@@ -86,7 +86,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Legal advice only.
             </p>
             <Link href="/terms" className="text-sm text-primary/60 hover:text-primary underline underline-offset-2 transition-colors">
-              Terms of Service
+              Terms of Use
             </Link>
           </div>
         </div>
