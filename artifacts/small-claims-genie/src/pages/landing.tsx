@@ -17,8 +17,8 @@ export default function Landing() {
           {/* Headline — left-aligned, single bold block, 25% smaller than reference */}
           <h1 className="text-3xl sm:text-4xl font-black leading-snug mb-5 text-primary tracking-tight">
             Win in Small Claims Court.<br />
-            Don't lose because you're<br />
-            unprepared.
+            Don't lose because you're unprepared.<br />
+            Get your money back!
           </h1>
 
           <p className="text-base md:text-lg text-primary/65 mb-7 max-w-xl leading-relaxed">
