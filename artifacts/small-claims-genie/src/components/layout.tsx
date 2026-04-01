@@ -87,7 +87,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/dashboard" className="hover:text-primary-foreground transition-colors">{i18n.nav.dashboard}</Link>
             </div>
             <p className="text-sm text-primary-foreground/50">
-              © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Not legal advice.
+              © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Legal advice only.
             </p>
           </div>
         </div>
