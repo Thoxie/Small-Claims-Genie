@@ -13,11 +13,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-white text-foreground">
       <header className="sticky top-0 z-40 w-full bg-white shadow-sm" style={{ borderBottom: '2px solid #ddf6f3' }}>
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-6 h-24 flex items-center justify-between">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center shrink-0">
-            <img src={logoPath} alt={i18n.brand.name} className="h-16 w-auto" />
+          {/* Logo — shifted 1 inch right, 30% larger */}
+          <Link href="/" className="flex items-center shrink-0 ml-24">
+            <img src={logoPath} alt={i18n.brand.name} className="h-20 w-auto" />
           </Link>
 
           {/* Center nav links */}
