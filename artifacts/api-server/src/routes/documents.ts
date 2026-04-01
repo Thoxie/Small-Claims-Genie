@@ -4,6 +4,10 @@ import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import multer from "multer";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import mammoth from "mammoth";
+// Use lib path directly — pdf-parse index.js runs tests on import which crash in prod
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse: (buf: Buffer) => Promise<{ text: string; numpages: number }> = require("pdf-parse/lib/pdf-parse.js");
 
 const router: IRouter = Router();
 
@@ -88,9 +92,9 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
       const originalName = req.file!.originalname;
       const buffer = req.file!.buffer;
 
-      // ── IMAGES: send directly to GPT Vision ────────────────────────────────
+      // ── IMAGES → Vision API ──────────────────────────────────────────────────
       if (mime.startsWith("image/")) {
-        console.log(`[OCR] Processing image: ${originalName}`);
+        console.log(`[OCR] Processing image via Vision: ${originalName}`);
         const response = await openai.chat.completions.create({
           model: "gpt-5.2",
           max_completion_tokens: 4096,
@@ -112,32 +116,38 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
           }],
         });
         ocrText = response.choices[0]?.message?.content ?? null;
-        console.log(`[OCR] Image done, chars extracted: ${ocrText?.length ?? 0}`);
+        console.log(`[OCR] Image Vision done — chars extracted: ${ocrText?.length ?? 0}`);
 
-      // ── PDFs + DOCX: upload to OpenAI Files API → GPT reads it ─────────────
-      } else if (
-        mime === "application/pdf" ||
-        mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) {
-        const fileType = mime === "application/pdf" ? "PDF" : "DOCX";
-        console.log(`[OCR] Uploading ${fileType} to OpenAI Files API: ${originalName}`);
+      // ── DOCX → mammoth (direct XML text extraction, no AI needed) ───────────
+      } else if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        console.log(`[OCR] Processing DOCX via mammoth: ${originalName}`);
+        const result = await mammoth.extractRawText({ buffer });
+        const extractedText = result.value?.trim() ?? "";
+        if (result.messages?.length > 0) {
+          console.log(`[OCR] mammoth warnings:`, result.messages.map((m: any) => m.message).join("; "));
+        }
+        ocrText = extractedText.length > 10 ? extractedText : null;
+        console.log(`[OCR] DOCX mammoth done — chars extracted: ${ocrText?.length ?? 0}`);
 
-        // Map DOCX mime to a name OpenAI will accept
-        const uploadName = mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          ? originalName.endsWith(".docx") ? originalName : originalName + ".docx"
-          : originalName;
-
-        let uploadedFileId: string | null = null;
-
+      // ── PDF → pdf-parse (native text), fallback to Vision if scanned ────────
+      } else if (mime === "application/pdf") {
+        console.log(`[OCR] Processing PDF via pdf-parse: ${originalName}`);
+        let nativeText = "";
         try {
-          const filesApi = openai.files as any;
-          const uploadedFile = await filesApi.create({
-            file: new File([buffer], uploadName, { type: mime }),
-            purpose: "user_data",
-          });
-          uploadedFileId = uploadedFile.id;
-          console.log(`[OCR] File uploaded, id: ${uploadedFileId}`);
+          const parsed = await pdfParse(buffer);
+          nativeText = parsed.text?.trim() ?? "";
+          console.log(`[OCR] pdf-parse result — chars: ${nativeText.length}, pages: ${parsed.numpages}`);
+        } catch (parseErr) {
+          console.warn(`[OCR] pdf-parse failed, will try Vision fallback:`, parseErr);
+        }
 
+        if (nativeText.length > 50) {
+          // Good native text — use it directly
+          ocrText = nativeText;
+          console.log(`[OCR] PDF native text extracted — ${ocrText.length} chars`);
+        } else {
+          // Likely a scanned/image PDF — send to Vision API
+          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), using Vision API`);
           const response = await openai.chat.completions.create({
             model: "gpt-5.2",
             max_completion_tokens: 4096,
@@ -145,32 +155,25 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
               role: "user",
               content: [
                 {
-                  type: "file",
-                  file: { file_id: uploadedFileId },
-                } as any,
-                {
                   type: "text",
-                  text: `Extract ALL text from this ${fileType} document exactly as written. Preserve every date, dollar amount, name, address, and legal term. This is a legal document for a California small claims court case — accuracy is critical. If this is a scanned document, use OCR to read it. Return the complete extracted text only.`,
+                  text: "This is a scanned PDF document. Extract ALL text exactly as written — every date, dollar amount, name, address, and legal term. This is for a California small claims court case. Return the complete extracted text only.",
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: `data:application/pdf;base64,${fileBase64}`,
+                    detail: "high",
+                  },
                 },
               ],
             }],
           });
-
           ocrText = response.choices[0]?.message?.content ?? null;
-          console.log(`[OCR] ${fileType} extraction done, chars: ${ocrText?.length ?? 0}`);
-        } finally {
-          if (uploadedFileId) {
-            const filesApi = openai.files as any;
-            await filesApi.del(uploadedFileId).catch((e: unknown) => {
-              console.warn("[OCR] Failed to delete OpenAI file:", e);
-            });
-          }
+          console.log(`[OCR] PDF Vision fallback done — chars: ${ocrText?.length ?? 0}`);
         }
       }
 
-      const finalText = ocrText && ocrText.trim().length > 10
-        ? ocrText
-        : null;
+      const finalText = ocrText && ocrText.trim().length > 10 ? ocrText : null;
 
       await db.update(documentsTable)
         .set({
@@ -179,15 +182,12 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
         })
         .where(eq(documentsTable.id, doc.id));
 
-      console.log(`[OCR] Saved to DB — status: ${finalText ? "complete" : "failed"}`);
+      console.log(`[OCR] DB updated — status: ${finalText ? "complete" : "failed"}, doc id: ${doc.id}`);
 
     } catch (err) {
       console.error("[OCR] Extraction error for", req.file!.originalname, ":", err);
       await db.update(documentsTable)
-        .set({
-          ocrText: null,
-          ocrStatus: "failed",
-        })
+        .set({ ocrText: null, ocrStatus: "failed" })
         .where(eq(documentsTable.id, doc.id));
     }
   });
