@@ -12,12 +12,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-white text-foreground">
-      <header className="sticky top-0 z-40 w-full border-b bg-white shadow-sm">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full border-b bg-white shadow-sm overflow-visible">
+        <div className="container mx-auto px-6 h-28 flex items-center justify-between">
 
           {/* Logo — large and prominent */}
-          <Link href="/" className="flex items-center shrink-0">
-            <img src={logoPath} alt={i18n.brand.name} className="h-16 w-auto" />
+          <Link href="/" className="flex items-center shrink-0 -my-6">
+            <img src={logoPath} alt={i18n.brand.name} className="h-40 w-auto" />
           </Link>
 
           {/* Center nav links */}
