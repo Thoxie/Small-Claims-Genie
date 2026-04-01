@@ -11,7 +11,7 @@ export default function Landing() {
     <div className="flex flex-col w-full bg-white">
 
       {/* ── Hero ── */}
-      <section style={{ backgroundColor: TEAL }} className="px-4 pt-10 pb-12 md:pt-14 md:pb-16">
+      <section style={{ backgroundColor: TEAL }} className="px-4 pt-16 pb-12 md:pt-20 md:pb-16">
         <div className="max-w-3xl mx-auto">
 
           {/* Trust pill */}
