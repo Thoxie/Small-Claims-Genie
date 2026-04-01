@@ -3,8 +3,15 @@ import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import multer from "multer";
-import { openai, toFile } from "@workspace/integrations-openai-ai-server";
+import { openai } from "@workspace/integrations-openai-ai-server";
 import mammoth from "mammoth";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { tmpdir } from "node:os";
+import { mkdtemp, writeFile, readdir, readFile, rm } from "node:fs/promises";
+import { join } from "node:path";
+
+const execFileAsync = promisify(execFile);
 // Use lib path directly — pdf-parse index.js runs tests on import which crash in prod
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse: (buf: Buffer) => Promise<{ text: string; numpages: number }> = require("pdf-parse/lib/pdf-parse.js");
@@ -32,7 +39,7 @@ function canonicalMime(originalname: string, reportedMime: string): string {
 
 const upload = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = file.originalname.toLowerCase().slice(file.originalname.lastIndexOf("."));
     if (ALLOWED_EXTENSIONS.has(ext)) {
@@ -160,53 +167,63 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
           ocrText = nativeText;
           console.log(`[OCR] PDF native text extracted — ${ocrText.length} chars`);
         } else {
-          // Scanned/image-only PDF — upload to Files API then reference by file_id
-          // in the Responses API (inline file_data is not supported for this model)
-          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), uploading to Files API for Responses API`);
-          let uploadedFileId: string | null = null;
+          // Scanned/image-only PDF — render each page to PNG via pdftoppm,
+          // then send each page image to Vision API.
+          // (OpenAI Files API and inline file_data are not supported by this proxy.)
+          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), converting pages via pdftoppm`);
+          const tmpDir = await mkdtemp(join(tmpdir(), "pdf-ocr-"));
           try {
-            const uploaded = await openai.files.create({
-              file: await toFile(buffer, originalName, { type: "application/pdf" }),
-              purpose: "user_data",
-            });
-            uploadedFileId = uploaded.id;
-            console.log(`[OCR] Files API upload complete — file_id: ${uploadedFileId}`);
-          } catch (uploadErr) {
-            console.error(`[OCR] Files API upload failed:`, uploadErr);
-          }
+            const tmpPdf = join(tmpDir, "input.pdf");
+            const pagePrefix = join(tmpDir, "page");
+            await writeFile(tmpPdf, buffer);
 
-          if (uploadedFileId) {
-            const responsesApi = (openai as any).responses;
-            const resp = await responsesApi.create({
-              model: "gpt-5.2",
-              input: [
-                {
+            // Render up to 20 pages at 150 DPI as PNG
+            await execFileAsync("pdftoppm", [
+              "-png", "-r", "150", "-l", "20",
+              tmpPdf, pagePrefix,
+            ]);
+
+            const allFiles = await readdir(tmpDir);
+            const pngFiles = allFiles
+              .filter((f) => f.endsWith(".png"))
+              .sort(); // page-01.png, page-02.png, ...
+
+            console.log(`[OCR] pdftoppm produced ${pngFiles.length} page image(s)`);
+
+            const pageTexts: string[] = [];
+            for (const pngFile of pngFiles) {
+              const pageBuffer = await readFile(join(tmpDir, pngFile));
+              const pageB64 = pageBuffer.toString("base64");
+              const pageResp = await openai.chat.completions.create({
+                model: "gpt-5.2",
+                max_completion_tokens: 3000,
+                messages: [{
                   role: "user",
                   content: [
                     {
-                      type: "input_file",
-                      file_id: uploadedFileId,
+                      type: "text",
+                      text: "Extract ALL text from this scanned document page exactly as written — every date, dollar amount, name, address, and legal term. This is a page from a California small claims court document. Return raw extracted text only, preserving structure.",
                     },
                     {
-                      type: "input_text",
-                      text: "Extract ALL text from this scanned PDF document exactly as written — every date, dollar amount, name, address, and legal term. This is for a California small claims court case. Return the complete extracted text only.",
+                      type: "image_url",
+                      image_url: {
+                        url: `data:image/png;base64,${pageB64}`,
+                        detail: "high",
+                      },
                     },
                   ],
-                },
-              ],
-            });
-            ocrText = resp.output_text ?? resp.output?.[0]?.content?.[0]?.text ?? null;
-            console.log(`[OCR] PDF Responses API (file_id) done — chars: ${ocrText?.length ?? 0}`);
-
-            // Clean up the uploaded file after extraction
-            try {
-              await openai.files.del(uploadedFileId);
-              console.log(`[OCR] Files API cleanup — deleted ${uploadedFileId}`);
-            } catch {
-              // Non-critical cleanup failure
+                }],
+              });
+              const pageText = pageResp.choices[0]?.message?.content ?? "";
+              pageTexts.push(pageText);
+              console.log(`[OCR] Page ${pngFile} — chars: ${pageText.length}`);
             }
-          } else {
-            console.error(`[OCR] No file_id available — scanned PDF OCR skipped`);
+
+            ocrText = pageTexts.join("\n\n--- Page Break ---\n\n");
+            console.log(`[OCR] pdftoppm+Vision done — total chars: ${ocrText.length}`);
+          } finally {
+            // Always clean up temp files
+            await rm(tmpDir, { recursive: true, force: true });
           }
         }
       }
