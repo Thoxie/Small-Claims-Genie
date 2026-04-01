@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import multer from "multer";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { openai, toFile } from "@workspace/integrations-openai-ai-server";
 import mammoth from "mammoth";
 // Use lib path directly — pdf-parse index.js runs tests on import which crash in prod
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -160,31 +160,54 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
           ocrText = nativeText;
           console.log(`[OCR] PDF native text extracted — ${ocrText.length} chars`);
         } else {
-          // Scanned/image-only PDF — use Responses API with inline file_data
-          // (Vision API image_url does NOT accept PDFs; Responses API does)
-          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), using Responses API`);
-          const responsesApi = (openai as any).responses;
-          const resp = await responsesApi.create({
-            model: "gpt-5.2",
-            input: [
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "input_file",
-                    filename: originalName,
-                    file_data: `data:application/pdf;base64,${fileBase64}`,
-                  },
-                  {
-                    type: "input_text",
-                    text: "Extract ALL text from this scanned PDF document exactly as written — every date, dollar amount, name, address, and legal term. This is for a California small claims court case. Return the complete extracted text only.",
-                  },
-                ],
-              },
-            ],
-          });
-          ocrText = resp.output_text ?? resp.output?.[0]?.content?.[0]?.text ?? null;
-          console.log(`[OCR] PDF Responses API done — chars: ${ocrText?.length ?? 0}`);
+          // Scanned/image-only PDF — upload to Files API then reference by file_id
+          // in the Responses API (inline file_data is not supported for this model)
+          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), uploading to Files API for Responses API`);
+          let uploadedFileId: string | null = null;
+          try {
+            const uploaded = await openai.files.create({
+              file: await toFile(buffer, originalName, { type: "application/pdf" }),
+              purpose: "user_data",
+            });
+            uploadedFileId = uploaded.id;
+            console.log(`[OCR] Files API upload complete — file_id: ${uploadedFileId}`);
+          } catch (uploadErr) {
+            console.error(`[OCR] Files API upload failed:`, uploadErr);
+          }
+
+          if (uploadedFileId) {
+            const responsesApi = (openai as any).responses;
+            const resp = await responsesApi.create({
+              model: "gpt-5.2",
+              input: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "input_file",
+                      file_id: uploadedFileId,
+                    },
+                    {
+                      type: "input_text",
+                      text: "Extract ALL text from this scanned PDF document exactly as written — every date, dollar amount, name, address, and legal term. This is for a California small claims court case. Return the complete extracted text only.",
+                    },
+                  ],
+                },
+              ],
+            });
+            ocrText = resp.output_text ?? resp.output?.[0]?.content?.[0]?.text ?? null;
+            console.log(`[OCR] PDF Responses API (file_id) done — chars: ${ocrText?.length ?? 0}`);
+
+            // Clean up the uploaded file after extraction
+            try {
+              await openai.files.del(uploadedFileId);
+              console.log(`[OCR] Files API cleanup — deleted ${uploadedFileId}`);
+            } catch {
+              // Non-critical cleanup failure
+            }
+          } else {
+            console.error(`[OCR] No file_id available — scanned PDF OCR skipped`);
+          }
         }
       }
 
