@@ -31,12 +31,13 @@ California small claims court SaaS app. Helps lower-income individuals and small
 artifacts/
   api-server/       # Express 5 API server (port 8080)
     src/routes/
-      health.ts     # GET /api/healthz
-      counties.ts   # GET /api/counties (all 58 CA counties hardcoded)
-      cases.ts      # Cases CRUD + stats + intake + readiness
-      documents.ts  # File upload (multer) + OCR (OpenAI vision)
-      chat.ts       # SSE streaming AI chat (OpenAI gpt-5.2)
-      forms.ts      # SC-100 PDF generation (pdf-lib)
+      health.ts       # GET /api/healthz
+      counties.ts     # GET /api/counties (all 58 CA counties hardcoded)
+      cases.ts        # Cases CRUD + stats + intake + readiness score algorithm
+      documents.ts    # File upload (multer) + async OCR (OpenAI vision)
+      chat.ts         # SSE streaming AI chat + buildCaseContext() grounding
+      forms.ts        # SC-100 PDF generation (pdf-lib, navy/gold branded)
+      transcribe.ts   # POST /api/transcribe — voice audio → Whisper transcription
   small-claims-genie/  # React+Vite frontend (previewPath /)
     src/
       pages/
@@ -69,7 +70,7 @@ lib/
 - **Stage 1**: No auth, no payments (Phase 2 adds Replit Auth + Stripe)
 - **OCR**: OpenAI vision API on upload (async, runs in `setImmediate`)
 - **Chat**: SSE streaming via raw `fetch` + `ReadableStream` in frontend (NOT the generated hook)
-- **Voice**: `useVoiceRecorder` from `@workspace/integrations-openai-ai-react` — 40-bar waveform
+- **Voice**: push-to-talk via `useVoiceRecorder` (hold mic → record → release → Whisper transcription via `/api/transcribe` → auto-send to AI)
 - **SC-100 limits**: $12,500 individuals, $6,250 businesses (CA 2026)
 - **All 58 CA counties** hardcoded in `artifacts/api-server/src/routes/counties.ts`
 - **Files stored as base64** in `documents.fileData` column (postgres TEXT)

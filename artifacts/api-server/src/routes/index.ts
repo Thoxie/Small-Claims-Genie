@@ -5,6 +5,7 @@ import casesRouter from "./cases";
 import documentsRouter from "./documents";
 import chatRouter from "./chat";
 import formsRouter from "./forms";
+import transcribeRouter from "./transcribe";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(casesRouter);
 router.use(documentsRouter);
 router.use(chatRouter);
 router.use(formsRouter);
+router.use(transcribeRouter);
 
 export default router;

@@ -3,9 +3,16 @@ import { useParams } from "wouter";
 import { 
   useGetCase, 
   useSaveIntakeProgress,
-  useListCounties
+  useListCounties,
+  useGetCaseReadiness,
+  useListDocuments,
+  useUploadDocument,
+  useDeleteDocument,
+  useGetChatHistory,
+  getListDocumentsQueryKey,
+  getGetCaseReadinessQueryKey,
 } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -21,27 +28,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertTriangle, AlertCircle, Trash2 } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetCaseQueryKey } from "@workspace/api-client-react";
-
-// Placeholder for missing hooks to make the UI work without crashing
-// The instructions said to use them, but api.ts is truncated so we have to assume their shape or stub them if they don't exist.
-// Assuming they don't exist since they weren't in the generated api schemas shown, but I must follow instructions.
-// I will just stub the missing ones that weren't in the api.ts snippet to avoid breaking the build,
-// but the prompt says they are generated. If they exist in the real api.ts, they will be imported.
-import { 
-  useGetCaseReadiness,
-  useListDocuments,
-  useUploadDocument,
-  useDeleteDocument,
-  useGetChatHistory,
-  useClearChatHistory
-} from "@workspace/api-client-react";
 import { useVoiceRecorder } from "@workspace/integrations-openai-ai-react";
 
-// Schemas for Intake
+// ─── Intake Zod Schemas (mapped 1-to-1 to SC-100 fields) ─────────────────────
 const intakeStep1Schema = z.object({
   plaintiffName: z.string().min(2, "Name is required"),
   plaintiffPhone: z.string().min(10, "Phone is required"),
@@ -90,6 +83,7 @@ const intakeStep6Schema = z.object({
   claimOver2500: z.boolean(),
 });
 
+// ─── Root Workspace ───────────────────────────────────────────────────────────
 export default function CaseWorkspace() {
   const params = useParams();
   const caseId = parseInt(params.id || "0", 10);
@@ -123,10 +117,10 @@ export default function CaseWorkspace() {
 
       <Tabs defaultValue="intake" className="w-full">
         <TabsList className="w-full grid grid-cols-4 h-14">
-          <TabsTrigger value="intake" className="text-base" data-testid="tab-intake">Intake</TabsTrigger>
-          <TabsTrigger value="documents" className="text-base" data-testid="tab-documents">Documents</TabsTrigger>
-          <TabsTrigger value="chat" className="text-base" data-testid="tab-chat">AI Chat</TabsTrigger>
-          <TabsTrigger value="forms" className="text-base" data-testid="tab-forms">Forms</TabsTrigger>
+          <TabsTrigger value="intake" className="text-base" data-testid="tab-intake">{i18n.workspace.tabs.intake}</TabsTrigger>
+          <TabsTrigger value="documents" className="text-base" data-testid="tab-documents">{i18n.workspace.tabs.documents}</TabsTrigger>
+          <TabsTrigger value="chat" className="text-base" data-testid="tab-chat">{i18n.workspace.tabs.chat}</TabsTrigger>
+          <TabsTrigger value="forms" className="text-base" data-testid="tab-forms">{i18n.workspace.tabs.forms}</TabsTrigger>
         </TabsList>
         
         <div className="mt-6 border rounded-lg bg-card shadow-sm min-h-[600px]">
@@ -148,7 +142,7 @@ export default function CaseWorkspace() {
   );
 }
 
-// --- INTAKE TAB ---
+// ─── INTAKE TAB ───────────────────────────────────────────────────────────────
 function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }) {
   const [step, setStep] = useState(initialData.intakeStep || 1);
   const saveIntake = useSaveIntakeProgress();
@@ -170,6 +164,7 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
       onSuccess: () => {
         toast({ title: "Intake Complete", description: "Your information has been saved." });
         queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+        queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
       }
     });
   };
@@ -213,7 +208,7 @@ function Step1({ initialData, onNext }: { initialData: any, onNext: (d: any) => 
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Your Information (Plaintiff)</h2>
+      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step1}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
           <FormField control={form.control} name="plaintiffName" render={({ field }) => (
@@ -242,7 +237,7 @@ function Step1({ initialData, onNext }: { initialData: any, onNext: (d: any) => 
             )} />
           </div>
           <div className="flex justify-end pt-4">
-            <Button type="submit" size="lg" data-testid="button-next-step">Save & Continue</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -269,7 +264,7 @@ function Step2({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Who Are You Suing? (Defendant)</h2>
+      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step2}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
           <FormField control={form.control} name="defendantIsBusinessOrEntity" render={({ field }) => (
@@ -309,8 +304,8 @@ function Step2({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
             )} />
           </div>
           <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>Back</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">Save & Continue</Button>
+            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -332,7 +327,7 @@ function Step3({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">What Happened & How Much?</h2>
+      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step3}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -366,8 +361,8 @@ function Step3({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
           )} />
 
           <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>Back</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">Save & Continue</Button>
+            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -388,7 +383,7 @@ function Step4({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Did You Ask Them to Pay?</h2>
+      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step4}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
           <FormField control={form.control} name="priorDemandMade" render={({ field }) => (
@@ -417,8 +412,8 @@ function Step4({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
           )}
 
           <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>Back</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">Save & Continue</Button>
+            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -441,7 +436,7 @@ function Step5({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Where to File</h2>
+      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step5}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
           <FormField control={form.control} name="countyId" render={({ field }) => (
@@ -479,8 +474,8 @@ function Step5({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
           )}
 
           <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>Back</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">Save & Continue</Button>
+            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -504,7 +499,7 @@ function Step6({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Additional Court Questions</h2>
+      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step6}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
           <FormField control={form.control} name="isSuingPublicEntity" render={({ field }) => (
@@ -526,8 +521,8 @@ function Step6({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
           )} />
 
           <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>Back</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">Save & Continue</Button>
+            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -538,10 +533,10 @@ function Step6({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 function Step7({ initialData, onComplete, onBack }: { initialData: any, onComplete: () => void, onBack: () => void }) {
   return (
     <div className="max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Review Your Information</h2>
+      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step7}</h2>
       <div className="space-y-6">
         <Card>
-          <CardHeader className="py-4"><CardTitle className="text-lg">Plaintiff & Defendant</CardTitle></CardHeader>
+          <CardHeader className="py-4"><CardTitle className="text-lg">Plaintiff &amp; Defendant</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div><span className="font-semibold block text-muted-foreground">Plaintiff</span>{initialData.plaintiffName}<br/>{initialData.plaintiffAddress}<br/>{initialData.plaintiffCity}, {initialData.plaintiffState} {initialData.plaintiffZip}</div>
             <div><span className="font-semibold block text-muted-foreground">Defendant</span>{initialData.defendantName}<br/>{initialData.defendantAddress}<br/>{initialData.defendantCity}, {initialData.defendantState} {initialData.defendantZip}</div>
@@ -557,46 +552,62 @@ function Step7({ initialData, onComplete, onBack }: { initialData: any, onComple
         </Card>
       </div>
       <div className="flex justify-between pt-8">
-        <Button type="button" variant="outline" size="lg" onClick={onBack}>Back</Button>
+        <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
         <Button onClick={onComplete} size="lg" data-testid="button-complete-intake" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Complete Intake</Button>
       </div>
     </div>
   );
 }
 
-// --- DOCUMENTS TAB ---
+// ─── DOCUMENTS TAB ────────────────────────────────────────────────────────────
 function DocumentsTab({ caseId }: { caseId: number }) {
-  const { data: documents, isLoading } = useListDocuments ? useListDocuments(caseId, { query: { enabled: !!caseId } }) : { data: [], isLoading: false };
-  const uploadDoc = useUploadDocument ? useUploadDocument() : { mutateAsync: async () => {}, isPending: false };
-  const deleteDoc = useDeleteDocument ? useDeleteDocument() : { mutate: () => {}, isPending: false };
+  const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
+  const uploadDoc = useUploadDocument();
+  const deleteDoc = useDeleteDocument();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
-    await uploadDoc.mutateAsync({ id: caseId, data: { file, label: "Document" } });
-    // Invalidate docs
-    // queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });
+    await uploadDoc.mutateAsync({ id: caseId, data: { file, label: file.name } });
+    queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });
+    queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
+    toast({ title: "Document uploaded", description: "OCR text extraction is running in the background." });
+    e.target.value = "";
+  };
+
+  const handleDelete = (docId: number) => {
+    deleteDoc.mutate({ id: caseId, docId }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });
+        queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
+      }
+    });
   };
 
   return (
     <div className="p-6 md:p-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Case Documents</h2>
-        <Button onClick={() => fileInputRef.current?.click()} data-testid="button-upload-doc">
-          <Paperclip className="h-4 w-4 mr-2" /> Upload Document
+        <h2 className="text-2xl font-bold">{i18n.documents.title}</h2>
+        <Button onClick={() => fileInputRef.current?.click()} disabled={uploadDoc.isPending} data-testid="button-upload-doc">
+          <Paperclip className="h-4 w-4 mr-2" />
+          {uploadDoc.isPending ? i18n.documents.processing : i18n.documents.uploadBtn}
         </Button>
-        <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.png,.docx" onChange={handleUpload} />
+        <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.docx" onChange={handleUpload} />
       </div>
 
-      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center mb-8 bg-muted/5">
+      <div
+        className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center mb-8 bg-muted/5 cursor-pointer hover:border-primary/40 transition-colors"
+        onClick={() => fileInputRef.current?.click()}
+      >
         <div className="mx-auto w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
           <FileText className="h-6 w-6" />
         </div>
         <h3 className="text-lg font-medium mb-1">Drag and drop files here</h3>
-        <p className="text-muted-foreground mb-4">Accepts PDF, JPG, PNG, DOCX</p>
-        <Button variant="outline" onClick={() => fileInputRef.current?.click()}>Browse Files</Button>
+        <p className="text-muted-foreground mb-4">{i18n.documents.uploadZone}</p>
+        <Button variant="outline" type="button">Browse Files</Button>
       </div>
 
       <div className="space-y-4">
@@ -605,38 +616,50 @@ function DocumentsTab({ caseId }: { caseId: number }) {
             <div className="flex items-center gap-4">
               <div className="bg-primary/10 p-2 rounded"><FileText className="h-5 w-5 text-primary" /></div>
               <div>
-                <p className="font-medium">{doc.filename}</p>
+                <p className="font-medium">{doc.originalName}</p>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant={doc.ocrStatus === 'complete' ? 'secondary' : 'outline'} className="text-[10px]">
-                    {doc.ocrStatus}
+                  <Badge
+                    variant={doc.ocrStatus === 'complete' ? 'secondary' : 'outline'}
+                    className={`text-[10px] ${doc.ocrStatus === 'complete' ? 'text-green-700 bg-green-100' : doc.ocrStatus === 'failed' ? 'text-red-700 bg-red-100' : ''}`}
+                  >
+                    {doc.ocrStatus === 'complete' ? i18n.documents.complete : doc.ocrStatus === 'failed' ? i18n.documents.failed : i18n.documents.processing}
                   </Badge>
-                  <span>{(doc.fileSize / 1024).toFixed(1)} KB</span>
+                  <span>{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : ""}</span>
                 </div>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => deleteDoc.mutate({ id: doc.id })} className="text-destructive hover:bg-destructive/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleDelete(doc.id)}
+              disabled={deleteDoc.isPending}
+              className="text-destructive hover:bg-destructive/10"
+            >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         ))}
-        {documents?.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">No documents uploaded yet.</p>
+        {(!documents || documents.length === 0) && (
+          <p className="text-center text-muted-foreground py-8">{i18n.documents.noDocs}</p>
         )}
       </div>
     </div>
   );
 }
 
-// --- AI CHAT TAB ---
+// ─── AI CHAT TAB ──────────────────────────────────────────────────────────────
+// Uses raw fetch + ReadableStream for SSE — intentionally NOT using a generated hook.
+// The AI is grounded in the user's case context and OCR'd documents via buildCaseContext (server-side).
 function ChatTab({ caseId }: { caseId: number }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
-  // Stub missing hooks
-  const { data: history } = useGetChatHistory ? useGetChatHistory(caseId, { query: { enabled: !!caseId } }) : { data: [] };
-  const { isRecording, startRecording, stopRecording, audioBlob } = useVoiceRecorder ? useVoiceRecorder() : { isRecording: false, startRecording: () => {}, stopRecording: () => {}, audioBlob: null };
+  const { data: history } = useGetChatHistory(caseId, { query: { enabled: !!caseId } });
+  const { state: recordingState, startRecording, stopRecording } = useVoiceRecorder();
+  const isRecording = recordingState === "recording";
 
   useEffect(() => {
     if (history) setMessages(history);
@@ -646,6 +669,7 @@ function ChatTab({ caseId }: { caseId: number }) {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isTyping]);
 
+  // SSE streaming send — evidence-grounded via buildCaseContext on the server
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
     const newMsg = { id: Date.now(), role: 'user', content };
@@ -692,6 +716,33 @@ function ChatTab({ caseId }: { caseId: number }) {
     }
   };
 
+  // Push-to-talk: hold mic button → record → release → transcribe → auto-send
+  const handleVoiceStart = () => {
+    startRecording();
+  };
+
+  const handleVoiceStop = async () => {
+    const blob = await stopRecording();
+    if (!blob || blob.size === 0) return;
+
+    setIsTranscribing(true);
+    try {
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.webm");
+      const res = await fetch("/api/transcribe", { method: "POST", body: formData });
+      const json = await res.json();
+      if (json.text && json.text.trim()) {
+        await sendMessage(json.text.trim());
+      }
+    } catch (e) {
+      console.error("Transcription failed", e);
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  const voiceLabel = isTranscribing ? "Transcribing..." : isRecording ? i18n.chat.recording : "";
+
   return (
     <div className="flex flex-col h-[600px]">
       <div className="bg-primary/5 border-b p-3 text-center text-sm font-medium text-primary flex items-center justify-center gap-2">
@@ -722,25 +773,33 @@ function ChatTab({ caseId }: { caseId: number }) {
       </div>
 
       <div className="p-4 border-t bg-card mt-auto">
+        {voiceLabel && (
+          <div className="text-xs text-center text-muted-foreground mb-2 font-medium animate-pulse">{voiceLabel}</div>
+        )}
         <div className="flex items-center gap-2 relative">
           <Input 
             value={input} 
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-            placeholder="Ask Small Claims Genie a question..." 
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
+            placeholder={i18n.chat.placeholder}
             className="flex-1 h-12 pr-12 rounded-full border-2"
+            disabled={isTranscribing}
           />
           <Button 
             size="icon" 
             variant="ghost" 
-            className={`absolute right-14 rounded-full ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground'}`}
-            onMouseDown={startRecording}
-            onMouseUp={stopRecording}
-            onMouseLeave={stopRecording}
+            className={`absolute right-14 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : isTranscribing ? 'text-yellow-500' : 'text-muted-foreground'}`}
+            onMouseDown={handleVoiceStart}
+            onMouseUp={handleVoiceStop}
+            onMouseLeave={isRecording ? handleVoiceStop : undefined}
+            onTouchStart={handleVoiceStart}
+            onTouchEnd={handleVoiceStop}
+            disabled={isTranscribing}
+            aria-label={isRecording ? "Recording — release to send" : "Hold to record voice message"}
           >
             <Mic className="h-5 w-5" />
           </Button>
-          <Button onClick={() => sendMessage(input)} size="icon" className="h-12 w-12 rounded-full shrink-0">
+          <Button onClick={() => sendMessage(input)} size="icon" className="h-12 w-12 rounded-full shrink-0" disabled={isTyping || isTranscribing}>
             <Send className="h-5 w-5 ml-1" />
           </Button>
         </div>
@@ -749,13 +808,16 @@ function ChatTab({ caseId }: { caseId: number }) {
   );
 }
 
-// --- FORMS TAB ---
+// ─── FORMS TAB ────────────────────────────────────────────────────────────────
+// Readiness score: intake(60) + documents(30) + prior demand(10) = 0–100
+// Score ≥ 80 unlocks SC-100 PDF download
 function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any }) {
-  const { data: readiness } = useGetCaseReadiness ? useGetCaseReadiness(caseId, { query: { enabled: !!caseId } }) : { data: { score: currentCase.readinessScore || 0, missingFields: [] } };
+  const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
   
-  const score = readiness?.score || 0;
+  const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
   const color = score >= 80 ? "text-green-500" : score >= 50 ? "text-yellow-500" : "text-red-500";
+  const barColor = score >= 80 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
   
   return (
     <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
@@ -783,7 +845,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           disabled={!isReady}
           onClick={() => window.open(`/api/cases/${caseId}/forms/sc100`, '_blank')}
         >
-          <Download className="mr-2 h-5 w-5" /> Download SC-100 PDF
+          <Download className="mr-2 h-5 w-5" /> {i18n.forms.downloadSc100}
         </Button>
         {!isReady && <p className="text-sm text-center text-muted-foreground">You must complete your intake to reach 80% readiness before downloading.</p>}
       </div>
@@ -791,22 +853,35 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
       <div className="w-full md:w-80 space-y-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-center text-muted-foreground text-sm uppercase tracking-wider">Readiness Score</CardTitle>
+            <CardTitle className="text-center text-muted-foreground text-sm uppercase tracking-wider">{i18n.forms.readinessScore}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <div className={`text-6xl font-black ${color} mb-2`}>{score}</div>
             <div className="w-full bg-muted rounded-full h-2 mb-4 overflow-hidden">
-              <div className={`h-full ${score >= 80 ? 'bg-green-500' : score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${score}%` }}></div>
+              <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
             </div>
-            {readiness?.missingFields?.length > 0 && (
+            {readiness?.missingFields && readiness.missingFields.length > 0 && (
               <div className="w-full mt-4">
-                <h4 className="text-sm font-semibold flex items-center gap-1 text-destructive mb-2"><AlertCircle className="h-4 w-4"/> Missing Fields</h4>
+                <h4 className="text-sm font-semibold flex items-center gap-1 text-destructive mb-2"><AlertCircle className="h-4 w-4"/> {i18n.forms.missingFields}</h4>
                 <ul className="text-sm space-y-1">
                   {readiness.missingFields.map((f: string, i: number) => (
                     <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-destructive mt-1">•</span>{f}</li>
                   ))}
                 </ul>
               </div>
+            )}
+            {readiness?.strengths && readiness.strengths.length > 0 && (
+              <div className="w-full mt-4">
+                <h4 className="text-sm font-semibold flex items-center gap-1 text-green-600 mb-2"><CheckCircle className="h-4 w-4"/> Strengths</h4>
+                <ul className="text-sm space-y-1">
+                  {readiness.strengths.map((s: string, i: number) => (
+                    <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-green-500 mt-1">✓</span>{s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {readiness?.filingGuidance && (
+              <p className="mt-4 text-xs text-muted-foreground text-center border-t pt-3">{readiness.filingGuidance}</p>
             )}
           </CardContent>
         </Card>
