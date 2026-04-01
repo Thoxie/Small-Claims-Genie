@@ -11,7 +11,7 @@ export default function Landing() {
     <div className="flex flex-col w-full bg-white">
 
       {/* ── Hero ── */}
-      <section style={{ backgroundColor: TEAL }} className="px-4 pt-16 pb-8 md:pt-20 md:pb-10">
+      <section style={{ backgroundColor: TEAL }} className="px-4 pt-8 pb-8 md:pt-10 md:pb-10">
         <div className="max-w-3xl mx-auto">
 
           {/* Headline — left-aligned, single bold block, 25% smaller than reference */}
