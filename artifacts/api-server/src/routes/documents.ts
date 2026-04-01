@@ -4,7 +4,6 @@ import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import multer from "multer";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import mammoth from "mammoth";
 
 const router: IRouter = Router();
 
@@ -35,7 +34,6 @@ router.get("/cases/:id/documents", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid case ID" });
     return;
   }
-
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
   const safeDocs = docs.map(({ fileData: _fileData, ...rest }) => rest);
   res.json(safeDocs);
@@ -48,7 +46,6 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
     res.status(400).json({ error: "Invalid case ID" });
     return;
   }
-
   if (!req.file) {
     res.status(400).json({ error: "No file uploaded" });
     return;
@@ -82,115 +79,113 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
   const { fileData: _fileData, ...safeDoc } = doc;
   res.status(201).json({ ...safeDoc, ocrStatus: "processing" });
 
-  // Run OCR/extraction async after responding
+  // ── OCR pipeline (runs after response is sent) ──────────────────────────────
   setImmediate(async () => {
-    try {
-      let ocrText: string | null = null;
+    let ocrText: string | null = null;
 
-      // ── Images: send directly to GPT Vision ──────────────────────────────
-      if (req.file!.mimetype.startsWith("image/")) {
+    try {
+      const mime = req.file!.mimetype;
+      const originalName = req.file!.originalname;
+      const buffer = req.file!.buffer;
+
+      // ── IMAGES: send directly to GPT Vision ────────────────────────────────
+      if (mime.startsWith("image/")) {
+        console.log(`[OCR] Processing image: ${originalName}`);
         const response = await openai.chat.completions.create({
           model: "gpt-5.2",
           max_completion_tokens: 4096,
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: "Extract ALL text from this document image exactly as written. Preserve structure, dates, amounts, names, and signatures. This is a legal document for a California small claims court case — accuracy is critical. Return raw text only.",
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:${req.file!.mimetype};base64,${fileBase64}`,
-                    detail: "high",
-                  },
-                },
-              ],
-            },
-          ],
-        });
-        ocrText = response.choices[0]?.message?.content ?? null;
-
-      // ── DOCX: use mammoth to extract text, then clean with GPT ───────────
-      } else if (
-        req.file!.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) {
-        const extracted = await mammoth.extractRawText({ buffer: req.file!.buffer });
-        const rawText = extracted.value.trim();
-
-        if (rawText.length > 0) {
-          // Use GPT to lightly structure/clean the extracted text
-          const response = await openai.chat.completions.create({
-            model: "gpt-5.2",
-            max_completion_tokens: 4096,
-            messages: [
+          messages: [{
+            role: "user",
+            content: [
               {
-                role: "user",
-                content: `The following is raw text extracted from a Word document (.docx). It is a legal or factual document related to a California small claims court case.\n\nClean up formatting artifacts, preserve all original text, dates, dollar amounts, names, and facts exactly as written. Return the complete cleaned text:\n\n${rawText.slice(0, 12000)}`,
+                type: "text",
+                text: "Extract ALL text from this document image exactly as written. Preserve structure, dates, amounts, names. This is a legal document for a California small claims court case — accuracy is critical. Return raw text only.",
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${mime};base64,${fileBase64}`,
+                  detail: "high",
+                },
               },
             ],
-          });
-          ocrText = response.choices[0]?.message?.content ?? rawText;
-        } else {
-          ocrText = "[Word document appears to be empty or contains only images. Please upload a PDF or image version.]";
-        }
+          }],
+        });
+        ocrText = response.choices[0]?.message?.content ?? null;
+        console.log(`[OCR] Image done, chars extracted: ${ocrText?.length ?? 0}`);
 
-      // ── PDFs: upload to OpenAI Files API, extract via GPT Vision ─────────
-      } else if (req.file!.mimetype === "application/pdf") {
+      // ── PDFs + DOCX: upload to OpenAI Files API → GPT reads it ─────────────
+      } else if (
+        mime === "application/pdf" ||
+        mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        const fileType = mime === "application/pdf" ? "PDF" : "DOCX";
+        console.log(`[OCR] Uploading ${fileType} to OpenAI Files API: ${originalName}`);
+
+        // Map DOCX mime to a name OpenAI will accept
+        const uploadName = mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ? originalName.endsWith(".docx") ? originalName : originalName + ".docx"
+          : originalName;
+
         let uploadedFileId: string | null = null;
 
         try {
-          // Upload PDF to OpenAI Files API
-          const uploadedFile = await (openai.files.create as Function)({
-            file: new File([req.file!.buffer], req.file!.originalname, { type: "application/pdf" }),
+          const filesApi = openai.files as any;
+          const uploadedFile = await filesApi.create({
+            file: new File([buffer], uploadName, { type: mime }),
             purpose: "user_data",
           });
           uploadedFileId = uploadedFile.id;
+          console.log(`[OCR] File uploaded, id: ${uploadedFileId}`);
 
-          // Ask GPT to extract all text from the uploaded file
           const response = await openai.chat.completions.create({
             model: "gpt-5.2",
             max_completion_tokens: 4096,
-            messages: [
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "file",
-                    file: { file_id: uploadedFileId },
-                  } as unknown as { type: "text"; text: string },
-                  {
-                    type: "text",
-                    text: "Extract ALL text from this PDF document exactly as written. Preserve every date, dollar amount, name, address, and legal term. This is a legal document for a California small claims court case — accuracy is critical. If this is a scanned document, use OCR to read it. Return complete extracted text only.",
-                  },
-                ],
-              },
-            ],
+            messages: [{
+              role: "user",
+              content: [
+                {
+                  type: "file",
+                  file: { file_id: uploadedFileId },
+                } as any,
+                {
+                  type: "text",
+                  text: `Extract ALL text from this ${fileType} document exactly as written. Preserve every date, dollar amount, name, address, and legal term. This is a legal document for a California small claims court case — accuracy is critical. If this is a scanned document, use OCR to read it. Return the complete extracted text only.`,
+                },
+              ],
+            }],
           });
 
           ocrText = response.choices[0]?.message?.content ?? null;
+          console.log(`[OCR] ${fileType} extraction done, chars: ${ocrText?.length ?? 0}`);
         } finally {
-          // Always clean up the uploaded file from OpenAI
           if (uploadedFileId) {
-            await (openai.files.del as Function)(uploadedFileId).catch(() => {});
+            const filesApi = openai.files as any;
+            await filesApi.del(uploadedFileId).catch((e: unknown) => {
+              console.warn("[OCR] Failed to delete OpenAI file:", e);
+            });
           }
         }
       }
 
+      const finalText = ocrText && ocrText.trim().length > 10
+        ? ocrText
+        : null;
+
       await db.update(documentsTable)
         .set({
-          ocrText: ocrText ?? "[Text extraction failed — try re-uploading or upload an image version of the document.]",
-          ocrStatus: ocrText ? "complete" : "failed",
+          ocrText: finalText,
+          ocrStatus: finalText ? "complete" : "failed",
         })
         .where(eq(documentsTable.id, doc.id));
 
+      console.log(`[OCR] Saved to DB — status: ${finalText ? "complete" : "failed"}`);
+
     } catch (err) {
-      console.error("[OCR] Extraction error:", err);
+      console.error("[OCR] Extraction error for", req.file!.originalname, ":", err);
       await db.update(documentsTable)
         .set({
-          ocrText: "[Text extraction failed — the document may be password-protected or corrupted. Try uploading a clear image or text-based version.]",
+          ocrText: null,
           ocrStatus: "failed",
         })
         .where(eq(documentsTable.id, doc.id));
