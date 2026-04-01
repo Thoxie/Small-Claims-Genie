@@ -1,0 +1,1300 @@
+# THOXIE Migration Handoff and Rebuild Checklist
+
+## Executive Summary
+
+This document is a formal migration handoff for the current THOXIE codebase. It is written for a developer or team that will rebuild, migrate, or stabilize the application in a new environment.
+
+The most important conclusion is that the current canonical application is a **server-backed California small-claims workflow app** built in **Next.js**. It supports structured case intake, document upload, text extraction, evidence-grounded AI chat, filing guidance, and a case dashboard. It is not a mature multi-user SaaS platform yet. Access is primarily controlled by a **case ownership cookie**, not a conventional authentication and authorization system.
+
+The repository also contains a substantial amount of **legacy, prototype, and archived material**. Those materials are useful for understanding the product’s history and intended direction, but they should not be treated as the source of truth for a rebuild. The **root Next.js app** is the canonical implementation.
+
+---
+
+## 1. Purpose of This Handoff
+
+This handoff is intended to give another developer enough context to:
+
+* understand what the current application actually does
+* distinguish canonical code from legacy or stale code
+* preserve the parts of the system that are already working
+* identify the main unfinished or fragile areas
+* rebuild the system in a cleaner environment without regressing core functionality
+
+This document is both:
+
+1. a **formal migration handoff**, and
+2. a **developer-facing rebuild checklist**.
+
+---
+
+## 2. Canonical Source of Truth
+
+### Canonical application
+
+Treat the **root Next.js app** as the current product.
+
+The most important live directories are:
+
+* `app/`
+* `app/api/`
+* `app/_lib/`
+* `app/_repository/`
+* `app/_config/`
+* `src/components/`
+
+### Non-canonical or legacy surfaces
+
+The repository also includes older or alternate surfaces that should not be treated as authoritative unless explicitly re-used:
+
+* `case-mockup/`
+* `frontend/`
+* `thoxie/`
+* `small-claims-court-app/`
+* old standalone HTML mockups at the repo root
+* archived planning/specification documents in `docs/archive/`
+
+### Practical interpretation
+
+For migration purposes:
+
+* **Preserve behavior from the root app**
+* **Do not rebuild from prototypes or archived mockups**
+* Use archived files only to clarify product direction or intended roadmap
+
+---
+
+## 3. Product Definition
+
+The current product is best described as:
+
+> A California small-claims preparation and evidence workflow application that helps a user create and manage a case, upload supporting documents, extract and organize evidence, and ask an AI assistant questions grounded in the case record.
+
+It is not currently:
+
+* a broad legal research platform
+* a law firm case-management system
+* a multi-tenant SaaS with user organizations and staff roles
+* a court e-filing system
+* a mature collaboration product
+
+---
+
+## 4. Architecture Overview
+
+### 4.1 Tech Stack
+
+Current canonical stack:
+
+* **Next.js App Router**
+* **React 18**
+* **Node 20**
+* **PostgreSQL** for structured server persistence
+* **Vercel Blob** for file storage
+* **OpenAI Chat Completions API** for AI responses
+* **Mammoth** for `.docx` text extraction
+* **pdf-parse** for machine-readable PDFs
+* supporting PDF/OCR libraries including `pdf2json`, `pdfjs-dist`, `tesseract.js`, and `@napi-rs/canvas`
+* browser-side storage using **IndexedDB** and **localStorage** for some client-local data
+
+### 4.2 High-level system flow
+
+The current application works roughly like this:
+
+1. A user creates or loads a case in the UI
+2. Structured case data is saved to PostgreSQL
+3. The user uploads evidence documents
+4. Documents are stored in Vercel Blob
+5. Extracted text and document metadata are stored in PostgreSQL
+6. Extracted text is chunked into a chunk table
+7. AI chat loads case data plus document/chunk context and answers either deterministically or via OpenAI
+
+### 4.3 Architectural strengths
+
+* server-backed source of truth for case and document data
+* evidence-grounded AI design rather than freeform chat only
+* deterministic workflow and readiness logic around small-claims preparation
+* chunked document storage without needing vector infrastructure
+* config-driven jurisdiction and forms logic
+
+### 4.4 Architectural weaknesses
+
+* no real user authentication model
+* no true team collaboration model
+* scanned-PDF OCR flow is incomplete
+* chat history and drafts are local rather than fully server-backed
+* duplicate and stale code in the repo increases migration risk
+* some technical concerns are handled in a lightweight way that is acceptable for prototype-stage production, but not ideal for scale
+
+---
+
+## 5. Repository Structure
+
+### 5.1 Primary directories
+
+#### `app/`
+
+Contains the main application routes and server API routes under the Next.js App Router.
+
+Key pages include:
+
+* `/`
+* `/start`
+* `/intake-wizard`
+* `/case-dashboard`
+* `/dashboard` (legacy redirect/compatibility)
+* `/documents`
+* `/document-preview`
+* `/drafts`
+* `/draft-preview`
+* `/filing-guidance`
+* `/filing-guidance/print`
+* `/key-dates`
+* `/ai-chatbox`
+* `/faq`
+* `/how-it-works`
+* `/resources`
+* `/types-of-cases`
+
+#### `app/api/`
+
+Contains the canonical server API routes.
+
+Important routes include:
+
+* `/api/case/load`
+* `/api/case/save`
+* `/api/documents`
+* `/api/blob-upload`
+* `/api/ingest`
+* `/api/ocr/callback`
+* `/api/ocr/retry`
+* `/api/chat`
+* `/api/rag/status`
+* `/api/rag/ingest` (disabled)
+* `/api/db-ping`
+* `/api/health`
+* `/api/db-init` (stale utility route)
+
+#### `app/_lib/`
+
+Contains core domain logic, server utilities, and schema setup. This is one of the most important directories for understanding the real application behavior.
+
+#### `app/_repository/`
+
+Contains client-side repositories and storage orchestration logic, including document upload behavior and case persistence patterns.
+
+#### `app/_config/`
+
+Contains jurisdiction, forms, and workflow configuration. This is where much of the small-claims business logic is driven from.
+
+#### `src/components/`
+
+Contains shared UI components, including the global AI chat dock.
+
+---
+
+## 6. Data Model and Database Design
+
+### 6.1 Source of truth for schema
+
+The canonical database schema is defined in:
+
+* `app/_lib/server/ensureSchema.js`
+
+Do **not** treat `/api/db-init` as the authoritative schema definition. It is stale relative to the current system.
+
+### 6.2 Database tables
+
+#### Table: `thoxie_case`
+
+Purpose:
+
+* stores the canonical case record
+* stores lightweight ownership metadata
+* acts as the parent record for documents
+
+Key fields:
+
+* `case_id`
+* `owner_token_hash`
+* `owner_claimed_at`
+* `owner_last_seen_at`
+* `case_data` (JSONB)
+* `created_at`
+* `updated_at`
+
+Interpretation:
+
+* the database keeps most business data inside `case_data` rather than fully normalized tables
+* ownership is enforced by hashing a browser-held token and comparing it to the stored hash
+
+#### Table: `thoxie_document`
+
+Purpose:
+
+* stores uploaded file metadata
+* stores extracted text
+* stores OCR lifecycle status
+* stores evidence-oriented metadata used in UI and AI retrieval
+
+Key fields:
+
+* `doc_id`
+* `case_id`
+* `name`
+* `mime_type`
+* `size_bytes`
+* `doc_type`
+* `exhibit_description`
+* `evidence_category`
+* `evidence_supports`
+* `blob_url`
+* `uploaded_at`
+* `extracted_text`
+* `extraction_method`
+* `ocr_status`
+* `ocr_job_id`
+* `ocr_provider`
+* `ocr_requested_at`
+* `ocr_completed_at`
+* `ocr_error`
+
+#### Table: `thoxie_document_chunk`
+
+Purpose:
+
+* stores chunked extracted text
+* supports evidence-grounded AI retrieval
+* stores lightweight structure metadata
+
+Key fields:
+
+* `chunk_id`
+* `case_id`
+* `doc_id`
+* `chunk_index`
+* `chunk_text`
+* `chunk_kind`
+* `chunk_label`
+* `section_label`
+* `page_start`
+* `page_end`
+* `char_start`
+* `char_end`
+* `structural_flags`
+* `created_at`
+
+### 6.3 Relationships
+
+* one case has many documents
+* one document has many chunks
+* deleting a case cascades to documents
+* deleting a document cascades to chunks
+
+### 6.4 Structured case JSON (`case_data`)
+
+The case JSON stores most of the application-specific workflow state.
+
+Important categories include:
+
+* case identity and timestamps
+* jurisdiction data
+* party data
+* claim details
+* service details
+* fee waiver details
+* case number and hearing data
+* facts and narrative items
+
+This design gives flexibility but places significant validation responsibility in application code rather than in the relational schema.
+
+---
+
+## 7. API Surface
+
+### 7.1 `/api/case/load` — GET
+
+Purpose:
+
+* load a case by `caseId`
+* claim an unowned case on first access
+* enforce ownership for already-claimed cases
+
+Returns:
+
+* normalized case payload or ownership error
+
+### 7.2 `/api/case/save` — POST
+
+Purpose:
+
+* create or update structured case data
+* enforce ownership via cookie/token system
+
+Inputs:
+
+* `caseId`
+* `caseData`
+
+Returns:
+
+* saved normalized case
+
+### 7.3 `/api/documents` — GET / PATCH / DELETE
+
+#### GET
+
+Supports:
+
+* list documents by `caseId`
+* load document detail by `docId`
+* open blob-backed document content with `open=1`
+
+#### PATCH
+
+Used to update document metadata such as:
+
+* document type
+* exhibit description
+* evidence category
+* evidence supports tags
+
+#### DELETE
+
+Used to delete:
+
+* document DB row
+* associated blob object if available
+
+### 7.4 `/api/blob-upload` — POST
+
+Purpose:
+
+* pre-authorize client-side blob upload, mainly for larger PDFs
+
+Used as part of a two-step upload flow, not as the final ingest step.
+
+### 7.5 `/api/ingest` — POST
+
+Purpose:
+
+* canonical document ingestion endpoint
+* accepts multipart upload or JSON-backed finalize ingest
+* stores document metadata
+* extracts text
+* chunks text
+* dispatches OCR when needed
+
+This is the core upload-processing route.
+
+### 7.6 `/api/ocr/callback` — GET / POST
+
+Purpose:
+
+* receive completion callbacks from an OCR provider or service
+* update OCR lifecycle status
+* persist OCR text and rebuild chunks when OCR succeeds
+
+### 7.7 `/api/ocr/retry` — GET / POST
+
+Purpose:
+
+* retry OCR for a document that is in a retryable state
+
+### 7.8 `/api/chat` — POST
+
+Purpose:
+
+* core AI assistant endpoint
+* loads case, documents, and chunk context
+* applies ownership and optional beta restrictions
+* chooses deterministic or live-AI response mode
+
+### 7.9 `/api/rag/status` — GET / POST
+
+Purpose:
+
+* provide document/chunk ingestion status for a case
+
+### 7.10 `/api/rag/ingest` — POST
+
+Purpose:
+
+* disabled compatibility route
+* currently returns that callers should use `/api/ingest`
+
+### 7.11 Diagnostics and utility endpoints
+
+* `/api/db-ping`
+* `/api/health`
+* `/api/db-init` (stale)
+* `/ai/chat` as compatibility alias to `/api/chat`
+
+---
+
+## 8. Document Upload and Extraction Pipeline
+
+### 8.1 Current design
+
+The application has two upload paths:
+
+1. **direct multipart upload** for typical files and smaller uploads
+2. **blob-backed two-step upload** for larger PDFs
+
+The client orchestration for uploads lives in:
+
+* `app/_repository/documentRepository.js`
+
+### 8.2 Direct upload flow
+
+1. User selects a file in the documents UI
+2. Client packages the file with `caseId` and `docType`
+3. Client posts multipart data to `/api/ingest`
+4. Server extracts text, stores file/blob metadata, stores document row, and writes chunks
+5. UI refreshes document status
+
+### 8.3 Blob-backed upload flow for larger PDFs
+
+1. Client creates a `docId`
+2. Client requests upload authorization from `/api/blob-upload`
+3. Browser uploads file directly to Vercel Blob
+4. Client finalizes the upload by sending a JSON-backed ingest request to `/api/ingest`
+5. Server reads the blob, extracts text, stores metadata, and writes chunks
+6. OCR may be dispatched if needed
+
+### 8.4 Extraction support by file type
+
+#### `.docx`
+
+Uses Mammoth. This is one of the more reliable ingestion paths.
+
+#### machine-readable PDFs
+
+Uses `pdf-parse` as primary extraction path.
+
+#### images
+
+Uses OCR tooling.
+
+#### scanned or image-only PDFs
+
+This is the weakest area. The system detects the problem and is designed to dispatch external OCR, but that external OCR path is not fully finished in the repo.
+
+### 8.5 Storage behavior
+
+For readable documents:
+
+* file stored in blob storage
+* metadata stored in `thoxie_document`
+* extracted text stored in `thoxie_document.extracted_text`
+* chunks stored in `thoxie_document_chunk`
+
+For scanned PDFs awaiting OCR:
+
+* file may still upload successfully
+* metadata row may still be created
+* extracted text may remain empty
+* chunk rows may remain absent
+* OCR status fields reflect pending or failed OCR states
+
+### 8.6 Known problems and failure points
+
+This is the main operational risk area.
+
+#### Problem 1: external OCR is architected but not truly complete
+
+The callback/retry/status model exists, but the end-to-end provider implementation is not fully resolved in the repo.
+
+#### Problem 2: inline OCR exists in code but is not the canonical solution
+
+There is evidence of OCR-related work in multiple places, but the main current flow expects an external OCR step for scanned PDFs.
+
+#### Problem 3: successful upload does not guarantee AI-readable evidence
+
+A file can exist in storage yet still provide no extracted text or chunks.
+
+#### Problem 4: the blob upload path is operationally more complex
+
+It is a multi-step flow with more chances for failure than a simple server-side upload.
+
+#### Problem 5: old `.doc` is unsupported
+
+Legacy binary Word docs are rejected.
+
+---
+
+## 9. AI and Chat Implementation
+
+### 9.1 UI placement
+
+The main chat UI is implemented as a global dock and persistent assistant surface rather than a page-only chatbot.
+
+Important components:
+
+* `src/components/AIChatbox.js`
+* `src/components/GlobalChatboxDock.js`
+
+### 9.2 Storage of conversation state
+
+Chat history is currently stored **client-side** in localStorage per case. It is not a full server-side conversation history system.
+
+### 9.3 Server chat flow
+
+The server-side AI flow is implemented in `/api/chat`.
+
+It generally performs the following steps:
+
+1. validate the request and any beta gating
+2. load server-authoritative case state
+3. load document inventory and relevant chunks
+4. classify the request/intent
+5. choose a response mode
+6. respond via deterministic logic or OpenAI
+
+### 9.4 Model and provider
+
+The codebase is configured around **OpenAI**.
+
+Environment-driven controls determine:
+
+* provider
+* model
+* timeout
+
+Default model references point to `gpt-4o-mini`.
+
+### 9.5 Context management
+
+The application does not simply send the raw chat thread. It builds structured context from:
+
+* case data
+* document metadata
+* extracted text
+* chunk retrieval results
+* evidence summaries
+* filing readiness logic
+
+This is one of the stronger design areas in the app.
+
+### 9.6 Retrieval approach
+
+The retrieval strategy is not vector-based. It is more heuristic and lexical:
+
+* chunk text
+* metadata
+* basic scoring/relevance heuristics
+
+This has tradeoffs:
+
+Pros:
+
+* simpler stack
+* easier migration
+* more transparent behavior
+* no vector DB dependency
+
+Cons:
+
+* weaker semantic recall
+* less robust search across paraphrases or loosely-related concepts
+
+### 9.7 Response modes
+
+The chat system supports multiple operational modes, including:
+
+* beta-restricted mode
+* rate-limited mode
+* readiness or workflow mode
+* deterministic evidence response mode
+* live AI mode
+
+The system is better understood as a hybrid **workflow/orchestration layer plus LLM** rather than a simple chatbot wrapper.
+
+---
+
+## 10. UI and Page Structure
+
+### `/`
+
+Marketing/entry page.
+
+### `/start`
+
+Initial case setup by state/county/court/role/category.
+
+### `/intake-wizard`
+
+Structured case intake flow.
+
+### `/case-dashboard`
+
+Canonical case workspace and hub.
+
+### `/dashboard`
+
+Compatibility route that redirects to the case dashboard.
+
+### `/documents`
+
+Document upload, review, and evidence metadata management.
+
+### `/document-preview`
+
+Document/case preview-type surface.
+
+### `/drafts`
+
+Draft management surface.
+
+### `/draft-preview`
+
+Single-draft editing/view surface.
+
+### `/filing-guidance`
+
+Case-specific filing guidance.
+
+### `/filing-guidance/print`
+
+Printable filing guidance output.
+
+### `/key-dates`
+
+Case date tracking.
+
+### `/ai-chatbox`
+
+Standalone chat view.
+
+### Supporting pages
+
+* `/faq`
+* `/how-it-works`
+* `/resources`
+* `/types-of-cases`
+
+Overall, the UI is organized around a **guided legal workflow**, not around admin back-office management.
+
+---
+
+## 11. Roles, Permissions, and Access Control
+
+### 11.1 Real access model
+
+The current application does **not** implement conventional auth or RBAC.
+
+There are no fully implemented concepts for:
+
+* admin users
+* staff users
+* customer accounts
+* organizations or tenant membership
+* role tables
+* auth provider sessions
+
+### 11.2 What exists instead
+
+#### Legal role
+
+The user can be categorized as plaintiff or defendant. This affects workflow guidance, not system security.
+
+#### Case owner
+
+This is the real permission model. A browser-held token is hashed and associated with the case. The corresponding cookie is used to enforce case access.
+
+#### AI beta user/tester
+
+Some AI access is gated by beta-allowlist logic.
+
+### 11.3 Practical implications
+
+The current app supports **single-browser ownership of a case**, not true shared or collaborative access.
+
+For a rebuild, this is a major architectural decision point:
+
+* either preserve the lightweight owner-token model for a single-user tool, or
+* replace it with real authentication, user accounts, and sharing/collaboration semantics
+
+---
+
+## 12. Core User Workflows
+
+### Workflow 1: Start a case
+
+1. User lands on `/start`
+2. Selects county/court/role/category
+3. App constructs case object
+4. Case is saved server-side
+5. Owner token/cookie is established
+
+### Workflow 2: Complete structured intake
+
+1. User opens `/intake-wizard`
+2. Enters party, claim, and hearing information
+3. Data is saved into structured `case_data`
+
+### Workflow 3: Upload evidence
+
+1. User opens `/documents`
+2. Selects files and document type
+3. Client chooses upload transport
+4. Server stores file, metadata, text, and chunks when possible
+5. OCR may be dispatched when needed
+
+### Workflow 4: Review or tag evidence
+
+1. User reviews document list
+2. Opens document detail
+3. Edits evidence metadata such as category or what the evidence supports
+4. Optionally retries OCR
+
+### Workflow 5: Ask AI about the case
+
+1. User opens the global chat or chat page
+2. Sends a question
+3. Server loads case and document context
+4. System returns deterministic or live AI answer grounded in case evidence
+
+### Workflow 6: Check filing readiness
+
+1. User opens filing guidance
+2. App resolves forms and readiness state
+3. User sees missing items or next actions
+
+### Workflow 7: Manage drafts
+
+1. User opens drafts
+2. Creates or edits draft content
+3. Drafts persist locally in IndexedDB
+
+---
+
+## 13. Search and Filtering
+
+### Current capabilities
+
+Search/filtering exists in a limited way.
+
+#### Draft search
+
+Drafts can be searched from local draft storage.
+
+#### AI-driven retrieval
+
+The most meaningful search capability is via AI chat retrieval across evidence chunks.
+
+#### Jurisdiction selection
+
+County/court lookup is driven from static config.
+
+### What is missing
+
+There is no strong evidence of:
+
+* dedicated full-text document search for users
+* advanced faceted filtering
+* cross-case search
+* vector search
+* search analytics or saved filters
+
+This is functional for current workflow scope, but not deep.
+
+---
+
+## 14. County and State Functionality
+
+### Current jurisdictional scope
+
+The product is currently scoped to **California small claims**.
+
+### County data usage
+
+The app uses county and court configuration to:
+
+* present location options
+* store jurisdiction metadata in the case
+* drive filing guidance and clerk information
+* support court-related workflow decisions
+
+### Known limitation
+
+Configured coverage appears limited to a subset of California counties rather than the entire state.
+
+This should be treated as a **product and data coverage constraint**, not an incidental code detail.
+
+---
+
+## 15. Forms and Data Entry
+
+### Main forms
+
+#### Start form
+
+Collects:
+
+* state
+* county
+* court
+* legal role
+* case category
+
+#### Intake wizard
+
+Collects structured case data, including:
+
+* party identities and addresses
+* claim details
+* damages and amount demanded
+* incident data
+* facts/narrative
+* service-related information
+* fee waiver details
+* hearing details
+
+#### Documents form
+
+Collects:
+
+* file uploads
+* document type
+* evidence metadata
+
+#### Key dates form
+
+Collects date/time-related case milestones.
+
+#### Draft editor
+
+Collects local drafting content.
+
+#### AI chat input
+
+Collects user questions and optional beta identity data.
+
+### Post-submission behavior
+
+* case data persists to PostgreSQL
+* document data persists to PostgreSQL + blob storage
+* drafts persist locally
+* chat requests go to the server, but history stays local
+
+---
+
+## 16. Notifications and Communication
+
+There is no mature notification or communications subsystem.
+
+Not present in a meaningful way:
+
+* outbound emails
+* SMS
+* push notifications
+* in-app notification center
+* user-to-user messaging
+
+Present in lightweight form:
+
+* inline status banners
+* upload and OCR status messages
+* readiness and gating messages
+
+The only asynchronous external communication pattern in the app is the OCR callback flow.
+
+---
+
+## 17. Reporting and Dashboards
+
+### Current dashboard model
+
+The case dashboard is a **workflow dashboard**, not a reporting or BI dashboard.
+
+It is intended to help the user navigate the case lifecycle and next actions.
+
+### Reporting status
+
+There is no formal reporting engine.
+
+Closest related surfaces include:
+
+* filing guidance
+* print-oriented filing guidance view
+* document preview
+* RAG/ingest status summaries
+
+### Access model
+
+The case owner has access to the dashboard associated with the case.
+
+---
+
+## 18. Admin Functions
+
+There is little true admin functionality in the current application.
+
+Not meaningfully present:
+
+* user management
+* role assignment
+* in-app config management
+* county/court admin editing interface
+* audit logs console
+* admin overrides UI
+* support dashboard
+
+Closest things to admin-like behavior:
+
+* health and DB diagnostic endpoints
+* environment-driven beta allowlist
+* OCR callback/retry routes
+* developer-edited configuration files
+
+If the rebuild expects “admin tools,” they will need to be designed and added rather than migrated.
+
+---
+
+## 19. Third-Party Integrations
+
+### Active or clearly intended integrations
+
+* PostgreSQL
+* Vercel Blob
+* OpenAI
+* Mammoth
+* PDF extraction libraries
+* OCR tooling / external OCR callback interface
+
+### Not currently present in a meaningful way
+
+* payments
+* email delivery provider
+* SMS provider
+* auth provider
+* analytics warehouse
+* court filing APIs
+* CRM
+* calendar integration
+
+---
+
+## 20. Business Logic and Embedded Domain Rules
+
+This is a domain-specific application. The codebase includes meaningful embedded rules around **California small claims**.
+
+Examples include:
+
+* county and court selection logic
+* filing guidance behavior
+* form resolution for small-claims forms
+* readiness logic for specific filing packs
+* claim and evidence preparation flow
+* plaintiff vs defendant workflow shaping
+* fee-waiver related form inclusion
+* service-related document requirements
+
+A key design strength is that much of this behavior is **deterministic and config-driven**, rather than hidden only inside prompts.
+
+---
+
+## 21. Incomplete, Fragile, or Missing Areas
+
+### Highest-priority issues
+
+#### 1. Scanned-PDF OCR is not fully complete end to end
+
+This is the biggest unfinished subsystem.
+
+#### 2. No real user/account model
+
+The system is not ready for robust multi-user collaboration.
+
+#### 3. Chat history is local-only
+
+No true server-side conversation persistence.
+
+#### 4. Drafts are local-only
+
+No shared or synchronized drafting.
+
+#### 5. Partial county coverage
+
+Jurisdiction support is incomplete.
+
+#### 6. Duplicate/stale code exists in the repo
+
+This creates migration confusion and risk.
+
+#### 7. Duplicate layout files and cleanup debt
+
+There is visible structural cleanup still needed.
+
+#### 8. `/api/db-init` is stale
+
+Could mislead a new developer about the schema.
+
+#### 9. Search is shallow
+
+No full document search product layer beyond AI retrieval patterns.
+
+#### 10. Minimal production hardening
+
+Examples include in-memory rate limiting and lack of strong testing coverage.
+
+---
+
+## 22. Migration Strategy Recommendations
+
+### 22.1 What should be preserved
+
+Preserve these elements unless there is a deliberate reason to replace them:
+
+* the root Next.js app as the canonical product
+* PostgreSQL-backed case/document/chunk model
+* Vercel Blob-backed file storage pattern
+* evidence-grounded chat design
+* deterministic filing-readiness and forms-resolution logic
+* chunk-based retrieval before adding vector complexity
+* structured case JSON model, unless a more normalized schema is intentionally designed
+
+### 22.2 What should be reworked or upgraded
+
+Strongly consider replacing or improving:
+
+* browser owner-token access model
+* local-only draft storage
+* local-only chat history
+* incomplete OCR subsystem
+* repo duplication and stale surfaces
+* weak diagnostics/test coverage
+* ad hoc rate limiting
+
+### 22.3 Recommended target-state decisions
+
+Before rebuilding, decide explicitly whether the new environment will remain:
+
+#### Option A: single-user, case-owner model
+
+Use a simplified owner-token approach again, but clean it up.
+
+#### Option B: real authenticated product
+
+Introduce:
+
+* users
+* sessions
+* case ownership/sharing tables
+* admin roles if needed
+* collaborative access semantics
+
+This is the single biggest product-architecture fork in the rebuild.
+
+---
+
+## 23. Recommended Rebuild Phasing
+
+### Phase 1: establish clean canonical app shell
+
+* isolate the root app as the basis for migration
+* remove or quarantine legacy surfaces
+* normalize layout/router structure
+* confirm environment variables and deployment model
+
+### Phase 2: rebuild core data and persistence
+
+* re-create PostgreSQL schema from `ensureSchema`
+* migrate case/document/chunk behavior
+* preserve case JSON shape unless intentionally redesigning
+
+### Phase 3: rebuild document ingestion
+
+* implement direct upload
+* implement blob-backed large-file upload
+* preserve `.docx` and machine-readable PDF extraction behavior
+* restore chunking pipeline
+
+### Phase 4: complete OCR subsystem
+
+* choose OCR provider or internal OCR path
+* implement dispatch, retry, callback, monitoring, and failure handling cleanly
+* ensure scanned PDFs become AI-readable where possible
+
+### Phase 5: rebuild AI chat
+
+* preserve server-side evidence grounding
+* port deterministic response modes
+* re-enable OpenAI integration
+* improve retrieval only after baseline behavior is restored
+
+### Phase 6: restore workflow pages
+
+* start
+* intake wizard
+* dashboard
+* documents
+* filing guidance
+* key dates
+* drafts
+
+### Phase 7: hardening
+
+* tests
+* observability
+* better rate limiting
+* auth/collaboration if required
+* data migration utilities if old data must be preserved
+
+---
+
+## 24. Developer-Facing Rebuild Checklist
+
+### A. Canonical scope and cleanup
+
+* [ ] Confirm the root Next.js app is the only canonical migration target
+* [ ] Move legacy prototypes and archived mockups out of the active app path
+* [ ] Document which archived materials remain as design references only
+* [ ] Remove or reconcile duplicate layout/router artifacts
+
+### B. Environment and infrastructure
+
+* [ ] Document required environment variables
+* [ ] Confirm PostgreSQL provisioning strategy
+* [ ] Confirm Blob storage provisioning strategy
+* [ ] Confirm OpenAI API provisioning strategy
+* [ ] Decide whether OCR will use an external provider or internal OCR path
+
+### C. Database and persistence
+
+* [ ] Recreate schema from `app/_lib/server/ensureSchema.js`
+* [ ] Verify `thoxie_case`, `thoxie_document`, and `thoxie_document_chunk`
+* [ ] Preserve indexes and cascade behavior
+* [ ] Validate JSON shape assumptions for `case_data`
+* [ ] Decide whether to keep JSONB-heavy schema or partially normalize it
+
+### D. Access model
+
+* [ ] Decide whether to preserve case-owner cookie model or replace with real auth
+* [ ] If replacing, define user/session/case-sharing schema
+* [ ] If preserving, document owner-token lifecycle and conflict handling
+
+### E. Core APIs
+
+* [ ] Rebuild `/api/case/load`
+* [ ] Rebuild `/api/case/save`
+* [ ] Rebuild `/api/documents` GET/PATCH/DELETE
+* [ ] Rebuild `/api/blob-upload`
+* [ ] Rebuild `/api/ingest`
+* [ ] Rebuild `/api/chat`
+* [ ] Rebuild `/api/ocr/callback`
+* [ ] Rebuild `/api/ocr/retry`
+* [ ] Rebuild `/api/rag/status`
+* [ ] Rebuild health/diagnostic endpoints as needed
+* [ ] Remove or clearly label stale endpoints such as `/api/db-init`
+
+### F. Document ingestion
+
+* [ ] Restore multipart upload path
+* [ ] Restore blob-backed large-PDF upload path
+* [ ] Restore `.docx` extraction with Mammoth
+* [ ] Restore text-PDF extraction with `pdf-parse`
+* [ ] Restore image OCR path where applicable
+* [ ] Rebuild chunking pipeline and document readability flags
+* [ ] Ensure delete/open behavior works with blob storage
+
+### G. OCR completion
+
+* [ ] Choose and implement OCR provider
+* [ ] Implement OCR job dispatch
+* [ ] Implement OCR callback authentication
+* [ ] Implement retry semantics
+* [ ] Persist OCR text back into document/chunk tables
+* [ ] Add monitoring/logging for OCR failures
+
+### H. AI chat
+
+* [ ] Restore global chat dock UI
+* [ ] Restore `/api/chat` orchestration logic
+* [ ] Preserve structured case/document context loading
+* [ ] Preserve deterministic response modes
+* [ ] Reconnect OpenAI provider configuration
+* [ ] Decide whether to keep beta allowlist behavior
+* [ ] Decide whether to move chat history from local-only to server-backed
+
+### I. Workflow pages
+
+* [ ] Rebuild start flow
+* [ ] Rebuild intake wizard
+* [ ] Rebuild case dashboard
+* [ ] Rebuild documents page
+* [ ] Rebuild draft pages
+* [ ] Rebuild filing guidance pages
+* [ ] Rebuild key dates page
+* [ ] Restore informational pages as needed
+
+### J. Business rules and config
+
+* [ ] Preserve California small-claims assumptions
+* [ ] Audit county/court configuration coverage
+* [ ] Verify forms-resolution logic
+* [ ] Verify filing-readiness rules
+* [ ] Verify fee-waiver and service-related branching
+* [ ] Decide whether county coverage should expand before relaunch
+
+### K. Search and retrieval
+
+* [ ] Preserve chunk-based retrieval baseline
+* [ ] Verify evidence scoring still works after migration
+* [ ] Decide whether to add document search UI
+* [ ] Decide whether vector retrieval is necessary or should be postponed
+
+### L. Drafts and local state
+
+* [ ] Document current IndexedDB/localStorage usage
+* [ ] Decide which local data should become server-backed
+* [ ] Preserve draft import/export behavior if needed
+* [ ] Decide whether chat history should sync across browsers/devices
+
+### M. Testing and hardening
+
+* [ ] Add schema-level validation tests
+* [ ] Add API tests for case save/load
+* [ ] Add upload/ingest tests
+* [ ] Add extraction tests for `.docx`, text PDFs, and scanned PDFs
+* [ ] Add chat endpoint tests for deterministic and live-AI modes
+* [ ] Add ownership/auth tests
+* [ ] Add logging and observability for OCR and AI errors
+* [ ] Replace in-memory rate limiting if production scale requires it
+
+### N. Post-migration acceptance criteria
+
+* [ ] User can create a case and reload it
+* [ ] User can upload `.docx` and readable PDFs successfully
+* [ ] Extracted text is stored and chunked
+* [ ] User can ask AI evidence-grounded questions and get coherent answers
+* [ ] Filing guidance displays correctly from stored case data
+* [ ] OCR flow works for scanned PDFs or is explicitly disabled with clear messaging
+* [ ] No legacy prototype path is accidentally driving live behavior
+
+---
+
+## 25. Recommended Immediate Next Steps
+
+1. Freeze the canonical scope around the root app
+2. Decide whether the rebuild is single-user or real-auth multi-user
+3. Recreate the schema from `ensureSchema`
+4. Port the document ingestion pipeline first
+5. Complete OCR before making broad AI or UX changes
+6. Only after parity, decide whether to improve retrieval, collaboration, or admin functionality
+
+---
+
+## 26. Final Summary
+
+The current THOXIE codebase has a coherent and valuable core. The root application already implements a meaningful server-backed workflow for California small claims, with structured case data, evidence uploads, document chunking, and grounded AI assistance. The rebuild should preserve that core rather than starting from the older prototypes.
+
+The most important migration risks are:
+
+* rebuilding from stale surfaces instead of the root app
+* underestimating the importance of the document ingestion pipeline
+* overlooking the incomplete OCR subsystem
+* assuming the app already supports real multi-user roles when it does not
+
+The most important strategic choice for the next environment is whether to keep the current lightweight owner-token model or replace it with real authentication and collaboration. That decision affects the schema, access model, UX, and deployment shape more than any other single factor.

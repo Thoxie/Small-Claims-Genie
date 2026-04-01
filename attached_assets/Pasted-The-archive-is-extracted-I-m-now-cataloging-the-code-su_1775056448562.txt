@@ -1,0 +1,1303 @@
+The archive is extracted. I’m now cataloging the code surfaces: root config, app routes, data models, upload pipeline, and AI-related modules. After that I’ll trace user flows end to end so the migration notes match actual behavior, not just filenames. 
+
+A clear pattern is emerging: this is not a conventional multi-user SaaS with accounts and RBAC. It is a single-case, browser-owned workflow app with server-backed case/document data and a permission model centered on an HttpOnly ownership cookie. I’m checking now whether anything beyond that exists in practice or only in placeholder AI/admin gating.
+
+Thought for 15m 17s
+
+I went through the repo as a codebase handoff, not just a surface scan. The clearest conclusion is this:
+
+THOXIE, in its current canonical form, is a server-backed California small-claims workflow application built in Next.js. It is no longer just a local-only prototype, but it also is not yet a fully mature multi-user SaaS. The current product centers on one case per browser, structured case intake, document upload and extraction, evidence-grounded AI chat, filing guidance, and a lightweight case dashboard. The main unfinished area is scanned-PDF OCR. The codebase also contains a substantial amount of historical or duplicate material that should not be treated as current product logic.
+
+I would treat this repo as having two layers:
+
+a real current application in the root Next.js app, and
+legacy prototypes, old mockups, and archived planning artifacts that explain strategy but should not drive a rebuild.
+
+Here is the detailed analysis.
+
+1. What the application is, at a high level
+
+The current application is a California small-claims preparation tool. It lets a user:
+
+start a case by county/court
+enter claim, party, and hearing information
+upload evidence documents
+extract text from those documents and store it server-side
+ask an AI assistant questions grounded in the case and uploaded evidence
+review filing guidance and readiness
+manage browser-local drafts
+
+It is best described as a legal workflow and evidence-preparation app, not a general practice management platform, not a true team collaboration tool, and not a full court e-filing integration.
+
+2. Architecture overview
+Tech stack
+
+The canonical stack is:
+
+Next.js App Router
+React 18
+Node 20
+PostgreSQL for server persistence
+Vercel Blob for file storage
+OpenAI Chat Completions API for AI responses
+Mammoth for DOCX text extraction
+pdf-parse, pdf2json, pdfjs-dist, and Tesseract-related tooling for document extraction/OCR support
+IndexedDB and localStorage for some client-local state
+
+Key dependencies visible in package.json include:
+
+next
+react
+react-dom
+pg
+@vercel/blob
+mammoth
+pdf-parse
+pdf2json
+pdfjs-dist
+tesseract.js
+@napi-rs/canvas
+zod
+Canonical folder structure
+
+The root Next.js app is the real product. The important directories are:
+
+app/ — main App Router code
+app/api/ — server API routes
+app/_lib/ — server and domain logic
+app/_repository/ — client-side repositories for case/document/draft persistence orchestration
+app/_config/ — jurisdiction, forms, and workflow configuration
+src/components/ — shared UI, including the global AI chat dock
+docs/archive/ — historical specs and old strategy notes, useful context but not canonical behavior
+
+There are also non-canonical or stale surfaces such as:
+
+case-mockup/
+frontend/
+thoxie/
+small-claims-court-app/
+standalone HTML mockups at the repo root
+
+These should be treated as legacy artifacts unless the root app imports them, which it generally does not.
+
+How major pieces connect
+
+The architecture is roughly:
+
+UI pages in app/.../page.js render the legal workflow.
+Client repositories manage browser state and call server APIs.
+Server APIs persist structured case data to PostgreSQL.
+Document uploads go to Vercel Blob and document metadata/text go into PostgreSQL.
+Extracted text is chunked into a chunk table for retrieval.
+AI chat loads case data + document/chunk context and either:
+answers deterministically, or
+calls OpenAI with evidence-grounded context.
+Important architectural characteristic
+
+This is not a user-account-based system. Access is controlled primarily through a case ownership cookie rather than login/auth/RBAC. That is one of the most important things to understand before rebuilding it.
+
+3. Database schema
+
+The canonical schema is defined in app/_lib/server/ensureSchema.js. That is the real source of truth for the data model. The db-init route is stale and should not be treated as authoritative.
+
+Table: thoxie_case
+
+Columns:
+
+case_id text primary key
+owner_token_hash text
+owner_claimed_at timestamptz
+owner_last_seen_at timestamptz
+case_data jsonb not null default '{}'::jsonb
+created_at timestamptz not null default now()
+updated_at timestamptz not null default now()
+
+Indexes:
+
+index on updated_at desc
+index on owner_token_hash
+
+Purpose:
+
+Stores the structured case record as JSON
+Stores browser ownership metadata
+Acts as the parent entity for documents
+Table: thoxie_document
+
+Columns:
+
+doc_id text primary key
+case_id text not null references thoxie_case(case_id) on delete cascade
+name text not null default ''
+mime_type text not null default ''
+size_bytes bigint not null default 0
+doc_type text not null default 'evidence'
+exhibit_description text not null default ''
+evidence_category text not null default ''
+evidence_supports jsonb not null default '[]'::jsonb
+blob_url text
+uploaded_at timestamptz not null default now()
+extracted_text text not null default ''
+extraction_method text not null default ''
+ocr_status text not null default ''
+ocr_job_id text not null default ''
+ocr_provider text not null default ''
+ocr_requested_at timestamptz
+ocr_completed_at timestamptz
+ocr_error text not null default ''
+
+Indexes:
+
+index on case_id
+index on uploaded_at desc
+index on ocr_status
+index on ocr_job_id
+
+Purpose:
+
+Stores uploaded document metadata
+Stores extracted text
+Stores OCR lifecycle state
+Stores evidence classification fields used by the AI and UI
+Table: thoxie_document_chunk
+
+Columns:
+
+chunk_id text primary key
+case_id text not null references thoxie_case(case_id) on delete cascade
+doc_id text not null references thoxie_document(doc_id) on delete cascade
+chunk_index integer not null
+chunk_text text not null default ''
+chunk_kind text not null default ''
+chunk_label text not null default ''
+section_label text not null default ''
+page_start integer
+page_end integer
+char_start integer
+char_end integer
+structural_flags jsonb not null default '[]'::jsonb
+created_at timestamptz not null default now()
+
+Constraints and indexes:
+
+unique index on (doc_id, chunk_index)
+index on case_id
+index on doc_id
+index on page_start
+index on chunk_kind
+
+Purpose:
+
+Stores chunked document text for retrieval
+Supports evidence-grounded AI chat
+Stores lightweight structure metadata about where the chunk came from
+Relationships
+One thoxie_case has many thoxie_document
+One thoxie_document has many thoxie_document_chunk
+Deleting a case cascades to its documents
+Deleting a document cascades to its chunks
+Structured case payload inside case_data
+
+The relational schema is intentionally thin. Most business data is inside case_data JSON.
+
+The case JSON schema includes fields such as:
+
+id
+createdAt
+updatedAt
+status
+role
+category
+jurisdiction
+state
+county
+courtId
+courtName
+courtAddress
+department
+clerkUrl
+notes
+parties
+plaintiff and defendant identities, contact info, addresses
+additional plaintiffs/defendants
+damages
+claim
+amount
+type
+reason
+where
+incidentDate
+flags like public entity / vehicle / contract / dba
+service
+feeWaiver
+facts
+factsItems
+caseNumber
+filedDate
+hearingDate
+hearingTime
+checkInTime
+appearanceType
+courtNoticeText
+
+This is a flexible model, but also means the schema is only partly enforced at the database layer.
+
+4. API endpoints
+/api/case/load — GET
+
+Accepts:
+
+query string: caseId
+
+Behavior:
+
+Loads a case row
+Enforces ownership if the case is already claimed
+If the case is unclaimed, first access can claim it and set ownership cookie
+
+Returns:
+
+success: { success: true, case: normalizedCase }
+failure: error response, including 403 on ownership mismatch
+/api/case/save — POST
+
+Accepts JSON:
+
+caseId
+caseData
+
+Behavior:
+
+Ensures/uses owner cookie
+Upserts the case into thoxie_case
+Enforces ownership conflict rules
+
+Returns:
+
+{ success: true, case: savedCase }
+/api/documents — GET
+
+Supports multiple modes.
+
+If ?caseId=...:
+
+returns document list for a case
+
+If ?docId=...:
+
+returns detail for one document, including full extracted text
+
+If ?docId=...&open=1:
+
+streams/open the blob file inline
+
+Response shape includes fields such as:
+
+docId
+caseId
+name
+mimeType
+sizeBytes
+docType
+exhibitDescription
+evidenceCategory
+evidenceSupports
+blobUrl
+uploadedAt
+previewText
+extractedText on detail load
+extractionMethod
+ocrStatus
+ocrJobId
+ocrProvider
+ocrRequestedAt
+ocrCompletedAt
+ocrError
+textLength
+chunkCount
+hasStoredText
+readableByAI
+detailLoaded
+/api/documents — PATCH
+
+Accepts JSON:
+
+docId
+patch
+
+Patchable fields:
+
+docType
+exhibitDescription
+evidenceCategory
+evidenceSupports
+
+Returns:
+
+{ ok: true, document }
+/api/documents — DELETE
+
+Accepts JSON:
+
+docId
+
+Behavior:
+
+Deletes DB document row
+Attempts to delete blob storage object
+
+Returns:
+
+{ ok: true, deleted, blobDeleted, blobWarning }
+/api/blob-upload — POST
+
+Purpose:
+
+Used by the Vercel Blob client upload flow, especially for large PDFs
+
+Accepts Vercel handle-upload payload plus client payload containing:
+
+caseId
+docId
+docType
+name
+sizeBytes
+
+Behavior:
+
+Validates blob pathname and metadata
+Enforces ownership
+Returns upload authorization for client-side blob upload
+
+Returns:
+
+Vercel Blob upload handling response
+
+This endpoint does not finalize ingestion by itself.
+
+/api/ingest — POST
+
+This is the main document ingestion endpoint.
+
+Accepts either:
+
+multipart/form-data with:
+caseId
+docType
+files[]
+
+or
+
+JSON with:
+caseId
+documents[]
+
+Document items can come from:
+
+existing blob source
+base64 content
+other direct payload forms
+
+Behavior:
+
+resolves file buffer
+uploads to blob if needed
+extracts text
+writes/updates document row
+chunks extracted text into thoxie_document_chunk
+optionally queues external OCR for scanned files
+
+Returns:
+
+{ ok, caseId, uploaded: [...], failed: [...] }
+can return HTTP 207 for partial success
+/api/ocr/callback — GET
+
+Purpose:
+
+readiness/info response for OCR callback path
+/api/ocr/callback — POST
+
+Accepts OCR callback payload containing things like:
+
+docId
+optional ocrJobId
+status
+ocrProvider or provider
+extractionMethod
+text or extractedText
+error or message
+
+Auth:
+
+callback token header or bearer token must match configured secret
+
+Behavior:
+
+updates OCR status
+on completed OCR with text, stores extracted text and rebuilds chunks
+
+Returns:
+
+OCR completion result, including counts/readability metadata
+/api/ocr/retry — GET
+
+Purpose:
+
+readiness/info response
+/api/ocr/retry — POST
+
+Accepts JSON:
+
+docId
+
+Behavior:
+
+validates ownership
+only allows retry for retryable OCR states
+dispatches OCR again if external OCR is configured
+
+Returns:
+
+retry result/status
+/api/chat — POST
+
+Accepts JSON with fields such as:
+
+caseId
+testerId
+messages
+optional caseSnapshot
+optional case-related context fields
+
+Behavior:
+
+optional beta allowlist check
+minimal in-memory rate limiting
+ownership enforcement
+loads case/docs/chunks
+classifies intent
+may answer in several modes:
+beta restricted
+rate limited
+readiness
+direct text
+deterministic evidence answer
+live AI
+
+Returns a response with fields like:
+
+ok
+provider
+mode
+reply: { role: "assistant", content: ... }
+/api/rag/status — GET/POST
+
+Purpose:
+
+status summary for document/chunk ingestion state
+
+Behavior:
+
+ownership enforced
+returns per-case ingestion/readability summary
+/api/rag/ingest — POST
+
+Behavior:
+
+explicitly disabled
+returns 410 and tells caller to use /api/ingest
+/api/db-ping — GET
+
+Purpose:
+
+database connectivity diagnostic
+/api/health — GET
+
+Purpose:
+
+general health check
+/api/db-init — GET
+
+Purpose:
+
+schema utility route, but stale relative to current schema
+should not be trusted as the actual model definition
+Back-compat endpoint
+
+There is also:
+
+/ai/chat — POST
+
+This is a compatibility route that simply delegates to /api/chat.
+
+5. Document upload flow: exact current behavior
+
+This is one of the most important parts of the repo.
+
+Client-side upload orchestration
+
+The main client logic is in app/_repository/documentRepository.js.
+
+The repository decides the upload transport:
+
+Large PDFs, especially around 4MB and above, use a two-step blob-backed flow
+Other files use direct multipart upload to /api/ingest
+Path A: direct multipart upload
+
+For smaller files and most non-large uploads:
+
+User selects file on /documents
+Client builds multipart payload with caseId, docType, and file
+Client POSTs to /api/ingest
+Server stores blob if needed, extracts text, writes document record, chunks text
+UI receives uploaded/failed result and refreshes document list
+Path B: blob-backed upload for larger PDFs
+
+For large PDFs:
+
+Client creates a docId
+Client requests upload authorization from /api/blob-upload
+Browser uploads file directly to private Vercel Blob
+Client POSTs a finalize JSON request to /api/ingest indicating source is blob
+Server reads blob back, extracts text, persists metadata/text/chunks, maybe queues OCR
+UI refreshes with status
+Server-side extraction path
+
+The server extraction stack supports several file classes.
+
+DOCX
+Uses Mammoth
+Extracts raw text and HTML-derived text
+Chooses the more complete candidate
+PDF with text layer
+Uses pdf-parse as primary extractor
+Can optionally use pdf2json fallback, though that fallback is not actively enabled in the canonical ingest path
+Image files
+Uses Tesseract OCR
+Scanned/image-only PDFs
+Detects them as scanned or empty-text-layer PDFs
+Current canonical ingest path does not complete them inline
+Instead, it expects an external OCR provider/service to finish the job asynchronously
+Storage behavior
+
+For successful machine-readable documents:
+
+file stored in Vercel Blob
+document metadata stored in thoxie_document
+extracted text stored in thoxie_document.extracted_text
+chunks stored in thoxie_document_chunk
+
+For scanned PDFs awaiting OCR:
+
+file still gets stored
+document row still gets created
+extracted text may remain empty
+chunk rows may remain absent
+OCR status tracks the problem/pipeline state
+Chunking behavior
+
+If text exists, the server:
+
+cleans and chunks text
+stores chunk rows with metadata such as page range, section labels, and structural flags
+caps chunk insertion volume to avoid runaway chunk counts
+Known issues and failure points in upload/extraction/storage
+
+This is the biggest operational gap in the repo.
+
+1. Scanned-PDF OCR is architected but not truly finished
+
+The code clearly expects an external OCR service, with:
+
+OCR status fields
+callback route
+retry route
+dispatch contract
+
+But the actual external provider/service is not complete in the repo. The repo notes explicitly point to this as the next main implementation phase.
+
+2. Inline OCR exists but is intentionally not the main path
+
+There is code for inline OCR/fallback behavior, but the canonical ingest path disables it for scanned PDFs. So the presence of OCR-related code does not mean the feature is actually operational end-to-end.
+
+3. Legacy .doc is unsupported
+
+Old binary Word docs are rejected.
+
+4. Some uploads can succeed as files but fail as AI-readable evidence
+
+A document can upload successfully, exist in blob storage, and still have:
+
+zero extracted text
+zero chunks
+unreadable-by-AI status
+
+That is important for migration and QA.
+
+5. Blob + finalize split adds complexity
+
+Large-PDF upload is not a single atomic server request. It is:
+
+pre-authorize
+client upload to blob
+finalize ingest
+
+That is workable, but it increases rebuild complexity and introduces more places to fail.
+
+6. Deletion/open behavior depends on blob environment correctness
+
+If blob tokens or environment wiring are missing, file open/delete can partially fail even if DB logic works.
+
+6. AI/chat functionality
+Where the chat UI lives
+
+The live chat UI is in:
+
+src/components/AIChatbox.js
+mounted globally by src/components/GlobalChatboxDock.js
+
+It is mounted in the app layout, which means the chat assistant is effectively always present throughout the main app.
+
+Chat storage
+
+Chat history is stored client-side in localStorage per case. It is not server-persisted conversation history in the current architecture.
+
+Server-side AI flow
+
+The core endpoint is /api/chat.
+
+The flow is:
+
+receive messages + case context
+enforce optional beta allowlist
+enforce case ownership
+load server-authoritative case and document state if available
+classify the intent
+choose a response mode
+either:
+answer deterministically, or
+call OpenAI
+Model / provider
+
+The current provider is controlled by env vars. The code is wired around:
+
+OpenAI
+default model is gpt-4o-mini
+provider and timeout are environment-driven
+How context is managed
+
+This is one of the stronger parts of the repo.
+
+The chat server does not just send raw chat history. It builds a structured legal/evidence context using:
+
+case metadata
+document inventory
+extracted document text
+pre-chunked retrieval hits
+evidence summaries
+readiness logic
+issue extraction from evidence packet
+
+The retrieval is not embedding-based. It is heuristic/lexical scoring over stored chunk text and metadata.
+
+That means:
+
+simpler infra
+easier migration
+weaker semantic recall than vector search
+but more transparency and fewer dependencies
+Response modes
+
+The system has multiple modes rather than one monolithic LLM call.
+
+These include:
+
+beta restricted mode
+rate-limited mode
+readiness mode
+direct stored-text readback mode
+deterministic document answer mode
+deterministic generic mode
+live AI mode
+
+That is a meaningful design choice. The chat subsystem is partly an orchestrator and only partly an LLM wrapper.
+
+Strengths of the AI design
+server loads authoritative evidence state
+deterministic fallback exists
+document-grounded behavior is explicit
+context is built from structured case + evidence signals
+no dependency on a vector DB
+Weaknesses / limitations
+no true conversation memory on server
+retrieval is heuristic, not semantic/vector-based
+rate limiting is in-memory only
+beta allowlist gating is operationally awkward
+if OCR/extraction fails, AI quality drops sharply because grounding disappears
+7. UI structure
+
+The main pages in the root app are:
+
+/
+
+Marketing/entry page. It routes users toward starting or continuing a case.
+
+/start
+
+Initial case setup. This is where the user selects:
+
+California
+county
+court
+legal role
+case category
+
+This is the first structured entry into the case workflow.
+
+/intake-wizard
+
+The main structured case intake UI. This is where the user enters the substantive legal and party data.
+
+/case-dashboard
+
+This is the canonical dashboard and main case workspace. It acts as the hub for next actions and navigation.
+
+/dashboard
+
+Legacy compatibility route that redirects to /case-dashboard.
+
+/documents
+
+Document upload and evidence management. This is a core operational page.
+
+/document-preview
+
+Preview-type page for case/doc packet review.
+
+/drafts
+
+Browser-local draft list.
+
+/draft-preview
+
+Single draft editor/view.
+
+/filing-guidance
+
+Case-specific filing checklist and guidance.
+
+/filing-guidance/print
+
+Printable filing guidance view.
+
+/key-dates
+
+Date-centric case tracker.
+
+/ai-chatbox
+
+Standalone chat page or chat-specific surface.
+
+Informational/help pages
+/faq
+/how-it-works
+/resources
+/types-of-cases
+General UI conclusion
+
+The UI is structured like a guided legal workflow rather than a traditional admin CRUD app. It is case-centric, not organization-centric.
+
+8. User roles and permissions
+Actual security roles
+
+There is no conventional user account model.
+
+I did not find a real system of:
+
+admin users
+staff users
+public users
+organization membership
+RBAC tables
+login/auth provider sessions
+What exists instead
+
+There are really four role-like concepts:
+
+1. Legal role in the case
+plaintiff
+defendant
+
+This affects workflow and guidance, not security.
+
+2. Browser owner of a case
+
+This is the real access-control mechanism.
+
+The app sets an HttpOnly owner cookie and stores a hash in the case row. That cookie is used to protect access to the case and associated documents.
+
+3. Beta tester identity for AI
+
+There is an optional beta allowlist for AI access. The “user email” or tester ID entered in the chat dock is used for gating certain AI behavior.
+
+4. “Admin intent” in chat
+
+This is not an admin permission system. It is just message classification logic to decide whether a user is asking an administrative/technical support type question.
+
+What each “role” can do
+Browser owner: can load/save case, upload docs, read docs, chat against case evidence, retry OCR, etc.
+Non-owner browser: blocked from that case
+Plaintiff/defendant: affects form logic and guidance only
+Beta-allowed tester: can access live AI modes where enabled
+Access control summary
+
+Access is controlled by:
+
+case ownership cookie
+owner hash in DB
+some endpoint ownership checks
+optional AI beta allowlist
+
+This is lightweight but not robust enough for a true collaborative or enterprise environment.
+
+9. Core user workflows
+Workflow 1: Start a case
+User lands on /start
+Selects county/court/role/category
+App creates a case object
+Client calls /api/case/save
+Server stores case row and sets owner cookie
+User enters dashboard flow
+Workflow 2: Complete intake
+User opens /intake-wizard
+Fills party identities, addresses, claim info, hearing info, service details, etc.
+Client stores interim draft state locally
+Final data is saved to server via /api/case/save
+Workflow 3: Upload evidence
+User opens /documents
+Selects files
+Client chooses upload method
+Server stores metadata + blob + extracted text if possible
+UI shows OCR and AI-readability status
+Workflow 4: Review evidence and document metadata
+User lists case documents
+Opens individual doc
+Can view extracted text
+Can patch metadata such as evidence category or what the document supports
+Can delete document
+Can retry OCR when relevant
+Workflow 5: Ask AI about the case
+User types into global chat
+Chat request includes case context
+Server loads case/docs/chunks
+Retrieval and evidence analysis run
+Response is produced deterministically or through OpenAI
+Workflow 6: Check filing readiness
+User opens /filing-guidance
+App computes court info, forms, and checklist items
+App checks readiness for key filings like SC-100
+User sees missing items and next actions
+Workflow 7: Manage drafts
+User creates or edits a draft
+Draft is stored in IndexedDB, not server DB
+User can duplicate, search, rename, or delete local drafts
+10. Search and filtering
+
+This is an area where the application is functional but not deep.
+
+What search exists
+Draft search
+
+The draft system supports searching drafts in IndexedDB.
+
+AI-driven evidence search
+
+The biggest “search” capability is through AI retrieval over document chunks. Users can ask questions and the server scores chunks/documents for relevance.
+
+Local list management
+
+The document list supports browsing and status review, but I did not find a rich standalone document full-text search endpoint.
+
+What users can search by
+
+Effectively:
+
+draft title/content in local draft storage
+natural language questions over case evidence through AI retrieval
+county/court selection from config data
+What is missing
+no vector search
+no true full-text search endpoint over all documents
+no advanced faceted filtering system
+no multi-case/global search
+no organization-wide search
+no saved searches
+11. County and state functionality
+Current geographic scope
+
+The current product is California small claims only.
+
+How state/county data is used
+
+The app uses jurisdiction config to:
+
+lock the state to California
+present county options
+present court options for a selected county
+provide filing guidance and clerk links
+power forms readiness and workflow guidance
+Counties currently present
+
+The config includes only a subset of California counties:
+
+Alameda
+Contra Costa
+Marin
+Monterey
+San Diego
+San Francisco
+San Mateo
+Santa Clara
+Santa Cruz
+Sonoma
+
+This is a major limitation. It is not statewide coverage.
+
+How users navigate by location
+
+The user chooses county first, then court. That selection is saved into case jurisdiction fields and later used in filing guidance.
+
+Business logic tied to geography
+county determines available courts
+court determines saved court metadata
+filing guidance uses court/clerk info
+some form guidance is California-specific
+
+There is no evidence of dynamic county rules fetched from external sources. It is config-driven.
+
+12. Forms and data entry
+Start form
+
+Collects:
+
+state
+county
+court
+role
+category
+Intake wizard
+
+Collects a substantial amount of structured case data, including:
+
+plaintiff and defendant names
+contact details
+addresses
+claim type
+amount demanded
+incident date
+narrative/facts
+case number
+hearing date/time
+service method
+fee waiver
+DBA indicator
+additional parties
+Documents page form behavior
+
+Collects:
+
+file uploads
+document type
+exhibit description
+evidence category
+evidence supports tags
+Key dates page
+
+Collects:
+
+filed date
+hearing date/time
+service-related dates
+trial or deposition date/time
+other custom labeled date/time
+Draft editor
+
+Collects:
+
+title
+body/content
+Chat form
+
+Collects:
+
+user query
+optional tester email / beta identifier
+What happens after submission
+case forms persist to thoxie_case.case_data
+document uploads persist to DB + blob storage
+draft changes persist locally in IndexedDB
+chat queries are sent to server for processing but chat history itself remains local
+13. Notifications and communication
+
+There is no real notification system in the current app.
+
+I did not find:
+
+outbound email sending
+SMS
+push notifications
+inbox/notification center
+user-to-user messaging
+
+What does exist:
+
+inline UI status messages and banners
+upload success/failure feedback
+OCR state indicators
+beta restriction messages
+document readability status indicators
+
+The only “callback communication” is machine-to-machine OCR callback handling.
+
+14. Reporting and dashboards
+Dashboard
+
+The application does have a case dashboard, but it is a workflow dashboard, not a reporting suite.
+
+It appears intended to show:
+
+case summary
+next actions
+documents/drafts/case status
+filing readiness context
+Reports
+
+I did not find a formal report engine. The closest things are:
+
+filing guidance views
+print view for filing guidance
+document preview
+RAG status / ingestion status summaries
+Who can access dashboards
+
+Any case owner in that browser context can access the dashboard for their case. There is no role-based dashboard separation.
+
+15. Admin functions
+
+This is one of the simpler answers: there is very little true admin functionality.
+
+There is no real admin console for:
+
+user management
+role assignment
+county config editing in-app
+system configuration UI
+OCR vendor settings UI
+audit logs dashboard
+content management backoffice
+
+The closest things to admin-ish behavior are:
+
+technical health routes
+beta allowlist env configuration
+OCR callback/retry plumbing
+static config files that a developer can edit
+
+So the honest answer is that administrators, in the normal SaaS sense, do not exist in the current product architecture.
+
+16. Integrations
+Active or clearly intended integrations
+OpenAI API
+PostgreSQL
+Vercel Blob
+Mammoth
+pdf-parse
+pdf2json
+pdfjs-dist
+Tesseract.js
+external OCR service interface via callback/retry model
+What is not present
+
+I did not find evidence of integrations with:
+
+payment providers
+email providers
+SMS providers
+auth providers like Auth0/Clerk/Supabase Auth
+court filing APIs
+calendaring APIs
+CRM systems
+analytics/reporting warehouses
+mapping/geocoding services
+17. Data and business logic embedded in the code
+Domain
+
+The business logic is very specific to California small claims.
+
+Embedded rules include
+California claim limit logic
+county/court config
+form resolution for small claims
+SC-100 readiness logic
+fee waiver-related form inclusion
+service-method-specific form selection
+plaintiff/defendant role guidance
+evidence-required readiness assumptions
+Forms logic
+
+There is logic for forms such as:
+
+SC-100
+SC-100-INFO
+SC-100A
+SC-103
+FW-001
+FW-003
+SC-104 / related service forms
+Readiness logic
+
+The readiness engine expects things like:
+
+legal role
+county/court
+facts summary
+at least one evidence document
+
+This is a very opinionated workflow. The product is not just a blank case notebook.
+
+Important design observation
+
+A lot of the core business logic is config-driven or deterministic rather than buried inside LLM prompts. That is good for migration.
+
+18. What is incomplete, broken, or missing
+
+This is the most important section for a rebuild.
+
+1. External OCR for scanned PDFs is not fully operational
+
+This is the biggest unfinished subsystem. The architecture exists, but the end-to-end provider implementation is not complete in the repo.
+
+2. County coverage is partial
+
+Only 10 California counties are configured. This is not statewide.
+
+3. No proper user auth or team collaboration
+
+There are no real user accounts, permissions, organizations, or team sharing. The ownership model is browser/cookie-based. That is not suitable for real collaboration with multiple end users.
+
+4. Drafts are local-only
+
+Drafts live in IndexedDB. They are not synced to the server.
+
+5. Chat history is local-only
+
+The AI interaction history is not server persisted.
+
+6. Duplicate/stale code exists in the repo
+
+There are multiple old surfaces and prototypes. This creates migration risk because a new developer could easily rebuild the wrong thing if they do not follow the root app as canonical.
+
+7. Duplicate root layout files exist
+
+Both app/layout.js and app/layout.tsx are present. That is a sign of cleanup debt and potential confusion.
+
+8. /api/db-init is stale
+
+It does not reflect the full current schema. A developer reading that route alone would get the wrong data model.
+
+9. Search is limited
+
+No vector search, no deep full-text search product surface, no global search.
+
+10. In-memory rate limiting is weak
+
+That is not a robust production design for distributed/serverless deployments.
+
+11. Some help/resources content is placeholder
+
+The resources page still contains placeholder YouTube IDs.
+
+12. No test suite
+
+I did not find a meaningful test suite. That increases migration risk because behavior is not strongly locked by automated verification.
+
+19. Roadmap and strategy: what the repo suggests
+
+There is a visible evolution in the repo.
+
+Earlier strategy
+
+The archived documents show an earlier product phase that was much more local-first:
+
+browser-local storage
+no real backend persistence
+simpler prototype behavior
+likely faster experimentation
+Current strategy
+
+The root README and current-state notes show a pivot toward a more serious server-backed product:
+
+PostgreSQL as source of case/document truth
+Vercel Blob for files
+server-owned evidence grounding
+AI that reads uploaded evidence
+canonical root app replacing prototypes
+Immediate roadmap implied by the repo
+
+The next major technical priority is clearly:
+
+complete external OCR for scanned PDFs
+
+And just behind that, the repo suggests likely priorities such as:
+
+preserve the working DOCX and machine-readable PDF flow
+keep server-authoritative evidence grounding
+avoid redoing the whole chat architecture unnecessarily
+continue California small claims scope rather than broadening too early
+Product strategy inference
+
+The product is trying to be:
+
+workflow-guided
+evidence-grounded
+small-claims specific
+deterministic where possible
+AI-assisted where useful
+
+It is not trying, at least yet, to be:
+
+broad legal research software
+practice management software
+collaborative case management platform
+multi-jurisdiction enterprise product
+20. What I would tell the other developer in plain terms
+
+If I were handing this to another developer, I would summarize it like this:
+
+The current app is a root Next.js App Router application for California small claims. The canonical system is server-backed. Case data is mostly JSON in PostgreSQL, documents are stored in Vercel Blob, extracted text and chunk records are stored in SQL, and AI chat reads that evidence through heuristic retrieval. Access control is cookie-based case ownership, not user auth. The strongest implemented areas are structured case intake, document ingestion for DOCX and text PDFs, and evidence-grounded chat orchestration. The weakest areas are scanned-PDF OCR completion, lack of true multi-user architecture, lack of tests, and repo duplication/staleness around old prototypes. If you are rebuilding, follow the root app only, preserve the server-backed case/document/chunk model, and decide early whether to keep the lightweight ownership model or replace it with a real auth and collaboration layer.
+
+21. Rebuild priorities I would recommend
+
+If the goal is migration/rebuild rather than just maintenance, these are the priorities I would preserve or change.
+
+Preserve:
+
+case/document/chunk data model
+config-driven jurisdiction/forms logic
+deterministic readiness layer
+server-authoritative evidence grounding
+simple chunk retrieval before introducing vector complexity
+blob-backed large-file upload pattern, if large PDFs matter
+
+Rebuild or improve:
+
+replace browser ownership cookie model with real auth/users/orgs
+make drafts and chat history server-backed if collaboration matters
+finish scanned-PDF OCR with a reliable provider
+remove stale routes and duplicate surfaces
+normalize layout and route duplication
+add tests around ingest, OCR, and chat context assembly
+decide whether single-case beta behavior should remain
+
+The codebase has a coherent current core, but it is surrounded by historical noise. The current product is understandable and rebuildable once you separate those two things.
