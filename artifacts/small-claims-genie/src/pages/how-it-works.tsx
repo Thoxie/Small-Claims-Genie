@@ -78,7 +78,7 @@ export default function HowItWorks() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {features.map(({ title, bullets }) => (
-              <div key={title} className="border border-gray-200 rounded-xl p-5 bg-white">
+              <div key={title} className="border-2 border-gray-300 rounded-xl p-5 bg-white">
                 <h3 className="text-sm font-bold text-primary mb-3">{title}</h3>
                 <ul className="space-y-1.5">
                   {bullets.map((b) => (
@@ -97,7 +97,7 @@ export default function HowItWorks() {
       {/* ── Bottom CTA Banner ── */}
       <section className="px-4 pt-4 pb-8 bg-white">
         <div className="max-w-3xl mx-auto">
-          <div className="border border-gray-200 rounded-xl px-8 py-10 text-center bg-gray-50">
+          <div className="border-2 border-gray-300 rounded-xl px-8 py-10 text-center bg-gray-50">
             <h2 className="text-2xl sm:text-3xl font-black text-primary mb-2">
               Don't pay a lawyer. Use Small Claims Genie.
             </h2>
