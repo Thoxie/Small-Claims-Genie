@@ -12,29 +12,27 @@ export default function Landing() {
 
       {/* ── Hero ── */}
       <section style={{ backgroundColor: TEAL }} className="px-4 pt-10 pb-12 md:pt-14 md:pb-16">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto">
 
           {/* Trust pill */}
-          <div className="inline-flex items-center gap-2 bg-white/70 border border-teal-200 text-primary/70 px-4 py-1.5 rounded-full text-xs font-semibold mb-5 shadow-sm">
+          <div className="inline-flex items-center gap-2 bg-white/70 border border-teal-200 text-primary/70 px-4 py-1.5 rounded-full text-xs font-semibold mb-6 shadow-sm">
             <ShieldCheck className="h-3.5 w-3.5 text-primary/50" />
             Built for California Small Claims Court — All 58 Counties
           </div>
 
-          {/* Headline — compact */}
-          <h1 className="text-4xl sm:text-5xl font-black leading-tight mb-3 text-primary tracking-tight">
-            Win in Small Claims Court.
+          {/* Headline — left-aligned, single bold block, 25% smaller than reference */}
+          <h1 className="text-3xl sm:text-4xl font-black leading-snug mb-5 text-primary tracking-tight">
+            Win in Small Claims Court.<br />
+            Don't lose because you're<br />
+            unprepared.
           </h1>
 
-          <p className="text-xl sm:text-2xl font-bold text-amber-500 mb-4 tracking-tight">
-            Don't lose because you're unprepared.
-          </p>
-
-          <p className="text-base md:text-lg text-primary/65 mb-7 max-w-xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-primary/65 mb-7 max-w-xl leading-relaxed">
             Small Claims Genie walks you through every step — intake, evidence, AI chat, and your SC-100 form, ready to file. No lawyer needed.
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <Button asChild size="lg" className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-md shadow-amber-200">
               <Link href="/cases/new">
                 <Wand2 className="mr-2 h-4 w-4" />
