@@ -14,6 +14,7 @@ import Counties from "@/pages/counties";
 import Resources from "@/pages/resources";
 import HowItWorks from "@/pages/how-it-works";
 import FAQ from "@/pages/faq";
+import TypesOfCases from "@/pages/types-of-cases";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/resources" component={Resources} />
         <Route path="/how-it-works" component={HowItWorks} />
         <Route path="/faq" component={FAQ} />
+        <Route path="/types-of-cases" component={TypesOfCases} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
