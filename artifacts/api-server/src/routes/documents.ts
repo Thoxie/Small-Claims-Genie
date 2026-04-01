@@ -5,16 +5,24 @@ import { casesTable, documentsTable } from "@workspace/db";
 import multer from "multer";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import mammoth from "mammoth";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { tmpdir } from "node:os";
-import { mkdtemp, writeFile, readdir, readFile, rm } from "node:fs/promises";
-import { join } from "node:path";
-
-const execFileAsync = promisify(execFile);
+import { createCanvas } from "@napi-rs/canvas";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 // Use lib path directly — pdf-parse index.js runs tests on import which crash in prod
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse: (buf: Buffer) => Promise<{ text: string; numpages: number }> = require("pdf-parse/lib/pdf-parse.js");
+
+// pdfjs needs a canvas factory for Node.js rendering
+const NodeCanvasFactory = {
+  create(width: number, height: number) {
+    const canvas = createCanvas(width, height);
+    return { canvas, context: canvas.getContext("2d") };
+  },
+  reset(obj: { canvas: ReturnType<typeof createCanvas> }, width: number, height: number) {
+    obj.canvas.width = width;
+    obj.canvas.height = height;
+  },
+  destroy() { /* no-op */ },
+};
 
 const router: IRouter = Router();
 
