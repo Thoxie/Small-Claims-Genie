@@ -1,7 +1,7 @@
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -23,7 +23,8 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="h-14 px-10 text-lg bg-accent text-accent-foreground hover:bg-accent/90 rounded-full font-bold shadow-lg">
               <Link href="/cases/new">
-                {i18n.landing.startCaseBtn} <ArrowRight className="ml-2 h-5 w-5" />
+                <Wand2 className="mr-2 h-5 w-5" />
+                {i18n.landing.startCaseBtn}
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-14 px-10 text-lg rounded-full font-semibold border-white/30 text-white hover:bg-white/10">
@@ -138,7 +139,7 @@ export default function Landing() {
             Unlike generic AI tools, your Genie has read your documents, knows your case facts, and gives advice specific to your situation. Ask anything — by voice or text.
           </p>
           <Button asChild size="lg" className="h-14 px-10 text-lg bg-accent text-accent-foreground hover:bg-accent/90 rounded-full font-bold">
-            <Link href="/cases/new">Start Your Case Free <ArrowRight className="ml-2 h-5 w-5" /></Link>
+            <Link href="/cases/new"><Wand2 className="mr-2 h-5 w-5" />Start Your Case Free</Link>
           </Button>
         </div>
       </section>
@@ -183,7 +184,7 @@ export default function Landing() {
               ))}
             </ul>
             <Button asChild size="lg" className="w-full h-13 text-base font-bold">
-              <Link href="/cases/new">Get Started Free</Link>
+              <Link href="/cases/new"><Wand2 className="mr-2 h-4 w-4" />Start Your Case Free</Link>
             </Button>
           </div>
         </div>

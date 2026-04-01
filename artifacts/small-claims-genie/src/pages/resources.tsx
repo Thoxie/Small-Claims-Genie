@@ -2,7 +2,7 @@ import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, FileText, Scale, BookOpen, HelpCircle, ArrowRight } from "lucide-react";
+import { ExternalLink, FileText, Scale, BookOpen, HelpCircle, Wand2 } from "lucide-react";
 
 const RESOURCES = [
   {
@@ -106,7 +106,7 @@ export default function Resources() {
           Stop reading and start preparing. Small Claims Genie walks you through every step.
         </p>
         <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full font-bold h-13 px-8">
-          <Link href="/cases/new">Start Your Case Free <ArrowRight className="ml-2 h-5 w-5" /></Link>
+          <Link href="/cases/new"><Wand2 className="mr-2 h-5 w-5" />Start Your Case Free</Link>
         </Button>
       </div>
     </div>
