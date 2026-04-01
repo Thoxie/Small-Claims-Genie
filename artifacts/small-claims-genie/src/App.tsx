@@ -13,6 +13,7 @@ import CaseWorkspace from "@/pages/cases/workspace";
 import Counties from "@/pages/counties";
 import Resources from "@/pages/resources";
 import HowItWorks from "@/pages/how-it-works";
+import FAQ from "@/pages/faq";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/counties" component={Counties} />
         <Route path="/resources" component={Resources} />
         <Route path="/how-it-works" component={HowItWorks} />
+        <Route path="/faq" component={FAQ} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

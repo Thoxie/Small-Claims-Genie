@@ -35,6 +35,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {i18n.nav.howItWorks}
             </Link>
             <Link
+              href="/faq"
+              className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${isActive("/faq") ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+            >
+              FAQ
+            </Link>
+            <Link
               href="/counties"
               className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${isActive("/counties") ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
             >
