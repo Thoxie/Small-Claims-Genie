@@ -1,7 +1,7 @@
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2, ShieldCheck, Clock, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2, Clock, Star } from "lucide-react";
 import logoPath from "@assets/2small-claims-genie-logo.png_1775057452576.png";
 
 const TEAL = "#ddf6f3";
@@ -13,12 +13,6 @@ export default function Landing() {
       {/* ── Hero ── */}
       <section style={{ backgroundColor: TEAL }} className="px-4 pt-16 pb-12 md:pt-20 md:pb-16">
         <div className="max-w-3xl mx-auto">
-
-          {/* Trust pill */}
-          <div className="inline-flex items-center gap-2 bg-white/70 border border-teal-200 text-primary/70 px-4 py-1.5 rounded-full text-xs font-semibold mb-6 shadow-sm">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary/50" />
-            Built for California Small Claims Court — All 58 Counties
-          </div>
 
           {/* Headline — left-aligned, single bold block, 25% smaller than reference */}
           <h1 className="text-3xl sm:text-4xl font-black leading-snug mb-5 text-primary tracking-tight">
