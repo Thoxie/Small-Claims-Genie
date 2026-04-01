@@ -38,9 +38,6 @@ export default function Landing() {
             </Button>
           </div>
 
-          <p className="text-xs text-primary/45 tracking-wide">
-            No account required · Free to start · $49 to download your final forms
-          </p>
         </div>
       </section>
 
