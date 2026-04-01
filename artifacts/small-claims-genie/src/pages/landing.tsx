@@ -133,8 +133,8 @@ export default function Landing() {
           </p>
           <div className="p-7 border-2 border-amber-200 rounded-3xl bg-white shadow-xl max-w-sm mx-auto">
             <img src={logoPath} alt="Small Claims Genie" className="h-10 w-auto mx-auto mb-4" />
-            <div className="text-5xl font-black text-primary mb-1">$49</div>
-            <div className="text-muted-foreground text-sm mb-1">per case · one-time</div>
+            <div className="text-5xl font-black text-primary mb-1">$89</div>
+            <div className="text-muted-foreground text-sm mb-1">per month · per case</div>
             <ul className="text-sm text-left space-y-2 text-muted-foreground my-5 pl-1">
               {[
                 "Full 7-step intake wizard",
