@@ -12,21 +12,35 @@ const pdfParse: (buf: Buffer) => Promise<{ text: string; numpages: number }> = r
 const router: IRouter = Router();
 
 const storage = multer.memoryStorage();
+
+// Accept by extension — browser-reported mime types vary across OS/versions
+// (e.g. Windows sends application/octet-stream for PDFs on some browsers)
+const ALLOWED_EXTENSIONS = new Set([".pdf", ".jpg", ".jpeg", ".png", ".docx"]);
+
+// Map extension to canonical mime type so our OCR pipeline always sees a known value
+function canonicalMime(originalname: string, reportedMime: string): string {
+  const ext = originalname.toLowerCase().slice(originalname.lastIndexOf("."));
+  const map: Record<string, string> = {
+    ".pdf":  "application/pdf",
+    ".jpg":  "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png":  "image/png",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  };
+  return map[ext] ?? reportedMime;
+}
+
 const upload = multer({
   storage,
   limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = [
-      "application/pdf",
-      "image/jpeg",
-      "image/png",
-      "image/jpg",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-    if (allowed.includes(file.mimetype)) {
+    const ext = file.originalname.toLowerCase().slice(file.originalname.lastIndexOf("."));
+    if (ALLOWED_EXTENSIONS.has(ext)) {
+      // Normalize the mime type before multer stores it
+      file.mimetype = canonicalMime(file.originalname, file.mimetype);
       cb(null, true);
     } else {
-      cb(new Error("Only PDF, JPG, PNG, and DOCX files are supported"));
+      cb(new Error(`Unsupported file type "${ext}". Upload a PDF, JPG, PNG, or DOCX.`));
     }
   },
 });
