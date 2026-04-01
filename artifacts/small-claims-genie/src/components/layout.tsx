@@ -79,13 +79,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t bg-primary text-primary-foreground py-12">
+      <footer className="border-t py-8" style={{ backgroundColor: '#ddf6f3' }}>
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <img src={logoPath} alt={i18n.brand.name} className="h-12 w-auto brightness-0 invert opacity-90" />
-            <p className="text-sm text-primary-foreground/50">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+            <p className="text-sm text-primary/60">
               © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Legal advice only.
             </p>
+            <Link href="/terms" className="text-sm text-primary/60 hover:text-primary underline underline-offset-2 transition-colors">
+              Terms of Service
+            </Link>
           </div>
         </div>
       </footer>
