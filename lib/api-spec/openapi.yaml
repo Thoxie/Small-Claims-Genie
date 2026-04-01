@@ -3,20 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Small Claims Genie API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: cases
+    description: Small claims case management
+  - name: documents
+    description: Document upload and OCR
+  - name: chat
+    description: Case-specific AI chat
+  - name: forms
+    description: SC-100 and related form generation
+  - name: counties
+    description: California county information
+  - name: openai
+    description: OpenAI AI chat, image, and audio operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +35,549 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /counties:
+    get:
+      operationId: listCounties
+      tags: [counties]
+      summary: List all 58 California counties with courthouse info
+      responses:
+        "200":
+          description: List of counties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/County"
+
+  /cases:
+    get:
+      operationId: listCases
+      tags: [cases]
+      summary: List all cases
+      responses:
+        "200":
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+    post:
+      operationId: createCase
+      tags: [cases]
+      summary: Create a new case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCaseBody"
+      responses:
+        "201":
+          description: Created case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+
+  /cases/stats:
+    get:
+      operationId: getCaseStats
+      tags: [cases]
+      summary: Get dashboard statistics across all cases
+      responses:
+        "200":
+          description: Case statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseStats"
+
+  /cases/{id}:
+    get:
+      operationId: getCase
+      tags: [cases]
+      summary: Get a single case with full details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseWithDetails"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateCase
+      tags: [cases]
+      summary: Update case fields
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCaseBody"
+      responses:
+        "200":
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteCase
+      tags: [cases]
+      summary: Delete a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /cases/{id}/intake:
+    patch:
+      operationId: saveIntakeProgress
+      tags: [cases]
+      summary: Save multi-step intake form progress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveIntakeBody"
+      responses:
+        "200":
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /cases/{id}/readiness:
+    get:
+      operationId: getCaseReadiness
+      tags: [cases]
+      summary: Get AI-generated case readiness score and filing guidance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Readiness assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseReadiness"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /cases/{id}/documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List documents for a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: uploadDocument
+      tags: [documents]
+      summary: Upload a document with OCR extraction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                label:
+                  type: string
+              required:
+                - file
+      responses:
+        "201":
+          description: Uploaded document with OCR text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /cases/{id}/documents/{docId}:
+    delete:
+      operationId: deleteDocument
+      tags: [documents]
+      summary: Delete a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: docId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /cases/{id}/chat:
+    get:
+      operationId: getChatHistory
+      tags: [chat]
+      summary: Get AI chat history for a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+    post:
+      operationId: sendChatMessage
+      tags: [chat]
+      summary: Send a message and receive a streaming AI response grounded in case evidence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendChatMessageBody"
+      responses:
+        "200":
+          description: SSE stream of AI response chunks
+          content:
+            text/event-stream: {}
+        "404":
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: clearChatHistory
+      tags: [chat]
+      summary: Clear chat history for a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Cleared
+
+  /cases/{id}/forms/sc100:
+    get:
+      operationId: generateSc100
+      tags: [forms]
+      summary: Generate SC-100 PDF form pre-filled from case data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: SC-100 PDF binary
+          content:
+            application/pdf: {}
+        "404":
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /cases/{id}/forms/sc100-preview:
+    get:
+      operationId: previewSc100Data
+      tags: [forms]
+      summary: Preview SC-100 field data that will be used to fill the form
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: SC-100 field values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sc100Preview"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /openai/conversations:
+    get:
+      operationId: listOpenaiConversations
+      tags: [openai]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiConversation"
+    post:
+      operationId: createOpenaiConversation
+      tags: [openai]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOpenaiConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversation"
+
+  /openai/conversations/{id}:
+    get:
+      operationId: getOpenaiConversation
+      tags: [openai]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+    delete:
+      operationId: deleteOpenaiConversation
+      tags: [openai]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+
+  /openai/conversations/{id}/messages:
+    get:
+      operationId: listOpenaiMessages
+      tags: [openai]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiMessage"
+    post:
+      operationId: sendOpenaiMessage
+      tags: [openai]
+      summary: Send a text message and receive a streaming text response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOpenaiMessageBody"
+      responses:
+        "200":
+          description: SSE stream of assistant text chunks
+          content:
+            text/event-stream: {}
+
+  /openai/conversations/{id}/voice-messages:
+    post:
+      operationId: sendOpenaiVoiceMessage
+      tags: [openai]
+      summary: Send audio and receive a streaming voice response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOpenaiVoiceMessageBody"
+      responses:
+        "200":
+          description: SSE stream of transcript and audio chunks
+          content:
+            text/event-stream: {}
+
+  /openai/generate-image:
+    post:
+      operationId: generateOpenaiImage
+      tags: [openai]
+      summary: Generate an image from a text prompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateOpenaiImageBody"
+      responses:
+        "200":
+          description: Generated image data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateOpenaiImageResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +588,524 @@ components:
       required:
         - status
 
+    County:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        courthouseName:
+          type: string
+        courthouseAddress:
+          type: string
+        courthouseCity:
+          type: string
+        courthouseZip:
+          type: string
+        filingFeeUnder1500:
+          type: number
+        filingFee1500to5000:
+          type: number
+        filingFeeOver5000:
+          type: number
+        phone:
+          type: string
+        website:
+          type: string
+        notes:
+          type: string
+      required:
+        - id
+        - name
+        - courthouseName
+        - courthouseAddress
+        - courthouseCity
+        - courthouseZip
+
+    Case:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+          enum: [draft, intake_complete, documents_uploaded, ready_to_file, filed]
+        countyId:
+          type: string
+        claimAmount:
+          type: number
+        claimType:
+          type: string
+        plaintiffName:
+          type: string
+        plaintiffPhone:
+          type: string
+        plaintiffAddress:
+          type: string
+        plaintiffCity:
+          type: string
+        plaintiffState:
+          type: string
+        plaintiffZip:
+          type: string
+        plaintiffEmail:
+          type: string
+        defendantName:
+          type: string
+        defendantPhone:
+          type: string
+        defendantAddress:
+          type: string
+        defendantCity:
+          type: string
+        defendantState:
+          type: string
+        defendantZip:
+          type: string
+        defendantIsBusinessOrEntity:
+          type: boolean
+        defendantAgentName:
+          type: string
+        claimDescription:
+          type: string
+        incidentDate:
+          type: string
+        howAmountCalculated:
+          type: string
+        priorDemandMade:
+          type: boolean
+        priorDemandDescription:
+          type: string
+        venueReason:
+          type: string
+        venueBasis:
+          type: string
+        isSuingPublicEntity:
+          type: boolean
+        publicEntityClaimFiledDate:
+          type: string
+        isAttyFeeDispute:
+          type: boolean
+        filedMoreThan12Claims:
+          type: boolean
+        claimOver2500:
+          type: boolean
+        intakeStep:
+          type: integer
+        intakeComplete:
+          type: boolean
+        documentCount:
+          type: integer
+        readinessScore:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - status
+        - createdAt
+        - updatedAt
+
+    CaseWithDetails:
+      allOf:
+        - $ref: "#/components/schemas/Case"
+        - type: object
+          properties:
+            documents:
+              type: array
+              items:
+                $ref: "#/components/schemas/Document"
+            chatMessages:
+              type: array
+              items:
+                $ref: "#/components/schemas/ChatMessage"
+
+    CreateCaseBody:
+      type: object
+      properties:
+        title:
+          type: string
+        claimType:
+          type: string
+        countyId:
+          type: string
+      required:
+        - title
+
+    UpdateCaseBody:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+        countyId:
+          type: string
+        claimAmount:
+          type: number
+        claimType:
+          type: string
+        plaintiffName:
+          type: string
+        plaintiffPhone:
+          type: string
+        plaintiffAddress:
+          type: string
+        plaintiffCity:
+          type: string
+        plaintiffState:
+          type: string
+        plaintiffZip:
+          type: string
+        plaintiffEmail:
+          type: string
+        defendantName:
+          type: string
+        defendantPhone:
+          type: string
+        defendantAddress:
+          type: string
+        defendantCity:
+          type: string
+        defendantState:
+          type: string
+        defendantZip:
+          type: string
+        defendantIsBusinessOrEntity:
+          type: boolean
+        defendantAgentName:
+          type: string
+        claimDescription:
+          type: string
+        incidentDate:
+          type: string
+        howAmountCalculated:
+          type: string
+        priorDemandMade:
+          type: boolean
+        priorDemandDescription:
+          type: string
+        venueReason:
+          type: string
+        venueBasis:
+          type: string
+        isSuingPublicEntity:
+          type: boolean
+        publicEntityClaimFiledDate:
+          type: string
+        isAttyFeeDispute:
+          type: boolean
+        filedMoreThan12Claims:
+          type: boolean
+        claimOver2500:
+          type: boolean
+        intakeStep:
+          type: integer
+        intakeComplete:
+          type: boolean
+        readinessScore:
+          type: integer
+
+    SaveIntakeBody:
+      type: object
+      properties:
+        step:
+          type: integer
+        data:
+          type: object
+          additionalProperties: true
+        intakeComplete:
+          type: boolean
+      required:
+        - step
+
+    CaseStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        byStatus:
+          type: object
+          additionalProperties:
+            type: integer
+        totalClaimAmount:
+          type: number
+        avgReadinessScore:
+          type: number
+        recentCases:
+          type: array
+          items:
+            $ref: "#/components/schemas/Case"
+      required:
+        - total
+        - byStatus
+        - totalClaimAmount
+        - avgReadinessScore
+        - recentCases
+
+    CaseReadiness:
+      type: object
+      properties:
+        score:
+          type: integer
+          description: 0-100 readiness score
+        missingFields:
+          type: array
+          items:
+            type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        weaknesses:
+          type: array
+          items:
+            type: string
+        nextSteps:
+          type: array
+          items:
+            type: string
+        filingGuidance:
+          type: string
+      required:
+        - score
+        - missingFields
+        - strengths
+        - weaknesses
+        - nextSteps
+        - filingGuidance
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+        caseId:
+          type: integer
+        filename:
+          type: string
+        originalName:
+          type: string
+        label:
+          type: string
+        mimeType:
+          type: string
+        fileSize:
+          type: integer
+        ocrText:
+          type: string
+        ocrStatus:
+          type: string
+          enum: [pending, processing, complete, failed]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - caseId
+        - filename
+        - originalName
+        - mimeType
+        - fileSize
+        - ocrStatus
+        - createdAt
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        caseId:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - caseId
+        - role
+        - content
+        - createdAt
+
+    SendChatMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    Sc100Preview:
+      type: object
+      properties:
+        courtName:
+          type: string
+        courtAddress:
+          type: string
+        plaintiffName:
+          type: string
+        plaintiffPhone:
+          type: string
+        plaintiffAddress:
+          type: string
+        defendantName:
+          type: string
+        defendantPhone:
+          type: string
+        defendantAddress:
+          type: string
+        claimAmount:
+          type: number
+        claimDescription:
+          type: string
+        incidentDate:
+          type: string
+        howAmountCalculated:
+          type: string
+        priorDemandMade:
+          type: boolean
+        venueReason:
+          type: string
+        isSuingPublicEntity:
+          type: boolean
+        isAttyFeeDispute:
+          type: boolean
+        filedMoreThan12Claims:
+          type: boolean
+        claimOver2500:
+          type: boolean
+      required:
+        - courtName
+        - courtAddress
+        - plaintiffName
+        - defendantName
+        - claimAmount
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    OpenaiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+
+    OpenaiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+
+    CreateOpenaiConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+
+    SendOpenaiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    SendOpenaiVoiceMessageBody:
+      type: object
+      properties:
+        audio:
+          type: string
+          description: Base64-encoded audio data
+      required:
+        - audio
+
+    OpenaiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenaiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+
+    GenerateOpenaiImageBody:
+      type: object
+      properties:
+        prompt:
+          type: string
+        size:
+          type: string
+          enum: ["1024x1024", "512x512", "256x256"]
+      required:
+        - prompt
+
+    GenerateOpenaiImageResponse:
+      type: object
+      properties:
+        b64_json:
+          type: string
+      required:
+        - b64_json
+
+    OpenaiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

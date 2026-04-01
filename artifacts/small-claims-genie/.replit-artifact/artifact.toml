@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Small Claims Genie"
+version = "1.0.0"
+id = "artifacts/small-claims-genie"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18304
+
+[services.development]
+run = "pnpm --filter @workspace/small-claims-genie run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/small-claims-genie", "run", "build" ]
+publicDir = "artifacts/small-claims-genie/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18304"
+BASE_PATH = "/"
