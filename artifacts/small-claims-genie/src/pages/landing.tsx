@@ -47,9 +47,6 @@ export default function Landing() {
       {/* ── Three Feature Boxes ── */}
       <section className="px-4 py-12 bg-white">
         <div className="container mx-auto max-w-5xl">
-          <p className="text-center text-sm font-semibold text-primary/40 uppercase tracking-widest mb-8">
-            What Small Claims Genie Does
-          </p>
           <div className="grid md:grid-cols-3 gap-5">
             {[
               {
