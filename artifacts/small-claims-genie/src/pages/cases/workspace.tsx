@@ -33,7 +33,6 @@ import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Tra
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetCaseQueryKey } from "@workspace/api-client-react";
-import { useVoiceRecorder } from "@workspace/integrations-openai-ai-react";
 
 // ─── Intake Zod Schemas (mapped 1-to-1 to SC-100 fields) ─────────────────────
 const intakeStep1Schema = z.object({
@@ -691,12 +690,11 @@ function ChatTab({ caseId }: { caseId: number }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   
   const { data: history } = useGetChatHistory(caseId, { query: { enabled: !!caseId } });
-  const { state: recordingState, startRecording, stopRecording } = useVoiceRecorder();
-  const isRecording = recordingState === "recording";
 
   useEffect(() => {
     if (history) setMessages(history);
@@ -753,32 +751,45 @@ function ChatTab({ caseId }: { caseId: number }) {
     }
   };
 
-  // Push-to-talk: hold mic button → record → release → transcribe → auto-send
+  // Push-to-talk: hold mic → browser speech recognition → release → auto-send
+  // Uses Web Speech API (browser-native, free, real-time — no Whisper API needed)
   const handleVoiceStart = () => {
-    startRecording();
-  };
-
-  const handleVoiceStop = async () => {
-    const blob = await stopRecording();
-    if (!blob || blob.size === 0) return;
-
-    setIsTranscribing(true);
-    try {
-      const formData = new FormData();
-      formData.append("audio", blob, "recording.webm");
-      const res = await fetch("/api/transcribe", { method: "POST", body: formData });
-      const json = await res.json();
-      if (json.text && json.text.trim()) {
-        await sendMessage(json.text.trim());
-      }
-    } catch (e) {
-      console.error("Transcription failed", e);
-    } finally {
-      setIsTranscribing(false);
+    const SpeechRecognitionAPI =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) {
+      console.warn("[Voice] Web Speech API not supported in this browser");
+      return;
     }
+    const recognition = new SpeechRecognitionAPI();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+
+    recognition.onresult = (event: any) => {
+      const transcript: string = event.results[0]?.[0]?.transcript ?? "";
+      if (transcript.trim()) sendMessage(transcript.trim());
+    };
+    recognition.onerror = (event: any) => {
+      console.error("[Voice] Speech recognition error:", event.error);
+      setIsRecording(false);
+    };
+    recognition.onend = () => setIsRecording(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
   };
 
-  const voiceLabel = isTranscribing ? "Transcribing..." : isRecording ? i18n.chat.recording : "";
+  const handleVoiceStop = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    setIsRecording(false);
+  };
+
+  const voiceLabel = isRecording ? i18n.chat.recording : "";
 
   return (
     <div className="flex flex-col h-[600px]">
@@ -826,23 +837,22 @@ function ChatTab({ caseId }: { caseId: number }) {
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
             placeholder={i18n.chat.placeholder}
             className="flex-1 h-12 pr-12 rounded-full border-2"
-            disabled={isTranscribing}
+            disabled={isRecording}
           />
           <Button 
             size="icon" 
             variant="ghost" 
-            className={`absolute right-14 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : isTranscribing ? 'text-yellow-500' : 'text-muted-foreground'}`}
+            className={`absolute right-14 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground'}`}
             onMouseDown={handleVoiceStart}
             onMouseUp={handleVoiceStop}
             onMouseLeave={isRecording ? handleVoiceStop : undefined}
             onTouchStart={handleVoiceStart}
             onTouchEnd={handleVoiceStop}
-            disabled={isTranscribing}
             aria-label={isRecording ? "Recording — release to send" : "Hold to record voice message"}
           >
             <Mic className="h-5 w-5" />
           </Button>
-          <Button onClick={() => sendMessage(input)} size="icon" className="h-12 w-12 rounded-full shrink-0" disabled={isTyping || isTranscribing}>
+          <Button onClick={() => sendMessage(input)} size="icon" className="h-12 w-12 rounded-full shrink-0" disabled={isTyping || isRecording}>
             <Send className="h-5 w-5 ml-1" />
           </Button>
         </div>
