@@ -28,12 +28,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               Home
             </Link>
-            <a
-              href="/#how-it-works"
-              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
+            <Link
+              href="/how-it-works"
+              className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${isActive("/how-it-works") ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
             >
               {i18n.nav.howItWorks}
-            </a>
+            </Link>
             <Link
               href="/counties"
               className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${isActive("/counties") ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
@@ -75,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex gap-6 text-sm text-primary-foreground/70">
               <Link href="/" className="hover:text-primary-foreground transition-colors">Home</Link>
-              <a href="/#how-it-works" className="hover:text-primary-foreground transition-colors">{i18n.nav.howItWorks}</a>
+              <Link href="/how-it-works" className="hover:text-primary-foreground transition-colors">{i18n.nav.howItWorks}</Link>
               <Link href="/counties" className="hover:text-primary-foreground transition-colors">{i18n.nav.counties}</Link>
               <Link href="/resources" className="hover:text-primary-foreground transition-colors">{i18n.nav.resources}</Link>
               <Link href="/dashboard" className="hover:text-primary-foreground transition-colors">{i18n.nav.dashboard}</Link>
