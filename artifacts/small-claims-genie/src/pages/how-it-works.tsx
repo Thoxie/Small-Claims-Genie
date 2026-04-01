@@ -74,7 +74,7 @@ export default function HowItWorks() {
       </section>
 
       {/* ── Six Feature Boxes ── */}
-      <section className="px-4 pb-2 bg-white">
+      <section className="px-4 pb-0 bg-white">
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {features.map(({ title, bullets }) => (
@@ -95,7 +95,7 @@ export default function HowItWorks() {
       </section>
 
       {/* ── Bottom CTA Banner ── */}
-      <section className="px-4 pt-6 pb-8 bg-white">
+      <section className="px-4 pt-4 pb-8 bg-white">
         <div className="max-w-3xl mx-auto">
           <div className="border border-gray-200 rounded-xl px-8 py-10 text-center bg-gray-50">
             <h2 className="text-2xl sm:text-3xl font-black text-primary mb-2">
