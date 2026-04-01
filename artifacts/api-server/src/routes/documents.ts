@@ -160,30 +160,31 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
           ocrText = nativeText;
           console.log(`[OCR] PDF native text extracted — ${ocrText.length} chars`);
         } else {
-          // Likely a scanned/image PDF — send to Vision API
-          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), using Vision API`);
-          const response = await openai.chat.completions.create({
+          // Scanned/image-only PDF — use Responses API with inline file_data
+          // (Vision API image_url does NOT accept PDFs; Responses API does)
+          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), using Responses API`);
+          const responsesApi = (openai as any).responses;
+          const resp = await responsesApi.create({
             model: "gpt-5.2",
-            max_completion_tokens: 4096,
-            messages: [{
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: "This is a scanned PDF document. Extract ALL text exactly as written — every date, dollar amount, name, address, and legal term. This is for a California small claims court case. Return the complete extracted text only.",
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:application/pdf;base64,${fileBase64}`,
-                    detail: "high",
+            input: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "input_file",
+                    filename: originalName,
+                    file_data: `data:application/pdf;base64,${fileBase64}`,
                   },
-                },
-              ],
-            }],
+                  {
+                    type: "input_text",
+                    text: "Extract ALL text from this scanned PDF document exactly as written — every date, dollar amount, name, address, and legal term. This is for a California small claims court case. Return the complete extracted text only.",
+                  },
+                ],
+              },
+            ],
           });
-          ocrText = response.choices[0]?.message?.content ?? null;
-          console.log(`[OCR] PDF Vision fallback done — chars: ${ocrText?.length ?? 0}`);
+          ocrText = resp.output_text ?? resp.output?.[0]?.content?.[0]?.text ?? null;
+          console.log(`[OCR] PDF Responses API done — chars: ${ocrText?.length ?? 0}`);
         }
       }
 
