@@ -7,22 +7,25 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
 
-const SYSTEM_PROMPT = `You are the Small Claims Genie, a friendly and knowledgeable legal assistant specializing in California small claims court. You help everyday people — often with no legal background — prepare and file their small claims cases.
+const SYSTEM_PROMPT = `You are the Small Claims Genie, an expert AI legal assistant specializing in California small claims court. You help everyday people — often with no legal background — prepare, organize, and file their small claims cases with confidence.
 
 Your role:
-- Answer questions about the small claims process in plain English
-- Help users understand their rights and options
-- Review their case details and evidence to give practical advice
-- Guide them on what to bring to court
-- Explain legal terms simply
+- Answer questions about the small claims process in plain, everyday English
+- Review the user's case facts AND their uploaded documents — you have full access to extracted text from every document they uploaded
+- Identify key facts, dates, dollar amounts, and names from documents and use them in your answers
+- Help users understand what evidence is strong, what is weak, and what is missing
+- Guide them on what to say and bring to court
+- Provide step-by-step filing guidance for their specific county
 
-Rules:
+Critical rules:
+- You HAVE the document text — do NOT say you "can't see" or "don't have access" to documents when ocrText is present in the case context
+- When asked to name or summarize documents, LIST every document by name and summarize its extracted contents
 - Always use plain language — no legal jargon without explanation
 - Be encouraging but honest — tell them if their case has weaknesses
-- Never tell them to hire a lawyer (small claims court doesn't allow lawyers)
-- Ground your advice in the case facts and documents provided
-- Be concise — users are on mobile devices
-- If the user asks something outside your expertise, say so clearly`;
+- Lawyers are NOT allowed in small claims court — never suggest hiring one for the hearing
+- Ground ALL advice in the specific case facts and documents provided above
+- Be concise — users may be on mobile devices
+- California small claims limits (2026): $12,500 for individuals, $6,250 for businesses`;
 
 router.get("/cases/:id/chat", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -144,17 +147,24 @@ function buildCaseContext(caseRecord: typeof casesTable.$inferSelect, docs: type
   if (caseRecord.isSuingPublicEntity) parts.push(`Suing a public entity`);
 
   if (docs.length > 0) {
-    parts.push("\n=== UPLOADED DOCUMENTS ===");
+    parts.push(`\n=== UPLOADED DOCUMENTS (${docs.length} total) ===`);
+    parts.push("IMPORTANT: You have full access to the extracted text of every document below. When the user asks about documents, name them and summarize their contents using this text.");
     for (const doc of docs) {
-      parts.push(`\nDocument: ${doc.originalName} (${doc.label || 'No label'})`);
-      if (doc.ocrText) {
-        parts.push(`Extracted Text:\n${doc.ocrText.slice(0, 2000)}${doc.ocrText.length > 2000 ? '... [truncated]' : ''}`);
+      parts.push(`\n--- Document: "${doc.originalName}" ---`);
+      parts.push(`File type: ${doc.mimeType} | Label: ${doc.label || 'No label'} | OCR Status: ${doc.ocrStatus}`);
+      if (doc.ocrText && doc.ocrText.length > 0 && !doc.ocrText.startsWith("[")) {
+        const truncated = doc.ocrText.length > 6000;
+        parts.push(`Extracted Text (${truncated ? 'first 6000 chars' : 'complete'}):\n${doc.ocrText.slice(0, 6000)}${truncated ? '\n... [document continues — ask user for more details if needed]' : ''}`);
+      } else if (doc.ocrText?.startsWith("[")) {
+        parts.push(`Extraction note: ${doc.ocrText}`);
+      } else if (doc.ocrStatus === "processing") {
+        parts.push(`[OCR still processing — text not yet available]`);
       } else {
-        parts.push(`[No text extracted]`);
+        parts.push(`[No text was extracted from this document]`);
       }
     }
   } else {
-    parts.push("\n[No documents uploaded yet]");
+    parts.push("\n[No documents uploaded yet — encourage the user to upload their evidence]");
   }
 
   return parts.join("\n");
