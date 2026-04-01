@@ -29,7 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetCaseQueryKey } from "@workspace/api-client-react";
@@ -664,15 +664,26 @@ function DocumentsTab({ caseId }: { caseId: number }) {
                 </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleDelete(doc.id)}
-              disabled={deleteDoc.isPending}
-              className="text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => window.open(`/api/cases/${caseId}/documents/${doc.id}/file`, "_blank")}
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                aria-label="View document"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDelete(doc.id)}
+                disabled={deleteDoc.isPending}
+                className="text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
         {(!documents || documents.length === 0) && (
