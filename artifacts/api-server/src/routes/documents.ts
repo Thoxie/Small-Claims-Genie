@@ -175,64 +175,67 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
           ocrText = nativeText;
           console.log(`[OCR] PDF native text extracted — ${ocrText.length} chars`);
         } else {
-          // Scanned/image-only PDF — render each page to PNG via pdftoppm,
-          // then send each page image to Vision API.
+          // Scanned/image-only PDF — render each page to PNG via pdfjs-dist + @napi-rs/canvas
+          // (pure Node.js, no system tools needed — works in both dev and production)
           // (OpenAI Files API and inline file_data are not supported by this proxy.)
-          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), converting pages via pdftoppm`);
-          const tmpDir = await mkdtemp(join(tmpdir(), "pdf-ocr-"));
-          try {
-            const tmpPdf = join(tmpDir, "input.pdf");
-            const pagePrefix = join(tmpDir, "page");
-            await writeFile(tmpPdf, buffer);
+          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), converting pages via pdfjs-dist`);
 
-            // Render up to 20 pages at 150 DPI as PNG
-            await execFileAsync("pdftoppm", [
-              "-png", "-r", "150", "-l", "20",
-              tmpPdf, pagePrefix,
-            ]);
+          const pdfData = new Uint8Array(buffer);
+          const pdfDoc = await (pdfjsLib as any).getDocument({
+            data: pdfData,
+            useWorkerFetch: false,
+            isEvalSupported: false,
+            useSystemFonts: true,
+            disableFontFace: true,
+            verbosity: 0,
+          }).promise;
 
-            const allFiles = await readdir(tmpDir);
-            const pngFiles = allFiles
-              .filter((f) => f.endsWith(".png"))
-              .sort(); // page-01.png, page-02.png, ...
+          const numPages = Math.min(pdfDoc.numPages, 20);
+          console.log(`[OCR] pdfjs loaded — ${pdfDoc.numPages} total pages, processing ${numPages}`);
 
-            console.log(`[OCR] pdftoppm produced ${pngFiles.length} page image(s)`);
+          const pageTexts: string[] = [];
+          for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.5 }); // ~108 DPI — legible for Vision
 
-            const pageTexts: string[] = [];
-            for (const pngFile of pngFiles) {
-              const pageBuffer = await readFile(join(tmpDir, pngFile));
-              const pageB64 = pageBuffer.toString("base64");
-              const pageResp = await openai.chat.completions.create({
-                model: "gpt-5.2",
-                max_completion_tokens: 3000,
-                messages: [{
-                  role: "user",
-                  content: [
-                    {
-                      type: "text",
-                      text: "Extract ALL text from this scanned document page exactly as written — every date, dollar amount, name, address, and legal term. This is a page from a California small claims court document. Return raw extracted text only, preserving structure.",
+            const canvasObj = NodeCanvasFactory.create(Math.ceil(viewport.width), Math.ceil(viewport.height));
+            await page.render({
+              canvasContext: canvasObj.context as any,
+              viewport,
+              canvasFactory: NodeCanvasFactory,
+            }).promise;
+            page.cleanup();
+
+            const pngBuffer = (canvasObj.canvas as any).toBuffer("image/png") as Buffer;
+            const pageB64 = pngBuffer.toString("base64");
+
+            const pageResp = await openai.chat.completions.create({
+              model: "gpt-5.2",
+              max_completion_tokens: 3000,
+              messages: [{
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Extract ALL text from this scanned document page exactly as written — every date, dollar amount, name, address, and legal term. This is a page from a California small claims court document. Return raw extracted text only, preserving structure.",
+                  },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:image/png;base64,${pageB64}`,
+                      detail: "high",
                     },
-                    {
-                      type: "image_url",
-                      image_url: {
-                        url: `data:image/png;base64,${pageB64}`,
-                        detail: "high",
-                      },
-                    },
-                  ],
-                }],
-              });
-              const pageText = pageResp.choices[0]?.message?.content ?? "";
-              pageTexts.push(pageText);
-              console.log(`[OCR] Page ${pngFile} — chars: ${pageText.length}`);
-            }
-
-            ocrText = pageTexts.join("\n\n--- Page Break ---\n\n");
-            console.log(`[OCR] pdftoppm+Vision done — total chars: ${ocrText.length}`);
-          } finally {
-            // Always clean up temp files
-            await rm(tmpDir, { recursive: true, force: true });
+                  },
+                ],
+              }],
+            });
+            const pageText = pageResp.choices[0]?.message?.content ?? "";
+            pageTexts.push(pageText);
+            console.log(`[OCR] Page ${pageNum}/${numPages} — chars: ${pageText.length}`);
           }
+
+          ocrText = pageTexts.join("\n\n--- Page Break ---\n\n");
+          console.log(`[OCR] pdfjs+Vision done — total chars: ${ocrText.length}`);
         }
       }
 
