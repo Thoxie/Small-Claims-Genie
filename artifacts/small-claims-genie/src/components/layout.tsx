@@ -17,7 +17,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Logo — shifted 1 inch right, 30% larger */}
           <Link href="/" className="flex items-center shrink-0 ml-24">
-            <img src={logoPath} alt={i18n.brand.name} className="h-20 w-auto" />
+            <img src={logoPath} alt={i18n.brand.name} className="h-[88px] w-auto" />
           </Link>
 
           {/* Center nav links */}
