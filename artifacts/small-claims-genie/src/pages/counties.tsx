@@ -28,8 +28,7 @@ export default function Counties() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{i18n.counties.title || "California Counties"}</h1>
         <p className="text-muted-foreground text-lg mb-6">
-          Find your local small claims courthouse, filing fees, and contact information.
-          Filing in the correct county is critical for your case to be heard.
+          {i18n.counties.subtitle}
         </p>
         
         <div className="relative max-w-md">
