@@ -75,17 +75,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <footer className="border-t bg-primary text-primary-foreground py-12">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center">
-              <img src={logoPath} alt={i18n.brand.name} className="h-12 w-auto brightness-0 invert opacity-90" />
-            </div>
-            <div className="flex gap-6 text-sm text-primary-foreground/70">
-              <Link href="/" className="hover:text-primary-foreground transition-colors">Home</Link>
-              <Link href="/how-it-works" className="hover:text-primary-foreground transition-colors">{i18n.nav.howItWorks}</Link>
-              <Link href="/counties" className="hover:text-primary-foreground transition-colors">{i18n.nav.counties}</Link>
-              <Link href="/resources" className="hover:text-primary-foreground transition-colors">{i18n.nav.resources}</Link>
-              <Link href="/dashboard" className="hover:text-primary-foreground transition-colors">{i18n.nav.dashboard}</Link>
-            </div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <img src={logoPath} alt={i18n.brand.name} className="h-12 w-auto brightness-0 invert opacity-90" />
             <p className="text-sm text-primary-foreground/50">
               © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Legal advice only.
             </p>
