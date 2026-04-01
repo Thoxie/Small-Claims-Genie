@@ -11,7 +11,7 @@ export default function Landing() {
     <div className="flex flex-col w-full bg-white">
 
       {/* ── Hero ── */}
-      <section style={{ backgroundColor: TEAL }} className="px-4 pt-16 pb-12 md:pt-20 md:pb-16">
+      <section style={{ backgroundColor: TEAL }} className="px-4 pt-16 pb-8 md:pt-20 md:pb-10">
         <div className="max-w-3xl mx-auto">
 
           {/* Headline — left-aligned, single bold block, 25% smaller than reference */}
@@ -45,7 +45,7 @@ export default function Landing() {
       </section>
 
       {/* ── Three Feature Boxes ── */}
-      <section className="px-4 py-12 bg-white">
+      <section className="px-4 pt-8 pb-12 bg-white">
         <div className="container mx-auto max-w-5xl">
           <div className="grid md:grid-cols-3 gap-5">
             {[
