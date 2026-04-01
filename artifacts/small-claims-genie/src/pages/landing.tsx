@@ -42,7 +42,7 @@ export default function Landing() {
       </section>
 
       {/* ── Three Feature Boxes ── */}
-      <section className="px-4 pt-8 pb-12 bg-white">
+      <section className="px-4 pt-4 pb-12 bg-white">
         <div className="container mx-auto max-w-5xl">
           <div className="grid md:grid-cols-3 gap-5">
             {[
