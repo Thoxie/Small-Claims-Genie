@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { 
   useGetCase, 
   useSaveIntakeProgress,
@@ -28,7 +28,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetCaseQueryKey } from "@workspace/api-client-react";
@@ -99,28 +99,64 @@ export default function CaseWorkspace() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-lg border shadow-sm">
+    <div className="container mx-auto px-4 py-6 max-w-6xl flex flex-col gap-5">
+
+      {/* Back link */}
+      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors w-fit">
+        <ArrowLeft className="h-4 w-4" />
+        Back to My Cases
+      </Link>
+
+      {/* Case header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-5 rounded-xl border shadow-sm">
         <div>
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl font-bold">{currentCase.title}</h1>
             <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-sm">
               {currentCase.status.replace('_', ' ')}
             </Badge>
           </div>
-          <p className="text-muted-foreground flex items-center gap-2">
-            <span className="font-medium text-foreground">Claim Amount:</span> 
-            {currentCase.claimAmount ? `$${currentCase.claimAmount}` : "Not set"}
+          <p className="text-sm text-muted-foreground">
+            Claim Amount: <span className="font-semibold text-foreground">{currentCase.claimAmount ? `$${currentCase.claimAmount.toLocaleString()}` : "Not set"}</span>
           </p>
         </div>
       </div>
 
+      {/* Tab navigation — click any tab to switch sections */}
       <Tabs defaultValue="intake" className="w-full">
-        <TabsList className="w-full grid grid-cols-4 h-14">
-          <TabsTrigger value="intake" className="text-base" data-testid="tab-intake">{i18n.workspace.tabs.intake}</TabsTrigger>
-          <TabsTrigger value="documents" className="text-base" data-testid="tab-documents">{i18n.workspace.tabs.documents}</TabsTrigger>
-          <TabsTrigger value="chat" className="text-base" data-testid="tab-chat">{i18n.workspace.tabs.chat}</TabsTrigger>
-          <TabsTrigger value="forms" className="text-base" data-testid="tab-forms">{i18n.workspace.tabs.forms}</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-4 h-auto p-1 bg-muted/80 rounded-xl gap-1">
+          <TabsTrigger
+            value="intake"
+            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            data-testid="tab-intake"
+          >
+            <ClipboardList className="h-4 w-4 shrink-0" />
+            <span>{i18n.workspace.tabs.intake}</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="documents"
+            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            data-testid="tab-documents"
+          >
+            <FileText className="h-4 w-4 shrink-0" />
+            <span>{i18n.workspace.tabs.documents}</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="chat"
+            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            data-testid="tab-chat"
+          >
+            <MessageSquare className="h-4 w-4 shrink-0" />
+            <span>{i18n.workspace.tabs.chat}</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="forms"
+            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            data-testid="tab-forms"
+          >
+            <Scale className="h-4 w-4 shrink-0" />
+            <span>{i18n.workspace.tabs.forms}</span>
+          </TabsTrigger>
         </TabsList>
         
         <div className="mt-6 border rounded-lg bg-card shadow-sm min-h-[600px]">
