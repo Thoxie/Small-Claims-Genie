@@ -59,9 +59,8 @@ export default function HowItWorks() {
       {/* ── Hero ── */}
       <section className="px-4 pt-14 pb-10 text-center bg-white">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-black leading-tight mb-4 text-primary">
-            Lawyers aren't allowed in Small Claims Court.<br />
-            Win with the power of AI.
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black leading-tight mb-4 text-primary whitespace-nowrap">
+            Lawyers aren't allowed in Small Claims Court. Win with the power of AI.
           </h1>
           <p className="text-base text-muted-foreground mb-7 leading-relaxed">
             Don't retain a lawyer for advice when you can use Small Claims Genie — an AI-powered system

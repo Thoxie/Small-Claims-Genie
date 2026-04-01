@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { i18n } from "@/lib/i18n";
-import logoPath from "@assets/2small-claims-genie-logo.png_1775057452576.png";
+import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
 
@@ -13,11 +13,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-white text-foreground">
       <header className="sticky top-0 z-40 w-full bg-white shadow-sm" style={{ borderBottom: '2px solid #ddf6f3' }}>
-        <div className="container mx-auto px-6 h-36 flex items-center justify-between">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
 
-          {/* Logo — fully contained, no overflow */}
+          {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
-            <img src={logoPath} alt={i18n.brand.name} className="h-32 w-auto" />
+            <img src={logoPath} alt={i18n.brand.name} className="h-12 w-auto" />
           </Link>
 
           {/* Center nav links */}
