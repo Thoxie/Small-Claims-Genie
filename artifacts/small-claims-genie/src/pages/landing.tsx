@@ -8,16 +8,16 @@ export default function Landing() {
     <div className="flex flex-col w-full">
 
       {/* ── Hero ── */}
-      <section className="relative px-4 py-24 md:py-36 bg-primary text-primary-foreground flex flex-col items-center text-center overflow-hidden">
+      <section className="relative px-4 py-20 md:py-28 bg-primary text-primary-foreground flex flex-col items-center text-center overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent via-transparent to-transparent pointer-events-none" />
-        <div className="relative max-w-3xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-black leading-tight mb-4 text-white tracking-tight">
+        <div className="relative max-w-4xl mx-auto">
+          <h1 className="text-5xl sm:text-6xl md:text-[4.5rem] font-black leading-[1.08] mb-5 text-white tracking-tight max-w-3xl mx-auto">
             {i18n.landing.heroTitle}
           </h1>
-          <p className="text-xl md:text-2xl font-semibold text-accent mb-5">
+          <p className="text-2xl md:text-3xl font-bold text-accent mb-5 tracking-tight">
             {i18n.landing.heroSubtitle}
           </p>
-          <p className="text-base md:text-lg text-primary-foreground/80 mb-10 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-primary-foreground/75 mb-10 max-w-2xl mx-auto leading-relaxed">
             {i18n.landing.heroBody}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -32,42 +32,42 @@ export default function Landing() {
               </Link>
             </Button>
           </div>
-          <p className="mt-6 text-sm text-primary-foreground/50">
+          <p className="mt-6 text-sm text-primary-foreground/45 tracking-wide">
             No account required · Free to start · $49 to download your final forms
           </p>
         </div>
       </section>
 
       {/* ── What We Do ── */}
-      <section className="px-4 py-24 bg-background">
+      <section className="px-4 py-20 bg-background">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3 text-foreground">
             {i18n.landing.whatWeDoTitle}
           </h2>
-          <p className="text-center text-muted-foreground text-lg mb-14 max-w-2xl mx-auto">
+          <p className="text-center text-muted-foreground text-base md:text-lg mb-12 max-w-2xl mx-auto">
             Built specifically for California small claims court — not generic legal software.
           </p>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             <div className="flex flex-col p-7 rounded-2xl border bg-card shadow-sm hover:border-primary/40 transition-colors">
               <div className="h-14 w-14 bg-primary/10 rounded-xl flex items-center justify-center mb-5">
                 <ClipboardList className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-xl font-bold mb-3">{i18n.landing.feature1Title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{i18n.landing.feature1Desc}</p>
+              <h3 className="text-lg font-bold mb-2">{i18n.landing.feature1Title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{i18n.landing.feature1Desc}</p>
             </div>
             <div className="flex flex-col p-7 rounded-2xl border bg-card shadow-sm hover:border-primary/40 transition-colors">
               <div className="h-14 w-14 bg-primary/10 rounded-xl flex items-center justify-center mb-5">
                 <FileText className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-xl font-bold mb-3">{i18n.landing.feature2Title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{i18n.landing.feature2Desc}</p>
+              <h3 className="text-lg font-bold mb-2">{i18n.landing.feature2Title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{i18n.landing.feature2Desc}</p>
             </div>
             <div className="flex flex-col p-7 rounded-2xl border bg-card shadow-sm hover:border-primary/40 transition-colors">
               <div className="h-14 w-14 bg-primary/10 rounded-xl flex items-center justify-center mb-5">
                 <BookOpen className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-xl font-bold mb-3">{i18n.landing.feature3Title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{i18n.landing.feature3Desc}</p>
+              <h3 className="text-lg font-bold mb-2">{i18n.landing.feature3Title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{i18n.landing.feature3Desc}</p>
             </div>
           </div>
         </div>

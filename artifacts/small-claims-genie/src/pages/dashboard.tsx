@@ -2,23 +2,56 @@ import { i18n } from "@/lib/i18n";
 import { useListCases, useGetCaseStats } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Briefcase, DollarSign, Activity } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Plus, Briefcase, DollarSign, Activity, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
+
+function ReadinessBar({ score }: { score: number }) {
+  const color =
+    score >= 80 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
+  const label =
+    score >= 80 ? "text-green-600" : score >= 50 ? "text-yellow-600" : "text-red-600";
+  return (
+    <div className="flex flex-col items-end gap-1 min-w-[70px]">
+      <span className={`text-2xl font-black tabular-nums ${label}`}>{score}%</span>
+      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${score}%` }} />
+      </div>
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Readiness</span>
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    draft: "bg-slate-100 text-slate-600 border-slate-200",
+    in_progress: "bg-blue-50 text-blue-700 border-blue-200",
+    filed: "bg-green-50 text-green-700 border-green-200",
+    closed: "bg-gray-100 text-gray-500 border-gray-200",
+  };
+  const style = styles[status] || styles.draft;
+  return (
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border capitalize ${style}`}>
+      {status.replace(/_/g, " ")}
+    </span>
+  );
+}
 
 export default function Dashboard() {
   const { data: cases, isLoading: loadingCases } = useListCases();
   const { data: stats, isLoading: loadingStats } = useGetCaseStats();
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          {i18n.dashboard.title}
-        </h1>
-        <Button asChild size="lg" className="w-full sm:w-auto h-12 bg-primary">
+    <div className="container mx-auto px-4 py-10 max-w-5xl">
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">{i18n.dashboard.title}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Pick up where you left off, or start a new case.</p>
+        </div>
+        <Button asChild size="lg" className="w-full sm:w-auto h-12 px-6 bg-primary text-primary-foreground font-bold rounded-xl">
           <Link href="/cases/new">
             <Plus className="mr-2 h-5 w-5" />
             {i18n.dashboard.newCaseBtn}
@@ -26,98 +59,102 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {i18n.dashboard.totalCases}
-            </CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loadingStats ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-3xl font-bold">{stats?.total || 0}</div>
-            )}
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
+        <Card className="border-0 bg-primary/5">
+          <CardContent className="p-6 flex items-center gap-5">
+            <div className="h-12 w-12 bg-primary/15 rounded-xl flex items-center justify-center shrink-0">
+              <Briefcase className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{i18n.dashboard.totalCases}</p>
+              {loadingStats ? (
+                <Skeleton className="h-10 w-10" />
+              ) : (
+                <p className="text-4xl font-black text-foreground leading-none">{stats?.total ?? 0}</p>
+              )}
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {i18n.dashboard.totalSought}
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loadingStats ? (
-              <Skeleton className="h-8 w-24" />
-            ) : (
-              <div className="text-3xl font-bold">${stats?.totalClaimAmount?.toLocaleString() || 0}</div>
-            )}
+
+        <Card className="border-0 bg-accent/5">
+          <CardContent className="p-6 flex items-center gap-5">
+            <div className="h-12 w-12 bg-accent/20 rounded-xl flex items-center justify-center shrink-0">
+              <DollarSign className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{i18n.dashboard.totalSought}</p>
+              {loadingStats ? (
+                <Skeleton className="h-10 w-24" />
+              ) : (
+                <p className="text-4xl font-black text-foreground leading-none">${stats?.totalClaimAmount?.toLocaleString() ?? 0}</p>
+              )}
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {i18n.dashboard.avgReadiness}
-            </CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loadingStats ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-3xl font-bold">{stats?.avgReadinessScore || 0}%</div>
-            )}
+
+        <Card className="border-0 bg-green-50 dark:bg-green-950/20">
+          <CardContent className="p-6 flex items-center gap-5">
+            <div className="h-12 w-12 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center shrink-0">
+              <Activity className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{i18n.dashboard.avgReadiness}</p>
+              {loadingStats ? (
+                <Skeleton className="h-10 w-16" />
+              ) : (
+                <>
+                  <p className="text-4xl font-black text-foreground leading-none mb-2">{stats?.avgReadinessScore ?? 0}%</p>
+                  <div className="w-full h-2 rounded-full bg-green-200 overflow-hidden">
+                    <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${stats?.avgReadinessScore ?? 0}%` }} />
+                  </div>
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">{i18n.dashboard.recentActivity}</h2>
+      {/* Case List */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-bold text-foreground mb-4">{i18n.dashboard.recentActivity}</h2>
+
         {loadingCases ? (
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-24 w-full rounded-xl" />
+          <div className="space-y-3">
+            <Skeleton className="h-24 w-full rounded-2xl" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
           </div>
         ) : cases && cases.length > 0 ? (
-          <div className="grid gap-4">
-            {cases.map((c) => (
-              <Link key={c.id} href={`/cases/${c.id}`}>
-                <Card className="hover:border-primary/50 transition-colors cursor-pointer group">
-                  <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                        {c.title}
-                      </h3>
-                      <div className="text-sm text-muted-foreground mt-1">
+          cases.map((c) => (
+            <Link key={c.id} href={`/cases/${c.id}`}>
+              <Card className="hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group rounded-2xl">
+                <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-bold group-hover:text-primary transition-colors truncate leading-tight">
+                      {c.title}
+                    </h3>
+                    <div className="flex items-center gap-3 mt-2">
+                      <StatusBadge status={c.status} />
+                      <span className="text-xs text-muted-foreground">
                         Updated {format(new Date(c.updatedAt), "MMM d, yyyy")}
-                      </div>
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right mr-2">
-                        <div className="text-sm font-medium">Readiness</div>
-                        <div className={`text-lg font-bold ${c.readinessScore && c.readinessScore > 79 ? 'text-green-600' : c.readinessScore && c.readinessScore > 49 ? 'text-yellow-600' : 'text-red-600'}`}>
-                          {c.readinessScore || 0}%
-                        </div>
-                      </div>
-                      <Badge variant={c.status === 'filed' ? 'default' : 'secondary'} className="h-8 px-3">
-                        {c.status.replace(/_/g, ' ')}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <ReadinessBar score={c.readinessScore ?? 0} />
+                    <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors hidden sm:block" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))
         ) : (
-          <Card className="p-12 text-center border-dashed">
+          <Card className="p-14 text-center border-dashed rounded-2xl">
             <div className="flex flex-col items-center gap-4">
-              <Briefcase className="h-12 w-12 text-muted-foreground/30" />
-              <div className="text-lg text-muted-foreground">{i18n.dashboard.noCases}</div>
-              <Button asChild className="mt-2">
-                <Link href="/cases/new">Start a Case</Link>
+              <Briefcase className="h-14 w-14 text-muted-foreground/20" />
+              <p className="text-lg font-medium text-muted-foreground">{i18n.dashboard.noCases}</p>
+              <Button asChild className="mt-1 rounded-xl">
+                <Link href="/cases/new">Start Your First Case</Link>
               </Button>
             </div>
           </Card>
