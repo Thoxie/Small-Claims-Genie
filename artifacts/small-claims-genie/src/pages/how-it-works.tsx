@@ -57,23 +57,24 @@ export default function HowItWorks() {
     <div className="flex flex-col w-full bg-white">
 
       {/* ── Hero ── */}
-      <section className="px-4 pt-14 pb-10 text-center bg-white">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-black leading-tight mb-4 text-primary whitespace-nowrap">
-            Lawyers aren't allowed in Small Claims Court. Win with the power of AI.
+      <section className="px-4 pt-7 pb-5 text-center bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black leading-tight mb-1 text-primary whitespace-nowrap">
+            Lawyers aren't allowed in Small Claims Court.
           </h1>
-          <p className="text-base text-muted-foreground mb-7 leading-relaxed">
+          <p className="text-base font-semibold text-primary/70 mb-4">Win with the power of AI.</p>
+          <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
             Don't retain a lawyer for advice when you can use Small Claims Genie — an AI-powered system
             built to guide your case from start to hearing.
           </p>
-          <Button asChild variant="outline" size="lg" className="h-11 px-8 text-base rounded-md border-primary text-primary hover:bg-primary/5 font-semibold">
+          <Button asChild variant="outline" size="lg" className="h-10 px-7 text-sm rounded-md border-primary text-primary hover:bg-primary/5 font-semibold">
             <Link href="/cases/new">Start Preparing Your Case</Link>
           </Button>
         </div>
       </section>
 
       {/* ── Six Feature Boxes ── */}
-      <section className="px-4 pb-12 bg-white">
+      <section className="px-4 pb-2 bg-white">
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {features.map(({ title, bullets }) => (
@@ -94,7 +95,7 @@ export default function HowItWorks() {
       </section>
 
       {/* ── Bottom CTA Banner ── */}
-      <section className="px-4 py-10 bg-white">
+      <section className="px-4 pt-6 pb-8 bg-white">
         <div className="max-w-3xl mx-auto">
           <div className="border border-gray-200 rounded-xl px-8 py-10 text-center bg-gray-50">
             <h2 className="text-2xl sm:text-3xl font-black text-primary mb-2">
