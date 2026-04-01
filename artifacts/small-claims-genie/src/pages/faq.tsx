@@ -1,6 +1,5 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Wand2 } from "lucide-react";
 
 const faqs = [
@@ -95,51 +94,46 @@ export default function FAQ() {
     <div className="flex flex-col w-full bg-white">
 
       {/* ── Header ── */}
-      <section className="px-4 pt-14 pb-8 text-center bg-white">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-black text-primary mb-3">
+      <section className="px-6 pt-10 pb-6 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl font-black text-primary mb-2">
             Frequently Asked Questions
           </h1>
-          <p className="text-base text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             Clear answers to common questions about how Small Claims Genie helps you prepare a small claims case.
             If you don't see your question here, describe what happened in plain English and Small Claims Genie will guide you.
           </p>
         </div>
       </section>
 
-      {/* ── FAQ Accordion ── */}
-      <section className="px-4 pb-12 bg-white">
-        <div className="max-w-2xl mx-auto">
-          <Accordion type="single" collapsible className="w-full divide-y divide-gray-100">
-            {faqs.map(({ q, a }, i) => (
-              <AccordionItem key={i} value={`item-${i}`} className="border-none py-1">
-                <AccordionTrigger className="text-left text-sm font-semibold text-primary hover:text-primary hover:no-underline py-4">
-                  {q}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                  {a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+      {/* ── FAQ Boxes ── */}
+      <section className="px-6 pb-10 bg-white">
+        <div className="max-w-3xl mx-auto flex flex-col gap-3">
+          {faqs.map(({ q, a }, i) => (
+            <div
+              key={i}
+              className="border border-gray-200 rounded-xl px-5 py-4 bg-white"
+            >
+              <p className="text-sm font-bold text-primary mb-1.5">{q}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{a}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section className="px-4 pb-16 bg-white">
-        <div className="max-w-2xl mx-auto">
-          <div className="border border-gray-200 rounded-xl px-8 py-10 text-center bg-gray-50">
-            <h2 className="text-xl font-black text-primary mb-2">Still have questions?</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Start your case and ask the Genie directly — it knows your documents, your facts, and your county.
-            </p>
-            <Button asChild size="lg" className="h-11 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-sm">
-              <Link href="/cases/new">
-                <Wand2 className="mr-2 h-4 w-4" />
-                Ask the Genie
-              </Link>
-            </Button>
-          </div>
+      <section className="px-6 pb-12 bg-white">
+        <div className="max-w-3xl mx-auto border border-gray-200 rounded-xl px-8 py-8 text-center bg-gray-50">
+          <h2 className="text-lg font-black text-primary mb-1.5">Still have questions?</h2>
+          <p className="text-sm text-muted-foreground mb-5">
+            Start your case and ask the Genie directly — it knows your documents, your facts, and your county.
+          </p>
+          <Button asChild size="lg" className="h-10 px-7 text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-sm">
+            <Link href="/cases/new">
+              <Wand2 className="mr-2 h-4 w-4" />
+              Ask the Genie
+            </Link>
+          </Button>
         </div>
       </section>
 
