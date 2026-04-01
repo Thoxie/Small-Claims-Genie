@@ -1,7 +1,7 @@
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2, Clock, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
 import logoPath from "@assets/2small-claims-genie-logo.png_1775057452576.png";
 
 const TEAL = "#ddf6f3";
@@ -43,24 +43,6 @@ export default function Landing() {
           </p>
         </div>
       </section>
-
-      {/* ── Social proof strip ── */}
-      <div className="bg-white border-y border-gray-100 py-3">
-        <div className="container mx-auto px-4 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />)}</div>
-            <span>Trusted by Southern California filers</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-            <span>All 58 California Counties</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4 text-primary/40" />
-            <span>Ready in under an hour</span>
-          </div>
-        </div>
-      </div>
 
       {/* ── Three Feature Boxes ── */}
       <section className="px-4 py-12 bg-white">
