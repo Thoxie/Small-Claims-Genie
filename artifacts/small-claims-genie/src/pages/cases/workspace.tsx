@@ -661,6 +661,13 @@ function DocumentsTab({ caseId }: { caseId: number }) {
                     {doc.ocrStatus === 'complete' ? i18n.documents.complete : doc.ocrStatus === 'failed' ? i18n.documents.failed : i18n.documents.processing}
                   </Badge>
                   <span>{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : ""}</span>
+                  {doc.createdAt && (
+                    <span>
+                      {new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {" · "}
+                      {new Date(doc.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -779,7 +786,7 @@ function ChatTab({ caseId }: { caseId: number }) {
 
     recognition.onresult = (event: any) => {
       const transcript: string = event.results[0]?.[0]?.transcript ?? "";
-      if (transcript.trim()) sendMessage(transcript.trim());
+      if (transcript.trim()) setInput(transcript.trim());
     };
     recognition.onerror = (event: any) => {
       console.error("[Voice] Speech recognition error:", event.error);
