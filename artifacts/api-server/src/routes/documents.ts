@@ -72,6 +72,34 @@ router.get("/cases/:id/documents", async (req, res): Promise<void> => {
   res.json(safeDocs);
 });
 
+// Serve the raw file so the user can view/download it in the browser
+router.get("/cases/:id/documents/:docId/file", async (req, res): Promise<void> => {
+  const caseId = parseInt(req.params.id, 10);
+  const docId = parseInt(req.params.docId, 10);
+  if (isNaN(caseId) || isNaN(docId)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
+  const [doc] = await db
+    .select()
+    .from(documentsTable)
+    .where(eq(documentsTable.id, docId));
+  if (!doc || doc.caseId !== caseId) {
+    res.status(404).json({ error: "Document not found" });
+    return;
+  }
+  const buffer = Buffer.from((doc as any).fileData as string, "base64");
+  const mime = doc.mimeType ?? "application/octet-stream";
+  // PDFs and images open inline; DOCX downloads
+  const disposition = mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ? `attachment; filename="${doc.originalName}"`
+    : `inline; filename="${doc.originalName}"`;
+  res.setHeader("Content-Type", mime);
+  res.setHeader("Content-Disposition", disposition);
+  res.setHeader("Content-Length", buffer.length);
+  res.end(buffer);
+});
+
 router.post("/cases/:id/documents", upload.single("file"), async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
