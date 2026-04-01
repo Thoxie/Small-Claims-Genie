@@ -16,6 +16,7 @@ import HowItWorks from "@/pages/how-it-works";
 import FAQ from "@/pages/faq";
 import TypesOfCases from "@/pages/types-of-cases";
 import Terms from "@/pages/terms";
+import TermsOfService from "@/pages/tos";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/faq" component={FAQ} />
         <Route path="/types-of-cases" component={TypesOfCases} />
         <Route path="/terms" component={Terms} />
+        <Route path="/tos" component={TermsOfService} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

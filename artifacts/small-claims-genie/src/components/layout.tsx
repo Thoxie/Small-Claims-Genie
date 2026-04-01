@@ -85,9 +85,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-sm text-primary/60">
               © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Legal advice only.
             </p>
-            <Link href="/terms" className="text-sm text-primary/60 hover:text-primary underline underline-offset-2 transition-colors">
-              Terms of Use
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/terms" className="text-sm text-primary/60 hover:text-primary underline underline-offset-2 transition-colors">
+                Terms of Use
+              </Link>
+              <Link href="/tos" className="text-sm text-primary/60 hover:text-primary underline underline-offset-2 transition-colors">
+                Terms of Service
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
