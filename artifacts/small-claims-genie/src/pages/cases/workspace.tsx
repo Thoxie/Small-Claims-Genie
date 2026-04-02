@@ -1104,13 +1104,46 @@ function ChatTab({ caseId }: { caseId: number }) {
 // Readiness score: intake(60) + documents(30) + prior demand(10) = 0–100
 // Score ≥ 80 unlocks SC-100 PDF download
 function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any }) {
+  const { getToken } = useAuth();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
-  
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadingWord, setDownloadingWord] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
   const color = score >= 80 ? "text-green-500" : score >= 50 ? "text-yellow-500" : "text-red-500";
   const barColor = score >= 80 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
-  
+
+  async function downloadForm(endpoint: string, filename: string, setLoading: (v: boolean) => void) {
+    setLoading(true);
+    setDownloadError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setDownloadError(err.error ?? "Download failed — please try again.");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      setDownloadError("Download failed — please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
       <div className="flex-1 space-y-6">
@@ -1131,28 +1164,31 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           </CardContent>
         </Card>
 
+        {downloadError && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
             size="lg"
             className="flex-1 h-14 text-lg font-bold"
-            disabled={!isReady}
-            onClick={() => window.open(`/api/cases/${caseId}/forms/sc100`, '_blank')}
+            disabled={!isReady || downloadingPdf}
+            onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
           >
-            <Download className="mr-2 h-5 w-5" /> {i18n.forms.downloadSc100}
+            {downloadingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+            {downloadingPdf ? "Downloading…" : i18n.forms.downloadSc100}
           </Button>
           <Button
             size="lg"
             variant="outline"
             className="flex-1 h-14 text-lg font-bold border-2"
-            disabled={!isReady}
-            onClick={() => {
-              const a = document.createElement("a");
-              a.href = `/api/cases/${caseId}/forms/sc100-word`;
-              a.download = `SC100-Case-${caseId}.docx`;
-              a.click();
-            }}
+            disabled={!isReady || downloadingWord}
+            onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
           >
-            <Download className="mr-2 h-5 w-5" /> Download as Word (.docx)
+            {downloadingWord ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+            {downloadingWord ? "Downloading…" : "Download as Word (.docx)"}
           </Button>
         </div>
         {!isReady && <p className="text-sm text-center text-muted-foreground">You must complete your intake to reach 80% readiness before downloading.</p>}
