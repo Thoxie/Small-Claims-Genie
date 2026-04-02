@@ -1,0 +1,251 @@
+Product goal
+Small Claims Genie is a California-first case preparation platform for small claims users. Its purpose is not just to fill out forms. Its purpose is to take a user who is confused, disorganized, and unsure whether they even have a valid small claims matter, and walk that user through a structured process that turns scattered facts and documents into a coherent, filing-ready case package.
+The system should feel like a guided legal operations assistant for small claims. It should help the user understand whether the matter belongs in small claims, what facts and evidence matter, what is missing, what to do next, and how to leave the platform with documents and outputs that are actually usable in the real world.
+The product should be designed around one primary workflow:
+Create case -> enter facts -> upload evidence -> organize timeline -> evaluate case -> generate demand letter -> prepare filing package -> follow county filing instructions.
+That is the core promise. Everything in Beta and the full California rollout should reinforce that workflow rather than distract from it.
+Beta Product Specification
+7.	California Eligibility and Case-Fit Analysis 
+What it is
+This feature evaluates whether the case appears appropriate for California small claims and whether the user has entered enough information to proceed intelligently.
+What it does
+It checks the amount sought, basic claim fit, simple venue logic, and certain procedural red flags. It should not over-promise or act like a judge, but it should tell the user whether the case appears to belong in small claims and whether obvious problems exist.
+How the user uses it
+Once intake and some basic facts are entered, the user can run analysis or automatically receive a case-fit summary. The product tells the user whether the matter appears eligible, what issues may exist, and what information is still missing.
+Expected system behavior
+The system should generate a structured analysis with categories such as eligible, caution, missing facts, missing evidence, or possible issue. It may also provide a short narrative summary in plain English.
+Why it matters in Beta
+This is what makes the product more than a storage tool. It is part of the core “Genie” value.
+8.	Evidence Gap and Weakness Detection 
+What it is
+This is the first layer of strategic analysis. It does not just ask whether the case belongs in small claims; it asks whether the user has enough support to present the claim credibly.
+What it does
+It identifies obvious weaknesses, such as no written agreement, no proof of payment, unclear damages amount, lack of proof that a demand was made, or a missing date that matters to the story.
+How the user uses it
+The user reviews a “Strengths and Weaknesses” or “What You Still Need” section after uploading documents and building the timeline. The system explains what appears strong and what should be added.
+Expected system behavior
+The system should connect this analysis to both case facts and documents. It should produce practical prompts such as “Upload proof of payment,” “Add the date you requested a refund,” or “Your damages amount is not yet supported by documentation.”
+Why it matters in Beta - Users do not just want documents generated. They want to know what is weak before they stand in front of a clerk or judge.
+9.	Demand Letter Generator 
+What it is
+This feature drafts a formal demand letter based on the user’s facts. It is one of the highest-value early outputs because many disputes may settle before filing.
+What it does -It converts the structured intake, timeline, and facts into a clean written demand letter that states the dispute, the amount sought, the reason for the demand, and a deadline for response or payment.
+How the user uses it - The user opens the demand letter tool, chooses tone or style, reviews the draft, edits it if needed, and then exports it as a PDF or DOCX for sending.
+Expected system behaviorThe generator should pull from the case facts consistently, avoid hallucinating unsupported facts, and clearly include the amount demanded, factual basis, and response deadline. It should be editable before export.
+Why it matters in BetaThis is immediate value, easy for users to understand, and a strong bridge between organization and legal action.
+10.	SC-100-Aligned Filing Workflow 
+What it isThis is the feature that prepares the user’s information in a structure aligned with the California SC-100 small claims plaintiff form. It is not just a summary page. It is the platform’s filing-oriented preparation workflow.
+What it doesIt collects and validates the specific information needed for the SC-100 format and ensures the user has supplied the necessary fields in a way that can be mapped onto the actual court form.
+How the user uses itThe user completes guided filing-prep questions. The product then shows a filing-oriented review page indicating what has been completed, what is missing, and how the information maps into the filing package.
+Expected system behavior
+The system should validate missing fields, identify inconsistencies, and maintain a structured mapping between case data and the SC-100 format. The output should be compatible with the form’s logic and field requirements.
+Why it matters in Beta
+Because you want a California rollout quickly after beta, this should be built correctly from the beginning rather than treated as a vague future feature.
+11.	County Filing Checklist 
+What it is
+This is the operational guidance layer that tells users what to do in the real world after their case is prepared.
+What it does
+It explains where to file, what to bring, what steps remain, what service obligations generally apply, and any county-specific guidance included in the beta scope.
+How the user uses it
+After completing the filing workflow, the user sees a checklist for their selected county. It should feel concrete: file here, bring these items, prepare these copies, review these final steps.
+Expected system behavior
+The system should generate county-specific checklist content based on the user’s selected filing location. The Beta version can be narrower and simpler, but it should still feel operational rather than generic.
+Why it matters in Beta
+Users do not just need forms. They need instructions that connect the app to the real courthouse process.
+12.	Case Summary, Damages Summary, and Exhibit List Export 
+What it is
+This feature gives the user a plain-English package that complements the formal filing workflow.
+What it does
+It produces a concise case summary, a damages breakdown, a timeline summary, and an exhibit list. This helps the user think clearly and prepare more confidently even apart from official court forms.
+How the user uses it
+The user reviews generated summaries and exports them for printing or personal preparation. These outputs may also help the user communicate with the defendant, mediator, or supporter.
+Expected system behavior
+The generated outputs should be based on the structured case data and not invent facts. The exhibit list should reflect uploaded evidence and user labels. The damages summary should clearly explain how the amount sought is calculated.
+Why it matters in Beta
+This turns the platform from a form prep tool into a case preparation tool.
+13.	Stripe Payment and Entitlement Layer 
+What it is
+If the beta is paid, this feature governs the purchase flow and access rights associated with payment.
+What it does
+It lets the user pay for a case workflow, receive a receipt, and unlock the paid product flow or export features tied to that purchase.
+How the user uses it
+The user may create an account and begin intake, then be prompted to purchase before advanced outputs or exports are unlocked. Alternatively, the user may pay upfront depending on the pricing model.
+Expected system behavior
+The system should track payment status, entitlement per case or per account, transaction timestamps, and refund or support visibility for the admin side.
+Why it matters in Beta
+If monetization is part of launch, this must exist from day one. It is not a future add-on.
+14.	Essential Transactional Email System 
+What it is
+This is the minimal communication layer needed for a real user-facing product.
+What it does
+It sends account confirmation, password reset, payment receipt, and potentially certain workflow confirmations such as “your case has been saved” or “your filing package is ready.”
+How the user uses it
+The user receives confirmation emails during signup, billing, and recovery flows. These are not marketing emails. They are operational emails that support trust and usability.
+Expected system behavior
+The system should send accurate, branded, reliable transactional email tied to real application events.
+Why it matters in Beta
+A product that takes payment and user data without basic transactional communication feels unfinished and untrustworthy.
+Full California Rollout Product Specification
+After Beta, the product should deepen the same workflow rather than abandon it. The full California release should make the Beta experience more intelligent, more county-aware, and more complete across the state.
+15.	County-Specific Procedural Depth 
+What it is
+This is an expansion of the filing checklist into a much more complete county-aware procedural layer.
+What it does
+It adds more accurate county-level instructions, fee guidance, filing quirks, service rules, and court operational details that vary in practice across California jurisdictions.
+How the user uses it
+The user selects a county and receives more precise procedural guidance that feels tailored to that court environment rather than merely California-generic.
+Expected system behavior
+The system should support county-specific content modules and procedural rules that can be updated independently as courts change information.
+Why it matters after Beta
+This is the bridge from “useful California product” to “credible statewide California platform.”
+16.	Defendant Business Lookup 
+What it is
+This feature helps users identify and complete business-defendant information more accurately.
+What it does
+It assists with finding the correct business name, entity status, and potentially registered agent or service information when the defendant is a business rather than an individual.
+How the user uses it
+The user indicates that the defendant is a business, begins entering the business name, and receives assistance in identifying the formal entity that should be used in the filing workflow.
+Expected system behavior
+The system should help reduce business-name errors, improve form accuracy, and reduce user confusion in common business-claim scenarios.
+Why it matters after Beta
+This is a strong usability feature and especially valuable in consumer-business disputes, but it can follow once the base workflow is stable.
+17.	Enhanced Filing Readiness and Contradiction Detection 
+What it is
+This is a more advanced analysis layer that checks whether the case is not just eligible, but truly ready for filing.
+What it does
+It identifies deeper issues such as mismatched dates, unsupported damages, incomplete addresses, weak linkage between facts and documents, or contradictions between uploaded files and user-entered narrative.
+How the user uses it
+Before filing, the user runs a readiness check and receives a more sophisticated set of warnings, recommendations, and final action items.
+Expected system behavior
+The system should compare the structured intake, the timeline, and the evidence corpus to identify missing or inconsistent information.
+Why it matters after Beta
+This is the type of feature that makes the AI feel meaningfully useful rather than decorative.
+18.	Evidence Strength Scoring 
+What it is
+This feature turns basic evidence gap detection into a more explicit strength evaluation.
+What it does
+It evaluates how well the uploaded documents support the user’s claim, whether key facts appear substantiated, and where the evidence is likely thin or vulnerable.
+How the user uses it
+The user sees a breakdown of strong evidence, weak evidence, missing categories, and suggested improvements. This can be shown overall and by claim issue.
+Expected system behavior
+The scoring should be cautious and explainable. It should not falsely promise winning or predict outcomes with certainty. It should function as preparation guidance, not as a guarantee.
+Why it matters after Beta
+This is a strong differentiator and helps move the product beyond simple automation.
+19.	Argument Builder 
+What it is
+This is the beginning of the hearing-prep layer. It helps the user understand how to present the case clearly.
+What it does
+It generates the most important points the user should make in court, grounded in the case facts and evidence already in the system.
+How the user uses it
+The user enters hearing-prep mode and receives a structured argument outline such as the top three facts, the most important supporting documents, and the cleanest way to explain damages.
+Expected system behavior
+The system should produce simple, direct, hearing-appropriate talking points rather than long legal essays.
+Why it matters after Beta
+It adds a premium strategic dimension without requiring the system to become a full litigation platform.
+20.	Script and Talking Points for Hearing 
+What it is
+This is a practical speaking-prep feature that turns the argument structure into language the user can actually say out loud.
+What it does
+It helps the user prepare an opening explanation, a short narrative, answers to predictable questions, and transitions between major issues.
+How the user uses it
+The user reads or prints a hearing prep guide and practices delivering the case clearly and concisely.
+Expected system behavior
+The product should generate spoken-style content, not dense written prose. It should feel human, brief, and realistic.
+Why it matters after Beta
+Users are often more afraid of the hearing than of the paperwork. This feature addresses that anxiety directly.
+21.	Counterargument Coach 
+What it is
+This feature helps the user prepare for what the defendant might say in response.
+What it does
+It identifies common defense themes based on the type of claim and the user’s facts, then helps the user think through how to respond calmly and factually.
+How the user uses it
+The user selects a case and reviews possible pushback points, along with suggested responses grounded in the existing evidence.
+Expected system behavior
+The product should frame this as preparation, not certainty. It should identify likely lines of attack, such as denial of agreement, incomplete services, prior notice disputes, payment disputes, or exaggerated damages claims.
+Why it matters after Beta
+This is one of the places where AI can deliver real prep value without overstepping.
+22.	Witness and Statement Templates 
+What it is
+This is a support feature for users who rely on other people or written statements to help establish the facts.
+What it does
+It helps the user prepare witness summaries, factual statement drafts, or supporting narrative templates that align with the user’s overall case timeline.
+How the user uses it
+The user chooses to add a witness or supporting statement, answers guided questions, and receives a clean draft or prep structure.
+Expected system behavior
+The system should keep witness material fact-focused and aligned with the existing record rather than allowing conflicting narratives to emerge.
+Why it matters after Beta
+Useful, but not necessary for the first wave of actual product value.
+23.	Court Date Tracker and Reminder Automation 
+What it is
+This is the workflow continuity layer that helps users stay on schedule once they have moved into filing and hearing stages.
+What it does
+It tracks important dates such as intended filing date, service deadlines, hearing dates, and reminder intervals.
+How the user uses it
+The user adds or confirms dates and receives reminders or status prompts through the dashboard and email layer.
+Expected system behavior
+The system should support important date storage, countdown visibility, and reminder delivery based on case stage.
+Why it matters after Beta
+Helpful and sticky, but secondary to getting the core case workflow correct.
+24.	Case Outcome Tracking and Product Feedback Loop 
+What it is
+This is the internal learning layer for the product and the user-facing result capture layer.
+What it does
+It records whether the user filed, settled, won, lost, dismissed the case, or abandoned it. It also collects structured user feedback about which parts of the workflow were most useful or confusing.
+How the user uses it
+After a case concludes, the user is prompted to record the outcome and optionally provide feedback.
+Expected system behavior
+The system should store structured outcomes so the product team can evaluate quality, find drop-off points, and improve templates, analysis, and guidance.
+Why it matters after Beta
+This is strategically important for improving the platform and proving user value over time.
+25.	Spanish and Multilingual Support 
+What it is
+This feature makes the product more accessible to California users whose primary language is not English.
+What it does
+It localizes the interface, guided intake, help content, and potentially generated explanatory materials for Spanish-speaking users.
+How the user uses it
+The user chooses a language preference and completes the workflow in that language where supported.
+Expected system behavior
+Localization should be deliberate and accurate. It should not just translate UI labels; it should support the user’s understanding of the process and outputs.
+Why it matters after Beta
+Commercially important for California, but should follow once the core system is stable and correct in English.
+26.	Mediation Prep Mode 
+What it is
+This is a separate preparation path for disputes that may go through mediation or settlement discussion before or instead of a hearing.
+What it does
+It helps the user articulate the claim, identify acceptable outcomes, and prepare a clear factual summary and negotiation position.
+How the user uses it
+The user chooses mediation prep mode and receives a simplified version of the case summary and negotiation talking points tailored to settlement conversations.
+Expected system behavior
+The system should shift tone away from adversarial hearing prep and toward practical resolution framing.
+Why it matters after Beta
+Useful in many real disputes, but not necessary to prove the product’s core value in Beta.
+27.	Case Sharing and Helper Access 
+What it is
+This feature allows the user to share case access with a trusted helper such as a family member, advocate, or support person.
+What it does
+It lets another person view or assist with the case without fully transferring ownership.
+How the user uses it
+The user invites a helper by email and chooses what level of access to grant.
+Expected system behavior
+The product should preserve ownership and privacy controls while supporting limited collaborative access.
+Why it matters after Beta
+Good for support and accessibility, but not core to the initial launch.
+28.	Attorney Referral and Escalation Path 
+What it is
+This is the feature that handles matters that exceed the platform’s intended scope.
+What it does
+When a case becomes too complex, too high-value, or procedurally unsuitable for small claims, the product can guide the user toward another path rather than forcing a poor fit.
+How the user uses it
+The user is informed that the matter may fall outside the ideal small claims flow and is shown next-step guidance or referral options where appropriate.
+Expected system behavior
+The product should identify complexity thresholds and steer the user carefully and transparently.
+Why it matters after Beta
+Important as a safety and monetization expansion, but not a launch feature.
+Final product position
+The strongest overall product strategy is:
+Beta should deliver one complete California small claims preparation workflow with enough depth that a real user can rely on it.
+The full California rollout should make that workflow smarter, more county-aware, more strategic, and more operationally complete.
+That means the Beta is not a teaser. It is a functional product with a narrow promise. The full version is not a reinvention. It is a deeper, more sophisticated statewide version of the same product.
+If you want, the next step is for me to convert this into a formal PRD structure with sections for user stories, functional requirements, non-functional requirements, data model implications, and acceptance criteria for each feature.
+
+Feature	Why it matters
