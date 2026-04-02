@@ -1,11 +1,24 @@
+import { useState } from "react";
 import { i18n } from "@/lib/i18n";
-import { useListCases, useGetCaseStats } from "@workspace/api-client-react";
+import { useListCases, useGetCaseStats, useDeleteCase, getListCasesQueryKey, getGetCaseStatsQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Briefcase, DollarSign, Activity, ChevronRight } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, Briefcase, DollarSign, Activity, ChevronRight, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 function ReadinessBar({ score }: { score: number }) {
   const color =
@@ -41,6 +54,31 @@ function StatusBadge({ status }: { status: string }) {
 export default function Dashboard() {
   const { data: cases, isLoading: loadingCases } = useListCases();
   const { data: stats, isLoading: loadingStats } = useGetCaseStats();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const deleteCase = useDeleteCase();
+
+  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const confirmCase = cases?.find((c) => c.id === confirmId);
+
+  const handleDelete = () => {
+    if (confirmId == null) return;
+    deleteCase.mutate(
+      { id: confirmId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListCasesQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetCaseStatsQueryKey() });
+          toast({ title: "Case deleted", description: "The case has been permanently removed." });
+          setConfirmId(null);
+        },
+        onError: () => {
+          toast({ title: "Delete failed", description: "Could not delete the case. Please try again.", variant: "destructive" });
+          setConfirmId(null);
+        },
+      }
+    );
+  };
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-5xl">
@@ -126,27 +164,38 @@ export default function Dashboard() {
           </div>
         ) : cases && cases.length > 0 ? (
           cases.map((c) => (
-            <Link key={c.id} href={`/cases/${c.id}`}>
-              <Card className="hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group rounded-2xl">
-                <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold group-hover:text-primary transition-colors truncate leading-tight">
-                      {c.title}
-                    </h3>
-                    <div className="flex items-center gap-3 mt-2">
-                      <StatusBadge status={c.status} />
-                      <span className="text-xs text-muted-foreground">
-                        Updated {format(new Date(c.updatedAt), "MMM d, yyyy")}
-                      </span>
+            <div key={c.id} className="relative group/card">
+              <Link href={`/cases/${c.id}`}>
+                <Card className="hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group rounded-2xl">
+                  <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors truncate leading-tight">
+                        {c.title}
+                      </h3>
+                      <div className="flex items-center gap-3 mt-2">
+                        <StatusBadge status={c.status} />
+                        <span className="text-xs text-muted-foreground">
+                          Updated {format(new Date(c.updatedAt), "MMM d, yyyy")}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4 shrink-0">
-                    <ReadinessBar score={c.readinessScore ?? 0} />
-                    <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors hidden sm:block" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                    <div className="flex items-center gap-4 shrink-0 pr-10">
+                      <ReadinessBar score={c.readinessScore ?? 0} />
+                      <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors hidden sm:block" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              {/* Delete button — sits outside the Link so it doesn't navigate */}
+              <button
+                onClick={(e) => { e.preventDefault(); setConfirmId(c.id); }}
+                className="absolute top-3 right-3 p-2 rounded-lg text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover/card:opacity-100 transition-all"
+                aria-label="Delete case"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           ))
         ) : (
           <Card className="p-14 text-center border-dashed rounded-2xl">
@@ -160,6 +209,28 @@ export default function Dashboard() {
           </Card>
         )}
       </div>
+
+      {/* Confirm Delete Dialog */}
+      <AlertDialog open={confirmId !== null} onOpenChange={(open) => { if (!open) setConfirmId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this case?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{confirmCase?.title}</strong> will be permanently deleted — including all documents, chat history, and form data. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deleteCase.isPending}
+            >
+              {deleteCase.isPending ? "Deleting…" : "Yes, delete it"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
