@@ -1,24 +1,10 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useListCounties, useCreateCase } from "@workspace/api-client-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { i18n } from "@/lib/i18n";
-import { AlertCircle } from "lucide-react";
-
-const newCaseSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  claimType: z.string().min(1, "Please select a claim type"),
-  countyId: z.string().optional(),
-});
-
-type NewCaseFormValues = z.infer<typeof newCaseSchema>;
 
 const CLAIM_TYPES = [
   "Money Owed",
@@ -27,36 +13,42 @@ const CLAIM_TYPES = [
   "Property Damage",
   "Contract Dispute",
   "Fraud",
-  "Other"
+  "Other",
 ];
 
 export default function NewCase() {
   const [, setLocation] = useLocation();
-  const { data: counties, isLoading: countiesLoading } = useListCounties();
+  const { data: counties } = useListCounties();
   const createCase = useCreateCase();
   const { toast } = useToast();
 
-  const form = useForm<NewCaseFormValues>({
-    resolver: zodResolver(newCaseSchema),
-    defaultValues: {
-      title: "",
-      claimType: "",
-      countyId: "",
-    },
-  });
+  const [title, setTitle] = useState("");
+  const [claimType, setClaimType] = useState("");
+  const [countyId, setCountyId] = useState("");
+  const [errors, setErrors] = useState<{ title?: string; claimType?: string }>({});
 
-  const onSubmit = (data: NewCaseFormValues) => {
+  const handleSubmit = () => {
+    const newErrors: { title?: string; claimType?: string } = {};
+    if (title.trim().length < 3) newErrors.title = "Please enter a title (at least 3 characters)";
+    if (!claimType) newErrors.claimType = "Please select a claim type";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+
     createCase.mutate(
-      { data },
+      { data: { title: title.trim(), claimType, countyId: countyId || undefined } },
       {
         onSuccess: (newCase) => {
           setLocation(`/cases/${newCase.id}`);
         },
         onError: (err: any) => {
-          const msg = err?.message || "Could not create your case. Please try again.";
           toast({
-            title: "Error creating case",
-            description: msg,
+            title: "Could not create your case",
+            description: err?.message || "Please try again.",
             variant: "destructive",
           });
         },
@@ -68,115 +60,84 @@ export default function NewCase() {
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <Card className="border-2 shadow-lg">
         <CardHeader className="pb-6 border-b bg-muted/20">
-          <CardTitle className="text-3xl">{i18n.newCase.title}</CardTitle>
+          <CardTitle className="text-3xl">Start Your Case</CardTitle>
           <CardDescription className="text-base text-muted-foreground mt-2">
-            Let's get started with the basics. You can always fill in more details after.
+            Fill in the basics to get started. You can add more details after.
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <CardContent className="pt-8 space-y-8">
 
-              {/* Show any general form errors */}
-              {Object.keys(form.formState.errors).length > 0 && (
-                <div className="flex items-start gap-2 rounded-md bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>Please fix the highlighted fields below before continuing.</span>
-                </div>
-              )}
+          {/* Case Title */}
+          <div>
+            <label className="text-base font-semibold block mb-2">
+              What is this case about?
+            </label>
+            <Input
+              placeholder="e.g., Unpaid Rent from John Smith"
+              className="h-14 text-lg"
+              value={title}
+              onChange={(e) => { setTitle(e.target.value); setErrors((p) => ({ ...p, title: undefined })); }}
+            />
+            {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
+          </div>
 
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-semibold">{i18n.newCase.caseTitleLabel}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., Unpaid Rent from John Smith"
-                        className="h-14 text-lg"
-                        data-testid="input-case-title"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="claimType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-semibold">{i18n.newCase.claimTypeLabel}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-14 text-lg" data-testid="select-claim-type">
-                          <SelectValue placeholder="Select the type of claim" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {CLAIM_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="countyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-semibold">
-                      {i18n.newCase.countyLabel}{" "}
-                      <span className="text-muted-foreground font-normal text-sm">(optional — can set later)</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || ""}
-                      disabled={countiesLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="h-14 text-lg" data-testid="select-county">
-                          <SelectValue placeholder={countiesLoading ? "Loading counties…" : "Select a county (optional)"} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-72 overflow-y-auto">
-                        {counties?.map((county) => (
-                          <SelectItem key={county.id} value={county.id}>
-                            {county.name} County
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Usually where the defendant lives or where the incident happened.
-                    </p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="pt-4">
-                <Button
-                  type="submit"
-                  className="w-full h-14 text-lg font-bold"
-                  disabled={createCase.isPending}
-                  data-testid="button-create-case"
+          {/* Claim Type */}
+          <div>
+            <label className="text-base font-semibold block mb-2">
+              Type of claim
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {CLAIM_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => { setClaimType(type); setErrors((p) => ({ ...p, claimType: undefined })); }}
+                  className={`px-4 py-3 rounded-lg border-2 text-sm font-medium text-left transition-all ${
+                    claimType === type
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background hover:border-primary/50"
+                  }`}
                 >
-                  {createCase.isPending ? "Creating your case…" : i18n.newCase.createBtn}
-                </Button>
-              </div>
+                  {type}
+                </button>
+              ))}
+            </div>
+            {errors.claimType && <p className="text-sm text-destructive mt-1">{errors.claimType}</p>}
+          </div>
 
-            </form>
-          </Form>
+          {/* County — optional */}
+          <div>
+            <label className="text-base font-semibold block mb-2">
+              County{" "}
+              <span className="text-muted-foreground font-normal text-sm">(optional — can set later)</span>
+            </label>
+            <select
+              className="w-full h-14 px-3 rounded-md border border-input bg-background text-base"
+              value={countyId}
+              onChange={(e) => setCountyId(e.target.value)}
+            >
+              <option value="">Select a county (optional)</option>
+              {counties?.map((county) => (
+                <option key={county.id} value={county.id}>
+                  {county.name} County
+                </option>
+              ))}
+            </select>
+            <p className="text-sm text-muted-foreground mt-1">
+              Usually where the defendant lives or where the incident happened.
+            </p>
+          </div>
+
+          {/* Submit */}
+          <Button
+            type="button"
+            className="w-full h-14 text-lg font-bold"
+            disabled={createCase.isPending}
+            onClick={handleSubmit}
+          >
+            {createCase.isPending ? "Creating your case…" : "Create My Case →"}
+          </Button>
+
         </CardContent>
       </Card>
     </div>
