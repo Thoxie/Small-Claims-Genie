@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode, useEffect } from "react";
-import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
@@ -102,33 +102,45 @@ function PublicRoutes() {
 }
 
 // ── Protected app (requires sign-in) ─────────────────────────────────────────
+// Waits for Clerk to fully load before deciding to redirect — prevents
+// the auth state flash that was bouncing users mid sign-up flow.
 function ProtectedRouter() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const [location] = useLocation();
+
+  // While Clerk is still initialising, render nothing so we don't flash
+  // a redirect before the session is known.
+  if (!isLoaded) return null;
+
+  if (!isSignedIn) {
+    // Preserve the intended destination so we can redirect back after login
+    const returnTo = location !== "/sign-in" && location !== "/sign-up"
+      ? `?redirect=${encodeURIComponent(location)}`
+      : "";
+    return <Redirect to={`/sign-in${returnTo}`} />;
+  }
+
   return (
     <>
-      <SignedIn>
-        <AuthTokenBridge />
-        <Layout>
-          <Switch>
-            <Route path="/" component={Landing} />
-            <Route path="/dashboard" component={Dashboard} />
-            <Route path="/resume" component={Resume} />
-            <Route path="/cases/new" component={NewCase} />
-            <Route path="/cases/:id" component={CaseWorkspace} />
-            <Route path="/counties" component={Counties} />
-            <Route path="/resources" component={Resources} />
-            <Route path="/how-it-works" component={HowItWorks} />
-            <Route path="/faq" component={FAQ} />
-            <Route path="/types-of-cases" component={TypesOfCases} />
-            <Route path="/terms" component={Terms} />
-            <Route path="/tos" component={TermsOfService} />
-            <Route path="/sc100" component={SC100Generator} />
-            <Route component={NotFound} />
-          </Switch>
-        </Layout>
-      </SignedIn>
-      <SignedOut>
-        <Redirect to="/sign-in" />
-      </SignedOut>
+      <AuthTokenBridge />
+      <Layout>
+        <Switch>
+          <Route path="/" component={Landing} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/resume" component={Resume} />
+          <Route path="/cases/new" component={NewCase} />
+          <Route path="/cases/:id" component={CaseWorkspace} />
+          <Route path="/counties" component={Counties} />
+          <Route path="/resources" component={Resources} />
+          <Route path="/how-it-works" component={HowItWorks} />
+          <Route path="/faq" component={FAQ} />
+          <Route path="/types-of-cases" component={TypesOfCases} />
+          <Route path="/terms" component={Terms} />
+          <Route path="/tos" component={TermsOfService} />
+          <Route path="/sc100" component={SC100Generator} />
+          <Route component={NotFound} />
+        </Switch>
+      </Layout>
     </>
   );
 }
