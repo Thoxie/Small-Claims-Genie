@@ -136,27 +136,29 @@ function drawPage2(
   // ── Page header bar (plaintiff name + case number repeated top of every page) ─
   // "Plaintiff (list names):" label xMax=130.094, yMax=47.433 → pdf_y=744.6
   v(c.plaintiffName, 132, 745);
-  // "Case Number:" label xMax=459.891, yMax=46.829 → pdf_y=745.2
-  v(c.caseNumber, 462, 745);
+  // "Case Number:" label xMin=459.891, label width≈52pt → data AFTER label at x=515
+  v(c.caseNumber, 515, 745);
 
   // ── Item 1 — Plaintiff ────────────────────────────────────────────────────
   // "Name:" label xMax=92.326, yMax=117.763 → pdf_y=674
   v(c.plaintiffName, 95, 674);
-  // "Phone:" label xMax=419.899, yMax=118.069 → pdf_y=674
-  v(c.plaintiffPhone, 422, 674);
+  // "Phone:" label xMin=419.899, label width≈25pt → data AFTER label at x=455
+  v(c.plaintiffPhone, 455, 674);
 
-  // Primary address — "Street" sub-label yMin=140.958 → data at pdf_y=792-140.958=651
-  v(c.plaintiffAddress, 133, 651);
-  v(c.plaintiffCity,    373, 651);
-  v(c.plaintiffState || "CA", 476, 651);
-  v(c.plaintiffZip,    503, 651);
+  // Primary address — fill line sits 4pt above the "Street" sub-label baseline
+  // "Street" sub-label yMin=140.958 → pdf_y=651; fill line at y=655
+  v(c.plaintiffAddress,       133, 655);
+  v(c.plaintiffCity,          373, 655);
+  v(c.plaintiffState || "CA", 476, 655);
+  v(c.plaintiffZip,           503, 655);
 
-  // Mailing address — "Street" sub-label yMin=169.793 → pdf_y=622
+  // Mailing address — fill line 4pt above mailing "Street" sub-label
+  // sub-label yMin=169.793 → pdf_y=622; fill line at y=626
   if (c.plaintiffMailingAddress) {
-    v(c.plaintiffMailingAddress,        197, 622);
-    v(c.plaintiffMailingCity,           373, 622);
-    v(c.plaintiffMailingState || "CA",  476, 622);
-    v(c.plaintiffMailingZip,            503, 622);
+    v(c.plaintiffMailingAddress,        197, 626);
+    v(c.plaintiffMailingCity,           373, 626);
+    v(c.plaintiffMailingState || "CA",  476, 626);
+    v(c.plaintiffMailingZip,            503, 626);
   }
 
   // Email — "Email address (if available):" xMax≈188, yMax=192.207 → pdf_y=600
@@ -165,21 +167,23 @@ function drawPage2(
   // ── Item 2 — Defendant ───────────────────────────────────────────────────
   // "Name:" xMax=92.323, yMax=402.305 → pdf_y=390
   v(c.defendantName, 95, 390);
-  // "Phone:" xMax=417.087, yMax=402.614 → pdf_y=390
-  v(c.defendantPhone, 420, 390);
+  // "Phone:" label xMin=417.087, label width≈25pt → data AFTER label at x=455
+  v(c.defendantPhone, 455, 390);
 
-  // Primary address — "Street" sub-label yMin=424.905 → pdf_y=367
-  v(c.defendantAddress,        133, 367);
-  v(c.defendantCity,           372, 367);
-  v(c.defendantState || "CA",  473, 367);
-  v(c.defendantZip,            500, 367);
+  // Primary address — fill line 4pt above "Street" sub-label
+  // sub-label yMin=424.905 → pdf_y=367; fill line at y=371
+  v(c.defendantAddress,        133, 371);
+  v(c.defendantCity,           372, 371);
+  v(c.defendantState || "CA",  473, 371);
+  v(c.defendantZip,            500, 371);
 
-  // Mailing address — "Street" sub-label yMin=453.144 → pdf_y=339
+  // Mailing address — fill line 4pt above mailing "Street" sub-label
+  // sub-label yMin=453.144 → pdf_y=339; fill line at y=343
   if (c.defendantMailingAddress) {
-    v(c.defendantMailingAddress,       215, 339);
-    v(c.defendantMailingCity,          372, 339);
-    v(c.defendantMailingState || "CA", 473, 339);
-    v(c.defendantMailingZip,           500, 339);
+    v(c.defendantMailingAddress,       215, 343);
+    v(c.defendantMailingCity,          372, 343);
+    v(c.defendantMailingState || "CA", 473, 343);
+    v(c.defendantMailingZip,           500, 343);
   }
 
   // Agent for service (corporation / LLC / public entity)
@@ -227,7 +231,7 @@ function drawPage3(
 
   // Page header bar
   v(c.plaintiffName, 132, 745);
-  v(c.caseNumber,    462, 745);
+  v(c.caseNumber,    515, 745);
 
   // ── Item 3b — When did this happen? ──────────────────────────────────────
   // "(Date):" xMax=214.716, yMax=101.797 → pdf_y=690
@@ -329,7 +333,7 @@ function drawPage4(
 
   // Page header bar
   v(c.plaintiffName, 132, 745);
-  v(c.caseNumber,    462, 745);
+  v(c.caseNumber,    515, 745);
 
   // ── Item 9 — Filed more than 12 small claims in past 12 months? ──────────
   // "Yes" xMin=77.902, yMax=119.540 → pdf_y=672.5; checkbox center x=71
