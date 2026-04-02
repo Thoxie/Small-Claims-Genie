@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, sum, avg } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable } from "@workspace/db";
 import {
@@ -10,6 +10,10 @@ import {
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { chatMessagesTable } from "@workspace/db";
 import { documentsTable } from "@workspace/db";
+
+function getUserId(req: any): string {
+  return req.userId as string;
+}
 
 async function recalcReadiness(caseId: number): Promise<number> {
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, caseId));
@@ -41,13 +45,25 @@ async function recalcReadiness(caseId: number): Promise<number> {
 
 const router: IRouter = Router();
 
-router.get("/cases", async (_req, res): Promise<void> => {
-  const cases = await db.select().from(casesTable).orderBy(desc(casesTable.updatedAt));
+// List all cases for the current user
+router.get("/cases", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const cases = await db
+    .select()
+    .from(casesTable)
+    .where(eq(casesTable.userId, userId))
+    .orderBy(desc(casesTable.updatedAt));
   res.json(cases);
 });
 
-router.get("/cases/stats", async (_req, res): Promise<void> => {
-  const cases = await db.select().from(casesTable).orderBy(desc(casesTable.updatedAt));
+// Stats for the current user's cases
+router.get("/cases/stats", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const cases = await db
+    .select()
+    .from(casesTable)
+    .where(eq(casesTable.userId, userId))
+    .orderBy(desc(casesTable.updatedAt));
 
   const byStatus: Record<string, number> = {};
   let totalClaimAmount = 0;
@@ -59,18 +75,18 @@ router.get("/cases/stats", async (_req, res): Promise<void> => {
     totalReadiness += c.readinessScore ?? 0;
   }
 
-  const stats = {
+  res.json({
     total: cases.length,
     byStatus,
     totalClaimAmount,
     avgReadinessScore: cases.length > 0 ? Math.round(totalReadiness / cases.length) : 0,
     recentCases: cases.slice(0, 5),
-  };
-
-  res.json(stats);
+  });
 });
 
+// Create a new case owned by the current user
 router.post("/cases", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const parsed = CreateCaseBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -80,6 +96,7 @@ router.post("/cases", async (req, res): Promise<void> => {
   const [newCase] = await db
     .insert(casesTable)
     .values({
+      userId,
       title: parsed.data.title,
       claimType: parsed.data.claimType ?? null,
       countyId: parsed.data.countyId ?? null,
@@ -90,19 +107,18 @@ router.post("/cases", async (req, res): Promise<void> => {
   res.status(201).json(newCase);
 });
 
+// Get a single case — ownership check enforced
 router.get("/cases/:id", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
-  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
-  if (!caseRecord) {
-    res.status(404).json({ error: "Case not found" });
-    return;
-  }
+  const [caseRecord] = await db
+    .select()
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
 
   const documents = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
   const chatMessages = await db.select().from(chatMessagesTable).where(eq(chatMessagesTable.caseId, id));
@@ -110,83 +126,75 @@ router.get("/cases/:id", async (req, res): Promise<void> => {
   res.json({ ...caseRecord, documents, chatMessages });
 });
 
+// Update a case — ownership check enforced
 router.patch("/cases/:id", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
   const parsed = UpdateCaseBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
-  const updateData: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(parsed.data)) {
-    if (value !== undefined) {
-      const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-      updateData[snakeKey] = value;
-    }
-  }
+  // Verify ownership first
+  const [existing] = await db
+    .select({ id: casesTable.id })
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!existing) { res.status(404).json({ error: "Case not found" }); return; }
 
   const [updated] = await db
     .update(casesTable)
     .set(parsed.data as Parameters<typeof db.update>[0] extends Parameters<typeof db.update>[0] ? Record<string, unknown> : never)
-    .where(eq(casesTable.id, id))
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)))
     .returning();
 
-  if (!updated) {
-    res.status(404).json({ error: "Case not found" });
-    return;
-  }
+  if (!updated) { res.status(404).json({ error: "Case not found" }); return; }
 
   await recalcReadiness(id);
   const [fresh] = await db.select().from(casesTable).where(eq(casesTable.id, id));
   res.json(fresh ?? updated);
 });
 
+// Delete a case — ownership check enforced
 router.delete("/cases/:id", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
-  const [deleted] = await db.delete(casesTable).where(eq(casesTable.id, id)).returning();
-  if (!deleted) {
-    res.status(404).json({ error: "Case not found" });
-    return;
-  }
+  const [deleted] = await db
+    .delete(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)))
+    .returning();
+  if (!deleted) { res.status(404).json({ error: "Case not found" }); return; }
 
   res.sendStatus(204);
 });
 
+// Save intake progress — ownership check enforced
 router.patch("/cases/:id/intake", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
   const parsed = SaveIntakeProgressBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+
+  // Verify ownership
+  const [existing] = await db
+    .select({ id: casesTable.id })
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!existing) { res.status(404).json({ error: "Case not found" }); return; }
 
   const { step, data, intakeComplete } = parsed.data;
-
   const updatePayload: Record<string, unknown> = {
     intakeStep: step,
     ...(intakeComplete !== undefined && { intakeComplete }),
     ...(intakeComplete && { status: "intake_complete" }),
   };
-
   if (data && typeof data === "object") {
     Object.assign(updatePayload, data);
   }
@@ -194,32 +202,28 @@ router.patch("/cases/:id/intake", async (req, res): Promise<void> => {
   const [updated] = await db
     .update(casesTable)
     .set(updatePayload as Parameters<typeof casesTable.$inferSelect>[0])
-    .where(eq(casesTable.id, id))
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)))
     .returning();
 
-  if (!updated) {
-    res.status(404).json({ error: "Case not found" });
-    return;
-  }
+  if (!updated) { res.status(404).json({ error: "Case not found" }); return; }
 
   await recalcReadiness(id);
   const [fresh] = await db.select().from(casesTable).where(eq(casesTable.id, id));
   res.json(fresh ?? updated);
 });
 
+// Readiness score — ownership check enforced
 router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
-  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
-  if (!caseRecord) {
-    res.status(404).json({ error: "Case not found" });
-    return;
-  }
+  const [caseRecord] = await db
+    .select()
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
 
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
 
@@ -249,7 +253,7 @@ router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
   if (caseRecord.plaintiffName && caseRecord.plaintiffAddress) strengths.push("Your contact information is complete");
   if (caseRecord.defendantName && caseRecord.defendantAddress) strengths.push("Defendant information is on file");
   if (caseRecord.claimDescription && caseRecord.claimDescription.length > 100) strengths.push("Detailed claim description provided");
-  if (docs.length > 0) strengths.push(`${docs.length} supporting document${docs.length > 1 ? 's' : ''} uploaded`);
+  if (docs.length > 0) strengths.push(`${docs.length} supporting document${docs.length > 1 ? "s" : ""} uploaded`);
   if (caseRecord.priorDemandMade) strengths.push("Prior demand to defendant was made");
 
   if (docs.length === 0) weaknesses.push("No supporting documents uploaded");
@@ -265,7 +269,7 @@ router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
 
   const filingGuidance = score >= 80
     ? "Your case appears ready to file. Download your SC-100 form, review it carefully, then bring it to your county courthouse."
-    : `Complete the missing fields and upload supporting documents to improve your readiness score. You need a score of 80+ to be ready to file.`;
+    : "Complete the missing fields and upload supporting documents to improve your readiness score. You need a score of 80+ to be ready to file.";
 
   await db.update(casesTable).set({ readinessScore: score }).where(eq(casesTable.id, id));
 
