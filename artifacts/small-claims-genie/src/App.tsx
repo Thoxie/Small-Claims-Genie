@@ -101,6 +101,18 @@ function PublicRoutes() {
   );
 }
 
+// ── Loading screen ────────────────────────────────────────────────────────────
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ddf6f3] to-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+        <p className="text-muted-foreground text-sm font-medium">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
 // ── Protected app (requires sign-in) ─────────────────────────────────────────
 // Waits for Clerk to fully load before deciding to redirect — prevents
 // the auth state flash that was bouncing users mid sign-up flow.
@@ -108,9 +120,8 @@ function ProtectedRouter() {
   const { isLoaded, isSignedIn } = useAuth();
   const [location] = useLocation();
 
-  // While Clerk is still initialising, render nothing so we don't flash
-  // a redirect before the session is known.
-  if (!isLoaded) return null;
+  // While Clerk is still initialising, show a spinner instead of blank.
+  if (!isLoaded) return <LoadingScreen />;
 
   if (!isSignedIn) {
     // Preserve the intended destination so we can redirect back after login

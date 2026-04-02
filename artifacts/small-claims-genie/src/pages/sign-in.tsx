@@ -1,5 +1,7 @@
 import { SignIn } from "@clerk/clerk-react";
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ddf6f3] to-white p-4">
@@ -10,9 +12,9 @@ export default function SignInPage() {
         </div>
         <SignIn
           routing="path"
-          path="/sign-in"
-          signUpUrl="/sign-up"
-          fallbackRedirectUrl="/dashboard"
+          path={`${base}/sign-in`}
+          signUpUrl={`${base}/sign-up`}
+          fallbackRedirectUrl={`${base}/dashboard`}
           appearance={{
             elements: {
               rootBox: "w-full",
