@@ -101,3 +101,19 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 - `SESSION_SECRET` — session secret (Phase 2)
 - `PORT` — server port (auto-assigned per artifact)
 - `BASE_PATH` — base URL path for frontend routing
+
+## Testing & Publishing
+
+Before every publish, run the smoke test and follow the manual checklist:
+
+```bash
+bash scripts/smoke-test.sh   # 10 automated API checks (~10 seconds)
+```
+
+Then follow `PUBLISH_CHECKLIST.md` for the manual UI steps.
+
+### Known Regression Patterns
+- **Chat blank on send** — raw `fetch` in `ChatTab` (workspace.tsx) must use `useAuth().getToken()` and attach `Authorization: Bearer <token>`
+- **POST /api/cases returns 401** — Vite proxy in `vite.config.ts` must be active; restart the frontend workflow if missing
+- **Auth stripping on POST** — Replit's internal proxy strips auth headers from POST requests; the Vite proxy (`/api → localhost:18080`) is the fix
+- **All API calls 401** — `AuthTokenBridge` in `App.tsx` sets `setAuthTokenGetter(() => getToken())` synchronously via `useMemo`
