@@ -29,7 +29,7 @@ export default function Landing() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-11 px-8 text-base rounded-full font-semibold border-primary/20 text-primary hover:bg-white/60 bg-white/40">
-              <Link href="/dashboard">Resume Your Case</Link>
+              <Link href="/resume">Resume Your Case</Link>
             </Button>
           </div>
         </div>
