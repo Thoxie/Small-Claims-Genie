@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode, useEffect } from "react";
+import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
@@ -81,10 +81,16 @@ class ErrorBoundary extends Component<
 function AuthTokenBridge() {
   const { getToken } = useAuth();
 
-  useEffect(() => {
+  // Set synchronously during render so the token getter is available
+  // before any child components mount and fire their first API requests.
+  useMemo(() => {
     setAuthTokenGetter(() => getToken());
-    return () => setAuthTokenGetter(null);
   }, [getToken]);
+
+  // Clean up when unmounted (sign-out / ClerkProvider teardown).
+  useEffect(() => {
+    return () => setAuthTokenGetter(null);
+  }, []);
 
   return null;
 }
