@@ -605,12 +605,12 @@ function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNe
 
           {/* State / County / Courthouse — all in one row */}
           <div className="grid grid-cols-3 gap-3">
-            <FormItem>
-              <FormLabel>State</FormLabel>
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">State</label>
               <div className="flex h-10 w-full items-center rounded-md border bg-muted px-3 text-sm font-medium text-muted-foreground select-none">
                 California
               </div>
-            </FormItem>
+            </div>
 
             <FormField control={form.control} name="countyId" render={({ field }) => (
               <FormItem>
