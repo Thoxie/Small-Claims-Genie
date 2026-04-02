@@ -1,30 +1,35 @@
 import { randomUUID } from "crypto";
+import { db } from "@workspace/db";
+import { downloadTokensTable } from "@workspace/db";
+import { eq, and, lt } from "drizzle-orm";
 
-interface DownloadToken {
-  caseId: number;
-  userId: string;
-  expires: number;
-}
+const TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-const store = new Map<string, DownloadToken>();
-
-const TTL_MS = 2 * 60 * 1000; // 2 minutes
-
-export function createDownloadToken(caseId: number, userId: string): string {
+export async function createDownloadToken(caseId: number, userId: string): Promise<string> {
   const token = randomUUID();
-  store.set(token, { caseId, userId, expires: Date.now() + TTL_MS });
-  // Lazy cleanup of expired tokens
-  for (const [k, v] of store) {
-    if (v.expires < Date.now()) store.delete(k);
-  }
+  const expiresAt = new Date(Date.now() + TTL_MS);
+
+  await db.insert(downloadTokensTable).values({ token, caseId, userId, expiresAt });
+
+  // Lazy cleanup: delete expired tokens older than 10 minutes
+  await db.delete(downloadTokensTable).where(lt(downloadTokensTable.expiresAt, new Date(Date.now() - TTL_MS)));
+
   return token;
 }
 
-export function redeemDownloadToken(token: string, caseId: number): string | null {
-  const entry = store.get(token);
+export async function redeemDownloadToken(token: string, caseId: number): Promise<string | null> {
+  const [entry] = await db
+    .select()
+    .from(downloadTokensTable)
+    .where(and(eq(downloadTokensTable.token, token), eq(downloadTokensTable.caseId, caseId)));
+
   if (!entry) return null;
-  if (entry.caseId !== caseId) return null;
-  if (entry.expires < Date.now()) { store.delete(token); return null; }
-  store.delete(token); // single-use
+  if (entry.expiresAt < new Date()) {
+    await db.delete(downloadTokensTable).where(eq(downloadTokensTable.token, token));
+    return null;
+  }
+
+  // Single-use: delete immediately after redeeming
+  await db.delete(downloadTokensTable).where(eq(downloadTokensTable.token, token));
   return entry.userId;
 }

@@ -12,7 +12,7 @@ const router: IRouter = Router();
 async function resolveDownloadUser(req: Request, res: Response, caseId: number): Promise<string | null> {
   const queryToken = req.query.token as string | undefined;
   if (queryToken) {
-    const userId = redeemDownloadToken(queryToken, caseId);
+    const userId = await redeemDownloadToken(queryToken, caseId);
     if (!userId) { res.status(403).json({ error: "Invalid or expired download link. Please try again." }); return null; }
     return userId;
   }
@@ -156,6 +156,8 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
 
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+
+  try {
 
   const pdfDoc = await PDFDocument.create();
   const bold  = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -649,6 +651,12 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   res.setHeader("Content-Disposition", `attachment; filename="SC100-Case-${id}-Draft.pdf"`);
   res.setHeader("Content-Length", pdfBytes.length);
   res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("SC-100 PDF generation error:", err?.message ?? err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Failed to generate SC-100 PDF. Please try again." });
+    }
+  }
 });
 
 // ── Preview endpoint ───────────────────────────────────────────────────────────

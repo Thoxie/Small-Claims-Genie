@@ -9,7 +9,7 @@ router.post("/cases/:id/forms/download-token", async (req, res): Promise<void> =
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const caseId = parseInt(raw, 10);
   if (isNaN(caseId)) { res.status(400).json({ error: "Invalid case ID" }); return; }
-  const token = createDownloadToken(caseId, userId);
+  const token = await createDownloadToken(caseId, userId);
   res.json({ token });
 });
 
