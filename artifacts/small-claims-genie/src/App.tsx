@@ -136,10 +136,10 @@ function ProtectedRouter() {
 function Router() {
   return (
     <Switch>
-      {/* Auth pages don't use the main Layout */}
-      <Route path="/sign-in" component={SignInPage} />
-      <Route path="/sign-up" component={SignUpPage} />
-      <Route path="/sign-in/sso-callback" component={SignInPage} />
+      {/* Auth pages — match the base path AND all sub-paths Clerk uses
+          for multi-step flows (e.g. /sign-up/verify-email-address) */}
+      <Route path="/sign-in/:rest*" component={SignInPage} />
+      <Route path="/sign-up/:rest*" component={SignUpPage} />
       {/* Everything else requires auth */}
       <Route>
         <ProtectedRouter />
