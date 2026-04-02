@@ -40,7 +40,6 @@ import ReactMarkdown from "react-markdown";
 import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { getGetCaseQueryKey } from "@workspace/api-client-react";
 
 // ─── Phone formatter ──────────────────────────────────────────────────────────
 function formatPhone(value: string): string {
