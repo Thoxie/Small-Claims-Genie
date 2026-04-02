@@ -11,6 +11,9 @@ import {
   useGetChatHistory,
   getListDocumentsQueryKey,
   getGetCaseReadinessQueryKey,
+  getGetCaseQueryKey,
+  getListCasesQueryKey,
+  getGetCaseStatsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -251,12 +254,19 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+    queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
+    queryClient.invalidateQueries({ queryKey: getListCasesQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetCaseStatsQueryKey() });
+  };
+
   const handleNext = (data: any) => {
     const nextStep = Math.min(step + 1, 7);
     saveIntake.mutate({ id: caseId, data: { step: nextStep, data } }, {
       onSuccess: () => {
         setStep(nextStep);
-        queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+        invalidateAll();
       },
       onError: (err: any) => {
         toast({
@@ -272,8 +282,7 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
     saveIntake.mutate({ id: caseId, data: { step: 7, intakeComplete: true } }, {
       onSuccess: () => {
         toast({ title: "Intake Complete", description: "Your information has been saved." });
-        queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
-        queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
+        invalidateAll();
       }
     });
   };
@@ -786,12 +795,18 @@ function DocumentsTab({ caseId }: { caseId: number }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const invalidateDocAndScore = () => {
+    queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });
+    queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
+    queryClient.invalidateQueries({ queryKey: getListCasesQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetCaseStatsQueryKey() });
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
     await uploadDoc.mutateAsync({ id: caseId, data: { file, label: file.name } });
-    queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });
-    queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
+    invalidateDocAndScore();
     toast({ title: "Document uploaded", description: "OCR text extraction is running in the background." });
     e.target.value = "";
   };
@@ -799,8 +814,7 @@ function DocumentsTab({ caseId }: { caseId: number }) {
   const handleDelete = (docId: number) => {
     deleteDoc.mutate({ id: caseId, docId }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });
-        queryClient.invalidateQueries({ queryKey: getGetCaseReadinessQueryKey(caseId) });
+        invalidateDocAndScore();
       }
     });
   };

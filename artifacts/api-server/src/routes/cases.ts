@@ -11,6 +11,34 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { chatMessagesTable } from "@workspace/db";
 import { documentsTable } from "@workspace/db";
 
+async function recalcReadiness(caseId: number): Promise<number> {
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, caseId));
+  if (!caseRecord) return 0;
+  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, caseId));
+
+  const required = [
+    caseRecord.plaintiffName,
+    caseRecord.plaintiffAddress,
+    caseRecord.defendantName,
+    caseRecord.defendantAddress,
+    caseRecord.claimAmount,
+    caseRecord.claimDescription,
+    caseRecord.incidentDate,
+    caseRecord.howAmountCalculated,
+    caseRecord.priorDemandMade != null ? true : null,
+    caseRecord.countyId,
+    caseRecord.venueBasis,
+  ];
+  const filled = required.filter(Boolean).length;
+  const intakeScore = Math.round((filled / required.length) * 60);
+  const docScore = Math.min(docs.length * 10, 30);
+  const demandScore = caseRecord.priorDemandMade ? 10 : 0;
+  const score = intakeScore + docScore + demandScore;
+
+  await db.update(casesTable).set({ readinessScore: score }).where(eq(casesTable.id, caseId));
+  return score;
+}
+
 const router: IRouter = Router();
 
 router.get("/cases", async (_req, res): Promise<void> => {
@@ -115,7 +143,9 @@ router.patch("/cases/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(updated);
+  await recalcReadiness(id);
+  const [fresh] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  res.json(fresh ?? updated);
 });
 
 router.delete("/cases/:id", async (req, res): Promise<void> => {
@@ -172,7 +202,9 @@ router.patch("/cases/:id/intake", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(updated);
+  await recalcReadiness(id);
+  const [fresh] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  res.json(fresh ?? updated);
 });
 
 router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
