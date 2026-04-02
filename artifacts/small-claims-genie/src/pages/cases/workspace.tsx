@@ -24,6 +24,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,6 +38,66 @@ import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Tra
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetCaseQueryKey } from "@workspace/api-client-react";
+
+// ─── Phone formatter ──────────────────────────────────────────────────────────
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+  if (digits.length === 0) return "";
+  if (digits.length <= 3) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+// ─── Date range picker ────────────────────────────────────────────────────────
+function DateRangePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [range, setRange] = useState<DateRange | undefined>(() => {
+    if (!value) return undefined;
+    const parts = value.split(" – ");
+    const from = parts[0] ? new Date(parts[0]) : undefined;
+    const to = parts[1] ? new Date(parts[1]) : undefined;
+    return from && !isNaN(from.getTime()) ? { from, to: to && !isNaN(to.getTime()) ? to : undefined } : undefined;
+  });
+
+  const handleSelect = (r: DateRange | undefined) => {
+    setRange(r);
+    if (r?.from && r?.to) {
+      onChange(`${format(r.from, "MM/dd/yyyy")} – ${format(r.to, "MM/dd/yyyy")}`);
+      setOpen(false);
+    } else if (r?.from && !r?.to) {
+      onChange(format(r.from, "MM/dd/yyyy"));
+    }
+  };
+
+  const label = range?.from
+    ? range.to
+      ? `${format(range.from, "MMM d, yyyy")} – ${format(range.to, "MMM d, yyyy")}`
+      : format(range.from, "MMM d, yyyy")
+    : "Select date or date range";
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={`w-full justify-start text-left font-normal ${!range?.from ? "text-muted-foreground" : ""}`}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+          {label}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="range"
+          selected={range}
+          onSelect={handleSelect}
+          numberOfMonths={2}
+          disabled={(date) => date > new Date()}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 // ─── Intake Zod Schemas (mapped 1-to-1 to SC-100 fields) ─────────────────────
 const intakeStep1Schema = z.object({
@@ -253,7 +318,18 @@ function Step1({ initialData, onNext }: { initialData: any, onNext: (d: any) => 
           )} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="plaintiffPhone" render={({ field }) => (
-              <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="(555) 555-5555"
+                    value={field.value}
+                    onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
             <FormField control={form.control} name="plaintiffEmail" render={({ field }) => (
               <FormItem><FormLabel>Email (Optional)</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
@@ -324,7 +400,18 @@ function Step2({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
           )}
 
           <FormField control={form.control} name="defendantPhone" render={({ field }) => (
-            <FormItem><FormLabel>Phone Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem>
+              <FormLabel>Phone Number (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="(555) 555-5555"
+                  value={field.value}
+                  onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )} />
           <FormField control={form.control} name="defendantAddress" render={({ field }) => (
             <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -386,7 +473,14 @@ function Step3({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
           </div>
           
           <FormField control={form.control} name="incidentDate" render={({ field }) => (
-            <FormItem><FormLabel>When did this happen? (Date or Date Range)</FormLabel><FormControl><Input type="text" placeholder="e.g. June 2023 or 05/10/2023" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem>
+              <FormLabel>When did this happen?</FormLabel>
+              <FormControl>
+                <DateRangePicker value={field.value} onChange={field.onChange} />
+              </FormControl>
+              <p className="text-xs text-muted-foreground">Click a start date, then click an end date to select a range. Click one date for a single day.</p>
+              <FormMessage />
+            </FormItem>
           )} />
 
           <FormField control={form.control} name="claimDescription" render={({ field }) => (
