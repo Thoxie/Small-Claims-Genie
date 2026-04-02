@@ -1,7 +1,7 @@
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
+import { CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 
 const TEAL = "#ddf6f3";
@@ -107,19 +107,6 @@ export default function Landing() {
           </p>
           <Button asChild size="lg" className="h-11 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg">
             <Link href="/cases/new"><Wand2 className="mr-2 h-4 w-4" />Start Your Case Free</Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* ── Counties ── */}
-      <section className="px-4 py-7 bg-white border-y border-gray-100">
-        <div className="container mx-auto max-w-5xl text-center">
-          <h2 className="text-xl font-bold mb-1.5 text-primary">All 58 California Counties</h2>
-          <p className="text-muted-foreground mb-4 text-sm max-w-xl mx-auto">
-            Courthouse addresses, filing fees, and phone numbers for every county.
-          </p>
-          <Button asChild variant="outline" size="sm" className="rounded-full border-primary/20 text-primary hover:bg-primary/5">
-            <Link href="/counties">Find My County Courthouse <ArrowRight className="ml-2 h-3.5 w-3.5" /></Link>
           </Button>
         </div>
       </section>
