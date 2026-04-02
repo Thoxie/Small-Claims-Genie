@@ -1128,16 +1128,20 @@ function ChatTab({ caseId }: { caseId: number }) {
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
-      
+      let sseBuffer = "";
+
       if (reader) {
         setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: "" }]);
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n').filter(Boolean);
+          sseBuffer += decoder.decode(value, { stream: true });
+          const lines = sseBuffer.split('\n');
+          // Keep the last (potentially incomplete) line in the buffer
+          sseBuffer = lines.pop() ?? "";
           for (const line of lines) {
-            if (line.startsWith('data: ')) {
+            if (!line.startsWith('data: ')) continue;
+            try {
               const data = JSON.parse(line.slice(6));
               if (data.content) {
                 assistantContent += data.content;
@@ -1146,6 +1150,8 @@ function ChatTab({ caseId }: { caseId: number }) {
                   return [...prev.slice(0, -1), { ...last, content: assistantContent }];
                 });
               }
+            } catch {
+              // Incomplete or malformed chunk — skip, buffer handles it
             }
           }
         }
