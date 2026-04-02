@@ -58,7 +58,7 @@ export const en = {
     tabs: {
       intake: "Intake",
       documents: "Documents",
-      chat: "AI Chat",
+      chat: "Ask The Genie AI",
       demandLetter: "Demand Letter",
       forms: "Forms",
     },
