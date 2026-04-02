@@ -101,21 +101,11 @@ export default function CaseWorkspace() {
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl flex flex-col gap-5">
 
-      {/* Your Cases bar */}
-      <div className="flex items-center justify-between">
-        <Link href="/dashboard" className="inline-flex items-center gap-2 group">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
-            <ArrowLeft className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">Your Cases</p>
-            <p className="text-xs text-muted-foreground leading-tight">Pick up where you left off, or start a new case.</p>
-          </div>
-        </Link>
-        <Link href="/cases/new" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline underline-offset-2 transition-colors">
-          + Start New Case
-        </Link>
-      </div>
+      {/* Your Cases icon */}
+      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors w-fit">
+        <ArrowLeft className="h-4 w-4" />
+        Your Cases
+      </Link>
 
       {/* Case header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-5 rounded-xl border shadow-sm">
