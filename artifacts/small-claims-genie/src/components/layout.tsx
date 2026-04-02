@@ -63,7 +63,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Right side CTAs */}
           <div className="flex items-center gap-3">
             <Button asChild variant="ghost" size="sm" className="hidden sm:flex text-muted-foreground hover:text-primary font-semibold">
-              <Link href="/dashboard">{i18n.nav.dashboard}</Link>
+              <Link href="/resume">{i18n.nav.dashboard}</Link>
             </Button>
             <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-5">
               <Link href="/cases/new">

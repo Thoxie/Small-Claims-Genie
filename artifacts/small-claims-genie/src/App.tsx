@@ -18,6 +18,7 @@ import TypesOfCases from "@/pages/types-of-cases";
 import Terms from "@/pages/terms";
 import TermsOfService from "@/pages/tos";
 import SC100Generator from "@/pages/sc100-generator";
+import Resume from "@/pages/resume";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Landing} />
         <Route path="/dashboard" component={Dashboard} />
+        <Route path="/resume" component={Resume} />
         <Route path="/cases/new" component={NewCase} />
         <Route path="/cases/:id" component={CaseWorkspace} />
         <Route path="/counties" component={Counties} />
