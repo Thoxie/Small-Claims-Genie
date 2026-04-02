@@ -38,7 +38,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -193,7 +193,7 @@ export default function CaseWorkspace() {
 
       {/* Tab navigation — click any tab to switch sections */}
       <Tabs defaultValue="intake" className="w-full">
-        <TabsList className="w-full grid grid-cols-4 h-auto p-1 bg-muted/80 rounded-xl gap-1">
+        <TabsList className="w-full grid grid-cols-5 h-auto p-1 bg-muted/80 rounded-xl gap-1">
           <TabsTrigger
             value="intake"
             className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
@@ -219,6 +219,14 @@ export default function CaseWorkspace() {
             <span>{i18n.workspace.tabs.chat}</span>
           </TabsTrigger>
           <TabsTrigger
+            value="demand-letter"
+            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            data-testid="tab-demand-letter"
+          >
+            <Mail className="h-4 w-4 shrink-0" />
+            <span>{i18n.workspace.tabs.demandLetter}</span>
+          </TabsTrigger>
+          <TabsTrigger
             value="forms"
             className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
             data-testid="tab-forms"
@@ -237,6 +245,9 @@ export default function CaseWorkspace() {
           </TabsContent>
           <TabsContent value="chat" className="p-0 m-0">
             <ChatTab caseId={caseId} />
+          </TabsContent>
+          <TabsContent value="demand-letter" className="p-0 m-0">
+            <DemandLetterTab caseId={caseId} currentCase={currentCase} />
           </TabsContent>
           <TabsContent value="forms" className="p-0 m-0">
             <FormsTab caseId={caseId} currentCase={currentCase} />
@@ -1184,6 +1195,260 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+// ─── Demand Letter Tab ────────────────────────────────────────────────────────
+type DemandLetterTone = "formal" | "firm" | "friendly";
+
+const TONE_META: { value: DemandLetterTone; label: string; description: string }[] = [
+  { value: "formal",   label: "Formal",   description: "Neutral, professional tone — facts stated plainly" },
+  { value: "firm",     label: "Firm",     description: "Assertive & deadline-focused — legal basis emphasized" },
+  { value: "friendly", label: "Friendly", description: "Cooperative tone — prefers settlement over court" },
+];
+
+function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase: any }) {
+  const { getToken } = useAuth();
+  const [text, setText] = useState("");
+  const [tone, setTone] = useState<DemandLetterTone>("formal");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load any previously saved letter on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`/api/cases/${caseId}/demand-letter`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to load");
+        const data = await res.json();
+        if (!cancelled) {
+          if (data.text) setText(data.text);
+          if (data.tone) setTone(data.tone as DemandLetterTone);
+          setLoaded(true);
+        }
+      } catch {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [caseId, getToken]);
+
+  const hasRequiredInfo = !!(currentCase?.plaintiffName && currentCase?.defendantName && currentCase?.claimAmount);
+
+  async function generate() {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    setError(null);
+    setText("");
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/demand-letter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tone }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Generation failed" }));
+        setError(err.error ?? "Generation failed");
+        setIsGenerating(false);
+        return;
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) { setError("Streaming not supported"); setIsGenerating(false); return; }
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const payload = JSON.parse(line.slice(6));
+            if (payload.content) setText(prev => prev + payload.content);
+          } catch { /* skip malformed chunk */ }
+        }
+      }
+    } catch (e: any) {
+      setError(e.message ?? "Unexpected error");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  async function downloadPdf() {
+    if (!text.trim() || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/demand-letter/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) { setError("PDF generation failed"); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `demand-letter.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setError(e.message ?? "Download failed");
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Mail className="h-5 w-5 text-primary" />
+            Demand Letter Generator
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Generate a professional pre-litigation demand letter using your case details.
+          </p>
+        </div>
+        {text.trim() && (
+          <Button
+            onClick={downloadPdf}
+            disabled={isDownloading}
+            className="gap-2 bg-amber-500 hover:bg-amber-600 text-white"
+          >
+            {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Download PDF
+          </Button>
+        )}
+      </div>
+
+      {/* Incomplete intake warning */}
+      {!hasRequiredInfo && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-amber-800 text-sm">Complete Intake First</p>
+            <p className="text-amber-700 text-sm mt-0.5">
+              To generate a demand letter, fill in your name, the defendant's name, and the claim amount in the Intake tab.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Tone selector */}
+      <div>
+        <p className="text-sm font-semibold mb-3">Select Tone</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {TONE_META.map(({ value, label, description }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTone(value)}
+              className={`rounded-lg border-2 p-4 text-left transition-all ${
+                tone === value
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:border-primary/40"
+              }`}
+            >
+              <span className="block font-semibold text-sm">{label}</span>
+              <span className="block text-xs text-muted-foreground mt-1">{description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Generate button */}
+      <Button
+        onClick={generate}
+        disabled={isGenerating || !hasRequiredInfo}
+        className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-5"
+        size="lg"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Generating letter…
+          </>
+        ) : (
+          <>
+            <Mail className="h-4 w-4" />
+            {text.trim() ? "Regenerate Demand Letter" : "Generate Demand Letter"}
+          </>
+        )}
+      </Button>
+
+      {/* Error display */}
+      {error && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
+      {/* Letter output */}
+      {(text.trim() || isGenerating) && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold">Letter Preview</p>
+            <p className="text-xs text-muted-foreground">You can edit the text below before downloading.</p>
+          </div>
+          <Textarea
+            value={text}
+            onChange={e => setText(e.target.value)}
+            className="font-mono text-sm leading-relaxed min-h-[520px] resize-y"
+            placeholder={isGenerating ? "Generating your demand letter…" : ""}
+            readOnly={isGenerating}
+          />
+          {!isGenerating && text.trim() && (
+            <Button
+              onClick={downloadPdf}
+              disabled={isDownloading}
+              className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white mt-2"
+              size="lg"
+            >
+              {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              Download as PDF
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!text.trim() && !isGenerating && loaded && (
+        <div className="rounded-xl border border-dashed border-muted-foreground/30 bg-muted/20 p-12 text-center">
+          <Mail className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground font-medium">No demand letter yet</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Select a tone above and click Generate to create your letter.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

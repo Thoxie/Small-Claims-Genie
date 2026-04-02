@@ -42,6 +42,8 @@ export const casesTable = pgTable("cases", {
   intakeComplete: boolean("intake_complete").default(false),
   documentCount: integer("document_count").default(0),
   readinessScore: integer("readiness_score").default(0),
+  demandLetterText: text("demand_letter_text"),
+  demandLetterTone: text("demand_letter_tone"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

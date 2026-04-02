@@ -59,6 +59,7 @@ export const en = {
       intake: "Intake",
       documents: "Documents",
       chat: "AI Chat",
+      demandLetter: "Demand Letter",
       forms: "Forms",
     },
     backToDashboard: "Back to Dashboard",

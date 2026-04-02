@@ -38,13 +38,14 @@ artifacts/
       chat.ts         # SSE streaming AI chat + buildCaseContext() grounding
       forms.ts        # SC-100 PDF generation (pdf-lib, navy/gold branded)
       transcribe.ts   # POST /api/transcribe — voice audio → Whisper transcription
+      demand-letter.ts # SSE streaming demand letter gen; GET/POST /cases/:id/demand-letter + /pdf
   small-claims-genie/  # React+Vite frontend (previewPath /)
     src/
       pages/
         landing.tsx       # / — Hero, CTA
         dashboard.tsx     # /dashboard — Case list + stats
         cases/new.tsx     # /cases/new — Quick-start form
-        cases/workspace.tsx # /cases/:id — 4-tab workspace
+        cases/workspace.tsx # /cases/:id — 5-tab workspace (Intake/Documents/AI Chat/Demand Letter/Forms)
         counties.tsx      # /counties — County directory
       components/
         layout.tsx        # Nav + footer
