@@ -148,10 +148,12 @@ function ProtectedRouter() {
 function Router() {
   return (
     <Switch>
-      {/* Auth pages — match the base path AND all sub-paths Clerk uses
-          for multi-step flows (e.g. /sign-up/verify-email-address) */}
-      <Route path="/sign-in/:rest*" component={SignInPage} />
-      <Route path="/sign-up/:rest*" component={SignUpPage} />
+      {/* Auth pages: explicit base path + wildcard sub-paths for Clerk
+          multi-step flows (e.g. /sign-up/verify-email-address) */}
+      <Route path="/sign-in" component={SignInPage} />
+      <Route path="/sign-in/*" component={SignInPage} />
+      <Route path="/sign-up" component={SignUpPage} />
+      <Route path="/sign-up/*" component={SignUpPage} />
       {/* Everything else requires auth */}
       <Route>
         <ProtectedRouter />
