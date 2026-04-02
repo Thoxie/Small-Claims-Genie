@@ -621,36 +621,42 @@ function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNe
     <div className="max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step5}</h2>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
+        <form onSubmit={form.handleSubmit((data) => {
+          // Enrich submission with full courthouse details so they're stored on the case
+          onNext({
+            ...data,
+            courthouseName: courtName || null,
+            courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
+            courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
+            courthouseZip: selectedCourthouse?.zip ?? selectedCounty?.courthouseZip ?? null,
+            courthousePhone: courtPhone || null,
+            courthouseWebsite: selectedCounty?.website ?? null,
+            filingFee: filingFee ?? null,
+          });
+        })} className="space-y-6">
 
-          {/* State / County / Courthouse — all in one row */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">State</label>
-              <div className="flex h-10 w-full items-center rounded-md border bg-muted px-3 text-sm font-medium text-muted-foreground select-none">
-                California
-              </div>
-            </div>
+          {/* County (CA) */}
+          <FormField control={form.control} name="countyId" render={({ field }) => (
+            <FormItem>
+              <FormLabel>County (CA)</FormLabel>
+              <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
+                <FormControl><SelectTrigger><SelectValue placeholder="Select your county" /></SelectTrigger></FormControl>
+                <SelectContent className="max-h-72 overflow-y-auto">
+                  {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )} />
 
-            <FormField control={form.control} name="countyId" render={({ field }) => (
-              <FormItem>
-                <FormLabel>County</FormLabel>
-                <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Select county" /></SelectTrigger></FormControl>
-                  <SelectContent className="max-h-72 overflow-y-auto">
-                    {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-
+          {/* Court dropdown — only shown when county has multiple locations */}
+          {selectedCounty && (
             <FormField control={form.control} name="courthouseId" render={({ field }) => (
               <FormItem>
-                <FormLabel>Filing Location</FormLabel>
+                <FormLabel>Court <span className="text-muted-foreground font-normal">(auto-derived from county)</span></FormLabel>
                 {hasMultipleCourthouses ? (
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select courthouse" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select courthouse location" /></SelectTrigger></FormControl>
                     <SelectContent className="max-h-72 overflow-y-auto">
                       {selectedCounty.courthouses.map((ch: any) => (
                         <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
@@ -659,32 +665,34 @@ function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNe
                   </Select>
                 ) : (
                   <div className="flex h-10 w-full items-center rounded-md border bg-muted px-3 text-sm text-muted-foreground">
-                    {selectedCounty ? "Single location" : "Select county first"}
+                    {courtName || "Single courthouse location"}
                   </div>
                 )}
                 <FormMessage />
               </FormItem>
             )} />
-          </div>
+          )}
 
-          {/* Auto-populated court info — compact single strip */}
-          {selectedCounty && (
-            <div className="rounded-lg border bg-muted/40 px-4 py-3 grid grid-cols-4 gap-x-6 gap-y-1 items-start">
-              <div>
-                <p className="text-xs text-muted-foreground">Court Name</p>
-                <p className="text-sm font-medium leading-snug">{courtName || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Address</p>
-                <p className="text-sm font-medium leading-snug">{courtAddress || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Phone</p>
-                <p className="text-sm font-medium">{courtPhone || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Filing Fee</p>
-                <p className="text-sm font-bold text-primary">${filingFee}</p>
+          {/* Auto-populated courthouse info card */}
+          {selectedCounty && courtName && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+              <p className="font-semibold text-sm">{courtName}</p>
+              <p className="text-sm text-muted-foreground">{courtAddress}</p>
+              {selectedCounty.website && (
+                <a
+                  href={selectedCounty.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                >
+                  Clerk / Court site: {selectedCounty.website}
+                </a>
+              )}
+              <div className="pt-1 border-t mt-2">
+                <p className="text-sm text-muted-foreground">
+                  Filing fee for your claim amount:{" "}
+                  <span className="font-bold text-foreground">${filingFee}</span>
+                </p>
               </div>
             </div>
           )}
