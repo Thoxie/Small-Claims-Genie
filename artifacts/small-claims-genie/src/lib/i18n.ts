@@ -31,7 +31,7 @@ export const en = {
     step2Title: "Upload Your Evidence",
     step2Desc: "Securely upload receipts, contracts, texts, and photos. Our AI reads every document so it can help you argue your case.",
     step3Title: "Get Your Forms & File",
-    step3Desc: "Download your completed SC-100, ready to file. Step-by-step filing instructions included for your county courthouse.",
+    step3Desc: "Download your completed demand letter, court ready forms, ready to file. Step-by-step filing instructions included for your county courthouse.",
     pricingTitle: "Simple, Transparent Pricing",
     pricingDesc: "Prepare your entire case for free. Pay only when you're ready to download your final court forms.",
     price: "$49",
