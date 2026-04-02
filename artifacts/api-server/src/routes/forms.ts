@@ -1,148 +1,754 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db } from "@workspace/db";
-import { casesTable } from "@workspace/db";
 import { PDFDocument, StandardFonts, rgb, LineCapStyle } from "pdf-lib";
-import { getUserId, getOwnedCase } from "../lib/owned-case";
+import { getOwnedCase, getUserId } from "../lib/owned-case";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import type { Request, Response } from "express";
 
 const router: IRouter = Router();
 
-async function resolveDownloadUser(req: Request, res: Response, caseId: number): Promise<string | null> {
+// ─── Auth helper ─────────────────────────────────────────────────────────────
+async function resolveDownloadUser(
+  req: Request,
+  res: Response,
+  caseId: number
+): Promise<string | null> {
   const queryToken = req.query.token as string | undefined;
   if (queryToken) {
     const userId = await redeemDownloadToken(queryToken, caseId);
-    if (!userId) { res.status(403).json({ error: "Invalid or expired download link. Please try again." }); return null; }
+    if (!userId) {
+      res.status(403).json({ error: "Invalid or expired download link." });
+      return null;
+    }
     return userId;
   }
   const userId = getUserId(req);
-  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return null; }
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
   return userId;
 }
 
-// ─── Shared drawing helpers ───────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
+const PW = 612;
+const PH = 792;
+const ML = 36;
+const MR = 36;
+const CW = PW - ML - MR; // 540
 
-type DrawCtx = {
-  page: ReturnType<PDFDocument["addPage"]>;
+const BLACK = rgb(0, 0, 0);
+const GRAY  = rgb(0.45, 0.45, 0.45);
+const LGRAY = rgb(0.82, 0.82, 0.82);
+const MGRAY = rgb(0.92, 0.92, 0.92);
+const NAVY  = rgb(0.02, 0.12, 0.38);
+const WHITE = rgb(1, 1, 1);
+const AMBER = rgb(0.55, 0.35, 0);
+
+// ─── Drawing context ─────────────────────────────────────────────────────────
+type Fonts = {
   bold: Awaited<ReturnType<PDFDocument["embedFont"]>>;
-  reg: Awaited<ReturnType<PDFDocument["embedFont"]>>;
-  small: Awaited<ReturnType<PDFDocument["embedFont"]>>;
+  reg:  Awaited<ReturnType<PDFDocument["embedFont"]>>;
 };
 
-const BLACK  = rgb(0,    0,    0);
-const GRAY   = rgb(0.4,  0.4,  0.4);
-const LGRAY  = rgb(0.85, 0.85, 0.85);
-const NAVY   = rgb(0.05, 0.15, 0.35);
-const WHITE  = rgb(1,    1,    1);
+type Ctx = Fonts & { page: ReturnType<PDFDocument["addPage"]> };
 
-const W = 612;   // letter width  pts
-const H = 792;   // letter height pts
-const ML = 36;   // margin left
-const MR = 36;   // margin right
-const CW = W - ML - MR;  // content width
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Draw a rectangle outline */
-function box(ctx: DrawCtx, x: number, y: number, w: number, h: number, lw = 0.5) {
-  ctx.page.drawRectangle({ x, y, width: w, height: h, borderColor: BLACK, borderWidth: lw, color: WHITE });
+function drawRect(ctx: Ctx, x: number, y: number, w: number, h: number,
+  opts: { fill?: ReturnType<typeof rgb>; border?: ReturnType<typeof rgb>; lw?: number } = {}
+) {
+  ctx.page.drawRectangle({
+    x, y, width: w, height: h,
+    color: opts.fill,
+    borderColor: opts.border ?? BLACK,
+    borderWidth: opts.lw ?? 0.5,
+  });
 }
 
-/** Draw a horizontal rule */
-function hline(ctx: DrawCtx, x: number, y: number, w: number, lw = 0.5) {
+function hline(ctx: Ctx, x: number, y: number, w: number, lw = 0.5) {
   ctx.page.drawLine({ start: { x, y }, end: { x: x + w, y }, thickness: lw, color: BLACK });
 }
 
-/** Draw text, returns width */
-function txt(ctx: DrawCtx, text: string, x: number, y: number, size: number, bold = false, color = BLACK, maxWidth?: number) {
-  const font = bold ? ctx.bold : ctx.reg;
-  let t = text;
-  if (maxWidth) {
-    // truncate to fit
-    while (t.length > 0 && font.widthOfTextAtSize(t, size) > maxWidth) {
-      t = t.slice(0, -1);
+function vline(ctx: Ctx, x: number, y: number, h: number, lw = 0.5) {
+  ctx.page.drawLine({ start: { x, y }, end: { x, y: y + h }, thickness: lw, color: BLACK });
+}
+
+/** Draw text — returns the text width. Truncates with ellipsis if maxW given. */
+function t(ctx: Ctx, text: string, x: number, y: number, size: number,
+  opts: { bold?: boolean; color?: ReturnType<typeof rgb>; maxW?: number } = {}
+): number {
+  const font = opts.bold ? ctx.bold : ctx.reg;
+  const col  = opts.color ?? BLACK;
+  let s = text ?? "";
+  if (opts.maxW !== undefined) {
+    while (s.length > 0 && font.widthOfTextAtSize(s, size) > opts.maxW) {
+      s = s.slice(0, -1);
     }
-    if (t.length < text.length) t = t.slice(0, -1) + "…";
+    if (s.length < (text ?? "").length) s = s.slice(0, -3) + "...";
   }
-  ctx.page.drawText(t, { x, y, size, font, color });
-  return font.widthOfTextAtSize(t, size);
+  ctx.page.drawText(s, { x, y, size, font: font, color: col });
+  return font.widthOfTextAtSize(s, size);
 }
 
-/** Draw a checkbox (filled=true draws an X) */
-function checkbox(ctx: DrawCtx, x: number, y: number, filled: boolean) {
-  const s = 7;
-  box(ctx, x, y - s + 1, s, s, 0.6);
-  if (filled) {
-    ctx.page.drawText("✓", { x: x + 0.5, y: y - s + 2, size: 6.5, font: ctx.bold, color: BLACK });
-  }
-}
-
-/** Underline field: label + value on a line */
-function field(ctx: DrawCtx, label: string, value: string | null | undefined,
-               x: number, y: number, lineWidth: number, labelSize = 7, valueSize = 8) {
-  txt(ctx, label, x, y, labelSize, false, GRAY);
-  const labelW = ctx.reg.widthOfTextAtSize(label, labelSize);
-  const vx = x + labelW + 3;
-  const val = value || "";
-  txt(ctx, val, vx, y, valueSize, false, BLACK, lineWidth - labelW - 5);
-  hline(ctx, vx, y - 2, lineWidth - labelW - 3);
-}
-
-/** Multi-line wrapped text, returns final y */
-function multiline(ctx: DrawCtx, text: string, x: number, y: number, maxW: number, size: number, lineH: number, maxLines = 999): number {
+/** Draw wrapped text; returns the y after the last line. */
+function wrap(ctx: Ctx, text: string, x: number, y: number, maxW: number,
+  size: number, lineH: number, maxLines = 999
+): number {
   const words = (text || "").split(/\s+/);
   let line = "";
   let count = 0;
   for (const word of words) {
     const candidate = line ? line + " " + word : word;
     if (ctx.reg.widthOfTextAtSize(candidate, size) > maxW && line) {
-      txt(ctx, line, x, y, size);
+      t(ctx, line, x, y, size);
       y -= lineH;
       count++;
       line = word;
-      if (count >= maxLines) { txt(ctx, "…", x, y, size); y -= lineH; break; }
+      if (count >= maxLines) { t(ctx, "...", x, y, size); y -= lineH; break; }
     } else {
       line = candidate;
     }
   }
-  if (line && count < maxLines) {
-    txt(ctx, line, x, y, size);
-    y -= lineH;
-  }
+  if (line && count < maxLines) { t(ctx, line, x, y, size); y -= lineH; }
   return y;
 }
 
-/** Section item number bubble */
-function itemNum(ctx: DrawCtx, n: string, x: number, y: number) {
-  ctx.page.drawCircle({ x: x + 7, y: y + 3, size: 7, color: NAVY });
-  txt(ctx, n, x + (n.length > 1 ? 3 : 5), y, 7, true, WHITE);
+/** Draw a checkbox (square outline). If checked, draw an X inside. */
+function checkbox(ctx: Ctx, x: number, y: number, checked: boolean) {
+  const s = 7;
+  drawRect(ctx, x, y - s + 1, s, s, { lw: 0.6 });
+  if (checked) {
+    ctx.page.drawLine({ start: { x: x + 1, y: y - s + 2 }, end: { x: x + s - 1, y: y }, thickness: 0.8, color: BLACK });
+    ctx.page.drawLine({ start: { x: x + 1, y: y }, end: { x: x + s - 1, y: y - s + 2 }, thickness: 0.8, color: BLACK });
+  }
 }
 
-// ─── Page header shared across pages 2-4 ─────────────────────────────────────
-function drawPageHeader(ctx: DrawCtx, pageNum: number, plaintiffName: string, caseNumber: string, y: number) {
-  // Top border
-  ctx.page.drawRectangle({ x: 0, y: H - 28, width: W, height: 28, color: NAVY });
-  txt(ctx, "SC-100", 10, H - 20, 11, true, WHITE);
-  txt(ctx, "Plaintiff's Claim and ORDER to Go to Small Claims Court", 65, H - 16, 8, false, WHITE);
-  txt(ctx, `Rev. January 1, 2026`, 65, H - 25, 6.5, false, rgb(0.7,0.7,0.7));
-  txt(ctx, `Page ${pageNum} of 4`, W - 70, H - 20, 7, false, WHITE);
-
-  // Plaintiff name + case number bar
-  ctx.page.drawRectangle({ x: ML, y: y - 14, width: CW, height: 16, color: LGRAY });
-  txt(ctx, "Plaintiff (list names):", ML + 3, y - 8, 7, false, GRAY);
-  const pNameX = ML + ctx.reg.widthOfTextAtSize("Plaintiff (list names): ", 7) + 6;
-  txt(ctx, plaintiffName || "", pNameX, y - 8, 7.5, true, BLACK, 260);
-  txt(ctx, "Case Number:", ML + CW - 130, y - 8, 7, false, GRAY);
-  txt(ctx, caseNumber || "(court assigns)", ML + CW - 75, y - 8, 7, false, GRAY);
-  return y - 28;
+/** Number bubble (circle with number). */
+function bubble(ctx: Ctx, label: string, cx: number, cy: number) {
+  ctx.page.drawCircle({ x: cx, y: cy, size: 7.5, color: NAVY });
+  const lw = ctx.bold.widthOfTextAtSize(label, 6.5);
+  ctx.page.drawText(label, { x: cx - lw / 2, y: cy - 2.5, size: 6.5, font: ctx.bold, color: WHITE });
 }
 
-// ─── DRAFT watermark ──────────────────────────────────────────────────────────
-function drawDraftWatermark(page: ReturnType<PDFDocument["addPage"]>, font: Awaited<ReturnType<PDFDocument["embedFont"]>>) {
-  page.drawText("DRAFT – PREPARED WITH SMALL CLAIMS GENIE", {
-    x: 90, y: H / 2 - 20, size: 28, font,
-    color: rgb(0.85, 0.85, 0.85), opacity: 0.35,
+/** Underline field row: grey label then value text with underline. */
+function labelField(ctx: Ctx, label: string, value: string | null | undefined,
+  x: number, y: number, totalW: number, labelSize = 7, valSize = 8.5
+) {
+  t(ctx, label, x, y, labelSize, { color: GRAY });
+  const lw = ctx.reg.widthOfTextAtSize(label, labelSize);
+  const vx = x + lw + 3;
+  const vw = totalW - lw - 5;
+  t(ctx, value ?? "", vx, y, valSize, { maxW: vw });
+  hline(ctx, vx, y - 2, vw);
+}
+
+// ─── Shared page header (pages 2-4) ──────────────────────────────────────────
+function pageHeader(ctx: Ctx, pageNum: number, plaintiffName: string) {
+  // Navy top bar
+  drawRect(ctx, 0, PH - 24, PW, 24, { fill: NAVY, border: NAVY, lw: 0 });
+  t(ctx, "SC-100", 10, PH - 17, 10, { bold: true, color: WHITE });
+  t(ctx, "Plaintiff's Claim and ORDER to Go to Small Claims Court",
+    65, PH - 13, 7.5, { color: WHITE });
+  t(ctx, "Rev. January 1, 2026",
+    65, PH - 21, 6, { color: rgb(0.65, 0.65, 0.65) });
+  t(ctx, `Page ${pageNum} of 4`, PW - 62, PH - 17, 7, { color: WHITE });
+
+  // Plaintiff / Case # bar
+  const barY = PH - 36;
+  drawRect(ctx, ML, barY - 13, CW, 13, { fill: MGRAY, border: LGRAY });
+  t(ctx, "Plaintiff (list names):", ML + 3, barY - 9, 6.5, { color: GRAY });
+  const lpx = ML + 3 + ctx.reg.widthOfTextAtSize("Plaintiff (list names):", 6.5) + 4;
+  t(ctx, plaintiffName, lpx, barY - 9, 8, { bold: true, maxW: 240 });
+  t(ctx, "Case Number:", PW - 150, barY - 9, 6.5, { color: GRAY });
+  t(ctx, "(court assigns)", PW - 90, barY - 9, 6.5, { color: GRAY });
+
+  return barY - 22;
+}
+
+// ─── Watermark ────────────────────────────────────────────────────────────────
+function watermark(ctx: Ctx) {
+  ctx.page.drawText("DRAFT - SMALL CLAIMS GENIE", {
+    x: 80, y: PH / 2 - 15, size: 30, font: ctx.bold,
+    color: rgb(0.88, 0.88, 0.88), opacity: 0.3,
     rotate: { type: "degrees" as const, angle: 45 },
   });
+}
+
+// ─── Page 1: Cover ───────────────────────────────────────────────────────────
+function drawPage1(ctx: Ctx, c: Record<string, any>) {
+  watermark(ctx);
+
+  const county = (c.countyId ?? "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (l: string) => l.toUpperCase());
+
+  // Top navy banner
+  drawRect(ctx, 0, PH - 58, PW, 58, { fill: NAVY, border: NAVY, lw: 0 });
+  t(ctx, "SC-100", 12, PH - 22, 18, { bold: true, color: WHITE });
+  t(ctx, "Plaintiff's Claim and ORDER", 90, PH - 20, 13, { bold: true, color: WHITE });
+  t(ctx, "to Go to Small Claims Court", 90, PH - 34, 12, { color: WHITE });
+  t(ctx, "Rev. January 1, 2026  |  Judicial Council of California, courts.ca.gov",
+    12, PH - 51, 6.5, { color: rgb(0.65, 0.65, 0.65) });
+
+  // Right column boxes
+  const rX = PW - 192;
+  const rW = 168;
+
+  // Clerk stamp box
+  drawRect(ctx, rX, PH - 128, rW, 68, { lw: 0.7 });
+  t(ctx, "Clerk stamps date here when form is filed.", rX + 5, PH - 72, 6.5, { color: GRAY });
+  hline(ctx, rX + 6, PH - 95, rW - 12, 0.4);
+  hline(ctx, rX + 6, PH - 110, rW - 12, 0.4);
+
+  // Court name box
+  drawRect(ctx, rX, PH - 202, rW, 68, { lw: 0.7 });
+  t(ctx, "Fill in court name and street address:", rX + 5, PH - 143, 6.5, { color: GRAY });
+  t(ctx, "Superior Court of California, County of", rX + 5, PH - 154, 7, { color: BLACK });
+  t(ctx, county || "______________________", rX + 5, PH - 166, 8.5, { bold: true, maxW: rW - 10 });
+  hline(ctx, rX + 6, PH - 174, rW - 12, 0.4);
+  hline(ctx, rX + 6, PH - 186, rW - 12, 0.4);
+
+  // Case number box
+  drawRect(ctx, rX, PH - 232, rW, 28, { lw: 0.7 });
+  t(ctx, "Case Number:", rX + 5, PH - 215, 6.5, { color: GRAY });
+  t(ctx, "Court assigns on filing", rX + 5, PH - 226, 6.5, { color: GRAY });
+
+  // Case name box
+  drawRect(ctx, rX, PH - 263, rW, 28, { lw: 0.7 });
+  t(ctx, "Case Name:", rX + 5, PH - 246, 6.5, { color: GRAY });
+  const caseName = c.plaintiffName
+    ? `${c.plaintiffName} v. ${c.defendantName ?? ""}`
+    : (c.title ?? "");
+  t(ctx, caseName, rX + 5, PH - 257, 7.5, { maxW: rW - 10 });
+
+  // Notice to defendant
+  const noticeW = rX - ML - 8;
+  drawRect(ctx, ML, PH - 263, noticeW, 200, { lw: 0.7 });
+  t(ctx, "Notice to the person being sued:", ML + 5, PH - 73, 8, { bold: true });
+  const notices = [
+    "You are the defendant if your name is listed in 2 on page 2 of this form or on form SC-100A.",
+    "You and the plaintiff must go to court on the trial date listed below.",
+    "If you do not go to court, you may lose the case. If you lose, the court can order that your wages, money, or property be taken to pay this claim.",
+    "Bring witnesses, receipts, and any evidence you need to prove your case.",
+    "Read this form and all pages attached to understand the claim against you and to protect your rights.",
+  ];
+  let ny = PH - 87;
+  for (const n of notices) {
+    t(ctx, "-", ML + 7, ny, 7);
+    ny = wrap(ctx, n, ML + 16, ny, noticeW - 24, 7, 10, 3);
+    ny -= 2;
+  }
+
+  // Aviso (Spanish notice)
+  t(ctx, "Aviso al Demandado:", ML + 5, ny - 4, 8, { bold: true });
+  ny -= 16;
+  const avisos = [
+    "Usted es el Demandado si su nombre figura en 2 de la pagina 2 de este formulario, o en el formulario SC-100A.",
+    "Usted y el Demandante tienen que presentarse en la corte en la fecha del juicio indicada a continuacion.",
+    "Lleve testigos, recibos y cualquier otra prueba que necesite para probar su caso.",
+  ];
+  for (const av of avisos) {
+    t(ctx, "-", ML + 7, ny, 7);
+    ny = wrap(ctx, av, ML + 16, ny, noticeW - 24, 7, 10, 2);
+    ny -= 2;
+  }
+
+  // Order to Go to Court table
+  const tableY = PH - 280;
+  drawRect(ctx, ML, tableY - 66, CW, 66, { lw: 0.7 });
+  drawRect(ctx, ML, tableY - 15, CW, 15, { fill: MGRAY, border: LGRAY });
+  t(ctx, "Order to Go to Court", ML + 5, tableY - 10, 8, { bold: true, color: NAVY });
+  t(ctx, "The people in 1 and 2 must attend court: (Clerk fills out section below.)",
+    ML + 5, tableY - 22, 7);
+  // Column headers
+  t(ctx, "Trial Date", ML + 6, tableY - 33, 6.5, { color: GRAY });
+  t(ctx, "Date", ML + 75, tableY - 33, 6.5, { color: GRAY });
+  t(ctx, "Time", ML + 190, tableY - 33, 6.5, { color: GRAY });
+  t(ctx, "Department", ML + 255, tableY - 33, 6.5, { color: GRAY });
+  t(ctx, "Name and address of court, if different from above",
+    ML + 340, tableY - 33, 6, { color: GRAY });
+  hline(ctx, ML + 4, tableY - 38, CW - 8, 0.3);
+  t(ctx, "1.", ML + 6, tableY - 49, 7);
+  t(ctx, "2.", ML + 6, tableY - 60, 7);
+  t(ctx, "3.", ML + 6, tableY - 71, 7);
+
+  // Vertical dividers in table
+  vline(ctx, ML + 70, tableY - 66, 28, 0.3);
+  vline(ctx, ML + 180, tableY - 66, 28, 0.3);
+  vline(ctx, ML + 245, tableY - 66, 28, 0.3);
+  vline(ctx, ML + 330, tableY - 66, 28, 0.3);
+
+  // Date/Clerk row
+  t(ctx, "Date:", ML + 6, tableY - 80, 7, { color: GRAY });
+  t(ctx, "Clerk, by", ML + 200, tableY - 80, 7, { color: GRAY });
+  t(ctx, ", Deputy", ML + 400, tableY - 80, 7, { color: GRAY });
+
+  // Instructions section
+  const instY = tableY - 94;
+  drawRect(ctx, ML, instY - 148, CW, 148, { lw: 0.7 });
+  drawRect(ctx, ML, instY - 15, CW, 15, { fill: MGRAY, border: LGRAY });
+  t(ctx, "Instructions for the person suing:", ML + 5, instY - 10, 8, { bold: true, color: NAVY });
+  const insts = [
+    "You are the plaintiff. The person you are suing is the defendant.",
+    "Before you fill out this form, read form SC-100-INFO, Information for the Plaintiff, to know your rights. You can get form SC-100-INFO at any courthouse, county law library, or courts.ca.gov.",
+    "Fill out pages 2, 3, and 4 of this form. Make copies of all the pages of this form and any attachments - one for each party named in this case and an extra copy for yourself.",
+    "Take or mail the original and the copies to the court clerk's office and pay the filing fee. The clerk will write the date of your trial in the box above.",
+    "You must have someone at least 18 - not you or anyone else listed in this case - give each defendant a court-stamped copy of all pages of this form. See forms SC-104, SC-104B, and SC-104C.",
+    "Go to court on your trial date listed above. Bring witnesses, receipts, and any evidence you need to prove your case.",
+  ];
+  let iy = instY - 28;
+  for (const inst of insts) {
+    t(ctx, "-", ML + 7, iy, 7);
+    iy = wrap(ctx, inst, ML + 16, iy, CW - 28, 7, 10, 3);
+    iy -= 3;
+  }
+
+  // Footer
+  hline(ctx, 0, 32, PW);
+  t(ctx, "Judicial Council of California, courts.ca.gov", ML, 22, 7, { color: GRAY });
+  t(ctx, "SC-100, Page 1 of 4", PW / 2 - 40, 22, 7, { color: GRAY });
+  t(ctx, "Prepared with Small Claims Genie - review before filing",
+    PW - 230, 22, 6.5, { color: GRAY });
+}
+
+// ─── Page 2: Items 1, 2, 3a ──────────────────────────────────────────────────
+function drawPage2(ctx: Ctx, c: Record<string, any>) {
+  watermark(ctx);
+  let y = pageHeader(ctx, 2, c.plaintiffName ?? "");
+
+  // ── Item 1: Plaintiff ──────────────────────────────────────────────────────
+  y -= 4;
+  bubble(ctx, "1", ML + 8, y + 2);
+  t(ctx, "The plaintiff (the person, business, or public entity that is suing) is:",
+    ML + 20, y, 8, { bold: true, color: NAVY });
+  y -= 14;
+
+  // Name / Phone row
+  const nameW = 320;
+  const phoneW = CW - nameW;
+  drawRect(ctx, ML, y - 14, nameW, 14, { lw: 0.5 });
+  drawRect(ctx, ML + nameW, y - 14, phoneW, 14, { lw: 0.5 });
+  t(ctx, "Name:", ML + 4, y - 10, 6.5, { color: GRAY });
+  t(ctx, c.plaintiffName ?? "", ML + 38, y - 10, 8.5, { maxW: nameW - 44 });
+  t(ctx, "Phone:", ML + nameW + 4, y - 10, 6.5, { color: GRAY });
+  t(ctx, c.plaintiffPhone ?? "", ML + nameW + 42, y - 10, 8, { maxW: phoneW - 46 });
+  y -= 14;
+
+  // Street address
+  drawRect(ctx, ML, y - 14, CW, 14, { lw: 0.5 });
+  t(ctx, "Street address:", ML + 4, y - 10, 6.5, { color: GRAY });
+  const pAddr = [c.plaintiffAddress, c.plaintiffCity, c.plaintiffState, c.plaintiffZip]
+    .filter(Boolean).join(", ");
+  t(ctx, pAddr, ML + 90, y - 10, 8, { maxW: CW - 96 });
+  y -= 14;
+
+  // Mailing address
+  drawRect(ctx, ML, y - 14, CW, 14, { lw: 0.5 });
+  t(ctx, "Mailing address (if different):", ML + 4, y - 10, 6.5, { color: GRAY });
+  y -= 14;
+
+  // Email
+  drawRect(ctx, ML, y - 14, CW, 14, { lw: 0.5 });
+  t(ctx, "Email address (if available):", ML + 4, y - 10, 6.5, { color: GRAY });
+  t(ctx, c.plaintiffEmail ?? "", ML + 144, y - 10, 8, { maxW: CW - 150 });
+  y -= 18;
+
+  // Checkboxes
+  checkbox(ctx, ML + 4, y, false);
+  t(ctx, "Check here if more than two plaintiffs and attach form SC-100A.", ML + 16, y - 5, 7);
+  y -= 12;
+  checkbox(ctx, ML + 4, y, false);
+  t(ctx, "Check here if either plaintiff is doing business under a fictitious name and attach form SC-103.", ML + 16, y - 5, 7);
+  y -= 12;
+  checkbox(ctx, ML + 4, y, false);
+  t(ctx, "Check here if any plaintiff is a \"licensee\" or payday lender under Financial Code sections 23000 et seq.", ML + 16, y - 5, 7);
+  y -= 14;
+
+  // ── Item 2: Defendant ──────────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 8;
+  bubble(ctx, "2", ML + 8, y + 2);
+  t(ctx, "The defendant (the person, business, or public entity being sued) is:",
+    ML + 20, y, 8, { bold: true, color: NAVY });
+  y -= 14;
+
+  drawRect(ctx, ML, y - 14, nameW, 14, { lw: 0.5 });
+  drawRect(ctx, ML + nameW, y - 14, phoneW, 14, { lw: 0.5 });
+  t(ctx, "Name:", ML + 4, y - 10, 6.5, { color: GRAY });
+  t(ctx, c.defendantName ?? "", ML + 38, y - 10, 8.5, { maxW: nameW - 44 });
+  t(ctx, "Phone:", ML + nameW + 4, y - 10, 6.5, { color: GRAY });
+  t(ctx, c.defendantPhone ?? "", ML + nameW + 42, y - 10, 8, { maxW: phoneW - 46 });
+  y -= 14;
+
+  drawRect(ctx, ML, y - 14, CW, 14, { lw: 0.5 });
+  t(ctx, "Street address:", ML + 4, y - 10, 6.5, { color: GRAY });
+  const dAddr = [c.defendantAddress, c.defendantCity, c.defendantState, c.defendantZip]
+    .filter(Boolean).join(", ");
+  t(ctx, dAddr, ML + 90, y - 10, 8, { maxW: CW - 96 });
+  y -= 14;
+
+  drawRect(ctx, ML, y - 14, CW, 14, { lw: 0.5 });
+  t(ctx, "Mailing address (if different):", ML + 4, y - 10, 6.5, { color: GRAY });
+  y -= 14;
+
+  if (c.defendantIsBusinessOrEntity) {
+    y -= 2;
+    t(ctx, "If the defendant is a corporation, LLC, or public entity, list the person or agent authorized for service of process here:",
+      ML + 4, y, 6.5);
+    y -= 13;
+    drawRect(ctx, ML, y - 14, 280, 14, { lw: 0.5 });
+    drawRect(ctx, ML + 280, y - 14, CW - 280, 14, { lw: 0.5 });
+    t(ctx, "Name:", ML + 4, y - 10, 6.5, { color: GRAY });
+    t(ctx, c.defendantAgentName ?? "", ML + 36, y - 10, 8, { maxW: 235 });
+    t(ctx, "Job title, if known:", ML + 285, y - 10, 6.5, { color: GRAY });
+    y -= 14;
+    drawRect(ctx, ML, y - 14, CW, 14, { lw: 0.5 });
+    t(ctx, "Address:", ML + 4, y - 10, 6.5, { color: GRAY });
+    y -= 14;
+  }
+
+  y -= 4;
+  checkbox(ctx, ML + 4, y, false);
+  t(ctx, "Check here if your case is against more than one defendant and attach form SC-100A.", ML + 16, y - 5, 7);
+  y -= 12;
+  checkbox(ctx, ML + 4, y, c.defendantOnActiveMilitaryDuty === true);
+  t(ctx, "Check here if any defendant is on active military duty and write defendant's name here:", ML + 16, y - 5, 7);
+  y -= 14;
+
+  // ── Item 3a: Claim description ─────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "3", ML + 8, y + 2);
+  t(ctx, "The plaintiff claims the defendant owes $", ML + 20, y, 8, { bold: true, color: NAVY });
+  const amtLabelW = ctx.bold.widthOfTextAtSize("The plaintiff claims the defendant owes $", 8);
+  const amtStr = c.claimAmount ? `${Number(c.claimAmount).toFixed(2)}` : "___________";
+  t(ctx, amtStr, ML + 20 + amtLabelW, y, 9, { bold: true });
+  t(ctx, "   (Explain below and on next page.)", ML + 20 + amtLabelW + 80, y, 7.5, { color: GRAY });
+  y -= 14;
+
+  t(ctx, "a.", ML + 22, y, 8, { bold: true, color: NAVY });
+  t(ctx, "Why does the defendant owe the plaintiff money?", ML + 34, y, 8);
+  y -= 10;
+
+  const descH = Math.max(70, Math.min(160, y - 42));
+  drawRect(ctx, ML, y - descH, CW, descH, { lw: 0.5 });
+  if (c.claimDescription) {
+    wrap(ctx, c.claimDescription, ML + 6, y - 8, CW - 12, 8.5, 12,
+      Math.floor(descH / 12));
+  } else {
+    t(ctx, "(describe what happened)", ML + 6, y - 14, 8, { color: LGRAY });
+  }
+  y -= descH + 6;
+
+  // Footer
+  hline(ctx, ML, 36, CW, 0.5);
+  t(ctx, "Rev. January 1, 2026", ML, 26, 6.5, { color: GRAY });
+  t(ctx, "Plaintiff's Claim and ORDER to Go to Small Claims Court", PW / 2 - 120, 26, 6.5, { color: GRAY });
+  t(ctx, "SC-100, Page 2 of 4", PW - 100, 26, 6.5, { color: GRAY });
+}
+
+// ─── Page 3: Items 3b, 3c, 4, 5, 6, 7, 8 ────────────────────────────────────
+function drawPage3(ctx: Ctx, c: Record<string, any>) {
+  watermark(ctx);
+  let y = pageHeader(ctx, 3, c.plaintiffName ?? "");
+
+  const venueBasisMap: Record<string, string> = {
+    where_defendant_lives:      "a1",
+    where_damage_happened:      "a2",
+    where_plaintiff_injured:    "a3",
+    where_contract_made_broken: "a4",
+    buyer_household_goods:      "b",
+    retail_installment:         "c",
+    vehicle_finance:            "d",
+    other:                      "e",
+  };
+  const vSel = venueBasisMap[c.venueBasis ?? ""] ?? "";
+
+  // 3b: When did this happen
+  y -= 4;
+  bubble(ctx, "3", ML + 8, y + 2);
+  t(ctx, "b.", ML + 22, y, 8, { bold: true, color: NAVY });
+  t(ctx, "When did this happen?  (Date):", ML + 34, y, 8);
+  y -= 14;
+
+  const dateParts = (c.incidentDate ?? "").split(/[-–]/).map((s: string) => s.trim());
+  const halfW = CW / 2 - 4;
+  drawRect(ctx, ML, y - 14, halfW, 14, { lw: 0.5 });
+  drawRect(ctx, ML + halfW + 8, y - 14, halfW, 14, { lw: 0.5 });
+  t(ctx, "Date:", ML + 4, y - 10, 6.5, { color: GRAY });
+  t(ctx, dateParts[0] ?? "", ML + 34, y - 10, 8.5, { maxW: halfW - 40 });
+  t(ctx, "If no specific date, give the time period:  Date started:",
+    ML + halfW + 12, y - 10, 6.5, { color: GRAY });
+  y -= 14;
+
+  if (dateParts[1]) {
+    drawRect(ctx, ML, y - 14, CW, 14, { lw: 0.5 });
+    t(ctx, "Through:", ML + 4, y - 10, 6.5, { color: GRAY });
+    t(ctx, dateParts[1], ML + 52, y - 10, 8.5);
+    y -= 14;
+  }
+  y -= 8;
+
+  // 3c: How did you calculate
+  t(ctx, "c.", ML + 22, y, 8, { bold: true, color: NAVY });
+  t(ctx, "How did you calculate the money owed to you? (Do not include court costs or fees for service.)",
+    ML + 34, y, 8);
+  y -= 12;
+  const calcH = 64;
+  drawRect(ctx, ML, y - calcH, CW, calcH, { lw: 0.5 });
+  if (c.howAmountCalculated) {
+    wrap(ctx, c.howAmountCalculated, ML + 6, y - 8, CW - 12, 8.5, 12, 4);
+  } else {
+    t(ctx, "(explain how you calculated your damages)", ML + 6, y - 14, 8, { color: LGRAY });
+  }
+  y -= calcH + 4;
+
+  // Overflow checkbox
+  checkbox(ctx, ML + 4, y, false);
+  t(ctx, "Check here if you need more space. Attach one sheet of paper or form MC-031 and write \"SC-100, Item 3\" at the top.",
+    ML + 16, y - 5, 7);
+  y -= 16;
+
+  // ── Item 4: Prior demand ───────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "4", ML + 8, y + 2);
+  t(ctx, "You must ask the defendant (in person, in writing, or by phone) to pay you before you sue.",
+    ML + 20, y, 8, { bold: false });
+  y -= 10;
+  t(ctx, "If your claim is for possession of property, you must ask the defendant to give you the property. Have you done this?",
+    ML + 20, y, 8);
+  y -= 14;
+
+  checkbox(ctx, ML + 20, y, c.priorDemandMade === true);
+  t(ctx, "Yes", ML + 32, y - 5, 8);
+  checkbox(ctx, ML + 68, y, c.priorDemandMade === false);
+  t(ctx, "No", ML + 80, y - 5, 8);
+  t(ctx, "  If no, explain why not:", ML + 100, y - 5, 7, { color: GRAY });
+  y -= 14;
+
+  if (c.priorDemandDescription) {
+    drawRect(ctx, ML + 20, y - 36, CW - 20, 36, { lw: 0.5 });
+    wrap(ctx, c.priorDemandDescription, ML + 26, y - 8, CW - 34, 8, 11, 3);
+    y -= 42;
+  } else {
+    y -= 4;
+  }
+
+  // ── Item 5: Venue ──────────────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "5", ML + 8, y + 2);
+  t(ctx, "Why are you filing your claim at this courthouse?", ML + 20, y, 8);
+  y -= 11;
+  t(ctx, "This courthouse covers the area (check the one that applies):", ML + 20, y, 8);
+  y -= 14;
+
+  // 5a: four sub-options in 2x2 grid
+  t(ctx, "a.", ML + 20, y, 8, { bold: true, color: NAVY });
+  const col2X = ML + 20 + CW / 2;
+
+  checkbox(ctx, ML + 32, y + 2, vSel === "a1");
+  t(ctx, "(1) Where the defendant lives or does business.", ML + 44, y - 3, 7);
+  checkbox(ctx, col2X, y + 2, vSel === "a3");
+  t(ctx, "(3) Where the plaintiff was injured.", col2X + 12, y - 3, 7);
+  y -= 14;
+
+  checkbox(ctx, ML + 32, y + 2, vSel === "a2");
+  t(ctx, "(2) Where the plaintiff's property was damaged.", ML + 44, y - 3, 7);
+  checkbox(ctx, col2X, y + 2, vSel === "a4");
+  wrap(ctx, "(4) Where a contract was made, signed, performed, or broken by the defendant, or where the defendant lived or did business when the contract was made.",
+    col2X + 12, y - 3, CW / 2 - 30, 7, 10, 2);
+  y -= 24;
+
+  // 5b
+  checkbox(ctx, ML + 20, y, vSel === "b");
+  t(ctx, "b.", ML + 32, y - 5, 8, { bold: true, color: NAVY });
+  wrap(ctx, "Where the buyer or lessee signed the contract, lives now, or lived when the contract was made, if this claim is about an offer or contract for personal, family, or household goods, services, or loans. (Code Civ. Proc., section 395(b).)",
+    ML + 44, y - 5, CW - 60, 7, 10, 2);
+  y -= 22;
+
+  // 5c
+  checkbox(ctx, ML + 20, y, vSel === "c");
+  t(ctx, "c.", ML + 32, y - 5, 8, { bold: true, color: NAVY });
+  wrap(ctx, "Where the buyer signed the contract, lives now, or lived when the contract was made, if this claim is about a retail installment contract (like a credit card). (Civ. Code, section 1812.10.)",
+    ML + 44, y - 5, CW - 60, 7, 10, 2);
+  y -= 22;
+
+  // 5d
+  checkbox(ctx, ML + 20, y, vSel === "d");
+  t(ctx, "d.", ML + 32, y - 5, 8, { bold: true, color: NAVY });
+  wrap(ctx, "Where the buyer signed the contract, lives now, or lived when the contract was made, or where the vehicle is permanently garaged, if this claim is about a vehicle finance sale. (Civ. Code, section 2984.4.)",
+    ML + 44, y - 5, CW - 60, 7, 10, 2);
+  y -= 22;
+
+  // 5e
+  checkbox(ctx, ML + 20, y, vSel === "e");
+  t(ctx, "e.", ML + 32, y - 5, 8, { bold: true, color: NAVY });
+  t(ctx, "Other (specify):", ML + 44, y - 5, 7, { color: GRAY });
+  if (c.venueReason) {
+    t(ctx, c.venueReason, ML + 138, y - 5, 8, { maxW: CW - 154 });
+  }
+  hline(ctx, ML + 138, y - 8, CW - 154);
+  y -= 16;
+
+  // ── Item 6: Zip code ───────────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "6", ML + 8, y + 2);
+  t(ctx, "List the zip code of the place checked in 5 above (if you know):", ML + 20, y, 8);
+  const zipBoxX = ML + 20 + ctx.reg.widthOfTextAtSize(
+    "List the zip code of the place checked in 5 above (if you know):  ", 8) + 10;
+  drawRect(ctx, zipBoxX, y - 11, 62, 13, { lw: 0.5 });
+  if (c.venueZip) t(ctx, c.venueZip, zipBoxX + 4, y - 8, 8.5);
+  y -= 18;
+
+  // ── Item 7: Attorney fee dispute ──────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "7", ML + 8, y + 2);
+  t(ctx, "Is your claim about an attorney-client fee dispute?", ML + 20, y, 8);
+  const q7x = ML + 20 + ctx.reg.widthOfTextAtSize("Is your claim about an attorney-client fee dispute?  ", 8) + 10;
+  checkbox(ctx, q7x, y + 2, c.isAttyFeeDispute === true);
+  t(ctx, "Yes", q7x + 12, y - 3, 8);
+  checkbox(ctx, q7x + 44, y + 2, c.isAttyFeeDispute === false || !c.isAttyFeeDispute);
+  t(ctx, "No", q7x + 56, y - 3, 8);
+  y -= 12;
+  t(ctx, "If yes, and if you have had arbitration, fill out form SC-101, attach it to this form, and check here:",
+    ML + 20, y, 7, { color: GRAY });
+  checkbox(ctx, ML + 20 + ctx.reg.widthOfTextAtSize(
+    "If yes, and if you have had arbitration, fill out form SC-101, attach it to this form, and check here:  ", 7) + 5,
+    y + 2, false);
+  y -= 16;
+
+  // ── Item 8: Public entity ──────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "8", ML + 8, y + 2);
+  t(ctx, "Are you suing a public entity?", ML + 20, y, 8);
+  const q8x = ML + 20 + ctx.reg.widthOfTextAtSize("Are you suing a public entity?  ", 8) + 10;
+  checkbox(ctx, q8x, y + 2, c.isSuingPublicEntity === true);
+  t(ctx, "Yes", q8x + 12, y - 3, 8);
+  checkbox(ctx, q8x + 44, y + 2, c.isSuingPublicEntity !== true);
+  t(ctx, "No", q8x + 56, y - 3, 8);
+  y -= 12;
+  t(ctx, "If yes, you must file a written claim with the entity first.  A claim was filed on (date):",
+    ML + 20, y, 7.5);
+  if (c.isSuingPublicEntity && c.publicEntityClaimFiledDate) {
+    const peW = ctx.reg.widthOfTextAtSize(
+      "If yes, you must file a written claim with the entity first.  A claim was filed on (date):  ", 7.5);
+    drawRect(ctx, ML + 20 + peW + 4, y - 11, 110, 13, { lw: 0.5 });
+    t(ctx, c.publicEntityClaimFiledDate, ML + 20 + peW + 8, y - 8, 8);
+  }
+  y -= 16;
+
+  // Footer
+  hline(ctx, ML, 36, CW, 0.5);
+  t(ctx, "Rev. January 1, 2026", ML, 26, 6.5, { color: GRAY });
+  t(ctx, "Plaintiff's Claim and ORDER to Go to Small Claims Court", PW / 2 - 120, 26, 6.5, { color: GRAY });
+  t(ctx, "SC-100, Page 3 of 4", PW - 100, 26, 6.5, { color: GRAY });
+}
+
+// ─── Page 4: Items 9, 10, 11, Signature ──────────────────────────────────────
+function drawPage4(ctx: Ctx, c: Record<string, any>, caseId: number) {
+  watermark(ctx);
+  let y = pageHeader(ctx, 4, c.plaintiffName ?? "");
+  y -= 6;
+
+  // ── Item 9 ────────────────────────────────────────────────────────────────
+  bubble(ctx, "9", ML + 8, y + 2);
+  t(ctx, "Have you filed more than 12 other small claims within the last 12 months in California?",
+    ML + 20, y, 8);
+  y -= 14;
+  checkbox(ctx, ML + 20, y, c.filedMoreThan12Claims === true);
+  t(ctx, "Yes", ML + 32, y - 5, 8);
+  t(ctx, "  If yes, the filing fee for this case will be higher.", ML + 52, y - 5, 7.5);
+  y -= 12;
+  checkbox(ctx, ML + 20, y, c.filedMoreThan12Claims !== true);
+  t(ctx, "No", ML + 32, y - 5, 8);
+  y -= 18;
+
+  // ── Item 10 ───────────────────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "10", ML + 8, y + 2);
+  t(ctx, "Is your claim for more than $2,500?", ML + 20, y, 8);
+  const q10x = ML + 20 + ctx.reg.widthOfTextAtSize("Is your claim for more than $2,500?  ", 8) + 10;
+  checkbox(ctx, q10x, y + 2, c.claimOver2500 === true);
+  t(ctx, "Yes", q10x + 12, y - 3, 8);
+  checkbox(ctx, q10x + 44, y + 2, c.claimOver2500 !== true);
+  t(ctx, "No", q10x + 56, y - 3, 8);
+  y -= 14;
+  t(ctx, "If you answer yes, you also confirm that you have not filed, and you understand that you may not file, more than two",
+    ML + 20, y, 7.5);
+  y -= 11;
+  t(ctx, "small claims cases for more than $2,500 in California during this calendar year.",
+    ML + 20, y, 7.5);
+  y -= 18;
+
+  // ── Item 11 ───────────────────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 0.8);
+  y -= 10;
+  bubble(ctx, "11", ML + 8, y + 2);
+  t(ctx, "I understand that by filing a claim in small claims court, I have no right to appeal this claim.",
+    ML + 20, y, 8);
+  y -= 22;
+
+  // ── Declaration ───────────────────────────────────────────────────────────
+  hline(ctx, ML, y, CW, 1.2);
+  y -= 12;
+  wrap(ctx,
+    "I declare under penalty of perjury under the laws of the State of California that the information above and on any attachments to this form is true and correct.",
+    ML, y, CW, 8, 12, 3);
+  y -= 36;
+
+  // Signature block – Plaintiff 1
+  const sigH = 54;
+  const sigW = CW / 2 - 8;
+  drawRect(ctx, ML, y - sigH, sigW, sigH, { lw: 0.5 });
+  t(ctx, "Date:", ML + 5, y - 9, 7, { color: GRAY });
+  hline(ctx, ML + 32, y - 11, sigW - 38);
+  hline(ctx, ML + 5, y - 28, sigW - 10, 0.4);
+  t(ctx, "Plaintiff types or prints name here", ML + 5, y - 36, 6.5, { color: GRAY });
+  t(ctx, c.plaintiffName ?? "", ML + 5, y - 26, 8.5, { maxW: sigW - 14 });
+  hline(ctx, ML + 5, y - 48, sigW - 10, 0.4);
+  t(ctx, "Plaintiff signs here", ML + 5, y - 56, 6.5, { color: GRAY });
+
+  // Signature block – Plaintiff 2
+  drawRect(ctx, ML + sigW + 16, y - sigH, sigW, sigH, { lw: 0.5 });
+  t(ctx, "Date:", ML + sigW + 21, y - 9, 7, { color: GRAY });
+  hline(ctx, ML + sigW + 48, y - 11, sigW - 38);
+  hline(ctx, ML + sigW + 21, y - 28, sigW - 10, 0.4);
+  t(ctx, "Second plaintiff types or prints name here", ML + sigW + 21, y - 36, 6.5, { color: GRAY });
+  hline(ctx, ML + sigW + 21, y - 48, sigW - 10, 0.4);
+  t(ctx, "Second plaintiff signs here", ML + sigW + 21, y - 56, 6.5, { color: GRAY });
+  y -= sigH + 14;
+
+  // Accommodations notice
+  drawRect(ctx, ML, y - 52, CW, 52, { fill: MGRAY, border: LGRAY });
+  t(ctx, "Requests for Accommodations", ML + 8, y - 13, 8, { bold: true, color: NAVY });
+  wrap(ctx,
+    "Assistive listening systems, computer-assisted real-time captioning, or sign language interpreter services are available if you ask at least five days before the trial. For these and other accommodations, contact the clerk's office for form MC-410, Disability Accommodation Request. (Civ. Code, section 54.8.)",
+    ML + 8, y - 26, CW - 16, 7.5, 11, 3);
+  y -= 62;
+
+  // Disclaimer box
+  y -= 6;
+  drawRect(ctx, ML, y - 50, CW, 50, { fill: rgb(1, 0.98, 0.91), border: rgb(0.75, 0.55, 0), lw: 1 });
+  t(ctx, "IMPORTANT - DRAFT DOCUMENT PREPARED WITH SMALL CLAIMS GENIE",
+    ML + 8, y - 14, 8.5, { bold: true, color: AMBER });
+  t(ctx, "Review all information carefully before filing. Obtain the official SC-100 form from courts.ca.gov or your county courthouse.",
+    ML + 8, y - 27, 7.5);
+  t(ctx, "Small Claims Genie is not a law firm. This document is not legal advice.",
+    ML + 8, y - 38, 7.5);
+  t(ctx, `Generated: ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}  |  Case ${caseId}`,
+    ML + 8, y - 49, 7, { color: GRAY });
+
+  // Footer
+  hline(ctx, ML, 36, CW, 0.5);
+  t(ctx, "Rev. January 1, 2026", ML, 26, 6.5, { color: GRAY });
+  t(ctx, "Plaintiff's Claim and ORDER to Go to Small Claims Court", PW / 2 - 120, 26, 6.5, { color: GRAY });
+  t(ctx, "SC-100, Page 4 of 4", PW - 100, 26, 6.5, { color: GRAY });
 }
 
 // ─── Main route ───────────────────────────────────────────────────────────────
@@ -158,508 +764,42 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
 
   try {
+    const pdfDoc = await PDFDocument.create();
+    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const reg  = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  const pdfDoc = await PDFDocument.create();
-  const bold  = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const reg   = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const small = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const caseData = c as unknown as Record<string, any>;
 
-  // Convenience: map venueBasis code → SC-100 checkbox letter
-  const venueBasisMap: Record<string, string> = {
-    where_defendant_lives:       "a1",
-    where_damage_happened:       "a2",
-    where_plaintiff_injured:     "a3",
-    where_contract_made_broken:  "a4",
-    buyer_household_goods:       "b",
-    retail_installment:          "c",
-    vehicle_finance:             "d",
-    other:                       "e",
-  };
-  const venueSel = venueBasisMap[c.venueBasis ?? ""] ?? "";
+    // Page 1
+    const p1 = pdfDoc.addPage([PW, PH]);
+    drawPage1({ page: p1, bold, reg }, caseData);
 
-  // ── PAGE 1 — Cover / Instructions ──────────────────────────────────────────
-  {
-    const page = pdfDoc.addPage([W, H]);
-    const ctx: DrawCtx = { page, bold, reg, small };
-    drawDraftWatermark(page, bold);
+    // Page 2
+    const p2 = pdfDoc.addPage([PW, PH]);
+    drawPage2({ page: p2, bold, reg }, caseData);
 
-    // Top navy banner
-    page.drawRectangle({ x: 0, y: H - 60, width: W, height: 60, color: NAVY });
-    txt(ctx, "SC-100", 12, H - 25, 18, true, WHITE);
-    txt(ctx, "Plaintiff's Claim and ORDER", 90, H - 22, 13, true, WHITE);
-    txt(ctx, "to Go to Small Claims Court", 90, H - 37, 13, false, WHITE);
-    txt(ctx, "Rev. January 1, 2026  |  Judicial Council of California, courts.ca.gov", 12, H - 53, 7, false, rgb(0.7,0.7,0.7));
+    // Page 3
+    const p3 = pdfDoc.addPage([PW, PH]);
+    drawPage3({ page: p3, bold, reg }, caseData);
 
-    // Right side: clerk stamp box + court info
-    const rightX = W - 195;
-    box(ctx, rightX, H - 130, 175, 65, 0.8);
-    txt(ctx, "Clerk stamps date here when form is filed.", rightX + 5, H - 75, 7, false, GRAY);
-    hline(ctx, rightX + 5, H - 100, 165);
-    hline(ctx, rightX + 5, H - 115, 165);
+    // Page 4
+    const p4 = pdfDoc.addPage([PW, PH]);
+    drawPage4({ page: p4, bold, reg }, caseData, id);
 
-    box(ctx, rightX, H - 200, 175, 62, 0.8);
-    txt(ctx, "Fill in court name and street address:", rightX + 4, H - 143, 7, false, GRAY);
-    txt(ctx, "Superior Court of California, County of", rightX + 4, H - 155, 7.5, false, BLACK);
-    const county = (c.countyId ?? "").replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-    txt(ctx, county || "________________________", rightX + 4, H - 168, 8.5, true, BLACK);
-    hline(ctx, rightX + 4, H - 176, 165);
-    hline(ctx, rightX + 4, H - 187, 165);
-
-    box(ctx, rightX, H - 230, 175, 28, 0.8);
-    txt(ctx, "Case Number:", rightX + 4, H - 214, 7, false, GRAY);
-    txt(ctx, "Court assigns on filing", rightX + 4, H - 225, 7, false, GRAY);
-
-    box(ctx, rightX, H - 260, 175, 28, 0.8);
-    txt(ctx, "Case Name:", rightX + 4, H - 244, 7, false, GRAY);
-    txt(ctx, c.plaintiffName ? `${c.plaintiffName} v. ${c.defendantName ?? ""}` : c.title, rightX + 4, H - 255, 7.5, false, BLACK, 165);
-
-    // Notice boxes
-    const noticeY = H - 75;
-    const noticeW = rightX - ML - 10;
-    box(ctx, ML, noticeY - 120, noticeW, 120, 0.8);
-    txt(ctx, "Notice to the person being sued:", ML + 5, noticeY - 14, 8, true, BLACK);
-    const notices = [
-      "You are the defendant if your name is listed in item 2 on page 2 of this form.",
-      "You and the plaintiff must go to court on the trial date listed below.",
-      "If you do not go to court, you may lose the case.",
-      "Bring witnesses, receipts, and any evidence you need to prove your case.",
-      "Read this form and all pages attached to understand the claim against you.",
-    ];
-    let ny = noticeY - 27;
-    for (const n of notices) {
-      txt(ctx, "•", ML + 7, ny, 7, false, BLACK);
-      ny = multiline(ctx, n, ML + 15, ny, noticeW - 25, 7, 10, 2);
-    }
-
-    // Order to Go to Court table
-    const tableY = noticeY - 140;
-    box(ctx, ML, tableY - 60, CW, 60, 0.8);
-    page.drawRectangle({ x: ML, y: tableY - 14, width: CW, height: 14, color: LGRAY });
-    txt(ctx, "Order to Go to Court", ML + 5, tableY - 10, 8, true, NAVY);
-    txt(ctx, "The people in 1 and 2 must attend court: (Clerk fills out section below.)", ML + 5, tableY - 24, 7, false, BLACK);
-    txt(ctx, "Trial Date", ML + 5, tableY - 36, 7, false, GRAY);
-    txt(ctx, "Date", ML + 70, tableY - 36, 7, false, GRAY);
-    txt(ctx, "Time", ML + 180, tableY - 36, 7, false, GRAY);
-    txt(ctx, "Department", ML + 250, tableY - 36, 7, false, GRAY);
-    txt(ctx, "Court Name / Address (if different)", ML + 340, tableY - 36, 7, false, GRAY);
-    hline(ctx, ML + 5, tableY - 42, CW - 10, 0.3);
-    txt(ctx, "1.", ML + 5, tableY - 53, 7, false, GRAY);
-    txt(ctx, "2.", ML + 5, tableY - 65, 7, false, GRAY);
-
-    // Instructions section
-    const instY = tableY - 80;
-    box(ctx, ML, instY - 155, CW, 155, 0.8);
-    page.drawRectangle({ x: ML, y: instY - 14, width: CW, height: 14, color: LGRAY });
-    txt(ctx, "Instructions for the person suing:", ML + 5, instY - 10, 8, true, NAVY);
-    const insts = [
-      "You are the plaintiff. The person you are suing is the defendant.",
-      "Before you fill out this form, read form SC-100-INFO, Information for the Plaintiff, to know your rights.",
-      "Fill out pages 2, 3, and 4 of this form. Make copies of all pages — one for each party and an extra copy for yourself.",
-      "Take or mail the original and the copies to the court clerk's office and pay the filing fee.",
-      "You must have someone at least 18 years old — not you or anyone else listed in this case — serve each defendant a court-stamped copy of all pages of this form.",
-      "Go to court on your trial date. Bring witnesses, receipts, and any evidence you need to prove your case.",
-    ];
-    let iy = instY - 30;
-    for (const inst of insts) {
-      txt(ctx, "•", ML + 7, iy, 7, false, BLACK);
-      iy = multiline(ctx, inst, ML + 16, iy, CW - 30, 7, 10, 3);
-      iy -= 3;
-    }
-
-    // Footer
-    txt(ctx, "Judicial Council of California, courts.ca.gov", ML, 28, 7, false, GRAY);
-    txt(ctx, "SC-100, Page 1 of 4  |  PREPARED WITH SMALL CLAIMS GENIE — review all information before filing", W / 2 - 100, 20, 6.5, false, GRAY);
-  }
-
-  // ── PAGE 2 — Items 1, 2, 3a ────────────────────────────────────────────────
-  {
-    const page = pdfDoc.addPage([W, H]);
-    const ctx: DrawCtx = { page, bold, reg, small };
-    drawDraftWatermark(page, bold);
-
-    let y = H - 32;
-    y = drawPageHeader(ctx, 2, c.plaintiffName ?? "", "", y);
-
-    // ── Item 1: Plaintiff ────────────────────────────────────────────────────
-    y -= 6;
-    itemNum(ctx, "1", ML, y);
-    txt(ctx, "The plaintiff (the person, business, or public entity that is suing) is:", ML + 20, y, 8, true, NAVY);
-    y -= 16;
-
-    // Name + Phone row
-    box(ctx, ML, y - 14, 320, 14);
-    box(ctx, ML + 320, y - 14, CW - 320, 14);
-    txt(ctx, "Name:", ML + 4, y - 10, 7, false, GRAY);
-    txt(ctx, c.plaintiffName ?? "", ML + 35, y - 10, 8.5, false, BLACK, 275);
-    txt(ctx, "Phone:", ML + 326, y - 10, 7, false, GRAY);
-    txt(ctx, c.plaintiffPhone ?? "", ML + 360, y - 10, 8, false, BLACK, 100);
-    y -= 14;
-
-    // Street address
-    box(ctx, ML, y - 14, CW, 14);
-    txt(ctx, "Street address:", ML + 4, y - 10, 7, false, GRAY);
-    const addr1 = [c.plaintiffAddress, c.plaintiffCity, c.plaintiffState, c.plaintiffZip].filter(Boolean).join(", ");
-    txt(ctx, addr1, ML + 80, y - 10, 8, false, BLACK, CW - 86);
-    y -= 14;
-
-    // Mailing address (show if different — for now show same)
-    box(ctx, ML, y - 14, CW, 14);
-    txt(ctx, "Mailing address (if different):", ML + 4, y - 10, 7, false, GRAY);
-    y -= 14;
-
-    // Email
-    box(ctx, ML, y - 14, CW, 14);
-    txt(ctx, "Email address (if available):", ML + 4, y - 10, 7, false, GRAY);
-    txt(ctx, c.plaintiffEmail ?? "", ML + 140, y - 10, 8, false, BLACK, CW - 146);
-    y -= 14;
-
-    // Checkboxes
-    y -= 4;
-    checkbox(ctx, ML + 4, y, false);
-    txt(ctx, "Check here if more than two plaintiffs and attach form SC-100A.", ML + 16, y - 5, 7, false, BLACK);
-    y -= 12;
-    checkbox(ctx, ML + 4, y, false);
-    txt(ctx, "Check here if either plaintiff is doing business under a fictitious name and attach form SC-103.", ML + 16, y - 5, 7, false, BLACK);
-    y -= 16;
-
-    // ── Item 2: Defendant ────────────────────────────────────────────────────
-    hline(ctx, ML, y, CW, 1);
-    y -= 8;
-    itemNum(ctx, "2", ML, y);
-    txt(ctx, "The defendant (the person, business, or public entity being sued) is:", ML + 20, y, 8, true, NAVY);
-    y -= 16;
-
-    box(ctx, ML, y - 14, 320, 14);
-    box(ctx, ML + 320, y - 14, CW - 320, 14);
-    txt(ctx, "Name:", ML + 4, y - 10, 7, false, GRAY);
-    txt(ctx, c.defendantName ?? "", ML + 35, y - 10, 8.5, false, BLACK, 275);
-    txt(ctx, "Phone:", ML + 326, y - 10, 7, false, GRAY);
-    txt(ctx, c.defendantPhone ?? "", ML + 360, y - 10, 8, false, BLACK, 100);
-    y -= 14;
-
-    box(ctx, ML, y - 14, CW, 14);
-    txt(ctx, "Street address:", ML + 4, y - 10, 7, false, GRAY);
-    const addr2 = [c.defendantAddress, c.defendantCity, c.defendantState, c.defendantZip].filter(Boolean).join(", ");
-    txt(ctx, addr2, ML + 80, y - 10, 8, false, BLACK, CW - 86);
-    y -= 14;
-
-    box(ctx, ML, y - 14, CW, 14);
-    txt(ctx, "Mailing address (if different):", ML + 4, y - 10, 7, false, GRAY);
-    y -= 14;
-
-    if (c.defendantIsBusinessOrEntity) {
-      y -= 4;
-      txt(ctx, "If the defendant is a corporation, limited liability company, or public entity, list the person or agent authorized for service of process:", ML + 4, y, 7, false, BLACK);
-      y -= 14;
-      box(ctx, ML, y - 14, 280, 14);
-      box(ctx, ML + 280, y - 14, CW - 280, 14);
-      txt(ctx, "Agent Name:", ML + 4, y - 10, 7, false, GRAY);
-      txt(ctx, c.defendantAgentName ?? "", ML + 68, y - 10, 8, false, BLACK, 200);
-      txt(ctx, "Job title, if known:", ML + 286, y - 10, 7, false, GRAY);
-      y -= 14;
-      box(ctx, ML, y - 14, CW, 14);
-      txt(ctx, "Address:", ML + 4, y - 10, 7, false, GRAY);
-      y -= 14;
-    }
-
-    y -= 4;
-    checkbox(ctx, ML + 4, y, false);
-    txt(ctx, "Check here if your case is against more than one defendant and attach form SC-100A.", ML + 16, y - 5, 7, false, BLACK);
-    y -= 12;
-    checkbox(ctx, ML + 4, y, c.isSuingPublicEntity === true);
-    txt(ctx, "Check here if any defendant is on active military duty.", ML + 16, y - 5, 7, false, BLACK);
-    y -= 18;
-
-    // ── Item 3a: Why does defendant owe money ────────────────────────────────
-    hline(ctx, ML, y, CW, 1);
-    y -= 8;
-    itemNum(ctx, "3", ML, y);
-    txt(ctx, `The plaintiff claims the defendant owes $`, ML + 20, y, 8, true, NAVY);
-    const amtX = ML + 20 + bold.widthOfTextAtSize("The plaintiff claims the defendant owes $", 8);
-    txt(ctx, c.claimAmount ? c.claimAmount.toFixed(2) : "__________", amtX, y, 9, true, c.claimAmount ? BLACK : GRAY);
-    txt(ctx, "   (Explain below and on the next page.)", amtX + 70, y, 8, false, NAVY);
-    y -= 14;
-
-    txt(ctx, "a.", ML + 6, y, 8, true, NAVY);
-    txt(ctx, "Why does the defendant owe the plaintiff money?", ML + 20, y, 8, false, BLACK);
-    y -= 12;
-
-    // Description box — tall
-    const descBoxH = Math.min(180, Math.max(80, y - 90));
-    box(ctx, ML, y - descBoxH, CW, descBoxH);
-    let dy = y - 10;
-    if (c.claimDescription) {
-      dy = multiline(ctx, c.claimDescription, ML + 6, dy, CW - 12, 8.5, 12, Math.floor(descBoxH / 12));
-    } else {
-      txt(ctx, "(Not provided)", ML + 6, dy, 8, false, LGRAY);
-    }
-    y -= descBoxH + 8;
-
-    // Footer
-    hline(ctx, ML, 38, CW);
-    txt(ctx, `SC-100, Page 2 of 4  |  Plaintiff's Claim and ORDER to Go to Small Claims Court  |  DRAFT — Small Claims Genie`, ML, 28, 6.5, false, GRAY);
-  }
-
-  // ── PAGE 3 — Items 3b, 3c, 4, 5, 6, 7, 8 ──────────────────────────────────
-  {
-    const page = pdfDoc.addPage([W, H]);
-    const ctx: DrawCtx = { page, bold, reg, small };
-    drawDraftWatermark(page, bold);
-
-    let y = H - 32;
-    y = drawPageHeader(ctx, 3, c.plaintiffName ?? "", "", y);
-    y -= 6;
-
-    // 3b: When did this happen
-    itemNum(ctx, "3", ML, y);
-    txt(ctx, "b.", ML + 20, y, 8, true, NAVY);
-    txt(ctx, "When did this happen?", ML + 32, y, 8, false, BLACK);
-    y -= 14;
-
-    box(ctx, ML, y - 14, CW / 2, 14);
-    box(ctx, ML + CW / 2, y - 14, CW / 2, 14);
-    txt(ctx, "Date:", ML + 4, y - 10, 7, false, GRAY);
-    // parse date range: "MM/dd/yyyy – MM/dd/yyyy" or single date
-    const dateParts = (c.incidentDate ?? "").split("–").map((s: string) => s.trim());
-    txt(ctx, dateParts[0] ?? "", ML + 35, y - 10, 8.5, false, BLACK, CW / 2 - 42);
-    txt(ctx, "If no specific date — Date started:", ML + CW / 2 + 4, y - 10, 7, false, GRAY);
-    if (dateParts[0] && dateParts[1]) {
-      txt(ctx, dateParts[0], ML + CW / 2 + 140, y - 10, 8, false, BLACK);
-    }
-    y -= 14;
-
-    if (dateParts[1]) {
-      box(ctx, ML, y - 14, CW, 14);
-      txt(ctx, "Through:", ML + 4, y - 10, 7, false, GRAY);
-      txt(ctx, dateParts[1], ML + 50, y - 10, 8.5, false, BLACK);
-      y -= 14;
-    }
-
-    y -= 8;
-
-    // 3c: How did you calculate
-    txt(ctx, "c.", ML + 20, y, 8, true, NAVY);
-    txt(ctx, "How did you calculate the money owed to you? (Do not include court costs or fees for service.)", ML + 32, y, 8, false, BLACK);
-    y -= 12;
-    const calcH = 70;
-    box(ctx, ML, y - calcH, CW, calcH);
-    if (c.howAmountCalculated) {
-      multiline(ctx, c.howAmountCalculated, ML + 6, y - 8, CW - 12, 8.5, 12, 5);
-    } else {
-      txt(ctx, "(Not provided)", ML + 6, y - 12, 8, false, LGRAY);
-    }
-    y -= calcH + 10;
-
-    // 4: Prior demand
-    hline(ctx, ML, y, CW, 0.8);
-    y -= 10;
-    itemNum(ctx, "4", ML, y);
-    txt(ctx, "You must ask the defendant to pay you before you sue. Have you done this?", ML + 20, y, 8, false, BLACK);
-    y -= 14;
-
-    checkbox(ctx, ML + 20, y, c.priorDemandMade === true);
-    txt(ctx, "Yes", ML + 32, y - 5, 8, false, BLACK);
-    checkbox(ctx, ML + 70, y, c.priorDemandMade === false);
-    txt(ctx, "No", ML + 82, y - 5, 8, false, BLACK);
-    if (c.priorDemandMade === false) {
-      txt(ctx, "If no, explain why not:", ML + 105, y - 5, 7, false, GRAY);
-    }
-    y -= 20;
-
-    if (c.priorDemandDescription) {
-      box(ctx, ML, y - 40, CW, 40);
-      multiline(ctx, c.priorDemandDescription, ML + 5, y - 8, CW - 10, 8, 11, 3);
-      y -= 48;
-    }
-
-    // 5: Venue
-    hline(ctx, ML, y, CW, 0.8);
-    y -= 10;
-    itemNum(ctx, "5", ML, y);
-    txt(ctx, "Why are you filing your claim at this courthouse?", ML + 20, y, 8, false, BLACK);
-    txt(ctx, "This courthouse covers the area (check the one that applies):", ML + 20, y - 11, 8, false, BLACK);
-    y -= 26;
-
-    const venueOptions = [
-      { key: "a1", label: "(1) Where the defendant lives or does business." },
-      { key: "a2", label: "(2) Where the plaintiff's property was damaged." },
-      { key: "a3", label: "(3) Where the plaintiff was injured." },
-      { key: "a4", label: "(4) Where a contract was made, signed, performed, or broken by the defendant." },
-    ];
-
-    txt(ctx, "a.", ML + 20, y, 8, true, NAVY);
-    for (let i = 0; i < venueOptions.length; i++) {
-      const vo = venueOptions[i];
-      const ox = i < 2 ? ML + 32 : ML + 32 + CW / 2;
-      const oy = i < 2 ? y - (i * 13) : y - ((i - 2) * 13);
-      checkbox(ctx, ox, oy + 2, venueSel === vo.key);
-      txt(ctx, vo.label, ox + 14, oy - 3, 7, false, BLACK, CW / 2 - 30);
-    }
-    y -= 32;
-
-    const venueLowerOptions = [
-      { key: "b", letter: "b", label: "Where the buyer or lessee signed the contract, lives now, or lived when the contract was made (household goods/services)." },
-      { key: "c", letter: "c", label: "Where the buyer signed the contract or lives (retail installment contract)." },
-      { key: "d", letter: "d", label: "Where the buyer signed the contract, lives, or where the vehicle is garaged (vehicle finance sale)." },
-    ];
-    for (const vo of venueLowerOptions) {
-      checkbox(ctx, ML + 20, y, venueSel === vo.key);
-      txt(ctx, vo.letter + ".", ML + 32, y - 5, 8, true, NAVY);
-      txt(ctx, vo.label, ML + 44, y - 5, 7, false, BLACK, CW - 60);
-      y -= 14;
-    }
-
-    // "e. Other"
-    checkbox(ctx, ML + 20, y, venueSel === "e");
-    txt(ctx, "e.", ML + 32, y - 5, 8, true, NAVY);
-    txt(ctx, "Other (specify):", ML + 44, y - 5, 7, false, GRAY);
-    if (c.venueReason) {
-      txt(ctx, c.venueReason, ML + 120, y - 5, 8, false, BLACK, CW - 130);
-    }
-    hline(ctx, ML + 120, y - 8, CW - 130);
-    y -= 16;
-
-    // 6: Zip code
-    hline(ctx, ML, y, CW, 0.8);
-    y -= 10;
-    itemNum(ctx, "6", ML, y);
-    txt(ctx, "List the zip code of the place checked in 5 above (if you know):", ML + 20, y, 8, false, BLACK);
-    box(ctx, ML + 20 + reg.widthOfTextAtSize("List the zip code of the place checked in 5 above (if you know): ", 8) + 20, y - 11, 60, 13);
-    y -= 20;
-
-    // 7: Attorney fee dispute
-    hline(ctx, ML, y, CW, 0.8);
-    y -= 10;
-    itemNum(ctx, "7", ML, y);
-    txt(ctx, "Is your claim about an attorney-client fee dispute?", ML + 20, y, 8, false, BLACK);
-    checkbox(ctx, ML + 20 + reg.widthOfTextAtSize("Is your claim about an attorney-client fee dispute?  ", 8) + 20, y + 2, c.isAttyFeeDispute === true);
-    txt(ctx, "Yes", ML + 20 + reg.widthOfTextAtSize("Is your claim about an attorney-client fee dispute?  ", 8) + 34, y - 3, 8, false, BLACK);
-    checkbox(ctx, ML + 20 + reg.widthOfTextAtSize("Is your claim about an attorney-client fee dispute?  ", 8) + 65, y + 2, c.isAttyFeeDispute === false);
-    txt(ctx, "No", ML + 20 + reg.widthOfTextAtSize("Is your claim about an attorney-client fee dispute?  ", 8) + 79, y - 3, 8, false, BLACK);
-    y -= 20;
-
-    // 8: Public entity
-    hline(ctx, ML, y, CW, 0.8);
-    y -= 10;
-    itemNum(ctx, "8", ML, y);
-    txt(ctx, "Are you suing a public entity?", ML + 20, y, 8, false, BLACK);
-    const peX = ML + 20 + reg.widthOfTextAtSize("Are you suing a public entity?  ", 8) + 12;
-    checkbox(ctx, peX, y + 2, c.isSuingPublicEntity === true);
-    txt(ctx, "Yes", peX + 14, y - 3, 8, false, BLACK);
-    checkbox(ctx, peX + 45, y + 2, c.isSuingPublicEntity !== true);
-    txt(ctx, "No", peX + 59, y - 3, 8, false, BLACK);
-    y -= 14;
-
-    if (c.isSuingPublicEntity) {
-      txt(ctx, "If yes, you must file a written claim with the entity first. A claim was filed on (date):", ML + 20, y, 7.5, false, BLACK);
-      box(ctx, ML + 20 + reg.widthOfTextAtSize("If yes, you must file a written claim with the entity first. A claim was filed on (date): ", 7.5) + 20, y - 10, 110, 13);
-      txt(ctx, c.publicEntityClaimFiledDate ?? "", ML + 20 + reg.widthOfTextAtSize("If yes, you must file a written claim with the entity first. A claim was filed on (date): ", 7.5) + 25, y - 7, 8, false, BLACK);
-      y -= 20;
-    }
-
-    // Footer
-    hline(ctx, ML, 38, CW);
-    txt(ctx, `SC-100, Page 3 of 4  |  Plaintiff's Claim and ORDER to Go to Small Claims Court  |  DRAFT — Small Claims Genie`, ML, 28, 6.5, false, GRAY);
-  }
-
-  // ── PAGE 4 — Items 9, 10, 11, Signature ────────────────────────────────────
-  {
-    const page = pdfDoc.addPage([W, H]);
-    const ctx: DrawCtx = { page, bold, reg, small };
-    drawDraftWatermark(page, bold);
-
-    let y = H - 32;
-    y = drawPageHeader(ctx, 4, c.plaintiffName ?? "", "", y);
-    y -= 10;
-
-    // 9: Filed more than 12 claims
-    itemNum(ctx, "9", ML, y);
-    txt(ctx, "Have you filed more than 12 other small claims within the last 12 months in California?", ML + 20, y, 8, false, BLACK);
-    y -= 14;
-    checkbox(ctx, ML + 20, y, c.filedMoreThan12Claims === true);
-    txt(ctx, "Yes   — If yes, the filing fee for this case will be higher.", ML + 34, y - 5, 8, false, BLACK);
-    y -= 12;
-    checkbox(ctx, ML + 20, y, c.filedMoreThan12Claims !== true);
-    txt(ctx, "No", ML + 34, y - 5, 8, false, BLACK);
-    y -= 20;
-
-    // 10: Claim over $2,500
-    hline(ctx, ML, y, CW, 0.8);
-    y -= 10;
-    itemNum(ctx, "10", ML, y);
-    txt(ctx, "Is your claim for more than $2,500?", ML + 20, y, 8, false, BLACK);
-    y -= 14;
-    checkbox(ctx, ML + 20, y, c.claimOver2500 === true);
-    txt(ctx, "Yes — You also confirm you have not filed more than two claims over $2,500 in California this calendar year.", ML + 34, y - 5, 7.5, false, BLACK, CW - 50);
-    y -= 12;
-    checkbox(ctx, ML + 20, y, c.claimOver2500 !== true);
-    txt(ctx, "No", ML + 34, y - 5, 8, false, BLACK);
-    y -= 20;
-
-    // 11: No right to appeal
-    hline(ctx, ML, y, CW, 0.8);
-    y -= 10;
-    itemNum(ctx, "11", ML, y);
-    txt(ctx, "I understand that by filing a claim in small claims court, I have no right to appeal this claim.", ML + 20, y, 8, false, BLACK);
-    y -= 24;
-
-    // Declaration
-    hline(ctx, ML, y, CW, 1.2);
-    y -= 14;
-    const decl = "I declare under penalty of perjury under the laws of the State of California that the information above and on any attachments to this form is true and correct.";
-    y = multiline(ctx, decl, ML, y, CW, 8, 12, 3);
-    y -= 14;
-
-    // Signature block — plaintiff 1
-    box(ctx, ML, y - 50, CW / 2 - 10, 50);
-    txt(ctx, "Date:", ML + 6, y - 10, 7, false, GRAY);
-    hline(ctx, ML + 34, y - 12, CW / 2 - 50);
-    txt(ctx, "Plaintiff types or prints name here:", ML + 6, y - 26, 7, false, GRAY);
-    txt(ctx, c.plaintiffName ?? "", ML + 6, y - 37, 9, false, BLACK, CW / 2 - 18);
-    hline(ctx, ML + 6, y - 40, CW / 2 - 22);
-    txt(ctx, "Plaintiff signs here →", ML + 6, y - 52, 7, false, GRAY);
-
-    box(ctx, ML + CW / 2 + 10, y - 50, CW / 2 - 10, 50);
-    txt(ctx, "Date:", ML + CW / 2 + 16, y - 10, 7, false, GRAY);
-    hline(ctx, ML + CW / 2 + 44, y - 12, CW / 2 - 50);
-    txt(ctx, "Plaintiff signs here:", ML + CW / 2 + 16, y - 52, 7, false, GRAY);
-    y -= 60;
-
-    // Accommodations notice
-    y -= 10;
-    page.drawRectangle({ x: ML, y: y - 56, width: CW, height: 56, color: rgb(0.97, 0.97, 0.97), borderColor: LGRAY, borderWidth: 0.8 });
-    txt(ctx, "Requests for Accommodations", ML + 8, y - 13, 8, true, NAVY);
-    const accText = "Assistive listening systems, computer-assisted real-time captioning, or sign language interpreter services are available if you ask at least five days before the trial. For these and other accommodations, contact the clerk's office for form MC-410, Disability Accommodation Request. (Civ. Code, § 54.8.)";
-    multiline(ctx, accText, ML + 8, y - 26, CW - 16, 7.5, 11, 4);
-    y -= 65;
-
-    // DRAFT disclaimer box
-    y -= 8;
-    page.drawRectangle({ x: ML, y: y - 52, width: CW, height: 52, color: rgb(1, 0.98, 0.90), borderColor: rgb(0.8, 0.65, 0), borderWidth: 1 });
-    txt(ctx, "⚠  IMPORTANT — DRAFT DOCUMENT", ML + 8, y - 14, 9, true, rgb(0.6, 0.4, 0));
-    txt(ctx, "This form was prepared by Small Claims Genie as a guide only. You MUST obtain and file the official SC-100 form", ML + 8, y - 27, 7.5, false, BLACK);
-    txt(ctx, "from your county courthouse or courts.ca.gov. Small Claims Genie is not a law firm. This is not legal advice.", ML + 8, y - 38, 7.5, false, BLACK);
-    txt(ctx, `Generated: ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, ML + 8, y - 49, 7, false, GRAY);
-
-    // Footer
-    hline(ctx, ML, 38, CW);
-    txt(ctx, `SC-100, Page 4 of 4  |  Plaintiff's Claim and ORDER to Go to Small Claims Court  |  DRAFT — Small Claims Genie`, ML, 28, 6.5, false, GRAY);
-  }
-
-  const pdfBytes = await pdfDoc.save();
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="SC100-Case-${id}-Draft.pdf"`);
-  res.setHeader("Content-Length", pdfBytes.length);
-  res.send(Buffer.from(pdfBytes));
+    const pdfBytes = await pdfDoc.save();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="SC100-Case-${id}.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-100 PDF generation error:", err?.message ?? err);
+    console.error("SC-100 PDF generation error:", err?.message ?? err, err?.stack);
     if (!res.headersSent) {
       res.status(500).json({ error: "Failed to generate SC-100 PDF. Please try again." });
     }
   }
 });
 
-// ── Preview endpoint ───────────────────────────────────────────────────────────
+// ─── Preview / data endpoint ──────────────────────────────────────────────────
 router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
@@ -671,48 +811,33 @@ router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => 
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
 
+  const caseData = c as unknown as Record<string, any>;
   res.json({
-    plaintiffName: c.plaintiffName,
-    plaintiffAddress: [c.plaintiffAddress, c.plaintiffCity, c.plaintiffState, c.plaintiffZip].filter(Boolean).join(", "),
-    plaintiffPhone: c.plaintiffPhone,
-    plaintiffEmail: c.plaintiffEmail,
-    defendantName: c.defendantName,
-    defendantAddress: [c.defendantAddress, c.defendantCity, c.defendantState, c.defendantZip].filter(Boolean).join(", "),
-    defendantPhone: c.defendantPhone,
-    defendantIsBusinessOrEntity: c.defendantIsBusinessOrEntity,
-    defendantAgentName: c.defendantAgentName,
-    claimAmount: c.claimAmount,
-    claimType: c.claimType,
-    claimDescription: c.claimDescription,
-    incidentDate: c.incidentDate,
-    howAmountCalculated: c.howAmountCalculated,
-    priorDemandMade: c.priorDemandMade,
-    priorDemandDescription: c.priorDemandDescription,
-    venueBasis: c.venueBasis,
-    venueReason: c.venueReason,
-    countyId: c.countyId,
-    isSuingPublicEntity: c.isSuingPublicEntity,
-    publicEntityClaimFiledDate: c.publicEntityClaimFiledDate,
-    isAttyFeeDispute: c.isAttyFeeDispute,
-    filedMoreThan12Claims: c.filedMoreThan12Claims,
-    claimOver2500: c.claimOver2500,
+    plaintiffName:              caseData.plaintiffName,
+    plaintiffAddress:           [caseData.plaintiffAddress, caseData.plaintiffCity, caseData.plaintiffState, caseData.plaintiffZip].filter(Boolean).join(", "),
+    plaintiffPhone:             caseData.plaintiffPhone,
+    plaintiffEmail:             caseData.plaintiffEmail,
+    defendantName:              caseData.defendantName,
+    defendantAddress:           [caseData.defendantAddress, caseData.defendantCity, caseData.defendantState, caseData.defendantZip].filter(Boolean).join(", "),
+    defendantPhone:             caseData.defendantPhone,
+    defendantIsBusinessOrEntity: caseData.defendantIsBusinessOrEntity,
+    defendantAgentName:         caseData.defendantAgentName,
+    claimAmount:                caseData.claimAmount,
+    claimType:                  caseData.claimType,
+    claimDescription:           caseData.claimDescription,
+    incidentDate:               caseData.incidentDate,
+    howAmountCalculated:        caseData.howAmountCalculated,
+    priorDemandMade:            caseData.priorDemandMade,
+    priorDemandDescription:     caseData.priorDemandDescription,
+    venueBasis:                 caseData.venueBasis,
+    venueReason:                caseData.venueReason,
+    countyId:                   caseData.countyId,
+    isSuingPublicEntity:        caseData.isSuingPublicEntity,
+    publicEntityClaimFiledDate: caseData.publicEntityClaimFiledDate,
+    isAttyFeeDispute:           caseData.isAttyFeeDispute,
+    filedMoreThan12Claims:      caseData.filedMoreThan12Claims,
+    claimOver2500:              caseData.claimOver2500,
   });
 });
-
-function wrapText(text: string, maxChars: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let current = "";
-  for (const word of words) {
-    if ((current + " " + word).trim().length <= maxChars) {
-      current = current ? current + " " + word : word;
-    } else {
-      if (current) lines.push(current);
-      current = word;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
-}
 
 export default router;
