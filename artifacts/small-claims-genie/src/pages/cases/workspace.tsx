@@ -105,6 +105,7 @@ function DateRangePicker({ value, onChange }: { value: string; onChange: (v: str
 // ─── Intake Zod Schemas — 4-step consolidated intake ─────────────────────────
 const intakeStep1Schema = z.object({
   countyId: z.string().min(1, "County is required"),
+  courthouseId: z.string().optional(),
   plaintiffName: z.string().min(2, "Name is required"),
   plaintiffPhone: z.string().min(10, "Phone is required"),
   plaintiffAddress: z.string().min(5, "Address is required"),
@@ -162,7 +163,7 @@ export default function CaseWorkspace() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl flex flex-col gap-5">
+    <div className="container mx-auto px-4 pt-3 pb-6 max-w-6xl flex flex-col gap-3">
 
       {/* Your Cases button */}
       <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary border rounded-md px-3 py-1.5 transition-colors w-fit bg-background hover:bg-muted">
@@ -302,8 +303,8 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
   ];
 
   return (
-    <div className="p-5 md:p-7">
-      <div className="mb-7">
+    <div className="p-4 md:p-5">
+      <div className="mb-5">
         <div className="flex justify-between items-center mb-1">
           <span className="text-base font-semibold text-foreground">{stepLabels[step - 1]}</span>
           <span className="text-sm font-medium text-muted-foreground">Step {step} of 4</span>
@@ -339,6 +340,7 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
     resolver: zodResolver(intakeStep1Schema),
     defaultValues: {
       countyId: initialData.countyId || "",
+      courthouseId: initialData.courthouseId || "",
       plaintiffName: initialData.plaintiffName || "",
       plaintiffPhone: initialData.plaintiffPhone || "",
       plaintiffAddress: initialData.plaintiffAddress || "",
@@ -358,32 +360,105 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
   });
 
   const isBusiness = form.watch("defendantIsBusinessOrEntity");
+  const selectedCountyId = form.watch("countyId");
+  const selectedCourthouseId = form.watch("courthouseId");
+
+  const selectedCounty = counties?.find((c: any) => c.id === selectedCountyId);
+  const hasMultipleCourthouses = selectedCounty?.courthouses && selectedCounty.courthouses.length > 0;
+  const selectedCourthouse = hasMultipleCourthouses
+    ? selectedCounty.courthouses.find((ch: any) => ch.id === selectedCourthouseId)
+    : null;
+
+  const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
+  const courtAddress = selectedCourthouse
+    ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, CA ${selectedCourthouse.zip}`
+    : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, CA ${selectedCounty.courthouseZip}` : "";
+  const courtPhone = selectedCourthouse?.phone ?? selectedCounty?.phone;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-5">
+        <form onSubmit={form.handleSubmit((data) => {
+          onNext({
+            ...data,
+            courthouseName: courtName || null,
+            courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
+            courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
+            courthouseZip: selectedCourthouse?.zip ?? selectedCounty?.courthouseZip ?? null,
+            courthousePhone: courtPhone || null,
+            courthouseWebsite: selectedCounty?.website ?? null,
+          });
+        })} className="space-y-4">
 
-          {/* Filing County — full width, required */}
-          <div className="rounded-xl border bg-muted/20 p-5">
-            <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County (Required)</h3>
-            <FormField control={form.control} name="countyId" render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold">California County <span className="text-destructive">*</span></FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="h-11 max-w-sm">
-                      <SelectValue placeholder="Select your county" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="max-h-72 overflow-y-auto">
-                    {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">Usually where the defendant lives or where the incident happened.</p>
-                <FormMessage />
-              </FormItem>
-            )} />
+          {/* Filing County + Court Info — full width */}
+          <div className="rounded-xl border bg-muted/20 p-4">
+            <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County &amp; Court</h3>
+
+            {/* County + Courthouse selectors side by side */}
+            <div className="flex flex-wrap gap-3 items-end mb-3">
+              <FormField control={form.control} name="countyId" render={({ field }) => (
+                <FormItem className="flex-1 min-w-[200px]">
+                  <FormLabel className="font-semibold">California County <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select your county" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-72 overflow-y-auto">
+                      {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {hasMultipleCourthouses && (
+                <FormField control={form.control} name="courthouseId" render={({ field }) => (
+                  <FormItem className="flex-1 min-w-[200px]">
+                    <FormLabel className="font-semibold">Courthouse Location</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Select courthouse" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-72 overflow-y-auto">
+                        {selectedCounty.courthouses.map((ch: any) => (
+                          <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
+            </div>
+
+            {/* Horizontal court info strip */}
+            {selectedCounty && courtName && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg bg-background border px-4 py-2.5 text-sm">
+                <span className="font-semibold text-foreground">{courtName}</span>
+                {courtAddress && <span className="text-muted-foreground">{courtAddress}</span>}
+                {courtPhone && <span className="text-muted-foreground">{courtPhone}</span>}
+                {selectedCounty?.website && (
+                  <a
+                    href={selectedCounty.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium inline-flex items-center gap-0.5"
+                  >
+                    Court website ↗
+                  </a>
+                )}
+              </div>
+            )}
+            {selectedCountyId && !courtName && (
+              <p className="text-xs text-muted-foreground italic">Loading court information…</p>
+            )}
+            {!selectedCountyId && (
+              <p className="text-xs text-muted-foreground">Select a county to see the court location.</p>
+            )}
           </div>
 
           {/* Plaintiff | Defendant — side by side */}
@@ -627,7 +702,6 @@ function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNe
 
 // ─── Step 3: Prior Demand & Venue ─────────────────────────────────────────────
 function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
-  const { data: counties } = useListCounties();
   const form = useForm({
     resolver: zodResolver(intakeStep3Schema),
     defaultValues: {
@@ -640,48 +714,15 @@ function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNe
   });
 
   const madeDemand = form.watch("priorDemandMade");
-  const selectedCourthouseId = form.watch("courthouseId");
   const basis = form.watch("venueBasis");
 
-  const selectedCounty = counties?.find((c: any) => c.id === initialData.countyId);
-  const hasMultipleCourthouses = selectedCounty?.courthouses && selectedCounty.courthouses.length > 0;
-
-  const selectedCourthouse = hasMultipleCourthouses
-    ? selectedCounty.courthouses.find((ch: any) => ch.id === selectedCourthouseId)
-    : null;
-
-  const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
-  const courtAddress = selectedCourthouse
-    ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, CA ${selectedCourthouse.zip}`
-    : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, CA ${selectedCounty.courthouseZip}` : "";
-  const courtPhone = selectedCourthouse?.phone ?? selectedCounty?.phone;
-
-  const claimAmount = Number(initialData.claimAmount) || 0;
-  const filingFee = claimAmount < 1500
-    ? selectedCounty?.filingFeeUnder1500 ?? 30
-    : claimAmount <= 5000
-      ? selectedCounty?.filingFee1500to5000 ?? 50
-      : selectedCounty?.filingFeeOver5000 ?? 75;
-
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit((data) => {
-          onNext({
-            ...data,
-            countyId: initialData.countyId,
-            courthouseName: courtName || null,
-            courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
-            courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
-            courthouseZip: selectedCourthouse?.zip ?? selectedCounty?.courthouseZip ?? null,
-            courthousePhone: courtPhone || null,
-            courthouseWebsite: selectedCounty?.website ?? null,
-            filingFee: filingFee ?? null,
-          });
-        })} className="space-y-5">
+        <form onSubmit={form.handleSubmit(onNext)} className="space-y-4">
 
-          {/* Two-column: Prior Demand | Court Location */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Two-column: Prior Demand | Venue Basis */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
             {/* ── Prior Demand ── */}
             <div className="rounded-xl border p-5 space-y-4">
@@ -726,97 +767,47 @@ function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNe
               )}
             </div>
 
-            {/* ── Court Location ── */}
+            {/* ── Venue Basis ── */}
             <div className="rounded-xl border p-5 space-y-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Court Location</h3>
-
-              {selectedCounty ? (
-                <>
-                  {hasMultipleCourthouses && (
-                    <FormField control={form.control} name="courthouseId" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Select Courthouse</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Select courthouse location" /></SelectTrigger></FormControl>
-                          <SelectContent className="max-h-72 overflow-y-auto">
-                            {selectedCounty.courthouses.map((ch: any) => (
-                              <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Why This County?</h3>
+              <FormField control={form.control} name="venueBasis" render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="font-medium">Select the reason you're filing here <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
+                      <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                        <FormControl><RadioGroupItem value="where_defendant_lives" /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Where the defendant lives or does business</FormLabel>
                       </FormItem>
-                    )} />
-                  )}
+                      <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                        <FormControl><RadioGroupItem value="where_damage_happened" /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Where the damage or injury happened</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                        <FormControl><RadioGroupItem value="where_contract_made_broken" /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Where the contract was made or broken</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                        <FormControl><RadioGroupItem value="other" /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Other reason</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-                  {courtName && (
-                    <div className="rounded-lg bg-muted/30 border p-4 space-y-2">
-                      <p className="font-semibold text-sm">{courtName}</p>
-                      {courtAddress && <p className="text-sm text-muted-foreground">{courtAddress}</p>}
-                      {courtPhone && <p className="text-sm text-muted-foreground">Phone: {courtPhone}</p>}
-                      {selectedCounty?.website && (
-                        <a
-                          href={selectedCounty.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-                        >
-                          Court website ↗
-                        </a>
-                      )}
-                      <div className="border-t pt-2 mt-1">
-                        <p className="text-sm">
-                          Estimated filing fee:{" "}
-                          <span className="font-bold text-foreground">${filingFee}</span>
-                          <span className="text-xs text-muted-foreground ml-1">(based on ${claimAmount.toLocaleString()} claim)</span>
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">County was set in Step 1. Court information will appear here once data loads.</p>
+              {basis === 'other' && (
+                <FormField control={form.control} name="venueReason" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Please explain</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               )}
             </div>
           </div>
-
-          {/* Venue basis — full width 2×2 */}
-          <FormField control={form.control} name="venueBasis" render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel className="font-semibold">Why are you filing in this county? <span className="text-destructive">*</span></FormLabel>
-              <FormControl>
-                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-2">
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
-                    <FormControl><RadioGroupItem value="where_defendant_lives" /></FormControl>
-                    <FormLabel className="font-normal cursor-pointer">Where the defendant lives or does business</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
-                    <FormControl><RadioGroupItem value="where_damage_happened" /></FormControl>
-                    <FormLabel className="font-normal cursor-pointer">Where the damage or injury happened</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
-                    <FormControl><RadioGroupItem value="where_contract_made_broken" /></FormControl>
-                    <FormLabel className="font-normal cursor-pointer">Where the contract was made or broken</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
-                    <FormControl><RadioGroupItem value="other" /></FormControl>
-                    <FormLabel className="font-normal cursor-pointer">Other reason</FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-
-          {basis === 'other' && (
-            <FormField control={form.control} name="venueReason" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Please explain</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-          )}
 
           <div className="flex justify-between pt-2">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
