@@ -1029,7 +1029,6 @@ function ChatTab({ caseId }: { caseId: number }) {
     setIsRecording(false);
   };
 
-  const voiceLabel = isRecording ? i18n.chat.recording : "";
 
   return (
     <div className="flex flex-col h-[600px]">
@@ -1067,9 +1066,9 @@ function ChatTab({ caseId }: { caseId: number }) {
       </div>
 
       <div className="p-4 border-t bg-card mt-auto">
-        {voiceLabel && (
-          <div className="text-xs text-center text-muted-foreground mb-2 font-medium animate-pulse">{voiceLabel}</div>
-        )}
+        <div className={`text-xs text-center mb-2 font-medium transition-colors ${isRecording ? 'text-destructive animate-pulse' : 'text-muted-foreground/60'}`}>
+          {isRecording ? i18n.chat.recording : i18n.chat.micHint}
+        </div>
         <div className="flex items-center gap-2 relative">
           <Input 
             value={input} 

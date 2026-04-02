@@ -89,7 +89,8 @@ export const en = {
   chat: {
     placeholder: "Ask Small Claims Genie a question...",
     send: "Send",
-    recording: "Recording — release to send",
+    recording: "Recording… release to send",
+    micHint: "Press to record · release to send",
   },
   forms: {
     title: "Court Forms",
