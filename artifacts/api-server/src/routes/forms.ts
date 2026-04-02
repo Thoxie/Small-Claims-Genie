@@ -4,8 +4,22 @@ import { db } from "@workspace/db";
 import { casesTable } from "@workspace/db";
 import { PDFDocument, StandardFonts, rgb, LineCapStyle } from "pdf-lib";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
+import { redeemDownloadToken } from "../lib/download-tokens";
+import type { Request, Response } from "express";
 
 const router: IRouter = Router();
+
+async function resolveDownloadUser(req: Request, res: Response, caseId: number): Promise<string | null> {
+  const queryToken = req.query.token as string | undefined;
+  if (queryToken) {
+    const userId = redeemDownloadToken(queryToken, caseId);
+    if (!userId) { res.status(403).json({ error: "Invalid or expired download link. Please try again." }); return null; }
+    return userId;
+  }
+  const userId = getUserId(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return null; }
+  return userId;
+}
 
 // ─── Shared drawing helpers ───────────────────────────────────────────────────
 
@@ -133,10 +147,12 @@ function drawDraftWatermark(page: ReturnType<PDFDocument["addPage"]>, font: Awai
 
 // ─── Main route ───────────────────────────────────────────────────────────────
 router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
 
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
@@ -637,10 +653,12 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
 
 // ── Preview endpoint ───────────────────────────────────────────────────────────
 router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
 
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }

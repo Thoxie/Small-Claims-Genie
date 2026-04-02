@@ -1119,24 +1119,25 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
     setLoading(true);
     setDownloadError(null);
     try {
-      const token = await getToken();
-      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      // Step 1: get a short-lived download token via authenticated request
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${clerkToken}` },
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        setDownloadError(err.error ?? "Download failed — please try again.");
+      if (!tokenRes.ok) {
+        setDownloadError("Could not authorize download — please try again.");
         return;
       }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const { token } = await tokenRes.json();
+
+      // Step 2: download using ?token query param (no auth header needed)
       const a = document.createElement("a");
-      a.href = url;
+      a.href = `/api/cases/${caseId}/forms/${endpoint}?token=${encodeURIComponent(token)}`;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     } catch {
       setDownloadError("Download failed — please try again.");
     } finally {
