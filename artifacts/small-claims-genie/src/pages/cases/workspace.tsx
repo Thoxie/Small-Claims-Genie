@@ -252,12 +252,19 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
   const { toast } = useToast();
 
   const handleNext = (data: any) => {
-    const nextStep = step + 1;
+    const nextStep = Math.min(step + 1, 7);
     saveIntake.mutate({ id: caseId, data: { step: nextStep, data } }, {
       onSuccess: () => {
         setStep(nextStep);
         queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
-      }
+      },
+      onError: (err: any) => {
+        toast({
+          title: "Could not save progress",
+          description: err?.message || "Please check your connection and try again.",
+          variant: "destructive",
+        });
+      },
     });
   };
 
@@ -283,18 +290,18 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
         <Progress value={progress} className="h-2" />
       </div>
 
-      {step === 1 && <Step1 initialData={initialData} onNext={handleNext} />}
-      {step === 2 && <Step2 initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} />}
-      {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} />}
-      {step === 4 && <Step4 initialData={initialData} onNext={handleNext} onBack={() => setStep(3)} />}
-      {step === 5 && <Step5 initialData={initialData} onNext={handleNext} onBack={() => setStep(4)} />}
-      {step === 6 && <Step6 initialData={initialData} onNext={handleNext} onBack={() => setStep(5)} />}
-      {step === 7 && <Step7 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(6)} />}
+      {step === 1 && <Step1 initialData={initialData} onNext={handleNext} saving={saveIntake.isPending} />}
+      {step === 2 && <Step2 initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} />}
+      {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} saving={saveIntake.isPending} />}
+      {step === 4 && <Step4 initialData={initialData} onNext={handleNext} onBack={() => setStep(3)} saving={saveIntake.isPending} />}
+      {step === 5 && <Step5 initialData={initialData} onNext={handleNext} onBack={() => setStep(4)} saving={saveIntake.isPending} />}
+      {step === 6 && <Step6 initialData={initialData} onNext={handleNext} onBack={() => setStep(5)} saving={saveIntake.isPending} />}
+      {step === 7 && <Step7 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(6)} saving={saveIntake.isPending} />}
     </div>
   );
 }
 
-function Step1({ initialData, onNext }: { initialData: any, onNext: (d: any) => void }) {
+function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: any) => void, saving?: boolean }) {
   const form = useForm({
     resolver: zodResolver(intakeStep1Schema),
     defaultValues: {
@@ -350,7 +357,7 @@ function Step1({ initialData, onNext }: { initialData: any, onNext: (d: any) => 
             )} />
           </div>
           <div className="flex justify-end pt-4">
-            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -358,7 +365,7 @@ function Step1({ initialData, onNext }: { initialData: any, onNext: (d: any) => 
   );
 }
 
-function Step2({ initialData, onNext, onBack }: { initialData: any, onNext: (d: any) => void, onBack: () => void }) {
+function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
   const form = useForm({
     resolver: zodResolver(intakeStep2Schema),
     defaultValues: {
@@ -429,7 +436,7 @@ function Step2({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
           </div>
           <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -437,7 +444,7 @@ function Step2({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
   );
 }
 
-function Step3({ initialData, onNext, onBack }: { initialData: any, onNext: (d: any) => void, onBack: () => void }) {
+function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
   const form = useForm({
     resolver: zodResolver(intakeStep3Schema),
     defaultValues: {
@@ -461,7 +468,7 @@ function Step3({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
                   <SelectContent>
-                    {["Unpaid Debt", "Property Damage", "Contract Dispute", "Security Deposit", "Fraud", "Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -493,7 +500,7 @@ function Step3({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
           <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -501,7 +508,7 @@ function Step3({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
   );
 }
 
-function Step4({ initialData, onNext, onBack }: { initialData: any, onNext: (d: any) => void, onBack: () => void }) {
+function Step4({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
   const form = useForm({
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
@@ -544,7 +551,7 @@ function Step4({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
           <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -552,7 +559,7 @@ function Step4({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
   );
 }
 
-function Step5({ initialData, onNext, onBack }: { initialData: any, onNext: (d: any) => void, onBack: () => void }) {
+function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
   const { data: counties } = useListCounties();
   const form = useForm({
     resolver: zodResolver(intakeStep5Schema),
@@ -686,7 +693,7 @@ function Step5({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
           <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -694,7 +701,7 @@ function Step5({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
   );
 }
 
-function Step6({ initialData, onNext, onBack }: { initialData: any, onNext: (d: any) => void, onBack: () => void }) {
+function Step6({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
   const form = useForm({
     resolver: zodResolver(intakeStep6Schema),
     defaultValues: {
@@ -733,7 +740,7 @@ function Step6({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
           <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step">{i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
           </div>
         </form>
       </Form>
@@ -741,7 +748,7 @@ function Step6({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
   );
 }
 
-function Step7({ initialData, onComplete, onBack }: { initialData: any, onComplete: () => void, onBack: () => void }) {
+function Step7({ initialData, onComplete, onBack, saving }: { initialData: any, onComplete: () => void, onBack: () => void, saving?: boolean }) {
   return (
     <div className="max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step7}</h2>
@@ -764,7 +771,7 @@ function Step7({ initialData, onComplete, onBack }: { initialData: any, onComple
       </div>
       <div className="flex justify-between pt-8">
         <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-        <Button onClick={onComplete} size="lg" data-testid="button-complete-intake" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">Complete Intake</Button>
+        <Button onClick={onComplete} size="lg" data-testid="button-complete-intake" disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">{saving ? "Saving…" : "Complete Intake"}</Button>
       </div>
     </div>
   );
