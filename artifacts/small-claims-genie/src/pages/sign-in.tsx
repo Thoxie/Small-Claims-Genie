@@ -13,6 +13,7 @@ export default function SignInPage() {
           </div>
           <p className="text-xl font-bold text-primary mt-1">Win in Small Claims Court.</p>
           <p className="text-muted-foreground mt-1 text-sm">Don't lose because you're unprepared.</p>
+          <p className="text-base font-semibold text-amber-600 mt-1">Get your money back!</p>
         </div>
         <SignIn
           routing="path"
