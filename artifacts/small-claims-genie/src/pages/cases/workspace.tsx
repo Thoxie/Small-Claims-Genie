@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@clerk/clerk-react";
 import { useParams, Link } from "wouter";
 import { 
   useGetCase, 
@@ -906,7 +907,8 @@ function ChatTab({ caseId }: { caseId: number }) {
   const [isRecording, setIsRecording] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  
+  const { getToken } = useAuth();
+
   const { data: history } = useGetChatHistory(caseId, { query: { enabled: !!caseId } });
 
   useEffect(() => {
@@ -926,12 +928,21 @@ function ChatTab({ caseId }: { caseId: number }) {
     setIsTyping(true);
 
     try {
+      const token = await getToken();
       const response = await fetch(`/api/cases/${caseId}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ content })
       });
       
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(err.error || `Request failed (${response.status})`);
+      }
+
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
@@ -957,8 +968,13 @@ function ChatTab({ caseId }: { caseId: number }) {
           }
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 2,
+        role: 'assistant',
+        content: `Sorry, I ran into an error: ${e?.message || "Please try again."}`,
+      }]);
     } finally {
       setIsTyping(false);
     }
