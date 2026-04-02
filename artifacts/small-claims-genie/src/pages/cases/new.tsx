@@ -19,10 +19,11 @@ const newCaseSchema = z.object({
 type NewCaseFormValues = z.infer<typeof newCaseSchema>;
 
 const CLAIM_TYPES = [
+  "Money Owed",
   "Unpaid Debt",
+  "Security Deposit",
   "Property Damage",
   "Contract Dispute",
-  "Security Deposit",
   "Fraud",
   "Other"
 ];
@@ -120,7 +121,7 @@ export default function NewCase() {
                           <SelectValue placeholder={countiesLoading ? "Loading counties..." : "Select a county"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-72 overflow-y-auto">
                         {counties?.map((county) => (
                           <SelectItem key={county.id} value={county.id}>
                             {county.name} County
