@@ -71,6 +71,7 @@ const intakeStep4Schema = z.object({
 
 const intakeStep5Schema = z.object({
   countyId: z.string().min(1, "County is required"),
+  courthouseId: z.string().optional(),
   venueBasis: z.string().min(1, "Please select a reason"),
   venueReason: z.string().optional(),
 });
@@ -101,8 +102,8 @@ export default function CaseWorkspace() {
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl flex flex-col gap-5">
 
-      {/* Your Cases icon */}
-      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors w-fit">
+      {/* Your Cases button */}
+      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary border rounded-md px-3 py-1.5 transition-colors w-fit bg-background hover:bg-muted">
         <ArrowLeft className="h-4 w-4" />
         Your Cases
       </Link>
@@ -463,38 +464,119 @@ function Step5({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
     resolver: zodResolver(intakeStep5Schema),
     defaultValues: {
       countyId: initialData.countyId || "",
+      courthouseId: initialData.courthouseId || "",
       venueBasis: initialData.venueBasis || "",
       venueReason: initialData.venueReason || "",
     }
   });
 
+  const selectedCountyId = form.watch("countyId");
+  const selectedCourthouseId = form.watch("courthouseId");
   const basis = form.watch("venueBasis");
+
+  const selectedCounty = counties?.find((c: any) => c.id === selectedCountyId);
+  const hasMultipleCourthouses = selectedCounty?.courthouses && selectedCounty.courthouses.length > 0;
+
+  const selectedCourthouse = hasMultipleCourthouses
+    ? selectedCounty.courthouses.find((ch: any) => ch.id === selectedCourthouseId)
+    : null;
+
+  const courtName = selectedCourthouse
+    ? selectedCourthouse.name
+    : selectedCounty?.courthouseName;
+  const courtAddress = selectedCourthouse
+    ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, CA ${selectedCourthouse.zip}`
+    : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, CA ${selectedCounty.courthouseZip}` : "";
+  const courtPhone = selectedCourthouse?.phone ?? selectedCounty?.phone;
+
+  const claimAmount = initialData.claimAmount || 0;
+  const filingFee = claimAmount < 1500
+    ? selectedCounty?.filingFeeUnder1500 ?? 30
+    : claimAmount <= 5000
+      ? selectedCounty?.filingFee1500to5000 ?? 50
+      : selectedCounty?.filingFeeOver5000 ?? 75;
 
   return (
     <div className="max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step5}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
-          <FormField control={form.control} name="countyId" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Which County will you file in?</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Select county" /></SelectTrigger></FormControl>
-                <SelectContent>
-                  {counties?.map(c => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} />
 
+          {/* State + County row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormItem>
+              <FormLabel>State</FormLabel>
+              <Select value="california" disabled>
+                <SelectTrigger><SelectValue>California</SelectValue></SelectTrigger>
+                <SelectContent><SelectItem value="california">California</SelectItem></SelectContent>
+              </Select>
+            </FormItem>
+
+            <FormField control={form.control} name="countyId" render={({ field }) => (
+              <FormItem>
+                <FormLabel>County</FormLabel>
+                <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Select county" /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
+
+          {/* Courthouse dropdown — only for multi-courthouse counties */}
+          {hasMultipleCourthouses && (
+            <FormField control={form.control} name="courthouseId" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Court (Filing Location)</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Select filing location" /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    {selectedCounty.courthouses.map((ch: any) => (
+                      <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+          )}
+
+          {/* Auto-populated court info card */}
+          {selectedCounty && (
+            <div className="rounded-lg border bg-muted/40 p-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Court Information</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Court Name</p>
+                  <p className="text-sm font-medium">{courtName || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Phone</p>
+                  <p className="text-sm font-medium">{courtPhone || "—"}</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-xs text-muted-foreground mb-1">Address</p>
+                  <p className="text-sm font-medium">{courtAddress || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Filing Fee (your claim amount)</p>
+                  <p className="text-sm font-bold text-primary">${filingFee}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Venue basis */}
           <FormField control={form.control} name="venueBasis" render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Why are you filing here?</FormLabel>
+              <FormLabel>Why are you filing in this county?</FormLabel>
               <FormControl>
                 <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2">
-                  <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="where_defendant_lives" /></FormControl><FormLabel className="font-normal">Where the defendant lives</FormLabel></FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="where_damage_happened" /></FormControl><FormLabel className="font-normal">Where the damage/injury happened</FormLabel></FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="where_defendant_lives" /></FormControl><FormLabel className="font-normal">Where the defendant lives or does business</FormLabel></FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="where_damage_happened" /></FormControl><FormLabel className="font-normal">Where the damage or injury happened</FormLabel></FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="where_contract_made_broken" /></FormControl><FormLabel className="font-normal">Where the contract was made or broken</FormLabel></FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="other" /></FormControl><FormLabel className="font-normal">Other</FormLabel></FormItem>
                 </RadioGroup>
@@ -505,7 +587,7 @@ function Step5({ initialData, onNext, onBack }: { initialData: any, onNext: (d: 
 
           {basis === 'other' && (
             <FormField control={form.control} name="venueReason" render={({ field }) => (
-              <FormItem><FormLabel>Explain why</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Please explain</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
           )}
 

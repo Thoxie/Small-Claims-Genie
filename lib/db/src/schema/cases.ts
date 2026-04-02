@@ -31,6 +31,7 @@ export const casesTable = pgTable("cases", {
   priorDemandDescription: text("prior_demand_description"),
   venueReason: text("venue_reason"),
   venueBasis: text("venue_basis"),
+  courthouseId: text("courthouse_id"),
   isSuingPublicEntity: boolean("is_suing_public_entity").default(false),
   publicEntityClaimFiledDate: text("public_entity_claim_filed_date"),
   isAttyFeeDispute: boolean("is_atty_fee_dispute").default(false),
