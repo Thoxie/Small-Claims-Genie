@@ -9,8 +9,7 @@ export default function SignUpPage() {
           <p className="text-muted-foreground mt-2">Create your free account to get started</p>
         </div>
         <SignUp
-          routing="path"
-          path="/sign-up"
+          routing="virtual"
           signInUrl="/sign-in"
           fallbackRedirectUrl="/dashboard"
           appearance={{

@@ -9,8 +9,7 @@ export default function SignInPage() {
           <p className="text-muted-foreground mt-2">Sign in to access your cases</p>
         </div>
         <SignIn
-          routing="path"
-          path="/sign-in"
+          routing="virtual"
           signUpUrl="/sign-up"
           fallbackRedirectUrl="/dashboard"
           appearance={{
