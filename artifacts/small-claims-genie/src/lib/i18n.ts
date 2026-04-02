@@ -19,7 +19,7 @@ export const en = {
     howItWorksLink: "How It Works",
     whatWeDoTitle: "What Small Claims Genie Does",
     feature1Title: "Court-Ready Intake Forms",
-    feature1Desc: "Guides your intake so you can create court-ready forms that are legally complete — every required field, nothing missed.",
+    feature1Desc: "Guides your intake so you can create court ready forms that are legal ready and complete. Guided step-by-step collects every field required for your court ready forms — legally complete, nothing missed.",
     feature2Title: "Evidence That Speaks for You",
     feature2Desc: "Organizes your documents and evidence into clean, usable summaries you can read to the judge with confidence.",
     feature3Title: "Filing Guidance & Checklists",
