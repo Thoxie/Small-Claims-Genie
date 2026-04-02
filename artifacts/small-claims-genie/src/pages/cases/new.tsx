@@ -25,12 +25,13 @@ export default function NewCase() {
   const [title, setTitle] = useState("");
   const [claimType, setClaimType] = useState("");
   const [countyId, setCountyId] = useState("");
-  const [errors, setErrors] = useState<{ title?: string; claimType?: string }>({});
+  const [errors, setErrors] = useState<{ title?: string; claimType?: string; countyId?: string }>({});
 
   const handleSubmit = () => {
-    const newErrors: { title?: string; claimType?: string } = {};
+    const newErrors: { title?: string; claimType?: string; countyId?: string } = {};
     if (title.trim().length < 3) newErrors.title = "Please enter a title (at least 3 characters)";
     if (!claimType) newErrors.claimType = "Please select a claim type";
+    if (!countyId) newErrors.countyId = "Please select a county";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -40,7 +41,7 @@ export default function NewCase() {
     setErrors({});
 
     createCase.mutate(
-      { data: { title: title.trim(), claimType, countyId: countyId || undefined } },
+      { data: { title: title.trim(), claimType, countyId } },
       {
         onSuccess: (newCase) => {
           setLocation(`/cases/${newCase.id}`);
@@ -105,18 +106,17 @@ export default function NewCase() {
             {errors.claimType && <p className="text-sm text-destructive mt-1">{errors.claimType}</p>}
           </div>
 
-          {/* County — optional */}
+          {/* County — required */}
           <div>
             <label className="text-base font-semibold block mb-2">
-              County{" "}
-              <span className="text-muted-foreground font-normal text-sm">(optional — can set later)</span>
+              California County <span className="text-red-500">*</span>
             </label>
             <select
-              className="w-full h-14 px-3 rounded-md border border-input bg-background text-base"
+              className={`w-full h-14 px-3 rounded-md border bg-background text-base ${errors.countyId ? "border-red-500" : "border-input"}`}
               value={countyId}
-              onChange={(e) => setCountyId(e.target.value)}
+              onChange={(e) => { setCountyId(e.target.value); setErrors((p) => ({ ...p, countyId: undefined })); }}
             >
-              <option value="">Select a county (optional)</option>
+              <option value="">Select your county</option>
               {counties?.map((county) => (
                 <option key={county.id} value={county.id}>
                   {county.name} County
@@ -126,6 +126,7 @@ export default function NewCase() {
             <p className="text-sm text-muted-foreground mt-1">
               Usually where the defendant lives or where the incident happened.
             </p>
+            {errors.countyId && <p className="text-sm text-destructive mt-1">{errors.countyId}</p>}
           </div>
 
           {/* Submit */}

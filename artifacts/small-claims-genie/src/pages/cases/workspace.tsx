@@ -102,8 +102,9 @@ function DateRangePicker({ value, onChange }: { value: string; onChange: (v: str
   );
 }
 
-// ─── Intake Zod Schemas (mapped 1-to-1 to SC-100 fields) ─────────────────────
+// ─── Intake Zod Schemas — 4-step consolidated intake ─────────────────────────
 const intakeStep1Schema = z.object({
+  countyId: z.string().min(1, "County is required"),
   plaintiffName: z.string().min(2, "Name is required"),
   plaintiffPhone: z.string().min(10, "Phone is required"),
   plaintiffAddress: z.string().min(5, "Address is required"),
@@ -111,20 +112,17 @@ const intakeStep1Schema = z.object({
   plaintiffState: z.string().min(2, "State is required"),
   plaintiffZip: z.string().min(5, "ZIP is required"),
   plaintiffEmail: z.string().email("Valid email required").optional().or(z.literal("")),
-});
-
-const intakeStep2Schema = z.object({
+  defendantIsBusinessOrEntity: z.boolean().default(false),
   defendantName: z.string().min(2, "Defendant name is required"),
+  defendantAgentName: z.string().optional(),
   defendantPhone: z.string().optional(),
   defendantAddress: z.string().min(5, "Address is required"),
   defendantCity: z.string().min(2, "City is required"),
   defendantState: z.string().min(2, "State is required"),
   defendantZip: z.string().min(5, "ZIP is required"),
-  defendantIsBusinessOrEntity: z.boolean().default(false),
-  defendantAgentName: z.string().optional(),
 });
 
-const intakeStep3Schema = z.object({
+const intakeStep2Schema = z.object({
   claimType: z.string().min(1, "Claim type is required"),
   claimAmount: z.coerce.number().min(1, "Amount must be greater than 0"),
   claimDescription: z.string().min(10, "Please describe what happened"),
@@ -132,19 +130,15 @@ const intakeStep3Schema = z.object({
   howAmountCalculated: z.string().min(5, "Please explain how you calculated the amount"),
 });
 
-const intakeStep4Schema = z.object({
+const intakeStep3Schema = z.object({
   priorDemandMade: z.boolean(),
   priorDemandDescription: z.string().optional(),
-});
-
-const intakeStep5Schema = z.object({
-  countyId: z.string().min(1, "County is required"),
   courthouseId: z.string().optional(),
   venueBasis: z.string().min(1, "Please select a reason"),
   venueReason: z.string().optional(),
 });
 
-const intakeStep6Schema = z.object({
+const intakeStep4Schema = z.object({
   isSuingPublicEntity: z.boolean(),
   publicEntityClaimFiledDate: z.string().optional(),
   isAttyFeeDispute: z.boolean(),
@@ -260,7 +254,7 @@ export default function CaseWorkspace() {
 
 // ─── INTAKE TAB ───────────────────────────────────────────────────────────────
 function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }) {
-  const [step, setStep] = useState(initialData.intakeStep || 1);
+  const [step, setStep] = useState(Math.min(initialData.intakeStep || 1, 4));
   const saveIntake = useSaveIntakeProgress();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -273,11 +267,12 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
   };
 
   const handleNext = (data: any) => {
-    const nextStep = Math.min(step + 1, 7);
+    const nextStep = Math.min(step + 1, 4);
     saveIntake.mutate({ id: caseId, data: { step: nextStep, data } }, {
       onSuccess: () => {
         setStep(nextStep);
         invalidateAll();
+        window.scrollTo({ top: 0, behavior: "smooth" });
       },
       onError: (err: any) => {
         toast({
@@ -289,8 +284,8 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
     });
   };
 
-  const handleComplete = () => {
-    saveIntake.mutate({ id: caseId, data: { step: 7, intakeComplete: true } }, {
+  const handleComplete = (formData: any) => {
+    saveIntake.mutate({ id: caseId, data: { step: 4, ...formData, intakeComplete: true } }, {
       onSuccess: () => {
         toast({ title: "Intake Complete", description: "Your information has been saved." });
         invalidateAll();
@@ -298,33 +293,52 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
     });
   };
 
-  const progress = (step / 7) * 100;
+  const progress = (step / 4) * 100;
+  const stepLabels = [
+    "Parties & Filing County",
+    "Claim Details",
+    "Prior Demand & Venue",
+    "Eligibility & Review",
+  ];
 
   return (
-    <div className="p-6 md:p-8">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2 text-sm font-medium text-muted-foreground">
-          <span>Step {step} of 7</span>
-          <span>{Math.round(progress)}% Complete</span>
+    <div className="p-5 md:p-7">
+      <div className="mb-7">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-base font-semibold text-foreground">{stepLabels[step - 1]}</span>
+          <span className="text-sm font-medium text-muted-foreground">Step {step} of 4</span>
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className="h-2.5 mb-2" />
+        <div className="flex gap-1.5">
+          {stepLabels.map((label, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => i < step - 1 && setStep(i + 1)}
+              className={`flex-1 h-1.5 rounded-full transition-colors ${
+                i < step ? "bg-primary" : "bg-muted"
+              } ${i < step - 1 ? "cursor-pointer hover:bg-primary/70" : "cursor-default"}`}
+              title={i < step - 1 ? `Back to ${label}` : label}
+            />
+          ))}
+        </div>
       </div>
 
       {step === 1 && <Step1 initialData={initialData} onNext={handleNext} saving={saveIntake.isPending} />}
       {step === 2 && <Step2 initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} />}
       {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} saving={saveIntake.isPending} />}
-      {step === 4 && <Step4 initialData={initialData} onNext={handleNext} onBack={() => setStep(3)} saving={saveIntake.isPending} />}
-      {step === 5 && <Step5 initialData={initialData} onNext={handleNext} onBack={() => setStep(4)} saving={saveIntake.isPending} />}
-      {step === 6 && <Step6 initialData={initialData} onNext={handleNext} onBack={() => setStep(5)} saving={saveIntake.isPending} />}
-      {step === 7 && <Step7 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(6)} saving={saveIntake.isPending} />}
+      {step === 4 && <Step4 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(3)} saving={saveIntake.isPending} />}
     </div>
   );
 }
 
+// ─── Step 1: Parties & Filing County ─────────────────────────────────────────
 function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: any) => void, saving?: boolean }) {
+  const { data: counties } = useListCounties();
   const form = useForm({
     resolver: zodResolver(intakeStep1Schema),
     defaultValues: {
+      countyId: initialData.countyId || "",
       plaintiffName: initialData.plaintiffName || "",
       plaintiffPhone: initialData.plaintiffPhone || "",
       plaintiffAddress: initialData.plaintiffAddress || "",
@@ -332,131 +346,190 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
       plaintiffState: initialData.plaintiffState || "CA",
       plaintiffZip: initialData.plaintiffZip || "",
       plaintiffEmail: initialData.plaintiffEmail || "",
-    }
-  });
-
-  return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step1}</h2>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
-          <FormField control={form.control} name="plaintiffName" render={({ field }) => (
-            <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField control={form.control} name="plaintiffPhone" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="(555) 555-5555"
-                    value={field.value}
-                    onChange={(e) => field.onChange(formatPhone(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="plaintiffEmail" render={({ field }) => (
-              <FormItem><FormLabel>Email (Optional)</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-          </div>
-          <FormField control={form.control} name="plaintiffAddress" render={({ field }) => (
-            <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-          <div className="grid grid-cols-3 gap-4">
-            <FormField control={form.control} name="plaintiffCity" render={({ field }) => (
-              <FormItem className="col-span-1"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="plaintiffState" render={({ field }) => (
-              <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="plaintiffZip" render={({ field }) => (
-              <FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-          </div>
-          <div className="flex justify-end pt-4">
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
-          </div>
-        </form>
-      </Form>
-    </div>
-  );
-}
-
-function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
-  const form = useForm({
-    resolver: zodResolver(intakeStep2Schema),
-    defaultValues: {
+      defendantIsBusinessOrEntity: initialData.defendantIsBusinessOrEntity || false,
       defendantName: initialData.defendantName || "",
+      defendantAgentName: initialData.defendantAgentName || "",
       defendantPhone: initialData.defendantPhone || "",
       defendantAddress: initialData.defendantAddress || "",
       defendantCity: initialData.defendantCity || "",
       defendantState: initialData.defendantState || "CA",
       defendantZip: initialData.defendantZip || "",
-      defendantIsBusinessOrEntity: initialData.defendantIsBusinessOrEntity || false,
-      defendantAgentName: initialData.defendantAgentName || "",
     }
   });
 
   const isBusiness = form.watch("defendantIsBusinessOrEntity");
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step2}</h2>
+    <div className="space-y-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
-          <FormField control={form.control} name="defendantIsBusinessOrEntity" render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>I am suing a business or public entity</FormLabel>
-              </div>
-            </FormItem>
-          )} />
-          
-          <FormField control={form.control} name="defendantName" render={({ field }) => (
-            <FormItem><FormLabel>{isBusiness ? "Business Name" : "Full Name"}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
+        <form onSubmit={form.handleSubmit(onNext)} className="space-y-5">
 
-          {isBusiness && (
-            <FormField control={form.control} name="defendantAgentName" render={({ field }) => (
-              <FormItem><FormLabel>Agent for Service of Process (if known)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-          )}
-
-          <FormField control={form.control} name="defendantPhone" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number (Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="(555) 555-5555"
-                  value={field.value}
-                  onChange={(e) => field.onChange(formatPhone(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="defendantAddress" render={({ field }) => (
-            <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-          <div className="grid grid-cols-3 gap-4">
-            <FormField control={form.control} name="defendantCity" render={({ field }) => (
-              <FormItem className="col-span-1"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="defendantState" render={({ field }) => (
-              <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="defendantZip" render={({ field }) => (
-              <FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+          {/* Filing County — full width, required */}
+          <div className="rounded-xl border bg-muted/20 p-5">
+            <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County (Required)</h3>
+            <FormField control={form.control} name="countyId" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="font-semibold">California County <span className="text-destructive">*</span></FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11 max-w-sm">
+                      <SelectValue placeholder="Select your county" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-72 overflow-y-auto">
+                    {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Usually where the defendant lives or where the incident happened.</p>
+                <FormMessage />
+              </FormItem>
             )} />
           </div>
-          <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
+
+          {/* Plaintiff | Defendant — side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            {/* ── Plaintiff ── */}
+            <div className="rounded-xl border p-5 space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Your Information (Plaintiff)</h3>
+
+              <FormField control={form.control} name="plaintiffName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name <span className="text-destructive">*</span></FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <div className="grid grid-cols-2 gap-3">
+                <FormField control={form.control} name="plaintiffPhone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="(555) 555-5555" value={field.value} onChange={(e) => field.onChange(formatPhone(e.target.value))} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="plaintiffEmail" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl><Input type="email" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+
+              <FormField control={form.control} name="plaintiffAddress" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Street Address <span className="text-destructive">*</span></FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <div className="grid grid-cols-5 gap-2">
+                <FormField control={form.control} name="plaintiffCity" render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>City</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="plaintiffState" render={({ field }) => (
+                  <FormItem className="col-span-1">
+                    <FormLabel>State</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="plaintiffZip" render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>ZIP</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+            </div>
+
+            {/* ── Defendant ── */}
+            <div className="rounded-xl border p-5 space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Defendant Information</h3>
+
+              <FormField control={form.control} name="defendantIsBusinessOrEntity" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <FormLabel className="font-normal cursor-pointer">I am suing a business or public entity</FormLabel>
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="defendantName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{isBusiness ? "Business Name" : "Full Name"} <span className="text-destructive">*</span></FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {isBusiness && (
+                <FormField control={form.control} name="defendantAgentName" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agent for Service of Process (if known)</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
+
+              <FormField control={form.control} name="defendantPhone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="(555) 555-5555" value={field.value} onChange={(e) => field.onChange(formatPhone(e.target.value))} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="defendantAddress" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Street Address <span className="text-destructive">*</span></FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <div className="grid grid-cols-5 gap-2">
+                <FormField control={form.control} name="defendantCity" render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>City</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="defendantState" render={({ field }) => (
+                  <FormItem className="col-span-1">
+                    <FormLabel>State</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="defendantZip" render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>ZIP</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
+              {saving ? "Saving…" : i18n.intake.saveAndContinue}
+            </Button>
           </div>
         </form>
       </Form>
@@ -464,9 +537,10 @@ function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNe
   );
 }
 
-function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+// ─── Step 2: Claim Details ────────────────────────────────────────────────────
+function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
   const form = useForm({
-    resolver: zodResolver(intakeStep3Schema),
+    resolver: zodResolver(intakeStep2Schema),
     defaultValues: {
       claimType: initialData.claimType || "",
       claimAmount: initialData.claimAmount || "",
@@ -477,50 +551,73 @@ function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNe
   });
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step3}</h2>
+    <div className="space-y-5">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={form.handleSubmit(onNext)} className="space-y-5">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <FormField control={form.control} name="claimType" render={({ field }) => (
               <FormItem>
-                <FormLabel>Claim Type</FormLabel>
+                <FormLabel>Claim Type <span className="text-destructive">*</span></FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                  <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
                   <SelectContent>
-                    {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )} />
+
             <FormField control={form.control} name="claimAmount" render={({ field }) => (
-              <FormItem><FormLabel>Amount Requested ($)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Amount Requested ($) <span className="text-destructive">*</span></FormLabel>
+                <FormControl><Input type="number" step="0.01" className="h-11" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
           </div>
-          
+
           <FormField control={form.control} name="incidentDate" render={({ field }) => (
             <FormItem>
-              <FormLabel>When did this happen?</FormLabel>
+              <FormLabel>When did this happen? <span className="text-destructive">*</span></FormLabel>
               <FormControl>
                 <DateRangePicker value={field.value} onChange={field.onChange} />
               </FormControl>
-              <p className="text-xs text-muted-foreground">Click a start date, then click an end date to select a range. Click one date for a single day.</p>
+              <p className="text-xs text-muted-foreground">Select a single date or a date range.</p>
               <FormMessage />
             </FormItem>
           )} />
 
-          <FormField control={form.control} name="claimDescription" render={({ field }) => (
-            <FormItem><FormLabel>What happened?</FormLabel><FormControl><Textarea className="min-h-[120px]" placeholder="Briefly describe why the defendant owes you money..." {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-          
-          <FormField control={form.control} name="howAmountCalculated" render={({ field }) => (
-            <FormItem><FormLabel>How did you calculate this amount?</FormLabel><FormControl><Textarea className="min-h-[80px]" placeholder="e.g. $500 for rent + $100 late fee" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FormField control={form.control} name="claimDescription" render={({ field }) => (
+              <FormItem>
+                <FormLabel>What happened? <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Textarea className="min-h-[150px]" placeholder="Briefly describe why the defendant owes you money…" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
 
-          <div className="flex justify-between pt-4">
+            <FormField control={form.control} name="howAmountCalculated" render={({ field }) => (
+              <FormItem>
+                <FormLabel>How did you calculate this amount? <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Textarea className="min-h-[150px]" placeholder="e.g. $500 unpaid rent + $100 late fee + $50 court costs" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
+
+          <div className="flex justify-between pt-2">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
+              {saving ? "Saving…" : i18n.intake.saveAndContinue}
+            </Button>
           </div>
         </form>
       </Form>
@@ -528,89 +625,38 @@ function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNe
   );
 }
 
-function Step4({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+// ─── Step 3: Prior Demand & Venue ─────────────────────────────────────────────
+function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+  const { data: counties } = useListCounties();
   const form = useForm({
-    resolver: zodResolver(intakeStep4Schema),
+    resolver: zodResolver(intakeStep3Schema),
     defaultValues: {
       priorDemandMade: initialData.priorDemandMade ?? false,
       priorDemandDescription: initialData.priorDemandDescription || "",
-    }
-  });
-
-  const madeDemand = form.watch("priorDemandMade");
-
-  return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step4}</h2>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
-          <FormField control={form.control} name="priorDemandMade" render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Have you asked the defendant to pay you (or perform the required action)?</FormLabel>
-              <FormControl>
-                <RadioGroup onValueChange={(val) => field.onChange(val === 'true')} defaultValue={field.value ? 'true' : 'false'} className="flex flex-col space-y-1">
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl><RadioGroupItem value="true" /></FormControl>
-                    <FormLabel className="font-normal">Yes, I asked them.</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl><RadioGroupItem value="false" /></FormControl>
-                    <FormLabel className="font-normal">No, I have not asked them.</FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-
-          {madeDemand && (
-            <FormField control={form.control} name="priorDemandDescription" render={({ field }) => (
-              <FormItem><FormLabel>How and when did you ask them?</FormLabel><FormControl><Textarea placeholder="e.g. I sent a text message on Oct 1st and an email on Oct 5th." {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-          )}
-
-          <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
-          </div>
-        </form>
-      </Form>
-    </div>
-  );
-}
-
-function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
-  const { data: counties } = useListCounties();
-  const form = useForm({
-    resolver: zodResolver(intakeStep5Schema),
-    defaultValues: {
-      countyId: initialData.countyId || "",
       courthouseId: initialData.courthouseId || "",
       venueBasis: initialData.venueBasis || "",
       venueReason: initialData.venueReason || "",
     }
   });
 
-  const selectedCountyId = form.watch("countyId");
+  const madeDemand = form.watch("priorDemandMade");
   const selectedCourthouseId = form.watch("courthouseId");
   const basis = form.watch("venueBasis");
 
-  const selectedCounty = counties?.find((c: any) => c.id === selectedCountyId);
+  const selectedCounty = counties?.find((c: any) => c.id === initialData.countyId);
   const hasMultipleCourthouses = selectedCounty?.courthouses && selectedCounty.courthouses.length > 0;
 
   const selectedCourthouse = hasMultipleCourthouses
     ? selectedCounty.courthouses.find((ch: any) => ch.id === selectedCourthouseId)
     : null;
 
-  const courtName = selectedCourthouse
-    ? selectedCourthouse.name
-    : selectedCounty?.courthouseName;
+  const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
   const courtAddress = selectedCourthouse
     ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, CA ${selectedCourthouse.zip}`
     : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, CA ${selectedCounty.courthouseZip}` : "";
   const courtPhone = selectedCourthouse?.phone ?? selectedCounty?.phone;
 
-  const claimAmount = initialData.claimAmount || 0;
+  const claimAmount = Number(initialData.claimAmount) || 0;
   const filingFee = claimAmount < 1500
     ? selectedCounty?.filingFeeUnder1500 ?? 30
     : claimAmount <= 5000
@@ -618,13 +664,12 @@ function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNe
       : selectedCounty?.filingFeeOver5000 ?? 75;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step5}</h2>
+    <div className="space-y-5">
       <Form {...form}>
         <form onSubmit={form.handleSubmit((data) => {
-          // Enrich submission with full courthouse details so they're stored on the case
           onNext({
             ...data,
+            countyId: initialData.countyId,
             courthouseName: courtName || null,
             courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
             courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
@@ -633,80 +678,130 @@ function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNe
             courthouseWebsite: selectedCounty?.website ?? null,
             filingFee: filingFee ?? null,
           });
-        })} className="space-y-6">
+        })} className="space-y-5">
 
-          {/* County (CA) */}
-          <FormField control={form.control} name="countyId" render={({ field }) => (
-            <FormItem>
-              <FormLabel>County (CA)</FormLabel>
-              <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Select your county" /></SelectTrigger></FormControl>
-                <SelectContent className="max-h-72 overflow-y-auto">
-                  {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} />
+          {/* Two-column: Prior Demand | Court Location */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-          {/* Court dropdown — only shown when county has multiple locations */}
-          {selectedCounty && (
-            <FormField control={form.control} name="courthouseId" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Court <span className="text-muted-foreground font-normal">(auto-derived from county)</span></FormLabel>
-                {hasMultipleCourthouses ? (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select courthouse location" /></SelectTrigger></FormControl>
-                    <SelectContent className="max-h-72 overflow-y-auto">
-                      {selectedCounty.courthouses.map((ch: any) => (
-                        <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="flex h-10 w-full items-center rounded-md border bg-muted px-3 text-sm text-muted-foreground">
-                    {courtName || "Single courthouse location"}
-                  </div>
-                )}
-                <FormMessage />
-              </FormItem>
-            )} />
-          )}
+            {/* ── Prior Demand ── */}
+            <div className="rounded-xl border p-5 space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Prior Demand</h3>
+              <FormField control={form.control} name="priorDemandMade" render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel className="font-medium">Have you already asked the defendant to pay you?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(val) => field.onChange(val === 'true')}
+                      defaultValue={field.value ? 'true' : 'false'}
+                      className="flex flex-col space-y-2"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl><RadioGroupItem value="true" /></FormControl>
+                        <FormLabel className="font-normal">Yes, I asked them.</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl><RadioGroupItem value="false" /></FormControl>
+                        <FormLabel className="font-normal">No, I have not asked them yet.</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-          {/* Auto-populated courthouse info card */}
-          {selectedCounty && courtName && (
-            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-              <p className="font-semibold text-sm">{courtName}</p>
-              <p className="text-sm text-muted-foreground">{courtAddress}</p>
-              {selectedCounty.website && (
-                <a
-                  href={selectedCounty.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  Clerk / Court site: {selectedCounty.website}
-                </a>
+              {madeDemand && (
+                <FormField control={form.control} name="priorDemandDescription" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>How and when did you ask them?</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className="min-h-[100px]"
+                        placeholder="e.g. Sent a text on Oct 1st and an email on Oct 5th demanding payment."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               )}
-              <div className="pt-1 border-t mt-2">
-                <p className="text-sm text-muted-foreground">
-                  Filing fee for your claim amount:{" "}
-                  <span className="font-bold text-foreground">${filingFee}</span>
-                </p>
-              </div>
             </div>
-          )}
 
-          {/* Venue basis — 2x2 grid */}
+            {/* ── Court Location ── */}
+            <div className="rounded-xl border p-5 space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Court Location</h3>
+
+              {selectedCounty ? (
+                <>
+                  {hasMultipleCourthouses && (
+                    <FormField control={form.control} name="courthouseId" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Select Courthouse</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Select courthouse location" /></SelectTrigger></FormControl>
+                          <SelectContent className="max-h-72 overflow-y-auto">
+                            {selectedCounty.courthouses.map((ch: any) => (
+                              <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  )}
+
+                  {courtName && (
+                    <div className="rounded-lg bg-muted/30 border p-4 space-y-2">
+                      <p className="font-semibold text-sm">{courtName}</p>
+                      {courtAddress && <p className="text-sm text-muted-foreground">{courtAddress}</p>}
+                      {courtPhone && <p className="text-sm text-muted-foreground">Phone: {courtPhone}</p>}
+                      {selectedCounty?.website && (
+                        <a
+                          href={selectedCounty.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          Court website ↗
+                        </a>
+                      )}
+                      <div className="border-t pt-2 mt-1">
+                        <p className="text-sm">
+                          Estimated filing fee:{" "}
+                          <span className="font-bold text-foreground">${filingFee}</span>
+                          <span className="text-xs text-muted-foreground ml-1">(based on ${claimAmount.toLocaleString()} claim)</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">County was set in Step 1. Court information will appear here once data loads.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Venue basis — full width 2×2 */}
           <FormField control={form.control} name="venueBasis" render={({ field }) => (
             <FormItem className="space-y-2">
-              <FormLabel>Why are you filing in this county?</FormLabel>
+              <FormLabel className="font-semibold">Why are you filing in this county? <span className="text-destructive">*</span></FormLabel>
               <FormControl>
                 <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-2">
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-3"><FormControl><RadioGroupItem value="where_defendant_lives" /></FormControl><FormLabel className="font-normal cursor-pointer">Where the defendant lives or does business</FormLabel></FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-3"><FormControl><RadioGroupItem value="where_damage_happened" /></FormControl><FormLabel className="font-normal cursor-pointer">Where the damage or injury happened</FormLabel></FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-3"><FormControl><RadioGroupItem value="where_contract_made_broken" /></FormControl><FormLabel className="font-normal cursor-pointer">Where the contract was made or broken</FormLabel></FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-3"><FormControl><RadioGroupItem value="other" /></FormControl><FormLabel className="font-normal cursor-pointer">Other reason</FormLabel></FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                    <FormControl><RadioGroupItem value="where_defendant_lives" /></FormControl>
+                    <FormLabel className="font-normal cursor-pointer">Where the defendant lives or does business</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                    <FormControl><RadioGroupItem value="where_damage_happened" /></FormControl>
+                    <FormLabel className="font-normal cursor-pointer">Where the damage or injury happened</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                    <FormControl><RadioGroupItem value="where_contract_made_broken" /></FormControl>
+                    <FormLabel className="font-normal cursor-pointer">Where the contract was made or broken</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                    <FormControl><RadioGroupItem value="other" /></FormControl>
+                    <FormLabel className="font-normal cursor-pointer">Other reason</FormLabel>
+                  </FormItem>
                 </RadioGroup>
               </FormControl>
               <FormMessage />
@@ -715,13 +810,19 @@ function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNe
 
           {basis === 'other' && (
             <FormField control={form.control} name="venueReason" render={({ field }) => (
-              <FormItem><FormLabel>Please explain</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Please explain</FormLabel>
+                <FormControl><Input {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
           )}
 
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-2">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
+              {saving ? "Saving…" : i18n.intake.saveAndContinue}
+            </Button>
           </div>
         </form>
       </Form>
@@ -729,9 +830,10 @@ function Step5({ initialData, onNext, onBack, saving }: { initialData: any, onNe
   );
 }
 
-function Step6({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+// ─── Step 4: Eligibility & Review ─────────────────────────────────────────────
+function Step4({ initialData, onComplete, onBack, saving }: { initialData: any, onComplete: (d: any) => void, onBack: () => void, saving?: boolean }) {
   const form = useForm({
-    resolver: zodResolver(intakeStep6Schema),
+    resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
       isSuingPublicEntity: initialData.isSuingPublicEntity || false,
       publicEntityClaimFiledDate: initialData.publicEntityClaimFiledDate || "",
@@ -744,63 +846,133 @@ function Step6({ initialData, onNext, onBack, saving }: { initialData: any, onNe
   const suingPublic = form.watch("isSuingPublicEntity");
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step6}</h2>
+    <div className="space-y-5">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-6">
-          <FormField control={form.control} name="isSuingPublicEntity" render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Are you suing a public entity? (e.g., City, County, State)</FormLabel></div></FormItem>
-          )} />
-          {suingPublic && (
-            <FormField control={form.control} name="publicEntityClaimFiledDate" render={({ field }) => (
-              <FormItem><FormLabel>When did you file a claim with them?</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-          )}
-          <FormField control={form.control} name="isAttyFeeDispute" render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Is this a dispute with a lawyer about attorney fees?</FormLabel></div></FormItem>
-          )} />
-          <FormField control={form.control} name="filedMoreThan12Claims" render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Have you filed more than 12 small claims in California in the past 12 months?</FormLabel></div></FormItem>
-          )} />
-          <FormField control={form.control} name="claimOver2500" render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>If your claim is over $2,500: Have you filed more than 2 other small claims for over $2,500 in CA this calendar year?</FormLabel></div></FormItem>
-          )} />
+        <form onSubmit={form.handleSubmit(onComplete)} className="space-y-5">
 
-          <div className="flex justify-between pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            {/* ── Eligibility questions ── */}
+            <div className="rounded-xl border p-5 space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Eligibility Questions</h3>
+
+              <FormField control={form.control} name="isSuingPublicEntity" render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">Suing a public entity? (e.g. City, County, State)</FormLabel>
+                  </div>
+                </FormItem>
+              )} />
+
+              {suingPublic && (
+                <FormField control={form.control} name="publicEntityClaimFiledDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>When did you file a government claim with them?</FormLabel>
+                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
+
+              <FormField control={form.control} name="isAttyFeeDispute" render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">Is this a dispute with a lawyer about attorney fees?</FormLabel>
+                  </div>
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="filedMoreThan12Claims" render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">Filed more than 12 small claims in California in the past 12 months?</FormLabel>
+                  </div>
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="claimOver2500" render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">Claim over $2,500: Have you filed 2+ other small claims over $2,500 in CA this calendar year?</FormLabel>
+                  </div>
+                </FormItem>
+              )} />
+            </div>
+
+            {/* ── Summary review ── */}
+            <div className="rounded-xl border p-5 space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Review Your Case</h3>
+              <div className="space-y-4 text-sm">
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Plaintiff</p>
+                    <p className="font-semibold">{initialData.plaintiffName || "—"}</p>
+                    <p className="text-muted-foreground">{initialData.plaintiffAddress || ""}</p>
+                    <p className="text-muted-foreground">{[initialData.plaintiffCity, initialData.plaintiffState, initialData.plaintiffZip].filter(Boolean).join(", ")}</p>
+                    {initialData.plaintiffPhone && <p className="text-muted-foreground">{initialData.plaintiffPhone}</p>}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Defendant</p>
+                    <p className="font-semibold">{initialData.defendantName || "—"}</p>
+                    <p className="text-muted-foreground">{initialData.defendantAddress || ""}</p>
+                    <p className="text-muted-foreground">{[initialData.defendantCity, initialData.defendantState, initialData.defendantZip].filter(Boolean).join(", ")}</p>
+                  </div>
+                </div>
+
+                <div className="border-t pt-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Claim</p>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-semibold">{initialData.claimType || "—"}</span>
+                    <span className="font-bold text-primary text-base">${initialData.claimAmount ? Number(initialData.claimAmount).toLocaleString() : "—"}</span>
+                  </div>
+                  {initialData.incidentDate && <p className="text-muted-foreground text-xs mb-1">Date: {initialData.incidentDate}</p>}
+                  {initialData.claimDescription && (
+                    <p className="text-muted-foreground line-clamp-3">{initialData.claimDescription}</p>
+                  )}
+                </div>
+
+                {(initialData.courthouseName || initialData.countyId) && (
+                  <div className="border-t pt-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Court</p>
+                    {initialData.courthouseName && <p className="font-semibold">{initialData.courthouseName}</p>}
+                    {initialData.courthouseAddress && (
+                      <p className="text-muted-foreground">{initialData.courthouseAddress}, {initialData.courthouseCity} {initialData.courthouseZip}</p>
+                    )}
+                    {initialData.filingFee && (
+                      <p className="mt-1">Filing fee: <span className="font-bold">${initialData.filingFee}</span></p>
+                    )}
+                  </div>
+                )}
+
+                {initialData.venueBasis && (
+                  <div className="border-t pt-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Venue Basis</p>
+                    <p>{initialData.venueBasis.replace(/_/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between pt-2">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>{saving ? "Saving…" : i18n.intake.saveAndContinue}</Button>
+            <Button
+              type="submit"
+              size="lg"
+              data-testid="button-complete-intake"
+              disabled={saving}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
+            >
+              {saving ? "Saving…" : "Complete Intake ✓"}
+            </Button>
           </div>
         </form>
       </Form>
-    </div>
-  );
-}
-
-function Step7({ initialData, onComplete, onBack, saving }: { initialData: any, onComplete: () => void, onBack: () => void, saving?: boolean }) {
-  return (
-    <div className="max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">{i18n.intake.steps.step7}</h2>
-      <div className="space-y-6">
-        <Card>
-          <CardHeader className="py-4"><CardTitle className="text-lg">Plaintiff &amp; Defendant</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 text-sm">
-            <div><span className="font-semibold block text-muted-foreground">Plaintiff</span>{initialData.plaintiffName}<br/>{initialData.plaintiffAddress}<br/>{initialData.plaintiffCity}, {initialData.plaintiffState} {initialData.plaintiffZip}</div>
-            <div><span className="font-semibold block text-muted-foreground">Defendant</span>{initialData.defendantName}<br/>{initialData.defendantAddress}<br/>{initialData.defendantCity}, {initialData.defendantState} {initialData.defendantZip}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="py-4"><CardTitle className="text-lg">The Claim</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 text-sm">
-            <div><span className="font-semibold block text-muted-foreground">Type</span>{initialData.claimType}</div>
-            <div><span className="font-semibold block text-muted-foreground">Amount</span>${initialData.claimAmount}</div>
-            <div className="col-span-2"><span className="font-semibold block text-muted-foreground">Description</span>{initialData.claimDescription}</div>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="flex justify-between pt-8">
-        <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-        <Button onClick={onComplete} size="lg" data-testid="button-complete-intake" disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">{saving ? "Saving…" : "Complete Intake"}</Button>
-      </div>
     </div>
   );
 }
