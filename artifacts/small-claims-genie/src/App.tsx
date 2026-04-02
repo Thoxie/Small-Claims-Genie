@@ -17,6 +17,7 @@ import FAQ from "@/pages/faq";
 import TypesOfCases from "@/pages/types-of-cases";
 import Terms from "@/pages/terms";
 import TermsOfService from "@/pages/tos";
+import SC100Generator from "@/pages/sc100-generator";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ function Router() {
         <Route path="/types-of-cases" component={TypesOfCases} />
         <Route path="/terms" component={Terms} />
         <Route path="/tos" component={TermsOfService} />
+        <Route path="/sc100" component={SC100Generator} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

@@ -910,14 +910,30 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           </CardContent>
         </Card>
 
-        <Button 
-          size="lg" 
-          className="w-full h-14 text-lg font-bold" 
-          disabled={!isReady}
-          onClick={() => window.open(`/api/cases/${caseId}/forms/sc100`, '_blank')}
-        >
-          <Download className="mr-2 h-5 w-5" /> {i18n.forms.downloadSc100}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            size="lg"
+            className="flex-1 h-14 text-lg font-bold"
+            disabled={!isReady}
+            onClick={() => window.open(`/api/cases/${caseId}/forms/sc100`, '_blank')}
+          >
+            <Download className="mr-2 h-5 w-5" /> {i18n.forms.downloadSc100}
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="flex-1 h-14 text-lg font-bold border-2"
+            disabled={!isReady}
+            onClick={() => {
+              const a = document.createElement("a");
+              a.href = `/api/cases/${caseId}/forms/sc100-word`;
+              a.download = `SC100-Case-${caseId}.docx`;
+              a.click();
+            }}
+          >
+            <Download className="mr-2 h-5 w-5" /> Download as Word (.docx)
+          </Button>
+        </div>
         {!isReady && <p className="text-sm text-center text-muted-foreground">You must complete your intake to reach 80% readiness before downloading.</p>}
       </div>
 

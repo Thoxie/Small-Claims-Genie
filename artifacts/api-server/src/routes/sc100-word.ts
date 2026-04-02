@@ -1,0 +1,259 @@
+import { Router, type IRouter } from "express";
+import { eq } from "drizzle-orm";
+import { db } from "@workspace/db";
+import { casesTable } from "@workspace/db";
+import {
+  Document, Packer, Paragraph, Table, TableRow, TableCell,
+  TextRun, WidthType, BorderStyle, AlignmentType, HeadingLevel,
+  VerticalAlign, ShadingType, TableLayoutType,
+} from "docx";
+
+const router: IRouter = Router();
+
+function val(v: string | null | undefined, fallback = ""): string {
+  return v ?? fallback;
+}
+
+function field(label: string, value: string | null | undefined): Paragraph[] {
+  return [
+    new Paragraph({
+      children: [
+        new TextRun({ text: `${label}: `, bold: true, size: 18 }),
+        new TextRun({ text: val(value, "___________________________"), size: 18 }),
+      ],
+      spacing: { after: 60 },
+    }),
+  ];
+}
+
+function sectionHeader(title: string): Paragraph {
+  return new Paragraph({
+    children: [new TextRun({ text: title, bold: true, size: 19, color: "003366" })],
+    spacing: { before: 200, after: 80 },
+    shading: { type: ShadingType.SOLID, color: "ddf6f3", fill: "ddf6f3" },
+    indent: { left: 80, right: 80 },
+  });
+}
+
+function divider(): Paragraph {
+  return new Paragraph({
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "cccccc" } },
+    spacing: { after: 80 },
+  });
+}
+
+function twoCol(
+  label1: string, val1: string | null | undefined,
+  label2: string, val2: string | null | undefined,
+): Table {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+    borders: {
+      top: { style: BorderStyle.NONE },
+      bottom: { style: BorderStyle.NONE },
+      left: { style: BorderStyle.NONE },
+      right: { style: BorderStyle.NONE },
+      insideH: { style: BorderStyle.NONE },
+      insideV: { style: BorderStyle.NONE },
+    },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            children: [new Paragraph({
+              children: [
+                new TextRun({ text: `${label1}: `, bold: true, size: 18 }),
+                new TextRun({ text: val(val1, "________________________"), size: 18 }),
+              ],
+              spacing: { after: 60 },
+            })],
+            verticalAlign: VerticalAlign.TOP,
+          }),
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            children: [new Paragraph({
+              children: [
+                new TextRun({ text: `${label2}: `, bold: true, size: 18 }),
+                new TextRun({ text: val(val2, "________________________"), size: 18 }),
+              ],
+              spacing: { after: 60 },
+            })],
+            verticalAlign: VerticalAlign.TOP,
+          }),
+        ],
+      }),
+    ],
+  });
+}
+
+router.get("/cases/:id/forms/sc100-word", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const [c] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const claimAmountStr = c.claimAmount ? `$${c.claimAmount.toFixed(2)}` : "___________";
+  const defendantAddr = [c.defendantAddress, c.defendantCity, c.defendantState, c.defendantZip].filter(Boolean).join(", ");
+  const plaintiffAddr = [c.plaintiffAddress, c.plaintiffCity, c.plaintiffState, c.plaintiffZip].filter(Boolean).join(", ");
+  const countyDisplay = c.countyId ? c.countyId.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()) : "___________";
+
+  const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { font: "Arial", size: 20 },
+        },
+      },
+    },
+    sections: [{
+      properties: {
+        page: {
+          margin: { top: 720, bottom: 720, left: 900, right: 900 },
+        },
+      },
+      children: [
+        // Title block
+        new Paragraph({
+          children: [
+            new TextRun({ text: "SC-100", bold: true, size: 28, color: "003366" }),
+          ],
+          alignment: AlignmentType.RIGHT,
+          spacing: { after: 40 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "PLAINTIFF'S CLAIM AND ORDER TO GO TO SMALL CLAIMS COURT", bold: true, size: 22, color: "003366" }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 40 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "California Small Claims Court  |  Judicial Council Form SC-100", size: 17, color: "666666" }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 40 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Generated by Small Claims Genie  |  Not a law firm  |  Review before filing", size: 16, color: "888888", italics: true }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        }),
+
+        divider(),
+
+        // Court info
+        sectionHeader("COURT INFORMATION"),
+        ...field("County", countyDisplay),
+        ...field("Court Name", `${countyDisplay} County Superior Court — Small Claims Division`),
+        divider(),
+
+        // Plaintiff
+        sectionHeader("PLAINTIFF (The person filing this claim)"),
+        twoCol("Full Name", c.plaintiffName, "Phone", c.plaintiffPhone),
+        ...field("Street Address, City, State, Zip", plaintiffAddr),
+        ...field("Email", c.plaintiffEmail),
+        divider(),
+
+        // Defendant
+        sectionHeader("DEFENDANT (The person or business you are suing)"),
+        twoCol("Full Name / Business Name", c.defendantName, "Phone", c.defendantPhone),
+        ...field("Street Address, City, State, Zip", defendantAddr),
+        ...(c.defendantIsBusinessOrEntity ? [
+          ...field("Type", "Business or Entity"),
+          ...field("Agent for Service of Process", c.defendantAgentName),
+        ] : [
+          ...field("Type", "Individual"),
+        ]),
+        divider(),
+
+        // Claim
+        sectionHeader("CLAIM DETAILS"),
+        twoCol("Type of Claim", c.claimType, "Date of Incident", c.incidentDate),
+        twoCol("Amount Claimed", claimAmountStr, "Claim Over $2,500?", c.claimOver2500 ? "Yes" : "No"),
+        new Paragraph({ spacing: { after: 80 } }),
+        new Paragraph({
+          children: [new TextRun({ text: "Description of Claim (explain what happened and why you are owed money):", bold: true, size: 18 })],
+          spacing: { after: 60 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: val(c.claimDescription, ""), size: 18 })],
+          spacing: { after: 120 },
+        }),
+        divider(),
+
+        // Amount calculation
+        sectionHeader("HOW AMOUNT WAS CALCULATED"),
+        new Paragraph({
+          children: [new TextRun({ text: val(c.howAmountCalculated, ""), size: 18 })],
+          spacing: { after: 120 },
+        }),
+        divider(),
+
+        // Prior demand
+        sectionHeader("PRIOR DEMAND"),
+        twoCol("Demand Made Before Filing?", c.priorDemandMade === true ? "Yes" : c.priorDemandMade === false ? "No" : "Unknown", "Venue Basis", c.venueBasis),
+        ...(c.priorDemandDescription ? field("Details of Demand", c.priorDemandDescription) : []),
+        divider(),
+
+        // Venue
+        sectionHeader("VENUE — WHY THIS COURT IS THE RIGHT COURT"),
+        ...field("Reason", c.venueReason),
+        divider(),
+
+        // Additional
+        sectionHeader("ADDITIONAL REQUIRED DISCLOSURES"),
+        twoCol("Suing a Public Entity?", c.isSuingPublicEntity ? "Yes" : "No", "Attorney Fee Dispute?", c.isAttyFeeDispute ? "Yes" : "No"),
+        twoCol("Filed 12+ Small Claims in CA This Year?", c.filedMoreThan12Claims ? "Yes" : "No", "", ""),
+        ...(c.isSuingPublicEntity && c.publicEntityClaimFiledDate
+          ? field("Date Claim Filed with Public Entity", c.publicEntityClaimFiledDate)
+          : []),
+        divider(),
+
+        // Signature
+        sectionHeader("DECLARATION"),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "I declare under penalty of perjury under the laws of the State of California that the foregoing is true and correct.",
+              size: 18,
+            }),
+          ],
+          spacing: { after: 200 },
+        }),
+        twoCol("Date", "___________________", "Plaintiff Signature", "___________________________________"),
+        new Paragraph({ spacing: { after: 80 } }),
+        ...field("Print Name", c.plaintiffName),
+        divider(),
+
+        // Disclaimer
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "IMPORTANT: This document was generated by Small Claims Genie as a preparation aid. Review all information carefully. You must file the official SC-100 form at your county courthouse. Small Claims Genie is not a law firm and this is not legal advice.",
+              size: 16,
+              color: "888888",
+              italics: true,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 200 },
+        }),
+      ],
+    }],
+  });
+
+  const buffer = await Packer.toBuffer(doc);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+  res.setHeader("Content-Disposition", `attachment; filename="SC100-Case-${id}.docx"`);
+  res.setHeader("Content-Length", buffer.length);
+  res.send(buffer);
+});
+
+export default router;

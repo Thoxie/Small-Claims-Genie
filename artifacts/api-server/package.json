@@ -16,6 +16,7 @@
     "@workspace/integrations-openai-ai-server": "workspace:*",
     "cookie-parser": "^1.4.7",
     "cors": "^2",
+    "docx": "^9.6.1",
     "drizzle-orm": "catalog:",
     "express": "^5",
     "mammoth": "^1.12.0",
