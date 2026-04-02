@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable } from "@workspace/db";
+import { getUserId, getOwnedCase } from "../lib/owned-case";
 import {
   Document, Packer, Paragraph, Table, TableRow, TableCell,
   TextRun, WidthType, BorderStyle, AlignmentType, HeadingLevel,
@@ -89,10 +90,11 @@ function twoCol(
 }
 
 router.get("/cases/:id/forms/sc100-word", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
-  const [c] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
 
   const claimAmountStr = c.claimAmount ? `$${c.claimAmount.toFixed(2)}` : "___________";

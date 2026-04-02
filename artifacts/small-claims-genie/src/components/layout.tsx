@@ -3,6 +3,7 @@ import { i18n } from "@/lib/i18n";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
+import { UserButton } from "@clerk/clerk-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -71,6 +72,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 Start Your Case
               </Link>
             </Button>
+            <UserButton afterSignOutUrl="/sign-in" />
           </div>
         </div>
       </header>

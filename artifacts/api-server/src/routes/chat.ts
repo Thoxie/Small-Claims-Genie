@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { casesTable, chatMessagesTable, documentsTable } from "@workspace/db";
 import { SendChatMessageBody } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { getUserId, getOwnedCase } from "../lib/owned-case";
 
 const router: IRouter = Router();
 
@@ -28,12 +29,12 @@ Critical rules:
 - California small claims limits (2026): $12,500 for individuals, $6,250 for businesses`;
 
 router.get("/cases/:id/chat", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
 
   const messages = await db
     .select()
@@ -45,12 +46,13 @@ router.get("/cases/:id/chat", async (req, res): Promise<void> => {
 });
 
 router.post("/cases/:id/chat", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
 
   const parsed = SendChatMessageBody.safeParse(req.body);
   if (!parsed.success) {

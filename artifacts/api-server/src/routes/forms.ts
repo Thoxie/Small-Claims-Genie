@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable } from "@workspace/db";
 import { PDFDocument, StandardFonts, rgb, LineCapStyle } from "pdf-lib";
+import { getUserId, getOwnedCase } from "../lib/owned-case";
 
 const router: IRouter = Router();
 
@@ -132,11 +133,12 @@ function drawDraftWatermark(page: ReturnType<PDFDocument["addPage"]>, font: Awai
 
 // ─── Main route ───────────────────────────────────────────────────────────────
 router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
-  const [c] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
 
   const pdfDoc = await PDFDocument.create();
@@ -633,13 +635,14 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   res.send(Buffer.from(pdfBytes));
 });
 
-// ── Preview endpoint (unchanged) ──────────────────────────────────────────────
+// ── Preview endpoint ───────────────────────────────────────────────────────────
 router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
-  const [c] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
 
   res.json({

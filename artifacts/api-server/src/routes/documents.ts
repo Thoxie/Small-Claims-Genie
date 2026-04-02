@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
+import { getUserId, getOwnedCase } from "../lib/owned-case";
 import multer from "multer";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import mammoth from "mammoth";
@@ -61,12 +62,12 @@ const upload = multer({
 });
 
 router.get("/cases/:id/documents", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
   const safeDocs = docs.map(({ fileData: _fileData, ...rest }) => rest);
   res.json(safeDocs);
@@ -74,12 +75,12 @@ router.get("/cases/:id/documents", async (req, res): Promise<void> => {
 
 // Serve the raw file so the user can view/download it in the browser
 router.get("/cases/:id/documents/:docId/file", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const caseId = parseInt(req.params.id, 10);
   const docId = parseInt(req.params.docId, 10);
-  if (isNaN(caseId) || isNaN(docId)) {
-    res.status(400).json({ error: "Invalid ID" });
-    return;
-  }
+  if (isNaN(caseId) || isNaN(docId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  const ownedCase = await getOwnedCase(caseId, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
   const [doc] = await db
     .select()
     .from(documentsTable)
@@ -101,18 +102,13 @@ router.get("/cases/:id/documents/:docId/file", async (req, res): Promise<void> =
 });
 
 router.post("/cases/:id/documents", upload.single("file"), async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid case ID" });
-    return;
-  }
-  if (!req.file) {
-    res.status(400).json({ error: "No file uploaded" });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
 
-  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  const caseRecord = await getOwnedCase(id, userId);
   if (!caseRecord) {
     res.status(404).json({ error: "Case not found" });
     return;
@@ -288,15 +284,15 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
 });
 
 router.delete("/cases/:id/documents/:docId", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const rawDocId = Array.isArray(req.params.docId) ? req.params.docId[0] : req.params.docId;
   const id = parseInt(rawId, 10);
   const docId = parseInt(rawDocId, 10);
 
-  if (isNaN(id) || isNaN(docId)) {
-    res.status(400).json({ error: "Invalid ID" });
-    return;
-  }
+  if (isNaN(id) || isNaN(docId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
 
   const [deleted] = await db.delete(documentsTable).where(eq(documentsTable.id, docId)).returning();
   if (!deleted) {

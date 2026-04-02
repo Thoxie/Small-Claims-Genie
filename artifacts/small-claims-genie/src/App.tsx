@@ -1,6 +1,8 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Component, type ErrorInfo, type ReactNode, useEffect } from "react";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
+import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
@@ -20,6 +22,10 @@ import Terms from "@/pages/terms";
 import TermsOfService from "@/pages/tos";
 import SC100Generator from "@/pages/sc100-generator";
 import Resume from "@/pages/resume";
+import SignInPage from "@/pages/sign-in";
+import SignUpPage from "@/pages/sign-up";
+
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +36,7 @@ const queryClient = new QueryClient({
   },
 });
 
+// ── Error boundary ────────────────────────────────────────────────────────────
 class ErrorBoundary extends Component<
   { children: ReactNode },
   { error: Error | null }
@@ -68,42 +75,105 @@ class ErrorBoundary extends Component<
   }
 }
 
+// ── Auth token bridge ─────────────────────────────────────────────────────────
+// Hooks Clerk's getToken into the API client's bearer-token mechanism so
+// every API request automatically carries the current session token.
+function AuthTokenBridge() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+    return () => setAuthTokenGetter(null);
+  }, [getToken]);
+
+  return null;
+}
+
+// ── Public pages (no auth required) ──────────────────────────────────────────
+function PublicRoutes() {
+  return (
+    <Switch>
+      <Route path="/sign-in" component={SignInPage} />
+      <Route path="/sign-up" component={SignUpPage} />
+      {/* SSO callback path used internally by Clerk */}
+      <Route path="/sign-in/sso-callback" component={SignInPage} />
+    </Switch>
+  );
+}
+
+// ── Protected app (requires sign-in) ─────────────────────────────────────────
+function ProtectedRouter() {
+  return (
+    <>
+      <SignedIn>
+        <AuthTokenBridge />
+        <Layout>
+          <Switch>
+            <Route path="/" component={Landing} />
+            <Route path="/dashboard" component={Dashboard} />
+            <Route path="/resume" component={Resume} />
+            <Route path="/cases/new" component={NewCase} />
+            <Route path="/cases/:id" component={CaseWorkspace} />
+            <Route path="/counties" component={Counties} />
+            <Route path="/resources" component={Resources} />
+            <Route path="/how-it-works" component={HowItWorks} />
+            <Route path="/faq" component={FAQ} />
+            <Route path="/types-of-cases" component={TypesOfCases} />
+            <Route path="/terms" component={Terms} />
+            <Route path="/tos" component={TermsOfService} />
+            <Route path="/sc100" component={SC100Generator} />
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </SignedIn>
+      <SignedOut>
+        <Redirect to="/sign-in" />
+      </SignedOut>
+    </>
+  );
+}
+
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/resume" component={Resume} />
-        <Route path="/cases/new" component={NewCase} />
-        <Route path="/cases/:id" component={CaseWorkspace} />
-        <Route path="/counties" component={Counties} />
-        <Route path="/resources" component={Resources} />
-        <Route path="/how-it-works" component={HowItWorks} />
-        <Route path="/faq" component={FAQ} />
-        <Route path="/types-of-cases" component={TypesOfCases} />
-        <Route path="/terms" component={Terms} />
-        <Route path="/tos" component={TermsOfService} />
-        <Route path="/sc100" component={SC100Generator} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      {/* Auth pages don't use the main Layout */}
+      <Route path="/sign-in" component={SignInPage} />
+      <Route path="/sign-up" component={SignUpPage} />
+      <Route path="/sign-in/sso-callback" component={SignInPage} />
+      {/* Everything else requires auth */}
+      <Route>
+        <ProtectedRouter />
+      </Route>
+    </Switch>
   );
 }
 
 function App() {
+  if (!PUBLISHABLE_KEY) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <h1 className="text-2xl font-bold">Configuration Required</h1>
+        <p className="text-muted-foreground max-w-md">
+          The app is not yet configured for authentication. Please add your Clerk Publishable Key.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <ErrorBoundary>
-              <Router />
-            </ErrorBoundary>
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <ErrorBoundary>
+                <Router />
+              </ErrorBoundary>
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ClerkProvider>
     </ErrorBoundary>
   );
 }
