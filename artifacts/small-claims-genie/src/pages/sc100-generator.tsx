@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { FileDown, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@clerk/clerk-react";
+import { FileDown, FileText, CheckCircle, AlertCircle, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +68,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SC100Generator() {
   const [downloading, setDownloading] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [cleared, setCleared] = useState(false);
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: cases, isLoading } = useQuery<Case[]>({
     queryKey: ["cases"],
@@ -102,6 +107,66 @@ export default function SC100Generator() {
     a.download = `SC100-Case-${selectedCase.id}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleClearForm = async () => {
+    if (!selectedCase) return;
+    const confirmed = window.confirm(
+      "This will clear all intake fields on this SC-100 so you can enter new information. This cannot be undone. Continue?"
+    );
+    if (!confirmed) return;
+
+    setClearing(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API}/api/cases/${selectedCase.id}/intake`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          plaintiffName: null,
+          plaintiffAddress: null,
+          plaintiffCity: null,
+          plaintiffState: null,
+          plaintiffZip: null,
+          plaintiffPhone: null,
+          plaintiffEmail: null,
+          defendantName: null,
+          defendantAddress: null,
+          defendantCity: null,
+          defendantState: null,
+          defendantZip: null,
+          defendantPhone: null,
+          defendantIsBusinessOrEntity: false,
+          defendantAgentName: null,
+          claimType: null,
+          claimDescription: null,
+          claimAmount: null,
+          incidentDate: null,
+          howAmountCalculated: null,
+          priorDemandMade: null,
+          priorDemandDescription: null,
+          venueReason: null,
+          venueBasis: null,
+          isSuingPublicEntity: false,
+          isAttyFeeDispute: false,
+          filedMoreThan12Claims: false,
+          claimOver2500: false,
+          countyId: null,
+          intakeComplete: false,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to clear form");
+      await queryClient.invalidateQueries({ queryKey: ["cases"] });
+      setCleared(true);
+    } catch (e) {
+      console.error("[ClearForm]", e);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setClearing(false);
+    }
   };
 
   if (isLoading) {
@@ -143,15 +208,23 @@ export default function SC100Generator() {
         </p>
       </div>
 
+      {/* Cleared banner */}
+      {cleared && (
+        <div className="mb-6 flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm text-green-800">
+          <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+          <span>Form cleared successfully. Go to your case intake tab to enter new information, then return here to download a fresh SC-100.</span>
+        </div>
+      )}
+
       {/* Download buttons */}
       <Card className="mb-8 border-2 border-[#ddf6f3]">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Download Your SC-100</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
+        <CardContent className="flex flex-wrap gap-3 items-center">
           <Button
             onClick={handleDownloadWord}
-            disabled={downloading}
+            disabled={downloading || cleared}
             className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
           >
             {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
@@ -160,11 +233,13 @@ export default function SC100Generator() {
           <Button
             onClick={handleDownloadPDF}
             variant="outline"
+            disabled={cleared}
             className="border-2 border-gray-300 gap-2"
           >
             <FileDown className="h-4 w-4" />
             Download as PDF
           </Button>
+
           <div className="flex items-center gap-2 ml-auto">
             {selectedCase.readinessScore != null && (
               <div className="flex items-center gap-1.5 text-sm">
@@ -172,6 +247,15 @@ export default function SC100Generator() {
                 <span className="font-medium">Readiness: {selectedCase.readinessScore}%</span>
               </div>
             )}
+            <Button
+              onClick={handleClearForm}
+              disabled={clearing || cleared}
+              variant="outline"
+              className="border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 gap-2"
+            >
+              {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              {clearing ? "Clearing…" : "Clear Form"}
+            </Button>
           </div>
         </CardContent>
       </Card>
