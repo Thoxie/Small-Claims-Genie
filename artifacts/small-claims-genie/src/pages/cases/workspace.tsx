@@ -1403,9 +1403,38 @@ function ChatTab({ caseId }: { caseId: number }) {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isTyping]);
 
+  // Detect download commands typed in the chat box
+  const detectDownloadCommand = (text: string): "pdf" | "word" | null => {
+    const t = text.toLowerCase().trim();
+    const wordPatterns = [/word/, /\.docx/, /docx/, /ms word/, /microsoft word/];
+    const pdfPatterns = [/\bpdf\b/, /\.pdf/];
+    const actionPatterns = [/download/, /export/, /save/, /give me/, /get me/, /create/, /generate/, /send/];
+    const hasAction = actionPatterns.some(p => p.test(t));
+    if (!hasAction) return null;
+    if (wordPatterns.some(p => p.test(t))) return "word";
+    if (pdfPatterns.some(p => p.test(t))) return "pdf";
+    return null;
+  };
+
   // SSE streaming send — evidence-grounded via buildCaseContext on the server
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
+
+    // Intercept download commands — handle locally without hitting the AI
+    const downloadFormat = detectDownloadCommand(content);
+    if (downloadFormat) {
+      setInput("");
+      const userMsg = { id: Date.now(), role: 'user', content };
+      const botMsg = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: `Of course! Preparing your chat transcript as a **${downloadFormat === "pdf" ? "PDF" : "Word (.docx)"}** file now — your download will start in a moment.`,
+      };
+      setMessages(prev => [...prev, userMsg, botMsg]);
+      await downloadChat(downloadFormat);
+      return;
+    }
+
     const newMsg = { id: Date.now(), role: 'user', content };
     setMessages(prev => [...prev, newMsg]);
     setInput("");
