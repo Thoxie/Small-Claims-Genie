@@ -19,7 +19,7 @@ export default function SignUpPage() {
           routing="path"
           path={`${base}/sign-up`}
           signInUrl={`${base}/sign-in`}
-          fallbackRedirectUrl={`${base}/dashboard`}
+          fallbackRedirectUrl={`${base}/`}
           appearance={{
             elements: {
               rootBox: "w-full",
