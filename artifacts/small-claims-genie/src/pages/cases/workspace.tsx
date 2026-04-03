@@ -30,6 +30,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -38,7 +39,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2 } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -326,7 +327,7 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
       </div>
 
       {step === 1 && <Step1 initialData={initialData} onNext={handleNext} saving={saveIntake.isPending} />}
-      {step === 2 && <Step2 initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} />}
+      {step === 2 && <Step2 caseId={caseId} initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} />}
       {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} saving={saveIntake.isPending} />}
       {step === 4 && <Step4 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(3)} saving={saveIntake.isPending} />}
     </div>
@@ -613,7 +614,10 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
 }
 
 // ─── Step 2: Claim Details ────────────────────────────────────────────────────
-function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number, initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+  const { getToken } = useAuth();
+  const { toast } = useToast();
+
   const form = useForm({
     resolver: zodResolver(intakeStep2Schema),
     defaultValues: {
@@ -624,6 +628,86 @@ function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNe
       howAmountCalculated: initialData.howAmountCalculated || "",
     }
   });
+
+  // ── Advisor drawer state ───────────────────────────────────────────────────
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+  type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
+  const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
+  const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [evidenceChecklist, setEvidenceChecklist] = useState<{ id: string; item: string; description: string }[]>([]);
+  const [checkedEvidence, setCheckedEvidence] = useState<Set<string>>(new Set());
+  const [refinedStatement, setRefinedStatement] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const openAdvisor = async () => {
+    const values = form.getValues();
+    if (!values.claimDescription || values.claimDescription.trim().length < 10) {
+      toast({ title: "Add a description first", description: "Write at least a sentence about what happened so the advisor can help.", variant: "destructive" });
+      return;
+    }
+    setAdvisorOpen(true);
+    setAdvisorPhase("analyzing");
+    setQuestions([]);
+    setAnswers({});
+    setEvidenceChecklist([]);
+    setRefinedStatement("");
+    setCopied(false);
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/advisor/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) throw new Error("Analysis failed");
+      const data = await res.json();
+      setQuestions(data.questions || []);
+      setEvidenceChecklist(data.evidenceChecklist || []);
+      setAdvisorPhase("questions");
+    } catch {
+      toast({ title: "Advisor error", description: "Could not analyze your case. Please try again.", variant: "destructive" });
+      setAdvisorPhase("idle");
+      setAdvisorOpen(false);
+    }
+  };
+
+  const refineStatement = async () => {
+    setAdvisorPhase("refining");
+    try {
+      const token = await getToken();
+      const values = form.getValues();
+      const answersArr = questions.map(q => ({ question: q.question, answer: answers[q.id] || "" }));
+      const res = await fetch(`/api/cases/${caseId}/advisor/refine`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ ...values, answers: answersArr }),
+      });
+      if (!res.ok) throw new Error("Refine failed");
+      const data = await res.json();
+      setRefinedStatement(data.refinedStatement || "");
+      setAdvisorPhase("done");
+    } catch {
+      toast({ title: "Advisor error", description: "Could not generate your statement. Please try again.", variant: "destructive" });
+      setAdvisorPhase("questions");
+    }
+  };
+
+  const copyToCase = () => {
+    form.setValue("claimDescription", refinedStatement, { shouldValidate: true });
+    setCopied(true);
+    toast({ title: "Copied to your case", description: "Your description has been updated. You can still edit it in the form." });
+    setTimeout(() => setCopied(false), 3000);
+  };
+
+  const toggleEvidence = (id: string) => {
+    setCheckedEvidence(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-5">
@@ -688,6 +772,18 @@ function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNe
             )} />
           </div>
 
+          {/* ── Case Advisor CTA ─────────────────────────────────────────────── */}
+          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
+              <p className="text-xs text-[#4a9990] mt-0.5">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement — plus tell you exactly what evidence to gather.</p>
+            </div>
+            <Button type="button" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2">
+              <Sparkles className="h-4 w-4" />
+              Check My Case
+            </Button>
+          </div>
+
           <div className="flex justify-between pt-2">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
             <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
@@ -696,6 +792,183 @@ function Step2({ initialData, onNext, onBack, saving }: { initialData: any, onNe
           </div>
         </form>
       </Form>
+
+      {/* ── Case Advisor Drawer ──────────────────────────────────────────────── */}
+      <Sheet open={advisorOpen} onOpenChange={setAdvisorOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
+          <SheetHeader className="p-5 border-b bg-gradient-to-r from-[#ddf6f3] to-white">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <SheetTitle className="text-base">Case Advisor</SheetTitle>
+                <SheetDescription className="text-xs">Reviewing your case to help you build a stronger description</SheetDescription>
+              </div>
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 p-5 space-y-6 overflow-y-auto">
+
+            {/* ── Phase: Analyzing ── */}
+            {advisorPhase === "analyzing" && (
+              <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+                <div className="h-12 w-12 rounded-full bg-[#ddf6f3] flex items-center justify-center animate-pulse">
+                  <Sparkles className="h-6 w-6 text-[#0d6b5e]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#0d6b5e]">Reviewing your case…</p>
+                  <p className="text-sm text-muted-foreground mt-1">Identifying gaps and preparing questions</p>
+                </div>
+              </div>
+            )}
+
+            {/* ── Phase: Questions + Evidence ── */}
+            {(advisorPhase === "questions" || advisorPhase === "refining") && (
+              <>
+                {questions.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 rounded-full bg-amber-500 flex items-center justify-center text-white text-[10px] font-bold">1</div>
+                      <h3 className="font-semibold text-sm">Answer these questions to strengthen your case</h3>
+                    </div>
+                    <div className="space-y-4">
+                      {questions.map((q) => (
+                        <div key={q.id} className="space-y-1.5">
+                          <label className="text-sm font-medium text-foreground">{q.question}</label>
+                          <Textarea
+                            className="min-h-[70px] text-sm"
+                            placeholder="Your answer…"
+                            value={answers[q.id] || ""}
+                            onChange={e => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={refineStatement}
+                      disabled={advisorPhase === "refining"}
+                      className="w-full bg-[#0d6b5e] hover:bg-[#0a5449] text-white gap-2"
+                    >
+                      {advisorPhase === "refining" ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Generating your statement…</>
+                      ) : (
+                        <><Sparkles className="h-4 w-4" /> Generate My Statement</>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {evidenceChecklist.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 rounded-full bg-[#0d6b5e] flex items-center justify-center text-white text-[10px] font-bold">2</div>
+                      <h3 className="font-semibold text-sm">Evidence you should upload</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Check off each item as you gather it, then upload them in the Documents tab.</p>
+                    <div className="space-y-2">
+                      {evidenceChecklist.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => toggleEvidence(item.id)}
+                          className="w-full flex items-start gap-3 rounded-lg border p-3 text-left hover:bg-muted/40 transition-colors"
+                        >
+                          <div className="mt-0.5 shrink-0 text-[#0d6b5e]">
+                            {checkedEvidence.has(item.id)
+                              ? <CheckSquare2 className="h-5 w-5" />
+                              : <Square className="h-5 w-5 text-muted-foreground" />}
+                          </div>
+                          <div>
+                            <p className={`text-sm font-medium ${checkedEvidence.has(item.id) ? "line-through text-muted-foreground" : ""}`}>{item.item}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="pt-1">
+                      <a
+                        href="#documents"
+                        onClick={() => setAdvisorOpen(false)}
+                        className="inline-flex items-center gap-1.5 text-xs text-[#0d6b5e] font-medium hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Go to Documents tab to upload
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── Phase: Done — Show Refined Statement ── */}
+            {advisorPhase === "done" && (
+              <>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 rounded-full bg-amber-500 flex items-center justify-center text-white text-[10px] font-bold">✓</div>
+                    <h3 className="font-semibold text-sm">Your improved case description</h3>
+                  </div>
+                  <div className="rounded-lg border border-[#a8e6df] bg-[#f0fffe] p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
+                    {refinedStatement}
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={copyToCase}
+                    className={`w-full gap-2 ${copied ? "bg-green-600 hover:bg-green-700" : "bg-amber-500 hover:bg-amber-600"} text-white`}
+                  >
+                    {copied ? <><CheckCircle className="h-4 w-4" /> Copied to your case!</> : <><Copy className="h-4 w-4" /> Copy to My Case</>}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setAdvisorPhase("questions")}
+                    className="w-full text-xs text-muted-foreground hover:text-foreground text-center hover:underline"
+                  >
+                    ← Back to questions
+                  </button>
+                </div>
+
+                {evidenceChecklist.length > 0 && (
+                  <div className="space-y-3 border-t pt-5">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 rounded-full bg-[#0d6b5e] flex items-center justify-center text-white text-[10px] font-bold">2</div>
+                      <h3 className="font-semibold text-sm">Evidence to gather &amp; upload</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {evidenceChecklist.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => toggleEvidence(item.id)}
+                          className="w-full flex items-start gap-3 rounded-lg border p-3 text-left hover:bg-muted/40 transition-colors"
+                        >
+                          <div className="mt-0.5 shrink-0 text-[#0d6b5e]">
+                            {checkedEvidence.has(item.id)
+                              ? <CheckSquare2 className="h-5 w-5" />
+                              : <Square className="h-5 w-5 text-muted-foreground" />}
+                          </div>
+                          <div>
+                            <p className={`text-sm font-medium ${checkedEvidence.has(item.id) ? "line-through text-muted-foreground" : ""}`}>{item.item}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <a
+                      href="#documents"
+                      onClick={() => setAdvisorOpen(false)}
+                      className="inline-flex items-center gap-1.5 text-xs text-[#0d6b5e] font-medium hover:underline"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Go to Documents tab to upload
+                    </a>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

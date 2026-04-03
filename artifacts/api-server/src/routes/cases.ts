@@ -276,4 +276,115 @@ router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
   res.json({ score, missingFields, strengths, weaknesses, nextSteps, filingGuidance });
 });
 
+// ─── Case Advisor: Analyze ────────────────────────────────────────────────────
+router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const [caseRecord] = await db
+    .select()
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const { claimDescription, claimType, claimAmount, incidentDate, howAmountCalculated } = req.body;
+
+  const prompt = `You are a California small claims court advisor. Analyze this case and return ONLY a valid JSON object — no markdown, no explanation, no code blocks.
+
+Case details:
+- Claim Type: ${claimType || "Not specified"}
+- Amount Claimed: $${claimAmount || "Not specified"}
+- When it happened: ${incidentDate || "Not specified"}
+- What happened: ${claimDescription || "Not provided"}
+- How amount calculated: ${howAmountCalculated || "Not provided"}
+
+Return this exact JSON structure:
+{
+  "questions": [
+    { "id": "q1", "question": "..." },
+    { "id": "q2", "question": "..." }
+  ],
+  "evidenceChecklist": [
+    { "id": "e1", "item": "Short label", "description": "Why this document matters and what specifically to look for" }
+  ]
+}
+
+Rules:
+- Generate 2–4 questions targeting the WEAKEST or MISSING parts of the description. Make them specific to what was actually written, not generic.
+- Generate 3–6 evidence items specific to this exact claim type. Be specific (e.g. "Signed lease agreement" not "Documents").
+- Security deposit cases: lease, move-in/out inspection report, bank records showing deposit paid, texts or emails with landlord
+- Contract disputes: signed contract or agreement, invoices, proof of payment, written communications
+- Property damage: repair estimates or receipts, before/after photos, written acknowledgment from defendant
+- Money owed / unpaid debt: loan agreement, payment history, prior demand letters
+- Plain English only. No legal jargon.`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 1000,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const raw2 = completion.choices[0].message.content || "{}";
+  const match = raw2.match(/\{[\s\S]*\}/);
+  const jsonStr = match ? match[0] : "{}";
+
+  try {
+    res.json(JSON.parse(jsonStr));
+  } catch {
+    res.status(500).json({ error: "Failed to parse AI response" });
+  }
+});
+
+// ─── Case Advisor: Refine Statement ───────────────────────────────────────────
+router.post("/cases/:id/advisor/refine", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const [caseRecord] = await db
+    .select()
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const { claimDescription, claimType, claimAmount, incidentDate, howAmountCalculated, answers } = req.body;
+
+  const answersText = Array.isArray(answers)
+    ? answers.filter((a: any) => a.answer?.trim()).map((a: any) => `Q: ${a.question}\nA: ${a.answer}`).join("\n\n")
+    : "";
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 800,
+    messages: [{
+      role: "user",
+      content: `You are a California small claims court advisor. Using the original description and the user's follow-up answers, write a clear, polished case description suitable for a California small claims court form.
+
+Original description: ${claimDescription || "None provided"}
+Claim Type: ${claimType || "Unknown"}
+Amount: $${claimAmount || "Unknown"}
+When it happened: ${incidentDate || "Unknown"}
+How amount calculated: ${howAmountCalculated || "Not provided"}
+
+Additional answers from the user:
+${answersText || "None provided"}
+
+Write 2–4 tight paragraphs that:
+1. State the relationship or agreement between the parties
+2. Describe what happened clearly and in chronological order
+3. State the dollar amount and how it was calculated
+4. Mention any prior demand made (if the user mentioned it)
+5. Use plain, factual language — no legal jargon
+6. Are suitable for copying directly into a California small claims court form
+
+Return ONLY the case description text. No headers, no commentary, no formatting.`
+    }],
+  });
+
+  res.json({ refinedStatement: completion.choices[0].message.content?.trim() || "" });
+});
+
 export default router;
