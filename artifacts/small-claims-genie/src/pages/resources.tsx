@@ -75,22 +75,20 @@ export default function Resources() {
                       <CardTitle className="text-base font-semibold flex items-start justify-between gap-2">
                         <span>{item.title}</span>
                         {"url" in item && item.url && (
-                          <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Open ${item.title}`}
+                            className="text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
                         )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 pb-4">
                       <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                      {"url" in item && item.url && (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-3 font-medium"
-                        >
-                          Open official resource <ExternalLink className="h-3 w-3" />
-                        </a>
-                      )}
                     </CardContent>
                   </Card>
                 ))}
