@@ -73,12 +73,17 @@ function buildLetterContext(
 
 const SYSTEM_PROMPT = `You are a professional legal document writer specializing in California pre-litigation demand letters for small claims matters. You produce clean, court-ready demand letters that are factually grounded, professional, and effective.
 
+CRITICAL RULES — read before writing a single word:
+1. The "Claim Description" field in the case facts contains the user's own explanation of what happened. You MUST use this verbatim as the foundation of the factual basis paragraph. Do NOT paraphrase it into a generic summary. Do NOT replace it with "a dispute arose." Reproduce the key facts from it directly in the letter.
+2. If supporting documents are provided with extracted text, use specific details from them (dates, dollar amounts, names, addresses, property details) to enrich the letter. Do NOT ignore them.
+3. NEVER write generic filler like "a dispute arose" or "money is owed." Every sentence must reference the actual facts of this specific case.
+4. Ground every fact in the case information provided — do NOT invent facts not present in the context.
+
 Format rules:
 - Output ONLY the letter text — no commentary, no preamble, no markdown headers outside the letter
 - Use standard business letter format with today's date
 - Structure: Sender block → Date → Recipient block → RE: subject line → Body paragraphs → Signature block
-- Body must include: statement of the dispute, factual basis, amount demanded with breakdown, response deadline (14 days from today), and consequences of non-response
-- Ground every fact in the case information provided — do NOT invent facts
+- Body must include: statement of the dispute, factual basis (using the ACTUAL claim description), amount demanded with breakdown, response deadline (14 days from today), and consequences of non-response
 - If plaintiff address is missing, use "[Your Address]" as placeholder
 - If defendant address is missing, use "[Defendant Address]" as placeholder
 - Amount demanded must match the claim amount exactly — do not round or estimate
@@ -122,11 +127,15 @@ router.post("/cases/:id/demand-letter", async (req, res): Promise<void> => {
   const toneInstruction = TONE_INSTRUCTIONS[tone];
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
+  const claimDescriptionHighlight = caseRecord.claimDescription
+    ? `\n\n⚠️ IMPORTANT — USE THIS IN THE FACTUAL BASIS PARAGRAPH (do not replace with generic language):\n"${caseRecord.claimDescription}"\n`
+    : "\n\n⚠️ WARNING: No claim description was provided. Do your best with the information available but note the letter may be incomplete.\n";
+
   const messages = [
     { role: "system" as const, content: SYSTEM_PROMPT },
     {
       role: "user" as const,
-      content: `Today's date is ${today}.\n\nTone instruction: ${toneInstruction}\n\n${context}\n\nWrite the demand letter now.`,
+      content: `Today's date is ${today}.\n\nTone instruction: ${toneInstruction}\n\n${context}${claimDescriptionHighlight}\nWrite the demand letter now. Remember: use the actual claim description above — never replace it with generic filler.`,
     },
   ];
 
