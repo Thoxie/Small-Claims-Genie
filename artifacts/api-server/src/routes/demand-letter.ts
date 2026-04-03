@@ -51,7 +51,15 @@ function buildLetterContext(
   }
   if (caseRecord.defendantIsBusinessOrEntity) parts.push(`Defendant is a business/entity`);
   if (caseRecord.incidentDate)    parts.push(`Incident Date: ${caseRecord.incidentDate}`);
-  if (caseRecord.claimDescription) parts.push(`\nClaim Description:\n${caseRecord.claimDescription}`);
+  if (caseRecord.claimDescription) {
+    const cleanedDesc = caseRecord.claimDescription
+      .replace(/mock\s+small\s+claims\s+case\s+summary/gi, "")
+      .replace(/mock\s+case\s+summary/gi, "")
+      .replace(/sample\s+case/gi, "")
+      .replace(/^\s*[-–—:]+\s*/gm, "")
+      .trim();
+    if (cleanedDesc) parts.push(`\nClaim Description:\n${cleanedDesc}`);
+  }
   if (caseRecord.howAmountCalculated) parts.push(`How Amount Calculated: ${caseRecord.howAmountCalculated}`);
   if (caseRecord.priorDemandMade !== null) {
     parts.push(`Prior Demand Made: ${caseRecord.priorDemandMade ? "Yes" : "No"}`);
@@ -127,8 +135,16 @@ router.post("/cases/:id/demand-letter", async (req, res): Promise<void> => {
   const toneInstruction = TONE_INSTRUCTIONS[tone];
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
-  const claimDescriptionHighlight = caseRecord.claimDescription
-    ? `\n\n⚠️ IMPORTANT — USE THIS IN THE FACTUAL BASIS PARAGRAPH (do not replace with generic language):\n"${caseRecord.claimDescription}"\n`
+  // Strip any mock/sample labels before sending to AI
+  const cleanDescription = (caseRecord.claimDescription ?? "")
+    .replace(/mock\s+small\s+claims\s+case\s+summary/gi, "")
+    .replace(/mock\s+case\s+summary/gi, "")
+    .replace(/sample\s+case/gi, "")
+    .replace(/^\s*[-–—:]+\s*/gm, "")
+    .trim();
+
+  const claimDescriptionHighlight = cleanDescription
+    ? `\n\n⚠️ IMPORTANT — USE THESE FACTS IN THE FACTUAL BASIS PARAGRAPH. These are real case facts — do NOT label them as mock, sample, or hypothetical. Do NOT include any "Mock" or "Summary" headers. Write them as the actual factual basis of this claim:\n"${cleanDescription}"\n`
     : "\n\n⚠️ WARNING: No claim description was provided. Do your best with the information available but note the letter may be incomplete.\n";
 
   const messages = [
