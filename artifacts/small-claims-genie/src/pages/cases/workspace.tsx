@@ -1508,16 +1508,29 @@ function ChatTab({ caseId }: { caseId: number }) {
       console.warn("[Voice] Web Speech API not supported in this browser");
       return;
     }
+
+    // Snapshot whatever is already typed — new dictation appends to it, never replaces it
+    const textBeforeRecording = input.trim();
+
     const recognition = new SpeechRecognitionAPI();
     recognition.lang = "en-US";
-    recognition.interimResults = false;
+    recognition.interimResults = true;   // show live text while speaking
     recognition.maxAlternatives = 1;
-    recognition.continuous = false;
+    recognition.continuous = true;       // keep listening through pauses — no length cap
 
     recognition.onresult = (event: any) => {
-      const transcript: string = event.results[0]?.[0]?.transcript ?? "";
-      if (transcript.trim()) setInput(transcript.trim());
+      // Collect ALL result segments (interim + final) for this session
+      let sessionTranscript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        sessionTranscript += event.results[i][0].transcript;
+      }
+      // Append to pre-existing input so repeated mic presses accumulate
+      const combined = textBeforeRecording
+        ? textBeforeRecording + " " + sessionTranscript.trim()
+        : sessionTranscript.trim();
+      setInput(combined);
     };
+
     recognition.onerror = (event: any) => {
       console.error("[Voice] Speech recognition error:", event.error);
       setIsRecording(false);
