@@ -24,9 +24,29 @@ function parseTone(value: unknown): DemandLetterTone {
 
 // ── Tone instructions ─────────────────────────────────────────────────────────
 const TONE_INSTRUCTIONS: Record<string, string> = {
-  formal: "Write in a neutral, professional tone. State facts clearly. Do not threaten or plead.",
-  firm:   "Write in a firm, assertive tone. Emphasize the legal basis, the deadline, and the consequences of non-response clearly but without hostility.",
-  friendly: "Write in a cooperative, solution-oriented tone. Acknowledge the relationship where appropriate and express a preference for resolution without court involvement.",
+  formal: `TONE — FORMAL (Professional Notice):
+- Write as a calm, official notice of debt — no emotion, no pleading, no hostility
+- State facts in plain declarative sentences: "On [date], [event occurred]. Payment of $X remains due."
+- The consequence sentence must read: "In the event payment is not received by the deadline, I will file a court action against you in [County] Small Claims Court seeking the full amount owed plus court costs and filing fees."
+- Do not soften or hedge the consequence — state it as certain fact
+- Closing should be brief: "I trust you will address this matter promptly."`,
+
+  firm: `TONE — FIRM (Assertive Demand):
+- Open with a direct statement of the debt owed — no pleasantries
+- State the facts crisply. Every sentence should apply pressure without being hostile.
+- Emphasize the deadline prominently: "You have until [date] to remit payment in full."
+- The consequence sentence must read: "Failure to pay by this date will result in a court action filed against you in [County] Small Claims Court. I will seek the full amount owed, plus court filing fees, service costs, and any other relief the court deems appropriate."
+- End with: "I am prepared to file immediately upon expiration of this deadline."
+- This letter should feel like the last warning before legal action — because it is.`,
+
+  friendly: `TONE — FRIENDLY (Resolution-Oriented):
+- Acknowledge any prior relationship or dealings in the opening sentence
+- Express a genuine preference for resolving this without court involvement
+- State the facts plainly but without accusation — "It appears there may be a misunderstanding regarding..."
+- Keep the payment request clear: the dollar amount and deadline must not be buried
+- The consequence sentence must read: "If I do not hear from you by [date], I will have no choice but to file a court action against you in [County] Small Claims Court to recover the amount owed."
+- Close with an invitation to contact you: include phone or email if provided
+- End with: "I hope we can resolve this matter quickly and amicably."`,
 };
 
 function buildLetterContext(
@@ -38,6 +58,7 @@ function buildLetterContext(
   parts.push(`=== CASE FACTS ===`);
   parts.push(`Case Title: ${caseRecord.title}`);
   if (caseRecord.claimType)     parts.push(`Claim Type: ${caseRecord.claimType}`);
+  if (caseRecord.countyId)      parts.push(`Filing County: ${caseRecord.countyId} County`);
   if (caseRecord.claimAmount)   parts.push(`Amount Sought: $${caseRecord.claimAmount.toLocaleString()}`);
   if (caseRecord.plaintiffName) parts.push(`Plaintiff (Sender): ${caseRecord.plaintiffName}`);
   if (caseRecord.plaintiffAddress && caseRecord.plaintiffCity) {
@@ -79,24 +100,31 @@ function buildLetterContext(
   return parts.join("\n");
 }
 
-const SYSTEM_PROMPT = `You are a professional legal document writer specializing in California pre-litigation demand letters for small claims matters. You produce clean, court-ready demand letters that are factually grounded, professional, and effective.
+const SYSTEM_PROMPT = `You are a professional legal document writer specializing in California pre-litigation demand letters for small claims matters. You write letters that are tight, factual, and effective — the kind a seasoned paralegal would produce.
 
-CRITICAL RULES — read before writing a single word:
-1. The "Claim Description" field in the case facts contains the user's own explanation of what happened. You MUST use this verbatim as the foundation of the factual basis paragraph. Do NOT paraphrase it into a generic summary. Do NOT replace it with "a dispute arose." Reproduce the key facts from it directly in the letter.
-2. If supporting documents are provided with extracted text, use specific details from them (dates, dollar amounts, names, addresses, property details) to enrich the letter. Do NOT ignore them.
-3. NEVER write generic filler like "a dispute arose" or "money is owed." Every sentence must reference the actual facts of this specific case.
-4. Ground every fact in the case information provided — do NOT invent facts not present in the context.
+═══ CRITICAL CONTENT RULES ═══
+1. USE THE ACTUAL CLAIM DESCRIPTION. The highlighted facts below are the real basis of this claim. Use them directly in the factual basis paragraph. Do NOT replace them with generic filler like "a dispute arose" or "money is owed."
+2. NEVER invent facts. Every sentence must be grounded in the case data provided.
+3. If documents are provided with extracted text, pull specific details (dates, amounts, addresses, names) from them to strengthen the letter.
+4. NEVER use the words "mock," "sample," or "hypothetical" — these are real case facts.
+5. COUNTY: Where a filing county is known, the consequences paragraph must name it specifically: "...file a court action against you in [County Name] County Small Claims Court..." If no county is given, use "California Small Claims Court."
 
-Format rules:
-- Output ONLY the letter text — no commentary, no preamble, no markdown headers outside the letter
-- Use standard business letter format with today's date
-- Structure: Sender block → Date → Recipient block → RE: subject line → Body paragraphs → Signature block
-- Body must include: statement of the dispute, factual basis (using the ACTUAL claim description), amount demanded with breakdown, response deadline (14 days from today), and consequences of non-response
-- If plaintiff address is missing, use "[Your Address]" as placeholder
-- If defendant address is missing, use "[Defendant Address]" as placeholder
-- Amount demanded must match the claim amount exactly — do not round or estimate
-- Response deadline: exactly 14 calendar days from today's date
-- Sign off with plaintiff's name or "[Your Name]" if not provided`;
+═══ LENGTH & STRUCTURE RULES ═══
+Target: 4 tight body paragraphs. One page. No padding.
+
+Paragraph 1 — Opening (2 sentences max): Who you are, what this letter is about.
+Paragraph 2 — Facts (3-5 sentences): The actual events using the claim description. Specific dates, amounts, what happened, what was not done.
+Paragraph 3 — Demand (2-3 sentences): Exact dollar amount with breakdown. Clear deadline (14 days from today). No hedging.
+Paragraph 4 — Consequences (2-3 sentences): What happens if they don't pay. Must use "court action against you" language — NOT "small claims action." Reference court costs added on top.
+
+FORMAT:
+- Output ONLY the letter text — no commentary, no markdown, no preamble
+- Standard business letter format: Sender block → Date → Recipient block → RE: line → Body → Signature
+- Plaintiff address missing → use "[Your Address]"
+- Defendant address missing → use "[Defendant Address]"  
+- Dollar amount must match exactly — never round or estimate
+- Sign off with plaintiff name or "[Your Name]" if not provided
+- Response deadline: exactly 14 calendar days from today`;
 
 // GET — retrieve saved letter
 router.get("/cases/:id/demand-letter", async (req, res): Promise<void> => {
