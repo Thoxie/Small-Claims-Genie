@@ -1360,9 +1360,38 @@ function ChatTab({ caseId }: { caseId: number }) {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadingWord, setDownloadingWord] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const { getToken } = useAuth();
+
+  const downloadChat = async (format: "pdf" | "word") => {
+    const setLoading = format === "pdf" ? setDownloadingPdf : setDownloadingWord;
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/chat/export/${format}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Download failed" }));
+        throw new Error(err.error || "Download failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ai-chat-transcript.${format === "pdf" ? "pdf" : "docx"}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      console.error("[Chat export]", e);
+      alert(e?.message || "Could not download transcript. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const { data: history } = useGetChatHistory(caseId, { query: { enabled: !!caseId } });
 
@@ -1482,8 +1511,35 @@ function ChatTab({ caseId }: { caseId: number }) {
 
   return (
     <div className="flex flex-col h-[600px]">
-      <div className="bg-primary/5 border-b p-3 text-center text-sm font-medium text-primary flex items-center justify-center gap-2">
-        <CheckCircle className="h-4 w-4" /> Your AI Genie is trained on your uploaded documents.
+      <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-4 w-4 shrink-0" /> Your AI Genie is trained on your uploaded documents.
+        </div>
+        {messages.length > 0 && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-xs text-muted-foreground font-normal">Download transcript:</span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-xs gap-1"
+              onClick={() => downloadChat("pdf")}
+              disabled={downloadingPdf || downloadingWord}
+            >
+              {downloadingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+              PDF
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-xs gap-1"
+              onClick={() => downloadChat("word")}
+              disabled={downloadingPdf || downloadingWord}
+            >
+              {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+              Word
+            </Button>
+          </div>
+        )}
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
