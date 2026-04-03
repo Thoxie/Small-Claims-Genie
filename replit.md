@@ -42,16 +42,27 @@ artifacts/
   small-claims-genie/  # React+Vite frontend (previewPath /)
     src/
       pages/
-        landing.tsx       # / — Hero, CTA
-        dashboard.tsx     # /dashboard — Case list + stats
-        cases/new.tsx     # /cases/new — Quick-start form
-        cases/workspace.tsx # /cases/:id — 5-tab workspace (Intake/Documents/AI Chat/Demand Letter/Forms)
-        counties.tsx      # /counties — County directory
+        landing.tsx           # / — Hero, features, CTA
+        dashboard.tsx         # /dashboard — Case list + stats cards
+        resume.tsx            # /resume — Resume an in-progress case
+        cases/new.tsx         # /cases/new — Quick-start case creation form
+        cases/workspace.tsx   # /cases/:id — 5-tab workspace (Intake / Documents / AI Chat / Demand Letter / Forms)
+        counties.tsx          # /counties — All 58 CA counties directory
+        how-it-works.tsx      # /how-it-works — Step-by-step explainer
+        faq.tsx               # /faq — Frequently asked questions
+        types-of-cases.tsx    # /types-of-cases — Supported claim type descriptions
+        resources.tsx         # /resources — Filing resources and links
+        sc100-generator.tsx   # /sc100 — Standalone SC-100 PDF generator
+        sign-in.tsx           # /sign-in — Clerk sign-in
+        sign-up.tsx           # /sign-up — Clerk sign-up
+        tos.tsx               # /tos — Terms of Service
+        terms.tsx             # /terms — Terms of Use
+        not-found.tsx         # catch-all 404
       components/
-        layout.tsx        # Nav + footer
-        ui/               # Shadcn components
+        layout.tsx            # Nav + footer wrapper
+        ui/                   # Shadcn UI component library (40+ components)
       lib/
-        i18n.ts           # All UI strings (single-file for future Spanish)
+        i18n.ts               # All UI strings (single source — ready for Spanish translation)
 lib/
   api-spec/openapi.yaml   # Source of truth for all endpoints
   api-client-react/       # Generated React Query hooks (orval)
@@ -68,10 +79,12 @@ lib/
 
 ## Key Design Decisions
 
-- **Stage 1**: No auth, no payments (Phase 2 adds Replit Auth + Stripe)
+- **Auth**: Clerk authentication is live (sign-in/sign-up via Clerk hosted UI). All protected routes require a valid Clerk JWT.
+- **Pricing model**: SaaS — prepare case for free, pay to download final court forms. No Stripe integration yet; payment gate is planned.
 - **OCR**: OpenAI vision API on upload (async, runs in `setImmediate`)
 - **Chat**: SSE streaming via raw `fetch` + `ReadableStream` in frontend (NOT the generated hook)
 - **Voice**: push-to-talk via `useVoiceRecorder` (hold mic → record → release → Whisper transcription via `/api/transcribe` → auto-send to AI)
+- **Demand Letter**: SSE streaming generation + PDF download via `/cases/:id/demand-letter` and `/cases/:id/demand-letter/pdf`
 - **SC-100 limits**: $12,500 individuals, $6,250 businesses (CA 2026)
 - **All 58 CA counties** hardcoded in `artifacts/api-server/src/routes/counties.ts`
 - **Files stored as base64** in `documents.fileData` column (postgres TEXT)
@@ -98,10 +111,13 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 
 ## Environment
 
-- `DATABASE_URL` — PostgreSQL connection string
-- `SESSION_SECRET` — session secret (Phase 2)
-- `PORT` — server port (auto-assigned per artifact)
-- `BASE_PATH` — base URL path for frontend routing
+| Variable | Required | Description |
+|---|---|---|
+| `CLERK_SECRET_KEY` | Yes | Clerk backend secret — from dashboard.clerk.com |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Yes | Clerk frontend publishable key — from dashboard.clerk.com |
+| `SESSION_SECRET` | Yes | Random 32+ char string for session signing |
+| `DATABASE_URL` | Yes | PostgreSQL connection string — auto-set by Replit DB |
+| `PORT` | Yes | Server port — auto-assigned by Replit per artifact |
 
 ## Testing & Publishing
 
