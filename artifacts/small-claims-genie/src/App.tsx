@@ -1,7 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
+import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -81,30 +81,15 @@ class ErrorBoundary extends Component<
 function AuthTokenBridge() {
   const { getToken } = useAuth();
 
-  // Set synchronously during render so the token getter is available
-  // before any child components mount and fire their first API requests.
   useMemo(() => {
     setAuthTokenGetter(() => getToken());
   }, [getToken]);
 
-  // Clean up when unmounted (sign-out / ClerkProvider teardown).
   useEffect(() => {
     return () => setAuthTokenGetter(null);
   }, []);
 
   return null;
-}
-
-// ── Public pages (no auth required) ──────────────────────────────────────────
-function PublicRoutes() {
-  return (
-    <Switch>
-      <Route path="/sign-in" component={SignInPage} />
-      <Route path="/sign-up" component={SignUpPage} />
-      {/* SSO callback path used internally by Clerk */}
-      <Route path="/sign-in/sso-callback" component={SignInPage} />
-    </Switch>
-  );
 }
 
 // ── Loading screen ────────────────────────────────────────────────────────────
@@ -119,61 +104,72 @@ function LoadingScreen() {
   );
 }
 
-// ── Protected app (requires sign-in) ─────────────────────────────────────────
-// Waits for Clerk to fully load before deciding to redirect — prevents
-// the auth state flash that was bouncing users mid sign-up flow.
-function ProtectedRouter() {
+// ── Require auth wrapper ──────────────────────────────────────────────────────
+// Wraps protected pages — redirects to sign-in if not authenticated.
+// Public pages are NOT wrapped in this; they render freely for everyone.
+function RequireAuth({ children }: { children: ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
   const [location] = useLocation();
 
-  // While Clerk is still initialising, show a spinner instead of blank.
   if (!isLoaded) return <LoadingScreen />;
 
   if (!isSignedIn) {
-    // Preserve the intended destination so we can redirect back after login
     const returnTo = location !== "/sign-in" && location !== "/sign-up"
       ? `?redirect=${encodeURIComponent(location)}`
       : "";
     return <Redirect to={`/sign-in${returnTo}`} />;
   }
 
-  return (
-    <>
-      <AuthTokenBridge />
-      <Layout>
-        <Switch>
-          <Route path="/" component={Landing} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/resume" component={Resume} />
-          <Route path="/cases/new" component={NewCase} />
-          <Route path="/cases/:id" component={CaseWorkspace} />
-          <Route path="/counties" component={Counties} />
-          <Route path="/resources" component={Resources} />
-          <Route path="/how-it-works" component={HowItWorks} />
-          <Route path="/faq" component={FAQ} />
-          <Route path="/types-of-cases" component={TypesOfCases} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/tos" component={TermsOfService} />
-          <Route path="/sc100" component={SC100Generator} />
-          <Route component={NotFound} />
-        </Switch>
-      </Layout>
-    </>
-  );
+  return <>{children}</>;
 }
 
+// ── Main router ───────────────────────────────────────────────────────────────
 function Router() {
   return (
     <Switch>
-      {/* Auth pages: explicit base path + wildcard sub-paths for Clerk
-          multi-step flows (e.g. /sign-up/verify-email-address) */}
+      {/* Auth pages — Clerk multi-step flows need wildcard sub-paths */}
       <Route path="/sign-in" component={SignInPage} />
       <Route path="/sign-in/*" component={SignInPage} />
       <Route path="/sign-up" component={SignUpPage} />
       <Route path="/sign-up/*" component={SignUpPage} />
-      {/* Everything else requires auth */}
+
+      {/* All other pages share the Layout (nav + footer) */}
       <Route>
-        <ProtectedRouter />
+        {/* Token bridge: sets up API auth when user is signed in.
+            Harmless for signed-out users — getToken() just returns null. */}
+        <AuthTokenBridge />
+        <Layout>
+          <Switch>
+            {/* ── Public routes — no login required ───────────────────── */}
+            <Route path="/" component={Landing} />
+            <Route path="/counties" component={Counties} />
+            <Route path="/resources" component={Resources} />
+            <Route path="/how-it-works" component={HowItWorks} />
+            <Route path="/faq" component={FAQ} />
+            <Route path="/types-of-cases" component={TypesOfCases} />
+            <Route path="/terms" component={Terms} />
+            <Route path="/tos" component={TermsOfService} />
+
+            {/* ── Protected routes — login required ───────────────────── */}
+            <Route path="/dashboard">
+              <RequireAuth><Dashboard /></RequireAuth>
+            </Route>
+            <Route path="/resume">
+              <RequireAuth><Resume /></RequireAuth>
+            </Route>
+            <Route path="/cases/new">
+              <RequireAuth><NewCase /></RequireAuth>
+            </Route>
+            <Route path="/cases/:id">
+              <RequireAuth><CaseWorkspace /></RequireAuth>
+            </Route>
+            <Route path="/sc100">
+              <RequireAuth><SC100Generator /></RequireAuth>
+            </Route>
+
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
       </Route>
     </Switch>
   );
