@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, desc } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable, chatMessagesTable } from "@workspace/db";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
@@ -13,6 +13,26 @@ const BLACK = rgb(0, 0, 0);
 const GRAY = rgb(0.4, 0.4, 0.4);
 const TEAL = rgb(0.05, 0.42, 0.36);
 
+// ── helper: fetch messages by scope ──────────────────────────────────────────
+async function fetchMessages(caseId: number, scope: string) {
+  if (scope === "last") {
+    // Only the most recent assistant message
+    const rows = await db
+      .select()
+      .from(chatMessagesTable)
+      .where(eq(chatMessagesTable.caseId, caseId))
+      .orderBy(desc(chatMessagesTable.createdAt))
+      .limit(20); // fetch recent, find last assistant
+    const lastAssistant = rows.find(r => r.role === "assistant");
+    return lastAssistant ? [lastAssistant] : [];
+  }
+  return db
+    .select()
+    .from(chatMessagesTable)
+    .where(eq(chatMessagesTable.caseId, caseId))
+    .orderBy(asc(chatMessagesTable.createdAt));
+}
+
 // ── GET /cases/:id/chat/export/pdf ────────────────────────────────────────────
 router.get("/cases/:id/chat/export/pdf", async (req, res): Promise<void> => {
   const userId = getUserId(req);
@@ -23,15 +43,12 @@ router.get("/cases/:id/chat/export/pdf", async (req, res): Promise<void> => {
   const ownedCase = await getOwnedCase(id, userId);
   if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
 
+  const scope = (req.query.scope as string) === "last" ? "last" : "all";
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
-  const messages = await db
-    .select()
-    .from(chatMessagesTable)
-    .where(eq(chatMessagesTable.caseId, id))
-    .orderBy(asc(chatMessagesTable.createdAt));
+  const messages = await fetchMessages(id, scope);
 
   if (messages.length === 0) {
-    res.status(400).json({ error: "No chat messages to export" });
+    res.status(400).json({ error: "No content to export" });
     return;
   }
 
@@ -43,14 +60,16 @@ router.get("/cases/:id/chat/export/pdf", async (req, res): Promise<void> => {
   let page = pdfDoc.addPage([W, H]);
   let y = H - 60;
 
-  // Header
+  const exportDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const isLastOnly = scope === "last";
+  const headerTitle = isLastOnly ? "AI GENIE — DOCUMENT EXPORT" : "AI CHAT TRANSCRIPT";
+
+  // Header bar
   page.drawRectangle({ x: 0, y: H - 44, width: W, height: 44, color: NAVY });
-  page.drawText("AI CHAT TRANSCRIPT", { x: ML, y: H - 29, size: 13, font: boldFont, color: rgb(1, 1, 1) });
+  page.drawText(headerTitle, { x: ML, y: H - 29, size: 13, font: boldFont, color: rgb(1, 1, 1) });
   page.drawText(`Small Claims Genie  •  Case: ${caseRecord?.title ?? `#${id}`}`, {
     x: W - MR - 260, y: H - 29, size: 8.5, font: regFont, color: rgb(0.75, 0.85, 1),
   });
-
-  const exportDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   page.drawText(`Exported: ${exportDate}`, { x: ML, y: H - 55, size: 8, font: regFont, color: GRAY });
   y = H - 78;
 
@@ -83,40 +102,58 @@ router.get("/cases/:id/chat/export/pdf", async (req, res): Promise<void> => {
     if (y - linesNeeded * LINE_H < MAX_Y) {
       page = pdfDoc.addPage([W, H]);
       page.drawRectangle({ x: 0, y: H - 44, width: W, height: 44, color: NAVY });
-      page.drawText("AI CHAT TRANSCRIPT (continued)", { x: ML, y: H - 29, size: 11, font: boldFont, color: rgb(1, 1, 1) });
+      page.drawText(`${headerTitle} (continued)`, { x: ML, y: H - 29, size: 11, font: boldFont, color: rgb(1, 1, 1) });
       y = H - 66;
     }
   }
 
-  for (const msg of messages) {
-    const isUser = msg.role === "user";
-    const label = isUser ? "YOU" : "GENIE";
-    const labelColor = isUser ? NAVY : TEAL;
-
-    ensureSpace(2);
-
-    // Role label
-    page.drawText(label, { x: ML, y, size: 8, font: boldFont, color: labelColor });
-    y -= LINE_H * 0.8;
-
-    // Message content — strip markdown bold/italic for clean PDF output
-    const cleanContent = (msg.content ?? "")
+  if (isLastOnly) {
+    // Clean document layout — no role labels, just the content
+    const content = (messages[0].content ?? "")
       .replace(/\*\*(.*?)\*\*/g, "$1")
       .replace(/\*(.*?)\*/g, "$1")
       .replace(/^#+\s+/gm, "")
       .replace(/^[-•]\s+/gm, "  • ");
 
-    const lines = wrapText(cleanContent, CW - 12, regFont, SIZE);
+    const lines = wrapText(content, CW, regFont, SIZE);
     for (const line of lines) {
       ensureSpace(1);
-      page.drawText(line || " ", { x: ML + (isUser ? 12 : 0), y, size: SIZE, font: regFont, color: BLACK });
+      page.drawText(line || " ", { x: ML, y, size: SIZE, font: regFont, color: BLACK });
       y -= LINE_H;
     }
+  } else {
+    // Full chat transcript layout with role labels
+    for (const msg of messages) {
+      const isUser = msg.role === "user";
+      const label = isUser ? "YOU" : "GENIE";
+      const labelColor = isUser ? NAVY : TEAL;
 
-    // Divider
-    ensureSpace(1);
-    page.drawLine({ start: { x: ML, y: y + LINE_H * 0.5 }, end: { x: W - MR, y: y + LINE_H * 0.5 }, thickness: 0.3, color: GRAY });
-    y -= LINE_H * 0.6;
+      ensureSpace(2);
+      page.drawText(label, { x: ML, y, size: 8, font: boldFont, color: labelColor });
+      y -= LINE_H * 0.8;
+
+      const cleanContent = (msg.content ?? "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/^#+\s+/gm, "")
+        .replace(/^[-•]\s+/gm, "  • ");
+
+      const lines = wrapText(cleanContent, CW - 12, regFont, SIZE);
+      for (const line of lines) {
+        ensureSpace(1);
+        page.drawText(line || " ", { x: ML + (isUser ? 12 : 0), y, size: SIZE, font: regFont, color: BLACK });
+        y -= LINE_H;
+      }
+
+      ensureSpace(1);
+      page.drawLine({
+        start: { x: ML, y: y + LINE_H * 0.5 },
+        end: { x: W - MR, y: y + LINE_H * 0.5 },
+        thickness: 0.3,
+        color: GRAY,
+      });
+      y -= LINE_H * 0.6;
+    }
   }
 
   // Footer on all pages
@@ -131,9 +168,10 @@ router.get("/cases/:id/chat/export/pdf", async (req, res): Promise<void> => {
 
   const pdfBytes = await pdfDoc.save();
   const safeName = (caseRecord?.title ?? `case-${id}`).replace(/[^a-z0-9]/gi, "-").toLowerCase();
+  const fileSuffix = isLastOnly ? "ai-document" : "ai-chat";
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="${safeName}-ai-chat.pdf"`);
+  res.setHeader("Content-Disposition", `attachment; filename="${safeName}-${fileSuffix}.pdf"`);
   res.send(Buffer.from(pdfBytes));
 });
 
@@ -147,23 +185,21 @@ router.get("/cases/:id/chat/export/word", async (req, res): Promise<void> => {
   const ownedCase = await getOwnedCase(id, userId);
   if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
 
+  const scope = (req.query.scope as string) === "last" ? "last" : "all";
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
-  const messages = await db
-    .select()
-    .from(chatMessagesTable)
-    .where(eq(chatMessagesTable.caseId, id))
-    .orderBy(asc(chatMessagesTable.createdAt));
+  const messages = await fetchMessages(id, scope);
 
   if (messages.length === 0) {
-    res.status(400).json({ error: "No chat messages to export" });
+    res.status(400).json({ error: "No content to export" });
     return;
   }
 
   const exportDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const isLastOnly = scope === "last";
 
   const children: Paragraph[] = [
     new Paragraph({
-      text: "AI Chat Transcript",
+      text: isLastOnly ? "AI Genie — Document Export" : "AI Chat Transcript",
       heading: HeadingLevel.HEADING_1,
       alignment: AlignmentType.CENTER,
     }),
@@ -175,31 +211,17 @@ router.get("/cases/:id/chat/export/word", async (req, res): Promise<void> => {
       alignment: AlignmentType.CENTER,
     }),
     new Paragraph({
-      children: [
-        new TextRun({ text: `Exported: ${exportDate}`, size: 18, color: "888888" }),
-      ],
+      children: [new TextRun({ text: `Exported: ${exportDate}`, size: 18, color: "888888" })],
       alignment: AlignmentType.CENTER,
     }),
     new Paragraph({ text: "" }),
     new Paragraph({ text: "" }),
   ];
 
-  for (const msg of messages) {
-    const isUser = msg.role === "user";
-    const label = isUser ? "YOU:" : "GENIE:";
-    const labelColor = isUser ? "0D2357" : "0D6B5E";
-
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: label, bold: true, color: labelColor, size: 20 }),
-        ],
-        spacing: { before: 240, after: 60 },
-      })
-    );
-
-    const content = msg.content ?? "";
-    const paragraphs = content.split("\n").filter((l: string) => l.trim());
+  if (isLastOnly) {
+    // Clean document layout — just the content, no role labels
+    const content = messages[0].content ?? "";
+    const paragraphs = content.split("\n");
 
     for (const para of paragraphs) {
       const cleaned = para
@@ -210,34 +232,59 @@ router.get("/cases/:id/chat/export/word", async (req, res): Promise<void> => {
 
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: cleaned, size: 20 })],
-          spacing: { after: 80 },
-          indent: isUser ? { left: 360 } : {},
+          children: [new TextRun({ text: cleaned || " ", size: 22 })],
+          spacing: { after: 160 },
         })
       );
     }
+  } else {
+    // Full chat transcript layout
+    for (const msg of messages) {
+      const isUser = msg.role === "user";
+      const label = isUser ? "YOU:" : "GENIE:";
+      const labelColor = isUser ? "0D2357" : "0D6B5E";
 
-    children.push(
-      new Paragraph({
-        border: { bottom: { style: "single" as any, size: 4, color: "DDDDDD", space: 1 } },
-        text: "",
-        spacing: { after: 120 },
-      })
-    );
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: label, bold: true, color: labelColor, size: 20 })],
+          spacing: { before: 240, after: 60 },
+        })
+      );
+
+      const paragraphs = (msg.content ?? "").split("\n").filter((l: string) => l.trim());
+      for (const para of paragraphs) {
+        const cleaned = para
+          .replace(/\*\*(.*?)\*\*/g, "$1")
+          .replace(/\*(.*?)\*/g, "$1")
+          .replace(/^#+\s+/, "")
+          .replace(/^[-•]\s+/, "  • ");
+
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: cleaned, size: 20 })],
+            spacing: { after: 80 },
+            indent: isUser ? { left: 360 } : {},
+          })
+        );
+      }
+
+      children.push(
+        new Paragraph({
+          border: { bottom: { style: "single" as any, size: 4, color: "DDDDDD", space: 1 } },
+          text: "",
+          spacing: { after: 120 },
+        })
+      );
+    }
   }
 
-  const doc = new Document({
-    sections: [{
-      properties: {},
-      children,
-    }],
-  });
-
+  const doc = new Document({ sections: [{ properties: {}, children }] });
   const buffer = await Packer.toBuffer(doc);
   const safeName = (caseRecord?.title ?? `case-${id}`).replace(/[^a-z0-9]/gi, "-").toLowerCase();
+  const fileSuffix = isLastOnly ? "ai-document" : "ai-chat";
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-  res.setHeader("Content-Disposition", `attachment; filename="${safeName}-ai-chat.docx"`);
+  res.setHeader("Content-Disposition", `attachment; filename="${safeName}-${fileSuffix}.docx"`);
   res.send(buffer);
 });
 

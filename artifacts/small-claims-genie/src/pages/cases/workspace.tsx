@@ -1366,12 +1366,12 @@ function ChatTab({ caseId }: { caseId: number }) {
   const recognitionRef = useRef<any>(null);
   const { getToken } = useAuth();
 
-  const downloadChat = async (format: "pdf" | "word") => {
+  const downloadChat = async (format: "pdf" | "word", scope: "last" | "all" = "all") => {
     const setLoading = format === "pdf" ? setDownloadingPdf : setDownloadingWord;
     setLoading(true);
     try {
       const token = await getToken();
-      const res = await fetch(`/api/cases/${caseId}/chat/export/${format}`, {
+      const res = await fetch(`/api/cases/${caseId}/chat/export/${format}?scope=${scope}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!res.ok) {
@@ -1382,12 +1382,14 @@ function ChatTab({ caseId }: { caseId: number }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `ai-chat-transcript.${format === "pdf" ? "pdf" : "docx"}`;
+      const ext = format === "pdf" ? "pdf" : "docx";
+      const label = scope === "last" ? "ai-document" : "ai-chat-transcript";
+      a.download = `${label}.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e: any) {
       console.error("[Chat export]", e);
-      alert(e?.message || "Could not download transcript. Please try again.");
+      alert(e?.message || "Could not download. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -1404,16 +1406,26 @@ function ChatTab({ caseId }: { caseId: number }) {
   }, [messages, isTyping]);
 
   // Detect download commands typed in the chat box
-  const detectDownloadCommand = (text: string): "pdf" | "word" | null => {
+  // Returns { format, scope } where scope="last" means just the last AI response,
+  // scope="all" means the full conversation transcript
+  const detectDownloadCommand = (text: string): { format: "pdf" | "word"; scope: "last" | "all" } | null => {
     const t = text.toLowerCase().trim();
     const wordPatterns = [/word/, /\.docx/, /docx/, /ms word/, /microsoft word/];
     const pdfPatterns = [/\bpdf\b/, /\.pdf/];
-    const actionPatterns = [/download/, /export/, /save/, /give me/, /get me/, /create/, /generate/, /send/];
+    const actionPatterns = [/download/, /export/, /save/, /give me/, /get me/, /generate/, /send/];
     const hasAction = actionPatterns.some(p => p.test(t));
     if (!hasAction) return null;
-    if (wordPatterns.some(p => p.test(t))) return "word";
-    if (pdfPatterns.some(p => p.test(t))) return "pdf";
-    return null;
+
+    let format: "pdf" | "word" | null = null;
+    if (wordPatterns.some(p => p.test(t))) format = "word";
+    else if (pdfPatterns.some(p => p.test(t))) format = "pdf";
+    if (!format) return null;
+
+    // "all" only if user explicitly references the whole chat/conversation/transcript
+    const allPatterns = [/\bchat\b/, /conversation/, /transcript/, /\ball\b/, /everything/, /whole/];
+    const scope: "last" | "all" = allPatterns.some(p => p.test(t)) ? "all" : "last";
+
+    return { format, scope };
   };
 
   // SSE streaming send — evidence-grounded via buildCaseContext on the server
@@ -1421,17 +1433,21 @@ function ChatTab({ caseId }: { caseId: number }) {
     if (!content.trim()) return;
 
     // Intercept download commands — handle locally without hitting the AI
-    const downloadFormat = detectDownloadCommand(content);
-    if (downloadFormat) {
+    const downloadCmd = detectDownloadCommand(content);
+    if (downloadCmd) {
+      const { format, scope } = downloadCmd;
       setInput("");
-      const userMsg = { id: Date.now(), role: 'user', content };
+      const formatLabel = format === "pdf" ? "PDF" : "Word (.docx)";
+      const scopeLabel = scope === "last"
+        ? "that content"
+        : "the full chat transcript";
       const botMsg = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: `Of course! Preparing your chat transcript as a **${downloadFormat === "pdf" ? "PDF" : "Word (.docx)"}** file now — your download will start in a moment.`,
+        content: `Of course! Downloading ${scopeLabel} as a **${formatLabel}** file — your download will start in a moment.`,
       };
-      setMessages(prev => [...prev, userMsg, botMsg]);
-      await downloadChat(downloadFormat);
+      setMessages(prev => [...prev, { id: Date.now(), role: 'user', content }, botMsg]);
+      await downloadChat(format, scope);
       return;
     }
 
