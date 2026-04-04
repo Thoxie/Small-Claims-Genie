@@ -14,8 +14,7 @@ export default function SignInPage() {
             <p className="text-base font-semibold text-amber-600 mt-1">Get your money back!</p>
           </div>
           <SignIn
-            routing="path"
-            path={`${base}/sign-in`}
+            routing="virtual"
             signUpUrl={`${base}/sign-up`}
             fallbackRedirectUrl={`${base}/`}
             appearance={{

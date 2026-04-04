@@ -41,8 +41,7 @@ export default function SignUpPage() {
           </div>
           <div ref={containerRef}>
             <SignUp
-              routing="path"
-              path={`${base}/sign-up`}
+              routing="virtual"
               signInUrl={`${base}/sign-in`}
               fallbackRedirectUrl={`${base}/`}
               appearance={{
