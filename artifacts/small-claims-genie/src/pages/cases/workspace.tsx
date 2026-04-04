@@ -1767,23 +1767,109 @@ function ChatTab({ caseId }: { caseId: number }) {
 // ─── FORMS TAB ────────────────────────────────────────────────────────────────
 // Readiness score: intake(60) + documents(30) + prior demand(10) = 0–100
 // Score ≥ 80 unlocks SC-100 PDF download
+// ─── Forms Catalog ────────────────────────────────────────────────────────────
+const FORMS_CATALOG = [
+  {
+    id: "sc100",
+    number: "SC-100",
+    name: "Plaintiff's Claim and ORDER to Go to Small Claims Court",
+    shortDesc: "The primary form to file your small claims case. Lists your claim, both parties, and the amount you're seeking.",
+    detailDesc: "SC-100 is the main filing form for any plaintiff bringing a case in California small claims court. You fill in your name, the defendant's name, the amount you're claiming (up to $12,500 for individuals), and a plain-language explanation of why the defendant owes you money. Once filed, the court stamps a hearing date and the defendant must be served a copy. This form kicks off the entire small claims process.",
+    available: true,
+  },
+  {
+    id: "sc100a",
+    number: "SC-100A",
+    name: "Other Plaintiffs or Defendants",
+    shortDesc: "Attach to SC-100 when your case has more than two plaintiffs or defendants.",
+    detailDesc: "SC-100A is an attachment form used alongside SC-100 when there are more than two parties on either side of the case. If you are suing three or more people or businesses, or if three or more people are bringing the claim together, you list the additional parties here. Each additional plaintiff must also sign and declare the information is true. Attach as many copies of SC-100A as needed to list everyone involved.",
+    available: false,
+  },
+  {
+    id: "sc103",
+    number: "SC-103",
+    name: "Fictitious Business Name",
+    shortDesc: "Required when a party is suing or being sued under a 'doing business as' (DBA) name.",
+    detailDesc: "SC-103 must be attached to SC-100 or SC-120 whenever a plaintiff or defendant operates under a fictitious business name — commonly called a 'DBA' (doing business as). The form requires proof that the fictitious name is properly registered with the county and published as required by California law. If this step is skipped, the court can dismiss the case. Only the business owner, president, CEO, or another qualified officer may sign this form.",
+    available: false,
+  },
+  {
+    id: "sc104",
+    number: "SC-104",
+    name: "Proof of Service",
+    shortDesc: "Documents that the defendant was properly served with the court papers.",
+    detailDesc: "SC-104 is completed by the person who delivered (served) the court papers to the defendant — this must be someone who is at least 18 years old and not named in the case. It cannot be you. The server records exactly how, when, and where the papers were delivered, then signs under penalty of perjury. This completed form must be filed with the court at least 5 days before the hearing date. Without proof of service, the court cannot proceed.",
+    available: false,
+  },
+  {
+    id: "sc105",
+    number: "SC-105",
+    name: "Request for Court Order and Answer",
+    shortDesc: "Ask the court to issue a specific order before or after your trial.",
+    detailDesc: "SC-105 is a two-part form. The first part (Request) is filled out by the party asking the court to make a specific order — for example, requesting more time, asking to amend the claim, or requesting a payment plan after judgment. The second part (Answer) allows the other party to respond. If a request is filed before the trial, the requesting party must serve copies on all other parties. If filed after trial, the court clerk handles service.",
+    available: false,
+  },
+  {
+    id: "sc112a",
+    number: "SC-112A",
+    name: "Proof of Service by Mail",
+    shortDesc: "Proves that certain court documents were properly served by mailing them.",
+    detailDesc: "SC-112A is used when specific forms are allowed to be served by mail rather than in person. It covers forms like SC-105, SC-109, SC-114, SC-133, SC-150, and SC-221. Important: it cannot be used for serving the original SC-100 or SC-120 claim forms — those require in-person service documented on SC-104. The person mailing the documents must be 18 or older, not a party to the case, and must live or work in the county where the mailing takes place.",
+    available: false,
+  },
+  {
+    id: "sc120",
+    number: "SC-120",
+    name: "Defendant's Claim and ORDER to Go to Small Claims Court",
+    shortDesc: "Used by the defendant to file a counter-claim against the original plaintiff.",
+    detailDesc: "SC-120 allows the defendant — the person who was originally sued — to file their own claim against the plaintiff in the same case. This is called a cross-complaint or counter-claim. Filing SC-120 does not remove the obligation to appear at the original hearing; both claims are heard together on the same date. The defendant must still serve the plaintiff with this form before the hearing, following the same service rules that applied to the original SC-100.",
+    available: false,
+  },
+  {
+    id: "sc140",
+    number: "SC-140",
+    name: "Notice of Appeal",
+    shortDesc: "File this to appeal a small claims judgment to the superior court.",
+    detailDesc: "SC-140 is used when a party disagrees with the small claims court's decision and wants to appeal it to the superior court. Note that only defendants may appeal a small claims judgment — plaintiffs give up the right to appeal when they choose small claims court. The form must be filed within 30 days of the judgment. Once filed, the superior court will notify all parties of a new hearing date. The appeal is heard as a new trial (de novo), not a review of the original proceedings.",
+    available: false,
+  },
+  {
+    id: "sc150",
+    number: "SC-150",
+    name: "Request to Postpone Trial",
+    shortDesc: "Ask the court to reschedule your hearing to a later date.",
+    detailDesc: "SC-150 lets either a plaintiff or defendant formally request that the court move the trial to a different date. You must explain why you need a postponement and, if the trial is within 10 days, why you didn't ask sooner. After completing the form, you must serve copies on all other parties using SC-104 (in person) or SC-112A (by mail), then file it with the court clerk. There may be a $10 filing fee. The court will mail all parties its decision.",
+    available: false,
+  },
+  {
+    id: "mc030",
+    number: "MC-030",
+    name: "Declaration",
+    shortDesc: "A general sworn statement form for information that doesn't fit on the main form.",
+    detailDesc: "MC-030 is a blank declaration form used across many types of California court cases, including small claims. It is used whenever a party needs to submit a written statement under penalty of perjury that doesn't fit within the space provided on a specific form. For example, you might attach an MC-030 to provide a longer explanation of your claim, document witness statements, or supply additional facts. The person signing declares under penalty of perjury that everything written is true and correct.",
+    available: false,
+  },
+];
+
 function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any }) {
   const { getToken } = useAuth();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingWord, setDownloadingWord] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [activeFormId, setActiveFormId] = useState<string | null>(null);
 
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
   const color = score >= 80 ? "text-green-500" : score >= 50 ? "text-yellow-500" : "text-red-500";
   const barColor = score >= 80 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
 
+  const activeForm = FORMS_CATALOG.find(f => f.id === activeFormId) ?? null;
+
   async function downloadForm(endpoint: string, filename: string, setLoading: (v: boolean) => void) {
     setLoading(true);
     setDownloadError(null);
     try {
-      // Step 1: get a short-lived download token via authenticated request
       const clerkToken = await getToken();
       const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
         method: "POST",
@@ -1794,8 +1880,6 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
         return;
       }
       const { token } = await tokenRes.json();
-
-      // Step 2: download using ?token query param (no auth header needed)
       const a = document.createElement("a");
       a.href = `/api/cases/${caseId}/forms/${endpoint}?token=${encodeURIComponent(token)}`;
       a.download = filename;
@@ -1810,91 +1894,177 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
   }
 
   return (
-    <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
-      <div className="flex-1 space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">SC-100 Preview</h2>
-          <p className="text-muted-foreground">This is the official Plaintiff's Claim form you will file with the court.</p>
-        </div>
-        
-        <Card className="bg-muted/30 border-dashed">
-          <CardContent className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-y-4 text-sm">
-              <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Plaintiff</span>{currentCase.plaintiffName || "—"}</div>
-              <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Defendant</span>{currentCase.defendantName || "—"}</div>
-              <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Amount Requested</span>{currentCase.claimAmount ? `$${currentCase.claimAmount}` : "—"}</div>
-              <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Incident Date</span>{currentCase.incidentDate || "—"}</div>
-              <div className="col-span-2"><span className="font-semibold block text-xs text-muted-foreground uppercase">Why does defendant owe you money?</span>{currentCase.claimDescription || "—"}</div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {downloadError && (
-          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            size="lg"
-            className="flex-1 h-14 text-lg font-bold"
-            disabled={!isReady || downloadingPdf}
-            onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
-          >
-            {downloadingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
-            {downloadingPdf ? "Downloading…" : i18n.forms.downloadSc100}
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="flex-1 h-14 text-lg font-bold border-2"
-            disabled={!isReady || downloadingWord}
-            onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
-          >
-            {downloadingWord ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
-            {downloadingWord ? "Downloading…" : "Download as Word (.docx)"}
-          </Button>
-        </div>
-        {!isReady && <p className="text-sm text-center text-muted-foreground">You must complete your intake to reach 80% readiness before downloading.</p>}
+    <div className="p-6 md:p-8 space-y-8">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold mb-1">Court Forms Library</h2>
+        <p className="text-muted-foreground text-sm">California small claims forms — click any form to learn more or generate it.</p>
       </div>
 
-      <div className="w-full md:w-80 space-y-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-center text-muted-foreground text-sm uppercase tracking-wider">{i18n.forms.readinessScore}</CardTitle>
+      {/* Tile Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {FORMS_CATALOG.map((form) => {
+          const isActive = activeFormId === form.id;
+          return (
+            <button
+              key={form.id}
+              onClick={() => setActiveFormId(isActive ? null : form.id)}
+              className={`text-left rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/40 ${
+                isActive
+                  ? "border-[#0d6b5e] bg-[#ddf6f3]"
+                  : "border-border bg-card hover:border-[#0d6b5e]/40"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className={`text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full ${
+                  isActive ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"
+                }`}>
+                  {form.number}
+                </span>
+                {form.available ? (
+                  <span className="text-xs font-semibold text-[#0d6b5e] bg-[#ddf6f3] border border-[#0d6b5e]/30 px-2 py-0.5 rounded-full">Ready</span>
+                ) : (
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Coming Soon</span>
+                )}
+              </div>
+              <h3 className="font-semibold text-sm leading-snug mb-1">{form.name}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{form.shortDesc}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Detail Panel */}
+      {activeForm && (
+        <Card className="border-2 border-[#0d6b5e]/30 bg-card">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold tracking-widest uppercase text-[#0d6b5e] bg-[#ddf6f3] px-3 py-1 rounded-full">{activeForm.number}</span>
+                <CardTitle className="text-lg">{activeForm.name}</CardTitle>
+              </div>
+              <button
+                onClick={() => setActiveFormId(null)}
+                className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded"
+                aria-label="Close"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
           </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <div className={`text-6xl font-black ${color} mb-2`}>{score}</div>
-            <div className="w-full bg-muted rounded-full h-2 mb-4 overflow-hidden">
-              <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
-            </div>
-            {readiness?.missingFields && readiness.missingFields.length > 0 && (
-              <div className="w-full mt-4">
-                <h4 className="text-sm font-semibold flex items-center gap-1 text-destructive mb-2"><AlertCircle className="h-4 w-4"/> {i18n.forms.missingFields}</h4>
-                <ul className="text-sm space-y-1">
-                  {readiness.missingFields.map((f: string, i: number) => (
-                    <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-destructive mt-1">•</span>{f}</li>
-                  ))}
-                </ul>
+          <CardContent className="space-y-6">
+            <p className="text-sm text-muted-foreground leading-relaxed">{activeForm.detailDesc}</p>
+
+            {activeForm.available ? (
+              /* ── SC-100 Generator Panel ── */
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Case summary */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Your Case Summary</h4>
+                    <Card className="bg-muted/30 border-dashed">
+                      <CardContent className="p-4">
+                        <div className="grid grid-cols-2 gap-y-3 text-sm">
+                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Plaintiff</span>{currentCase.plaintiffName || "—"}</div>
+                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Defendant</span>{currentCase.defendantName || "—"}</div>
+                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Amount</span>{currentCase.claimAmount ? `$${currentCase.claimAmount}` : "—"}</div>
+                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Incident Date</span>{currentCase.incidentDate || "—"}</div>
+                          <div className="col-span-2"><span className="font-semibold block text-xs text-muted-foreground uppercase">Description</span>{currentCase.claimDescription || "—"}</div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {downloadError && (
+                      <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
+                        <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-3">
+                      <Button
+                        className="h-12 font-bold text-base"
+                        disabled={!isReady || downloadingPdf}
+                        onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
+                      >
+                        {downloadingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+                        {downloadingPdf ? "Downloading…" : i18n.forms.downloadSc100}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-12 font-bold text-base border-2"
+                        disabled={!isReady || downloadingWord}
+                        onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
+                      >
+                        {downloadingWord ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+                        {downloadingWord ? "Downloading…" : "Download as Word (.docx)"}
+                      </Button>
+                    </div>
+                    {!isReady && <p className="text-xs text-center text-muted-foreground">Complete your intake to reach 80% readiness before downloading.</p>}
+                  </div>
+
+                  {/* Readiness Score */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">{i18n.forms.readinessScore}</h4>
+                    <Card>
+                      <CardContent className="flex flex-col items-center pt-6">
+                        <div className={`text-6xl font-black ${color} mb-2`}>{score}</div>
+                        <div className="w-full bg-muted rounded-full h-2 mb-4 overflow-hidden">
+                          <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
+                        </div>
+                        {readiness?.missingFields && readiness.missingFields.length > 0 && (
+                          <div className="w-full mt-2">
+                            <h5 className="text-sm font-semibold flex items-center gap-1 text-destructive mb-2"><AlertCircle className="h-4 w-4"/> {i18n.forms.missingFields}</h5>
+                            <ul className="text-sm space-y-1">
+                              {readiness.missingFields.map((f: string, i: number) => (
+                                <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-destructive mt-1">•</span>{f}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {readiness?.strengths && readiness.strengths.length > 0 && (
+                          <div className="w-full mt-4">
+                            <h5 className="text-sm font-semibold flex items-center gap-1 text-green-600 mb-2"><CheckCircle className="h-4 w-4"/> Strengths</h5>
+                            <ul className="text-sm space-y-1">
+                              {readiness.strengths.map((s: string, i: number) => (
+                                <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-green-500 mt-1">✓</span>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {readiness?.filingGuidance && (
+                          <p className="mt-4 text-xs text-muted-foreground text-center border-t pt-3">{readiness.filingGuidance}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </div>
-            )}
-            {readiness?.strengths && readiness.strengths.length > 0 && (
-              <div className="w-full mt-4">
-                <h4 className="text-sm font-semibold flex items-center gap-1 text-green-600 mb-2"><CheckCircle className="h-4 w-4"/> Strengths</h4>
-                <ul className="text-sm space-y-1">
-                  {readiness.strengths.map((s: string, i: number) => (
-                    <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-green-500 mt-1">✓</span>{s}</li>
-                  ))}
-                </ul>
+            ) : (
+              /* ── Placeholder Panel ── */
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800">Form generator coming soon</p>
+                    <p className="text-xs text-amber-700">We're working on auto-filling this form with your case data.</p>
+                  </div>
+                </div>
+                <a
+                  href={`https://www.courts.ca.gov/rules-forms/find-your-court-forms?query=${activeForm.number}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0d6b5e] underline underline-offset-2 whitespace-nowrap"
+                >
+                  Download blank form
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
               </div>
-            )}
-            {readiness?.filingGuidance && (
-              <p className="mt-4 text-xs text-muted-foreground text-center border-t pt-3">{readiness.filingGuidance}</p>
             )}
           </CardContent>
         </Card>
-      </div>
+      )}
     </div>
   );
 }
