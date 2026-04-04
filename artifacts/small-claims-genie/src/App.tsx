@@ -125,53 +125,51 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 // ── Main router ───────────────────────────────────────────────────────────────
 function Router() {
+  const [location] = useLocation();
+
+  // Auth pages: render by path prefix so the Clerk component is never
+  // unmounted mid-flow (avoids duplicate verification emails).
+  if (location.startsWith("/sign-up")) return <SignUpPage />;
+  if (location.startsWith("/sign-in")) return <SignInPage />;
+
   return (
-    <Switch>
-      {/* Auth pages — Clerk multi-step flows need wildcard sub-paths */}
-      <Route path="/sign-in" component={SignInPage} />
-      <Route path="/sign-in/*" component={SignInPage} />
-      <Route path="/sign-up" component={SignUpPage} />
-      <Route path="/sign-up/*" component={SignUpPage} />
+    <>
+      {/* Token bridge: sets up API auth when user is signed in.
+          Harmless for signed-out users — getToken() just returns null. */}
+      <AuthTokenBridge />
+      <Layout>
+        <Switch>
+          {/* ── Public routes — no login required ───────────────────── */}
+          <Route path="/" component={Landing} />
+          <Route path="/counties" component={Counties} />
+          <Route path="/resources" component={Resources} />
+          <Route path="/how-it-works" component={HowItWorks} />
+          <Route path="/faq" component={FAQ} />
+          <Route path="/types-of-cases" component={TypesOfCases} />
+          <Route path="/terms" component={Terms} />
+          <Route path="/tos" component={TermsOfService} />
 
-      {/* All other pages share the Layout (nav + footer) */}
-      <Route>
-        {/* Token bridge: sets up API auth when user is signed in.
-            Harmless for signed-out users — getToken() just returns null. */}
-        <AuthTokenBridge />
-        <Layout>
-          <Switch>
-            {/* ── Public routes — no login required ───────────────────── */}
-            <Route path="/" component={Landing} />
-            <Route path="/counties" component={Counties} />
-            <Route path="/resources" component={Resources} />
-            <Route path="/how-it-works" component={HowItWorks} />
-            <Route path="/faq" component={FAQ} />
-            <Route path="/types-of-cases" component={TypesOfCases} />
-            <Route path="/terms" component={Terms} />
-            <Route path="/tos" component={TermsOfService} />
+          {/* ── Protected routes — login required ───────────────────── */}
+          <Route path="/dashboard">
+            <RequireAuth><Dashboard /></RequireAuth>
+          </Route>
+          <Route path="/resume">
+            <RequireAuth><Resume /></RequireAuth>
+          </Route>
+          <Route path="/cases/new">
+            <RequireAuth><NewCase /></RequireAuth>
+          </Route>
+          <Route path="/cases/:id">
+            <RequireAuth><CaseWorkspace /></RequireAuth>
+          </Route>
+          <Route path="/sc100">
+            <RequireAuth><SC100Generator /></RequireAuth>
+          </Route>
 
-            {/* ── Protected routes — login required ───────────────────── */}
-            <Route path="/dashboard">
-              <RequireAuth><Dashboard /></RequireAuth>
-            </Route>
-            <Route path="/resume">
-              <RequireAuth><Resume /></RequireAuth>
-            </Route>
-            <Route path="/cases/new">
-              <RequireAuth><NewCase /></RequireAuth>
-            </Route>
-            <Route path="/cases/:id">
-              <RequireAuth><CaseWorkspace /></RequireAuth>
-            </Route>
-            <Route path="/sc100">
-              <RequireAuth><SC100Generator /></RequireAuth>
-            </Route>
-
-            <Route component={NotFound} />
-          </Switch>
-        </Layout>
-      </Route>
-    </Switch>
+          <Route component={NotFound} />
+        </Switch>
+      </Layout>
+    </>
   );
 }
 
