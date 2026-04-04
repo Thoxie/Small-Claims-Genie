@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, real, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, real, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -51,6 +51,7 @@ export const casesTable = pgTable("cases", {
   readinessScore: integer("readiness_score").default(0),
   demandLetterText: text("demand_letter_text"),
   demandLetterTone: text("demand_letter_tone"),
+  evidenceChecklist: jsonb("evidence_checklist"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

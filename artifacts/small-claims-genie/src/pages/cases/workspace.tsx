@@ -237,7 +237,7 @@ export default function CaseWorkspace() {
             <IntakeTab caseId={caseId} initialData={currentCase} />
           </TabsContent>
           <TabsContent value="documents" className="p-0 m-0">
-            <DocumentsTab caseId={caseId} />
+            <DocumentsTab caseId={caseId} evidenceChecklist={(currentCase as any)?.evidenceChecklist || []} />
           </TabsContent>
           <TabsContent value="chat" className="p-0 m-0">
             <ChatTab caseId={caseId} />
@@ -635,7 +635,9 @@ function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
   const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [evidenceChecklist, setEvidenceChecklist] = useState<{ id: string; item: string; description: string }[]>([]);
+  const [evidenceChecklist, setEvidenceChecklist] = useState<{ id: string; item: string; description: string }[]>(
+    Array.isArray(initialData.evidenceChecklist) ? initialData.evidenceChecklist : []
+  );
   const [checkedEvidence, setCheckedEvidence] = useState<Set<string>>(new Set());
   const [refinedStatement, setRefinedStatement] = useState("");
   const [copied, setCopied] = useState(false);
@@ -863,9 +865,9 @@ function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-5 w-5 rounded-full bg-[#0d6b5e] flex items-center justify-center text-white text-[10px] font-bold">2</div>
-                      <h3 className="font-semibold text-sm">Evidence you should upload</h3>
+                      <h3 className="font-semibold text-sm">Evidence you should gather</h3>
                     </div>
-                    <p className="text-xs text-muted-foreground">Check off each item as you gather it, then upload them in the Documents tab.</p>
+                    <p className="text-xs text-muted-foreground">This list is saved to your case. Gather what you can — you can upload documents anytime from the Documents tab.</p>
                     <div className="space-y-2">
                       {evidenceChecklist.map((item) => (
                         <button
@@ -886,18 +888,18 @@ function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number
                         </button>
                       ))}
                     </div>
-                    <div className="pt-1">
-                      <a
-                        href="#documents"
-                        onClick={() => setAdvisorOpen(false)}
-                        className="inline-flex items-center gap-1.5 text-xs text-[#0d6b5e] font-medium hover:underline"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        Go to Documents tab to upload
-                      </a>
-                    </div>
                   </div>
                 )}
+                <div className="pt-2 flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => setAdvisorOpen(false)}
+                    className="w-full bg-[#0d6b5e] hover:bg-[#0a5449] text-white"
+                  >
+                    Done for now
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">Your document checklist is saved — find it in the Documents tab whenever you're ready to upload.</p>
+                </div>
               </>
             )}
 
@@ -932,8 +934,9 @@ function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number
                   <div className="space-y-3 border-t pt-5">
                     <div className="flex items-center gap-2">
                       <div className="h-5 w-5 rounded-full bg-[#0d6b5e] flex items-center justify-center text-white text-[10px] font-bold">2</div>
-                      <h3 className="font-semibold text-sm">Evidence to gather &amp; upload</h3>
+                      <h3 className="font-semibold text-sm">Evidence to gather</h3>
                     </div>
+                    <p className="text-xs text-muted-foreground">This list is saved to your case — find it anytime in the Documents tab when you're ready to upload.</p>
                     <div className="space-y-2">
                       {evidenceChecklist.map((item) => (
                         <button
@@ -954,16 +957,17 @@ function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number
                         </button>
                       ))}
                     </div>
-                    <a
-                      href="#documents"
-                      onClick={() => setAdvisorOpen(false)}
-                      className="inline-flex items-center gap-1.5 text-xs text-[#0d6b5e] font-medium hover:underline"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Go to Documents tab to upload
-                    </a>
                   </div>
                 )}
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    onClick={() => setAdvisorOpen(false)}
+                    className="w-full bg-[#0d6b5e] hover:bg-[#0a5449] text-white"
+                  >
+                    Done for now
+                  </Button>
+                </div>
               </>
             )}
           </div>
@@ -1242,13 +1246,15 @@ function Step4({ initialData, onComplete, onBack, saving }: { initialData: any, 
 }
 
 // ─── DOCUMENTS TAB ────────────────────────────────────────────────────────────
-function DocumentsTab({ caseId }: { caseId: number }) {
+function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string }[] }) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
   const uploadDoc = useUploadDocument();
   const deleteDoc = useDeleteDocument();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const toggleItem = (id: string) => setCheckedItems(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const invalidateDocAndScore = () => {
     queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });
@@ -1284,6 +1290,37 @@ function DocumentsTab({ caseId }: { caseId: number }) {
         </Button>
         <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.docx" onChange={handleUpload} />
       </div>
+
+      {evidenceChecklist.length > 0 && (
+        <div className="mb-6 rounded-lg border border-[#a8e6df] bg-[#f0fffe] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <ClipboardList className="h-4 w-4 text-[#0d6b5e]" />
+            <h3 className="font-semibold text-sm text-[#0d6b5e]">Your Document Checklist</h3>
+            <span className="text-xs text-muted-foreground ml-auto">{checkedItems.size}/{evidenceChecklist.length} gathered</span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">Check off each document as you gather it, then upload it using the button above.</p>
+          <div className="space-y-2">
+            {evidenceChecklist.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => toggleItem(item.id)}
+                className="w-full flex items-start gap-3 rounded-lg border border-[#a8e6df] bg-white p-3 text-left hover:bg-[#ddf6f3]/40 transition-colors"
+              >
+                <div className="mt-0.5 shrink-0 text-[#0d6b5e]">
+                  {checkedItems.has(item.id)
+                    ? <CheckSquare2 className="h-5 w-5" />
+                    : <Square className="h-5 w-5 text-muted-foreground" />}
+                </div>
+                <div>
+                  <p className={`text-sm font-medium ${checkedItems.has(item.id) ? "line-through text-muted-foreground" : ""}`}>{item.item}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div
         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center mb-8 bg-muted/5 cursor-pointer hover:border-primary/40 transition-colors"

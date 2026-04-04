@@ -331,7 +331,12 @@ Rules:
   const jsonStr = match ? match[0] : "{}";
 
   try {
-    res.json(JSON.parse(jsonStr));
+    const parsed = JSON.parse(jsonStr);
+    const checklist = parsed.evidenceChecklist || [];
+    if (checklist.length > 0) {
+      await db.update(casesTable).set({ evidenceChecklist: checklist }).where(eq(casesTable.id, id));
+    }
+    res.json(parsed);
   } catch {
     res.status(500).json({ error: "Failed to parse AI response" });
   }
