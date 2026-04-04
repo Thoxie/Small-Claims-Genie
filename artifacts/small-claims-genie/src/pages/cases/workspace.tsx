@@ -1868,6 +1868,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
   const [downloadingWord, setDownloadingWord] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
+  const [guideFormId, setGuideFormId] = useState<string | null>(null);
 
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
@@ -1875,6 +1876,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
   const barColor = score >= 80 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
 
   const activeForm = FORMS_CATALOG.find(f => f.id === activeFormId) ?? null;
+  const guideForm = FORMS_CATALOG.find(f => f.id === guideFormId) ?? null;
 
   async function downloadForm(endpoint: string, filename: string, setLoading: (v: boolean) => void) {
     setLoading(true);
@@ -1901,6 +1903,139 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
     } finally {
       setLoading(false);
     }
+  }
+
+  /* ── Full Form Guide Page ── */
+  if (guideForm) {
+    return (
+      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
+        {/* Back */}
+        <button
+          onClick={() => setGuideFormId(null)}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b5e] hover:underline"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Forms Library
+        </button>
+
+        {/* Form header */}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm font-bold tracking-widest uppercase bg-[#0d6b5e] text-white px-3 py-1 rounded-full">{guideForm.number}</span>
+          <h2 className="text-2xl font-bold leading-tight">{guideForm.name}</h2>
+          {guideForm.available
+            ? <span className="text-xs font-semibold text-[#0d6b5e] bg-[#ddf6f3] border border-[#0d6b5e]/30 px-2 py-0.5 rounded-full">Ready</span>
+            : <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Coming Soon</span>
+          }
+        </div>
+
+        {guideForm.id === "sc100" ? (
+          /* ── SC-100 Full Guide ── */
+          <div className="space-y-6">
+
+            {/* Mandatory badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-red-300 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Required — you cannot start your case without this form
+            </div>
+
+            {/* Section 1: What it is */}
+            <div className="space-y-2">
+              <h3 className="text-base font-bold text-foreground">What is this form?</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">Form SC-100 is the main form used to start a small claims case in California. It tells the court who is filing the case, who is being sued, how much money is being requested, and a short explanation of what happened. Without it, the court cannot open your case or schedule a hearing.</p>
+            </div>
+
+            {/* Section 2: Why you need it */}
+            <div className="space-y-2">
+              <h3 className="text-base font-bold text-foreground">Why do you need it?</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">SC-100 is the standard statewide starting form used in all 58 California counties. The court uses it to open the case, assign a hearing date, and identify the basic facts of the dispute. There is no substitute — every plaintiff must complete and file this form.</p>
+            </div>
+
+            {/* Section 3: What to put on it */}
+            <div className="space-y-3">
+              <h3 className="text-base font-bold text-foreground">What you will put on this form</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { label: "Who is involved", detail: "Your full name and address, and the full name and address of the person or business you are suing." },
+                  { label: "How much you want", detail: "The exact dollar amount you are requesting. For individuals, the limit is $12,500." },
+                  { label: "Why you are suing", detail: "A short, clear explanation of what happened and why you believe the other party owes you money." },
+                  { label: "Why this county", detail: "An explanation of why the case belongs in the specific county where you are filing — usually because that is where the event happened or where the defendant lives or works." },
+                ].map((item, i) => (
+                  <div key={i} className="rounded-xl border bg-muted/30 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e] mb-1">{item.label}</p>
+                    <p className="text-sm text-muted-foreground">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 4: MC-030 overflow */}
+            <div className="rounded-xl border border-[#0d6b5e]/20 bg-[#ddf6f3]/50 p-5 space-y-2">
+              <h3 className="text-base font-bold text-foreground">What if your explanation doesn't fit?</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">If you cannot fit your full explanation on SC-100, this application will direct you to <span className="font-semibold text-foreground">MC-030 Declaration</span> — the standard California form for providing additional written facts. Keep a short summary on SC-100 and use MC-030 to tell the rest of the story.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">Your MC-030 should follow a simple timeline format: what happened, when it happened, what the other party did or failed to do, the amount you are requesting, and why you believe that amount is owed. Both forms are submitted together as part of your filing.</p>
+              <p className="text-xs font-semibold text-[#0d6b5e] mt-2">Note: Always refer to this as "MC-030 Declaration" — not "CMC 30" or any other variation.</p>
+            </div>
+
+            {/* Section 5: Fee waiver */}
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
+              <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-amber-800">Before you finish — check if you qualify for a fee waiver</p>
+                <p className="text-sm text-amber-700 leading-relaxed">Filing a small claims case costs money. If paying the filing fee would be a financial hardship, you may not have to pay it. Before you submit your SC-100, check whether you qualify to use <span className="font-semibold">Form FW-001, Request to Waive Court Fees</span>. If you qualify, the court can waive or reduce the fee. You should never pay a court fee you are legally entitled to have waived.</p>
+              </div>
+            </div>
+
+            {/* Download CTA */}
+            {isReady && (
+              <div className="flex gap-3 pt-2">
+                <Button
+                  className="h-11 font-bold"
+                  disabled={downloadingPdf}
+                  onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
+                >
+                  {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  {downloadingPdf ? "Downloading…" : "Download Filled SC-100 (PDF)"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-11 font-bold border-2"
+                  disabled={downloadingWord}
+                  onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
+                >
+                  {downloadingWord ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  {downloadingWord ? "Downloading…" : "Word (.docx)"}
+                </Button>
+              </div>
+            )}
+            {!isReady && (
+              <p className="text-xs text-muted-foreground">Complete your intake to 80% readiness to unlock the filled SC-100 download.</p>
+            )}
+
+          </div>
+        ) : (
+          /* ── Placeholder Guide (other forms) ── */
+          <div className="space-y-6">
+            <p className="text-sm text-muted-foreground leading-relaxed">{guideForm.detailDesc}</p>
+            <div className="rounded-xl border border-dashed border-muted-foreground/30 bg-muted/20 p-8 flex flex-col items-center gap-3 text-center">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/50"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <p className="text-sm font-semibold text-muted-foreground">Detailed guide coming soon</p>
+              <p className="text-xs text-muted-foreground max-w-sm">We're working on a full step-by-step guide for this form explaining when you need it, how to fill it out, and what happens if you skip it.</p>
+              <a
+                href={guideForm.blankFormUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b5e] underline underline-offset-2"
+              >
+                Download blank {guideForm.number} from courts.ca.gov
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -2014,6 +2149,16 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
               </div>
               <h3 className="font-semibold text-sm leading-snug mb-1">{form.name}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">{form.shortDesc}</p>
+              {/* Learn more arrow */}
+              <div className="flex justify-end mt-3">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setGuideFormId(form.id); }}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#0d6b5e] hover:underline"
+                >
+                  Learn more
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
             </div>
           );
         })}
