@@ -1984,18 +1984,32 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
                   ) : (
                     <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Coming Soon</span>
                   )}
-                  <a
-                    href={form.blankFormUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`Download blank ${form.number}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-1 rounded hover:bg-black/10 text-muted-foreground hover:text-[#0d6b5e] transition-colors"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
-                    </svg>
-                  </a>
+                  {form.available ? (
+                    <button
+                      title={`Download filled ${form.number} PDF`}
+                      onClick={(e) => { e.stopPropagation(); downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf); }}
+                      disabled={downloadingPdf || !isReady}
+                      className="p-1 rounded hover:bg-black/10 text-[#0d6b5e] hover:text-[#0d6b5e]/70 transition-colors disabled:opacity-40"
+                    >
+                      {downloadingPdf
+                        ? <Loader2 width="14" height="14" className="animate-spin" />
+                        : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                      }
+                    </button>
+                  ) : (
+                    <a
+                      href={form.blankFormUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`Download blank ${form.number}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 rounded hover:bg-black/10 text-muted-foreground hover:text-[#0d6b5e] transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+                      </svg>
+                    </a>
+                  )}
                 </div>
               </div>
               <h3 className="font-semibold text-sm leading-snug mb-1">{form.name}</h3>
@@ -2027,33 +2041,24 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
             <p className="text-sm text-muted-foreground leading-relaxed">{activeForm.detailDesc}</p>
 
             {activeForm.available ? (
-              /* ── SC-100 Generator Panel ── */
-              <div className="space-y-4 max-w-xl">
+              /* ── SC-100 Detail ── */
+              <div className="space-y-4">
+                {isReady ? (
+                  <div className="flex items-center gap-2 rounded-lg border border-[#0d6b5e]/30 bg-[#ddf6f3] p-3 text-sm text-[#0d6b5e]">
+                    <CheckCircle className="h-4 w-4 shrink-0" />
+                    Your case is ready. Use the <svg className="inline mx-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> icon on the SC-100 tile above to download your filled form.
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    Complete your intake to 80% readiness to unlock the filled SC-100 download.
+                  </div>
+                )}
                 {downloadError && (
                   <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
                     <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
                   </div>
                 )}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    className="flex-1 h-12 font-bold text-base"
-                    disabled={!isReady || downloadingPdf}
-                    onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
-                  >
-                    {downloadingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
-                    {downloadingPdf ? "Downloading…" : i18n.forms.downloadSc100}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-12 font-bold text-base border-2"
-                    disabled={!isReady || downloadingWord}
-                    onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
-                  >
-                    {downloadingWord ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
-                    {downloadingWord ? "Downloading…" : "Download as Word (.docx)"}
-                  </Button>
-                </div>
-                {!isReady && <p className="text-xs text-center text-muted-foreground">Complete your intake to reach 80% readiness before downloading.</p>}
               </div>
             ) : (
               /* ── Placeholder Panel ── */
