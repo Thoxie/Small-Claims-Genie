@@ -1784,7 +1784,7 @@ const FORMS_CATALOG = [
     name: "Other Plaintiffs or Defendants",
     shortDesc: "Attach to SC-100 when your case has more than two plaintiffs or defendants.",
     detailDesc: "SC-100A is an attachment form used alongside SC-100 when there are more than two parties on either side of the case. If you are suing three or more people or businesses, or if three or more people are bringing the claim together, you list the additional parties here. Each additional plaintiff must also sign and declare the information is true. Attach as many copies of SC-100A as needed to list everyone involved.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc100a.pdf",
   },
   {
@@ -1793,7 +1793,7 @@ const FORMS_CATALOG = [
     name: "Fictitious Business Name",
     shortDesc: "Required when a party is suing or being sued under a 'doing business as' (DBA) name.",
     detailDesc: "SC-103 must be attached to SC-100 or SC-120 whenever a plaintiff or defendant operates under a fictitious business name — commonly called a 'DBA' (doing business as). The form requires proof that the fictitious name is properly registered with the county and published as required by California law. If this step is skipped, the court can dismiss the case. Only the business owner, president, CEO, or another qualified officer may sign this form.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc103.pdf",
   },
   {
@@ -1802,7 +1802,7 @@ const FORMS_CATALOG = [
     name: "Proof of Service",
     shortDesc: "Documents that the defendant was properly served with the court papers.",
     detailDesc: "SC-104 is completed by the person who delivered (served) the court papers to the defendant — this must be someone who is at least 18 years old and not named in the case. It cannot be you. The server records exactly how, when, and where the papers were delivered, then signs under penalty of perjury. This completed form must be filed with the court at least 5 days before the hearing date. Without proof of service, the court cannot proceed.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc104.pdf",
   },
   {
@@ -1811,7 +1811,7 @@ const FORMS_CATALOG = [
     name: "Request for Court Order and Answer",
     shortDesc: "Ask the court to issue a specific order before or after your trial.",
     detailDesc: "SC-105 is a two-part form. The first part (Request) is filled out by the party asking the court to make a specific order — for example, requesting more time, asking to amend the claim, or requesting a payment plan after judgment. The second part (Answer) allows the other party to respond. If a request is filed before the trial, the requesting party must serve copies on all other parties. If filed after trial, the court clerk handles service.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc105.pdf",
   },
   {
@@ -1820,7 +1820,7 @@ const FORMS_CATALOG = [
     name: "Proof of Service by Mail",
     shortDesc: "Proves that certain court documents were properly served by mailing them.",
     detailDesc: "SC-112A is used when specific forms are allowed to be served by mail rather than in person. It covers forms like SC-105, SC-109, SC-114, SC-133, SC-150, and SC-221. Important: it cannot be used for serving the original SC-100 or SC-120 claim forms — those require in-person service documented on SC-104. The person mailing the documents must be 18 or older, not a party to the case, and must live or work in the county where the mailing takes place.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc112a.pdf",
   },
   {
@@ -1829,7 +1829,7 @@ const FORMS_CATALOG = [
     name: "Defendant's Claim and ORDER to Go to Small Claims Court",
     shortDesc: "Used by the defendant to file a counter-claim against the original plaintiff.",
     detailDesc: "SC-120 allows the defendant — the person who was originally sued — to file their own claim against the plaintiff in the same case. This is called a cross-complaint or counter-claim. Filing SC-120 does not remove the obligation to appear at the original hearing; both claims are heard together on the same date. The defendant must still serve the plaintiff with this form before the hearing, following the same service rules that applied to the original SC-100.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc120.pdf",
   },
   {
@@ -1838,7 +1838,7 @@ const FORMS_CATALOG = [
     name: "Notice of Appeal",
     shortDesc: "File this to appeal a small claims judgment to the superior court.",
     detailDesc: "SC-140 is used when a party disagrees with the small claims court's decision and wants to appeal it to the superior court. Note that only defendants may appeal a small claims judgment — plaintiffs give up the right to appeal when they choose small claims court. The form must be filed within 30 days of the judgment. Once filed, the superior court will notify all parties of a new hearing date. The appeal is heard as a new trial (de novo), not a review of the original proceedings.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc140.pdf",
   },
   {
@@ -1847,7 +1847,7 @@ const FORMS_CATALOG = [
     name: "Request to Postpone Trial",
     shortDesc: "Ask the court to reschedule your hearing to a later date.",
     detailDesc: "SC-150 lets either a plaintiff or defendant formally request that the court move the trial to a different date. You must explain why you need a postponement and, if the trial is within 10 days, why you didn't ask sooner. After completing the form, you must serve copies on all other parties using SC-104 (in person) or SC-112A (by mail), then file it with the court clerk. There may be a $10 filing fee. The court will mail all parties its decision.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc150.pdf",
   },
   {
@@ -1856,7 +1856,7 @@ const FORMS_CATALOG = [
     name: "Declaration",
     shortDesc: "A general sworn statement form for information that doesn't fit on the main form.",
     detailDesc: "MC-030 is a blank declaration form used across many types of California court cases, including small claims. It is used whenever a party needs to submit a written statement under penalty of perjury that doesn't fit within the space provided on a specific form. For example, you might attach an MC-030 to provide a longer explanation of your claim, document witness statements, or supply additional facts. The person signing declares under penalty of perjury that everything written is true and correct.",
-    available: false,
+    available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/mc030.pdf",
   },
 ];
@@ -2158,6 +2158,385 @@ const FORM_GUIDE_CONTENT: Record<string, {
   },
 };
 
+/* ── Form Assistant field configs ────────────────────────────────────────── */
+type FieldDef = { key: string; label: string; type: "text" | "textarea" | "select" | "date"; options?: { value: string; label: string }[]; placeholder?: string; required?: boolean; hint?: string };
+type FieldGroup = { title: string; fields: FieldDef[] };
+
+const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpoint: string; filename: (id: number) => string; groups: FieldGroup[] }> = {
+  mc030: {
+    title: "Declaration (MC-030)",
+    subtitle: "Provide the title and content of your declaration. Your case information will be filled in automatically.",
+    endpoint: "mc030", filename: (id) => `MC030-Case-${id}.pdf`,
+    groups: [
+      { title: "Declaration Content", fields: [
+        { key: "declarationTitle", label: "Declaration Title", type: "text", placeholder: "e.g. Declaration of Jane Doe in Support of Claim", hint: "Optional — leave blank to omit a title" },
+        { key: "declarationText", label: "Declaration Text", type: "textarea", placeholder: "Write your sworn statement here. Begin with '1.' for numbered paragraphs...", required: true },
+        { key: "signDate", label: "Date Signed", type: "date" },
+      ]},
+    ],
+  },
+  sc100a: {
+    title: "Other Plaintiffs or Defendants (SC-100A)",
+    subtitle: "Add up to 2 additional plaintiffs and 1 additional defendant. Your primary parties from the case will also be included.",
+    endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`,
+    groups: [
+      { title: "Additional Plaintiff #1", fields: [
+        { key: "p1_name", label: "Full Name", type: "text" },
+        { key: "p1_phone", label: "Phone Number", type: "text" },
+        { key: "p1_street", label: "Street Address", type: "text" },
+        { key: "p1_city", label: "City", type: "text" }, { key: "p1_state", label: "State", type: "text", placeholder: "CA" }, { key: "p1_zip", label: "ZIP", type: "text" },
+      ]},
+      { title: "Additional Plaintiff #2 (optional)", fields: [
+        { key: "p2_name", label: "Full Name", type: "text" },
+        { key: "p2_phone", label: "Phone Number", type: "text" },
+        { key: "p2_street", label: "Street Address", type: "text" },
+        { key: "p2_city", label: "City", type: "text" }, { key: "p2_state", label: "State", type: "text", placeholder: "CA" }, { key: "p2_zip", label: "ZIP", type: "text" },
+      ]},
+      { title: "Additional Defendant (optional)", fields: [
+        { key: "d1_name", label: "Full Name / Business Name", type: "text" },
+        { key: "d1_phone", label: "Phone Number", type: "text" },
+        { key: "d1_street", label: "Street Address", type: "text" },
+        { key: "d1_city", label: "City", type: "text" }, { key: "d1_state", label: "State", type: "text", placeholder: "CA" }, { key: "d1_zip", label: "ZIP", type: "text" },
+        { key: "d1_agentName", label: "Agent for Service Name (if corporation/LLC)", type: "text" },
+      ]},
+    ],
+  },
+  sc103: {
+    title: "Fictitious Business Name (SC-103)",
+    subtitle: "Provide your DBA (doing business as) registration details. Attach to SC-100 or SC-120.",
+    endpoint: "sc103", filename: (id) => `SC103-Case-${id}.pdf`,
+    groups: [
+      { title: "Attachment", fields: [
+        { key: "attachedTo", label: "Attach to", type: "select", required: true, options: [{ value: "sc100", label: "SC-100 (Plaintiff's Claim)" }, { value: "sc120", label: "SC-120 (Defendant's Claim)" }] },
+      ]},
+      { title: "Business Information", fields: [
+        { key: "businessName", label: "Business Name (DBA)", type: "text", required: true },
+        { key: "businessAddress", label: "Business Address (no P.O. Box)", type: "text", required: true },
+        { key: "mailingAddress", label: "Mailing Address (if different)", type: "text" },
+        { key: "businessType", label: "Business Type", type: "select", required: true, options: [
+          { value: "individual", label: "Individual" }, { value: "association", label: "Association" }, { value: "partnership", label: "Partnership" },
+          { value: "corporation", label: "Corporation" }, { value: "llc", label: "Limited Liability Company (LLC)" }, { value: "other", label: "Other" },
+        ]},
+        { key: "businessTypeOther", label: "If Other, specify", type: "text" },
+      ]},
+      { title: "Fictitious Business Name Statement", fields: [
+        { key: "fbnCounty", label: "County where FBN Statement was filed", type: "text", required: true },
+        { key: "fbnNumber", label: "FBN Statement Number", type: "text", required: true },
+        { key: "fbnExpiry", label: "Expiration Date of FBN Statement", type: "date", required: true },
+        { key: "signerName", label: "Name and Title of Signer (owner, president, CEO, etc.)", type: "text" },
+        { key: "signDate", label: "Date Signed", type: "date" },
+      ]},
+    ],
+  },
+  sc104: {
+    title: "Proof of Service (SC-104)",
+    subtitle: "To be completed by the person who served the court papers — not you. Fill in the service details.",
+    endpoint: "sc104", filename: (id) => `SC104-Case-${id}.pdf`,
+    groups: [
+      { title: "Hearing Information", fields: [
+        { key: "courtStreet", label: "Court Street Address", type: "text", placeholder: "e.g. 111 N. Hill St., Los Angeles, CA 90012" },
+        { key: "hearingDate", label: "Hearing Date", type: "date" },
+        { key: "hearingTime", label: "Hearing Time", type: "text", placeholder: "e.g. 9:00 a.m." },
+        { key: "hearingDept", label: "Department", type: "text", placeholder: "e.g. 97" },
+      ]},
+      { title: "Who Was Served (Item 1)", fields: [
+        { key: "personServedName", label: "Person served (if serving a person)", type: "text" },
+        { key: "businessName", label: "Business/entity served (if serving a business)", type: "text" },
+        { key: "authorizedPerson", label: "Person authorized to accept service", type: "text" },
+        { key: "authorizedTitle", label: "Their job title", type: "text" },
+      ]},
+      { title: "Documents Served (Item 3)", fields: [
+        { key: "docsServed_sc100", label: "SC-100 (Plaintiff's Claim)", type: "select", options: [{ value: "yes", label: "Yes — served this" }, { value: "no", label: "No" }] },
+        { key: "docsServed_sc120", label: "SC-120 (Defendant's Claim)", type: "select", options: [{ value: "yes", label: "Yes — served this" }, { value: "no", label: "No" }] },
+        { key: "docsServedOther", label: "Other documents (describe)", type: "text" },
+      ]},
+      { title: "How Service Was Made (Item 4)", fields: [
+        { key: "serviceMethod", label: "Service method", type: "select", required: true, options: [{ value: "personal", label: "Personal Service (handed directly to person)" }, { value: "substituted", label: "Substituted Service (left with another adult)" }] },
+        { key: "serviceDate", label: "Date of service", type: "date", required: true },
+        { key: "serviceTime", label: "Time of service", type: "text", placeholder: "e.g. 2:30 p.m." },
+        { key: "serviceAddress", label: "Address where served", type: "text" },
+        { key: "serviceCity", label: "City", type: "text" }, { key: "serviceState", label: "State", type: "text", placeholder: "CA" }, { key: "serviceZip", label: "ZIP", type: "text" },
+        { key: "subPersonDesc", label: "If substituted — description of person who received (age, relationship)", type: "text" },
+      ]},
+      { title: "Server's Information (Item 5)", fields: [
+        { key: "serverName", label: "Server's full name", type: "text", required: true },
+        { key: "serverPhone", label: "Server's phone", type: "text" },
+        { key: "serverAddress", label: "Server's address", type: "text" },
+        { key: "serverCity", label: "City", type: "text" }, { key: "serverState", label: "State", type: "text", placeholder: "CA" }, { key: "serverZip", label: "ZIP", type: "text" },
+        { key: "serverFee", label: "Fee for service (if any)", type: "text", placeholder: "e.g. 25.00" },
+        { key: "signDate", label: "Date signed", type: "date" },
+      ]},
+    ],
+  },
+  sc105: {
+    title: "Request for Court Order (SC-105)",
+    subtitle: "Ask the court to make a specific order in your case. Fill in what you're requesting and why.",
+    endpoint: "sc105", filename: (id) => `SC105-Case-${id}.pdf`,
+    groups: [
+      { title: "Court Information", fields: [
+        { key: "courtStreet", label: "Court Street Address", type: "text", placeholder: "e.g. 111 N. Hill St., Los Angeles, CA 90012" },
+      ]},
+      { title: "Requesting Party (Item 1)", fields: [
+        { key: "requestingPartyName", label: "Your full name", type: "text", required: true },
+        { key: "requestingPartyAddress", label: "Your address", type: "text" },
+        { key: "requestingPartyRole", label: "You are a", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
+      ]},
+      { title: "Notice To (Item 2)", fields: [
+        { key: "noticeName1", label: "Other party name", type: "text" }, { key: "noticeAddr1", label: "Their address", type: "text" },
+        { key: "noticeName2", label: "Second party name (optional)", type: "text" }, { key: "noticeAddr2", label: "Their address", type: "text" },
+      ]},
+      { title: "Request Details", fields: [
+        { key: "orderRequested", label: "I ask the court to make the following order (Item 3)", type: "textarea", required: true, placeholder: "Describe the specific order you are requesting..." },
+        { key: "orderReason", label: "I ask for this order because (Item 4)", type: "textarea", required: true, placeholder: "Explain why you need this order..." },
+        { key: "signDate", label: "Date signed", type: "date" },
+      ]},
+    ],
+  },
+  sc112a: {
+    title: "Proof of Service by Mail (SC-112A)",
+    subtitle: "Completed by the person who mailed the court documents — not you. Cannot be used for SC-100 or SC-120.",
+    endpoint: "sc112a", filename: (id) => `SC112A-Case-${id}.pdf`,
+    groups: [
+      { title: "Server's Information (Item 1)", fields: [
+        { key: "serverName", label: "Server's full name", type: "text", required: true },
+        { key: "serverPhone", label: "Server's phone", type: "text" },
+        { key: "serverAddress", label: "Server's mailing address", type: "text" },
+        { key: "serverCity", label: "City", type: "text" }, { key: "serverState", label: "State", type: "text", placeholder: "CA" }, { key: "serverZip", label: "ZIP", type: "text" },
+      ]},
+      { title: "Document Mailed (Item 2)", fields: [
+        { key: "documentServed", label: "Document served", type: "select", required: true, options: [
+          { value: "sc105", label: "SC-105, Request for Court Order and Answer" },
+          { value: "sc109", label: "SC-109, Authorization to Appear" },
+          { value: "sc114", label: "SC-114, Request to Amend Claim Before Hearing" },
+          { value: "sc133", label: "SC-133, Judgment Debtor's Statement of Assets" },
+          { value: "sc150", label: "SC-150, Request to Postpone Trial" },
+          { value: "sc221", label: "SC-221, Response to Request to Make Payments" },
+          { value: "other", label: "Other document" },
+        ]},
+        { key: "documentServedOther", label: "If other, specify", type: "text" },
+      ]},
+      { title: "Parties Served (Item 3)", fields: [
+        { key: "party1Name", label: "Party 1 name", type: "text", required: true }, { key: "party1Addr", label: "Mailing address on envelope", type: "text", required: true },
+        { key: "party2Name", label: "Party 2 name (optional)", type: "text" }, { key: "party2Addr", label: "Mailing address", type: "text" },
+        { key: "party3Name", label: "Party 3 name (optional)", type: "text" }, { key: "party3Addr", label: "Mailing address", type: "text" },
+      ]},
+      { title: "Mailing Details", fields: [
+        { key: "mailingDate", label: "Date of mailing", type: "date", required: true },
+        { key: "mailingCity", label: "City and state of mailing", type: "text", required: true, placeholder: "e.g. Los Angeles, CA" },
+        { key: "signDate", label: "Date signed", type: "date" },
+      ]},
+    ],
+  },
+  sc120: {
+    title: "Defendant's Counter-Claim (SC-120)",
+    subtitle: "File your counter-claim against the plaintiff. Your case parties will be pre-filled. Provide your counter-claim details below.",
+    endpoint: "sc120", filename: (id) => `SC120-Case-${id}.pdf`,
+    groups: [
+      { title: "Your Counter-Claim (Item 3)", fields: [
+        { key: "counterClaimAmount", label: "Amount the plaintiff owes you ($)", type: "text", required: true, placeholder: "e.g. 1500.00" },
+        { key: "counterClaimReason", label: "Why does the plaintiff owe you money?", type: "textarea", required: true },
+        { key: "counterClaimDate", label: "When did this happen? (date)", type: "date" },
+        { key: "counterClaimHowCalculated", label: "How did you calculate this amount?", type: "textarea" },
+      ]},
+      { title: "Additional Questions", fields: [
+        { key: "priorDemand", label: "Did you ask the plaintiff to pay before filing? (Item 4)", type: "select", options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+        { key: "attyFeeDispute", label: "Is this about an attorney-client fee dispute? (Item 5)", type: "select", options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+        { key: "suingPublicEntity", label: "Are you suing a public entity? (Item 6)", type: "select", options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+        { key: "moreThan12", label: "Filed more than 12 small claims in last 12 months? (Item 7)", type: "select", options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+        { key: "signDate", label: "Date signed", type: "date" },
+      ]},
+    ],
+  },
+  sc140: {
+    title: "Notice of Appeal (SC-140)",
+    subtitle: "File your appeal of the small claims judgment. Only defendants may appeal a small claims judgment.",
+    endpoint: "sc140", filename: (id) => `SC140-Case-${id}.pdf`,
+    groups: [
+      { title: "Court & Case", fields: [
+        { key: "courtName", label: "Court name and address", type: "text", required: true, placeholder: "e.g. Stanley Mosk Courthouse, 111 N. Hill St., Los Angeles, CA 90012" },
+      ]},
+      { title: "Appeal Details", fields: [
+        { key: "appellantRole", label: "You are the", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
+        { key: "appealType", label: "You are appealing", type: "select", required: true, options: [{ value: "judgment", label: "The small claims judgment" }, { value: "motion_to_vacate", label: "The denial of motion to vacate the judgment" }] },
+        { key: "appealFiledDate", label: "Date appeal is being filed", type: "date", required: true },
+        { key: "appellantName", label: "Your full name (appellant)", type: "text", hint: "Leave blank to use case plaintiff/defendant name automatically" },
+      ]},
+    ],
+  },
+  sc150: {
+    title: "Request to Postpone Trial (SC-150)",
+    subtitle: "Ask the court to reschedule your hearing. Provide your reason and the dates involved.",
+    endpoint: "sc150", filename: (id) => `SC150-Case-${id}.pdf`,
+    groups: [
+      { title: "Court Information", fields: [
+        { key: "courtStreet", label: "Court Street Address", type: "text", placeholder: "e.g. 111 N. Hill St., Los Angeles, CA 90012" },
+      ]},
+      { title: "Your Information (Item 1)", fields: [
+        { key: "requestingPartyName", label: "Your full name", type: "text", required: true },
+        { key: "requestingPartyAddress", label: "Your mailing address", type: "text" },
+        { key: "requestingPartyPhone", label: "Your phone number", type: "text" },
+        { key: "requestingPartyRole", label: "You are a", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
+      ]},
+      { title: "Trial Dates", fields: [
+        { key: "currentTrialDate", label: "My trial is now scheduled for (Item 2)", type: "date", required: true },
+        { key: "postponeUntilDate", label: "I ask the court to postpone until (approximately) (Item 3)", type: "date" },
+      ]},
+      { title: "Reasons", fields: [
+        { key: "postponeReason", label: "I am asking for this postponement because (Item 4)", type: "textarea", required: true, placeholder: "Explain why you need a postponement..." },
+        { key: "withinTenDaysReason", label: "If trial is within 10 days — why didn't you ask sooner? (Item 5)", type: "textarea", placeholder: "Only fill this in if your trial is within the next 10 days..." },
+        { key: "signDate", label: "Date signed", type: "date" },
+      ]},
+    ],
+  },
+};
+
+/* ── Form Assistant Modal ─────────────────────────────────────────────────── */
+function FormAssistantModal({ formId, caseId, onClose, onDownload }: { formId: string; caseId: number; onClose: () => void; onDownload: (endpoint: string, filename: string, body: Record<string, any>) => void }) {
+  const cfg = FORM_FIELD_CONFIG[formId];
+  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [validationMsg, setValidationMsg] = useState<string | null>(null);
+
+  if (!cfg) return null;
+
+  function set(key: string, value: string) {
+    setFormData(prev => ({ ...prev, [key]: value }));
+  }
+
+  function buildBody(): Record<string, any> {
+    const d: Record<string, any> = { ...formData };
+
+    if (formId === "sc100a") {
+      const makePl = (prefix: string) => {
+        const name = formData[`${prefix}_name`];
+        if (!name) return null;
+        return { name, phone: formData[`${prefix}_phone`], street: formData[`${prefix}_street`], city: formData[`${prefix}_city`], state: formData[`${prefix}_state`] || "CA", zip: formData[`${prefix}_zip`] };
+      };
+      const makeDef = (prefix: string) => {
+        const name = formData[`${prefix}_name`];
+        if (!name) return null;
+        return { name, phone: formData[`${prefix}_phone`], street: formData[`${prefix}_street`], city: formData[`${prefix}_city`], state: formData[`${prefix}_state`] || "CA", zip: formData[`${prefix}_zip`], agentName: formData[`${prefix}_agentName`] };
+      };
+      d.additionalPlaintiffs = [makePl("p1"), makePl("p2")].filter(Boolean);
+      d.additionalDefendants = [makeDef("d1")].filter(Boolean);
+    }
+
+    if (formId === "sc104") {
+      const docs: string[] = [];
+      if (formData["docsServed_sc100"] === "yes") docs.push("sc100");
+      if (formData["docsServed_sc120"] === "yes") docs.push("sc120");
+      if (formData["docsServedOther"]) docs.push("other");
+      d.docsServed = docs;
+    }
+
+    if (formId === "sc105") {
+      d.noticeParties = [
+        formData["noticeName1"] ? { name: formData["noticeName1"], address: formData["noticeAddr1"] || "" } : null,
+        formData["noticeName2"] ? { name: formData["noticeName2"], address: formData["noticeAddr2"] || "" } : null,
+      ].filter(Boolean);
+    }
+
+    if (formId === "sc112a") {
+      d.partiesServed = [
+        formData["party1Name"] ? { name: formData["party1Name"], address: formData["party1Addr"] || "" } : null,
+        formData["party2Name"] ? { name: formData["party2Name"], address: formData["party2Addr"] || "" } : null,
+        formData["party3Name"] ? { name: formData["party3Name"], address: formData["party3Addr"] || "" } : null,
+      ].filter(Boolean);
+    }
+
+    return d;
+  }
+
+  function handleSubmit() {
+    const requiredFields: string[] = [];
+    for (const group of cfg.groups) {
+      for (const field of group.fields) {
+        if (field.required && !formData[field.key]) requiredFields.push(field.label);
+      }
+    }
+    if (requiredFields.length > 0) {
+      setValidationMsg(`Please fill in: ${requiredFields.join(", ")}`);
+      return;
+    }
+    setValidationMsg(null);
+    onDownload(cfg.endpoint, cfg.filename(caseId), buildBody());
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-background rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
+          <div>
+            <h2 className="text-lg font-bold leading-tight">{cfg.title}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{cfg.subtitle}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-6">
+          {cfg.groups.map((group, gi) => (
+            <div key={gi} className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">{group.title}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {group.fields.map((field) => (
+                  <div key={field.key} className={field.type === "textarea" ? "sm:col-span-2" : ""}>
+                    <label className="block text-xs font-semibold text-foreground mb-1">
+                      {field.label}{field.required && <span className="text-rose-500 ml-0.5">*</span>}
+                    </label>
+                    {field.hint && <p className="text-xs text-muted-foreground mb-1">{field.hint}</p>}
+                    {field.type === "textarea" ? (
+                      <textarea
+                        rows={4}
+                        placeholder={field.placeholder}
+                        value={formData[field.key] || ""}
+                        onChange={(e) => set(field.key, e.target.value)}
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/40"
+                      />
+                    ) : field.type === "select" ? (
+                      <select
+                        value={formData[field.key] || ""}
+                        onChange={(e) => set(field.key, e.target.value)}
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/40"
+                      >
+                        <option value="">— select —</option>
+                        {(field.options || []).map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        type={field.type === "date" ? "date" : "text"}
+                        placeholder={field.placeholder}
+                        value={formData[field.key] || ""}
+                        onChange={(e) => set(field.key, e.target.value)}
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/40"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          {validationMsg && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{validationMsg}</div>
+          )}
+        </div>
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t shrink-0">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+          <button
+            onClick={handleSubmit}
+            className="px-5 py-2 rounded-lg bg-[#0d6b5e] text-white text-sm font-semibold hover:bg-[#0d6b5e]/90 transition-colors flex items-center gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Generate PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any }) {
   const { getToken } = useAuth();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
@@ -2166,6 +2545,8 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
   const [guideFormId, setGuideFormId] = useState<string | null>(null);
+  const [modalFormId, setModalFormId] = useState<string | null>(null);
+  const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
 
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
@@ -2199,6 +2580,44 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
       setDownloadError("Download failed — please try again.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function downloadFormPost(endpoint: string, filename: string, body: Record<string, any>) {
+    setDownloadingForm(endpoint);
+    setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${clerkToken}` },
+      });
+      if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, token }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setDownloadError(err.error || "Failed to generate PDF — please try again.");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setModalFormId(null);
+    } catch {
+      setDownloadError("Download failed — please try again.");
+    } finally {
+      setDownloadingForm(null);
     }
   }
 
@@ -2468,11 +2887,18 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
                   {form.available ? (
                     <button
                       title={`Download filled ${form.number} PDF`}
-                      onClick={(e) => { e.stopPropagation(); downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf); }}
-                      disabled={downloadingPdf || !isReady}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (form.id === "sc100") {
+                          if (isReady) downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf);
+                        } else {
+                          setModalFormId(form.id);
+                        }
+                      }}
+                      disabled={form.id === "sc100" ? (downloadingPdf || !isReady) : downloadingForm === form.id}
                       className="p-1 rounded hover:bg-black/10 text-[#0d6b5e] hover:text-[#0d6b5e]/70 transition-colors disabled:opacity-40"
                     >
-                      {downloadingPdf
+                      {(form.id === "sc100" ? downloadingPdf : downloadingForm === form.id)
                         ? <Loader2 width="14" height="14" className="animate-spin" />
                         : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                       }
@@ -2531,7 +2957,38 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           <CardContent className="space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">{activeForm.detailDesc}</p>
 
-            {activeForm.available ? (
+            {activeForm.available && activeForm.id !== "sc100" ? (
+              /* ── Other available forms — modal-based download ── */
+              <div className="space-y-4">
+                {downloadError && (
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => setModalFormId(activeForm.id)}
+                    disabled={downloadingForm === activeForm.id}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0d6b5e] text-white text-sm font-semibold hover:bg-[#0d6b5e]/90 transition-colors disabled:opacity-50"
+                  >
+                    {downloadingForm === activeForm.id
+                      ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+                      : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Generate Filled PDF</>
+                    }
+                  </button>
+                  <a
+                    href={activeForm.blankFormUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+                  >
+                    Download blank form
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
+                </div>
+                <p className="text-xs text-muted-foreground">Your case information will be pre-filled automatically. You'll be asked for any additional details the form requires.</p>
+              </div>
+            ) : activeForm.available ? (
               /* ── SC-100 Structured Guidance ── */
               <div className="space-y-5">
 
@@ -2614,6 +3071,16 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Form Assistant Modal */}
+      {modalFormId && (
+        <FormAssistantModal
+          formId={modalFormId}
+          caseId={caseId}
+          onClose={() => setModalFormId(null)}
+          onDownload={downloadFormPost}
+        />
       )}
     </div>
   );
