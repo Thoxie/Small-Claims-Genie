@@ -2446,7 +2446,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           return (
             <div
               key={form.id}
-              className={`relative rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md cursor-pointer ${
+              className={`relative flex flex-col rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md cursor-pointer ${
                 isActive
                   ? "border-[#0d6b5e] bg-[#ddf6f3]"
                   : "border-border bg-card hover:border-[#0d6b5e]/40"
@@ -2496,7 +2496,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
               <h3 className="font-semibold text-sm leading-snug mb-1">{form.name}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">{form.shortDesc}</p>
               {/* Learn more arrow */}
-              <div className="flex justify-end mt-3">
+              <div className="flex justify-end mt-auto pt-3">
                 <button
                   onClick={(e) => { e.stopPropagation(); setGuideFormId(form.id); }}
                   className="inline-flex items-center gap-1 text-xs font-semibold text-[#0d6b5e] hover:underline"
