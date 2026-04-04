@@ -320,7 +320,7 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
           </div>
           <span className="text-xs font-medium text-muted-foreground">Step {step} of 4</span>
         </div>
-        <Progress value={progress} className="h-2 mb-2" />
+        <Progress value={progress} className="h-2 mb-2 [&>div]:bg-[#0d6b5e]" />
         <div className="flex gap-1.5">
           {stepLabels.map((label, i) => (
             <button
