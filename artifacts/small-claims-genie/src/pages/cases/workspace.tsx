@@ -1330,16 +1330,17 @@ function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceC
       </div>
 
       <div
-        className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center mb-8 bg-muted/5 cursor-pointer hover:border-primary/40 transition-colors"
+        className="border-2 border-dashed border-muted-foreground/25 rounded-lg px-5 py-4 mb-6 bg-muted/5 cursor-pointer hover:border-primary/40 transition-colors flex items-center gap-4"
         onClick={() => fileInputRef.current?.click()}
       >
-        <div className="mx-auto w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
-          <FileText className="h-6 w-6" />
+        <div className="shrink-0 w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+          <FileText className="h-5 w-5" />
         </div>
-        <h3 className="text-lg font-medium mb-1">Drag and drop files here</h3>
-        <p className="text-muted-foreground mb-2">{i18n.documents.uploadZone}</p>
-        <p className="text-xs text-muted-foreground mb-4">Contracts, receipts, photos, text screenshots, emails, invoices — anything related to your case</p>
-        <Button variant="outline" type="button">Browse Files</Button>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm">Drag and drop files here</p>
+          <p className="text-xs text-muted-foreground">Contracts, receipts, photos, texts, emails, invoices — anything related to your case</p>
+        </div>
+        <Button variant="outline" type="button" className="shrink-0" onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}>Browse Files</Button>
       </div>
 
       <div className="space-y-4">
