@@ -1322,6 +1322,13 @@ function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceC
         </div>
       )}
 
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 mb-4 flex items-start gap-3">
+        <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+        <p className="text-sm text-amber-800">
+          <span className="font-semibold">Don't forget:</span> Upload any other documents, photos, screenshots, or images you believe are relevant to your case — even if they're not on the checklist above. More evidence strengthens your claim.
+        </p>
+      </div>
+
       <div
         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center mb-8 bg-muted/5 cursor-pointer hover:border-primary/40 transition-colors"
         onClick={() => fileInputRef.current?.click()}
@@ -1330,7 +1337,8 @@ function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceC
           <FileText className="h-6 w-6" />
         </div>
         <h3 className="text-lg font-medium mb-1">Drag and drop files here</h3>
-        <p className="text-muted-foreground mb-4">{i18n.documents.uploadZone}</p>
+        <p className="text-muted-foreground mb-2">{i18n.documents.uploadZone}</p>
+        <p className="text-xs text-muted-foreground mb-4">Contracts, receipts, photos, text screenshots, emails, invoices — anything related to your case</p>
         <Button variant="outline" type="button">Browse Files</Button>
       </div>
 
