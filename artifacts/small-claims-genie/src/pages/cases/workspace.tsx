@@ -315,7 +315,7 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
       <div className="mb-5">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">{step}</span>
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shrink-0" style={{ backgroundColor: "#0d6b5e" }}>{step}</span>
             <span className="text-base font-semibold text-foreground">{stepLabels[step - 1]}</span>
           </div>
           <span className="text-xs font-medium text-muted-foreground">Step {step} of 4</span>
