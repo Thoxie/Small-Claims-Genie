@@ -257,6 +257,7 @@ export default function CaseWorkspace() {
 // ─── INTAKE TAB ───────────────────────────────────────────────────────────────
 function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }) {
   const [step, setStep] = useState(Math.min(initialData.intakeStep || 1, 4));
+  const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
   const saveIntake = useSaveIntakeProgress();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -303,14 +304,23 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
     "Eligibility & Review",
   ];
 
+  const goToAdvisor = () => {
+    setAutoOpenAdvisor(true);
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="p-4 md:p-5">
       <div className="mb-5">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-base font-semibold text-foreground">{stepLabels[step - 1]}</span>
-          <span className="text-sm font-medium text-muted-foreground">Step {step} of 4</span>
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">{step}</span>
+            <span className="text-base font-semibold text-foreground">{stepLabels[step - 1]}</span>
+          </div>
+          <span className="text-xs font-medium text-muted-foreground">Step {step} of 4</span>
         </div>
-        <Progress value={progress} className="h-2.5 mb-2" />
+        <Progress value={progress} className="h-2 mb-2" />
         <div className="flex gap-1.5">
           {stepLabels.map((label, i) => (
             <button
@@ -327,9 +337,9 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
       </div>
 
       {step === 1 && <Step1 initialData={initialData} onNext={handleNext} saving={saveIntake.isPending} />}
-      {step === 2 && <Step2 caseId={caseId} initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} />}
+      {step === 2 && <Step2 caseId={caseId} initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} autoOpenAdvisor={autoOpenAdvisor} onAdvisorOpened={() => setAutoOpenAdvisor(false)} />}
       {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} saving={saveIntake.isPending} />}
-      {step === 4 && <Step4 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(3)} saving={saveIntake.isPending} />}
+      {step === 4 && <Step4 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(3)} saving={saveIntake.isPending} onCheckCase={goToAdvisor} />}
     </div>
   );
 }
@@ -614,7 +624,7 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
 }
 
 // ─── Step 2: Claim Details ────────────────────────────────────────────────────
-function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number, initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, onAdvisorOpened }: { caseId: number, initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean, autoOpenAdvisor?: boolean, onAdvisorOpened?: () => void }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
 
@@ -631,6 +641,14 @@ function Step2({ caseId, initialData, onNext, onBack, saving }: { caseId: number
 
   // ── Advisor drawer state ───────────────────────────────────────────────────
   const [advisorOpen, setAdvisorOpen] = useState(false);
+
+  useEffect(() => {
+    if (autoOpenAdvisor) {
+      openAdvisor();
+      onAdvisorOpened?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
   const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
@@ -1099,7 +1117,7 @@ function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNe
 }
 
 // ─── Step 4: Eligibility & Review ─────────────────────────────────────────────
-function Step4({ initialData, onComplete, onBack, saving }: { initialData: any, onComplete: (d: any) => void, onBack: () => void, saving?: boolean }) {
+function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initialData: any, onComplete: (d: any) => void, onBack: () => void, saving?: boolean, onCheckCase?: () => void }) {
   const form = useForm({
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
@@ -1226,6 +1244,19 @@ function Step4({ initialData, onComplete, onBack, saving }: { initialData: any, 
               </div>
             </div>
           </div>
+
+          {onCheckCase && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900">Want to strengthen your case?</p>
+                <p className="text-xs text-amber-700 mt-0.5">Use the Case Advisor to review your claim description and get specific guidance on evidence to gather.</p>
+              </div>
+              <Button type="button" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2 whitespace-nowrap">
+                <Sparkles className="h-4 w-4" />
+                Check My Case
+              </Button>
+            </div>
+          )}
 
           <div className="flex justify-between pt-2">
             <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
