@@ -1896,8 +1896,8 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
   return (
     <div className="p-6 md:p-8 space-y-8">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold mb-1">Court Forms Library</h2>
+      <div className="flex items-baseline gap-3 flex-wrap">
+        <h2 className="text-2xl font-bold">Court Forms Library</h2>
         <p className="text-muted-foreground text-sm">California small claims forms — click any form to learn more or generate it.</p>
       </div>
 
