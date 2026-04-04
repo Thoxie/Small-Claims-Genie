@@ -1774,7 +1774,7 @@ const FORMS_CATALOG = [
     number: "SC-100",
     name: "Plaintiff's Claim and ORDER to Go to Small Claims Court",
     shortDesc: "The primary form to file your small claims case. Lists your claim, both parties, and the amount you're seeking.",
-    detailDesc: "SC-100 is the main filing form for any plaintiff bringing a case in California small claims court. You fill in your name, the defendant's name, the amount you're claiming (up to $12,500 for individuals), and a plain-language explanation of why the defendant owes you money. Once filed, the court stamps a hearing date and the defendant must be served a copy. This form kicks off the entire small claims process.",
+    detailDesc: "SC-100 is the form that starts your California small claims case. It tells the court who you are suing, how much money you want, and why you are asking the court to order payment. You must complete this form — it is the statewide form used to open a small claims case.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc100.pdf",
   },
@@ -2041,12 +2041,14 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
             <p className="text-sm text-muted-foreground leading-relaxed">{activeForm.detailDesc}</p>
 
             {activeForm.available ? (
-              /* ── SC-100 Detail ── */
-              <div className="space-y-4">
+              /* ── SC-100 Structured Guidance ── */
+              <div className="space-y-5">
+
+                {/* Download status */}
                 {isReady ? (
-                  <div className="flex items-center gap-2 rounded-lg border border-[#0d6b5e]/30 bg-[#ddf6f3] p-3 text-sm text-[#0d6b5e]">
+                  <div className="flex items-center gap-2 rounded-lg border border-[#0d6b5e]/30 bg-[#ddf6f3] p-3 text-sm text-[#0d6b5e] font-medium">
                     <CheckCircle className="h-4 w-4 shrink-0" />
-                    Your case is ready. Use the <svg className="inline mx-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> icon on the SC-100 tile above to download your filled form.
+                    Your case is ready — use the print icon on the SC-100 tile above to download your filled form.
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -2059,6 +2061,42 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
                     <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
                   </div>
                 )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* What goes on it */}
+                  <div className="rounded-xl border bg-muted/30 p-4 space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">What you'll put on this form</p>
+                    <ul className="space-y-1.5 text-sm text-muted-foreground">
+                      {[
+                        "Names and addresses of everyone involved",
+                        "The amount of money you are requesting",
+                        "A short explanation of why you are suing",
+                        "Why this case belongs in the county you selected",
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-start gap-2"><span className="text-[#0d6b5e] font-bold mt-0.5">·</span>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* If space runs out */}
+                  <div className="rounded-xl border bg-muted/30 p-4 space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">If your explanation doesn't fit</p>
+                    <p className="text-sm text-muted-foreground">If you can't fit everything on SC-100, we will direct you to <span className="font-semibold text-foreground">MC-030 Declaration</span> — the standard California form for adding extra facts. Keep a short summary on SC-100 and use MC-030 for the full story.</p>
+                    <p className="text-sm text-muted-foreground">Your MC-030 should cover: what happened, when it happened, what the other side did or failed to do, the amount requested, and why you believe you are owed that amount.</p>
+                  </div>
+                </div>
+
+                {/* Fee waiver reminder */}
+                <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 mb-1">Check your fee waiver eligibility before you finish</p>
+                    <p className="text-sm text-amber-700">If paying the filing fee would be a financial hardship, you may qualify to have it waived. Before you submit, check whether you are eligible to use <span className="font-semibold">Form FW-001, Request to Waive Court Fees</span>. You should not pay a fee you don't have to pay.</p>
+                  </div>
+                </div>
+
               </div>
             ) : (
               /* ── Placeholder Panel ── */
