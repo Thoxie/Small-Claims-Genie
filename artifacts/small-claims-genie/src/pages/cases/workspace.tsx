@@ -1246,15 +1246,38 @@ function Step4({ initialData, onComplete, onBack, saving }: { initialData: any, 
 }
 
 // ─── DOCUMENTS TAB ────────────────────────────────────────────────────────────
-function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string }[] }) {
+function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[] }) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
   const uploadDoc = useUploadDocument();
   const deleteDoc = useDeleteDocument();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  const toggleItem = (id: string) => setCheckedItems(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const { getToken } = useAuth();
+
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(
+    () => new Set(evidenceChecklist.filter(i => i.checked).map(i => i.id))
+  );
+
+  const saveChecked = async (next: Set<string>) => {
+    try {
+      const token = await getToken();
+      await fetch(`/api/cases/${caseId}/advisor/checklist`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ checkedIds: Array.from(next) }),
+      });
+    } catch { /* silent — UI state is still correct */ }
+  };
+
+  const toggleItem = (id: string) => {
+    setCheckedItems(prev => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      saveChecked(n);
+      return n;
+    });
+  };
 
   const invalidateDocAndScore = () => {
     queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey(caseId) });

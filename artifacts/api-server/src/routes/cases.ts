@@ -342,6 +342,29 @@ Rules:
   }
 });
 
+// ─── Case Advisor: Save Checklist Checked State ───────────────────────────────
+router.patch("/cases/:id/advisor/checklist", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const [existing] = await db
+    .select({ id: casesTable.id, evidenceChecklist: casesTable.evidenceChecklist })
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!existing) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const { checkedIds } = req.body;
+  if (!Array.isArray(checkedIds)) { res.status(400).json({ error: "checkedIds must be an array" }); return; }
+
+  const currentList = Array.isArray(existing.evidenceChecklist) ? existing.evidenceChecklist as { id: string; item: string; description: string; checked?: boolean }[] : [];
+  const updated = currentList.map((item) => ({ ...item, checked: checkedIds.includes(item.id) }));
+
+  await db.update(casesTable).set({ evidenceChecklist: updated }).where(eq(casesTable.id, id));
+  res.json({ ok: true });
+});
+
 // ─── Case Advisor: Refine Statement ───────────────────────────────────────────
 router.post("/cases/:id/advisor/refine", async (req, res): Promise<void> => {
   const userId = getUserId(req);
