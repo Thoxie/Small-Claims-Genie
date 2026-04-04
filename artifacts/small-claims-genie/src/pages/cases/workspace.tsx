@@ -1905,12 +1905,11 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
       <Card className="bg-muted/30 border-dashed">
         <CardContent className="p-4">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your Case at a Glance</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-3 gap-x-4 text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
             <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Plaintiff</span>{currentCase.plaintiffName || "—"}</div>
             <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Defendant</span>{currentCase.defendantName || "—"}</div>
-            <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Amount Requested</span>{currentCase.claimAmount ? `$${currentCase.claimAmount}` : "—"}</div>
             <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Incident Date</span>{currentCase.incidentDate || "—"}</div>
-            <div className="col-span-2 sm:col-span-4"><span className="font-semibold block text-xs text-muted-foreground uppercase">Why does defendant owe you money?</span>{currentCase.claimDescription || "—"}</div>
+            <div className="col-span-2 sm:col-span-3"><span className="font-semibold block text-xs text-muted-foreground uppercase">Why does defendant owe you money?</span>{currentCase.claimDescription || "—"}</div>
           </div>
         </CardContent>
       </Card>
@@ -1981,7 +1980,6 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
                         <div className="grid grid-cols-2 gap-y-3 text-sm">
                           <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Plaintiff</span>{currentCase.plaintiffName || "—"}</div>
                           <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Defendant</span>{currentCase.defendantName || "—"}</div>
-                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Amount</span>{currentCase.claimAmount ? `$${currentCase.claimAmount}` : "—"}</div>
                           <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Incident Date</span>{currentCase.incidentDate || "—"}</div>
                           <div className="col-span-2"><span className="font-semibold block text-xs text-muted-foreground uppercase">Description</span>{currentCase.claimDescription || "—"}</div>
                         </div>
