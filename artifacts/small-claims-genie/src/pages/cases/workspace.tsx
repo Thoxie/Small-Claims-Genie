@@ -1861,6 +1861,303 @@ const FORMS_CATALOG = [
   },
 ];
 
+const FORM_GUIDE_CONTENT: Record<string, {
+  role: "primary" | "attachment";
+  effectiveDate: string;
+  bestUse: string;
+  whenToUse: string[];
+  whenNotToUse: string[];
+  haveReady: string[];
+  warnings: string[];
+  relatedForms: { number: string; reason: string }[];
+}> = {
+  sc100: {
+    role: "primary",
+    effectiveDate: "January 1, 2026",
+    bestUse: "Use this form if you are opening the case. It is the main starting form for small claims plaintiffs.",
+    whenToUse: [
+      "You want to sue a person, business, or agency for money in California small claims court.",
+      "You have worked out the correct legal name and service address for each defendant.",
+      "You are ready to state the amount you want, why you are owed it, and why the case belongs in that county.",
+    ],
+    whenNotToUse: [
+      "You are responding to a case filed against you — use SC-120 instead.",
+      "You only need more room to list additional parties — use SC-100A as an attachment, not a replacement.",
+      "You need a long witness-style statement — use MC-030 Declaration as an attachment if the court allows it.",
+    ],
+    haveReady: [
+      "Your full name and mailing address.",
+      "The exact legal name of each defendant.",
+      "A service address for each defendant.",
+      "The amount claimed and a short, plain explanation of what happened.",
+      "The reason the county is the correct place to sue.",
+      "The courthouse address and any local filing requirements.",
+    ],
+    warnings: [
+      "Naming the wrong defendant is one of the biggest small-claims mistakes — it can make collection difficult even if you win.",
+      "Keep the 'why' section short and factual. Let supporting detail live in attachments or evidence uploads.",
+      "After filing, service deadlines matter: personal service is usually due at least 15 days before trial, or 20 days if the defendant is in another county.",
+    ],
+    relatedForms: [
+      { number: "SC-100A", reason: "Add extra plaintiffs or defendants" },
+      { number: "SC-103", reason: "Suing under a fictitious business name" },
+      { number: "SC-104", reason: "Prove the claim was served" },
+      { number: "SC-150", reason: "Postpone the trial date later" },
+    ],
+  },
+  sc100a: {
+    role: "attachment",
+    effectiveDate: "January 1, 2017",
+    bestUse: "Attach to SC-100 or SC-120 only when the case has more people or businesses than the main form can hold.",
+    whenToUse: [
+      "There are more than two plaintiffs or more defendants than the main form can list.",
+      "You need to identify each extra person or business clearly for the court record and for service.",
+    ],
+    whenNotToUse: [
+      "Your case fits on SC-100 or SC-120 without extra names — this form is unnecessary.",
+      "You need extra room to explain facts. This form is only for listing additional parties, not adding narrative.",
+    ],
+    haveReady: [
+      "The caption information from the main form (case number, names).",
+      "The legal name and address details for each additional plaintiff or defendant.",
+      "Consistent spellings of all names used elsewhere in the case.",
+    ],
+    warnings: [
+      "This form solves a space problem, not a strategy problem. If you're unsure who to name, take time to confirm the correct legal identity before filing — naming the wrong party can cause service and collection problems.",
+      "Don't confuse trade names with legal entities. Confirm official names from business records before filing.",
+    ],
+    relatedForms: [
+      { number: "SC-100", reason: "Main plaintiff claim form" },
+      { number: "SC-120", reason: "Defendant counter-claim form" },
+      { number: "SC-103", reason: "If a listed business uses a fictitious name" },
+    ],
+  },
+  sc103: {
+    role: "attachment",
+    effectiveDate: "January 1, 2026",
+    bestUse: "Attach to SC-100 or SC-120 when a party is suing or being identified through a DBA (\"doing business as\") name.",
+    whenToUse: [
+      'A sole proprietor, partnership, or other business uses a "doing business as" (DBA) name.',
+      "You want the court record to connect the brand name customers know with the legal owner behind it.",
+    ],
+    whenNotToUse: [
+      "The business is already being named by its full legal entity name and no fictitious business name issue exists.",
+      "You are merely mentioning a nickname or informal label that is not actually the business name used in commerce.",
+    ],
+    haveReady: [
+      "The exact fictitious business name as registered.",
+      "The legal owner information (person or entity) behind that name.",
+      "County fictitious business name filing records or other business registration documents for consistency.",
+    ],
+    warnings: [
+      "A DBA is not a separate legal person — it is a label attached to a real owner or entity. Don't treat them as different parties.",
+      "Collecting a judgment is much easier when the legal identity is correct from the start. Take time to look up the official registration before filing.",
+    ],
+    relatedForms: [
+      { number: "SC-100", reason: "Plaintiff claim form" },
+      { number: "SC-120", reason: "Defendant claim form" },
+    ],
+  },
+  sc104: {
+    role: "primary",
+    effectiveDate: "January 1, 2009",
+    bestUse: "Use this after a non-party adult personally serves the filed small claims papers so the court knows service happened correctly.",
+    whenToUse: [
+      "A non-party adult (age 18 or older) personally handed the filed small claims papers to the person or entity that had to be served.",
+      "You need to show the court who served, when service happened, and exactly how it was done.",
+    ],
+    whenNotToUse: [
+      "You are proving mail service instead of personal service — a different proof-of-service form may be needed.",
+      "You are trying to serve papers yourself. The plaintiff cannot serve their own papers.",
+    ],
+    haveReady: [
+      "Server's full name, age, and address (must be 18+ and not a party to the case).",
+      "The date, time, and place of service.",
+      "The identity of the person who actually received the papers.",
+      "Case information that matches the filed claim exactly.",
+    ],
+    warnings: [
+      "Service is a technical step — if it is done wrong, the hearing can be delayed or the case dismissed.",
+      "The plaintiff cannot personally serve their own papers. Use someone else.",
+      "If substituted service was used, additional mailing proof is required and stricter timing rules apply.",
+    ],
+    relatedForms: [
+      { number: "SC-104B", reason: "Explanation of service details" },
+      { number: "SC-104A", reason: "If substituted service required a separate mailing proof" },
+      { number: "SC-112A", reason: "When later papers are served by mail instead" },
+    ],
+  },
+  sc105: {
+    role: "primary",
+    effectiveDate: "July 1, 2025",
+    bestUse: "Use this to ask the judge to rule on a specific procedural issue before or after trial — or to respond when the other side has filed the same request.",
+    whenToUse: [
+      "You need a court order connected to the small claims case, such as changing a party name or requesting a specific procedural ruling.",
+      "The other side already filed SC-105 and you need to tell the court your side before the judge rules.",
+    ],
+    whenNotToUse: [
+      "You are simply asking to move the hearing date — SC-150 is the cleaner, more specific form for that.",
+      "You want to explain the merits of the whole case. That belongs at trial, not in a procedural request form.",
+    ],
+    haveReady: [
+      "The exact order you want the judge to make — state it in one sentence.",
+      "A concise, facts-first explanation of why the order is needed.",
+      "Any supporting documents that back up the request.",
+      "Enough lead time to serve the other side if service is required before the ruling.",
+    ],
+    warnings: [
+      "This is not a general narrative form. The judge needs to be able to grant or deny a specific request — keep it focused.",
+      "Local court practices vary. Check court-specific instructions and any service requirements before filing.",
+    ],
+    relatedForms: [
+      { number: "SC-105A", reason: "Court's ruling on this request" },
+      { number: "SC-150", reason: "To postpone the trial date instead" },
+      { number: "MC-030", reason: "If a longer sworn explanation is needed as an attachment" },
+    ],
+  },
+  sc112a: {
+    role: "primary",
+    effectiveDate: "July 1, 2025",
+    bestUse: "Use this to prove that later small claims papers were served by mail when the rules allow mail service.",
+    whenToUse: [
+      "The specific rules allow the particular small claims document to be served by mail.",
+      "A non-party adult completed the mailing and can sign the proof under penalty of perjury.",
+    ],
+    whenNotToUse: [
+      "You are proving personal service of the original claim — use SC-104 for that.",
+      "You are not sure whether mail service is allowed for that document. Confirm before mailing — don't assume.",
+    ],
+    haveReady: [
+      "The name and address of the person who mailed the papers.",
+      "The date and place of mailing.",
+      "The names and mailing addresses of everyone served.",
+      "A list of the exact documents that were mailed.",
+    ],
+    warnings: [
+      "Not all papers can be mailed — the original claim (SC-100 or SC-120) must be personally served using SC-104.",
+      "Mail service has its own timing rules. Don't mail at the last minute — late service can invalidate the filing.",
+    ],
+    relatedForms: [
+      { number: "SC-150", reason: "When mailing a postponement request" },
+      { number: "SC-105", reason: "When mailing a court order request" },
+      { number: "SC-104", reason: "When personal service was used instead" },
+    ],
+  },
+  sc120: {
+    role: "primary",
+    effectiveDate: "July 1, 2025",
+    bestUse: "Use this only if you have been sued and want to file your own claim against the plaintiff in the same case.",
+    whenToUse: [
+      "You were served with SC-100 and believe the plaintiff owes you money.",
+      "Your claim fits within small claims court limits and can be raised as a defendant's claim in the same matter.",
+    ],
+    whenNotToUse: [
+      "You are starting a brand-new case against someone who has not sued you — use SC-100 instead.",
+      "You just want to deny the plaintiff's allegations without asking for money. You can simply show up and present your side at trial.",
+    ],
+    haveReady: [
+      "The existing case information and scheduled court date.",
+      "The amount you claim the plaintiff owes you.",
+      "A short explanation of why they owe it.",
+      "Correct legal names and service addresses for the plaintiff and any additional parties.",
+    ],
+    warnings: [
+      "Timing is tighter here. If you were served more than 10 days before trial, your claim must be served on the plaintiff at least 5 days before trial. If you were served 10 days or less before trial, service can be as late as 1 day before.",
+      "This form is optional — you are not required to file it just to defend against the plaintiff's claim.",
+    ],
+    relatedForms: [
+      { number: "SC-100A", reason: "Add extra parties if needed" },
+      { number: "SC-103", reason: "If filing under a fictitious business name" },
+      { number: "SC-104", reason: "To prove you served the defendant claim" },
+    ],
+  },
+  sc140: {
+    role: "primary",
+    effectiveDate: "January 1, 2007",
+    bestUse: "Use this after a judgment if you were ordered to pay and want to request a new hearing in superior court.",
+    whenToUse: [
+      "The court entered a small claims judgment against you and you disagree with the outcome.",
+      "You are the defendant — or the plaintiff only on a counter-claim filed against you — and you lost on that claim.",
+      "You are still within the 30-day appeal deadline from when the notice of entry of judgment was handed or mailed.",
+    ],
+    whenNotToUse: [
+      "You were the original plaintiff and simply lost your claim. Plaintiffs generally cannot appeal a small claims loss.",
+      "You missed the hearing and want another chance — that usually requires a motion to vacate, not an appeal.",
+    ],
+    haveReady: [
+      "The judgment date and the date the notice of entry of judgment was served.",
+      "The case number and the full names of all parties.",
+      "The filing fee, or a completed fee waiver request (FW-001) if you qualify.",
+    ],
+    warnings: [
+      "A small claims appeal is not a limited review of what happened — it generally leads to a completely new hearing. Prepare from the ground up.",
+      "The 30-day deadline is strict. Missing it ends your right to appeal. Calculate the date carefully and act early.",
+    ],
+    relatedForms: [
+      { number: "SC-130", reason: "Notice of Entry of Judgment" },
+      { number: "SC-200", reason: "Alternative entry of judgment form" },
+      { number: "FW-001", reason: "Fee waiver if cost of filing is a hardship" },
+    ],
+  },
+  sc150: {
+    role: "primary",
+    effectiveDate: "July 1, 2025",
+    bestUse: "Use this when the current trial date genuinely will not work and you can clearly explain why a postponement is necessary.",
+    whenToUse: [
+      "You have a legitimate conflict, emergency, or service problem that makes the current hearing date unreasonable.",
+      "You can explain the reason clearly and, if possible, attach proof (travel records, medical documentation, etc.).",
+      "You are asking before the hearing date — ideally at least 10 days in advance.",
+    ],
+    whenNotToUse: [
+      "You are simply not ready because you waited too long, without a strong reason for the delay.",
+      "You want to delay for tactical reasons. Judges expect a genuine, documented need — not convenience.",
+    ],
+    haveReady: [
+      "The current scheduled hearing date.",
+      "A specific, honest explanation of why you need more time.",
+      "Supporting documentation where possible (travel records, medical notes, failed service evidence).",
+      "A plan to serve the request on all other parties in the case.",
+    ],
+    warnings: [
+      "A postponement request is not automatically granted — the judge decides. Do not assume the hearing is rescheduled until you receive confirmation from the court.",
+      "If the hearing is very close, contact the clerk or small claims advisor for local guidance on emergency procedures.",
+      "There is typically a fee to request a postponement unless a fee waiver has been granted.",
+    ],
+    relatedForms: [
+      { number: "SC-112A", reason: "Prove the request was served by mail" },
+      { number: "SC-105", reason: "For other types of court orders" },
+    ],
+  },
+  mc030: {
+    role: "primary",
+    effectiveDate: "January 1, 2006",
+    bestUse: "Use this as a sworn written statement when another court form does not give enough space and the court permits or expects an attached declaration.",
+    whenToUse: [
+      "The main form is too short for the facts the court needs to understand.",
+      "A judge, clerk, or instruction page suggests attaching a declaration.",
+      "You need to present facts in numbered paragraphs and sign under penalty of perjury.",
+    ],
+    whenNotToUse: [
+      "The main form asks for only a short statement and a longer declaration is unnecessary or discouraged by local rules.",
+      "You are trying to use a declaration instead of the correct main form — MC-030 supports another filing; it does not replace it.",
+    ],
+    haveReady: [
+      "A clear heading showing which filing the declaration supports.",
+      "Facts stated from your own personal knowledge — not what someone else told you.",
+      "Your signature under penalty of perjury and the date signed.",
+    ],
+    warnings: [
+      "Keep facts separate from opinions or argument. Judges respond better to a clean chronology of what happened than to a long persuasive essay.",
+      "A declaration can hurt clarity if it becomes too long. Aim for concise, numbered paragraphs — short and factual is more effective.",
+    ],
+    relatedForms: [
+      { number: "MC-031", reason: "If more attachment pages are needed" },
+      { number: "SC-100", reason: "Main claim form this typically supports" },
+      { number: "SC-105", reason: "Court order request this can be attached to" },
+    ],
+  },
+};
+
 function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any }) {
   const { getToken } = useAuth();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
@@ -1928,112 +2225,161 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           }
         </div>
 
-        {guideForm.id === "sc100" ? (
-          /* ── SC-100 Full Guide ── */
-          <div className="space-y-6">
+        {(() => {
+          const guide = FORM_GUIDE_CONTENT[guideForm.id];
+          if (!guide) return null;
+          return (
+            <div className="space-y-8">
 
-            {/* Mandatory badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-red-300 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Required — you cannot start your case without this form
-            </div>
+              {/* Best Use callout */}
+              <div className="rounded-xl bg-[#ddf6f3] border border-[#0d6b5e]/20 px-5 py-4">
+                <p className="text-sm font-semibold text-[#0d6b5e] leading-relaxed">{guide.bestUse}</p>
+              </div>
 
-            {/* Section 1: What it is */}
-            <div className="space-y-2">
-              <h3 className="text-base font-bold text-foreground">What is this form?</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Form SC-100 is the main form used to start a small claims case in California. It tells the court who is filing the case, who is being sued, how much money is being requested, and a short explanation of what happened. Without it, the court cannot open your case or schedule a hearing.</p>
-            </div>
+              {/* When to use / When NOT to use */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-xl border bg-card p-5 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">Use this form when</p>
+                  <ul className="space-y-2">
+                    {guide.whenToUse.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-relaxed">
+                        <svg className="mt-0.5 shrink-0 text-[#0d6b5e]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-xl border bg-card p-5 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-rose-600">Do not use this form when</p>
+                  <ul className="space-y-2">
+                    {guide.whenNotToUse.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-relaxed">
+                        <svg className="mt-0.5 shrink-0 text-rose-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
 
-            {/* Section 2: Why you need it */}
-            <div className="space-y-2">
-              <h3 className="text-base font-bold text-foreground">Why do you need it?</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">SC-100 is the standard statewide starting form used in all 58 California counties. The court uses it to open the case, assign a hearing date, and identify the basic facts of the dispute. There is no substitute — every plaintiff must complete and file this form.</p>
-            </div>
+              {/* What to have ready */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">What to have ready</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {guide.haveReady.map((item, i) => (
+                    <div key={i} className="flex items-start gap-3 rounded-lg border bg-muted/30 px-4 py-3">
+                      <div className="mt-0.5 h-5 w-5 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center shrink-0">
+                        <span className="text-[10px] font-bold text-[#0d6b5e]">{i + 1}</span>
+                      </div>
+                      <p className="text-sm text-foreground leading-relaxed">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-            {/* Section 3: What to put on it */}
-            <div className="space-y-3">
-              <h3 className="text-base font-bold text-foreground">What you will put on this form</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  { label: "Who is involved", detail: "Your full name and address, and the full name and address of the person or business you are suing." },
-                  { label: "How much you want", detail: "The exact dollar amount you are requesting. For individuals, the limit is $12,500." },
-                  { label: "Why you are suing", detail: "A short, clear explanation of what happened and why you believe the other party owes you money." },
-                  { label: "Why this county", detail: "An explanation of why the case belongs in the specific county where you are filing — usually because that is where the event happened or where the defendant lives or works." },
-                ].map((item, i) => (
-                  <div key={i} className="rounded-xl border bg-muted/30 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e] mb-1">{item.label}</p>
-                    <p className="text-sm text-muted-foreground">{item.detail}</p>
+              {/* SC-100 special: MC-030 overflow note */}
+              {guideForm.id === "sc100" && (
+                <div className="rounded-xl border border-[#0d6b5e]/20 bg-[#ddf6f3]/40 p-5 space-y-2">
+                  <h3 className="text-sm font-bold text-foreground">What if your explanation doesn't fit?</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">If you cannot fit your full explanation in the space on SC-100, this application will direct you to <span className="font-semibold text-foreground">MC-030 Declaration</span> — the standard California form for adding sworn written facts. Keep a short summary on SC-100 and use MC-030 to tell the rest of the story in numbered paragraphs: what happened, when it happened, what the other party did or failed to do, the amount you are requesting, and why that amount is owed. Both forms are submitted together.</p>
+                </div>
+              )}
+
+              {/* Warnings */}
+              {guide.warnings.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">Important things to know</h3>
+                  <div className="space-y-2">
+                    {guide.warnings.map((w, i) => (
+                      <div key={i} className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                        <svg className="mt-0.5 shrink-0 text-amber-500" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <p className="text-sm text-amber-800 leading-relaxed">{w}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
 
-            {/* Section 4: MC-030 overflow */}
-            <div className="rounded-xl border border-[#0d6b5e]/20 bg-[#ddf6f3]/50 p-5 space-y-2">
-              <h3 className="text-base font-bold text-foreground">What if your explanation doesn't fit?</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">If you cannot fit your full explanation on SC-100, this application will direct you to <span className="font-semibold text-foreground">MC-030 Declaration</span> — the standard California form for providing additional written facts. Keep a short summary on SC-100 and use MC-030 to tell the rest of the story.</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">Your MC-030 should follow a simple timeline format: what happened, when it happened, what the other party did or failed to do, the amount you are requesting, and why you believe that amount is owed. Both forms are submitted together as part of your filing.</p>
-              <p className="text-xs font-semibold text-[#0d6b5e] mt-2">Note: Always refer to this as "MC-030 Declaration" — not "CMC 30" or any other variation.</p>
-            </div>
+              {/* SC-100 special: FW-001 fee waiver */}
+              {guideForm.id === "sc100" && (
+                <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
+                  <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-amber-800">Before you finish — check if you qualify for a fee waiver</p>
+                    <p className="text-sm text-amber-700 leading-relaxed">Filing a small claims case costs money. If paying the filing fee would be a financial hardship, you may be entitled to have it waived. Before you submit your SC-100, check whether you qualify to use <span className="font-semibold">Form FW-001, Request to Waive Court Fees</span>. You should never pay a court fee you are legally entitled to have waived.</p>
+                  </div>
+                </div>
+              )}
 
-            {/* Section 5: Fee waiver */}
-            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
-              <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-amber-800">Before you finish — check if you qualify for a fee waiver</p>
-                <p className="text-sm text-amber-700 leading-relaxed">Filing a small claims case costs money. If paying the filing fee would be a financial hardship, you may not have to pay it. Before you submit your SC-100, check whether you qualify to use <span className="font-semibold">Form FW-001, Request to Waive Court Fees</span>. If you qualify, the court can waive or reduce the fee. You should never pay a court fee you are legally entitled to have waived.</p>
-              </div>
-            </div>
+              {/* Related forms */}
+              {guide.relatedForms.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">Related forms &amp; next steps</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {guide.relatedForms.map((rf, i) => (
+                      <div key={i} className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-1.5">
+                        <span className="text-xs font-bold text-[#0d6b5e]">{rf.number}</span>
+                        <span className="text-xs text-muted-foreground">{rf.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            {/* Download CTA */}
-            {isReady && (
-              <div className="flex gap-3 pt-2">
-                <Button
-                  className="h-11 font-bold"
-                  disabled={downloadingPdf}
-                  onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
-                >
-                  {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                  {downloadingPdf ? "Downloading…" : "Download Filled SC-100 (PDF)"}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-11 font-bold border-2"
-                  disabled={downloadingWord}
-                  onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
-                >
-                  {downloadingWord ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                  {downloadingWord ? "Downloading…" : "Word (.docx)"}
-                </Button>
-              </div>
-            )}
-            {!isReady && (
-              <p className="text-xs text-muted-foreground">Complete your intake to 80% readiness to unlock the filled SC-100 download.</p>
-            )}
+              {/* Effective date note */}
+              <p className="text-xs text-muted-foreground/60">
+                Form version referenced: effective {guide.effectiveDate}. Always confirm the current Judicial Council version and any county-specific local rules before filing.
+              </p>
 
-          </div>
-        ) : (
-          /* ── Placeholder Guide (other forms) ── */
-          <div className="space-y-6">
-            <p className="text-sm text-muted-foreground leading-relaxed">{guideForm.detailDesc}</p>
-            <div className="rounded-xl border border-dashed border-muted-foreground/30 bg-muted/20 p-8 flex flex-col items-center gap-3 text-center">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/50"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <p className="text-sm font-semibold text-muted-foreground">Detailed guide coming soon</p>
-              <p className="text-xs text-muted-foreground max-w-sm">We're working on a full step-by-step guide for this form explaining when you need it, how to fill it out, and what happens if you skip it.</p>
-              <a
-                href={guideForm.blankFormUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b5e] underline underline-offset-2"
-              >
-                Download blank {guideForm.number} from courts.ca.gov
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </a>
+              {/* SC-100 Download CTA */}
+              {guideForm.id === "sc100" && (
+                <div className="pt-2 border-t">
+                  {isReady ? (
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        className="h-11 font-bold"
+                        disabled={downloadingPdf}
+                        onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
+                      >
+                        {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                        {downloadingPdf ? "Downloading…" : "Download Filled SC-100 (PDF)"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-11 font-bold border-2"
+                        disabled={downloadingWord}
+                        onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
+                      >
+                        {downloadingWord ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                        {downloadingWord ? "Downloading…" : "Word (.docx)"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Complete your intake to 80% readiness to unlock the filled SC-100 download.</p>
+                  )}
+                </div>
+              )}
+
+              {/* Blank form CTA for non-SC-100 forms */}
+              {guideForm.id !== "sc100" && (
+                <div className="pt-2 border-t">
+                  <a
+                    href={guideForm.blankFormUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-lg border-2 border-[#0d6b5e] text-[#0d6b5e] text-sm font-bold hover:bg-[#ddf6f3] transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Download blank {guideForm.number} from courts.ca.gov
+                  </a>
+                </div>
+              )}
+
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     );
   }
