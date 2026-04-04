@@ -127,9 +127,11 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function Router() {
   return (
     <Switch>
-      {/* Auth pages — single route per flow so Clerk never unmounts mid-step */}
-      <Route path="/sign-in/:rest*" component={SignInPage} />
-      <Route path="/sign-up/:rest*" component={SignUpPage} />
+      {/* Auth pages — Clerk multi-step flows need wildcard sub-paths */}
+      <Route path="/sign-in" component={SignInPage} />
+      <Route path="/sign-in/*" component={SignInPage} />
+      <Route path="/sign-up" component={SignUpPage} />
+      <Route path="/sign-up/*" component={SignUpPage} />
 
       {/* All other pages share the Layout (nav + footer) */}
       <Route>
