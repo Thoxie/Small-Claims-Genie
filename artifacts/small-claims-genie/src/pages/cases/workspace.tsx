@@ -1911,6 +1911,40 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
         <p className="text-muted-foreground text-sm">California small claims forms — click any form to learn more or generate it.</p>
       </div>
 
+      {/* Readiness Banner */}
+      <Card className={`border-2 ${score >= 80 ? "border-green-400 bg-green-50" : score >= 50 ? "border-yellow-400 bg-yellow-50" : "border-red-400 bg-red-50"}`}>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            {/* Score */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className={`text-5xl font-black leading-none ${color}`}>{score}</div>
+              <div className="flex flex-col gap-1 min-w-[80px]">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{i18n.forms.readinessScore}</span>
+                <div className="w-20 bg-muted rounded-full h-2 overflow-hidden">
+                  <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
+                </div>
+                <span className={`text-xs font-semibold ${color}`}>{score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info"}</span>
+              </div>
+            </div>
+            {/* Divider */}
+            <div className="hidden sm:block w-px self-stretch bg-border" />
+            {/* Details */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0.5">
+              {readiness?.strengths && readiness.strengths.map((s: string, i: number) => (
+                <div key={i} className="flex items-start gap-1.5 text-xs text-green-700">
+                  <CheckCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-green-500" />{s}
+                </div>
+              ))}
+              {readiness?.missingFields && readiness.missingFields.map((f: string, i: number) => (
+                <div key={i} className="flex items-start gap-1.5 text-xs text-destructive">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{f}
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Case Summary Card */}
       <Card className="bg-muted/30 border-dashed">
         <CardContent className="p-4">
@@ -1994,86 +2028,32 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
 
             {activeForm.available ? (
               /* ── SC-100 Generator Panel ── */
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Case summary */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Your Case Summary</h4>
-                    <Card className="bg-muted/30 border-dashed">
-                      <CardContent className="p-4">
-                        <div className="grid grid-cols-2 gap-y-3 text-sm">
-                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Plaintiff</span>{currentCase.plaintiffName || "—"}</div>
-                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Defendant</span>{currentCase.defendantName || "—"}</div>
-                          <div><span className="font-semibold block text-xs text-muted-foreground uppercase">Incident Date</span>{currentCase.incidentDate || "—"}</div>
-                          <div className="col-span-2"><span className="font-semibold block text-xs text-muted-foreground uppercase">Description</span>{currentCase.claimDescription || "—"}</div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {downloadError && (
-                      <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
-                        <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
-                      </div>
-                    )}
-
-                    <div className="flex flex-col gap-3">
-                      <Button
-                        className="h-12 font-bold text-base"
-                        disabled={!isReady || downloadingPdf}
-                        onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
-                      >
-                        {downloadingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
-                        {downloadingPdf ? "Downloading…" : i18n.forms.downloadSc100}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="h-12 font-bold text-base border-2"
-                        disabled={!isReady || downloadingWord}
-                        onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
-                      >
-                        {downloadingWord ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
-                        {downloadingWord ? "Downloading…" : "Download as Word (.docx)"}
-                      </Button>
-                    </div>
-                    {!isReady && <p className="text-xs text-center text-muted-foreground">Complete your intake to reach 80% readiness before downloading.</p>}
+              <div className="space-y-4 max-w-xl">
+                {downloadError && (
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
                   </div>
-
-                  {/* Readiness Score */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">{i18n.forms.readinessScore}</h4>
-                    <Card>
-                      <CardContent className="flex flex-col items-center pt-6">
-                        <div className={`text-6xl font-black ${color} mb-2`}>{score}</div>
-                        <div className="w-full bg-muted rounded-full h-2 mb-4 overflow-hidden">
-                          <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
-                        </div>
-                        {readiness?.missingFields && readiness.missingFields.length > 0 && (
-                          <div className="w-full mt-2">
-                            <h5 className="text-sm font-semibold flex items-center gap-1 text-destructive mb-2"><AlertCircle className="h-4 w-4"/> {i18n.forms.missingFields}</h5>
-                            <ul className="text-sm space-y-1">
-                              {readiness.missingFields.map((f: string, i: number) => (
-                                <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-destructive mt-1">•</span>{f}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {readiness?.strengths && readiness.strengths.length > 0 && (
-                          <div className="w-full mt-4">
-                            <h5 className="text-sm font-semibold flex items-center gap-1 text-green-600 mb-2"><CheckCircle className="h-4 w-4"/> Strengths</h5>
-                            <ul className="text-sm space-y-1">
-                              {readiness.strengths.map((s: string, i: number) => (
-                                <li key={i} className="text-muted-foreground flex items-start gap-2"><span className="text-green-500 mt-1">✓</span>{s}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {readiness?.filingGuidance && (
-                          <p className="mt-4 text-xs text-muted-foreground text-center border-t pt-3">{readiness.filingGuidance}</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    className="flex-1 h-12 font-bold text-base"
+                    disabled={!isReady || downloadingPdf}
+                    onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
+                  >
+                    {downloadingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+                    {downloadingPdf ? "Downloading…" : i18n.forms.downloadSc100}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-12 font-bold text-base border-2"
+                    disabled={!isReady || downloadingWord}
+                    onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
+                  >
+                    {downloadingWord ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+                    {downloadingWord ? "Downloading…" : "Download as Word (.docx)"}
+                  </Button>
                 </div>
+                {!isReady && <p className="text-xs text-center text-muted-foreground">Complete your intake to reach 80% readiness before downloading.</p>}
               </div>
             ) : (
               /* ── Placeholder Panel ── */
