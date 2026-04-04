@@ -136,22 +136,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t py-8" style={{ backgroundColor: "#ddf6f3" }}>
+      <footer className="border-t py-3" style={{ backgroundColor: "#ddf6f3" }}>
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-            <p className="text-sm text-primary/60">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-1">
+            <p className="text-xs text-primary/50">
               © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Legal advice only.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link
                 href="/terms"
-                className="text-sm text-primary/60 hover:text-primary underline underline-offset-2 transition-colors"
+                className="text-xs text-primary/50 hover:text-primary underline underline-offset-2 transition-colors"
               >
                 Terms of Use
               </Link>
               <Link
                 href="/tos"
-                className="text-sm text-primary/60 hover:text-primary underline underline-offset-2 transition-colors"
+                className="text-xs text-primary/50 hover:text-primary underline underline-offset-2 transition-colors"
               >
                 Terms of Service
               </Link>
