@@ -77,6 +77,14 @@ lib/
   integrations-openai-ai-react/   # useVoiceRecorder hook
 ```
 
+## UI Design Principles (Owner Preferences)
+
+- **Consolidate, don't spread** — always try to fit related fields and controls into the most compact, readable layout possible. Avoid wide-open whitespace that forces unnecessary scrolling.
+- **Size inputs to their content** — a "time" field should be narrow; a "case number" field medium; a "notes" field wider. Don't use full-width for everything by default.
+- **Prioritize what matters** — most important information and actions go first (top of the page/card). Secondary or optional fields come after.
+- **One line where possible** — headers, labels, and descriptions should be condensed to a single line whenever the meaning is clear. Avoid multi-line explanatory text unless truly necessary.
+- **Users are mobile-first, non-technical** — plain language, clear affordances, no legal jargon. Buttons and actions should be immediately obvious.
+
 ## Key Design Decisions
 
 - **Auth**: Clerk authentication is live (sign-in/sign-up via Clerk hosted UI). All protected routes require a valid Clerk JWT.
