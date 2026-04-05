@@ -1209,6 +1209,12 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
                   {initialData.claimDescription && (
                     <p className="text-sm text-muted-foreground line-clamp-3">{initialData.claimDescription}</p>
                   )}
+                  {initialData.howAmountCalculated && (
+                    <div className="mt-2 pt-2 border-t border-dashed">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Amount Calculation</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{initialData.howAmountCalculated}</p>
+                    </div>
+                  )}
                 </div>
 
                 {(initialData.courthouseName || initialData.countyId) && (
