@@ -498,4 +498,25 @@ Return ONLY the case description text. No headers, no commentary, no formatting.
   res.json({ refinedStatement: completion.choices[0].message.content?.trim() || "" });
 });
 
+// ─── PATCH /cases/:id/hearing — save court hearing details ────────────────────
+router.patch("/cases/:id/hearing", async (req, res): Promise<void> => {
+  const userId = (req as any).userId;
+  const id = Number(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case id" }); return; }
+
+  const existing = await db.select().from(casesTable).where(and(eq(casesTable.id, id), eq(casesTable.userId, userId))).limit(1);
+  if (!existing.length) { res.status(404).json({ error: "Not found" }); return; }
+
+  const allowed = ["caseNumber", "hearingDate", "hearingTime", "hearingJudge", "hearingCourtroom", "hearingNotes"];
+  const updates: Record<string, string | null> = {};
+  for (const key of allowed) {
+    if (key in req.body) updates[key] = req.body[key] ?? null;
+  }
+
+  if (!Object.keys(updates).length) { res.status(400).json({ error: "No valid fields provided" }); return; }
+
+  const [updated] = await db.update(casesTable).set(updates).where(eq(casesTable.id, id)).returning();
+  res.json(updated);
+});
+
 export default router;

@@ -327,6 +327,7 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
       {step === 2 && <Step2 caseId={caseId} initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} autoOpenAdvisor={autoOpenAdvisor} onAdvisorOpened={() => setAutoOpenAdvisor(false)} />}
       {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} saving={saveIntake.isPending} />}
       {step === 4 && <Step4 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(3)} saving={saveIntake.isPending} onCheckCase={goToAdvisor} />}
+      {step === 4 && <HearingInfoCard caseId={caseId} initialData={initialData} />}
     </div>
   );
 }
@@ -1259,6 +1260,133 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
           </div>
         </form>
       </Form>
+    </div>
+  );
+}
+
+// ─── Hearing Info Card ────────────────────────────────────────────────────────
+function HearingInfoCard({ caseId, initialData }: { caseId: number; initialData: any }) {
+  const { getToken } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    caseNumber: initialData.caseNumber || "",
+    hearingDate: initialData.hearingDate || "",
+    hearingTime: initialData.hearingTime || "",
+    hearingJudge: initialData.hearingJudge || "",
+    hearingCourtroom: initialData.hearingCourtroom || "",
+    hearingNotes: initialData.hearingNotes || "",
+  });
+
+  const hasHearingDate = !!form.hearingDate;
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/hearing`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+      toast({ title: "Hearing details saved", description: hasHearingDate ? "You'll receive email reminders before your hearing." : "Saved." });
+    } catch {
+      toast({ title: "Failed to save", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-6 rounded-xl border-2 border-dashed border-teal-300 bg-teal-50 p-5 space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center">
+          <CalendarIcon className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <h3 className="font-semibold text-teal-900 text-sm">Court's Response — Enter When You Receive It</h3>
+          <p className="text-xs text-teal-700 mt-0.5">After you file at the courthouse, they'll mail you back a Notice of Small Claims Hearing with your case number, date, and time. Enter it here and we'll send you reminder emails 14 days and 3 days before your hearing.</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-teal-800 mb-1">Case / Claim Number</label>
+            <Input
+              placeholder="e.g. 24SC01234"
+              value={form.caseNumber}
+              onChange={e => setForm(f => ({ ...f, caseNumber: e.target.value }))}
+              className="bg-white border-teal-200 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-teal-800 mb-1">Hearing Date <span className="text-teal-600">(enables reminders)</span></label>
+            <Input
+              type="date"
+              value={form.hearingDate}
+              onChange={e => setForm(f => ({ ...f, hearingDate: e.target.value }))}
+              className="bg-white border-teal-200 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-teal-800 mb-1">Hearing Time</label>
+            <Input
+              type="time"
+              value={form.hearingTime}
+              onChange={e => setForm(f => ({ ...f, hearingTime: e.target.value }))}
+              className="bg-white border-teal-200 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-teal-800 mb-1">Courtroom / Department</label>
+            <Input
+              placeholder="e.g. Dept. 12"
+              value={form.hearingCourtroom}
+              onChange={e => setForm(f => ({ ...f, hearingCourtroom: e.target.value }))}
+              className="bg-white border-teal-200 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-teal-800 mb-1">Judge Name <span className="text-xs text-teal-500">(if listed)</span></label>
+            <Input
+              placeholder="e.g. Hon. Maria Rodriguez"
+              value={form.hearingJudge}
+              onChange={e => setForm(f => ({ ...f, hearingJudge: e.target.value }))}
+              className="bg-white border-teal-200 text-sm"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-teal-800 mb-1">Notes</label>
+          <Textarea
+            placeholder="Any additional notes about the hearing..."
+            value={form.hearingNotes}
+            onChange={e => setForm(f => ({ ...f, hearingNotes: e.target.value }))}
+            rows={2}
+            className="bg-white border-teal-200 text-sm resize-none"
+          />
+        </div>
+
+        {hasHearingDate && (
+          <div className="flex items-center gap-2 bg-white border border-teal-200 rounded-lg px-3 py-2">
+            <Mail className="w-4 h-4 text-teal-600 flex-shrink-0" />
+            <p className="text-xs text-teal-700">We'll email <strong>{initialData.plaintiffEmail || "you"}</strong> a preparation checklist 14 days before and a final logistics checklist 3 days before.</p>
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button type="submit" disabled={saving} className="bg-teal-600 hover:bg-teal-700 text-white text-sm gap-2">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+            {saving ? "Saving…" : "Save Hearing Details"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

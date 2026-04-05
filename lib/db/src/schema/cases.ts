@@ -52,6 +52,16 @@ export const casesTable = pgTable("cases", {
   demandLetterText: text("demand_letter_text"),
   demandLetterTone: text("demand_letter_tone"),
   evidenceChecklist: jsonb("evidence_checklist"),
+  // ── Court hearing info (entered after filing, once court responds) ──────────
+  caseNumber: text("case_number"),
+  hearingDate: text("hearing_date"),
+  hearingTime: text("hearing_time"),
+  hearingJudge: text("hearing_judge"),
+  hearingCourtroom: text("hearing_courtroom"),
+  hearingNotes: text("hearing_notes"),
+  // ── Email reminder tracking ──────────────────────────────────────────────────
+  reminder14DaySent: boolean("reminder_14_day_sent").default(false),
+  reminder3DaySent: boolean("reminder_3_day_sent").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
