@@ -39,7 +39,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -1218,14 +1218,60 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
                 </div>
 
                 {(initialData.courthouseName || initialData.countyId) && (
-                  <div className="border-t pt-3">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Court</p>
-                    {initialData.courthouseName && <p className="font-semibold">{initialData.courthouseName}</p>}
+                  <div className="border-t pt-3 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Court</p>
+                    {initialData.courthouseName && <p className="font-semibold leading-snug">{initialData.courthouseName}</p>}
+
                     {initialData.courthouseAddress && (
-                      <p className="text-muted-foreground">{initialData.courthouseAddress}, {initialData.courthouseCity} {initialData.courthouseZip}</p>
+                      <div className="flex items-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                        <span className="text-muted-foreground">{initialData.courthouseAddress}, {initialData.courthouseCity} {initialData.courthouseZip}</span>
+                      </div>
                     )}
+
+                    {initialData.courthousePhone && (
+                      <div className="flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <a href={`tel:${initialData.courthousePhone.replace(/\D/g, "")}`} className="text-primary font-medium hover:underline">
+                          {initialData.courthousePhone}
+                        </a>
+                      </div>
+                    )}
+
+                    {initialData.courthouseClerkEmail && (
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <a href={`mailto:${initialData.courthouseClerkEmail}`} className="text-primary hover:underline break-all">
+                          {initialData.courthouseClerkEmail}
+                        </a>
+                      </div>
+                    )}
+
+                    {initialData.courthouseWebsite && (
+                      <div className="flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <a href={initialData.courthouseWebsite} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 break-all">
+                          Court website <ExternalLink className="w-3 h-3 inline shrink-0" />
+                        </a>
+                      </div>
+                    )}
+
                     {initialData.filingFee && (
-                      <p className="mt-1">Filing fee: <span className="font-bold">${initialData.filingFee}</span></p>
+                      <p className="text-sm">Filing fee: <span className="font-bold">${initialData.filingFee}</span></p>
+                    )}
+
+                    {initialData.courthouseAddress && (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                          `${initialData.courthouseAddress}, ${initialData.courthouseCity}, CA ${initialData.courthouseZip}`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        Get Directions
+                      </a>
                     )}
                   </div>
                 )}
