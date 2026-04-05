@@ -277,6 +277,94 @@ router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
 });
 
 // ─── Case Advisor: Analyze ────────────────────────────────────────────────────
+// ─── Shared: build advisor case brief ────────────────────────────────────────
+function buildAdvisorBrief(
+  c: typeof casesTable.$inferSelect,
+  docs: typeof documentsTable.$inferSelect[]
+): string {
+  const lines: string[] = ["=== FULL CASE RECORD ==="];
+
+  lines.push(`Title: ${c.title}`);
+  lines.push(`Intake Step: ${c.intakeStep ?? 1} of 4 | Complete: ${c.intakeComplete ? "Yes" : "No"}`);
+  lines.push(`Readiness Score: ${c.readinessScore ?? 0}%`);
+
+  lines.push("\n-- PLAINTIFF --");
+  lines.push(`Name: ${c.plaintiffName || "[not entered]"}`);
+  lines.push(`Phone: ${c.plaintiffPhone || "[not entered]"}`);
+  lines.push(`Email: ${c.plaintiffEmail || "[not entered]"}`);
+  lines.push(`Address: ${[c.plaintiffAddress, c.plaintiffCity, c.plaintiffState || "CA", c.plaintiffZip].filter(Boolean).join(", ") || "[not entered]"}`);
+
+  lines.push("\n-- DEFENDANT --");
+  lines.push(`Name: ${c.defendantName || "[not entered]"}`);
+  lines.push(`Phone: ${c.defendantPhone || "[not entered]"}`);
+  lines.push(`Address: ${[c.defendantAddress, c.defendantCity, c.defendantState || "CA", c.defendantZip].filter(Boolean).join(", ") || "[not entered]"}`);
+  lines.push(`Is Business/Entity: ${c.defendantIsBusinessOrEntity ? "Yes" : "No"}`);
+  if (c.defendantIsBusinessOrEntity && c.defendantAgentName) lines.push(`Agent for Service: ${c.defendantAgentName}`);
+
+  lines.push("\n-- COURT & FILING --");
+  lines.push(`Filing County: ${c.countyId || "[not selected]"}`);
+  if (c.courthouseName) lines.push(`Courthouse: ${c.courthouseName}`);
+  if (c.filingFee) lines.push(`Filing Fee: $${c.filingFee}`);
+
+  lines.push("\n-- CLAIM --");
+  lines.push(`Claim Type: ${c.claimType || "[not entered]"}`);
+  lines.push(`Claim Amount: ${c.claimAmount ? `$${c.claimAmount}` : "[not entered]"}`);
+  lines.push(`Incident Date: ${c.incidentDate || "[not entered]"}`);
+  lines.push(`Description:\n${c.claimDescription || "[not entered]"}`);
+  lines.push(`How Amount Calculated:\n${c.howAmountCalculated || "[not entered]"}`);
+
+  lines.push("\n-- PRIOR DEMAND & VENUE --");
+  lines.push(`Prior Demand Made: ${c.priorDemandMade === true ? "Yes" : c.priorDemandMade === false ? "No" : "[not answered]"}`);
+  if (c.priorDemandDescription) lines.push(`Demand Details: ${c.priorDemandDescription}`);
+  lines.push(`Venue Basis: ${c.venueBasis || "[not selected]"}`);
+  if (c.venueReason) lines.push(`Venue Explanation: ${c.venueReason}`);
+
+  lines.push("\n-- ELIGIBILITY FLAGS --");
+  lines.push(`Suing Public Entity: ${c.isSuingPublicEntity ? "Yes" : "No"}`);
+  lines.push(`Attorney Fee Dispute: ${c.isAttyFeeDispute ? "Yes" : "No"}`);
+  lines.push(`Filed 12+ Claims This Year: ${c.filedMoreThan12Claims ? "Yes" : "No"}`);
+  lines.push(`Claim Over $2,500: ${c.claimOver2500 ? "Yes" : "No"}`);
+
+  // What is already filled vs missing
+  const missing: string[] = [];
+  if (!c.plaintiffName) missing.push("plaintiff name");
+  if (!c.plaintiffPhone) missing.push("plaintiff phone");
+  if (!c.plaintiffAddress) missing.push("plaintiff address");
+  if (!c.defendantName) missing.push("defendant name");
+  if (!c.defendantAddress) missing.push("defendant address");
+  if (!c.claimAmount) missing.push("claim amount");
+  if (!c.claimDescription) missing.push("claim description");
+  if (!c.incidentDate) missing.push("incident date");
+  if (!c.howAmountCalculated) missing.push("how amount was calculated");
+  if (c.priorDemandMade === null) missing.push("prior demand answer");
+  if (!c.countyId) missing.push("filing county");
+  if (!c.venueBasis) missing.push("venue basis");
+
+  if (missing.length > 0) {
+    lines.push(`\n-- MISSING FIELDS (${missing.length}) --`);
+    lines.push(missing.map(f => `• ${f}`).join("\n"));
+    lines.push("RULE: Do NOT ask the user for information already filled in above. Only ask about or reference these missing fields.");
+  } else {
+    lines.push("\n-- All required intake fields are filled in. --");
+  }
+
+  // Already-uploaded documents
+  if (docs.length > 0) {
+    lines.push(`\n-- ALREADY UPLOADED DOCUMENTS (${docs.length}) --`);
+    lines.push("RULE: Do NOT ask the user to upload documents that are already in this list.");
+    for (const doc of docs) {
+      lines.push(`• "${doc.originalName}" (${doc.label || "unlabeled"}) — OCR: ${doc.ocrStatus}`);
+      if (doc.ocrText && doc.ocrText.length > 0 && !doc.ocrText.startsWith("[")) {
+        lines.push(`  Summary: ${doc.ocrText.slice(0, 500)}${doc.ocrText.length > 500 ? "..." : ""}`);
+      }
+    }
+  } else {
+    lines.push("\n-- No documents uploaded yet --");
+  }
+
+  return lines.join("\n");
+}
+
 router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {
   const userId = getUserId(req);
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -289,35 +377,33 @@ router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {
     .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
   if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
 
-  const { claimDescription, claimType, claimAmount, incidentDate, howAmountCalculated } = req.body;
+  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+  const caseBrief = buildAdvisorBrief(caseRecord, docs);
 
-  const prompt = `You are a California small claims court advisor. Analyze this case and return ONLY a valid JSON object — no markdown, no explanation, no code blocks.
+  const prompt = `You are a California small claims court advisor. You have received the COMPLETE case record below. Review everything that is already filled in before generating questions or an evidence checklist.
 
-Case details:
-- Claim Type: ${claimType || "Not specified"}
-- Amount Claimed: $${claimAmount || "Not specified"}
-- When it happened: ${incidentDate || "Not specified"}
-- What happened: ${claimDescription || "Not provided"}
-- How amount calculated: ${howAmountCalculated || "Not provided"}
+${caseBrief}
+
+Return ONLY a valid JSON object — no markdown, no explanation, no code blocks.
 
 Return this exact JSON structure:
 {
   "questions": [
-    { "id": "q1", "question": "..." },
-    { "id": "q2", "question": "..." }
+    { "id": "q1", "question": "..." }
   ],
   "evidenceChecklist": [
-    { "id": "e1", "item": "Short label", "description": "Why this document matters and what specifically to look for" }
+    { "id": "e1", "item": "Short label", "description": "Why this matters and what specifically to look for" }
   ]
 }
 
 Rules:
-- Generate 2–4 questions targeting the WEAKEST or MISSING parts of the description. Make them specific to what was actually written, not generic.
-- Generate 3–6 evidence items specific to this exact claim type. Be specific (e.g. "Signed lease agreement" not "Documents").
-- Security deposit cases: lease, move-in/out inspection report, bank records showing deposit paid, texts or emails with landlord
-- Contract disputes: signed contract or agreement, invoices, proof of payment, written communications
-- Property damage: repair estimates or receipts, before/after photos, written acknowledgment from defendant
-- Money owed / unpaid debt: loan agreement, payment history, prior demand letters
+- Review the MISSING FIELDS list above. Ask 2–4 targeted questions about what is weak or missing — NOT about things already filled in.
+- If the claim description is already detailed, ask about things that would strengthen it (witnesses, timeline gaps, amounts not accounted for).
+- For the evidence checklist: generate 3–6 items specific to this exact claim type. Only list documents NOT already uploaded.
+- Security deposit: lease, move-in/out inspection report, bank records showing deposit, texts/emails with landlord
+- Contract disputes: signed contract, invoices, proof of payment, written communications
+- Property damage: repair estimates/receipts, before/after photos, written acknowledgment
+- Money owed: loan agreement, payment history, prior demand letters
 - Plain English only. No legal jargon.`;
 
   const completion = await openai.chat.completions.create({
@@ -378,8 +464,10 @@ router.post("/cases/:id/advisor/refine", async (req, res): Promise<void> => {
     .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
   if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
 
-  const { claimDescription, claimType, claimAmount, incidentDate, howAmountCalculated, answers } = req.body;
+  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+  const caseBrief = buildAdvisorBrief(caseRecord, docs);
 
+  const { answers } = req.body;
   const answersText = Array.isArray(answers)
     ? answers.filter((a: any) => a.answer?.trim()).map((a: any) => `Q: ${a.question}\nA: ${a.answer}`).join("\n\n")
     : "";
@@ -389,24 +477,19 @@ router.post("/cases/:id/advisor/refine", async (req, res): Promise<void> => {
     max_completion_tokens: 800,
     messages: [{
       role: "user",
-      content: `You are a California small claims court advisor. Using the original description and the user's follow-up answers, write a clear, polished case description suitable for a California small claims court form.
+      content: `You are a California small claims court advisor. You have the COMPLETE case record below. Use all available information — including the original description, all filled-in fields, uploaded documents, and the user's follow-up answers — to write the best possible case description for a California small claims court form.
 
-Original description: ${claimDescription || "None provided"}
-Claim Type: ${claimType || "Unknown"}
-Amount: $${claimAmount || "Unknown"}
-When it happened: ${incidentDate || "Unknown"}
-How amount calculated: ${howAmountCalculated || "Not provided"}
+${caseBrief}
 
-Additional answers from the user:
-${answersText || "None provided"}
+${answersText ? `Additional answers from the user:\n${answersText}` : "No additional answers provided."}
 
 Write 2–4 tight paragraphs that:
-1. State the relationship or agreement between the parties
-2. Describe what happened clearly and in chronological order
-3. State the dollar amount and how it was calculated
-4. Mention any prior demand made (if the user mentioned it)
+1. State the relationship or agreement between the parties (use the actual names from the case record)
+2. Describe what happened clearly and in chronological order (use the actual incident date)
+3. State the dollar amount and exactly how it was calculated
+4. Mention any prior demand made and whether it was ignored
 5. Use plain, factual language — no legal jargon
-6. Are suitable for copying directly into a California small claims court form
+6. Are suitable for copying directly into a California small claims court form (SC-100)
 
 Return ONLY the case description text. No headers, no commentary, no formatting.`
     }],
