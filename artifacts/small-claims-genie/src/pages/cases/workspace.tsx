@@ -1121,7 +1121,7 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
   const suingPublic = form.watch("isSuingPublicEntity");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 text-sm">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onComplete)} className="space-y-5">
 
@@ -1205,7 +1205,7 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
                     <span className="font-semibold">{initialData.claimType || "—"}</span>
                     <span className="font-bold text-primary text-sm">${initialData.claimAmount ? Number(initialData.claimAmount).toLocaleString() : "—"}</span>
                   </div>
-                  {initialData.incidentDate && <p className="text-muted-foreground text-xs mb-1">Date: {initialData.incidentDate}</p>}
+                  {initialData.incidentDate && <p className="text-muted-foreground text-sm mb-1">Date: {initialData.incidentDate}</p>}
                   {initialData.claimDescription && (
                     <p className="text-sm text-muted-foreground line-clamp-3">{initialData.claimDescription}</p>
                   )}
@@ -1238,7 +1238,7 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <div className="flex-1">
                 <p className="text-sm font-semibold text-amber-900">Want to strengthen your case?</p>
-                <p className="text-xs text-amber-700 mt-0.5">Use the Case Advisor to review your claim description and get specific guidance on evidence to gather.</p>
+                <p className="text-sm text-amber-700 mt-0.5">Use the Case Advisor to review your claim description and get specific guidance on evidence to gather.</p>
               </div>
               <Button type="button" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2 whitespace-nowrap">
                 <Sparkles className="h-4 w-4" />
