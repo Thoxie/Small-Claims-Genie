@@ -111,38 +111,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Pricing ── */}
-      <section className="px-4 py-8 bg-gray-50">
-        <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-primary">Simple, Transparent Pricing</h2>
-          <p className="text-muted-foreground mb-7 max-w-xl mx-auto text-base">
-            Prepare your entire case for free. Pay only when you're ready to download your final court forms.
-          </p>
-          <div className="p-7 border-2 border-amber-200 rounded-3xl bg-white shadow-xl max-w-sm mx-auto">
-            <img src={logoPath} alt="Small Claims Genie" className="h-10 w-auto mx-auto mb-4" />
-            <div className="text-5xl font-black text-primary mb-1">$89</div>
-            <div className="text-muted-foreground text-sm mb-1">per month · per case</div>
-            <ul className="text-sm text-left space-y-2 text-muted-foreground my-5 pl-1">
-              {[
-                "Full 7-step intake wizard",
-                "Unlimited document uploads + AI OCR",
-                "Unlimited AI chat sessions",
-                "SC-100 PDF download",
-                "Step-by-step filing checklist",
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Button asChild size="lg" className="w-full text-base font-bold bg-amber-500 text-white hover:bg-amber-600 rounded-full h-11">
-              <Link href="/cases/new"><Wand2 className="mr-2 h-4 w-4" />Start Your Case Free</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
     </div>
   );
 }

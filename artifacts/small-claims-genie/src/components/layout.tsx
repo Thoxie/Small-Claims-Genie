@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/types-of-cases", label: "Types of Cases" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },
   { href: "/resources", label: "Resources" },
   { href: "/resume", label: "Resume a Case" },
@@ -34,8 +35,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* ── Main header row ── */}
         <div className="container mx-auto px-4 md:px-6 h-[70px] md:h-[106px] flex items-center justify-between">
 
-          {/* Logo — no left offset on mobile, 1-inch offset on desktop */}
-          <Link href="/" className="flex items-center shrink-0 md:ml-24">
+          {/* Logo — nudged left on desktop to make room for extra nav item */}
+          <Link href="/" className="flex items-center shrink-0 md:ml-8">
             <img
               src={logoPath}
               alt={i18n.brand.name}
@@ -49,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${
+                className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${
                   isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
                 }`}
               >
