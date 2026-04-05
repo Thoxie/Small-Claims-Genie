@@ -1,4 +1,4 @@
-import { eq, and, isNotNull, isNull, lte, sql } from "drizzle-orm";
+import { eq, and, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable } from "@workspace/db";
 import { getUncachableResendClient } from "./resend";
@@ -6,8 +6,12 @@ import {
   build14DayEmail,
   build3DayEmail,
   buildNoHearingDateEmail,
+  buildCaseConfirmationEmail,
+  buildWeeklyCheckInEmail,
   type HearingEmailData,
   type NoHearingDateEmailData,
+  type CaseConfirmationEmailData,
+  type WeeklyCheckInEmailData,
 } from "./email-templates";
 import { logger } from "./logger";
 
@@ -17,6 +21,123 @@ function daysUntil(dateStr: string): number {
   const hearing = new Date(dateStr + "T00:00:00");
   hearing.setHours(0, 0, 0, 0);
   return Math.round((hearing.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function daysSince(date: Date): number {
+  const now = new Date();
+  return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+// ─── Confirmation Email (sent once when intake is complete and email exists) ──
+async function sendConfirmationEmails() {
+  const cases = await db
+    .select()
+    .from(casesTable)
+    .where(
+      and(
+        eq(casesTable.intakeComplete, true),
+        isNotNull(casesTable.plaintiffEmail),
+        eq(casesTable.confirmationEmailSent, false)
+      )
+    );
+
+  for (const c of cases) {
+    if (!c.plaintiffEmail) continue;
+
+    const emailData: CaseConfirmationEmailData = {
+      plaintiffName: c.plaintiffName || "",
+      caseTitle: c.title,
+      claimAmount: c.claimAmount,
+      defendantName: c.defendantName,
+      countyId: c.countyId,
+      courthouseName: c.courthouseName,
+      courthouseAddress: c.courthouseAddress,
+      courthouseCity: c.courthouseCity,
+      courthouseZip: c.courthouseZip,
+      courthousePhone: c.courthousePhone,
+      courthouseWebsite: c.courthouseWebsite,
+      courthouseClerkEmail: c.courthouseClerkEmail,
+      caseId: c.id,
+    };
+
+    try {
+      const { client, fromEmail } = await getUncachableResendClient();
+      const { subject, html } = buildCaseConfirmationEmail(emailData);
+      await client.emails.send({
+        from: `Small Claims Genie <${fromEmail}>`,
+        to: c.plaintiffEmail,
+        subject,
+        html,
+      });
+      await db.update(casesTable).set({ confirmationEmailSent: true }).where(eq(casesTable.id, c.id));
+      logger.info({ caseId: c.id, email: c.plaintiffEmail }, "Case confirmation email sent");
+    } catch (err) {
+      logger.error({ caseId: c.id, err }, "Failed to send confirmation email");
+    }
+  }
+}
+
+// ─── Weekly check-in (every 7 days while no hearing date is entered) ──────────
+async function sendWeeklyCheckIns() {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  // Cases where: email exists, no hearing date, AND
+  // (weekly reminder was never sent OR last sent 7+ days ago)
+  const cases = await db
+    .select()
+    .from(casesTable)
+    .where(
+      and(
+        isNotNull(casesTable.plaintiffEmail),
+        isNull(casesTable.hearingDate),
+        eq(casesTable.intakeComplete, true),
+        or(
+          isNull(casesTable.weeklyReminderLastSent),
+          lte(casesTable.weeklyReminderLastSent, sevenDaysAgo)
+        )
+      )
+    );
+
+  for (const c of cases) {
+    if (!c.plaintiffEmail) continue;
+
+    // Calculate which week number this is (weeks since case was created)
+    const weeksSinceCreated = Math.floor(daysSince(c.createdAt) / 7) + 1;
+
+    const emailData: WeeklyCheckInEmailData = {
+      plaintiffName: c.plaintiffName || "",
+      caseTitle: c.title,
+      weekNumber: weeksSinceCreated,
+      countyId: c.countyId,
+      courthouseName: c.courthouseName,
+      courthousePhone: c.courthousePhone,
+      courthouseWebsite: c.courthouseWebsite,
+      courthouseClerkEmail: c.courthouseClerkEmail,
+      courthouseAddress: c.courthouseAddress,
+      courthouseCity: c.courthouseCity,
+      courthouseZip: c.courthouseZip,
+      caseId: c.id,
+    };
+
+    try {
+      const { client, fromEmail } = await getUncachableResendClient();
+      const { subject, html } = buildWeeklyCheckInEmail(emailData);
+      await client.emails.send({
+        from: `Small Claims Genie <${fromEmail}>`,
+        to: c.plaintiffEmail,
+        subject,
+        html,
+      });
+      await db
+        .update(casesTable)
+        .set({ weeklyReminderLastSent: new Date() })
+        .where(eq(casesTable.id, c.id));
+      logger.info({ caseId: c.id, email: c.plaintiffEmail, week: weeksSinceCreated }, "Weekly check-in sent");
+    } catch (err) {
+      logger.error({ caseId: c.id, err }, "Failed to send weekly check-in");
+    }
+  }
 }
 
 // ─── Hearing date reminders (14-day and 3-day) ────────────────────────────────
@@ -90,13 +211,11 @@ async function sendHearingReminders() {
   }
 }
 
-// ─── No-hearing-date follow-up (14 days after intake complete, still no date) ─
+// ─── Legacy one-time no-hearing-date follow-up (kept for older cases) ─────────
 async function sendNoHearingDateReminders() {
   const fourteenDaysAgo = new Date();
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
-  // Cases where: intake is complete, no hearing date, email exists,
-  // reminder not yet sent, and case was created 14+ days ago
   const cases = await db
     .select()
     .from(casesTable)
@@ -149,6 +268,8 @@ async function sendNoHearingDateReminders() {
 // ─── Main scheduler tick ───────────────────────────────────────────────────────
 async function runAllReminders() {
   try {
+    await sendConfirmationEmails();
+    await sendWeeklyCheckIns();
     await sendHearingReminders();
     await sendNoHearingDateReminders();
   } catch (err) {
