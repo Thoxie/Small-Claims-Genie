@@ -764,7 +764,7 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
               <FormItem>
                 <FormLabel>What happened? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Textarea className="min-h-[150px]" placeholder="Briefly describe why the defendant owes you money…" {...field} />
+                  <Textarea className="min-h-[88px]" placeholder="Briefly describe why the defendant owes you money…" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -774,7 +774,7 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
               <FormItem>
                 <FormLabel>How did you calculate this amount? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Textarea className="min-h-[150px]" placeholder="e.g. $500 unpaid rent + $100 late fee + $50 court costs" {...field} />
+                  <Textarea className="min-h-[88px]" placeholder="e.g. $500 unpaid rent + $100 late fee + $50 court costs" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
