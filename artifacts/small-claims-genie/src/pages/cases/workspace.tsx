@@ -315,25 +315,12 @@ function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }
       <div className="mb-5">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shrink-0" style={{ backgroundColor: "#0d6b5e" }}>{step}</span>
-            <span className="text-base font-semibold text-foreground">{stepLabels[step - 1]}</span>
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shrink-0" style={{ backgroundColor: "#14b8a6" }}>{step}</span>
+            <span className="text-sm font-medium text-foreground">{stepLabels[step - 1]}</span>
           </div>
           <span className="text-xs font-medium text-muted-foreground">Step {step} of 4</span>
         </div>
-        <Progress value={progress} className="h-2 mb-2 [&>div]:bg-[#0d6b5e]" />
-        <div className="flex gap-1.5">
-          {stepLabels.map((label, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => i < step - 1 && setStep(i + 1)}
-              className={`flex-1 h-1.5 rounded-full transition-colors ${
-                i < step ? "bg-primary" : "bg-muted"
-              } ${i < step - 1 ? "cursor-pointer hover:bg-primary/70" : "cursor-default"}`}
-              title={i < step - 1 ? `Back to ${label}` : label}
-            />
-          ))}
-        </div>
+        <Progress value={progress} className="h-2 [&>div]:bg-[#14b8a6]" />
       </div>
 
       {step === 1 && <Step1 initialData={initialData} onNext={handleNext} saving={saveIntake.isPending} />}
@@ -1218,7 +1205,7 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
                   </div>
                   {initialData.incidentDate && <p className="text-muted-foreground text-xs mb-1">Date: {initialData.incidentDate}</p>}
                   {initialData.claimDescription && (
-                    <p className="text-muted-foreground line-clamp-3">{initialData.claimDescription}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-3">{initialData.claimDescription}</p>
                   )}
                 </div>
 
