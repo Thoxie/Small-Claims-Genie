@@ -15,7 +15,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
   try {
     const payload = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY,
+      secretKey: process.env.CLERK_SECRET_KEY_DEV || process.env.CLERK_SECRET_KEY,
     });
     (req as any).userId = payload.sub;
     next();

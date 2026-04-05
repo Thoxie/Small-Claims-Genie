@@ -25,7 +25,7 @@ import Resume from "@/pages/resume";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
+const PUBLISHABLE_KEY = (import.meta.env.VITE_CLERK_PUBLISHABLE_KEY_DEV || import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) as string;
 
 const queryClient = new QueryClient({
   defaultOptions: {
