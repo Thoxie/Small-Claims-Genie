@@ -2,6 +2,15 @@
 import { Resend } from "resend";
 
 async function getResendCredentials(): Promise<{ apiKey: string; fromEmail: string }> {
+  // Primary: use RESEND_API_KEY env var if set
+  if (process.env.RESEND_API_KEY) {
+    return {
+      apiKey: process.env.RESEND_API_KEY,
+      fromEmail: process.env.RESEND_FROM_EMAIL || "reminders@smallclaimsgenie.com",
+    };
+  }
+
+  // Fallback: Replit connector
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? "repl " + process.env.REPL_IDENTITY
@@ -10,7 +19,7 @@ async function getResendCredentials(): Promise<{ apiKey: string; fromEmail: stri
     : null;
 
   if (!xReplitToken || !hostname) {
-    throw new Error("Replit connector environment not available");
+    throw new Error("Resend not configured — set RESEND_API_KEY secret");
   }
 
   const data = await fetch(
@@ -26,7 +35,7 @@ async function getResendCredentials(): Promise<{ apiKey: string; fromEmail: stri
     .then((d) => d.items?.[0]);
 
   if (!data?.settings?.api_key) {
-    throw new Error("Resend not connected — check Replit integration");
+    throw new Error("Resend not connected — check Replit integration or set RESEND_API_KEY");
   }
 
   return {
