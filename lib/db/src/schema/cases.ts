@@ -62,6 +62,7 @@ export const casesTable = pgTable("cases", {
   // ── Email reminder tracking ──────────────────────────────────────────────────
   reminder14DaySent: boolean("reminder_14_day_sent").default(false),
   reminder3DaySent: boolean("reminder_3_day_sent").default(false),
+  reminderNoHearingDateSent: boolean("reminder_no_hearing_date_sent").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
