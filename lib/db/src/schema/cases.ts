@@ -39,6 +39,7 @@ export const casesTable = pgTable("cases", {
   courthouseZip: text("courthouse_zip"),
   courthousePhone: text("courthouse_phone"),
   courthouseWebsite: text("courthouse_website"),
+  courthouseClerkEmail: text("courthouse_clerk_email"),
   filingFee: integer("filing_fee"),
   isSuingPublicEntity: boolean("is_suing_public_entity").default(false),
   publicEntityClaimFiledDate: text("public_entity_claim_filed_date"),

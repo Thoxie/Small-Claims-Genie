@@ -386,6 +386,7 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
             courthouseZip: selectedCourthouse?.zip ?? selectedCounty?.courthouseZip ?? null,
             courthousePhone: courtPhone || null,
             courthouseWebsite: selectedCounty?.website ?? null,
+            courthouseClerkEmail: selectedCounty?.clerkEmail ?? null,
           });
         })} className="space-y-4">
 

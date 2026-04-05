@@ -119,6 +119,7 @@ async function sendNoHearingDateReminders() {
       courthouseName: c.courthouseName,
       courthousePhone: c.courthousePhone,
       courthouseWebsite: c.courthouseWebsite,
+      courthouseClerkEmail: c.courthouseClerkEmail,
       courthouseAddress: c.courthouseAddress,
       courthouseCity: c.courthouseCity,
       courthouseZip: c.courthouseZip,

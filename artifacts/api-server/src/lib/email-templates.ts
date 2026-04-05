@@ -4,6 +4,7 @@ export type NoHearingDateEmailData = {
   courthouseName: string | null;
   courthousePhone: string | null;
   courthouseWebsite: string | null;
+  courthouseClerkEmail: string | null;
   courthouseAddress: string | null;
   courthouseCity: string | null;
   courthouseZip: string | null;
@@ -13,28 +14,41 @@ export type NoHearingDateEmailData = {
 export function buildNoHearingDateEmail(d: NoHearingDateEmailData): { subject: string; html: string } {
   const subject = `📋 Have You Received Your Hearing Notice Yet?`;
 
+  const contactFormNote = d.courthouseWebsite
+    ? `<p style="margin:6px 0 0;font-size:13px;color:#374151;">💬 No direct email? Use the <a href="${d.courthouseWebsite}" style="color:#0d6b5e;font-weight:bold;">court's online contact form →</a></p>`
+    : "";
+
   const courtContactBlock = `
     <div style="background:#f0faf8;border-left:4px solid #14b8a6;padding:16px;border-radius:8px;margin:20px 0;">
       <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#0d6b5e;text-transform:uppercase;letter-spacing:0.05em;">Your Court's Contact Information</p>
       ${d.courthouseName ? `<p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111827;">${d.courthouseName}</p>` : ""}
       ${d.courthouseAddress ? `<p style="margin:0 0 4px;font-size:14px;color:#374151;">📍 ${d.courthouseAddress}, ${d.courthouseCity || ""} ${d.courthouseZip || ""}</p>` : ""}
-      ${d.courthousePhone ? `<p style="margin:0 0 4px;font-size:14px;color:#374151;">📞 <a href="tel:${d.courthousePhone}" style="color:#0d6b5e;font-weight:bold;">${d.courthousePhone}</a></p>` : ""}
-      ${d.courthouseWebsite ? `<p style="margin:0;font-size:14px;"><a href="${d.courthouseWebsite}" style="color:#0d6b5e;font-weight:bold;">🌐 Visit Court Website →</a></p>` : ""}
+      ${d.courthousePhone ? `<p style="margin:0 0 4px;font-size:14px;color:#374151;">📞 <a href="tel:${d.courthousePhone}" style="color:#0d6b5e;font-weight:bold;">${d.courthousePhone}</a> — Call the clerk's office directly</p>` : ""}
+      ${d.courthouseClerkEmail ? `<p style="margin:0 0 4px;font-size:14px;color:#374151;">✉️ <a href="mailto:${d.courthouseClerkEmail}" style="color:#0d6b5e;font-weight:bold;">${d.courthouseClerkEmail}</a> — Email the clerk's office</p>` : ""}
+      ${d.courthouseWebsite ? `<p style="margin:0 0 4px;font-size:14px;"><a href="${d.courthouseWebsite}" style="color:#0d6b5e;font-weight:bold;">🌐 Visit Court Website →</a></p>` : ""}
+      ${contactFormNote}
     </div>`;
 
   const html = baseLayout(subject, `
     <p style="margin:0 0 8px;font-size:16px;color:#111827;">Hi ${d.plaintiffName || "there"},</p>
     <p style="margin:0 0 16px;font-size:15px;color:#374151;">It's been about two weeks since you filed your small claims case — <strong>${d.caseTitle}</strong>.</p>
-    <p style="margin:0 0 20px;font-size:15px;color:#374151;">California courts typically mail a <strong>Notice of Small Claims Hearing</strong> within a few weeks of filing. If you haven't received yours yet, it's a good time to follow up with the court clerk directly.</p>
+
+    <div style="background:#fef9c3;border:1px solid #fbbf24;border-radius:8px;padding:14px;margin:0 0 20px;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:bold;color:#92400e;">📬 First — check your mail and email</p>
+      <p style="margin:0;font-size:14px;color:#78350f;">California courts mail the <strong>Notice of Small Claims Hearing</strong> to the address you listed on your filing. Check your mailbox and any email account you provided — it may already be on its way or waiting in your inbox.</p>
+    </div>
+
+    <p style="margin:0 0 20px;font-size:15px;color:#374151;">If nothing has arrived yet, it's time to follow up with the court clerk directly. Use any of the contact methods below:</p>
 
     ${courtContactBlock}
 
-    <p style="margin:0 0 12px;font-size:15px;font-weight:bold;color:#111827;">When you call or email the clerk, ask:</p>
+    <p style="margin:0 0 12px;font-size:15px;font-weight:bold;color:#111827;">When you reach the clerk, ask:</p>
     <table cellpadding="0" cellspacing="0" width="100%">
       <tr><td style="padding:5px 0;font-size:14px;color:#374151;">• &nbsp;Was my small claims filing received and processed?</td></tr>
       <tr><td style="padding:5px 0;font-size:14px;color:#374151;">• &nbsp;Has a hearing date been assigned to my case?</td></tr>
-      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">• &nbsp;What is my case number?</td></tr>
-      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">• &nbsp;Was the hearing notice mailed to the correct address?</td></tr>
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">• &nbsp;What is my case/claim number?</td></tr>
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">• &nbsp;Was the notice mailed to the correct address?</td></tr>
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">• &nbsp;What courtroom or department will my hearing be in?</td></tr>
     </table>
 
     <p style="margin:20px 0 16px;font-size:15px;color:#374151;">Once you have your hearing date, case number, and courtroom — enter them in Small Claims Genie so we can send you preparation reminders automatically.</p>
