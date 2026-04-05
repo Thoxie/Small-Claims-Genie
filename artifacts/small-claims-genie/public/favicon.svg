@@ -1,35 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <!-- White background -->
-  <rect width="32" height="32" fill="white"/>
+  <rect width="32" height="32" rx="6" fill="white"/>
 
-  <!-- Lamp body shadow -->
-  <ellipse cx="13" cy="23" rx="10" ry="5.5" fill="#A87008"/>
+  <!-- Center pole -->
+  <rect x="15" y="7" width="2" height="18" rx="1" fill="#0d6b5e"/>
 
-  <!-- Lamp body main -->
-  <ellipse cx="13" cy="21.5" rx="10" ry="5.5" fill="#F0B429"/>
+  <!-- Base -->
+  <rect x="9" y="24" width="14" height="2.5" rx="1.25" fill="#0d6b5e"/>
 
-  <!-- Lid dome -->
-  <path d="M4 21 Q4 12 13 10 Q22 12 22 21Z" fill="#F5C84A"/>
+  <!-- Balance beam -->
+  <rect x="4" y="9" width="24" height="2" rx="1" fill="#0d6b5e"/>
 
-  <!-- Decorative band -->
-  <rect x="3" y="19.5" width="20" height="3" rx="1.5" fill="#C8920A"/>
-  <!-- Blue jewel inset -->
-  <rect x="9" y="20.2" width="8" height="1.6" rx="0.8" fill="#1a6fbe" opacity="0.8"/>
+  <!-- Top pivot circle -->
+  <circle cx="16" cy="8" r="2" fill="#0d6b5e"/>
 
-  <!-- Lid cap -->
-  <ellipse cx="13" cy="10" rx="4" ry="1.8" fill="#C8920A"/>
-  <circle cx="13" cy="8.5" r="1.8" fill="#F0B429"/>
-  <circle cx="13" cy="7.2" r="1" fill="#C8920A"/>
+  <!-- Left chain -->
+  <rect x="6.5" y="11" width="1.5" height="7" rx="0.75" fill="#0d6b5e"/>
 
-  <!-- Handle loop on left -->
-  <path d="M4 20 Q0 20 0 23 Q0 26 4 25" stroke="#C8920A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Right chain -->
+  <rect x="24" y="11" width="1.5" height="7" rx="0.75" fill="#0d6b5e"/>
 
-  <!-- Spout curving up-right -->
-  <path d="M22 18 Q27 14 27 9" stroke="#C8920A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-  <circle cx="27" cy="9" r="2.5" fill="#C8920A"/>
-  <circle cx="27" cy="9" r="1.2" fill="#F0B429"/>
+  <!-- Left pan -->
+  <path d="M3 18 Q7.25 21.5 11.5 18" stroke="#0d6b5e" stroke-width="2" fill="none" stroke-linecap="round"/>
 
-  <!-- Blue smoke from spout tip (kept inside viewBox) -->
-  <path d="M26 7 Q23 4 25 2" stroke="#3b9edd" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.9"/>
-  <path d="M28 6 Q31 3 30 1" stroke="#5bb8f5" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.75"/>
+  <!-- Right pan -->
+  <path d="M20.5 18 Q24.75 21.5 29 18" stroke="#0d6b5e" stroke-width="2" fill="none" stroke-linecap="round"/>
 </svg>
