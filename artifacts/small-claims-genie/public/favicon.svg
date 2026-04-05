@@ -1,34 +1,35 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <!-- White background -->
-  <rect width="64" height="64" rx="10" fill="white"/>
+  <rect width="32" height="32" fill="white"/>
 
-  <!-- Lamp body — flat oval, gold -->
-  <ellipse cx="28" cy="44" rx="20" ry="11" fill="#C8920A"/>
-  <ellipse cx="28" cy="42" rx="20" ry="11" fill="#F0B429"/>
+  <!-- Lamp body shadow -->
+  <ellipse cx="13" cy="23" rx="10" ry="5.5" fill="#A87008"/>
 
-  <!-- Lid dome on top of body -->
-  <path d="M 18 42 Q 18 30 28 28 Q 38 30 38 42 Z" fill="#F0B429"/>
-  <path d="M 20 38 Q 20 30 28 28 Q 36 30 36 38 Z" fill="#F5C842"/>
+  <!-- Lamp body main -->
+  <ellipse cx="13" cy="21.5" rx="10" ry="5.5" fill="#F0B429"/>
 
-  <!-- Decorative band across middle of body -->
-  <rect x="8" y="40" width="40" height="5" rx="2" fill="#C8920A"/>
-  <!-- Blue jewel accent on band -->
-  <rect x="22" y="41" width="12" height="3" rx="1" fill="#1a5fa8" opacity="0.7"/>
+  <!-- Lid dome -->
+  <path d="M4 21 Q4 12 13 10 Q22 12 22 21Z" fill="#F5C84A"/>
 
-  <!-- Lid finial (small round cap on top) -->
-  <ellipse cx="28" cy="28" rx="5" ry="2.5" fill="#C8920A"/>
-  <ellipse cx="28" cy="26" rx="2.5" ry="2.5" fill="#C8920A"/>
-  <circle cx="28" cy="24" r="2" fill="#F0B429"/>
+  <!-- Decorative band -->
+  <rect x="3" y="19.5" width="20" height="3" rx="1.5" fill="#C8920A"/>
+  <!-- Blue jewel inset -->
+  <rect x="9" y="20.2" width="8" height="1.6" rx="0.8" fill="#1a6fbe" opacity="0.8"/>
 
-  <!-- Handle — small curved loop on left -->
-  <path d="M 10 40 Q 2 40 2 46 Q 2 52 10 50" stroke="#C8920A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Lid cap -->
+  <ellipse cx="13" cy="10" rx="4" ry="1.8" fill="#C8920A"/>
+  <circle cx="13" cy="8.5" r="1.8" fill="#F0B429"/>
+  <circle cx="13" cy="7.2" r="1" fill="#C8920A"/>
 
-  <!-- Spout — curves up and to the right -->
-  <path d="M 44 36 Q 52 30 54 20" stroke="#C8920A" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <circle cx="54" cy="19" r="4" fill="#C8920A"/>
+  <!-- Handle loop on left -->
+  <path d="M4 20 Q0 20 0 23 Q0 26 4 25" stroke="#C8920A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 
-  <!-- Blue magical smoke / flame from spout tip -->
-  <path d="M 54 15 Q 48 8 52 2" stroke="#3b9edd" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.9"/>
-  <path d="M 57 14 Q 62 7 59 1" stroke="#5bb8f5" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.75"/>
-  <path d="M 51 14 Q 44 9 47 3" stroke="#3b9edd" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.65"/>
+  <!-- Spout curving up-right -->
+  <path d="M22 18 Q27 14 27 9" stroke="#C8920A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <circle cx="27" cy="9" r="2.5" fill="#C8920A"/>
+  <circle cx="27" cy="9" r="1.2" fill="#F0B429"/>
+
+  <!-- Blue smoke from spout tip (kept inside viewBox) -->
+  <path d="M26 7 Q23 4 25 2" stroke="#3b9edd" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <path d="M28 6 Q31 3 30 1" stroke="#5bb8f5" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.75"/>
 </svg>
