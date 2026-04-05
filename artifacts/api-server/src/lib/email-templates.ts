@@ -91,6 +91,10 @@ function formatDate(dateStr: string): string {
   }
 }
 
+const LOGO_URL = "https://smallclaimsgenie.com/logo.jpg";
+const CONTACT_EMAIL = "support@smallclaimsgenie.com";
+const SITE_URL = "https://smallclaimsgenie.com";
+
 function baseLayout(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -103,19 +107,47 @@ function baseLayout(title: string, body: string): string {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0faf8;padding:32px 16px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;">
-        <!-- Header -->
-        <tr><td style="background:#0d6b5e;padding:28px 32px;">
-          <p style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">⚖️ Small Claims Genie</p>
-          <p style="margin:6px 0 0;font-size:14px;color:#a7f3e4;">${title}</p>
+        <!-- Logo Header -->
+        <tr><td style="background:#ffffff;padding:24px 32px 0;text-align:center;">
+          <a href="${SITE_URL}" style="display:inline-block;text-decoration:none;">
+            <img src="${LOGO_URL}" alt="Small Claims Genie" width="220" height="104" style="display:block;width:220px;height:auto;border:0;" />
+          </a>
+        </td></tr>
+        <!-- Teal accent bar + subject line -->
+        <tr><td style="background:#0d6b5e;padding:12px 32px;margin-top:20px;">
+          <p style="margin:0;font-size:14px;font-weight:600;color:#ffffff;text-align:center;">${title}</p>
         </td></tr>
         <!-- Body -->
         <tr><td style="padding:32px;">${body}</td></tr>
         <!-- Footer -->
-        <tr><td style="background:#f8fffe;padding:20px 32px;border-top:1px solid #e5e7eb;">
-          <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;">
-            Small Claims Genie · Not a law firm · For informational purposes only<br/>
-            <a href="https://smallclaimsgenie.com" style="color:#0d6b5e;">smallclaimsgenie.com</a>
-          </p>
+        <tr><td style="background:#f0faf8;padding:24px 32px;border-top:1px solid #e5e7eb;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="text-align:center;padding-bottom:12px;">
+                <a href="${SITE_URL}" style="display:inline-block;text-decoration:none;">
+                  <img src="${LOGO_URL}" alt="Small Claims Genie" width="140" height="66" style="display:block;width:140px;height:auto;border:0;margin:0 auto;" />
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;padding-bottom:8px;">
+                <p style="margin:0 0 4px;font-size:13px;color:#374151;">
+                  Questions? Email us: <a href="mailto:${CONTACT_EMAIL}" style="color:#0d6b5e;font-weight:bold;">${CONTACT_EMAIL}</a>
+                </p>
+                <p style="margin:0;font-size:13px;color:#374151;">
+                  <a href="${SITE_URL}" style="color:#0d6b5e;font-weight:bold;">${SITE_URL}</a>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;padding-top:12px;border-top:1px solid #d1fae5;">
+                <p style="margin:0;font-size:11px;color:#9ca3af;">
+                  Small Claims Genie is not a law firm and this email is not legal advice.<br/>
+                  You are receiving this because you created a case at smallclaimsgenie.com.
+                </p>
+              </td>
+            </tr>
+          </table>
         </td></tr>
       </table>
     </td></tr>
