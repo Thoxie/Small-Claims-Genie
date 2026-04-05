@@ -12,6 +12,7 @@ export const documentsTable = pgTable("documents", {
   mimeType: text("mime_type").notNull(),
   fileSize: integer("file_size").notNull(),
   fileData: text("file_data"),
+  storageObjectPath: text("storage_object_path"),
   ocrText: text("ocr_text"),
   ocrStatus: text("ocr_status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

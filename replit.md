@@ -88,6 +88,9 @@ lib/
 ## Key Design Decisions
 
 - **Auth**: Clerk authentication is live (sign-in/sign-up via Clerk hosted UI). All protected routes require a valid Clerk JWT.
+- **File storage**: Uploaded documents go to Google Cloud Storage (GCS) via presigned URLs. `storageObjectPath` is stored in the DB. Legacy rows with `fileData` (base64) are still served from DB for backwards compatibility. New uploads always use GCS.
+- **AI rate limiting**: `artifacts/api-server/src/lib/rate-limiter.ts` — 30 AI calls per user per hour (in-memory). Applied to `/chat`, `/demand-letter`, and `/advisor/analyze` endpoints.
+- **Object storage bucket**: `replit-objstore-fbe13e76-2c09-46f1-9698-68ef867b76ca` — provisioned via Replit App Storage (GCS-backed). Env vars: `DEFAULT_OBJECT_STORAGE_BUCKET_ID`, `PRIVATE_OBJECT_DIR`, `PUBLIC_OBJECT_SEARCH_PATHS`.
 - **Pricing model**: SaaS — prepare case for free, pay to download final court forms. No Stripe integration yet; payment gate is planned.
 - **OCR**: OpenAI vision API on upload (async, runs in `setImmediate`)
 - **Chat**: SSE streaming via raw `fetch` + `ReadableStream` in frontend (NOT the generated hook)

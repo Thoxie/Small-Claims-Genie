@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { Readable } from "stream";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
@@ -8,6 +9,9 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import mammoth from "mammoth";
 import { createCanvas } from "@napi-rs/canvas";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { ObjectStorageService } from "../lib/objectStorage";
+
+const objectStorage = new ObjectStorageService();
 // Use lib path directly — pdf-parse index.js runs tests on import which crash in prod
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse: (buf: Buffer) => Promise<{ text: string; numpages: number }> = require("pdf-parse/lib/pdf-parse.js");
@@ -89,16 +93,28 @@ router.get("/cases/:id/documents/:docId/file", async (req, res): Promise<void> =
     res.status(404).json({ error: "Document not found" });
     return;
   }
-  const buffer = Buffer.from((doc as any).fileData as string, "base64");
   const mime = doc.mimeType ?? "application/octet-stream";
-  // PDFs and images open inline; DOCX downloads
   const disposition = mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ? `attachment; filename="${doc.originalName}"`
     : `inline; filename="${doc.originalName}"`;
   res.setHeader("Content-Type", mime);
   res.setHeader("Content-Disposition", disposition);
-  res.setHeader("Content-Length", buffer.length);
-  res.end(buffer);
+
+  if (doc.storageObjectPath) {
+    const objectFile = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
+    const gcsRes = await objectStorage.downloadObject(objectFile);
+    res.status(gcsRes.status);
+    gcsRes.headers.forEach((value, key) => { if (key.toLowerCase() !== "content-disposition") res.setHeader(key, value); });
+    if (gcsRes.body) {
+      Readable.fromWeb(gcsRes.body as import("stream/web").ReadableStream<Uint8Array>).pipe(res);
+    } else {
+      res.end();
+    }
+  } else {
+    const buffer = Buffer.from((doc as any).fileData as string, "base64");
+    res.setHeader("Content-Length", buffer.length);
+    res.end(buffer);
+  }
 });
 
 router.post("/cases/:id/documents", upload.single("file"), async (req, res): Promise<void> => {
@@ -118,6 +134,23 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
   const fileBase64 = req.file.buffer.toString("base64");
   const filename = `case-${id}-${Date.now()}-${req.file.originalname}`;
 
+  // Upload to object storage instead of storing base64 in DB
+  let storageObjectPath: string | null = null;
+  try {
+    const uploadURL = await objectStorage.getObjectEntityUploadURL();
+    storageObjectPath = objectStorage.normalizeObjectEntityPath(uploadURL);
+    await fetch(uploadURL, {
+      method: "PUT",
+      headers: { "Content-Type": req.file.mimetype },
+      // @ts-ignore — Node 18+ fetch accepts Buffer
+      body: req.file.buffer,
+      duplex: "half",
+    } as RequestInit);
+  } catch (storageErr) {
+    console.error("[Storage] GCS upload failed, falling back to DB:", storageErr);
+    storageObjectPath = null;
+  }
+
   const [doc] = await db.insert(documentsTable).values({
     caseId: id,
     filename,
@@ -125,7 +158,8 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
     label,
     mimeType: req.file.mimetype,
     fileSize: req.file.size,
-    fileData: fileBase64,
+    fileData: storageObjectPath ? null : fileBase64,
+    storageObjectPath,
     ocrStatus: "processing",
   }).returning();
 

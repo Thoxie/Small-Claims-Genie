@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
+import { checkAiRateLimit } from "../lib/rate-limiter";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const router: IRouter = Router();
@@ -146,6 +147,11 @@ router.get("/cases/:id/demand-letter", async (req, res): Promise<void> => {
 // POST — generate demand letter via AI (SSE stream), save on completion
 router.post("/cases/:id/demand-letter", async (req, res): Promise<void> => {
   const userId = getUserId(req);
+  const rateCheck = checkAiRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
+    return;
+  }
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }

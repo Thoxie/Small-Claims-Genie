@@ -11,12 +11,14 @@ import formsTokenRouter from "./forms-token";
 import transcribeRouter from "./transcribe";
 import sc100WordRouter from "./sc100-word";
 import demandLetterRouter from "./demand-letter";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
 // Public routes — no auth required
 router.use(healthRouter);
 router.use(countiesRouter);
+router.use(storageRouter);
 
 // Form downloads — accept ?token query param (token issued by protected endpoint below)
 router.use(formsRouter);
