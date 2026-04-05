@@ -1202,7 +1202,7 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Claim</p>
                   <div className="flex justify-between items-center mb-1">
                     <span className="font-semibold">{initialData.claimType || "—"}</span>
-                    <span className="font-bold text-primary text-base">${initialData.claimAmount ? Number(initialData.claimAmount).toLocaleString() : "—"}</span>
+                    <span className="font-bold text-primary text-sm">${initialData.claimAmount ? Number(initialData.claimAmount).toLocaleString() : "—"}</span>
                   </div>
                   {initialData.incidentDate && <p className="text-muted-foreground text-xs mb-1">Date: {initialData.incidentDate}</p>}
                   {initialData.claimDescription && (
