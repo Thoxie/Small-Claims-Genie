@@ -31,6 +31,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -39,7 +41,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe, Pencil, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -152,6 +154,7 @@ const intakeStep4Schema = z.object({
 export default function CaseWorkspace() {
   const params = useParams();
   const caseId = parseInt(params.id || "0", 10);
+  const [activeTab, setActiveTab] = useState("intake");
   
   const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
   
@@ -207,7 +210,7 @@ export default function CaseWorkspace() {
       </div>
 
       {/* Tab navigation — click any tab to switch sections */}
-      <Tabs defaultValue="intake" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full grid grid-cols-5 h-auto p-1 bg-muted/80 rounded-xl gap-1">
           <TabsTrigger
             value="intake"
@@ -265,7 +268,7 @@ export default function CaseWorkspace() {
             <DemandLetterTab caseId={caseId} currentCase={currentCase} />
           </TabsContent>
           <TabsContent value="forms" className="p-0 m-0">
-            <FormsTab caseId={caseId} currentCase={currentCase} />
+            <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} />
           </TabsContent>
         </div>
       </Tabs>
@@ -2828,14 +2831,14 @@ function FormAssistantModal({ formId, caseId, onClose, onDownload, onAiGenerate 
   );
 }
 
-function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any }) {
+function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, currentCase: any, onSwitchToIntake: () => void }) {
   const { getToken } = useAuth();
+  const { toast } = useToast();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingWord, setDownloadingWord] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [activeFormId, setActiveFormId] = useState<string | null>(null);
-  const [guideFormId, setGuideFormId] = useState<string | null>(null);
+  const [guideDialogFormId, setGuideDialogFormId] = useState<string | null>(null);
   const [modalFormId, setModalFormId] = useState<string | null>(null);
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [mc030Generating, setMc030Generating] = useState(false);
@@ -2874,8 +2877,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
   const color = score >= 80 ? "text-green-500" : score >= 50 ? "text-yellow-500" : "text-red-500";
   const barColor = score >= 80 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
 
-  const activeForm = FORMS_CATALOG.find(f => f.id === activeFormId) ?? null;
-  const guideForm = FORMS_CATALOG.find(f => f.id === guideFormId) ?? null;
+  const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 
   async function downloadForm(endpoint: string, filename: string, setLoading: (v: boolean) => void) {
     setLoading(true);
@@ -2942,204 +2944,6 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
     }
   }
 
-  /* ── Full Form Guide Page ── */
-  if (guideForm) {
-    return (
-      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
-        {/* Back */}
-        <button
-          onClick={() => setGuideFormId(null)}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b5e] hover:underline"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          Back to Forms Library
-        </button>
-
-        {/* Form header */}
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-sm font-bold tracking-widest uppercase bg-[#0d6b5e] text-white px-3 py-1 rounded-full">{guideForm.number}</span>
-          <h2 className="text-2xl font-bold leading-tight">{guideForm.name}</h2>
-          {guideForm.available
-            ? <span className="text-xs font-semibold text-[#0d6b5e] bg-[#ddf6f3] border border-[#0d6b5e]/30 px-2 py-0.5 rounded-full">Ready</span>
-            : <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Coming Soon</span>
-          }
-        </div>
-
-        {(() => {
-          const guide = FORM_GUIDE_CONTENT[guideForm.id];
-          if (!guide) return null;
-          return (
-            <div className="space-y-8">
-
-              {/* Best Use callout */}
-              <div className="rounded-xl bg-[#ddf6f3] border border-[#0d6b5e]/20 px-5 py-4">
-                <p className="text-sm font-semibold text-[#0d6b5e] leading-relaxed">{guide.bestUse}</p>
-              </div>
-
-              {/* When to use / When NOT to use */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-xl border bg-card p-5 space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">Use this form when</p>
-                  <ul className="space-y-2">
-                    {guide.whenToUse.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-relaxed">
-                        <svg className="mt-0.5 shrink-0 text-[#0d6b5e]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-xl border bg-card p-5 space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-rose-600">Do not use this form when</p>
-                  <ul className="space-y-2">
-                    {guide.whenNotToUse.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-relaxed">
-                        <svg className="mt-0.5 shrink-0 text-rose-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              {/* What to have ready */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">What to have ready</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {guide.haveReady.map((item, i) => (
-                    <div key={i} className="flex items-start gap-3 rounded-lg border bg-muted/30 px-4 py-3">
-                      <div className="mt-0.5 h-5 w-5 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center shrink-0">
-                        <span className="text-[10px] font-bold text-[#0d6b5e]">{i + 1}</span>
-                      </div>
-                      <p className="text-sm text-foreground leading-relaxed">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SC-100 special: MC-030 overflow note */}
-              {guideForm.id === "sc100" && descriptionNeedsMC030 && (
-                <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-5 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <svg className="mt-0.5 shrink-0 text-blue-600" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-bold text-blue-900">Your description is too long for SC-100 — MC-030 is required</h3>
-                      <p className="text-sm text-blue-800 leading-relaxed">Your case description ({currentCase.claimDescription?.length ?? 0} characters) exceeds what fits in the SC-100 description box. Your filled SC-100 PDF will include the first 7 lines and a note directing the court to the attached <span className="font-semibold">MC-030 Declaration</span>. File both forms together. Use the AI Generate button on MC-030 to create the complete declaration automatically.</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => { setGuideFormId(null); setTimeout(() => setGuideFormId("mc030"), 50); }}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 border border-blue-300 rounded-lg px-3 py-1.5 hover:bg-blue-100 transition-colors"
-                  >
-                    Go to MC-030 Declaration →
-                  </button>
-                </div>
-              )}
-              {guideForm.id === "sc100" && !descriptionNeedsMC030 && (
-                <div className="rounded-xl border border-[#0d6b5e]/20 bg-[#ddf6f3]/40 p-5 space-y-2">
-                  <h3 className="text-sm font-bold text-foreground">What if your explanation doesn't fit?</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">If you cannot fit your full explanation in the space on SC-100, this application will direct you to <span className="font-semibold text-foreground">MC-030 Declaration</span> — the standard California form for adding sworn written facts. Keep a short summary on SC-100 and use MC-030 to tell the rest of the story in numbered paragraphs: what happened, when it happened, what the other party did or failed to do, the amount you are requesting, and why that amount is owed. Both forms are submitted together.</p>
-                </div>
-              )}
-
-              {/* Warnings */}
-              {guide.warnings.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">Important things to know</h3>
-                  <div className="space-y-2">
-                    {guide.warnings.map((w, i) => (
-                      <div key={i} className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-                        <svg className="mt-0.5 shrink-0 text-amber-500" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        <p className="text-sm text-amber-800 leading-relaxed">{w}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* SC-100 special: FW-001 fee waiver */}
-              {guideForm.id === "sc100" && (
-                <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
-                  <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-amber-800">Before you finish — check if you qualify for a fee waiver</p>
-                    <p className="text-sm text-amber-700 leading-relaxed">Filing a small claims case costs money. If paying the filing fee would be a financial hardship, you may be entitled to have it waived. Before you submit your SC-100, check whether you qualify to use <span className="font-semibold">Form FW-001, Request to Waive Court Fees</span>. You should never pay a court fee you are legally entitled to have waived.</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Related forms */}
-              {guide.relatedForms.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">Related forms &amp; next steps</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {guide.relatedForms.map((rf, i) => (
-                      <div key={i} className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-1.5">
-                        <span className="text-xs font-bold text-[#0d6b5e]">{rf.number}</span>
-                        <span className="text-xs text-muted-foreground">{rf.reason}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Effective date note */}
-              <p className="text-xs text-muted-foreground/60">
-                Form version referenced: effective {guide.effectiveDate}. Always confirm the current Judicial Council version and any county-specific local rules before filing.
-              </p>
-
-              {/* SC-100 Download CTA */}
-              {guideForm.id === "sc100" && (
-                <div className="pt-2 border-t">
-                  {isReady ? (
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        className="h-11 font-bold"
-                        disabled={downloadingPdf}
-                        onClick={() => downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf)}
-                      >
-                        {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                        {downloadingPdf ? "Downloading…" : "Download Filled SC-100 (PDF)"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="h-11 font-bold border-2"
-                        disabled={downloadingWord}
-                        onClick={() => downloadForm("sc100-word", `SC100-Case-${caseId}.docx`, setDownloadingWord)}
-                      >
-                        {downloadingWord ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                        {downloadingWord ? "Downloading…" : "Word (.docx)"}
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Complete your intake to 80% readiness to unlock the filled SC-100 download.</p>
-                  )}
-                </div>
-              )}
-
-              {/* Blank form CTA for non-SC-100 forms */}
-              {guideForm.id !== "sc100" && (
-                <div className="pt-2 border-t">
-                  <a
-                    href={guideForm.blankFormUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 h-10 px-4 rounded-lg border-2 border-[#0d6b5e] text-[#0d6b5e] text-sm font-bold hover:bg-[#ddf6f3] transition-colors"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    Download blank {guideForm.number} from courts.ca.gov
-                  </a>
-                </div>
-              )}
-
-            </div>
-          );
-        })()}
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 md:p-8 space-y-8">
@@ -3198,288 +3002,119 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
 
       {/* Tile Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {FORMS_CATALOG.map((form) => {
-          const isActive = activeFormId === form.id;
-          return (
-            <div
-              key={form.id}
-              className={`relative flex flex-col rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md cursor-pointer ${
-                isActive
-                  ? "border-[#0d6b5e] bg-[#ddf6f3]"
-                  : "border-border bg-card hover:border-[#0d6b5e]/40"
-              }`}
-              onClick={() => setActiveFormId(isActive ? null : form.id)}
-            >
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className={`text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full ${
-                    isActive ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {form.number}
+        {FORMS_CATALOG.map((form) => (
+          <div
+            key={form.id}
+            className="relative flex flex-col rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md border-border bg-card hover:border-[#0d6b5e]/40"
+          >
+            {/* Tile header: number badge + status badge */}
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {form.number}
+                </span>
+                {form.id === "sc100" && (
+                  <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                    Start Here
                   </span>
-                  {form.id === "sc100" && (
-                    <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                      Start Here
-                    </span>
-                  )}
-                  {form.id === "mc030" && descriptionNeedsMC030 && (
-                    <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                      Needed
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {form.available ? (
-                    <span className="text-xs font-semibold text-[#0d6b5e] bg-[#ddf6f3] border border-[#0d6b5e]/30 px-2 py-0.5 rounded-full">Ready</span>
-                  ) : (
-                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Coming Soon</span>
-                  )}
-                  {form.available ? (
-                    form.id === "fw001" ? (
-                      /* FW-001: link to official blank form */
-                      <a
-                        href={form.blankFormUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Download blank FW-001 from courts.ca.gov"
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1 rounded hover:bg-black/10 text-[#0d6b5e] hover:text-[#0d6b5e]/70 transition-colors"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                      </a>
-                    ) : (
-                    <button
-                      title={`Download filled ${form.number} PDF`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (form.id === "sc100") {
-                          if (isReady) downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf);
-                        } else {
-                          setModalFormId(form.id);
-                        }
-                      }}
-                      disabled={form.id === "sc100" ? (downloadingPdf || !isReady) : downloadingForm === form.id}
-                      className="p-1 rounded hover:bg-black/10 text-[#0d6b5e] hover:text-[#0d6b5e]/70 transition-colors disabled:opacity-40"
-                    >
-                      {(form.id === "sc100" ? downloadingPdf : downloadingForm === form.id)
-                        ? <Loader2 width="14" height="14" className="animate-spin" />
-                        : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                      }
-                    </button>
-                    )
-                  ) : (
-                    <a
-                      href={form.blankFormUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`Download blank ${form.number}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-1 rounded hover:bg-black/10 text-muted-foreground hover:text-[#0d6b5e] transition-colors"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
-                      </svg>
-                    </a>
-                  )}
-                </div>
+                )}
+                {form.id === "mc030" && descriptionNeedsMC030 && (
+                  <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    Needed
+                  </span>
+                )}
               </div>
-              <h3 className="font-semibold text-sm leading-snug mb-1">{form.name}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{form.shortDesc}</p>
-              {/* Learn more arrow */}
-              <div className="flex justify-end mt-auto pt-3">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setGuideFormId(form.id); }}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#0d6b5e] hover:underline"
-                >
-                  Learn more
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
+              <div>
+                {form.available ? (
+                  <span className="text-xs font-semibold text-[#0d6b5e] bg-[#ddf6f3] border border-[#0d6b5e]/30 px-2 py-0.5 rounded-full">Ready</span>
+                ) : (
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Coming Soon</span>
+                )}
               </div>
             </div>
-          );
-        })}
+
+            {/* Title + short description */}
+            <h3 className="font-semibold text-sm leading-snug mb-1">{form.name}</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">{form.shortDesc}</p>
+
+            {/* 3 action buttons */}
+            <div className="flex gap-2 mt-auto pt-3 flex-wrap">
+              {/* View & Edit */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1 px-2"
+                onClick={onSwitchToIntake}
+              >
+                <Pencil className="h-3 w-3" />
+                View &amp; Edit
+              </Button>
+
+              {/* Download PDF */}
+              {form.available ? (
+                form.id === "fw001" ? (
+                  <a
+                    href={form.blankFormUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 h-7 px-2 text-xs font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <Download className="h-3 w-3" />
+                    Download PDF
+                  </a>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1 px-2"
+                    disabled={form.id === "sc100" ? downloadingPdf : downloadingForm === form.id}
+                    onClick={() => {
+                      if (form.id === "sc100") {
+                        if (isReady) {
+                          downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf);
+                        } else {
+                          toast({ title: "Intake incomplete", description: "Complete your intake to 80% to unlock the SC-100 download.", variant: "destructive" });
+                        }
+                      } else {
+                        setModalFormId(form.id);
+                      }
+                    }}
+                  >
+                    {(form.id === "sc100" ? downloadingPdf : downloadingForm === form.id)
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : <Download className="h-3 w-3" />
+                    }
+                    Download PDF
+                  </Button>
+                )
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1 px-2"
+                  disabled
+                  title="Coming soon"
+                >
+                  <Download className="h-3 w-3" />
+                  Download PDF
+                </Button>
+              )}
+
+              {/* How to Fill This */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1 px-2"
+                onClick={() => setGuideDialogFormId(form.id)}
+              >
+                <Info className="h-3 w-3" />
+                How to Fill This
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Detail Panel */}
-      {activeForm && (
-        <Card className="border-2 border-[#0d6b5e]/30 bg-card">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-bold tracking-widest uppercase text-[#0d6b5e] bg-[#ddf6f3] px-3 py-1 rounded-full">{activeForm.number}</span>
-                <CardTitle className="text-lg">{activeForm.name}</CardTitle>
-              </div>
-              <button
-                onClick={() => setActiveFormId(null)}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded"
-                aria-label="Close"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <p className="text-sm text-muted-foreground leading-relaxed">{activeForm.detailDesc}</p>
-
-            {activeForm.id === "fw001" ? (
-              /* ── FW-001 Fee Waiver Guide ── */
-              <div className="space-y-5">
-                {/* Eligibility quick-check */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { label: "Public Benefits", desc: "Medi-Cal, CalWORKS, SSI/SSP, CalFresh, IHSS, County Relief, CAPI, WIC", color: "border-green-200 bg-green-50", hdr: "text-green-800" },
-                    { label: "Income Below Threshold", desc: "Gross monthly household income is under the limit for your family size (see Item 5b thresholds on the form)", color: "border-blue-200 bg-blue-50", hdr: "text-blue-800" },
-                    { label: "Financial Hardship", desc: "You don't have enough income to cover basic household needs and also pay court fees", color: "border-violet-200 bg-violet-50", hdr: "text-violet-800" },
-                  ].map((card) => (
-                    <div key={card.label} className={`rounded-xl border p-4 space-y-1.5 ${card.color}`}>
-                      <p className={`text-xs font-bold uppercase tracking-wider ${card.hdr}`}>{card.label}</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{card.desc}</p>
-                    </div>
-                  ))}
-                </div>
-                {/* Confidentiality note */}
-                <div className="flex items-start gap-3 rounded-xl border border-[#0d6b5e]/20 bg-[#ddf6f3]/50 p-4">
-                  <svg className="mt-0.5 shrink-0 text-[#0d6b5e]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  <p className="text-sm text-[#0d6b5e] leading-relaxed"><span className="font-bold">This form is confidential.</span> The court will not share your FW-001 with the other party. Your financial information stays private.</p>
-                </div>
-                {/* Action buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <a
-                    href={activeForm.blankFormUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0d6b5e] text-white text-sm font-semibold hover:bg-[#0d6b5e]/90 transition-colors"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    Download Blank FW-001
-                  </a>
-                  <a
-                    href="https://www.courts.ca.gov/documents/fw001info.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
-                  >
-                    FW-001-INFO (instructions)
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  </a>
-                </div>
-                <p className="text-xs text-muted-foreground">File FW-001 at the same time as — or before — your SC-100. Bring a copy of your benefit card, award letter, or income documents to the clerk's window.</p>
-              </div>
-            ) : activeForm.available && activeForm.id !== "sc100" ? (
-              /* ── Other available forms — modal-based download ── */
-              <div className="space-y-4">
-                {downloadError && (
-                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
-                    <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
-                  </div>
-                )}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => setModalFormId(activeForm.id)}
-                    disabled={downloadingForm === activeForm.id}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0d6b5e] text-white text-sm font-semibold hover:bg-[#0d6b5e]/90 transition-colors disabled:opacity-50"
-                  >
-                    {downloadingForm === activeForm.id
-                      ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
-                      : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Generate Filled PDF</>
-                    }
-                  </button>
-                  <a
-                    href={activeForm.blankFormUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
-                  >
-                    Download blank form
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  </a>
-                </div>
-                <p className="text-xs text-muted-foreground">Your case information will be pre-filled automatically. You'll be asked for any additional details the form requires.</p>
-              </div>
-            ) : activeForm.available ? (
-              /* ── SC-100 Structured Guidance ── */
-              <div className="space-y-5">
-
-                {/* Download status */}
-                {isReady ? (
-                  <div className="flex items-center gap-2 rounded-lg border border-[#0d6b5e]/30 bg-[#ddf6f3] p-3 text-sm text-[#0d6b5e] font-medium">
-                    <CheckCircle className="h-4 w-4 shrink-0" />
-                    Your case is ready — use the print icon on the SC-100 tile above to download your filled form.
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    Complete your intake to 80% readiness to unlock the filled SC-100 download.
-                  </div>
-                )}
-                {downloadError && (
-                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-center gap-2 text-sm text-destructive">
-                    <AlertCircle className="h-4 w-4 shrink-0" />{downloadError}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* What goes on it */}
-                  <div className="rounded-xl border bg-muted/30 p-4 space-y-2">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">What you'll put on this form</p>
-                    <ul className="space-y-1.5 text-sm text-muted-foreground">
-                      {[
-                        "Names and addresses of everyone involved",
-                        "The amount of money you are requesting",
-                        "A short explanation of why you are suing",
-                        "Why this case belongs in the county you selected",
-                      ].map((item, i) => (
-                        <li key={i} className="flex items-start gap-2"><span className="text-[#0d6b5e] font-bold mt-0.5">·</span>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* If space runs out */}
-                  <div className="rounded-xl border bg-muted/30 p-4 space-y-2">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">If your explanation doesn't fit</p>
-                    <p className="text-sm text-muted-foreground">If you can't fit everything on SC-100, we will direct you to <span className="font-semibold text-foreground">MC-030 Declaration</span> — the standard California form for adding extra facts. Keep a short summary on SC-100 and use MC-030 for the full story.</p>
-                    <p className="text-sm text-muted-foreground">Your MC-030 should cover: what happened, when it happened, what the other side did or failed to do, the amount requested, and why you believe you are owed that amount.</p>
-                  </div>
-                </div>
-
-                {/* Fee waiver reminder */}
-                <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-amber-800 mb-1">Check your fee waiver eligibility before you finish</p>
-                    <p className="text-sm text-amber-700">If paying the filing fee would be a financial hardship, you may qualify to have it waived. Before you submit, check whether you are eligible to use <span className="font-semibold">Form FW-001, Request to Waive Court Fees</span>. You should not pay a fee you don't have to pay.</p>
-                  </div>
-                </div>
-
-              </div>
-            ) : (
-              /* ── Placeholder Panel ── */
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-amber-800">Form generator coming soon</p>
-                    <p className="text-xs text-amber-700">We're working on auto-filling this form with your case data.</p>
-                  </div>
-                </div>
-                <a
-                  href={`https://www.courts.ca.gov/rules-forms/find-your-court-forms?query=${activeForm.number}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0d6b5e] underline underline-offset-2 whitespace-nowrap"
-                >
-                  Download blank form
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                </a>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Form Assistant Modal */}
       {modalFormId && (
@@ -3491,6 +3126,137 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           onAiGenerate={modalFormId === "mc030" ? generateMC030Declaration : undefined}
         />
       )}
+
+      {/* "How to Fill This" Guide Dialog */}
+      <Dialog open={!!guideDialogFormId} onOpenChange={(open) => { if (!open) setGuideDialogFormId(null); }}>
+        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
+          {guideDialogForm && (() => {
+            const guide = FORM_GUIDE_CONTENT[guideDialogForm.id];
+            return (
+              <>
+                <DialogHeader className="px-6 pt-6 pb-4 border-b">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-xs font-bold tracking-widest uppercase bg-[#0d6b5e] text-white px-3 py-1 rounded-full">{guideDialogForm.number}</span>
+                    <DialogTitle className="text-xl font-bold leading-tight">How to Fill the {guideDialogForm.number}</DialogTitle>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{guideDialogForm.detailDesc}</p>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh]">
+                  <div className="px-6 py-5 space-y-6">
+
+                    {/* Video placeholder */}
+                    <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/20 flex flex-col items-center justify-center gap-2 py-10 px-4">
+                      <svg className="text-muted-foreground/40" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                      <p className="text-sm font-medium text-muted-foreground">Video guide — coming soon</p>
+                      <p className="text-xs text-muted-foreground/60">Step-by-step walkthrough for {guideDialogForm.number} will appear here</p>
+                    </div>
+
+                    {guide && (
+                      <div className="space-y-6">
+
+                        {/* Best Use callout */}
+                        <div className="rounded-xl bg-[#ddf6f3] border border-[#0d6b5e]/20 px-5 py-4">
+                          <p className="text-sm font-semibold text-[#0d6b5e] leading-relaxed">{guide.bestUse}</p>
+                        </div>
+
+                        {/* When to use / When NOT to use */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="rounded-xl border bg-card p-4 space-y-3">
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">Use this form when</p>
+                            <ul className="space-y-2">
+                              {guide.whenToUse.map((item, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-relaxed">
+                                  <svg className="mt-0.5 shrink-0 text-[#0d6b5e]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="rounded-xl border bg-card p-4 space-y-3">
+                            <p className="text-xs font-bold uppercase tracking-wider text-rose-600">Do not use this form when</p>
+                            <ul className="space-y-2">
+                              {guide.whenNotToUse.map((item, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-relaxed">
+                                  <svg className="mt-0.5 shrink-0 text-rose-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        {/* What to have ready */}
+                        <div className="space-y-3">
+                          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">What to have ready</h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {guide.haveReady.map((item, i) => (
+                              <div key={i} className="flex items-start gap-3 rounded-lg border bg-muted/30 px-4 py-3">
+                                <div className="mt-0.5 h-5 w-5 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center shrink-0">
+                                  <span className="text-[10px] font-bold text-[#0d6b5e]">{i + 1}</span>
+                                </div>
+                                <p className="text-sm text-foreground leading-relaxed">{item}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* SC-100 overflow note */}
+                        {guideDialogForm.id === "sc100" && descriptionNeedsMC030 && (
+                          <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-5 space-y-2">
+                            <div className="flex items-start gap-3">
+                              <svg className="mt-0.5 shrink-0 text-blue-600" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                              <div>
+                                <h3 className="text-sm font-bold text-blue-900">Your description is too long — MC-030 is required</h3>
+                                <p className="text-sm text-blue-800 leading-relaxed">Your SC-100 PDF will include the first 7 lines and a note directing the court to the attached MC-030 Declaration. File both forms together.</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Warnings */}
+                        {guide.warnings.length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">Important things to know</h3>
+                            <div className="space-y-2">
+                              {guide.warnings.map((w, i) => (
+                                <div key={i} className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                                  <svg className="mt-0.5 shrink-0 text-amber-500" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                  <p className="text-sm text-amber-800 leading-relaxed">{w}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Related forms */}
+                        {guide.relatedForms.length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70">Related forms &amp; next steps</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {guide.relatedForms.map((rf, i) => (
+                                <div key={i} className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-1.5">
+                                  <span className="text-xs font-bold text-[#0d6b5e]">{rf.number}</span>
+                                  <span className="text-xs text-muted-foreground">{rf.reason}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-muted-foreground/60">Form version referenced: effective {guide.effectiveDate}. Always confirm the current Judicial Council version and any county-specific local rules before filing.</p>
+
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+                <DialogFooter className="px-6 py-4 border-t">
+                  <Button variant="outline" onClick={() => setGuideDialogFormId(null)}>Close</Button>
+                </DialogFooter>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
