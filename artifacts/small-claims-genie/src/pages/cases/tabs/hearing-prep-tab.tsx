@@ -1,9 +1,82 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
-import { Gavel, FileText, Star, Mic, Send, RotateCcw, CheckCircle, ChevronLeft, Printer } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Gavel, FileText, Star, Mic, Send, RotateCcw, CheckCircle, ChevronLeft, Printer, RefreshCw, Clock, AlertCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { DraftOverlay, DraftLockedButton } from "@/components/draft-overlay";
+
+function buildOpeningStatement(c: any): string {
+  const name = c.plaintiffName?.trim() || "[Your Name]";
+  const defendant = c.defendantName?.trim() || "the defendant";
+  const isBusiness = !!c.defendantIsBusinessOrEntity;
+  const amount = c.claimAmount ? `$${Number(c.claimAmount).toLocaleString()}` : "[amount owed]";
+  const description = (c.claimDescription || "").trim();
+  const howCalculated = (c.howAmountCalculated || "").trim();
+  const priorDemand = c.priorDemandMade;
+  const priorDemandDesc = (c.priorDemandDescription || "").trim();
+  const rawDate = c.incidentDate || "";
+
+  let datePhrase = "";
+  if (rawDate) {
+    const parts = rawDate.split(" – ");
+    if (parts.length > 1) {
+      datePhrase = `Between ${parts[0].trim()} and ${parts[1].trim()}, `;
+    } else {
+      datePhrase = `On ${parts[0].trim()}, `;
+    }
+  }
+
+  const lines: string[] = [];
+
+  lines.push(`My name is ${name}, and I am the plaintiff in this case against ${isBusiness ? `${defendant}, a business` : defendant}.`);
+  lines.push("");
+
+  if (description) {
+    const sentences = description.match(/[^.!?\n]+[.!?\n]*/g) ?? [description];
+    const cleaned = sentences.map(s => s.trim()).filter(Boolean);
+    if (cleaned.length > 0) {
+      const first = cleaned[0];
+      const startsWithDate = /^(on |between |in |during )/i.test(first);
+      const body = startsWithDate || !datePhrase ? first : `${datePhrase}${first.charAt(0).toLowerCase()}${first.slice(1)}`;
+      lines.push(body.endsWith(".") || body.endsWith("?") || body.endsWith("!") ? body : body + ".");
+      if (cleaned.length > 1) {
+        lines.push("");
+        lines.push(cleaned.slice(1).join(" "));
+      }
+    }
+  } else {
+    lines.push(`${datePhrase || "At some point, "}${defendant} failed to fulfill an obligation to me, which is the basis of this claim.`);
+  }
+
+  lines.push("");
+  const amountLine = howCalculated
+    ? `I am seeking ${amount} from ${defendant}. ${howCalculated.charAt(0).toUpperCase()}${howCalculated.slice(1)}${howCalculated.endsWith(".") ? "" : "."}`
+    : `I am seeking ${amount} from ${defendant} to cover my losses from this dispute.`;
+  lines.push(amountLine);
+
+  lines.push("");
+  if (priorDemand) {
+    const demandLine = priorDemandDesc
+      ? `Before filing this case, I attempted to resolve this matter directly with ${defendant}. ${priorDemandDesc.charAt(0).toUpperCase()}${priorDemandDesc.slice(1)}${priorDemandDesc.endsWith(".") ? "" : "."} They have not paid or adequately responded.`
+      : `Before filing this case, I formally demanded that ${defendant} pay the amount owed. They failed to pay or respond.`;
+    lines.push(demandLine);
+    lines.push("");
+  }
+
+  lines.push(`I have [describe your supporting evidence — e.g., receipts, contracts, text messages, photos] to support my claim. I respectfully ask the court to award me ${amount}. Thank you, Your Honor.`);
+
+  return lines.join("\n");
+}
+
+function wordsToTime(text: string): string {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const seconds = Math.round((words / 130) * 60);
+  if (seconds < 60) return `~${seconds}s`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return secs > 0 ? `~${mins}m ${secs}s` : `~${mins}m`;
+}
 
 type PrepMessage = { role: "user" | "assistant"; content: string };
 
@@ -15,6 +88,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
   const [sessionStarted, setSessionStarted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [prepMode, setPrepMode] = useState<null | "statement" | "mock-trial">(null);
+  const [statementText, setStatementText] = useState(() => buildOpeningStatement(currentCase));
   const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -166,93 +240,124 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
   }
 
   if (!sessionStarted && prepMode === "statement") {
-    const desc = currentCase.claimDescription || "";
     const defName = currentCase.defendantName || "the defendant";
     const amount = currentCase.claimAmount ? `$${Number(currentCase.claimAmount).toLocaleString()}` : "the amount claimed";
+    const hasMissingIntake = !currentCase.claimDescription || !currentCase.claimAmount;
+    const speakingTime = wordsToTime(statementText);
+    const wordCount = statementText.trim().split(/\s+/).filter(Boolean).length;
+    const hasBrackets = /\[.+?\]/.test(statementText);
 
     const printStatement = () => {
-      const rules = [
-        { n: "1", tip: "Introduce yourself and your relationship", detail: `"My name is [your name]. I am suing ${defName} because…"` },
-        { n: "2", tip: "Tell the story in order", detail: "State what happened first, then next, then what the result was. Judges want a clear timeline." },
-        { n: "3", tip: "Name the exact dollar amount", detail: `State ${amount} clearly and explain exactly how you calculated it. Bring the math.` },
-        { n: "4", tip: "Mention your prior demand", detail: "Did you ask them to pay before filing? Say so. It shows you tried to resolve it first." },
-        { n: "5", tip: "Keep it under 3 minutes", detail: "Practice until you can say the essentials in 2–3 minutes. You can add detail when asked." },
-      ];
-      const rulesHtml = rules.map(r => `<div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start"><div style="background:#0d6b5e;color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;flex-shrink:0;margin-top:2px">${r.n}</div><div><strong style="font-size:13px;color:#111">${r.tip}</strong><br/><span style="font-size:12px;color:#555;line-height:1.5">${r.detail}</span></div></div>`).join("");
+      const escaped = statementText.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       const draftWatermarkCss = isDraftMode ? `@media print{body::after{content:"DRAFT";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:120px;font-weight:900;color:rgba(13,107,94,0.12);z-index:9999;pointer-events:none;white-space:nowrap;}}` : "";
       const draftBanner = isDraftMode ? `<div style="background:#f0fffe;border:2px dashed #14b8a6;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">🔒</span><span style="font-size:13px;color:#0d6b5e;font-weight:600;">Draft — Subscribe to unlock full PDF access</span></div>` : "";
       const w = window.open("", "_blank");
       if (!w) return;
-      w.document.write(`<!DOCTYPE html><html><head><title>Court-Ready Statement</title><style>body{font-family:Arial,sans-serif;max-width:680px;margin:40px auto;color:#111;padding:0 20px}h1{color:#0d6b5e;font-size:22px;margin-bottom:4px}.sub{color:#666;font-size:13px;margin-bottom:28px}.section{font-weight:bold;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#0d6b5e;margin-bottom:12px}.tips{border:1px solid #a8e6df;background:#f0fffe;padding:18px 20px;border-radius:8px;margin-bottom:24px}.statement{border:1px solid #d1d5db;background:#fff;padding:20px;border-radius:8px;font-size:14px;line-height:1.7;white-space:pre-wrap;margin-bottom:24px}.mistakes{border:1px solid #fecaca;background:#fff7f7;padding:16px 20px;border-radius:8px;font-size:12px;color:#b91c1c;line-height:1.7}.print-btn{margin-top:24px;padding:10px 24px;background:#0d6b5e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer}@media print{.print-btn{display:none}}${draftWatermarkCss}</style></head><body>${draftBanner}<h1>Court-Ready Statement</h1><p class="sub">Small Claims Genie &mdash; What to say when the judge asks you to explain your case</p><div class="tips"><div class="section">5 Rules for Speaking in Court</div>${rulesHtml}</div><div class="section">Your Case Description</div><div class="statement">${desc || "(No case description entered yet)"}</div><div class="mistakes"><div class="section" style="color:#b91c1c">Common mistakes to avoid</div>✕ Don't bring up the defendant's character — stick to facts about this specific dispute<br/>✕ Don't interrupt the judge — wait until they finish before speaking<br/>✕ Don't bring papers you haven't already submitted — hand copies to the clerk before the hearing<br/>✕ Don't get emotional — calm and factual always wins over angry and passionate</div><button class="print-btn" onclick="window.print()">Print / Save as PDF</button><script>window.onload=function(){window.print()}</script></body></html>`);
+      w.document.write(`<!DOCTYPE html><html><head><title>Court-Ready Statement</title><style>body{font-family:Georgia,serif;max-width:680px;margin:40px auto;color:#111;padding:0 20px;line-height:1.7}h1{font-family:Arial,sans-serif;color:#0d6b5e;font-size:22px;margin-bottom:4px}.sub{font-family:Arial,sans-serif;color:#666;font-size:13px;margin-bottom:28px}.section{font-family:Arial,sans-serif;font-weight:bold;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#0d6b5e;margin-bottom:10px;margin-top:0}.meta{font-family:Arial,sans-serif;font-size:11px;color:#9ca3af;margin-bottom:28px}.statement{border:1px solid #d1d5db;background:#fff;padding:24px 28px;border-radius:8px;font-size:15px;line-height:1.9;white-space:pre-wrap;margin-bottom:24px}.bracket{color:#d97706;font-style:italic;background:#fffbeb;border-radius:2px;padding:0 2px}.tips{border:1px solid #a8e6df;background:#f0fffe;padding:16px 20px;border-radius:8px;margin-bottom:24px;font-family:Arial,sans-serif}.tips li{font-size:12px;color:#0d6b5e;margin-bottom:6px;line-height:1.5}.mistakes{border:1px solid #fecaca;background:#fff7f7;padding:16px 20px;border-radius:8px;font-family:Arial,sans-serif;font-size:12px;color:#b91c1c;line-height:1.7}.print-btn{margin-top:24px;padding:10px 24px;background:#0d6b5e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:Arial,sans-serif}@media print{.print-btn{display:none}}${draftWatermarkCss}</style></head><body>${draftBanner}<h1>Court-Ready Opening Statement</h1><p class="sub">Prepared for ${currentCase.plaintiffName || "Plaintiff"} · ${currentCase.countyId ? currentCase.countyId + " County" : "CA Small Claims"} · Small Claims Genie</p><p class="meta">~${wordCount} words · estimated speaking time ${speakingTime}</p><div class="section">Your Statement</div><div class="statement">${escaped.replace(/\[([^\]]+)\]/g, '<span class="bracket">[$1]</span>').replace(/\n/g, "<br>")}</div><div class="tips"><div class="section">5 Rules for Speaking in Court</div><ul><li><strong>Introduce yourself</strong> — State your name and what you want the court to decide.</li><li><strong>Tell the story in order</strong> — What happened first, then next. Judges want a clear timeline.</li><li><strong>Name the exact dollar amount</strong> — State ${amount} and how you calculated it.</li><li><strong>Mention your prior demand</strong> — Did you ask them to pay before filing? Say so.</li><li><strong>Keep it under 3 minutes</strong> — Practice until you can state the essentials clearly.</li></ul></div><div class="mistakes"><strong style="display:block;margin-bottom:8px;text-transform:uppercase;font-size:11px;letter-spacing:.06em">Common mistakes to avoid</strong>✕ Don't bring up the defendant's character — stick to facts about this dispute<br/>✕ Don't interrupt the judge — wait until they finish before speaking<br/>✕ Don't bring new papers you haven't already submitted to the clerk<br/>✕ Don't get emotional — calm and factual always wins over angry and passionate</div><button class="print-btn" onclick="window.print()">Print / Save as PDF</button><script>window.onload=function(){window.print()}</script></body></html>`);
       w.document.close();
     };
 
     return (
-      <div className="p-5 md:p-8 space-y-6 max-w-2xl mx-auto">
+      <div className="p-5 md:p-8 space-y-5 max-w-2xl mx-auto">
         <button type="button" onClick={() => setPrepMode(null)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#0d6b5e] flex items-center justify-center shrink-0"><FileText className="h-5 w-5 text-white" /></div>
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Court-Ready Statement</h2>
-            <p className="text-xs text-muted-foreground">What to say when the judge asks you to explain your case</p>
+
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[#0d6b5e] flex items-center justify-center shrink-0"><FileText className="h-5 w-5 text-white" /></div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Court-Ready Statement</h2>
+              <p className="text-xs text-muted-foreground">Pre-drafted from your case — refine it, then practice out loud</p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setStatementText(buildOpeningStatement(currentCase))}
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-[#0d6b5e] border border-border bg-muted/50 hover:bg-[#f0fffe] hover:border-[#a8e6df] rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Re-draft from intake
+          </button>
         </div>
-        <div className="rounded-2xl border border-[#a8e6df] bg-[#f0fffe] p-5 space-y-4">
-          <p className="text-sm font-bold text-[#0d6b5e] uppercase tracking-wide">5 rules for speaking in court</p>
+
+        {hasMissingIntake && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 flex items-start gap-2.5">
+            <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800">Some intake fields are missing (claim description or amount). <span className="font-semibold underline cursor-pointer">Fill in the Intake tab</span> for a stronger pre-draft.</p>
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Your Opening Statement</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Pre-drafted from your intake data. Edit freely — this is your statement to refine.</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border ${wordCount > 390 ? "border-red-200 bg-red-50 text-red-600" : wordCount > 260 ? "border-yellow-200 bg-yellow-50 text-yellow-700" : "border-green-200 bg-green-50 text-green-700"}`}>
+                <Clock className="h-3 w-3" /> {speakingTime}
+              </div>
+              <span className="text-xs text-muted-foreground">{wordCount} words</span>
+            </div>
+          </div>
+
+          <DraftOverlay isDraftMode={isDraftMode}>
+            <Textarea
+              value={statementText}
+              onChange={e => setStatementText(e.target.value)}
+              className="font-serif text-sm leading-relaxed min-h-[340px] resize-y"
+              placeholder="Your case details will appear here once you fill in the Intake tab…"
+            />
+          </DraftOverlay>
+
+          {hasBrackets && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-800">Fill in all <span className="font-bold font-mono">[bracketed]</span> sections before printing — those are placeholders that need your specific details.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-3">
+          <p className="text-xs font-bold text-[#0d6b5e] uppercase tracking-wide">5 rules for speaking in court</p>
           {[
-            { icon: "1", tip: "Introduce yourself and your relationship", detail: `"My name is [your name]. I am suing ${defName} because…"` },
-            { icon: "2", tip: "Tell the story in order", detail: "State what happened first, then next, then what the result was. Judges want a clear timeline." },
-            { icon: "3", tip: "Name the exact dollar amount", detail: `State ${amount} clearly and explain exactly how you calculated it. Bring the math.` },
-            { icon: "4", tip: "Mention your prior demand", detail: "Did you ask them to pay before filing? Say so. It shows you tried to resolve it first." },
-            { icon: "5", tip: "Keep it under 3 minutes", detail: "Practice until you can say the essentials in 2–3 minutes. You can add detail when asked." },
-          ].map(({ icon, tip, detail }) => (
-            <div key={icon} className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-full bg-[#0d6b5e] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{icon}</div>
+            { n: "1", tip: "Introduce yourself", detail: `State your name and that you're the plaintiff suing ${defName}.` },
+            { n: "2", tip: "Tell the story in order", detail: "What happened first, then what happened next. Judges want a clear timeline — not a complaint." },
+            { n: "3", tip: "Name the exact dollar amount", detail: `State ${amount} and explain how you calculated it. Bring the math on paper.` },
+            { n: "4", tip: "Mention your prior demand", detail: "Say you contacted them before filing. It shows you tried to resolve it first." },
+            { n: "5", tip: "Keep it under 3 minutes", detail: "Practice until you can state the essentials in 2–3 minutes. The judge will ask follow-up questions." },
+          ].map(({ n, tip, detail }) => (
+            <div key={n} className="flex items-start gap-3">
+              <div className="h-5 w-5 rounded-full bg-[#0d6b5e] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{n}</div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">{tip}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{detail}</p>
+                <p className="text-xs font-semibold text-gray-900">{tip}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{detail}</p>
               </div>
             </div>
           ))}
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-gray-900">Your case description (from your form)</p>
-            {desc && (
-              isDraftMode
-                ? <DraftLockedButton label="Subscribe to Print" size="sm" />
-                : <button type="button" onClick={printStatement} className="flex items-center gap-1.5 text-xs font-semibold text-[#0d6b5e] hover:text-[#0a5449] border border-[#a8e6df] bg-[#f0fffe] hover:bg-[#e6faf8] rounded-lg px-3 py-1.5 transition-colors shrink-0">
-                    <Printer className="h-3.5 w-3.5" /> Print / Save PDF
-                  </button>
-            )}
-          </div>
-          {desc ? (
-            <DraftOverlay isDraftMode={isDraftMode}>
-              <div className="rounded-xl border bg-background p-4 text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">{desc}</div>
-            </DraftOverlay>
-          ) : (
-            <div className="rounded-xl border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground text-center">No description yet — go to the Details tab and fill in your claim description first.</div>
-          )}
-          <p className="text-xs text-muted-foreground">Use this as your opening statement. Practice saying it out loud a few times before your hearing.</p>
-        </div>
-        <div className="rounded-xl border border-red-100 bg-red-50 p-4 space-y-2">
+
+        <div className="rounded-xl border border-red-100 bg-red-50 p-4 space-y-1.5">
           <p className="text-xs font-bold text-red-700 uppercase tracking-wide">Common mistakes to avoid</p>
-          {["Don't bring up the defendant's character — stick to facts about this specific dispute", "Don't interrupt the judge — wait until they finish before speaking", "Don't bring papers you haven't already submitted — hand copies to the clerk before the hearing", "Don't get emotional — calm and factual always wins over angry and passionate"].map((m, i) => (
+          {[
+            "Don't bring up the defendant's character — stick to facts about this specific dispute",
+            "Don't interrupt the judge — wait until they finish before speaking",
+            "Don't bring new papers you haven't already submitted — hand copies to the clerk before the hearing",
+            "Don't get emotional — calm and factual always wins over angry and passionate",
+          ].map((m, i) => (
             <div key={i} className="flex items-start gap-2"><span className="text-red-400 shrink-0 mt-0.5">✕</span><p className="text-xs text-red-800 leading-relaxed">{m}</p></div>
           ))}
         </div>
-        <div className="flex flex-col gap-3 pt-2">
-          {desc && (
-            isDraftMode
-              ? <DraftLockedButton label="Subscribe to Print / Save as PDF" fullWidth />
-              : <Button type="button" onClick={printStatement} variant="outline" className="w-full gap-2 h-11 border-[#0d6b5e] text-[#0d6b5e] hover:bg-[#f0fffe]">
-                  <Printer className="h-4 w-4" /> Print / Save as PDF
-                </Button>
-          )}
+
+        <div className="flex flex-col gap-3 pt-1">
+          {isDraftMode
+            ? <DraftLockedButton label="Subscribe to Print / Save as PDF" fullWidth />
+            : <Button type="button" onClick={printStatement} variant="outline" className="w-full gap-2 h-11 border-[#0d6b5e] text-[#0d6b5e] hover:bg-[#f0fffe]">
+                <Printer className="h-4 w-4" /> Print / Save as PDF
+              </Button>
+          }
           <Button onClick={() => setPrepMode("mock-trial")} className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white h-11">
-            <Gavel className="h-4 w-4" /> Ready to practice? Try the Mock Trial →
+            <Gavel className="h-4 w-4" /> Statement ready? Practice with Mock Trial →
           </Button>
           <button type="button" onClick={() => setPrepMode(null)} className="text-xs text-muted-foreground hover:text-foreground text-center hover:underline">← Back to prep options</button>
         </div>
