@@ -1,0 +1,28 @@
+High risk: documents route is doing too much in one place (upload validation, storage, DB writes, OCR strategy selection, OpenAI calls, and status updates).
+Recommendation: Split into dedicated services/modules (document-storage, text-extraction, ocr-orchestrator, document-status) and keep the route as a thin controller to reduce regression risk and speed debugging. 
+
+High risk: OCR processing is fire-and-forget via setImmediate after returning 201, with no durable job queue/retry semantics.
+Recommendation: Move OCR/extraction to a persistent job worker (queue + retry + dead-letter + idempotency key) so processing is reliable across restarts/scale events. 
+
+High risk: API contract drift between frontend behavior and typed OpenAPI client.
+Frontend is mixing generated client hooks with ad hoc fetch calls to non-spec endpoints (advisor checklist, chat export/streaming), which increases breakage risk and weakens type safety.
+Recommendation: Add all live endpoints to OpenAPI and regenerate clients; reserve raw fetch only for clearly documented exceptions. 
+
+Medium-high risk: database model is highly overloaded (cases table carries intake, filing, letters, reminders, hearing, and checklist JSON in one row).
+Recommendation: Normalize into bounded tables (e.g., case_parties, case_filing, case_hearing, case_reminders, case_checklist) to reduce null-heavy records and improve maintainability. 
+
+Medium-high risk: scalability bottlenecks from missing indexes on common foreign-key access paths.
+You query documents and chat_messages by case_id frequently, but only cases.user_id has an explicit index.
+Recommendation: Add indexes for documents.case_id, chat_messages.case_id, and frequently filtered status columns (e.g., ocr_status) before dataset growth. 
+
+Medium risk: prompt construction is not true retrieval; it inlines large raw document text (up to 6000 chars/doc) into every chat call.
+Recommendation: Introduce retrieval layer (chunk table + embeddings + top-k selection) and pass only relevant chunks to the model for cost/performance/answer-quality stability. 
+
+Medium risk: storage architecture still permits DB blob fallback (fileData base64), which increases row size and operational cost/backup burden.
+Recommendation: Make object storage mandatory (or isolate binary payloads in a dedicated storage table/service) and keep relational rows metadata/text-only. 
+
+Medium risk: auth/security boundaries are harder to reason about due to mixed public route surface and dual-key auth fallback.
+Recommendation: Document and tighten public endpoints, enforce signed URLs for all file access patterns, and simplify auth key strategy per environment to reduce misconfiguration exposure. 
+
+Medium risk: developer workflow lacks stronger quality gates in package scripts (mostly build/typecheck, no visible lint/test contract).
+Recommendation: Add baseline CI gates (lint, unit tests for routes/services, contract tests for OpenAPI) and enforce them on merge to control architectural drift. 
