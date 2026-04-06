@@ -144,16 +144,16 @@ export default function CaseWorkspace() {
             <DocumentsTab caseId={caseId} evidenceChecklist={(currentCase as any)?.evidenceChecklist || []} />
           </TabsContent>
           <TabsContent value="chat" className="p-0 m-0">
-            <ChatTab caseId={caseId} />
+            <ChatTab caseId={caseId} isDraftMode={false} />
           </TabsContent>
           <TabsContent value="demand-letter" className="p-0 m-0">
-            <DemandLetterTab caseId={caseId} currentCase={currentCase} />
+            <DemandLetterTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
           </TabsContent>
           <TabsContent value="forms" className="p-0 m-0">
-            <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} />
+            <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
           </TabsContent>
           <TabsContent value="prep" className="p-0 m-0">
-            <HearingPrepTab caseId={caseId} currentCase={currentCase} />
+            <HearingPrepTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
           </TabsContent>
         </div>
       </Tabs>

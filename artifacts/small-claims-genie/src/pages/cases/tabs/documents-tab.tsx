@@ -1,4 +1,4 @@
-Should I weed on Stripe until I finish my beta Give me a road map on the product right now we added some features today can you import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useListDocuments,

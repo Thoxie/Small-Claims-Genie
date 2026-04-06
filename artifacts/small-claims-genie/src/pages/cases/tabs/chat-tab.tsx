@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Mic, Send, CheckCircle, Loader2, Download } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
+import { DraftLockedButton } from "@/components/draft-overlay";
 
-export function ChatTab({ caseId }: { caseId: number }) {
+export function ChatTab({ caseId, isDraftMode = false }: { caseId: number; isDraftMode?: boolean }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -177,12 +178,18 @@ export function ChatTab({ caseId }: { caseId: number }) {
         {messages.length > 0 && (
           <div className="flex items-center gap-1.5 shrink-0">
             <span className="text-xs text-muted-foreground font-normal">Download transcript:</span>
-            <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("pdf")} disabled={downloadingPdf || downloadingWord}>
-              {downloadingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} PDF
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingPdf || downloadingWord}>
-              {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
-            </Button>
+            {isDraftMode ? (
+              <DraftLockedButton label="Subscribe to Export" size="sm" />
+            ) : (
+              <>
+                <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("pdf")} disabled={downloadingPdf || downloadingWord}>
+                  {downloadingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} PDF
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingPdf || downloadingWord}>
+                  {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

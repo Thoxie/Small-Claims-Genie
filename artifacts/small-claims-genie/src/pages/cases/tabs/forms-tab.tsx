@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DraftModeBanner, DraftLockedButton } from "@/components/draft-overlay";
 
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
 const FORMS_CATALOG = [
@@ -343,7 +344,7 @@ function PhaseHeader({ number, title, subtitle }: { number: number; title: strin
 }
 
 // ─── Forms Tab ────────────────────────────────────────────────────────────────
-export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep }: { caseId: number, currentCase: any, onSwitchToIntake: () => void, onSwitchToPrep: () => void }) {
+export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep, isDraftMode = false }: { caseId: number, currentCase: any, onSwitchToIntake: () => void, onSwitchToPrep: () => void, isDraftMode?: boolean }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
@@ -411,6 +412,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
 
   // ── Download utilities ─────────────────────────────────────────────────────
   async function downloadForm(endpoint: string, filename: string, setLoading: (v: boolean) => void) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download and save court forms." }); return; }
     setLoading(true); setDownloadError(null);
     try {
       const clerkToken = await getToken();
@@ -426,6 +428,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   }
 
   async function downloadFormPost(endpoint: string, filename: string, body: Record<string, any>) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download and save court forms." }); return; }
     setDownloadingForm(endpoint); setDownloadError(null);
     try {
       const clerkToken = await getToken();
@@ -457,6 +460,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   }
 
   async function downloadMC030Packet() {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download and save court forms." }); return; }
     if (!mc030Text.trim()) { toast({ title: "Declaration required", description: "Please write or generate your declaration text first.", variant: "destructive" }); return; }
     setBuildingPacket(true);
     try {
@@ -498,6 +502,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="p-4 md:p-6 space-y-8">
+
+      {isDraftMode && <DraftModeBanner />}
 
       {/* ── PHASE 1: Filing Package ────────────────────────────────────────── */}
       <section>
