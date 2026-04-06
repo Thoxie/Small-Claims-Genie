@@ -293,7 +293,7 @@ export default function CaseWorkspace() {
             data-testid="tab-chat"
           >
             <MessageSquare className="h-4 w-4 shrink-0" />
-            <span className="leading-tight">Chat</span>
+            <span className="leading-tight">Genie</span>
           </TabsTrigger>
           <TabsTrigger
             value="demand-letter"
@@ -2006,7 +2006,7 @@ function ChatTab({ caseId }: { caseId: number }) {
       </div>
 
       {/* Messages — padded at bottom so content isn't hidden behind the fixed input bar */}
-      <div className="overflow-y-auto p-4 space-y-4 pb-36" ref={scrollRef} style={{ minHeight: "480px" }}>
+      <div className="overflow-y-auto p-4 space-y-4 pb-20" ref={scrollRef} style={{ minHeight: "480px" }}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-muted-foreground opacity-60">
             <div className="text-4xl mb-4">🧞</div>
@@ -2035,12 +2035,9 @@ function ChatTab({ caseId }: { caseId: number }) {
         )}
       </div>
 
-      {/* Fixed input bar — sticks to bottom of screen, sits on top of bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-4 pt-3 pb-4">
-        <div className={`text-xs text-center mb-2 font-medium transition-colors ${isRecording ? 'text-destructive animate-pulse' : 'text-muted-foreground/50'}`}>
-          {isRecording ? i18n.chat.recording : i18n.chat.micHint}
-        </div>
-        <div className="flex items-end gap-2">
+      {/* Fixed input bar — compact, sticks to bottom of screen */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-[0_-2px_12px_rgba(0,0,0,0.07)] px-3 py-2">
+        <div className="flex items-center gap-2">
           <div className="flex-1 relative">
             <textarea
               value={input}
@@ -2048,7 +2045,7 @@ function ChatTab({ caseId }: { caseId: number }) {
                 setInput(e.target.value);
                 const el = e.target as HTMLTextAreaElement;
                 el.style.height = "auto";
-                el.style.height = Math.min(el.scrollHeight, 160) + "px";
+                el.style.height = Math.min(el.scrollHeight, 120) + "px";
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -2058,34 +2055,35 @@ function ChatTab({ caseId }: { caseId: number }) {
                   el.style.height = "auto";
                 }
               }}
-              placeholder={i18n.chat.placeholder}
+              placeholder={isRecording ? "🔴 Recording — release mic to stop…" : i18n.chat.placeholder}
               rows={1}
               disabled={isRecording}
-              className="w-full resize-none overflow-hidden rounded-3xl border-2 border-input bg-background px-4 py-3 pr-12 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-50 transition-colors"
-              style={{ minHeight: "44px", maxHeight: "160px" }}
+              className="w-full resize-none overflow-hidden rounded-full border border-input bg-background px-4 py-2 pr-10 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
+              style={{ minHeight: "38px", maxHeight: "120px" }}
             />
-            {/* Mic — inside the chat box, bottom-right corner */}
+            {/* Mic — inside the input, right edge */}
             <Button
               size="icon"
               variant="ghost"
-              className={`absolute right-2 bottom-1.5 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground'}`}
+              className={`absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground hover:text-primary'}`}
               onMouseDown={handleVoiceStart}
               onMouseUp={handleVoiceStop}
               onMouseLeave={isRecording ? handleVoiceStop : undefined}
               onTouchStart={handleVoiceStart}
               onTouchEnd={handleVoiceStop}
-              aria-label={isRecording ? "Recording — release to send" : "Hold to record voice message"}
+              aria-label={isRecording ? "Recording — release to stop" : "Hold to record"}
             >
-              <Mic className="h-5 w-5" />
+              <Mic className="h-4 w-4" />
             </Button>
           </div>
+          {/* Send — right of input */}
           <Button
             onClick={() => { sendMessage(input); }}
             size="icon"
-            className="h-11 w-11 rounded-full shrink-0 mb-0.5"
-            disabled={isTyping || isRecording}
+            className="h-9 w-9 rounded-full shrink-0"
+            disabled={isTyping || isRecording || !input.trim()}
           >
-            <Send className="h-5 w-5 ml-1" />
+            <Send className="h-4 w-4 ml-0.5" />
           </Button>
         </div>
       </div>
