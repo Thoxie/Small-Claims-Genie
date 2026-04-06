@@ -1961,29 +1961,45 @@ function ChatTab({ caseId }: { caseId: number }) {
         <div className={`text-xs text-center mb-2 font-medium transition-colors ${isRecording ? 'text-destructive animate-pulse' : 'text-muted-foreground/60'}`}>
           {isRecording ? i18n.chat.recording : i18n.chat.micHint}
         </div>
-        <div className="flex items-center gap-2 relative">
-          <Input 
-            value={input} 
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
-            placeholder={i18n.chat.placeholder}
-            className="flex-1 h-12 pr-12 rounded-full border-2"
-            disabled={isRecording}
-          />
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className={`absolute right-14 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground'}`}
-            onMouseDown={handleVoiceStart}
-            onMouseUp={handleVoiceStop}
-            onMouseLeave={isRecording ? handleVoiceStop : undefined}
-            onTouchStart={handleVoiceStart}
-            onTouchEnd={handleVoiceStop}
-            aria-label={isRecording ? "Recording — release to send" : "Hold to record voice message"}
-          >
-            <Mic className="h-5 w-5" />
-          </Button>
-          <Button onClick={() => sendMessage(input)} size="icon" className="h-12 w-12 rounded-full shrink-0" disabled={isTyping || isRecording}>
+        <div className="flex items-end gap-2 relative">
+          <div className="flex-1 relative">
+            <textarea
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                const el = e.target as HTMLTextAreaElement;
+                el.style.height = "auto";
+                el.style.height = Math.min(el.scrollHeight, 160) + "px";
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(input);
+                  const el = e.target as HTMLTextAreaElement;
+                  el.style.height = "auto";
+                }
+              }}
+              placeholder={i18n.chat.placeholder}
+              rows={1}
+              disabled={isRecording}
+              className="w-full resize-none overflow-hidden rounded-3xl border-2 border-input bg-background px-4 py-3 pr-12 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-50 transition-colors"
+              style={{ minHeight: "44px", maxHeight: "160px" }}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className={`absolute right-2 bottom-1.5 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground'}`}
+              onMouseDown={handleVoiceStart}
+              onMouseUp={handleVoiceStop}
+              onMouseLeave={isRecording ? handleVoiceStop : undefined}
+              onTouchStart={handleVoiceStart}
+              onTouchEnd={handleVoiceStop}
+              aria-label={isRecording ? "Recording — release to send" : "Hold to record voice message"}
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
+          </div>
+          <Button onClick={() => { sendMessage(input); }} size="icon" className="h-11 w-11 rounded-full shrink-0 mb-0.5" disabled={isTyping || isRecording}>
             <Send className="h-5 w-5 ml-1" />
           </Button>
         </div>
@@ -3062,41 +3078,6 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
           Complete your case intake to see only the forms that apply to your situation — forms will be filtered based on whether you're suing an individual or a business.
         </div>
       )}
-
-      {/* Readiness Banner */}
-      <Card className={`border-2 ${score >= 80 ? "border-green-400 bg-green-50" : score >= 50 ? "border-yellow-400 bg-yellow-50" : "border-red-400 bg-red-50"}`}>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            {/* Score */}
-            <div className="flex items-center gap-3 shrink-0">
-              <div className={`text-5xl font-black leading-none ${color}`}>{score}</div>
-              <div className="flex flex-col gap-1 min-w-[80px]">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{i18n.forms.readinessScore}</span>
-                <div className="w-20 bg-muted rounded-full h-2 overflow-hidden">
-                  <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
-                </div>
-                <span className={`text-xs font-semibold ${color}`}>{score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info"}</span>
-              </div>
-            </div>
-            {/* Divider */}
-            <div className="hidden sm:block w-px self-stretch bg-border" />
-            {/* Details */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0.5">
-              {readiness?.strengths && readiness.strengths.map((s: string, i: number) => (
-                <div key={i} className="flex items-start gap-1.5 text-xs text-green-700">
-                  <CheckCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-green-500" />{s}
-                </div>
-              ))}
-              {readiness?.missingFields && readiness.missingFields.map((f: string, i: number) => (
-                <div key={i} className="flex items-start gap-1.5 text-xs text-destructive">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{f}
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
 
       {/* Case Summary Card */}
       <Card className="bg-muted/30 border-dashed">
