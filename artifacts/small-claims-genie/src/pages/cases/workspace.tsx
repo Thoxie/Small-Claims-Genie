@@ -123,7 +123,7 @@ export default function CaseWorkspace() {
             </TabsTrigger>
             <TabsTrigger value="demand-letter" className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-demand-letter">
               <Mail className="h-4 w-4 shrink-0" />
-              <span className="leading-tight">Demand</span>
+              <span className="leading-tight">Demand Letter</span>
             </TabsTrigger>
             <TabsTrigger value="forms" className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-forms">
               <Scale className="h-4 w-4 shrink-0" />
