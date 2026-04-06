@@ -149,7 +149,7 @@ export default function CaseWorkspace() {
             <DocumentsTab caseId={caseId} evidenceChecklist={(currentCase as any)?.evidenceChecklist || []} />
           </TabsContent>
           <TabsContent value="chat" className="p-0 m-0">
-            <ChatTab caseId={caseId} isDraftMode={false} />
+            <ChatTab caseId={caseId} isDraftMode={false} currentCase={currentCase} />
           </TabsContent>
           <TabsContent value="demand-letter" className="p-0 m-0">
             <DemandLetterTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />

@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetChatHistory } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Mic, Send, CheckCircle, Loader2, Download } from "lucide-react";
+import { Mic, Send, CheckCircle, Loader2, Download, Sparkles } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
 import { DraftLockedButton } from "@/components/draft-overlay";
 
-export function ChatTab({ caseId, isDraftMode = false }: { caseId: number; isDraftMode?: boolean }) {
+export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: number; isDraftMode?: boolean; currentCase?: any }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -196,9 +196,38 @@ export function ChatTab({ caseId, isDraftMode = false }: { caseId: number; isDra
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground opacity-60">
-            <div className="text-4xl mb-4">🧞</div>
-            <p>Ask anything about your case.</p>
+          <div className="flex flex-col items-center justify-center py-8 px-4 gap-6 max-w-lg mx-auto">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="h-14 w-14 rounded-2xl bg-[#ddf6f3] flex items-center justify-center text-3xl shadow-sm">🧞</div>
+              <div>
+                <p className="font-semibold text-foreground text-base">Your AI Genie is ready</p>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">Ask anything about your California small claims case. I'm trained on your uploaded documents and California court rules.</p>
+              </div>
+            </div>
+            <div className="w-full space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3" /> Suggested questions — tap to ask
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { q: currentCase?.defendantName ? `What are the strongest arguments in my case against ${currentCase.defendantName}?` : "What are the strongest arguments in my case?", icon: "⚖️" },
+                  { q: "What evidence should I bring to the hearing to prove my claim?", icon: "📋" },
+                  { q: currentCase?.claimAmount ? `How do I prove I'm owed $${Number(currentCase.claimAmount).toLocaleString()}?` : "How do I calculate and prove my damages?", icon: "💵" },
+                  { q: "What questions will the judge likely ask me at the hearing?", icon: "🏛️" },
+                ].map(({ q, icon }) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => sendMessage(q)}
+                    className="flex items-start gap-3 w-full rounded-xl border border-[#a8e6df] bg-[#f0fffe] hover:bg-[#ddf6f3] px-4 py-3 text-left text-sm text-foreground transition-colors group"
+                  >
+                    <span className="text-base shrink-0 mt-0.5">{icon}</span>
+                    <span className="leading-relaxed text-[#0d6b5e] group-hover:text-[#0a5a50]">{q}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground text-center">Or type your own question below — voice input also supported</p>
           </div>
         )}
         {messages.map((msg) => (

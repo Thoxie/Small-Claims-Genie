@@ -177,7 +177,44 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
             </div>
           </div>
         ))}
-        {(!documents || documents.length === 0) && <p className="text-center text-muted-foreground py-8">{i18n.documents.noDocs}</p>}
+        {(!documents || documents.length === 0) && (
+          <div className="rounded-xl border border-dashed border-muted-foreground/25 bg-muted/10 p-6 mt-2">
+            <div className="flex flex-col items-center gap-3 text-center mb-5">
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <FileText className="h-6 w-6 text-primary/60" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm">No documents uploaded yet</p>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">The AI Genie reads your documents and uses them to answer questions. Upload everything you have — more is better.</p>
+              </div>
+            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-center">Documents that win small claims cases</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {[
+                { icon: "📄", label: "Contracts & agreements", sub: "Written or signed" },
+                { icon: "🧾", label: "Receipts & invoices", sub: "Proof of payment" },
+                { icon: "📷", label: "Photos & videos", sub: "Damage or condition" },
+                { icon: "💬", label: "Texts & emails", sub: "Screenshots work" },
+                { icon: "🏦", label: "Bank statements", sub: "Transfers & charges" },
+                { icon: "📬", label: "Prior demand letters", sub: "If you sent one" },
+              ].map(({ icon, label, sub }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-start gap-2.5 rounded-lg border border-border bg-background hover:border-primary/40 hover:bg-primary/5 px-3 py-2.5 text-left transition-colors"
+                >
+                  <span className="text-lg shrink-0 mt-0.5">{icon}</span>
+                  <div>
+                    <p className="text-[12px] font-medium text-foreground leading-tight">{label}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground text-center mt-4">Click any card or use the Browse Files button above — PDFs, images, and Word docs all accepted</p>
+          </div>
+        )}
       </div>
     </div>
   );
