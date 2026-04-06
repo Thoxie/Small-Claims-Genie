@@ -670,4 +670,220 @@ router.post("/cases/:id/settlement-letter/pdf", async (req, res): Promise<void> 
   res.send(Buffer.from(pdfBytes));
 });
 
+// ─── SETTLEMENT AGREEMENT ────────────────────────────────────────────────────
+
+const AGREEMENT_SYSTEM = `You are an expert California civil attorney drafting a Settlement Agreement and Mutual Release. 
+Write a complete, professional settlement agreement that could be signed by both parties to resolve a California small claims dispute.
+Use formal legal language appropriate for a binding agreement. The document must be thorough but readable.`;
+
+// GET — load saved agreement
+router.get("/cases/:id/settlement-agreement", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  res.json({ text: (caseRecord as any).settlementAgreementText ?? null });
+});
+
+// POST — generate settlement agreement via SSE
+router.post("/cases/:id/settlement-agreement", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rateCheck = checkAiRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes.` });
+    return;
+  }
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const {
+    settlementAmount,
+    installments = false,
+    installmentCount = 3,
+    paymentMethod = "check",
+    includeConfidentiality = false,
+  } = req.body ?? {};
+
+  const today = new Date();
+  const todayStr = today.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  const origAmt = caseRecord.claimAmount
+    ? `$${Number(caseRecord.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : "[ORIGINAL CLAIM AMOUNT]";
+  const settleAmt = settlementAmount
+    ? `$${Number(settlementAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : origAmt;
+  const perInstallment = installments && settlementAmount
+    ? `$${(Number(settlementAmount) / Number(installmentCount)).toFixed(2)}`
+    : null;
+
+  const paymentTerms = installments && perInstallment
+    ? `${settleAmt} payable in ${installmentCount} equal monthly installments of ${perInstallment} each, with the first payment due within 30 days of execution of this Agreement, and each subsequent payment due on the same day of each following month, paid by ${paymentMethod}`
+    : `${settleAmt} paid in full within 14 days of execution of this Agreement by ${paymentMethod}`;
+
+  const hearingDateStr = caseRecord.hearingDate
+    ? new Date(caseRecord.hearingDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    : null;
+
+  const contextParts = [
+    `=== PARTIES ===`,
+    `Plaintiff (Claimant): ${caseRecord.plaintiffName ?? "[PLAINTIFF NAME]"}`,
+    caseRecord.plaintiffAddress ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity ?? ""}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`.trim() : "",
+    `Defendant (Respondent): ${caseRecord.defendantName ?? "[DEFENDANT NAME]"}`,
+    caseRecord.defendantAddress ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity ?? ""}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`.trim() : "",
+    `\n=== CASE DETAILS ===`,
+    caseRecord.caseNumber ? `Case Number: ${caseRecord.caseNumber}` : "Case: Filed in California Small Claims Court (case number to be inserted if applicable)",
+    caseRecord.countyId ? `Court: ${caseRecord.countyId} County Small Claims Court` : "",
+    caseRecord.claimType ? `Claim Type: ${caseRecord.claimType}` : "",
+    caseRecord.incidentDate ? `Incident Date: ${caseRecord.incidentDate}` : "",
+    hearingDateStr ? `Scheduled Hearing Date: ${hearingDateStr}` : "",
+    `Original Claim Amount: ${origAmt}`,
+    caseRecord.claimDescription ? `\nDispute Background:\n${caseRecord.claimDescription}` : "",
+    `\n=== SETTLEMENT TERMS ===`,
+    `Agreed Settlement Amount: ${settleAmt}`,
+    `Payment Terms: ${paymentTerms}`,
+    includeConfidentiality ? "Include a confidentiality/non-disclosure clause." : "No confidentiality clause required.",
+    `\nToday's Date: ${todayStr}`,
+  ].filter(Boolean).join("\n");
+
+  const prompt = `Draft a complete SETTLEMENT AGREEMENT AND MUTUAL RELEASE for this California small claims dispute.
+
+${contextParts}
+
+The agreement must include these sections in order:
+1. TITLE: "SETTLEMENT AGREEMENT AND MUTUAL RELEASE"
+2. PREAMBLE: Date, parties, and purpose
+3. RECITALS: Background facts (the dispute, that it has been filed or threatened in small claims court)
+4. SETTLEMENT PAYMENT: Exact amount and payment schedule
+5. MUTUAL RELEASE OF ALL CLAIMS: Both parties release all claims arising from this dispute
+6. DISMISSAL: Plaintiff agrees to dismiss/withdraw the case with prejudice upon receipt of payment
+7. NO ADMISSION OF LIABILITY: Standard clause
+8. ENTIRE AGREEMENT: Merger clause
+${includeConfidentiality ? "9. CONFIDENTIALITY: Both parties agree to keep terms confidential\n10." : "9."} GOVERNING LAW: California
+${includeConfidentiality ? "11." : "10."} COUNTERPARTS: Agreement may be signed in counterparts
+SIGNATURE BLOCK: Full signature lines for both parties with printed name, date, and address lines
+
+Use [BLANK] for any fields the parties must fill in at signing. Be complete and legally thorough.`;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  let fullText = "";
+  const stream = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 4096,
+    messages: [
+      { role: "system", content: AGREEMENT_SYSTEM },
+      { role: "user", content: prompt },
+    ],
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content;
+    if (content) {
+      fullText += content;
+      res.write(`data: ${JSON.stringify({ content })}\n\n`);
+    }
+  }
+
+  await db.update(casesTable)
+    .set({ settlementAgreementText: fullText } as any)
+    .where(eq(casesTable.id, id));
+
+  res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+  res.end();
+});
+
+// POST /pdf — generate settlement agreement PDF (formal legal document style)
+router.post("/cases/:id/settlement-agreement/pdf", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  const agreementText: string = req.body?.text ?? (caseRecord as any).settlementAgreementText ?? "";
+  if (!agreementText.trim()) { res.status(400).json({ error: "No agreement text to export" }); return; }
+
+  const NAVY = rgb(0.08, 0.16, 0.36);
+
+  const pdfDoc = await PDFDocument.create();
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const regFont  = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const W = 612, H = 792, ML = 72, MR = 72, CW = W - ML - MR;
+  let page = pdfDoc.addPage([W, H]);
+  let y = H - 56;
+
+  page.drawRectangle({ x: 0, y: H - 48, width: W, height: 48, color: NAVY });
+  page.drawText("SETTLEMENT AGREEMENT", { x: ML, y: H - 22, size: 14, font: boldFont, color: rgb(1, 1, 1) });
+  page.drawText("AND MUTUAL RELEASE", { x: ML, y: H - 38, size: 11, font: boldFont, color: rgb(0.8, 0.85, 1) });
+  page.drawText("Confidential Legal Document", {
+    x: W - MR - 148, y: H - 30, size: 9, font: regFont, color: rgb(0.7, 0.75, 0.9),
+  });
+  page.drawLine({ start: { x: ML, y: H - 58 }, end: { x: W - MR, y: H - 58 }, thickness: 0.5, color: GRAY });
+  y = H - 80;
+
+  const SIZE = 10.5, LINE_H = SIZE * 1.55, MAX_Y = 72;
+  function wrapLine(text: string, maxW: number): string[] {
+    if (!text.trim()) return [""];
+    const words = text.split(" ");
+    const result: string[] = [];
+    let cur = "";
+    for (const w of words) {
+      const test = cur ? `${cur} ${w}` : w;
+      if (regFont.widthOfTextAtSize(test, SIZE) <= maxW) { cur = test; }
+      else { if (cur) result.push(cur); cur = w; }
+    }
+    if (cur) result.push(cur);
+    return result.length ? result : [""];
+  }
+
+  for (const rawLine of agreementText.split("\n")) {
+    const isHeading = /^[A-Z\s]{6,}$/.test(rawLine.trim()) || /^\d+\.\s+[A-Z]/.test(rawLine.trim());
+    const font = isHeading ? boldFont : regFont;
+    const size = isHeading ? SIZE + 0.5 : SIZE;
+    const lineH = size * 1.6;
+    for (const wl of wrapLine(rawLine, CW)) {
+      if (y < MAX_Y) {
+        page = pdfDoc.addPage([W, H]);
+        page.drawRectangle({ x: 0, y: H - 40, width: W, height: 40, color: NAVY });
+        page.drawText("SETTLEMENT AGREEMENT (continued)", { x: ML, y: H - 26, size: 11, font: boldFont, color: rgb(1, 1, 1) });
+        y = H - 68;
+      }
+      page.drawText(wl || " ", { x: ML, y, size, font, color: BLACK });
+      y -= lineH;
+    }
+    y -= lineH * 0.12;
+  }
+
+  const pageCount = pdfDoc.getPageCount();
+  for (let i = 0; i < pageCount; i++) {
+    const p = pdfDoc.getPage(i);
+    p.drawLine({ start: { x: ML, y: 44 }, end: { x: W - MR, y: 44 }, thickness: 0.5, color: GRAY });
+    p.drawText(`Generated by Small Claims Genie  •  Page ${i + 1} of ${pageCount}  •  NOT LEGAL ADVICE`, {
+      x: ML, y: 28, size: 7.5, font: regFont, color: GRAY,
+    });
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  const defName = (caseRecord.defendantName ?? "defendant").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+  const dateStr = new Date().toISOString().slice(0, 10);
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="Settlement_Agreement_${defName}_${dateStr}.pdf"`);
+  res.send(Buffer.from(pdfBytes));
+});
+
 export default router;

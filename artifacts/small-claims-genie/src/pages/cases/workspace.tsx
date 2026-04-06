@@ -3515,7 +3515,7 @@ const TONE_META: { value: DemandLetterTone; label: string; description: string }
 
 function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase: any }) {
   const { getToken } = useAuth();
-  const [mode, setMode] = useState<"demand" | "settlement">("demand");
+  const [mode, setMode] = useState<"demand" | "settlement" | "agreement">("demand");
 
   // ── Demand letter state ────────────────────────────────────────────────────
   const [text, setText] = useState("");
@@ -3540,6 +3540,17 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
   const [settleLoaded, setSettleLoaded] = useState(false);
   const [settleError, setSettleError] = useState<string | null>(null);
   const [settleChecklist, setSettleChecklist] = useState<Record<string, boolean>>({});
+
+  // ── Settlement agreement state ─────────────────────────────────────────────
+  const [agreementText, setAgreementText] = useState("");
+  const [agreeInstallments, setAgreeInstallments] = useState(false);
+  const [agreeInstallmentCount, setAgreeInstallmentCount] = useState(3);
+  const [agreePaymentMethod, setAgreePaymentMethod] = useState<"check" | "cash" | "Zelle" | "bank transfer">("check");
+  const [agreeConfidential, setAgreeConfidential] = useState(false);
+  const [isGeneratingAgreement, setIsGeneratingAgreement] = useState(false);
+  const [isDownloadingAgreement, setIsDownloadingAgreement] = useState(false);
+  const [agreementLoaded, setAgreementLoaded] = useState(false);
+  const [agreementError, setAgreementError] = useState<string | null>(null);
 
   const SETTLE_CHECKLIST = [
     { id: "certified", label: "Send via certified mail (USPS)", detail: "Get a tracking number — you'll need it if they later dispute receipt." },
@@ -3581,6 +3592,20 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
           setSettleLoaded(true);
         }
       } catch { if (!cancelled) setSettleLoaded(true); }
+    })();
+    return () => { cancelled = true; };
+  }, [caseId, getToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`/api/cases/${caseId}/settlement-agreement`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!cancelled) { if (data.text) setAgreementText(data.text); setAgreementLoaded(true); }
+      } catch { if (!cancelled) setAgreementLoaded(true); }
     })();
     return () => { cancelled = true; };
   }, [caseId, getToken]);
@@ -3685,6 +3710,62 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
     finally { setIsDownloadingSettle(false); }
   }
 
+  // ── Settlement agreement generate ──────────────────────────────────────────
+  async function generateAgreement() {
+    if (isGeneratingAgreement) return;
+    setIsGeneratingAgreement(true); setAgreementError(null); setAgreementText("");
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/settlement-agreement`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          settlementAmount: settleAmount,
+          installments: agreeInstallments,
+          installmentCount: agreeInstallmentCount,
+          paymentMethod: agreePaymentMethod,
+          includeConfidentiality: agreeConfidential,
+        }),
+      });
+      if (!res.ok) { const err = await res.json().catch(() => ({})); setAgreementError(err.error ?? "Generation failed"); return; }
+      const reader = res.body?.getReader();
+      if (!reader) { setAgreementError("Streaming not supported"); return; }
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n"); buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try { const p = JSON.parse(line.slice(6)); if (p.content) setAgreementText(prev => prev + p.content); } catch { /* ignore */ }
+        }
+      }
+    } catch (e: any) { setAgreementError(e.message ?? "Unexpected error"); }
+    finally { setIsGeneratingAgreement(false); }
+  }
+
+  async function downloadAgreementPdf() {
+    if (!agreementText.trim() || isDownloadingAgreement) return;
+    setIsDownloadingAgreement(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/settlement-agreement/pdf`, {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: agreementText }),
+      });
+      if (!res.ok) { setAgreementError("PDF generation failed"); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const defName = (currentCase?.defendantName ?? "defendant").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const a = document.createElement("a"); a.href = url; a.download = `Settlement_Agreement_${defName}_${dateStr}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch (e: any) { setAgreementError(e.message ?? "Download failed"); }
+    finally { setIsDownloadingAgreement(false); }
+  }
+
   const pctLabel = claimAmt > 0
     ? `${settlePct}% of your claim (${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(settleAmount)})`
     : `${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(settleAmount)}`;
@@ -3692,7 +3773,7 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
   return (
     <div className="p-6 space-y-6">
       {/* Mode toggle */}
-      <div className="flex items-center gap-2 p-1 bg-muted rounded-xl w-fit">
+      <div className="flex items-center gap-1 p-1 bg-muted rounded-xl w-fit flex-wrap">
         <button
           type="button"
           onClick={() => setMode("demand")}
@@ -3710,6 +3791,15 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
           }`}
         >
           <Handshake className="h-4 w-4" /> Settlement Offer
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("agreement")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            mode === "agreement" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <PenLine className="h-4 w-4" /> Settlement Agreement
         </button>
       </div>
 
@@ -3969,6 +4059,196 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
               <Handshake className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
               <p className="text-sm text-muted-foreground font-medium">No settlement offer yet</p>
               <p className="text-xs text-muted-foreground mt-1">Configure your offer above and click Generate.</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── SETTLEMENT AGREEMENT MODE ── */}
+      {mode === "agreement" && (
+        <>
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2"><PenLine className="h-5 w-5 text-[#0d6b5e]" />Settlement Agreement Generator</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Generate a formal, legally-structured Settlement Agreement and Mutual Release — the document both parties sign to finalize the settlement.
+            </p>
+          </div>
+
+          {/* Info card */}
+          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 space-y-3">
+            <p className="text-sm font-bold text-blue-800">What is a Settlement Agreement?</p>
+            <p className="text-sm text-blue-700 leading-relaxed">
+              Unlike a Settlement Offer Letter (which proposes terms), a Settlement Agreement is the <strong>binding contract</strong> both parties sign once they agree to settle. It includes a mutual release of all claims, payment terms, and dismissal of the case.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              {[
+                { icon: "✍️", tip: "Both parties must sign for it to be binding" },
+                { icon: "🏛️", tip: "Plaintiff withdraws the court case upon receipt of payment" },
+                { icon: "🔒", tip: "Mutual release means neither side can sue over this again" },
+              ].map(({ icon, tip }) => (
+                <div key={tip} className="flex items-start gap-2">
+                  <span className="text-base shrink-0">{icon}</span>
+                  <p className="text-xs text-blue-700 leading-relaxed">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {!hasRequiredInfo && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-amber-800 text-sm">Complete Intake First</p>
+                <p className="text-amber-700 text-sm mt-0.5">Fill in your name, the defendant's name, and claim amount in the Intake tab.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Settlement amount */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">Agreed Settlement Amount</p>
+              <span className="text-sm font-bold text-[#0d6b5e]">{pctLabel}</span>
+            </div>
+            {claimAmt > 0 ? (
+              <>
+                <Slider
+                  min={50} max={100} step={1}
+                  value={[settlePct]}
+                  onValueChange={([v]) => {
+                    setSettlePct(v);
+                    setSettleAmount(Math.round(claimAmt * v / 100 * 100) / 100);
+                  }}
+                  className="[&_.bg-primary]:bg-[#0d6b5e] [&_.border-primary\/50]:border-[#0d6b5e]"
+                />
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  <span>50%</span><span className="font-semibold text-[#0d6b5e]">← Recommended range: 70–85% →</span><span>100%</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">$</span>
+                <input
+                  type="number" min={0} step={1}
+                  value={settleAmount}
+                  onChange={e => setSettleAmount(Number(e.target.value))}
+                  className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]"
+                  placeholder="Enter agreed amount"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Payment method */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold">Payment Method</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {(["check", "cash", "Zelle", "bank transfer"] as const).map(method => (
+                <button key={method} type="button" onClick={() => setAgreePaymentMethod(method)}
+                  className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all capitalize ${agreePaymentMethod === method ? "border-[#0d6b5e] bg-[#f0fffe] text-[#0d6b5e]" : "border-border hover:border-[#0d6b5e]/40"}`}>
+                  {method}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Installments */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox" id="agreeInstallments" checked={agreeInstallments}
+                onChange={e => setAgreeInstallments(e.target.checked)}
+                className="h-4 w-4 accent-[#0d6b5e]"
+              />
+              <label htmlFor="agreeInstallments" className="text-sm font-medium cursor-pointer">Pay in installments</label>
+            </div>
+            {agreeInstallments && (
+              <div className="flex items-center gap-3 pl-7">
+                <span className="text-sm text-muted-foreground">Monthly payments:</span>
+                {[2, 3, 4, 6].map(n => (
+                  <button key={n} type="button" onClick={() => setAgreeInstallmentCount(n)}
+                    className={`h-8 w-8 rounded-full text-sm font-bold border-2 transition-all ${agreeInstallmentCount === n ? "border-[#0d6b5e] bg-[#0d6b5e] text-white" : "border-border hover:border-[#0d6b5e]"}`}>
+                    {n}
+                  </button>
+                ))}
+                {settleAmount > 0 && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    ≈ {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(settleAmount / agreeInstallmentCount)}/mo
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Confidentiality clause */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox" id="agreeConfidential" checked={agreeConfidential}
+              onChange={e => setAgreeConfidential(e.target.checked)}
+              className="h-4 w-4 accent-[#0d6b5e]"
+            />
+            <label htmlFor="agreeConfidential" className="text-sm font-medium cursor-pointer">
+              Include confidentiality clause <span className="text-muted-foreground font-normal">(both parties agree not to disclose terms)</span>
+            </label>
+          </div>
+
+          {/* Generate button */}
+          <Button onClick={generateAgreement} disabled={isGeneratingAgreement || !hasRequiredInfo || settleAmount <= 0}
+            className="w-full gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white py-5" size="lg">
+            {isGeneratingAgreement
+              ? <><Loader2 className="h-4 w-4 animate-spin" />Drafting agreement…</>
+              : <><PenLine className="h-4 w-4" />{agreementText.trim() ? "Regenerate Settlement Agreement" : "Generate Settlement Agreement"}</>}
+          </Button>
+
+          {agreementError && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <p className="text-sm text-destructive">{agreementError}</p>
+            </div>
+          )}
+
+          {/* Agreement output */}
+          {(agreementText.trim() || isGeneratingAgreement) && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Agreement Preview</p>
+                <p className="text-xs text-muted-foreground">Edit to fill in [BLANK] fields before printing.</p>
+              </div>
+              <Textarea value={agreementText} onChange={e => setAgreementText(e.target.value)}
+                className="font-mono text-sm leading-relaxed min-h-[620px] resize-y"
+                placeholder={isGeneratingAgreement ? "Drafting your settlement agreement…" : ""} readOnly={isGeneratingAgreement} />
+              {!isGeneratingAgreement && agreementText.trim() && (
+                <Button onClick={downloadAgreementPdf} disabled={isDownloadingAgreement}
+                  className="w-full gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" size="lg">
+                  {isDownloadingAgreement ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download as PDF
+                </Button>
+              )}
+              {/* Post-gen notice */}
+              {!isGeneratingAgreement && agreementText.trim() && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 space-y-2">
+                  <p className="text-sm font-bold text-amber-800">Before you sign</p>
+                  {[
+                    { icon: "✍️", tip: "Fill in all [BLANK] fields with the correct information." },
+                    { icon: "📋", tip: "Print two copies — one for each party to keep." },
+                    { icon: "🤝", tip: "Both parties must sign and date in front of each other." },
+                    { icon: "💰", tip: "Plaintiff should wait until payment clears before filing dismissal." },
+                    { icon: "🏛️", tip: "File a Request for Dismissal (SC-290) with the court once paid." },
+                  ].map(({ icon, tip }) => (
+                    <div key={tip} className="flex items-start gap-2">
+                      <span className="text-base shrink-0">{icon}</span>
+                      <p className="text-xs text-amber-700 leading-relaxed">{tip}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!agreementText.trim() && !isGeneratingAgreement && agreementLoaded && (
+            <div className="rounded-xl border border-dashed border-muted-foreground/30 bg-muted/20 p-12 text-center">
+              <PenLine className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground font-medium">No agreement drafted yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Configure the terms above and click Generate.</p>
             </div>
           )}
         </>
