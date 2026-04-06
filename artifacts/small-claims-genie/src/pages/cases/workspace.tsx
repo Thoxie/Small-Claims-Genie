@@ -1426,6 +1426,11 @@ function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceC
     () => new Set(evidenceChecklist.filter(i => i.checked).map(i => i.id))
   );
 
+  // Keep local checked state in sync when parent refetches fresh case data
+  useEffect(() => {
+    setCheckedItems(new Set(evidenceChecklist.filter(i => i.checked).map(i => i.id)));
+  }, [evidenceChecklist]);
+
   const saveChecked = async (next: Set<string>) => {
     try {
       const token = await getToken();
@@ -1434,6 +1439,8 @@ function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceC
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ checkedIds: Array.from(next) }),
       });
+      // Refresh the parent case so checked flags persist across tab switches
+      queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
     } catch { /* silent — UI state is still correct */ }
   };
 
@@ -1444,6 +1451,17 @@ function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceC
       saveChecked(n);
       return n;
     });
+  };
+
+  const deleteChecklistItem = async (itemId: string) => {
+    try {
+      const token = await getToken();
+      await fetch(`/api/cases/${caseId}/advisor/checklist/${itemId}`, {
+        method: "DELETE",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+    } catch { /* silent */ }
   };
 
   const invalidateDocAndScore = () => {
@@ -1491,22 +1509,34 @@ function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceC
           <p className="text-xs text-muted-foreground mb-3">Check off each document as you gather it, then upload it using the button above.</p>
           <div className="space-y-2">
             {evidenceChecklist.map((item) => (
-              <button
+              <div
                 key={item.id}
-                type="button"
-                onClick={() => toggleItem(item.id)}
-                className="w-full flex items-start gap-3 rounded-lg border border-[#a8e6df] bg-white p-3 text-left hover:bg-[#ddf6f3]/40 transition-colors"
+                className="flex items-start gap-2 rounded-lg border border-[#a8e6df] bg-white p-3"
               >
-                <div className="mt-0.5 shrink-0 text-[#0d6b5e]">
-                  {checkedItems.has(item.id)
-                    ? <CheckSquare2 className="h-5 w-5" />
-                    : <Square className="h-5 w-5 text-muted-foreground" />}
-                </div>
-                <div>
-                  <p className={`text-sm font-medium ${checkedItems.has(item.id) ? "line-through text-muted-foreground" : ""}`}>{item.item}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
-                </div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => toggleItem(item.id)}
+                  className="flex items-start gap-3 flex-1 text-left hover:bg-[#ddf6f3]/40 transition-colors rounded"
+                >
+                  <div className="mt-0.5 shrink-0 text-[#0d6b5e]">
+                    {checkedItems.has(item.id)
+                      ? <CheckSquare2 className="h-5 w-5" />
+                      : <Square className="h-5 w-5 text-muted-foreground" />}
+                  </div>
+                  <div>
+                    <p className={`text-sm font-medium ${checkedItems.has(item.id) ? "line-through text-muted-foreground" : ""}`}>{item.item}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteChecklistItem(item.id)}
+                  className="shrink-0 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  aria-label="Remove from checklist"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             ))}
           </div>
         </div>

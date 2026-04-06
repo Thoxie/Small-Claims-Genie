@@ -457,6 +457,26 @@ router.patch("/cases/:id/advisor/checklist", async (req, res): Promise<void> => 
   res.json({ ok: true });
 });
 
+// ─── Case Advisor: Delete a single checklist item ─────────────────────────────
+router.delete("/cases/:id/advisor/checklist/:itemId", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const { itemId } = req.params;
+
+  const [existing] = await db
+    .select({ id: casesTable.id, evidenceChecklist: casesTable.evidenceChecklist })
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!existing) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const currentList = Array.isArray(existing.evidenceChecklist) ? existing.evidenceChecklist as { id: string; item: string; description: string; checked?: boolean }[] : [];
+  const updated = currentList.filter((item) => item.id !== itemId);
+
+  await db.update(casesTable).set({ evidenceChecklist: updated }).where(eq(casesTable.id, id));
+  res.json({ ok: true });
+});
+
 // ─── Case Advisor: Refine Statement ───────────────────────────────────────────
 router.post("/cases/:id/advisor/refine", async (req, res): Promise<void> => {
   const userId = getUserId(req);
