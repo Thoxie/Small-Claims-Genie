@@ -58,17 +58,21 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8 text-center">
-          <h1 className="text-2xl font-bold text-destructive">Something went wrong</h1>
-          <p className="text-muted-foreground max-w-md">
-            {this.state.error.message || "An unexpected error occurred. Please try again."}
-          </p>
-          <button
-            onClick={() => { this.setState({ error: null }); window.location.href = "/"; }}
-            className="px-5 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Return to Home
-          </button>
+        <div className="min-h-screen flex flex-col p-8 text-center">
+          <div className="flex flex-col items-center gap-6 mt-20">
+            <h1 className="text-2xl font-bold text-destructive">Something went wrong</h1>
+            <p className="text-muted-foreground max-w-md">
+              {this.state.error.message || "An unexpected error occurred. Please try again."}
+            </p>
+          </div>
+          <div className="mt-auto pb-4 flex justify-center">
+            <button
+              onClick={() => { this.setState({ error: null }); window.location.href = "/"; }}
+              className="px-5 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Return to Home
+            </button>
+          </div>
         </div>
       );
     }
