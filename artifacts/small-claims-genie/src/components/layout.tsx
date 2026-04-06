@@ -62,25 +62,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Right side actions */}
           <div className="flex items-center gap-2 md:gap-3">
 
-            {/* Resume — desktop only */}
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden md:flex text-muted-foreground hover:text-primary font-semibold"
-            >
-              <Link href="/resume">{i18n.nav.dashboard}</Link>
-            </Button>
-
-            {/* Start Your Case — always visible, shorter label on small phones */}
+            {/* Start or Resume Your Case — always visible, shorter label on small phones */}
             <Button
               asChild
               size="sm"
-              className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-3 md:px-5 text-xs md:text-sm h-8 md:h-9"
+              className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
             >
-              <Link href="/cases/new">
+              <Link href="/resume">
                 <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
-                <span className="hidden sm:inline">Start Your Case</span>
+                <span className="hidden sm:inline">Start or Resume Your Case</span>
                 <span className="sm:hidden">Start</span>
               </Link>
             </Button>
@@ -123,9 +113,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 asChild
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-full"
               >
-                <Link href="/cases/new">
+                <Link href="/resume">
                   <Wand2 className="mr-2 h-4 w-4" />
-                  Start Your Case
+                  Start or Resume Your Case
                 </Link>
               </Button>
             </div>
