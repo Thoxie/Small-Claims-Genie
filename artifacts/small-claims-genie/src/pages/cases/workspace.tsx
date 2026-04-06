@@ -7,7 +7,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, ClipboardList, FileText, MessageSquare, Mail, Scale, Gavel, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, ClipboardList, FileText, MessageSquare, Mail, Scale, Gavel, CheckCircle, AlertCircle, CalendarDays } from "lucide-react";
 
 import { IntakeTab } from "./tabs/intake-tab";
 import { DocumentsTab } from "./tabs/documents-tab";
@@ -15,6 +15,7 @@ import { ChatTab } from "./tabs/chat-tab";
 import { FormsTab } from "./tabs/forms-tab";
 import { DemandLetterTab } from "./tabs/demand-letter-tab";
 import { HearingPrepTab } from "./tabs/hearing-prep-tab";
+import { DeadlineCalculatorTab } from "./tabs/deadline-calculator-tab";
 
 export default function CaseWorkspace() {
   const params = useParams();
@@ -108,7 +109,7 @@ export default function CaseWorkspace() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="sticky top-[70px] md:top-[106px] z-30 bg-background -mx-4 px-4 md:-mx-6 md:px-6 pb-3 pt-1 border-b border-border shadow-sm">
-          <TabsList className="w-full grid grid-cols-6 h-auto p-1 bg-muted/80 rounded-xl gap-0.5">
+          <TabsList className="w-full grid grid-cols-7 h-auto p-1 bg-muted/80 rounded-xl gap-0.5">
             <TabsTrigger value="intake" className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-intake">
               <ClipboardList className="h-4 w-4 shrink-0" />
               <span className="leading-tight">Intake</span>
@@ -133,6 +134,10 @@ export default function CaseWorkspace() {
               <Gavel className="h-4 w-4 shrink-0" />
               <span className="leading-tight text-center">Prep for<br/>Hearing</span>
             </TabsTrigger>
+            <TabsTrigger value="deadlines" className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-deadlines">
+              <CalendarDays className="h-4 w-4 shrink-0" />
+              <span className="leading-tight text-center">Deadlines</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -154,6 +159,9 @@ export default function CaseWorkspace() {
           </TabsContent>
           <TabsContent value="prep" className="p-0 m-0">
             <HearingPrepTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
+          </TabsContent>
+          <TabsContent value="deadlines" className="p-0 m-0">
+            <DeadlineCalculatorTab currentCase={currentCase} />
           </TabsContent>
         </div>
       </Tabs>
