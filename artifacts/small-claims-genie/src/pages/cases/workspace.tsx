@@ -173,17 +173,34 @@ export default function CaseWorkspace() {
       </Link>
 
       {/* Case header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-card px-4 py-3 rounded-xl border shadow-sm">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start gap-2 mb-0.5">
-            <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{currentCase.title}</p>
-            <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0 mt-0.5">
-              {currentCase.status.replace('_', ' ')}
-            </Badge>
+      <div className="bg-card px-4 py-3 rounded-xl border shadow-sm">
+        {/* Legal caption row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground leading-snug tracking-tight">
+              {currentCase.plaintiffName || "[Plaintiff]"}
+              <span className="font-normal text-muted-foreground mx-1.5">v.</span>
+              {currentCase.defendantName || "[Defendant]"}
+            </p>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+              {currentCase.caseNumber && (
+                <span className="text-xs text-muted-foreground">
+                  Case No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span>
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">
+                Claim: <span className="font-semibold text-foreground">{currentCase.claimAmount ? `$${Number(currentCase.claimAmount).toLocaleString()}` : "Not set"}</span>
+              </span>
+              {currentCase.countyId && (
+                <span className="text-xs text-muted-foreground">
+                  {currentCase.countyId} County
+                </span>
+              )}
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Claim Amount: <span className="font-semibold text-foreground">{currentCase.claimAmount ? `$${currentCase.claimAmount.toLocaleString()}` : "Not set"}</span>
-          </p>
+          <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0 mt-0.5">
+            {currentCase.status.replace('_', ' ')}
+          </Badge>
         </div>
       </div>
 
