@@ -307,7 +307,7 @@ export default function CaseWorkspace() {
         </TabsList>
         </div>
         
-        <div className="mt-4 border rounded-lg bg-card shadow-sm min-h-[600px]">
+        <div className={`mt-4 border rounded-lg bg-card shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
           <TabsContent value="intake" className="p-0 m-0">
             <IntakeTab caseId={caseId} initialData={currentCase} />
           </TabsContent>
@@ -1976,7 +1976,7 @@ function ChatTab({ caseId }: { caseId: number }) {
 
 
   return (
-    <div className="flex flex-col" style={{ height: "520px" }}>
+    <div className="flex flex-col" style={{ height: "calc(100dvh - 135px)", minHeight: "420px" }}>
       {/* Top bar */}
       <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex items-center gap-2">
