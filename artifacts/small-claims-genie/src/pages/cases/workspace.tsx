@@ -182,28 +182,45 @@ export default function CaseWorkspace() {
         const borderColor = score >= 80 ? "border-green-400" : score >= 50 ? "border-yellow-400" : "border-red-400";
         const scoreColor = score >= 80 ? "text-green-600" : score >= 50 ? "text-yellow-600" : "text-red-500";
         const scoreLabel = score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info";
+        const allItems = [
+          ...(readiness?.strengths ?? []).map((s: string) => ({ text: s, ok: true })),
+          ...(readiness?.missingFields ?? []).map((f: string) => ({ text: f, ok: false })),
+        ];
+        const half = Math.ceil(allItems.length / 2);
+        const col1 = allItems.slice(0, half);
+        const col2 = allItems.slice(half);
         return (
-          <div className={`bg-card px-4 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
-            <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+          <div className={`bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
+            <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
 
-              {/* LEFT: legal caption */}
-              <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
-                <div className="min-w-0">
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
-                  <p className="text-sm font-bold text-foreground leading-tight truncate">{currentCase.plaintiffName || "—"}</p>
+              {/* LEFT: names stacked + score below */}
+              <div className="flex flex-col gap-1 shrink-0">
+                {/* Names row */}
+                <div className="flex items-end gap-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
+                    <p className="text-sm font-bold text-foreground leading-tight">{currentCase.plaintiffName || "—"}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground pb-0.5 shrink-0">v.</span>
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
+                    <p className="text-sm font-bold text-foreground leading-tight">{currentCase.defendantName || "—"}</p>
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground shrink-0">v.</span>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
-                  <p className="text-sm font-bold text-foreground leading-tight truncate">{currentCase.defendantName || "—"}</p>
+                {/* Score row — directly below names */}
+                <div className="flex items-baseline gap-1.5">
+                  <span className={`text-2xl font-black leading-none ${scoreColor}`}>{score}%</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Readiness</span>
+                  <span className={`text-[10px] font-semibold ${scoreColor}`}>· {scoreLabel}</span>
                 </div>
-                <div className="flex items-center gap-x-3 gap-y-0 flex-wrap ml-1">
-                  {currentCase.caseNumber && (
-                    <span className="text-xs text-muted-foreground">No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span></span>
-                  )}
+                {/* Claim + county */}
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{(currentCase as any).claimAmount ? `$${Number((currentCase as any).claimAmount).toLocaleString()}` : "—"}</span></span>
                   {(currentCase as any).countyId && (
-                    <span className="text-xs text-muted-foreground">{(currentCase as any).countyId} County</span>
+                    <span className="text-xs text-muted-foreground">· {(currentCase as any).countyId} County</span>
+                  )}
+                  {currentCase.caseNumber && (
+                    <span className="text-xs text-muted-foreground">· No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span></span>
                   )}
                 </div>
               </div>
@@ -211,34 +228,40 @@ export default function CaseWorkspace() {
               {/* DIVIDER */}
               <div className="hidden sm:block w-px self-stretch bg-border shrink-0" />
 
-              {/* RIGHT: readiness score + checkmarks */}
-              <div className="flex items-center gap-3 shrink-0">
-                {/* Score number */}
-                <div className="flex flex-col items-center shrink-0">
-                  <span className={`text-3xl font-black leading-none ${scoreColor}`}>{score}</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground leading-none mt-0.5">Readiness</span>
-                  <span className={`text-[10px] font-bold ${scoreColor} leading-none mt-0.5`}>{scoreLabel}</span>
-                </div>
-                {/* Checkmarks + missing */}
-                {((readiness?.strengths?.length ?? 0) + (readiness?.missingFields?.length ?? 0)) > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 max-w-xs sm:max-w-sm">
-                    {readiness?.strengths?.map((s: string, i: number) => (
-                      <div key={i} className="flex items-start gap-1 text-[10px] text-green-700 leading-tight">
-                        <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />{s}
-                      </div>
-                    ))}
-                    {readiness?.missingFields?.map((f: string, i: number) => (
-                      <div key={i} className="flex items-start gap-1 text-[10px] text-destructive leading-tight">
-                        <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />{f}
+              {/* RIGHT: evenly balanced bullet columns */}
+              {allItems.length > 0 && (
+                <div className="flex gap-6 flex-1 min-w-0">
+                  <div className="flex flex-col gap-1">
+                    {col1.map((item, i) => (
+                      <div key={i} className={`flex items-start gap-1 text-[10px] leading-tight ${item.ok ? "text-green-700" : "text-destructive"}`}>
+                        {item.ok
+                          ? <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />
+                          : <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
+                        }
+                        {item.text}
                       </div>
                     ))}
                   </div>
-                )}
-                {/* Status badge */}
-                <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0">
-                  {currentCase.status.replace('_', ' ')}
-                </Badge>
-              </div>
+                  {col2.length > 0 && (
+                    <div className="flex flex-col gap-1">
+                      {col2.map((item, i) => (
+                        <div key={i} className={`flex items-start gap-1 text-[10px] leading-tight ${item.ok ? "text-green-700" : "text-destructive"}`}>
+                          {item.ok
+                            ? <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />
+                            : <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
+                          }
+                          {item.text}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Status badge */}
+              <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0 ml-auto">
+                {currentCase.status.replace('_', ' ')}
+              </Badge>
 
             </div>
           </div>
