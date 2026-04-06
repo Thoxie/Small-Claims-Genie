@@ -747,6 +747,14 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
 
     try {
       const token = await getToken();
+
+      // Auto-save current form values to DB first so the advisor always sees up-to-date amounts
+      await fetch(`/api/cases/${caseId}/intake`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ step: 2, data: values }),
+      }).catch(() => {/* best-effort — don't block the advisor if save fails */});
+
       const res = await fetch(`/api/cases/${caseId}/advisor/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
