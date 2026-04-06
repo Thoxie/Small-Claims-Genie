@@ -1903,6 +1903,7 @@ function ChatTab({ caseId }: { caseId: number }) {
 // Score ≥ 80 unlocks SC-100 PDF download
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
 const FORMS_CATALOG = [
+  /* ── Top 4 — the core filing set ───────────────────────────────────────── */
   {
     id: "sc100",
     number: "SC-100",
@@ -1912,6 +1913,34 @@ const FORMS_CATALOG = [
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc100.pdf",
   },
+  {
+    id: "mc030",
+    number: "MC-030",
+    name: "Declaration",
+    shortDesc: "A general sworn statement form for information that doesn't fit on the main form.",
+    detailDesc: "MC-030 is a blank declaration form used across many types of California court cases, including small claims. It is used whenever a party needs to submit a written statement under penalty of perjury that doesn't fit within the space provided on a specific form. For example, you might attach an MC-030 to provide a longer explanation of your claim, document witness statements, or supply additional facts. The person signing declares under penalty of perjury that everything written is true and correct.",
+    available: true,
+    blankFormUrl: "https://www.courts.ca.gov/documents/mc030.pdf",
+  },
+  {
+    id: "sc104",
+    number: "SC-104",
+    name: "Proof of Service",
+    shortDesc: "Documents that the defendant was properly served with the court papers.",
+    detailDesc: "SC-104 is completed by the person who delivered (served) the court papers to the defendant — this must be someone who is at least 18 years old and not named in the case. It cannot be you. The server records exactly how, when, and where the papers were delivered, then signs under penalty of perjury. This completed form must be filed with the court at least 5 days before the hearing date. Without proof of service, the court cannot proceed.",
+    available: true,
+    blankFormUrl: "https://www.courts.ca.gov/documents/sc104.pdf",
+  },
+  {
+    id: "fw001",
+    number: "FW-001",
+    name: "Request to Waive Court Fees",
+    shortDesc: "Ask the court to waive your filing fees if paying would be a financial hardship.",
+    detailDesc: "FW-001 lets you ask the court to waive court filing fees when you cannot afford them. You may qualify if you receive public benefits (Medi-Cal, CalWORKS, SSI, etc.), your income is below the threshold for your household size, or paying the fee would prevent you from meeting your household's basic needs. File this with — or before — your SC-100. If granted, the court waives fees at no cost to you; if denied, you'll have time to pay. This form is confidential.",
+    available: true,
+    blankFormUrl: "https://www.courts.ca.gov/documents/fw001.pdf",
+  },
+  /* ── Supporting & supplemental forms ───────────────────────────────────── */
   {
     id: "sc100a",
     number: "SC-100A",
@@ -1929,15 +1958,6 @@ const FORMS_CATALOG = [
     detailDesc: "SC-103 must be attached to SC-100 or SC-120 whenever a plaintiff or defendant operates under a fictitious business name — commonly called a 'DBA' (doing business as). The form requires proof that the fictitious name is properly registered with the county and published as required by California law. If this step is skipped, the court can dismiss the case. Only the business owner, president, CEO, or another qualified officer may sign this form.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc103.pdf",
-  },
-  {
-    id: "sc104",
-    number: "SC-104",
-    name: "Proof of Service",
-    shortDesc: "Documents that the defendant was properly served with the court papers.",
-    detailDesc: "SC-104 is completed by the person who delivered (served) the court papers to the defendant — this must be someone who is at least 18 years old and not named in the case. It cannot be you. The server records exactly how, when, and where the papers were delivered, then signs under penalty of perjury. This completed form must be filed with the court at least 5 days before the hearing date. Without proof of service, the court cannot proceed.",
-    available: true,
-    blankFormUrl: "https://www.courts.ca.gov/documents/sc104.pdf",
   },
   {
     id: "sc105",
@@ -1983,15 +2003,6 @@ const FORMS_CATALOG = [
     detailDesc: "SC-150 lets either a plaintiff or defendant formally request that the court move the trial to a different date. You must explain why you need a postponement and, if the trial is within 10 days, why you didn't ask sooner. After completing the form, you must serve copies on all other parties using SC-104 (in person) or SC-112A (by mail), then file it with the court clerk. There may be a $10 filing fee. The court will mail all parties its decision.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc150.pdf",
-  },
-  {
-    id: "mc030",
-    number: "MC-030",
-    name: "Declaration",
-    shortDesc: "A general sworn statement form for information that doesn't fit on the main form.",
-    detailDesc: "MC-030 is a blank declaration form used across many types of California court cases, including small claims. It is used whenever a party needs to submit a written statement under penalty of perjury that doesn't fit within the space provided on a specific form. For example, you might attach an MC-030 to provide a longer explanation of your claim, document witness statements, or supply additional facts. The person signing declares under penalty of perjury that everything written is true and correct.",
-    available: true,
-    blankFormUrl: "https://www.courts.ca.gov/documents/mc030.pdf",
   },
 ];
 
@@ -2290,6 +2301,39 @@ const FORM_GUIDE_CONTENT: Record<string, {
       { number: "SC-105", reason: "Court order request this can be attached to" },
     ],
   },
+  fw001: {
+    role: "primary",
+    effectiveDate: "March 1, 2026",
+    bestUse: "Use this before or at the time of filing SC-100 if you cannot afford the court filing fee without financial hardship.",
+    whenToUse: [
+      "You receive public benefits: Medi-Cal, CalWORKS, SSI/SSP, Food Stamps (CalFresh), IHSS, County Relief, CAPI, or WIC.",
+      "Your gross monthly household income is below the threshold for your family size (see form Item 5b for thresholds).",
+      "You do not have enough income to pay for basic household needs and court fees (Item 5c — requires completing financial details on page 2).",
+    ],
+    whenNotToUse: [
+      "You can afford the filing fee without financial hardship.",
+      "Your case settled for $10,000 or more — a fee waiver lien may apply.",
+      "You already filed a fee waiver in this same case within the last six months (attach prior request if reasonably available).",
+    ],
+    haveReady: [
+      "Proof of public benefits if claiming eligibility under Item 5a (benefit card, award letter, or similar document).",
+      "Monthly income figures for you and everyone in your household who depends on you for support.",
+      "Monthly expense amounts: rent, food, utilities, transportation, medical, child care, and any installment payments.",
+      "Information about money and property: bank balances, vehicles, real estate, and other assets.",
+    ],
+    warnings: [
+      "This form is confidential — the court will not give it to the other party in your case.",
+      "If your financial situation improves during the case, you are required to notify the court.",
+      "If the court denies the fee waiver, you will be given a short time to pay the fee before your case is affected.",
+      "If you settle your case for $10,000 or more, the court may recover the waived fees from your settlement.",
+      "Sign the form under penalty of perjury. False statements on a fee waiver form are a criminal offense.",
+    ],
+    relatedForms: [
+      { number: "SC-100", reason: "File together with your claim" },
+      { number: "FW-001-INFO", reason: "Information sheet explaining eligibility rules" },
+      { number: "MC-025", reason: "If you need more space for financial information" },
+    ],
+  },
 };
 
 /* ── Form Assistant field configs ────────────────────────────────────────── */
@@ -2297,6 +2341,36 @@ type FieldDef = { key: string; label: string; type: "text" | "textarea" | "selec
 type FieldGroup = { title: string; fields: FieldDef[] };
 
 const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpoint: string; filename: (id: number) => string; groups: FieldGroup[] }> = {
+  fw001: {
+    title: "Request to Waive Court Fees (FW-001)",
+    subtitle: "Answer a few questions about your income and household. Your personal information will be pre-filled from your case.",
+    endpoint: "fw001", filename: (id) => `FW001-Case-${id}.pdf`,
+    groups: [
+      { title: "Eligibility Basis (Item 5)", fields: [
+        { key: "eligibilityBasis", label: "Why are you requesting a fee waiver?", type: "select", required: true, options: [
+          { value: "5a", label: "I receive public benefits (Medi-Cal, CalWORKS, SSI, CalFresh, IHSS, etc.)" },
+          { value: "5b", label: "My gross monthly income is below the threshold for my household size" },
+          { value: "5c", label: "I don't have enough income to cover basic needs and court fees" },
+        ], hint: "Check form FW-001-INFO for the exact income thresholds for your household size." },
+        { key: "familySize", label: "Number of people in your household (including yourself)", type: "text", placeholder: "e.g. 2" },
+        { key: "grossMonthlyIncome", label: "Your gross monthly income (before taxes)", type: "text", placeholder: "e.g. 2400.00" },
+      ]},
+      { title: "Public Benefits (if Item 5a applies)", fields: [
+        { key: "benefits", label: "Which benefits do you receive?", type: "textarea", placeholder: "e.g. Medi-Cal, CalFresh (Food Stamps), SSI", hint: "List any benefits you currently receive. Leave blank if you chose 5b or 5c above." },
+      ]},
+      { title: "Monthly Expenses (required for Item 5c)", fields: [
+        { key: "monthlyRent", label: "Rent or mortgage payment", type: "text", placeholder: "e.g. 1200.00" },
+        { key: "monthlyFood", label: "Food and household supplies", type: "text", placeholder: "e.g. 400.00" },
+        { key: "monthlyUtilities", label: "Utilities and telephone", type: "text", placeholder: "e.g. 150.00" },
+        { key: "monthlyTransportation", label: "Transportation and auto expenses", type: "text", placeholder: "e.g. 200.00" },
+        { key: "monthlyMedical", label: "Medical and dental expenses", type: "text", placeholder: "e.g. 100.00" },
+        { key: "monthlyOther", label: "Other significant monthly expenses", type: "textarea", placeholder: "e.g. Child care $500, installment payments $150" },
+      ]},
+      { title: "Signature", fields: [
+        { key: "signDate", label: "Date signed", type: "date" },
+      ]},
+    ],
+  },
   mc030: {
     title: "Declaration (MC-030)",
     subtitle: "Provide the title and content of your declaration. Your case information will be filled in automatically.",
@@ -3129,6 +3203,19 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
                     <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Coming Soon</span>
                   )}
                   {form.available ? (
+                    form.id === "fw001" ? (
+                      /* FW-001: link to official blank form */
+                      <a
+                        href={form.blankFormUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Download blank FW-001 from courts.ca.gov"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1 rounded hover:bg-black/10 text-[#0d6b5e] hover:text-[#0d6b5e]/70 transition-colors"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      </a>
+                    ) : (
                     <button
                       title={`Download filled ${form.number} PDF`}
                       onClick={(e) => {
@@ -3147,6 +3234,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
                         : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                       }
                     </button>
+                    )
                   ) : (
                     <a
                       href={form.blankFormUrl}
@@ -3201,7 +3289,51 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           <CardContent className="space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">{activeForm.detailDesc}</p>
 
-            {activeForm.available && activeForm.id !== "sc100" ? (
+            {activeForm.id === "fw001" ? (
+              /* ── FW-001 Fee Waiver Guide ── */
+              <div className="space-y-5">
+                {/* Eligibility quick-check */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { label: "Public Benefits", desc: "Medi-Cal, CalWORKS, SSI/SSP, CalFresh, IHSS, County Relief, CAPI, WIC", color: "border-green-200 bg-green-50", hdr: "text-green-800" },
+                    { label: "Income Below Threshold", desc: "Gross monthly household income is under the limit for your family size (see Item 5b thresholds on the form)", color: "border-blue-200 bg-blue-50", hdr: "text-blue-800" },
+                    { label: "Financial Hardship", desc: "You don't have enough income to cover basic household needs and also pay court fees", color: "border-violet-200 bg-violet-50", hdr: "text-violet-800" },
+                  ].map((card) => (
+                    <div key={card.label} className={`rounded-xl border p-4 space-y-1.5 ${card.color}`}>
+                      <p className={`text-xs font-bold uppercase tracking-wider ${card.hdr}`}>{card.label}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{card.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                {/* Confidentiality note */}
+                <div className="flex items-start gap-3 rounded-xl border border-[#0d6b5e]/20 bg-[#ddf6f3]/50 p-4">
+                  <svg className="mt-0.5 shrink-0 text-[#0d6b5e]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <p className="text-sm text-[#0d6b5e] leading-relaxed"><span className="font-bold">This form is confidential.</span> The court will not share your FW-001 with the other party. Your financial information stays private.</p>
+                </div>
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a
+                    href={activeForm.blankFormUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0d6b5e] text-white text-sm font-semibold hover:bg-[#0d6b5e]/90 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Download Blank FW-001
+                  </a>
+                  <a
+                    href="https://www.courts.ca.gov/documents/fw001info.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+                  >
+                    FW-001-INFO (instructions)
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
+                </div>
+                <p className="text-xs text-muted-foreground">File FW-001 at the same time as — or before — your SC-100. Bring a copy of your benefit card, award letter, or income documents to the clerk's window.</p>
+              </div>
+            ) : activeForm.available && activeForm.id !== "sc100" ? (
               /* ── Other available forms — modal-based download ── */
               <div className="space-y-4">
                 {downloadError && (
