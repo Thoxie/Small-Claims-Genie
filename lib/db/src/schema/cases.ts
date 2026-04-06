@@ -52,6 +52,8 @@ export const casesTable = pgTable("cases", {
   readinessScore: integer("readiness_score").default(0),
   demandLetterText: text("demand_letter_text"),
   demandLetterTone: text("demand_letter_tone"),
+  settlementLetterText: text("settlement_letter_text"),
+  settlementLetterTone: text("settlement_letter_tone"),
   evidenceChecklist: jsonb("evidence_checklist"),
   // ── Court hearing info (entered after filing, once court responds) ──────────
   caseNumber: text("case_number"),

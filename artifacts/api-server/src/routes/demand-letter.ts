@@ -443,4 +443,231 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   }
 });
 
+// ── SETTLEMENT LETTER ─────────────────────────────────────────────────────────
+
+const SETTLEMENT_TONES: Record<string, string> = {
+  firm: `TONE — FIRM:
+- Open with the facts directly. You have filed (or are ready to file) in small claims court.
+- Make clear that this offer is a business decision, not weakness — you are offering to avoid the time and cost of a hearing.
+- Reference the hearing date if provided: "My hearing is currently scheduled for [date]."
+- State the settlement amount clearly. State the deadline clearly.
+- End: "If I do not receive a response by [deadline], I will proceed with my court case."
+- No hostility, but zero ambiguity about what happens if they don't respond.`,
+
+  cooperative: `TONE — COOPERATIVE:
+- Open by acknowledging the dispute and expressing a preference for resolution without court.
+- Frame the settlement offer as a fair compromise — not a capitulation.
+- Keep language conciliatory: "I believe a reasonable resolution is possible."
+- Reference the hearing date if set, but frame it as context, not a threat.
+- End with an invitation to discuss: include phone/email if provided.
+- End: "I hope we can resolve this matter without the need for a court hearing."`,
+};
+
+const SETTLEMENT_SYSTEM = `You are a professional legal document writer helping a California small claims plaintiff write a settlement negotiation letter.
+
+RULES:
+- Output ONLY the letter text — no commentary, no markdown, no preamble
+- Standard business letter format: Sender block → Date → Recipient block → RE: line → Body → Signature block
+- 3–4 paragraphs. Plain English. No legal jargon.
+- Paragraph 1: Who you are, that a dispute exists, that you are proposing to resolve it without a hearing.
+- Paragraph 2: Brief factual summary — what happened, what is owed. Reference the original claim amount, then frame the settlement amount as a practical offer.
+- Paragraph 3: The settlement offer — state the exact settlement amount, any installment terms, and the response deadline.
+- Paragraph 4: Consequences and close — what happens if they don't respond. Reference hearing date if known.
+- RE: line must include "Settlement Offer — $[settlement amount]"
+- Never use the word "mock," "sample," or "hypothetical."
+- Never invent facts. Use only what is provided.`;
+
+// GET — load saved settlement letter
+router.get("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  res.json({
+    text: (caseRecord as any).settlementLetterText ?? null,
+    tone: (caseRecord as any).settlementLetterTone ?? null,
+  });
+});
+
+// POST — generate settlement letter via SSE stream
+router.post("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rateCheck = checkAiRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes.` });
+    return;
+  }
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const {
+    tone = "firm",
+    settlementAmount,
+    installments = false,
+    installmentCount = 3,
+    responseDays = 14,
+  } = req.body ?? {};
+
+  const today = new Date();
+  const todayStr = today.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const deadline = new Date(today);
+  deadline.setDate(deadline.getDate() + (Number(responseDays) || 14));
+  const deadlineStr = deadline.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  const origAmt = caseRecord.claimAmount
+    ? `$${Number(caseRecord.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : "[ORIGINAL AMOUNT]";
+  const settleAmt = settlementAmount
+    ? `$${Number(settlementAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : origAmt;
+
+  const installmentText = installments
+    ? `Settlement Payment Terms: ${settleAmt} payable in ${installmentCount} equal monthly installments of ${`$${(Number(settlementAmount) / Number(installmentCount)).toFixed(2)}`} each, beginning within 30 days of acceptance.`
+    : `Settlement Payment Terms: ${settleAmt} paid in full within 14 days of acceptance.`;
+
+  const parts: string[] = [
+    `=== CASE FACTS ===`,
+    `Plaintiff (Sender): ${caseRecord.plaintiffName ?? "[Plaintiff]"}`,
+    caseRecord.plaintiffAddress && caseRecord.plaintiffCity
+      ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`
+      : "",
+    caseRecord.plaintiffEmail ? `Plaintiff Email: ${caseRecord.plaintiffEmail}` : "",
+    caseRecord.plaintiffPhone ? `Plaintiff Phone: ${caseRecord.plaintiffPhone}` : "",
+    `Defendant (Recipient): ${caseRecord.defendantName ?? "[Defendant]"}`,
+    caseRecord.defendantAddress && caseRecord.defendantCity
+      ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`
+      : "",
+    caseRecord.claimType ? `Claim Type: ${caseRecord.claimType}` : "",
+    caseRecord.incidentDate ? `Incident Date: ${caseRecord.incidentDate}` : "",
+    `Original Claim Amount: ${origAmt}`,
+    `Settlement Amount Being Offered: ${settleAmt}`,
+    installmentText,
+    `Response Deadline: ${deadlineStr}`,
+    caseRecord.hearingDate
+      ? `Hearing Date (already scheduled): ${new Date(caseRecord.hearingDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`
+      : "Hearing Date: Not yet scheduled",
+    caseRecord.priorDemandMade ? `Prior Demand: Yes — a written demand was previously sent and not resolved.` : "",
+    caseRecord.claimDescription ? `\nCase Description:\n${caseRecord.claimDescription}` : "",
+    `\nToday's Date: ${todayStr}`,
+  ].filter(Boolean);
+
+  const toneInstruction = SETTLEMENT_TONES[tone] ?? SETTLEMENT_TONES.firm;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  let fullText = "";
+  const stream = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 2048,
+    messages: [
+      { role: "system", content: SETTLEMENT_SYSTEM },
+      { role: "user", content: `Today's date: ${todayStr}\n\n${toneInstruction}\n\n${parts.join("\n")}\n\nWrite the settlement offer letter now.` },
+    ],
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content;
+    if (content) {
+      fullText += content;
+      res.write(`data: ${JSON.stringify({ content })}\n\n`);
+    }
+  }
+
+  await db.update(casesTable)
+    .set({ settlementLetterText: fullText, settlementLetterTone: tone } as any)
+    .where(eq(casesTable.id, id));
+
+  res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+  res.end();
+});
+
+// POST /pdf — generate settlement letter PDF
+router.post("/cases/:id/settlement-letter/pdf", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  const letterText: string = req.body?.text ?? (caseRecord as any).settlementLetterText ?? "";
+  if (!letterText.trim()) { res.status(400).json({ error: "No letter text to export" }); return; }
+
+  const GREEN = rgb(0.05, 0.42, 0.37);
+
+  const pdfDoc = await PDFDocument.create();
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const regFont  = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const W = 612, H = 792, ML = 72, MR = 72, CW = W - ML - MR;
+  let page = pdfDoc.addPage([W, H]);
+  let y = H - 56;
+
+  page.drawRectangle({ x: 0, y: H - 40, width: W, height: 40, color: GREEN });
+  page.drawText("SETTLEMENT OFFER", { x: ML, y: H - 28, size: 13, font: boldFont, color: rgb(1, 1, 1) });
+  page.drawText("Confidential Settlement Communication", {
+    x: W - MR - 210, y: H - 28, size: 9, font: regFont, color: rgb(0.8, 1, 0.95),
+  });
+  page.drawLine({ start: { x: ML, y: H - 50 }, end: { x: W - MR, y: H - 50 }, thickness: 0.5, color: GRAY });
+  y = H - 72;
+
+  const SIZE = 10.5, LINE_H = SIZE * 1.55, MAX_Y = 60;
+  function wrapLine(text: string, maxW: number): string[] {
+    if (!text.trim()) return [""];
+    const words = text.split(" ");
+    const result: string[] = [];
+    let cur = "";
+    for (const w of words) {
+      const test = cur ? `${cur} ${w}` : w;
+      if (regFont.widthOfTextAtSize(test, SIZE) <= maxW) { cur = test; }
+      else { if (cur) result.push(cur); cur = w; }
+    }
+    if (cur) result.push(cur);
+    return result.length ? result : [""];
+  }
+
+  for (const rawLine of letterText.split("\n")) {
+    for (const wl of wrapLine(rawLine, CW)) {
+      if (y < MAX_Y) {
+        page = pdfDoc.addPage([W, H]);
+        page.drawRectangle({ x: 0, y: H - 40, width: W, height: 40, color: GREEN });
+        page.drawText("SETTLEMENT OFFER (continued)", { x: ML, y: H - 28, size: 11, font: boldFont, color: rgb(1, 1, 1) });
+        y = H - 72;
+      }
+      page.drawText(wl || " ", { x: ML, y, size: SIZE, font: regFont, color: BLACK });
+      y -= LINE_H;
+    }
+    y -= LINE_H * 0.15;
+  }
+
+  const pageCount = pdfDoc.getPageCount();
+  for (let i = 0; i < pageCount; i++) {
+    const p = pdfDoc.getPage(i);
+    p.drawLine({ start: { x: ML, y: 40 }, end: { x: W - MR, y: 40 }, thickness: 0.5, color: GRAY });
+    p.drawText(`Generated by Small Claims Genie  •  Page ${i + 1} of ${pageCount}`, {
+      x: ML, y: 26, size: 8, font: regFont, color: GRAY,
+    });
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  const defName = (caseRecord.defendantName ?? "defendant").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+  const dateStr = new Date().toISOString().slice(0, 10);
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="Settlement_Offer_${defName}_${dateStr}.pdf"`);
+  res.send(Buffer.from(pdfBytes));
+});
+
 export default router;
