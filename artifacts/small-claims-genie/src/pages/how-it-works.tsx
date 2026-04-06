@@ -1,5 +1,3 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 
 const features = [
   {
@@ -67,9 +65,6 @@ export default function HowItWorks() {
             Don't retain a lawyer for advice when you can use Small Claims Genie — an AI-powered system
             built to guide your case from start to hearing.
           </p>
-          <Button asChild variant="outline" size="lg" className="h-10 px-7 text-sm rounded-md border-primary text-primary hover:bg-primary/5 font-semibold">
-            <Link href="/cases/new">Start Preparing Your Case</Link>
-          </Button>
         </div>
       </section>
 
