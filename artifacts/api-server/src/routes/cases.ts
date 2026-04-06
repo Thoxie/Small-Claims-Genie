@@ -526,7 +526,7 @@ Return ONLY the case description text. No headers, no commentary, no formatting.
 
 // ─── PATCH /cases/:id/hearing — save court hearing details ────────────────────
 router.patch("/cases/:id/hearing", async (req, res): Promise<void> => {
-  const userId = (req as any).userId;
+  const userId = req.userId;
   const id = Number(req.params.id);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case id" }); return; }
 
