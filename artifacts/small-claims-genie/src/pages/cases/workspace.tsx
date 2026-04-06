@@ -2836,13 +2836,19 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
   const { toast } = useToast();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-  const [downloadingWord, setDownloadingWord] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [guideDialogFormId, setGuideDialogFormId] = useState<string | null>(null);
   const [modalFormId, setModalFormId] = useState<string | null>(null);
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [mc030Generating, setMc030Generating] = useState(false);
   const [mc030GenError, setMc030GenError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (downloadError) {
+      toast({ title: "Download failed", description: downloadError, variant: "destructive" });
+      setDownloadError(null);
+    }
+  }, [downloadError]);
 
   // SC-100 description overflow: ~8 lines × ~90 chars/line ≈ 720 chars threshold
   const descriptionNeedsMC030 = (currentCase.claimDescription?.length ?? 0) > 650;
