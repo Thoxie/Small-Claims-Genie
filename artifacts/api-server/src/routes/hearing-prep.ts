@@ -5,6 +5,7 @@ import { casesTable, documentsTable } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
 import { checkAiRateLimit } from "../lib/rate-limiter";
+import { isOnTopic, OFF_TOPIC_REPLY } from "../lib/topic-guard";
 
 const router: IRouter = Router();
 
@@ -32,7 +33,12 @@ Critical rules:
 - If they give a strong answer, say so — this builds confidence
 - If an answer is weak, ask them to try again with more detail
 - Keep each response concise — judges speak clearly, not in paragraphs
-- The goal is confidence-building, not intimidation`;
+- The goal is confidence-building, not intimidation
+
+STRICT GUARDRAIL — SCOPE RESTRICTION:
+You are ONLY permitted to engage with content related to the user's court case and small claims hearing preparation.
+If the user asks about ANYTHING off-topic — restaurants, travel, entertainment, sports, news, coding, health, or any non-legal topic — respond in character as a judge: "That's outside the scope of these proceedings. Let's stay focused on your case. Please answer my question."
+Do NOT break character. Do NOT answer off-topic questions under any circumstances.`;
 
 function buildHearingPrepContext(caseRecord: typeof casesTable.$inferSelect, docs: typeof documentsTable.$inferSelect[]): string {
   const parts: string[] = ["=== CASE FACTS FOR THIS PRACTICE SESSION ==="];
@@ -93,6 +99,18 @@ router.post("/cases/:id/hearing-prep", async (req, res): Promise<void> => {
 
   const body = req.body as { messages?: { role: string; content: string }[] };
   const sessionMessages = body.messages || [];
+
+  const lastUserMsg = [...sessionMessages].reverse().find(m => m.role === "user")?.content ?? "";
+  if (lastUserMsg && !(await isOnTopic(lastUserMsg))) {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    const judgeReply = "That's outside the scope of these proceedings. Let's stay focused on your case. Please answer my question.";
+    res.write(`data: ${JSON.stringify({ content: judgeReply })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+    return;
+  }
 
   const caseContext = buildHearingPrepContext(caseRecord, docs);
 

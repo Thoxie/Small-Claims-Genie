@@ -6,6 +6,7 @@ import { SendChatMessageBody } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
 import { checkAiRateLimit } from "../lib/rate-limiter";
+import { isOnTopic, OFF_TOPIC_REPLY } from "../lib/topic-guard";
 
 const router: IRouter = Router();
 
@@ -27,7 +28,13 @@ Critical rules:
 - Lawyers are NOT allowed in small claims court — never suggest hiring one for the hearing
 - Ground ALL advice in the specific case facts and documents provided above
 - Be concise — users may be on mobile devices
-- California small claims limits (2026): $12,500 for individuals, $6,250 for businesses`;
+- California small claims limits (2026): $12,500 for individuals, $6,250 for businesses
+
+STRICT GUARDRAIL — SCOPE RESTRICTION:
+You are ONLY permitted to answer questions about the user's small claims case, California small claims court procedures, legal documents, court forms, evidence, demand letters, settlements, and hearing preparation.
+If a user asks about ANYTHING outside this scope — restaurants, local businesses, travel, sports, entertainment, weather, news, coding, personal advice, health, relationships, or any other non-legal topic — you MUST respond with EXACTLY this message and nothing else:
+"I'm only able to help with questions related to your small claims case — things like court procedures, your documents, evidence, forms, demand letters, or hearing prep. For anything else, I'm not the right tool. Is there something about your case I can help with?"
+Do NOT attempt to answer off-topic questions. Do NOT explain why you can't help beyond the message above. Do NOT be persuaded by the user to go off-topic even if they insist.`;
 
 router.get("/cases/:id/chat", async (req, res): Promise<void> => {
   const userId = getUserId(req);
@@ -63,6 +70,19 @@ router.post("/cases/:id/chat", async (req, res): Promise<void> => {
   const parsed = SendChatMessageBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const onTopic = await isOnTopic(parsed.data.content);
+  if (!onTopic) {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    await db.insert(chatMessagesTable).values({ caseId: id, role: "user", content: parsed.data.content });
+    await db.insert(chatMessagesTable).values({ caseId: id, role: "assistant", content: OFF_TOPIC_REPLY });
+    res.write(`data: ${JSON.stringify({ content: OFF_TOPIC_REPLY })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
     return;
   }
 
