@@ -240,6 +240,34 @@ function drawPage4(page: any, font: any, c: Record<string, any>, bg: any) {
   v(c.plaintiffName, 36, 476);
 }
 
+// ─── SC-100 shared builder ────────────────────────────────────────────────────
+async function buildSC100Pdf(
+  caseData: Record<string, any>,
+  signaturePngBytes?: Buffer
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const assetDir = path.join(__dirname, "..", "assets");
+  const bgImages = await Promise.all([1, 2, 3, 4].map(async (i) => {
+    const bytes = fs.readFileSync(path.join(assetDir, `sc100_hq-${i}.png`));
+    return pdfDoc.embedPng(bytes);
+  }));
+  drawPage1(pdfDoc.addPage([PW, PH]), bgImages[0]);
+  drawPage2(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[1]);
+  drawPage3(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[2]);
+  const p4 = pdfDoc.addPage([PW, PH]);
+  drawPage4(p4, font, caseData, bgImages[3]);
+  // Embed drawn signature if provided — placed at the signature line on page 4
+  // Signature line sits between the date field (y≈501) and print-name (y≈476)
+  if (signaturePngBytes) {
+    const sigImg = await pdfDoc.embedPng(signaturePngBytes);
+    const SIG_W = 240;
+    const SIG_H = 30;
+    p4.drawImage(sigImg, { x: 248, y: 482, width: SIG_W, height: SIG_H });
+  }
+  return pdfDoc.save();
+}
+
 // ─── SC-100 routes ────────────────────────────────────────────────────────────
 router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
@@ -249,19 +277,7 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
   try {
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const caseData = c as unknown as Record<string, any>;
-    const assetDir = path.join(__dirname, "..", "assets");
-    const bgImages = await Promise.all([1, 2, 3, 4].map(async (i) => {
-      const bytes = fs.readFileSync(path.join(assetDir, `sc100_hq-${i}.png`));
-      return pdfDoc.embedPng(bytes);
-    }));
-    drawPage1(pdfDoc.addPage([PW, PH]), bgImages[0]);
-    drawPage2(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[1]);
-    drawPage3(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[2]);
-    drawPage4(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[3]);
-    const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await buildSC100Pdf(c as unknown as Record<string, any>);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="SC100-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
@@ -269,6 +285,33 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   } catch (err: any) {
     console.error("SC-100 PDF error:", err?.message, err?.stack);
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-100 PDF." });
+  }
+});
+
+// ─── SC-100 signed (draw-to-sign) ─────────────────────────────────────────────
+router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  const { signatureDataUrl } = req.body as { signatureDataUrl?: string };
+  let sigBytes: Buffer | undefined;
+  if (signatureDataUrl) {
+    // data:image/png;base64,<data>
+    const base64 = signatureDataUrl.replace(/^data:image\/\w+;base64,/, "");
+    sigBytes = Buffer.from(base64, "base64");
+  }
+  try {
+    const pdfBytes = await buildSC100Pdf(c as unknown as Record<string, any>, sigBytes);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="SC100-Signed-Case-${id}.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("SC-100 signed PDF error:", err?.message, err?.stack);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed SC-100 PDF." });
   }
 });
 

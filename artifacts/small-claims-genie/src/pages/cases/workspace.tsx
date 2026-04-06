@@ -41,7 +41,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe, Pencil, Info, Gavel, Maximize2, RotateCcw, Star } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe, Pencil, Info, Gavel, Maximize2, RotateCcw, Star, PenLine } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -3004,6 +3004,7 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep }: { c
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [mc030Generating, setMc030Generating] = useState(false);
   const [mc030GenError, setMc030GenError] = useState<string | null>(null);
+  const [sigModalOpen, setSigModalOpen] = useState(false);
 
   useEffect(() => {
     if (downloadError) {
@@ -3263,7 +3264,7 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep }: { c
                     onClick={() => {
                       if (form.id === "sc100") {
                         if (isReady) {
-                          downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf);
+                          setSigModalOpen(true);
                         } else {
                           toast({ title: "Intake incomplete", description: "Complete your intake to 80% to unlock the SC-100 download.", variant: "destructive" });
                         }
@@ -3449,6 +3450,44 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep }: { c
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* SC-100 Signature Modal */}
+      <SignaturePadModal
+        open={sigModalOpen}
+        onClose={() => setSigModalOpen(false)}
+        onSign={async (dataUrl) => {
+          setSigModalOpen(false);
+          setDownloadingPdf(true);
+          try {
+            const token = await getToken();
+            const res = await fetch(`/api/cases/${caseId}/forms/sc100/signed`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ signatureDataUrl: dataUrl }),
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              toast({ title: "Download failed", description: err.error || "Could not generate signed SC-100.", variant: "destructive" });
+              return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `SC100-Signed-Case-${caseId}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+          } catch {
+            toast({ title: "Download failed", description: "Could not generate signed SC-100.", variant: "destructive" });
+          } finally {
+            setDownloadingPdf(false);
+          }
+        }}
+        onSkipSign={async () => {
+          setSigModalOpen(false);
+          downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf);
+        }}
+      />
     </div>
   );
 }
@@ -3704,6 +3743,162 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
         </div>
       )}
     </div>
+  );
+}
+
+// ─── SIGNATURE PAD MODAL ──────────────────────────────────────────────────────
+function SignaturePadModal({
+  open,
+  onClose,
+  onSign,
+  onSkipSign,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSign: (dataUrl: string) => void;
+  onSkipSign: () => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasDrawn, setHasDrawn] = useState(false);
+  const lastPos = useRef<{ x: number; y: number } | null>(null);
+
+  // Reset canvas when modal opens
+  useEffect(() => {
+    if (open) {
+      setHasDrawn(false);
+      setTimeout(() => clearCanvas(), 50);
+    }
+  }, [open]);
+
+  function getPos(e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if ("touches" in e) {
+      const t = e.touches[0];
+      return { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY };
+    }
+    const m = e as React.MouseEvent;
+    return { x: (m.clientX - rect.left) * scaleX, y: (m.clientY - rect.top) * scaleY };
+  }
+
+  function startDraw(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    setIsDrawing(true);
+    setHasDrawn(true);
+    lastPos.current = getPos(e, canvas);
+  }
+
+  function draw(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault();
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const pos = getPos(e, canvas);
+    if (lastPos.current) {
+      ctx.beginPath();
+      ctx.moveTo(lastPos.current.x, lastPos.current.y);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.strokeStyle = "#0d1b2a";
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.stroke();
+    }
+    lastPos.current = pos;
+  }
+
+  function endDraw(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault();
+    setIsDrawing(false);
+    lastPos.current = null;
+  }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasDrawn(false);
+  }
+
+  function handleSign() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL("image/png");
+    onSign(dataUrl);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PenLine className="h-5 w-5 text-primary" />
+            Sign Your SC-100
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Draw your signature below using your mouse or finger. This will be placed on the signature line of your SC-100 and downloaded as a signed PDF.
+          </p>
+        </DialogHeader>
+
+        {/* Signature canvas */}
+        <div className="rounded-xl border-2 border-dashed border-input bg-[#fdfdfc] relative overflow-hidden" style={{ touchAction: "none" }}>
+          <canvas
+            ref={canvasRef}
+            width={680}
+            height={160}
+            className="w-full cursor-crosshair"
+            style={{ display: "block" }}
+            onMouseDown={startDraw}
+            onMouseMove={draw}
+            onMouseUp={endDraw}
+            onMouseLeave={endDraw}
+            onTouchStart={startDraw}
+            onTouchMove={draw}
+            onTouchEnd={endDraw}
+          />
+          {/* Signature baseline */}
+          <div className="absolute bottom-8 left-8 right-8 border-b border-gray-300 pointer-events-none" />
+          {!hasDrawn && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <p className="text-muted-foreground/40 text-sm select-none">Sign here ↑</p>
+            </div>
+          )}
+        </div>
+
+        {/* Legal note */}
+        <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-4 py-3 leading-relaxed">
+          By signing, you declare under penalty of perjury under the laws of the State of California that the information on your SC-100 is true and correct. This is the same declaration printed on the form.
+        </p>
+
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="ghost" size="sm" onClick={clearCanvas} disabled={!hasDrawn} className="gap-1.5">
+            <RotateCcw className="h-3.5 w-3.5" />
+            Clear
+          </Button>
+          <div className="flex gap-2 ml-auto">
+            <Button variant="outline" onClick={onSkipSign}>
+              Skip — Download Without Signature
+            </Button>
+            <Button
+              onClick={handleSign}
+              disabled={!hasDrawn}
+              className="gap-2 bg-[#0d6b5e] hover:bg-[#0a5549] text-white"
+            >
+              <Download className="h-4 w-4" />
+              Sign &amp; Download
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
