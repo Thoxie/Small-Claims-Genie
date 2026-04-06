@@ -156,6 +156,131 @@ function baseLayout(title: string, body: string): string {
 </html>`;
 }
 
+export function build30DayEmail(d: HearingEmailData): { subject: string; html: string } {
+  const subject = `📅 Your Hearing is 1 Month Away — Here's What to Do Now`;
+  const html = baseLayout(subject, `
+    <p style="margin:0 0 8px;font-size:16px;color:#111827;">Hi ${d.plaintiffName || "there"},</p>
+    <p style="margin:0 0 20px;font-size:15px;color:#374151;">Great news — your small claims hearing is set! You have <strong>30 days to prepare</strong>, which is plenty of time to build a strong case.</p>
+
+    <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin:0 0 20px;">
+      <p style="margin:0 0 4px;font-size:13px;font-weight:bold;color:#92400e;text-transform:uppercase;">Your Hearing Date</p>
+      <p style="margin:0;font-size:18px;font-weight:bold;color:#111827;">${formatDate(d.hearingDate)}${d.hearingTime ? ` at ${d.hearingTime}` : ""}</p>
+      ${d.courthouseName ? `<p style="margin:4px 0 0;font-size:14px;color:#374151;">${d.courthouseName}${d.hearingCourtroom ? ` · Courtroom ${d.hearingCourtroom}` : ""}</p>` : ""}
+      ${d.caseNumber ? `<p style="margin:4px 0 0;font-size:13px;color:#374151;">Case No. <strong>${d.caseNumber}</strong></p>` : ""}
+    </div>
+
+    <p style="margin:0 0 12px;font-size:15px;font-weight:bold;color:#111827;">📋 Your 30-day game plan:</p>
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr><td style="padding:7px 0;font-size:14px;color:#374151;">✅ &nbsp;<strong>Week 1:</strong> Gather all your evidence — contracts, receipts, texts, photos, invoices</td></tr>
+      <tr><td style="padding:7px 0;font-size:14px;color:#374151;">✅ &nbsp;<strong>Week 2:</strong> Make sure the defendant is properly served if you haven't already</td></tr>
+      <tr><td style="padding:7px 0;font-size:14px;color:#374151;">✅ &nbsp;<strong>Week 3:</strong> Use the AI Chat and Hearing Prep Coach to practice your statement</td></tr>
+      <tr><td style="padding:7px 0;font-size:14px;color:#374151;">✅ &nbsp;<strong>Week 4:</strong> Make copies of all documents and do a final review</td></tr>
+    </table>
+
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;margin:20px 0;">
+      <p style="margin:0;font-size:14px;color:#166534;"><strong>💡 Did you know?</strong> Small Claims Genie has a <strong>Hearing Prep Coach</strong> that acts like a practice judge — it will ask you the same kinds of questions a real judge would ask, so you're not caught off guard on hearing day.</p>
+    </div>
+
+    <div style="text-align:center;margin:28px 0;">
+      <a href="https://smallclaimsgenie.com/cases/${d.caseId}" style="background:#0d6b5e;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-size:15px;font-weight:bold;display:inline-block;">
+        Open My Case &amp; Start Preparing →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:13px;color:#6b7280;">Small Claims Genie is not a law firm and this is not legal advice.</p>
+  `);
+  return { subject, html };
+}
+
+export function build7DayEmail(d: HearingEmailData): { subject: string; html: string } {
+  const subject = `📌 1 Week Until Your Hearing — Final Prep Checklist`;
+  const courtBlock = d.courthouseName
+    ? `<div style="background:#f0faf8;border-left:4px solid #14b8a6;padding:16px;border-radius:8px;margin:20px 0;">
+        <p style="margin:0 0 6px;font-size:13px;font-weight:bold;color:#0d6b5e;text-transform:uppercase;">Where to Go</p>
+        ${d.courthouseName ? `<p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#111827;">${d.courthouseName}</p>` : ""}
+        ${d.courthouseAddress ? `<p style="margin:0 0 4px;font-size:14px;color:#374151;">${d.courthouseAddress}, ${d.courthouseCity || ""} ${d.courthouseZip || ""}</p>` : ""}
+        ${d.hearingCourtroom ? `<p style="margin:0 0 4px;font-size:14px;color:#374151;">Courtroom: <strong>${d.hearingCourtroom}</strong></p>` : ""}
+        ${d.courthouseWebsite ? `<p style="margin:0;font-size:14px;"><a href="${d.courthouseWebsite}" style="color:#0d6b5e;font-weight:bold;">🌐 Get directions &amp; parking info →</a></p>` : ""}
+       </div>` : "";
+
+  const html = baseLayout(subject, `
+    <p style="margin:0 0 8px;font-size:16px;color:#111827;">Hi ${d.plaintiffName || "there"},</p>
+    <p style="margin:0 0 20px;font-size:15px;color:#374151;">Your hearing is <strong>one week away</strong>. This is the week to finalize everything — here's what you should do today.</p>
+
+    <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin:0 0 20px;">
+      <p style="margin:0 0 4px;font-size:13px;font-weight:bold;color:#92400e;text-transform:uppercase;">Hearing Info</p>
+      <p style="margin:0;font-size:18px;font-weight:bold;color:#111827;">${formatDate(d.hearingDate)}${d.hearingTime ? ` at ${d.hearingTime}` : ""}</p>
+      ${d.caseNumber ? `<p style="margin:4px 0 0;font-size:13px;color:#374151;">Case No. <strong>${d.caseNumber}</strong></p>` : ""}
+    </div>
+
+    ${courtBlock}
+
+    <p style="margin:0 0 12px;font-size:15px;font-weight:bold;color:#111827;">✅ This week — get these done:</p>
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📁 &nbsp;Make <strong>3 printed copies</strong> of every document (judge, defendant, yourself)</td></tr>
+      <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🧠 &nbsp;Practice with the <strong>Hearing Prep Coach</strong> — answer the judge's practice questions</td></tr>
+      <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📝 &nbsp;Write out a 2–3 minute statement in plain words — practice saying it out loud</td></tr>
+      <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📬 &nbsp;Confirm you have <strong>proof of service</strong> showing the defendant was notified</td></tr>
+      <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🗺️ &nbsp;Look up parking and how long it takes to get to the courthouse — plan to arrive early</td></tr>
+    </table>
+
+    <div style="text-align:center;margin:28px 0;">
+      <a href="https://smallclaimsgenie.com/cases/${d.caseId}" style="background:#0d6b5e;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-size:15px;font-weight:bold;display:inline-block;">
+        Prep for My Hearing →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:13px;color:#6b7280;">You've got this! Small Claims Genie is not a law firm and this is not legal advice.</p>
+  `);
+  return { subject, html };
+}
+
+export function build1DayEmail(d: HearingEmailData): { subject: string; html: string } {
+  const subject = `⚖️ Your Hearing is Tomorrow — You're Ready`;
+  const mapsUrl = d.courthouseAddress
+    ? `https://www.google.com/maps/search/${encodeURIComponent((d.courthouseAddress || "") + " " + (d.courthouseCity || "") + " CA")}`
+    : null;
+
+  const html = baseLayout(subject, `
+    <p style="margin:0 0 8px;font-size:16px;color:#111827;">Hi ${d.plaintiffName || "there"},</p>
+    <p style="margin:0 0 20px;font-size:15px;color:#374151;"><strong>Tomorrow is your day.</strong> You have prepared for this — now trust that preparation and walk in with confidence.</p>
+
+    <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;padding:18px;margin:0 0 20px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:13px;font-weight:bold;color:#92400e;text-transform:uppercase;">⏰ Your Hearing</p>
+      <p style="margin:0;font-size:22px;font-weight:bold;color:#111827;">${formatDate(d.hearingDate)}${d.hearingTime ? ` at ${d.hearingTime}` : ""}</p>
+      ${d.courthouseName ? `<p style="margin:8px 0 0;font-size:15px;color:#374151;">${d.courthouseName}${d.hearingCourtroom ? ` — Courtroom ${d.hearingCourtroom}` : ""}</p>` : ""}
+      ${d.caseNumber ? `<p style="margin:4px 0 0;font-size:13px;color:#6b7280;">Case No. ${d.caseNumber}</p>` : ""}
+      ${mapsUrl ? `<p style="margin:12px 0 0;"><a href="${mapsUrl}" style="color:#0d6b5e;font-weight:bold;font-size:14px;">📍 Get directions →</a></p>` : ""}
+    </div>
+
+    <p style="margin:0 0 12px;font-size:15px;font-weight:bold;color:#111827;">📦 Pack tonight — bring tomorrow:</p>
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">✅ &nbsp;Photo ID</td></tr>
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">✅ &nbsp;3 copies of all documents &amp; evidence</td></tr>
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">✅ &nbsp;Your printed statement / talking points</td></tr>
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">✅ &nbsp;SC-100 and any attachments</td></tr>
+      <tr><td style="padding:5px 0;font-size:14px;color:#374151;">✅ &nbsp;Proof of service (SC-104 or certified mail receipt)</td></tr>
+    </table>
+
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:16px;margin:20px 0;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:bold;color:#166534;">💡 3 things to remember in the courtroom:</p>
+      <p style="margin:0 0 4px;font-size:14px;color:#166534;">1. Arrive 30 minutes early — security lines can be slow</p>
+      <p style="margin:0 0 4px;font-size:14px;color:#166534;">2. Address the judge as <strong>"Your Honor"</strong></p>
+      <p style="margin:0;font-size:14px;color:#166534;">3. Stick to the facts — amounts, dates, what happened, what you lost</p>
+    </div>
+
+    <div style="text-align:center;margin:28px 0;">
+      <a href="https://smallclaimsgenie.com/cases/${d.caseId}" style="background:#0d6b5e;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-size:15px;font-weight:bold;display:inline-block;">
+        Review My Case One Last Time →
+      </a>
+    </div>
+
+    <p style="margin:0 0 8px;font-size:14px;color:#374151;text-align:center;font-weight:bold;">Good luck, ${d.plaintiffName || ""}. You've got this! 🌟</p>
+    <p style="margin:0;font-size:13px;color:#6b7280;">Small Claims Genie is not a law firm and this is not legal advice.</p>
+  `);
+  return { subject, html };
+}
+
 export function build14DayEmail(d: HearingEmailData): { subject: string; html: string } {
   const subject = `⏰ 2 Weeks to Your Hearing — Time to Prepare`;
   const courtBlock = d.courthouseName

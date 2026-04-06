@@ -61,8 +61,11 @@ export const casesTable = pgTable("cases", {
   hearingCourtroom: text("hearing_courtroom"),
   hearingNotes: text("hearing_notes"),
   // ── Email reminder tracking ──────────────────────────────────────────────────
+  reminder30DaySent: boolean("reminder_30_day_sent").default(false),
   reminder14DaySent: boolean("reminder_14_day_sent").default(false),
+  reminder7DaySent: boolean("reminder_7_day_sent").default(false),
   reminder3DaySent: boolean("reminder_3_day_sent").default(false),
+  reminder1DaySent: boolean("reminder_1_day_sent").default(false),
   reminderNoHearingDateSent: boolean("reminder_no_hearing_date_sent").default(false),
   confirmationEmailSent: boolean("confirmation_email_sent").default(false),
   weeklyReminderLastSent: timestamp("weekly_reminder_last_sent", { withTimezone: true }),

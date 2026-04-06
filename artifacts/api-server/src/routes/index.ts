@@ -11,6 +11,7 @@ import formsTokenRouter from "./forms-token";
 import transcribeRouter from "./transcribe";
 import sc100WordRouter from "./sc100-word";
 import demandLetterRouter from "./demand-letter";
+import hearingPrepRouter from "./hearing-prep";
 import storageRouter from "./storage";
 
 const router: IRouter = Router();
@@ -33,5 +34,6 @@ router.use(chatExportRouter);
 router.use(formsTokenRouter);
 router.use(transcribeRouter);
 router.use(demandLetterRouter);
+router.use(hearingPrepRouter);
 
 export default router;

@@ -3,8 +3,11 @@ import { db } from "@workspace/db";
 import { casesTable } from "@workspace/db";
 import { getUncachableResendClient } from "./resend";
 import {
+  build30DayEmail,
   build14DayEmail,
+  build7DayEmail,
   build3DayEmail,
+  build1DayEmail,
   buildNoHearingDateEmail,
   buildCaseConfirmationEmail,
   buildWeeklyCheckInEmail,
@@ -173,21 +176,42 @@ async function sendHearingReminders() {
       caseId: c.id,
     };
 
+    // 30-day reminder (send when 29–31 days out)
+    if (days >= 29 && days <= 31 && !c.reminder30DaySent) {
+      try {
+        const { client, fromEmail } = await getUncachableResendClient();
+        const { subject, html } = build30DayEmail(emailData);
+        await client.emails.send({ from: `Small Claims Genie <${fromEmail}>`, to: c.plaintiffEmail, subject, html });
+        await db.update(casesTable).set({ reminder30DaySent: true }).where(eq(casesTable.id, c.id));
+        logger.info({ caseId: c.id, email: c.plaintiffEmail }, "30-day reminder sent");
+      } catch (err) {
+        logger.error({ caseId: c.id, err }, "Failed to send 30-day reminder");
+      }
+    }
+
     // 14-day reminder (send when 13–15 days out to handle timing gaps)
     if (days >= 13 && days <= 15 && !c.reminder14DaySent) {
       try {
         const { client, fromEmail } = await getUncachableResendClient();
         const { subject, html } = build14DayEmail(emailData);
-        await client.emails.send({
-          from: `Small Claims Genie <${fromEmail}>`,
-          to: c.plaintiffEmail,
-          subject,
-          html,
-        });
+        await client.emails.send({ from: `Small Claims Genie <${fromEmail}>`, to: c.plaintiffEmail, subject, html });
         await db.update(casesTable).set({ reminder14DaySent: true }).where(eq(casesTable.id, c.id));
         logger.info({ caseId: c.id, email: c.plaintiffEmail }, "14-day reminder sent");
       } catch (err) {
         logger.error({ caseId: c.id, err }, "Failed to send 14-day reminder");
+      }
+    }
+
+    // 7-day reminder (send when 6–8 days out)
+    if (days >= 6 && days <= 8 && !c.reminder7DaySent) {
+      try {
+        const { client, fromEmail } = await getUncachableResendClient();
+        const { subject, html } = build7DayEmail(emailData);
+        await client.emails.send({ from: `Small Claims Genie <${fromEmail}>`, to: c.plaintiffEmail, subject, html });
+        await db.update(casesTable).set({ reminder7DaySent: true }).where(eq(casesTable.id, c.id));
+        logger.info({ caseId: c.id, email: c.plaintiffEmail }, "7-day reminder sent");
+      } catch (err) {
+        logger.error({ caseId: c.id, err }, "Failed to send 7-day reminder");
       }
     }
 
@@ -196,16 +220,24 @@ async function sendHearingReminders() {
       try {
         const { client, fromEmail } = await getUncachableResendClient();
         const { subject, html } = build3DayEmail(emailData);
-        await client.emails.send({
-          from: `Small Claims Genie <${fromEmail}>`,
-          to: c.plaintiffEmail,
-          subject,
-          html,
-        });
+        await client.emails.send({ from: `Small Claims Genie <${fromEmail}>`, to: c.plaintiffEmail, subject, html });
         await db.update(casesTable).set({ reminder3DaySent: true }).where(eq(casesTable.id, c.id));
         logger.info({ caseId: c.id, email: c.plaintiffEmail }, "3-day reminder sent");
       } catch (err) {
         logger.error({ caseId: c.id, err }, "Failed to send 3-day reminder");
+      }
+    }
+
+    // 1-day reminder (send when 0–1 days out)
+    if (days >= 0 && days <= 1 && !c.reminder1DaySent) {
+      try {
+        const { client, fromEmail } = await getUncachableResendClient();
+        const { subject, html } = build1DayEmail(emailData);
+        await client.emails.send({ from: `Small Claims Genie <${fromEmail}>`, to: c.plaintiffEmail, subject, html });
+        await db.update(casesTable).set({ reminder1DaySent: true }).where(eq(casesTable.id, c.id));
+        logger.info({ caseId: c.id, email: c.plaintiffEmail }, "1-day reminder sent");
+      } catch (err) {
+        logger.error({ caseId: c.id, err }, "Failed to send 1-day reminder");
       }
     }
   }

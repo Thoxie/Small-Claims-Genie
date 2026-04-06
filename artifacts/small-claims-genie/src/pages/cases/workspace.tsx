@@ -41,7 +41,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe, Pencil, Info } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe, Pencil, Info, Gavel, Maximize2, RotateCcw, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -270,46 +270,54 @@ export default function CaseWorkspace() {
 
       {/* Tab navigation — click any tab to switch sections */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-5 h-auto p-1 bg-muted/80 rounded-xl gap-1">
+        <TabsList className="w-full grid grid-cols-6 h-auto p-1 bg-muted/80 rounded-xl gap-0.5">
           <TabsTrigger
             value="intake"
-            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
             data-testid="tab-intake"
           >
             <ClipboardList className="h-4 w-4 shrink-0" />
-            <span>{i18n.workspace.tabs.intake}</span>
+            <span className="leading-tight">Intake</span>
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
             data-testid="tab-documents"
           >
             <FileText className="h-4 w-4 shrink-0" />
-            <span>{i18n.workspace.tabs.documents}</span>
+            <span className="leading-tight">Docs</span>
           </TabsTrigger>
           <TabsTrigger
             value="chat"
-            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
             data-testid="tab-chat"
           >
             <MessageSquare className="h-4 w-4 shrink-0" />
-            <span>{i18n.workspace.tabs.chat}</span>
+            <span className="leading-tight">Chat</span>
           </TabsTrigger>
           <TabsTrigger
             value="demand-letter"
-            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
             data-testid="tab-demand-letter"
           >
             <Mail className="h-4 w-4 shrink-0" />
-            <span>{i18n.workspace.tabs.demandLetter}</span>
+            <span className="leading-tight">Demand</span>
           </TabsTrigger>
           <TabsTrigger
             value="forms"
-            className="flex flex-col sm:flex-row items-center gap-1.5 py-3 px-2 text-sm font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
             data-testid="tab-forms"
           >
             <Scale className="h-4 w-4 shrink-0" />
-            <span>{i18n.workspace.tabs.forms}</span>
+            <span className="leading-tight">Forms</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="prep"
+            className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+            data-testid="tab-prep"
+          >
+            <Gavel className="h-4 w-4 shrink-0" />
+            <span className="leading-tight">Prep</span>
           </TabsTrigger>
         </TabsList>
         
@@ -327,7 +335,10 @@ export default function CaseWorkspace() {
             <DemandLetterTab caseId={caseId} currentCase={currentCase} />
           </TabsContent>
           <TabsContent value="forms" className="p-0 m-0">
-            <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} />
+            <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} />
+          </TabsContent>
+          <TabsContent value="prep" className="p-0 m-0">
+            <HearingPrepTab caseId={caseId} currentCase={currentCase} />
           </TabsContent>
         </div>
       </Tabs>
@@ -709,6 +720,10 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
     }
   });
 
+  // ── Claim description expand modal state ─────────────────────────────────
+  const [descModalOpen, setDescModalOpen] = useState(false);
+  const [descModalValue, setDescModalValue] = useState("");
+
   // ── Advisor drawer state ───────────────────────────────────────────────────
   const [advisorOpen, setAdvisorOpen] = useState(false);
 
@@ -843,9 +858,29 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <FormField control={form.control} name="claimDescription" render={({ field }) => (
               <FormItem>
-                <FormLabel>What happened? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>
+                  What happened? <span className="text-destructive">*</span>
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">Describe why you're owed money</span>
+                </FormLabel>
                 <FormControl>
-                  <Textarea className="min-h-[88px]" placeholder="Briefly describe why the defendant owes you money…" {...field} />
+                  <div className="relative">
+                    <Textarea
+                      className="min-h-[88px] pr-10 resize-none"
+                      placeholder="Briefly describe why the defendant owes you money — what happened, when, and how much you lost…"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      title="Expand to full editor"
+                      onClick={() => {
+                        setDescModalValue(field.value || "");
+                        setDescModalOpen(true);
+                      }}
+                      className="absolute bottom-2 right-2 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -882,6 +917,47 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
           </div>
         </form>
       </Form>
+
+      {/* ── Claim Description Expand Modal ────────────────────────────────────── */}
+      <Dialog open={descModalOpen} onOpenChange={setDescModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90dvh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Maximize2 className="h-5 w-5 text-primary" />
+              What happened? — Full Description Editor
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Write as much detail as you need. Explain what happened, when it happened, and exactly how much money you lost. The more specific you are, the stronger your case.
+            </p>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden flex flex-col gap-3 min-h-0">
+            <textarea
+              value={descModalValue}
+              onChange={(e) => setDescModalValue(e.target.value)}
+              placeholder="Describe what happened in your own words. Include:&#10;• What the defendant did (or didn't do)&#10;• When it happened (specific dates)&#10;• The exact dollar amount you lost and why&#10;• What you tried to do to resolve it before going to court"
+              className="flex-1 min-h-[320px] w-full resize-none rounded-lg border border-input bg-background px-4 py-3 text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{descModalValue.length} characters</span>
+              {descModalValue.length > 650 && (
+                <span className="text-amber-600 font-medium">⚠ Long descriptions may need a separate MC-030 attachment — the AI will help generate it.</span>
+              )}
+            </div>
+          </div>
+          <DialogFooter className="flex-shrink-0 gap-2">
+            <Button variant="outline" onClick={() => setDescModalOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              const currentFieldValue = form.getValues("claimDescription");
+              if (descModalValue !== currentFieldValue) {
+                form.setValue("claimDescription", descModalValue, { shouldValidate: true, shouldDirty: true });
+              }
+              setDescModalOpen(false);
+            }}>
+              Save Description
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Case Advisor Drawer ──────────────────────────────────────────────── */}
       <Sheet open={advisorOpen} onOpenChange={setAdvisorOpen}>
@@ -2917,7 +2993,7 @@ function FormAssistantModal({ formId, caseId, onClose, onDownload, onAiGenerate 
   );
 }
 
-function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, currentCase: any, onSwitchToIntake: () => void }) {
+function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep }: { caseId: number, currentCase: any, onSwitchToIntake: () => void, onSwitchToPrep: () => void }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
@@ -3046,6 +3122,25 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
 
   return (
     <div className="p-6 md:p-8 space-y-8">
+
+      {/* ── Hearing Prep Coach Teaser ────────────────────────────────────────── */}
+      <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="h-14 w-14 shrink-0 rounded-full bg-amber-500 flex items-center justify-center shadow-md">
+          <Gavel className="h-7 w-7 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="font-bold text-amber-900 text-base">Practice Before Your Hearing</h3>
+            <span className="rounded-full bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">New</span>
+          </div>
+          <p className="text-sm text-amber-800">The Hearing Prep Coach acts as a real judge — asking you the same questions you'll face in court. Practice your answers until you feel confident.</p>
+        </div>
+        <Button onClick={onSwitchToPrep} className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white gap-2 font-semibold">
+          <Gavel className="h-4 w-4" />
+          Start Practice
+        </Button>
+      </div>
+
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-baseline gap-3 flex-wrap">
@@ -3608,6 +3703,304 @@ function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase:
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── HEARING PREP COACH TAB ────────────────────────────────────────────────────
+type PrepMessage = { role: "user" | "assistant"; content: string };
+
+function HearingPrepTab({ caseId, currentCase }: { caseId: number; currentCase: any }) {
+  const { getToken } = useAuth();
+  const [messages, setMessages] = useState<PrepMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  const streamJudgeResponse = async (msgHistory: PrepMessage[]) => {
+    setIsTyping(true);
+    try {
+      const token = await getToken();
+      const response = await fetch(`/api/cases/${caseId}/hearing-prep`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ messages: msgHistory }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        setMessages(prev => [...prev, { role: "assistant", content: `⚠️ ${err.error || "Something went wrong. Please try again."}` }]);
+        return;
+      }
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullResponse = "";
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.done) break;
+            if (data.content) {
+              fullResponse += data.content;
+              setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: "assistant", content: fullResponse };
+                return updated;
+              });
+            }
+          } catch { /* ignore parse errors */ }
+        }
+      }
+    } catch (err) {
+      console.error("[HearingPrep] Streaming error:", err);
+      setMessages(prev => [...prev, { role: "assistant", content: "⚠️ Connection error. Please try again." }]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const startSession = () => {
+    setSessionStarted(true);
+    setMessages([]);
+    // Kick off with empty history so judge gives opening statement
+    streamJudgeResponse([]);
+  };
+
+  const resetSession = () => {
+    setSessionStarted(false);
+    setMessages([]);
+    setInput("");
+  };
+
+  const sendMessage = async (content: string) => {
+    if (!content.trim() || isTyping) return;
+    setInput("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+    const newMessages: PrepMessage[] = [...messages, { role: "user", content }];
+    setMessages(newMessages);
+    await streamJudgeResponse(newMessages);
+  };
+
+  const handleVoiceStart = () => {
+    const API = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!API) return;
+    const before = input.trim();
+    const rec = new API();
+    rec.lang = "en-US";
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.onresult = (e: any) => {
+      let transcript = "";
+      for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+      setInput(before ? `${before} ${transcript.trim()}` : transcript.trim());
+    };
+    rec.onerror = () => setIsRecording(false);
+    rec.onend = () => setIsRecording(false);
+    recognitionRef.current = rec;
+    rec.start();
+    setIsRecording(true);
+  };
+
+  const handleVoiceStop = () => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setIsRecording(false);
+  };
+
+  // ── Welcome screen ─────────────────────────────────────────────────────────
+  if (!sessionStarted) {
+    const hasHearingDate = !!currentCase.hearingDate;
+    return (
+      <div className="p-6 md:p-10 flex flex-col items-center gap-8 text-center">
+        {/* Icon */}
+        <div className="relative">
+          <div className="h-24 w-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-xl">
+            <Gavel className="h-12 w-12 text-white" />
+          </div>
+          <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-[#0d6b5e] flex items-center justify-center border-2 border-white">
+            <Star className="h-4 w-4 text-white fill-white" />
+          </div>
+        </div>
+
+        <div className="max-w-lg">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Hearing Prep Coach</h2>
+          <p className="text-muted-foreground mt-3 text-base leading-relaxed">
+            Nervous about court? That's normal. This coach acts like a real judge — asking you the same questions you'll face in the courtroom — so you're not caught off guard on hearing day.
+          </p>
+        </div>
+
+        {/* How it works */}
+        <div className="w-full max-w-md bg-[#f0fffe] border border-[#a8e6df] rounded-2xl p-6 text-left space-y-4">
+          <p className="font-bold text-[#0d6b5e] text-sm uppercase tracking-wide">How a session works</p>
+          {[
+            { num: "1", text: "The AI introduces itself as Judge Chen and asks you to explain your case in your own words" },
+            { num: "2", text: "The judge follows up with the same questions a real judge would ask — amounts, dates, evidence" },
+            { num: "3", text: "You practice answering until you feel confident. Then you get personal feedback." },
+          ].map(({ num, text }) => (
+            <div key={num} className="flex items-start gap-3">
+              <div className="h-7 w-7 rounded-full bg-[#0d6b5e] text-white flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">{num}</div>
+              <p className="text-sm text-gray-700 leading-relaxed">{text}</p>
+            </div>
+          ))}
+        </div>
+
+        {hasHearingDate && (
+          <div className="w-full max-w-md rounded-xl border border-green-200 bg-green-50 px-5 py-3 flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-green-800">
+              <strong>Hearing date set:</strong> {new Date(currentCase.hearingDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.
+              Your prep session is tailored to your real case.
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col items-center gap-3">
+          <Button
+            size="lg"
+            onClick={startSession}
+            className="gap-3 text-base px-10 py-4 h-auto bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl transition-all"
+          >
+            <Gavel className="h-5 w-5" />
+            Start Practice Session
+          </Button>
+          <p className="text-xs text-muted-foreground">This is practice only — nothing is sent to the court.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Active session ─────────────────────────────────────────────────────────
+  return (
+    <div className="flex flex-col h-[calc(100dvh-260px)] min-h-[520px]">
+      {/* Session header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-orange-50">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-amber-500 flex items-center justify-center shadow-sm">
+            <Gavel className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900">Judge Chen's Courtroom</p>
+            <p className="text-xs text-muted-foreground">Practice session — answer as you would in real court</p>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={resetSession}
+          className="gap-1.5 text-muted-foreground hover:text-destructive text-xs"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          Restart
+        </Button>
+      </div>
+
+      {/* Messages */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            {msg.role === "assistant" && (
+              <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center shrink-0 mr-2 mt-1">
+                <Gavel className="h-4 w-4 text-white" />
+              </div>
+            )}
+            <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+              msg.role === "user"
+                ? "bg-[#0d6b5e] text-white rounded-tr-sm"
+                : "bg-amber-50 border border-amber-200 text-gray-800 rounded-tl-sm"
+            }`}>
+              {msg.role === "assistant" ? (
+                <ReactMarkdown>{msg.content || "…"}</ReactMarkdown>
+              ) : (
+                <p>{msg.content}</p>
+              )}
+            </div>
+          </div>
+        ))}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center shrink-0 mr-2 mt-1">
+              <Gavel className="h-4 w-4 text-white" />
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1.5 items-center">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" />
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: "0.2s" }} />
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: "0.4s" }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input area */}
+      <div className="p-4 border-t bg-card mt-auto">
+        <div className={`text-xs text-center mb-2 font-medium transition-colors ${isRecording ? "text-destructive animate-pulse" : "text-muted-foreground/60"}`}>
+          {isRecording ? "Recording — release to send" : "Speak your answer or type below — press Enter to send"}
+        </div>
+        <div className="flex items-end gap-2">
+          <div className="flex-1 relative">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                const el = e.target as HTMLTextAreaElement;
+                el.style.height = "auto";
+                el.style.height = Math.min(el.scrollHeight, 160) + "px";
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(input);
+                }
+              }}
+              placeholder="Type your answer here… speak naturally, like you would in court"
+              rows={1}
+              disabled={isRecording || isTyping}
+              className="w-full resize-none overflow-hidden rounded-3xl border-2 border-input bg-background px-4 py-3 pr-12 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-0 disabled:opacity-50 transition-colors"
+              style={{ minHeight: "44px", maxHeight: "160px" }}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className={`absolute right-2 bottom-1.5 rounded-full transition-colors ${isRecording ? "text-destructive animate-pulse bg-destructive/10" : "text-muted-foreground"}`}
+              onMouseDown={handleVoiceStart}
+              onMouseUp={handleVoiceStop}
+              onMouseLeave={isRecording ? handleVoiceStop : undefined}
+              onTouchStart={handleVoiceStart}
+              onTouchEnd={handleVoiceStop}
+              aria-label={isRecording ? "Recording — release to send" : "Hold to record voice answer"}
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
+          </div>
+          <Button
+            onClick={() => sendMessage(input)}
+            size="icon"
+            className="h-11 w-11 rounded-full shrink-0 mb-0.5 bg-amber-500 hover:bg-amber-600"
+            disabled={isTyping || isRecording || !input.trim()}
+          >
+            <Send className="h-5 w-5 ml-0.5" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
