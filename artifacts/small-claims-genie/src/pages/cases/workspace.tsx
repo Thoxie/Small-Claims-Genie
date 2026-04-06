@@ -2525,15 +2525,33 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
 };
 
 /* ── Form Assistant Modal ─────────────────────────────────────────────────── */
-function FormAssistantModal({ formId, caseId, onClose, onDownload }: { formId: string; caseId: number; onClose: () => void; onDownload: (endpoint: string, filename: string, body: Record<string, any>) => void }) {
+function FormAssistantModal({ formId, caseId, onClose, onDownload, onAiGenerate }: { formId: string; caseId: number; onClose: () => void; onDownload: (endpoint: string, filename: string, body: Record<string, any>) => void; onAiGenerate?: () => Promise<string | null> }) {
   const cfg = FORM_FIELD_CONFIG[formId];
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [validationMsg, setValidationMsg] = useState<string | null>(null);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   if (!cfg) return null;
 
   function set(key: string, value: string) {
     setFormData(prev => ({ ...prev, [key]: value }));
+  }
+
+  async function handleAiGenerate() {
+    if (!onAiGenerate) return;
+    setAiGenerating(true);
+    setAiError(null);
+    try {
+      const text = await onAiGenerate();
+      if (text) {
+        setFormData(prev => ({ ...prev, declarationText: text }));
+      }
+    } catch {
+      setAiError("AI generation failed — please try again.");
+    } finally {
+      setAiGenerating(false);
+    }
   }
 
   function buildBody(): Record<string, any> {
@@ -2610,6 +2628,39 @@ function FormAssistantModal({ formId, caseId, onClose, onDownload }: { formId: s
         </div>
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-6">
+          {/* MC-030 AI Generate section */}
+          {formId === "mc030" && onAiGenerate && (
+            <div className="rounded-xl border-2 border-[#0d6b5e]/30 bg-[#ddf6f3]/50 p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <svg className="mt-0.5 shrink-0 text-[#0d6b5e]" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <div className="space-y-1 flex-1">
+                  <p className="text-sm font-bold text-[#0d6b5e]">AI Declaration Generator</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Click to auto-generate a complete, court-ready declaration based on your case details. You can review and edit the text before downloading.</p>
+                </div>
+              </div>
+              {aiError && (
+                <p className="text-xs text-rose-600 font-semibold">{aiError}</p>
+              )}
+              <button
+                onClick={handleAiGenerate}
+                disabled={aiGenerating}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0d6b5e] text-white text-sm font-semibold hover:bg-[#0d6b5e]/90 transition-colors disabled:opacity-60"
+              >
+                {aiGenerating ? (
+                  <>
+                    <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    AI Generate Declaration
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           {cfg.groups.map((group, gi) => (
             <div key={gi} className="space-y-3">
               <p className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e]">{group.title}</p>
@@ -2622,11 +2673,11 @@ function FormAssistantModal({ formId, caseId, onClose, onDownload }: { formId: s
                     {field.hint && <p className="text-xs text-muted-foreground mb-1">{field.hint}</p>}
                     {field.type === "textarea" ? (
                       <textarea
-                        rows={4}
+                        rows={field.key === "declarationText" ? 10 : 4}
                         placeholder={field.placeholder}
                         value={formData[field.key] || ""}
                         onChange={(e) => set(field.key, e.target.value)}
-                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/40"
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/40"
                       />
                     ) : field.type === "select" ? (
                       <select
@@ -2681,6 +2732,36 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
   const [guideFormId, setGuideFormId] = useState<string | null>(null);
   const [modalFormId, setModalFormId] = useState<string | null>(null);
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
+  const [mc030Generating, setMc030Generating] = useState(false);
+  const [mc030GenError, setMc030GenError] = useState<string | null>(null);
+
+  // SC-100 description overflow: ~8 lines × ~90 chars/line ≈ 720 chars threshold
+  const descriptionNeedsMC030 = (currentCase.claimDescription?.length ?? 0) > 650;
+
+  async function generateMC030Declaration(): Promise<string | null> {
+    setMc030Generating(true);
+    setMc030GenError(null);
+    try {
+      const clerkToken = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/forms/mc030-ai`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${clerkToken}` },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMc030GenError(err.error || "AI generation failed.");
+        return null;
+      }
+      const data = await res.json();
+      return data.declarationText ?? null;
+    } catch {
+      setMc030GenError("AI generation failed — please try again.");
+      return null;
+    } finally {
+      setMc030Generating(false);
+    }
+  }
 
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
@@ -2831,7 +2912,24 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
               </div>
 
               {/* SC-100 special: MC-030 overflow note */}
-              {guideForm.id === "sc100" && (
+              {guideForm.id === "sc100" && descriptionNeedsMC030 && (
+                <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-5 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <svg className="mt-0.5 shrink-0 text-blue-600" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-bold text-blue-900">Your description is too long for SC-100 — MC-030 is required</h3>
+                      <p className="text-sm text-blue-800 leading-relaxed">Your case description ({currentCase.claimDescription?.length ?? 0} characters) exceeds what fits in the SC-100 description box. Your filled SC-100 PDF will include the first 7 lines and a note directing the court to the attached <span className="font-semibold">MC-030 Declaration</span>. File both forms together. Use the AI Generate button on MC-030 to create the complete declaration automatically.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { setGuideFormId(null); setTimeout(() => setGuideFormId("mc030"), 50); }}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 border border-blue-300 rounded-lg px-3 py-1.5 hover:bg-blue-100 transition-colors"
+                  >
+                    Go to MC-030 Declaration →
+                  </button>
+                </div>
+              )}
+              {guideForm.id === "sc100" && !descriptionNeedsMC030 && (
                 <div className="rounded-xl border border-[#0d6b5e]/20 bg-[#ddf6f3]/40 p-5 space-y-2">
                   <h3 className="text-sm font-bold text-foreground">What if your explanation doesn't fit?</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">If you cannot fit your full explanation in the space on SC-100, this application will direct you to <span className="font-semibold text-foreground">MC-030 Declaration</span> — the standard California form for adding sworn written facts. Keep a short summary on SC-100 and use MC-030 to tell the rest of the story in numbered paragraphs: what happened, when it happened, what the other party did or failed to do, the amount you are requesting, and why that amount is owed. Both forms are submitted together.</p>
@@ -3007,11 +3105,23 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
               onClick={() => setActiveFormId(isActive ? null : form.id)}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
-                <span className={`text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full ${
-                  isActive ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"
-                }`}>
-                  {form.number}
-                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className={`text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full ${
+                    isActive ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"
+                  }`}>
+                    {form.number}
+                  </span>
+                  {form.id === "sc100" && (
+                    <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                      Start Here
+                    </span>
+                  )}
+                  {form.id === "mc030" && descriptionNeedsMC030 && (
+                    <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                      Needed
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5">
                   {form.available ? (
                     <span className="text-xs font-semibold text-[#0d6b5e] bg-[#ddf6f3] border border-[#0d6b5e]/30 px-2 py-0.5 rounded-full">Ready</span>
@@ -3214,6 +3324,7 @@ function FormsTab({ caseId, currentCase }: { caseId: number, currentCase: any })
           caseId={caseId}
           onClose={() => setModalFormId(null)}
           onDownload={downloadFormPost}
+          onAiGenerate={modalFormId === "mc030" ? generateMC030Declaration : undefined}
         />
       )}
     </div>

@@ -69,6 +69,24 @@ function wrapVal(page: any, font: any, text: string | null | undefined, x: numbe
   return y;
 }
 
+// Count how many lines a block of text would need at given width/size
+function countWrapLines(font: any, text: string, maxW: number, size: number): number {
+  if (!text) return 0;
+  const words = text.split(/\s+/);
+  let line = "";
+  let count = 1;
+  for (const word of words) {
+    const cand = line ? line + " " + word : word;
+    if (font.widthOfTextAtSize(cand, size) > maxW && line) {
+      count++;
+      line = word;
+    } else {
+      line = cand;
+    }
+  }
+  return count;
+}
+
 function xmark(page: any, cx: number, cy: number, size = 5) {
   const h = size / 2;
   page.drawLine({ start: { x: cx - h, y: cy - h }, end: { x: cx + h, y: cy + h }, thickness: 1, color: BLACK });
@@ -92,8 +110,30 @@ function drawPage1(page: any, bg: any) {
 function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
   const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-  v(c.plaintiffName, 132, 745);
-  v(c.caseNumber, 515, 745);
+
+  // ── Court / courthouse info (top header section) ────────────────────────
+  // "SUPERIOR COURT OF CALIFORNIA, COUNTY OF ___" → county name
+  if (c.countyId) {
+    const countyDisplay = String(c.countyId)
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (l: string) => l.toUpperCase());
+    v(countyDisplay, 166, 779);
+  }
+  // Courthouse name (e.g. "Stanley Mosk Courthouse")
+  if (c.courthouseName) v(c.courthouseName, 60, 765);
+  // Courthouse street address
+  if (c.courthouseAddress) v(c.courthouseAddress, 60, 752);
+  // Courthouse city + zip (only if it won't conflict — keep it tight)
+  if (c.courthouseCity || c.courthouseZip) {
+    const cityZip = [c.courthouseCity, "CA", c.courthouseZip].filter(Boolean).join(" ");
+    v(cityZip, 60, 739);
+  }
+
+  // ── Case caption ────────────────────────────────────────────────────────
+  v(c.plaintiffName, 132, 725);
+  v(c.caseNumber, 515, 725);
+
+  // ── Plaintiff section ───────────────────────────────────────────────────
   v(c.plaintiffName, 95, 674);
   v(c.plaintiffPhone, 455, 674);
   v(c.plaintiffAddress, 133, 655);
@@ -107,6 +147,8 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
     v(c.plaintiffMailingZip, 503, 626);
   }
   v(c.plaintiffEmail, 191, 600);
+
+  // ── Defendant section ───────────────────────────────────────────────────
   v(c.defendantName, 95, 390);
   v(c.defendantPhone, 455, 390);
   v(c.defendantAddress, 133, 371);
@@ -121,14 +163,33 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
   }
   if (c.defendantIsBusinessOrEntity && c.defendantAgentName) {
     v(c.defendantAgentName, 95, 283);
-    v(c.defendantAgentTitle, 413, 283);
-    v(c.defendantAgentStreet, 124, 261);
-    v(c.defendantAgentCity, 341, 261);
+    v(c.defendantAgentTitle || "", 413, 283);
+    v(c.defendantAgentStreet || "", 124, 261);
+    v(c.defendantAgentCity || "", 341, 261);
     v(c.defendantAgentState || "CA", 441, 261);
-    v(c.defendantAgentZip, 469, 261);
+    v(c.defendantAgentZip || "", 469, 261);
   }
-  if (c.claimAmount) v(`${Number(c.claimAmount).toFixed(2)}`, 300, 194);
-  if (c.claimDescription) wrapVal(page, font, c.claimDescription, 63, 163, 490, 9, 12, 8);
+
+  // ── Claim amount ────────────────────────────────────────────────────────
+  if (c.claimAmount) {
+    v(`${Number(c.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 300, 194);
+  }
+
+  // ── Claim description — detect overflow, stamp MC-030 note if needed ───
+  const DESC_MAX_LINES = 8;
+  const DESC_OVERFLOW_LINES = 7; // leave line 8 for the reference note
+  const desc = String(c.claimDescription || "").trim();
+  if (desc) {
+    const linesNeeded = countWrapLines(font, desc, 490, 9);
+    if (linesNeeded > DESC_MAX_LINES) {
+      // Draw 7 lines then stamp overflow note on line 8
+      wrapVal(page, font, desc, 63, 163, 490, 9, 12, DESC_OVERFLOW_LINES);
+      const noteY = 163 - DESC_OVERFLOW_LINES * 12;
+      val(page, font, "(Continued — see attached MC-030 Declaration for full statement)", 63, noteY, 8);
+    } else {
+      wrapVal(page, font, desc, 63, 163, 490, 9, 12, DESC_MAX_LINES);
+    }
+  }
 }
 
 function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {

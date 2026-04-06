@@ -318,4 +318,129 @@ router.post("/cases/:id/demand-letter/pdf", async (req, res): Promise<void> => {
   res.send(Buffer.from(pdfBytes));
 });
 
+// ── MC-030 Declaration AI generation ─────────────────────────────────────────
+// Statute map by claim type — California-specific
+const STATUTE_MAP: Record<string, string[]> = {
+  "Security Deposit": [
+    "Civil Code § 1950.5 — landlord must return the security deposit within 21 days of move-out with an itemized statement of deductions",
+    "Civil Code § 1950.5(l) — if deposit is withheld in bad faith, landlord is liable for up to twice the amount wrongfully withheld",
+  ],
+  "Property Damage": [
+    "Civil Code § 3333 — the measure of damages for tort is the amount that will compensate for all detriment proximately caused",
+    "Civil Code § 3281 — every person who suffers detriment from the unlawful act of another may recover compensation in damages",
+  ],
+  "Contract Dispute": [
+    "Civil Code § 3300 — the measure of damages for breach of contract is the amount that will compensate for all detriment proximately caused by the breach",
+    "Civil Code § 3301 — damages must be certain, or capable of being made certain by calculation, from the breach",
+    "Civil Code § 1550 — essential elements of a contract: parties capable of contracting, mutual consent, lawful object, sufficient consideration",
+  ],
+  "Unpaid Debt": [
+    "Civil Code § 1605 — consideration exists when the promisor receives a benefit or the promisee suffers a detriment",
+    "Civil Code § 3287 — a person entitled to damages certain or capable of being made certain may recover prejudgment interest from the day the right vested",
+    "Civil Code § 3289 — if no interest rate is specified in the contract, the legal rate is 10% per annum",
+  ],
+  "Money Owed": [
+    "Civil Code § 1605 — consideration exists when the promisor receives a benefit or the promisee suffers a detriment",
+    "Civil Code § 3287 — a party entitled to recover damages certain in amount may also recover interest from the date the obligation became due",
+    "Civil Code § 3289 — the statutory interest rate when none is specified is 10% per annum",
+  ],
+  "Fraud": [
+    "Civil Code § 1709 — one who willfully deceives another with intent to induce an act or omission to their prejudice is liable for any damage caused",
+    "Civil Code § 3343 — the measure of fraud damages is the out-of-pocket loss and any additional damage arising from the fraud",
+    "Civil Code § 1572 — actual fraud includes intentional misrepresentation, concealment, false promise, and other deceptive acts",
+  ],
+  "Other": [
+    "Civil Code § 3281 — every person who suffers detriment from the unlawful act of another may recover compensation in damages",
+    "Civil Code § 3333 — the measure of damages is the amount that compensates for all detriment proximately caused",
+  ],
+};
+
+const MC030_SYSTEM = `You are a California legal document drafter helping a self-represented party in small claims court. Write a MC-030 Declaration — a sworn statement under penalty of perjury.
+
+FORMAT RULES:
+- Number every paragraph starting at 1.
+- One fact or idea per paragraph. Keep each paragraph 2–4 sentences max.
+- Write in first person ("I," "me," "my").
+- Do not use bullet points, headers, or markdown.
+- Do not use the word "aforementioned," "herein," or other legalese.
+- End with a closing paragraph: "I declare under penalty of perjury under the laws of the State of California that the foregoing is true and correct, and that this declaration was executed on [DATE] in [City], California."
+
+CONTENT ORDER:
+1. Who you are and your relationship to the case.
+2. Chronological facts — what happened, specific dates, specific amounts, specific actions taken.
+3. What you did to try to resolve the matter before filing.
+4. What relief you are seeking and why the amount is fair.
+5. Applicable California statutes (list each statute cited as a separate numbered paragraph explaining how it applies).
+6. Closing declaration paragraph.
+
+IMPORTANT: Use only the facts provided. Never invent facts. The dollar amount must match the Amount Sought exactly.`;
+
+router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rateCheck = checkAiRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes.` });
+    return;
+  }
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+
+  const statutes = STATUTE_MAP[caseRecord.claimType ?? "Other"] ?? STATUTE_MAP["Other"];
+  const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const amt = caseRecord.claimAmount
+    ? `$${Number(caseRecord.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : "[AMOUNT]";
+
+  const parts: string[] = [
+    `=== CASE FACTS ===`,
+    `Plaintiff (Declarant): ${caseRecord.plaintiffName ?? "[Plaintiff]"}`,
+    `Defendant: ${caseRecord.defendantName ?? "[Defendant]"}`,
+    `Amount Sought (AUTHORITATIVE): ${amt}`,
+    `Claim Type: ${caseRecord.claimType ?? "Not specified"}`,
+    caseRecord.incidentDate ? `Incident Date: ${caseRecord.incidentDate}` : "",
+    caseRecord.claimDescription ? `\nFull Claim Description:\n${caseRecord.claimDescription}` : "",
+    caseRecord.howAmountCalculated ? `\nHow Amount Was Calculated:\n${caseRecord.howAmountCalculated}` : "",
+    caseRecord.priorDemandMade != null ? `Prior Demand Made: ${caseRecord.priorDemandMade ? "Yes" : "No"}` : "",
+    caseRecord.priorDemandDescription ? `Prior Demand Details: ${caseRecord.priorDemandDescription}` : "",
+    caseRecord.countyId ? `Filing County: ${caseRecord.countyId} County` : "",
+    caseRecord.plaintiffCity ? `Declarant City: ${caseRecord.plaintiffCity}` : "",
+    `Today's Date: ${today}`,
+    `\n=== APPLICABLE CALIFORNIA STATUTES ===`,
+    ...statutes,
+  ].filter(Boolean);
+
+  if (docs.length > 0) {
+    parts.push(`\n=== SUPPORTING DOCUMENTS ===`);
+    for (const doc of docs.slice(0, 4)) {
+      if (doc.ocrText && !doc.ocrText.startsWith("[")) {
+        parts.push(`Document: "${doc.originalName}"\n${doc.ocrText.slice(0, 2000)}`);
+      }
+    }
+  }
+
+  const userContent = parts.join("\n");
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      max_tokens: 2000,
+      messages: [
+        { role: "system", content: MC030_SYSTEM },
+        { role: "user", content: `Write the MC-030 declaration now.\n\n${userContent}` },
+      ],
+    });
+    const text = completion.choices[0]?.message?.content ?? "";
+    res.json({ declarationText: text });
+  } catch (err: any) {
+    console.error("MC-030 AI error:", err?.message);
+    res.status(500).json({ error: "Failed to generate declaration. Please try again." });
+  }
+});
+
 export default router;
