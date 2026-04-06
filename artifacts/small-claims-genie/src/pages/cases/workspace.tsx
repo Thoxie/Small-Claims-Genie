@@ -293,7 +293,7 @@ export default function CaseWorkspace() {
             data-testid="tab-chat"
           >
             <MessageSquare className="h-4 w-4 shrink-0" />
-            <span className="leading-tight">Genie</span>
+            <span className="leading-tight text-center">Ask Genie AI</span>
           </TabsTrigger>
           <TabsTrigger
             value="demand-letter"
