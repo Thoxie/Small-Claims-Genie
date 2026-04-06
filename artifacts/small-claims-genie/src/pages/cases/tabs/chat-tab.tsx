@@ -254,7 +254,19 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
         )}
       </div>
 
-      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-3 py-3">
+      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 pt-1.5 pb-3">
+        <div className={`flex items-center justify-end mb-1.5 transition-all duration-200`}>
+          {isRecording ? (
+            <span className="flex items-center gap-1 text-[10px] font-medium text-destructive animate-pulse">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
+              Recording… release mic to stop
+            </span>
+          ) : (
+            <span className="text-[10px] text-muted-foreground/70">
+              Hold <span className="font-semibold">mic</span> to record voice
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 relative flex items-center">
             <textarea
