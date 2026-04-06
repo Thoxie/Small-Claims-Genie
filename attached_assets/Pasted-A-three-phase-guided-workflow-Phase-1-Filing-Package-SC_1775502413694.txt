@@ -1,0 +1,33 @@
+A three-phase guided workflow
+
+Phase 1 — Filing Package (SC-100 + MC-030 together)
+
+These belong in one phase because the MC-030 is literally the written narrative that supports the dollar amount on the SC-100. You can't do one properly without the other. This phase would:
+
+Pre-fill both forms from intake data already collected (parties, amounts, dates, county, courthouse)
+Have the user write or review their declaration narrative (the MC-030 body), with AI help drafting it from their claim description
+Let them pick which uploaded documents become exhibits — labeled Exhibit A, Exhibit B, etc. — and the system stamps each page and appends them to the MC-030
+Show a side-by-side preview before generating the final combined PDF: SC-100 on top, MC-030 with exhibits behind it, ready to file as one packet
+Phase 2 — Additional Forms (logic-driven)
+
+Before moving to service, the app checks the case facts and surfaces any required extras:
+
+Multiple defendants → SC-100A automatically queued
+Defendant is a business/DBA → extra guidance on serving the registered agent, not just the storefront
+Suing a public entity → hard block with warning that a government tort claim must have been filed first, with the date it was filed pulled from intake
+Claim exceeds $10,000 → warning that they're near or over the individual limit
+This phase only appears if something was triggered. Most users will skip straight to Phase 3.
+
+Phase 3 — Service of Process + POS-030
+
+After the filing packet is ready, the user has to serve the defendant. This phase walks them through the county-specific method (certified mail via clerk, process server, or sheriff), then pre-fills the POS-030 once they've confirmed service was completed — with the correct checkboxes for how it was done and the 15/20-day deadline flagged clearly.
+
+The MC-030 + exhibits PDF technically
+
+This is the most complex piece. The generated PDF needs to be assembled from multiple source types: the filled MC-030 form, plus whatever the user uploaded — which could be a PDF contract, a JPG receipt, a PNG screenshot. The app would need to normalize everything into pages within a single PDF, add an exhibit stamp or label to each, and sequence them in the order the user picks. That's all doable with the PDF libraries already in the stack, but it needs proper handling for images-to-pages conversion and page size normalization.
+
+What I'd recommend building vs. what to defer
+
+Build now: the three-phase wizard shell, Phase 1 SC-100/MC-030 generation with exhibit assembly, and the conditional logic gates for Phase 2. These are the highest-value pieces and the ones users will hit immediately.
+
+Defer: POS-030 generation can come right after since it requires the case number from the filed SC-100 (which the user gets back from the clerk), and the service method varies more per county. That's a slightly separate loop that makes sense as a follow-up feature.
