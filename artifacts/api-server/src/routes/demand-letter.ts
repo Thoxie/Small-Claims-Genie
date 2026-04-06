@@ -60,7 +60,10 @@ function buildLetterContext(
   parts.push(`Case Title: ${caseRecord.title}`);
   if (caseRecord.claimType)     parts.push(`Claim Type: ${caseRecord.claimType}`);
   if (caseRecord.countyId)      parts.push(`Filing County: ${caseRecord.countyId} County`);
-  if (caseRecord.claimAmount)   parts.push(`Amount Sought: $${caseRecord.claimAmount.toLocaleString()}`);
+  if (caseRecord.claimAmount) {
+    const amt = `$${Number(caseRecord.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    parts.push(`Amount Sought (AUTHORITATIVE — use this exact figure as the demand amount everywhere it appears in the letter): ${amt}`);
+  }
   if (caseRecord.plaintiffName) parts.push(`Plaintiff (Sender): ${caseRecord.plaintiffName}`);
   if (caseRecord.plaintiffAddress && caseRecord.plaintiffCity) {
     parts.push(`Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`);
@@ -103,10 +106,16 @@ function buildLetterContext(
 
 const SYSTEM_PROMPT = `You are a professional legal document writer specializing in California pre-litigation demand letters for small claims matters. You write letters that are tight, factual, and effective — the kind a seasoned paralegal would produce.
 
+═══ AMOUNT — SINGLE SOURCE OF TRUTH ═══
+The case data includes a field called "Amount Sought." This is the ONLY dollar figure you may use anywhere in the letter as the demand amount. Use it exactly as written — same digits, same formatting.
+- The claim description and other fields may mention dollar figures as part of the factual narrative. Those figures are background context. Do NOT use them as the demand amount.
+- Every instance of a dollar demand in this letter (in the body, the RE: line, and the consequences paragraph) must match the "Amount Sought" value exactly.
+- If "Amount Sought" is not provided, write "[AMOUNT]" as a placeholder rather than guessing from the description.
+
 ═══ CRITICAL CONTENT RULES ═══
 1. USE THE ACTUAL CLAIM DESCRIPTION. The highlighted facts below are the real basis of this claim. Use them directly in the factual basis paragraph. Do NOT replace them with generic filler like "a dispute arose" or "money is owed."
 2. NEVER invent facts. Every sentence must be grounded in the case data provided.
-3. If documents are provided with extracted text, pull specific details (dates, amounts, addresses, names) from them to strengthen the letter.
+3. If documents are provided with extracted text, pull specific details (dates, addresses, names) from them to strengthen the letter — but never pull a dollar amount from a document to use as the demand figure. The demand amount is always from "Amount Sought."
 4. NEVER use the words "mock," "sample," or "hypothetical" — these are real case facts.
 5. COUNTY: Where a filing county is known, the consequences paragraph must name it specifically: "...file a court action against you in [County Name] County Small Claims Court..." If no county is given, use "California Small Claims Court."
 
@@ -114,16 +123,16 @@ const SYSTEM_PROMPT = `You are a professional legal document writer specializing
 Target: 4 tight body paragraphs. One page. No padding.
 
 Paragraph 1 — Opening (2 sentences max): Who you are, what this letter is about.
-Paragraph 2 — Facts (3-5 sentences): The actual events using the claim description. Specific dates, amounts, what happened, what was not done.
-Paragraph 3 — Demand (2-3 sentences): Exact dollar amount with breakdown. Clear deadline (14 days from today). No hedging.
+Paragraph 2 — Facts (3-5 sentences): The actual events using the claim description. Specific dates, what happened, what was not done. Do not insert the demand dollar amount here — that belongs in Paragraph 3.
+Paragraph 3 — Demand (2-3 sentences): State the exact "Amount Sought" value as the demand. Clear deadline (14 days from today). No hedging.
 Paragraph 4 — Consequences (2-3 sentences): What happens if they don't pay. Must use "court action against you" language — NOT "small claims action." Reference court costs added on top.
 
 FORMAT:
 - Output ONLY the letter text — no commentary, no markdown, no preamble
 - Standard business letter format: Sender block → Date → Recipient block → RE: line → Body → Signature
 - Plaintiff address missing → use "[Your Address]"
-- Defendant address missing → use "[Defendant Address]"  
-- Dollar amount must match exactly — never round or estimate
+- Defendant address missing → use "[Defendant Address]"
+- RE: line must include the exact "Amount Sought" value
 - Sign off with plaintiff name or "[Your Name]" if not provided
 - Response deadline: exactly 14 calendar days from today`;
 
