@@ -791,7 +791,13 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
       });
       if (!res.ok) throw new Error("Refine failed");
       const data = await res.json();
-      setRefinedStatement(data.refinedStatement || "");
+      const improved = data.refinedStatement?.trim() || "";
+      setRefinedStatement(improved);
+      // Auto-apply immediately — no extra button click required
+      if (improved) {
+        form.setValue("claimDescription", improved, { shouldValidate: true, shouldDirty: true });
+        toast({ title: "✓ Description updated", description: "Your improved case description has been applied. Review it in the form below." });
+      }
       setAdvisorPhase("done");
     } catch {
       toast({ title: "Advisor error", description: "Could not generate your statement. Please try again.", variant: "destructive" });
@@ -800,9 +806,9 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
   };
 
   const copyToCase = () => {
-    form.setValue("claimDescription", refinedStatement, { shouldValidate: true });
+    form.setValue("claimDescription", refinedStatement, { shouldValidate: true, shouldDirty: true });
     setCopied(true);
-    toast({ title: "Copied to your case", description: "Your description has been updated. You can still edit it in the form." });
+    toast({ title: "Description re-applied", description: "Your case description has been updated." });
     setTimeout(() => setCopied(false), 3000);
   };
 
@@ -1072,8 +1078,11 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
               <>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 rounded-full bg-amber-500 flex items-center justify-center text-white text-[10px] font-bold">✓</div>
-                    <h3 className="font-semibold text-sm">Your improved case description</h3>
+                    <div className="h-6 w-6 rounded-full bg-green-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0">✓</div>
+                    <div>
+                      <h3 className="font-semibold text-sm">Description updated in your form</h3>
+                      <p className="text-xs text-muted-foreground">Already applied — scroll down to review it</p>
+                    </div>
                   </div>
                   <div className="rounded-lg border border-[#a8e6df] bg-[#f0fffe] p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
                     {refinedStatement}
@@ -1081,16 +1090,17 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
                   <Button
                     type="button"
                     onClick={copyToCase}
-                    className={`w-full gap-2 ${copied ? "bg-green-600 hover:bg-green-700" : "bg-amber-500 hover:bg-amber-600"} text-white`}
+                    variant="outline"
+                    className={`w-full gap-2 text-sm ${copied ? "border-green-500 text-green-700" : ""}`}
                   >
-                    {copied ? <><CheckCircle className="h-4 w-4" /> Copied to your case!</> : <><Copy className="h-4 w-4" /> Copy to My Case</>}
+                    {copied ? <><CheckCircle className="h-4 w-4" /> Re-applied!</> : <><RotateCcw className="h-4 w-4" /> Re-apply to form</>}
                   </Button>
                   <button
                     type="button"
                     onClick={() => setAdvisorPhase("questions")}
                     className="w-full text-xs text-muted-foreground hover:text-foreground text-center hover:underline"
                   >
-                    ← Back to questions
+                    ← Back to questions to refine further
                   </button>
                 </div>
 
