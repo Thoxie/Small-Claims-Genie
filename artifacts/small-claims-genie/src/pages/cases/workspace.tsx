@@ -191,11 +191,10 @@ export default function CaseWorkspace() {
         const col2 = allItems.slice(half);
         return (
           <div className={`bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
-            <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+            <div className="grid grid-cols-2 gap-4 items-center">
 
-              {/* LEFT: names stacked + score below */}
-              <div className="flex flex-col gap-1 shrink-0">
-                {/* Names row */}
+              {/* LEFT: names + score + meta */}
+              <div className="flex flex-col gap-1.5">
                 <div className="flex items-end gap-2">
                   <div>
                     <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
@@ -207,13 +206,11 @@ export default function CaseWorkspace() {
                     <p className="text-sm font-bold text-foreground leading-tight">{currentCase.defendantName || "—"}</p>
                   </div>
                 </div>
-                {/* Score row — directly below names */}
                 <div className="flex items-baseline gap-1.5">
                   <span className={`text-2xl font-black leading-none ${scoreColor}`}>{score}%</span>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Readiness</span>
                   <span className={`text-[10px] font-semibold ${scoreColor}`}>· {scoreLabel}</span>
                 </div>
-                {/* Claim + county */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{(currentCase as any).claimAmount ? `$${Number((currentCase as any).claimAmount).toLocaleString()}` : "—"}</span></span>
                   {(currentCase as any).countyId && (
@@ -225,43 +222,29 @@ export default function CaseWorkspace() {
                 </div>
               </div>
 
-              {/* DIVIDER */}
-              <div className="hidden sm:block w-px self-stretch bg-border shrink-0" />
-
-              {/* RIGHT: evenly balanced bullet columns */}
-              {allItems.length > 0 && (
-                <div className="flex gap-6 flex-1 min-w-0">
-                  <div className="flex flex-col gap-1">
-                    {col1.map((item, i) => (
+              {/* RIGHT: readiness bullets or status */}
+              <div className="flex flex-col gap-1 border-l border-border pl-4">
+                {allItems.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                    {allItems.map((item, i) => (
                       <div key={i} className={`flex items-start gap-1 text-[10px] leading-tight ${item.ok ? "text-green-700" : "text-destructive"}`}>
                         {item.ok
                           ? <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />
                           : <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
                         }
-                        {item.text}
+                        <span>{item.text}</span>
                       </div>
                     ))}
                   </div>
-                  {col2.length > 0 && (
-                    <div className="flex flex-col gap-1">
-                      {col2.map((item, i) => (
-                        <div key={i} className={`flex items-start gap-1 text-[10px] leading-tight ${item.ok ? "text-green-700" : "text-destructive"}`}>
-                          {item.ok
-                            ? <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />
-                            : <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
-                          }
-                          {item.text}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Complete your intake form to see your readiness score.</p>
+                )}
+                <div className="mt-1">
+                  <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs">
+                    {currentCase.status.replace('_', ' ')}
+                  </Badge>
                 </div>
-              )}
-
-              {/* Status badge */}
-              <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0 ml-auto">
-                {currentCase.status.replace('_', ' ')}
-              </Badge>
+              </div>
 
             </div>
           </div>
