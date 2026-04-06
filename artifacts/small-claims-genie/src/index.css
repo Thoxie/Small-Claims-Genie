@@ -376,3 +376,12 @@
     inset: -1px;
   }
 }
+/* ── Clerk UserProfile: profile photo auto-save hint ─────────────────────── */
+.cl-avatarImageActions::after {
+  content: "Profile photo saves automatically";
+  display: block;
+  font-size: 0.72rem;
+  color: #6b7280;
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
