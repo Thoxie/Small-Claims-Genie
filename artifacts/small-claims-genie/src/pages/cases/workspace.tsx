@@ -41,7 +41,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
-import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe, Pencil, Info, Gavel, Maximize2, RotateCcw, Star, PenLine, ChevronLeft, Handshake } from "lucide-react";
+import { Mic, Send, Paperclip, FileText, Download, CheckCircle, AlertCircle, Trash2, ClipboardList, MessageSquare, Scale, ArrowLeft, Eye, Mail, Loader2, Sparkles, Copy, Square, CheckSquare2, ExternalLink, Phone, MapPin, Globe, Pencil, Info, Gavel, Maximize2, RotateCcw, Star, PenLine, ChevronLeft, Handshake, Printer } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -4328,6 +4328,55 @@ function HearingPrepTab({ caseId, currentCase }: { caseId: number; currentCase: 
     const desc = currentCase.claimDescription || "";
     const defName = currentCase.defendantName || "the defendant";
     const amount = currentCase.claimAmount ? `$${Number(currentCase.claimAmount).toLocaleString()}` : "the amount claimed";
+
+    const printStatement = () => {
+      const rules = [
+        { n: "1", tip: "Introduce yourself and your relationship", detail: `"My name is [your name]. I am suing ${defName} because…"` },
+        { n: "2", tip: "Tell the story in order", detail: "State what happened first, then next, then what the result was. Judges want a clear timeline." },
+        { n: "3", tip: "Name the exact dollar amount", detail: `State ${amount} clearly and explain exactly how you calculated it. Bring the math.` },
+        { n: "4", tip: "Mention your prior demand", detail: "Did you ask them to pay before filing? Say so. It shows you tried to resolve it first." },
+        { n: "5", tip: "Keep it under 3 minutes", detail: "Practice until you can say the essentials in 2–3 minutes. You can add detail when asked." },
+      ];
+      const rulesHtml = rules.map(r => `
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start">
+          <div style="background:#0d6b5e;color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;flex-shrink:0;margin-top:2px">${r.n}</div>
+          <div><strong style="font-size:13px;color:#111">${r.tip}</strong><br/><span style="font-size:12px;color:#555;line-height:1.5">${r.detail}</span></div>
+        </div>`).join("");
+      const w = window.open("", "_blank");
+      if (!w) return;
+      w.document.write(`<!DOCTYPE html><html><head><title>Court-Ready Statement</title>
+        <style>
+          body{font-family:Arial,sans-serif;max-width:680px;margin:40px auto;color:#111;padding:0 20px}
+          h1{color:#0d6b5e;font-size:22px;margin-bottom:4px}
+          .sub{color:#666;font-size:13px;margin-bottom:28px}
+          .section{font-weight:bold;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#0d6b5e;margin-bottom:12px}
+          .tips{border:1px solid #a8e6df;background:#f0fffe;padding:18px 20px;border-radius:8px;margin-bottom:24px}
+          .statement{border:1px solid #d1d5db;background:#fff;padding:20px;border-radius:8px;font-size:14px;line-height:1.7;white-space:pre-wrap;margin-bottom:24px}
+          .mistakes{border:1px solid #fecaca;background:#fff7f7;padding:16px 20px;border-radius:8px;font-size:12px;color:#b91c1c;line-height:1.7}
+          .print-btn{margin-top:24px;padding:10px 24px;background:#0d6b5e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer}
+          @media print{.print-btn{display:none}}
+        </style></head><body>
+        <h1>Court-Ready Statement</h1>
+        <p class="sub">Small Claims Genie &mdash; What to say when the judge asks you to explain your case</p>
+        <div class="tips">
+          <div class="section">5 Rules for Speaking in Court</div>
+          ${rulesHtml}
+        </div>
+        <div class="section">Your Case Description</div>
+        <div class="statement">${desc || "(No case description entered yet)"}</div>
+        <div class="mistakes">
+          <div class="section" style="color:#b91c1c">Common mistakes to avoid</div>
+          ✕ Don't bring up the defendant's character — stick to facts about this specific dispute<br/>
+          ✕ Don't interrupt the judge — wait until they finish before speaking<br/>
+          ✕ Don't bring papers you haven't already submitted — hand copies to the clerk before the hearing<br/>
+          ✕ Don't get emotional — calm and factual always wins over angry and passionate
+        </div>
+        <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+        <script>window.onload=function(){window.print()}</script>
+        </body></html>`);
+      w.document.close();
+    };
+
     return (
       <div className="p-5 md:p-8 space-y-6 max-w-2xl mx-auto">
         {/* Back */}
@@ -4367,7 +4416,18 @@ function HearingPrepTab({ caseId, currentCase }: { caseId: number; currentCase: 
 
         {/* Their statement */}
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-gray-900">Your case description (from your form)</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-gray-900">Your case description (from your form)</p>
+            {desc && (
+              <button
+                type="button"
+                onClick={printStatement}
+                className="flex items-center gap-1.5 text-xs font-semibold text-[#0d6b5e] hover:text-[#0a5449] border border-[#a8e6df] bg-[#f0fffe] hover:bg-[#e6faf8] rounded-lg px-3 py-1.5 transition-colors shrink-0"
+              >
+                <Printer className="h-3.5 w-3.5" /> Print / Save PDF
+              </button>
+            )}
+          </div>
           {desc ? (
             <div className="rounded-xl border bg-background p-4 text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">
               {desc}
@@ -4398,6 +4458,16 @@ function HearingPrepTab({ caseId, currentCase }: { caseId: number; currentCase: 
 
         {/* CTA */}
         <div className="flex flex-col gap-3 pt-2">
+          {desc && (
+            <Button
+              type="button"
+              onClick={printStatement}
+              variant="outline"
+              className="w-full gap-2 h-11 border-[#0d6b5e] text-[#0d6b5e] hover:bg-[#f0fffe]"
+            >
+              <Printer className="h-4 w-4" /> Print / Save as PDF
+            </Button>
+          )}
           <Button
             onClick={() => setPrepMode("mock-trial")}
             className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white h-11"
