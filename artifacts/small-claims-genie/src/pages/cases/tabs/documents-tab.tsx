@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+Should I weed on Stripe until I finish my beta import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useListDocuments,
