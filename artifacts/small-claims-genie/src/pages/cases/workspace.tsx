@@ -270,6 +270,7 @@ export default function CaseWorkspace() {
 
       {/* Tab navigation — click any tab to switch sections */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="sticky top-[70px] md:top-[106px] z-30 bg-background -mx-4 px-4 md:-mx-6 md:px-6 pb-3 pt-1 border-b border-border shadow-sm">
         <TabsList className="w-full grid grid-cols-6 h-auto p-1 bg-muted/80 rounded-xl gap-0.5">
           <TabsTrigger
             value="intake"
@@ -320,8 +321,9 @@ export default function CaseWorkspace() {
             <span className="leading-tight">Prep</span>
           </TabsTrigger>
         </TabsList>
+        </div>
         
-        <div className="mt-6 border rounded-lg bg-card shadow-sm min-h-[600px]">
+        <div className="mt-4 border rounded-lg bg-card shadow-sm min-h-[600px]">
           <TabsContent value="intake" className="p-0 m-0">
             <IntakeTab caseId={caseId} initialData={currentCase} />
           </TabsContent>
