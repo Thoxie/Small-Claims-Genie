@@ -173,15 +173,15 @@ export default function CaseWorkspace() {
       </Link>
 
       {/* Case header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-5 rounded-xl border shadow-sm">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold">{currentCase.title}</h1>
-            <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-card px-4 py-3 rounded-xl border shadow-sm">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-2 mb-0.5">
+            <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{currentCase.title}</p>
+            <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0 mt-0.5">
               {currentCase.status.replace('_', ' ')}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Claim Amount: <span className="font-semibold text-foreground">{currentCase.claimAmount ? `$${currentCase.claimAmount.toLocaleString()}` : "Not set"}</span>
           </p>
         </div>
