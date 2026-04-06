@@ -2006,6 +2006,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-100 is the form that starts your California small claims case. It tells the court who you are suing, how much money you want, and why you are asking the court to order payment. You must complete this form — it is the statewide form used to open a small claims case.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc100.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "mc030",
@@ -2015,6 +2016,7 @@ const FORMS_CATALOG = [
     detailDesc: "MC-030 is a blank declaration form used across many types of California court cases, including small claims. It is used whenever a party needs to submit a written statement under penalty of perjury that doesn't fit within the space provided on a specific form. For example, you might attach an MC-030 to provide a longer explanation of your claim, document witness statements, or supply additional facts. The person signing declares under penalty of perjury that everything written is true and correct.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/mc030.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "sc104",
@@ -2024,6 +2026,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-104 is completed by the person who delivered (served) the court papers to the defendant — this must be someone who is at least 18 years old and not named in the case. It cannot be you. The server records exactly how, when, and where the papers were delivered, then signs under penalty of perjury. This completed form must be filed with the court at least 5 days before the hearing date. Without proof of service, the court cannot proceed.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc104.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "fw001",
@@ -2033,6 +2036,7 @@ const FORMS_CATALOG = [
     detailDesc: "FW-001 lets you ask the court to waive court filing fees when you cannot afford them. You may qualify if you receive public benefits (Medi-Cal, CalWORKS, SSI, etc.), your income is below the threshold for your household size, or paying the fee would prevent you from meeting your household's basic needs. File this with — or before — your SC-100. If granted, the court waives fees at no cost to you; if denied, you'll have time to pay. This form is confidential.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/fw001.pdf",
+    caseTypes: "both" as const,
   },
   /* ── Supporting & supplemental forms ───────────────────────────────────── */
   {
@@ -2043,6 +2047,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-100A is an attachment form used alongside SC-100 when there are more than two parties on either side of the case. If you are suing three or more people or businesses, or if three or more people are bringing the claim together, you list the additional parties here. Each additional plaintiff must also sign and declare the information is true. Attach as many copies of SC-100A as needed to list everyone involved.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc100a.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "sc103",
@@ -2052,6 +2057,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-103 must be attached to SC-100 or SC-120 whenever a plaintiff or defendant operates under a fictitious business name — commonly called a 'DBA' (doing business as). The form requires proof that the fictitious name is properly registered with the county and published as required by California law. If this step is skipped, the court can dismiss the case. Only the business owner, president, CEO, or another qualified officer may sign this form.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc103.pdf",
+    caseTypes: "business" as const,
   },
   {
     id: "sc105",
@@ -2061,6 +2067,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-105 is a two-part form. The first part (Request) is filled out by the party asking the court to make a specific order — for example, requesting more time, asking to amend the claim, or requesting a payment plan after judgment. The second part (Answer) allows the other party to respond. If a request is filed before the trial, the requesting party must serve copies on all other parties. If filed after trial, the court clerk handles service.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc105.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "sc112a",
@@ -2070,6 +2077,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-112A is used when specific forms are allowed to be served by mail rather than in person. It covers forms like SC-105, SC-109, SC-114, SC-133, SC-150, and SC-221. Important: it cannot be used for serving the original SC-100 or SC-120 claim forms — those require in-person service documented on SC-104. The person mailing the documents must be 18 or older, not a party to the case, and must live or work in the county where the mailing takes place.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc112a.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "sc120",
@@ -2079,6 +2087,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-120 allows the defendant — the person who was originally sued — to file their own claim against the plaintiff in the same case. This is called a cross-complaint or counter-claim. Filing SC-120 does not remove the obligation to appear at the original hearing; both claims are heard together on the same date. The defendant must still serve the plaintiff with this form before the hearing, following the same service rules that applied to the original SC-100.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc120.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "sc140",
@@ -2088,6 +2097,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-140 is used when a party disagrees with the small claims court's decision and wants to appeal it to the superior court. Note that only defendants may appeal a small claims judgment — plaintiffs give up the right to appeal when they choose small claims court. The form must be filed within 30 days of the judgment. Once filed, the superior court will notify all parties of a new hearing date. The appeal is heard as a new trial (de novo), not a review of the original proceedings.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc140.pdf",
+    caseTypes: "both" as const,
   },
   {
     id: "sc150",
@@ -2097,6 +2107,7 @@ const FORMS_CATALOG = [
     detailDesc: "SC-150 lets either a plaintiff or defendant formally request that the court move the trial to a different date. You must explain why you need a postponement and, if the trial is within 10 days, why you didn't ask sooner. After completing the form, you must serve copies on all other parties using SC-104 (in person) or SC-112A (by mail), then file it with the court clerk. There may be a $10 filing fee. The court will mail all parties its decision.",
     available: true,
     blankFormUrl: "https://www.courts.ca.gov/documents/sc150.pdf",
+    caseTypes: "both" as const,
   },
 ];
 
@@ -2940,6 +2951,15 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
 
+  const isBusinessCase: boolean | null = currentCase.defendantIsBusinessOrEntity ?? null;
+  const intakeStarted = currentCase.intakeStep != null && currentCase.intakeStep > 1;
+
+  const filteredForms = FORMS_CATALOG.filter((form) => {
+    if (isBusinessCase === null || !intakeStarted) return true;
+    if (isBusinessCase) return form.caseTypes === "both" || form.caseTypes === "business";
+    return form.caseTypes === "both" || form.caseTypes === "personal";
+  });
+
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 
   async function downloadForm(endpoint: string, filename: string, setLoading: (v: boolean) => void) {
@@ -3011,10 +3031,72 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
   return (
     <div className="p-6 md:p-8 space-y-8">
       {/* Header */}
-      <div className="flex items-baseline gap-3 flex-wrap">
-        <h2 className="text-2xl font-bold">Court Forms Library</h2>
-        <p className="text-muted-foreground text-sm">California small claims forms — click any form to learn more or generate it.</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h2 className="text-2xl font-bold">Court Forms Library</h2>
+          <p className="text-muted-foreground text-sm">California small claims forms — click any form to learn more or generate it.</p>
+        </div>
+        {/* Case-type filter pill */}
+        {!intakeStarted ? (
+          <div className="flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Showing all forms — complete intake for a personalized list
+          </div>
+        ) : isBusinessCase ? (
+          <div className="flex items-center gap-1.5 rounded-full border border-[#0d6b5e]/30 bg-[#ddf6f3] px-3 py-1 text-xs font-semibold text-[#0d6b5e]">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Showing forms for: Business / Entity case
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 rounded-full border border-[#0d6b5e]/30 bg-[#ddf6f3] px-3 py-1 text-xs font-semibold text-[#0d6b5e]">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Showing forms for: Personal case
+          </div>
+        )}
       </div>
+
+      {/* Prompt to complete intake if not started */}
+      {!intakeStarted && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <svg className="mt-0.5 shrink-0 text-amber-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Complete your case intake to see only the forms that apply to your situation — forms will be filtered based on whether you're suing an individual or a business.
+        </div>
+      )}
+
+      {/* Readiness Banner */}
+      <Card className={`border-2 ${score >= 80 ? "border-green-400 bg-green-50" : score >= 50 ? "border-yellow-400 bg-yellow-50" : "border-red-400 bg-red-50"}`}>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            {/* Score */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className={`text-5xl font-black leading-none ${color}`}>{score}</div>
+              <div className="flex flex-col gap-1 min-w-[80px]">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{i18n.forms.readinessScore}</span>
+                <div className="w-20 bg-muted rounded-full h-2 overflow-hidden">
+                  <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
+                </div>
+                <span className={`text-xs font-semibold ${color}`}>{score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info"}</span>
+              </div>
+            </div>
+            {/* Divider */}
+            <div className="hidden sm:block w-px self-stretch bg-border" />
+            {/* Details */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0.5">
+              {readiness?.strengths && readiness.strengths.map((s: string, i: number) => (
+                <div key={i} className="flex items-start gap-1.5 text-xs text-green-700">
+                  <CheckCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-green-500" />{s}
+                </div>
+              ))}
+              {readiness?.missingFields && readiness.missingFields.map((f: string, i: number) => (
+                <div key={i} className="flex items-start gap-1.5 text-xs text-destructive">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{f}
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
 
       {/* Case Summary Card */}
       <Card className="bg-muted/30 border-dashed">
@@ -3031,10 +3113,10 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
 
       {/* Tile Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {FORMS_CATALOG.map((form) => (
+        {filteredForms.map((form) => (
           <div
             key={form.id}
-            className="relative flex flex-col rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md border-border bg-card hover:border-[#0d6b5e]/40"
+            className={`relative flex flex-col rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md bg-card hover:border-[#0d6b5e]/40 ${form.id === "sc103" && isBusinessCase ? "border-orange-400 bg-orange-50/30" : "border-border"}`}
           >
             {/* Tile header: number badge + status badge */}
             <div className="flex items-start justify-between gap-2 mb-2">
@@ -3050,6 +3132,11 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
                 {form.id === "mc030" && descriptionNeedsMC030 && (
                   <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                     Needed
+                  </span>
+                )}
+                {form.id === "sc103" && isBusinessCase && (
+                  <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">
+                    Required for DBA
                   </span>
                 )}
               </div>
