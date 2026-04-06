@@ -131,11 +131,10 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
   }
 
   const label = typeof req.body.label === "string" ? req.body.label : null;
-  const fileBase64 = req.file.buffer.toString("base64");
   const filename = `case-${id}-${Date.now()}-${req.file.originalname}`;
 
-  // Upload to object storage instead of storing base64 in DB
-  let storageObjectPath: string | null = null;
+  // Upload to object storage — no DB blob fallback
+  let storageObjectPath: string;
   try {
     const uploadURL = await objectStorage.getObjectEntityUploadURL();
     storageObjectPath = objectStorage.normalizeObjectEntityPath(uploadURL);
@@ -147,8 +146,9 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
       duplex: "half",
     } as RequestInit);
   } catch (storageErr) {
-    console.error("[Storage] GCS upload failed, falling back to DB:", storageErr);
-    storageObjectPath = null;
+    console.error("[Storage] GCS upload failed:", storageErr);
+    res.status(503).json({ error: "File storage is temporarily unavailable. Please try again in a moment." });
+    return;
   }
 
   const [doc] = await db.insert(documentsTable).values({
@@ -158,7 +158,7 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
     label,
     mimeType: req.file.mimetype,
     fileSize: req.file.size,
-    fileData: storageObjectPath ? null : fileBase64,
+    fileData: null,
     storageObjectPath,
     ocrStatus: "processing",
   }).returning();
@@ -195,7 +195,7 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:${mime};base64,${fileBase64}`,
+                  url: `data:${mime};base64,${buffer.toString("base64")}`,
                   detail: "high",
                 },
               },
