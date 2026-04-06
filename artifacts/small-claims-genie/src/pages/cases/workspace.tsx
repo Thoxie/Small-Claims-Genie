@@ -174,27 +174,29 @@ export default function CaseWorkspace() {
 
       {/* Case header */}
       <div className="bg-card px-4 py-3 rounded-xl border shadow-sm">
-        {/* Legal caption row */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-foreground leading-snug tracking-tight">
-              {currentCase.plaintiffName || "[Plaintiff]"}
-              <span className="font-normal text-muted-foreground mx-1.5">v.</span>
-              {currentCase.defendantName || "[Defendant]"}
-            </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+          {/* Legal caption */}
+          <div className="flex items-end gap-2 flex-1 min-w-0 flex-wrap">
+            {/* Plaintiff */}
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
+              <p className="text-sm font-bold text-foreground leading-snug truncate">{currentCase.plaintiffName || "—"}</p>
+            </div>
+            {/* v. separator */}
+            <span className="text-sm font-normal text-muted-foreground pb-0.5 shrink-0">v.</span>
+            {/* Defendant */}
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
+              <p className="text-sm font-bold text-foreground leading-snug truncate">{currentCase.defendantName || "—"}</p>
+            </div>
+            {/* Metadata chips */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0 w-full mt-0.5">
               {currentCase.caseNumber && (
-                <span className="text-xs text-muted-foreground">
-                  Case No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span>
-                </span>
+                <span className="text-xs text-muted-foreground">Case No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span></span>
               )}
-              <span className="text-xs text-muted-foreground">
-                Claim: <span className="font-semibold text-foreground">{currentCase.claimAmount ? `$${Number(currentCase.claimAmount).toLocaleString()}` : "Not set"}</span>
-              </span>
+              <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{currentCase.claimAmount ? `$${Number(currentCase.claimAmount).toLocaleString()}` : "Not set"}</span></span>
               {currentCase.countyId && (
-                <span className="text-xs text-muted-foreground">
-                  {currentCase.countyId} County
-                </span>
+                <span className="text-xs text-muted-foreground">{currentCase.countyId} County</span>
               )}
             </div>
           </div>
