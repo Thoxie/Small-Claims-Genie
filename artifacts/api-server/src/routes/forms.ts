@@ -5,6 +5,12 @@ import { redeemDownloadToken } from "../lib/download-tokens";
 import type { Request, Response } from "express";
 import * as fs from "fs";
 import * as path from "path";
+import { db } from "@workspace/db";
+import { documentsTable } from "@workspace/db";
+import { inArray, and, eq } from "drizzle-orm";
+import { ObjectStorageService } from "../lib/objectStorage";
+
+const objectStorage = new ObjectStorageService();
 
 const router: IRouter = Router();
 
@@ -403,6 +409,116 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
   } catch (err: any) {
     console.error("MC-030 PDF error:", err?.message, err?.stack);
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate MC-030 PDF." });
+  }
+});
+
+// ─── MC-030 + Exhibits Filing Packet ─────────────────────────────────────────
+// Generates MC-030 declaration and appends selected uploaded documents as
+// labeled exhibit pages (Exhibit A, B, C…) into one combined PDF.
+router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  const d = c as unknown as Record<string, any>;
+  const b = req.body as Record<string, any>;
+  const exhibitIds: number[] = Array.isArray(b.exhibitDocIds)
+    ? b.exhibitDocIds.map(Number).filter((n: number) => !isNaN(n))
+    : [];
+
+  try {
+    const masterDoc = await PDFDocument.create();
+    const font = await masterDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await masterDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // ── MC-030 page ──────────────────────────────────────────────────────────
+    const bg = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
+    const mc030Page = masterDoc.addPage([PW, PH]);
+    mc030Page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
+    const v = (t: any, x: number, y: number, s = 9) => val(mc030Page, font, t, x, y, s);
+
+    v(b.declarantName || d.plaintiffName, 175, 733);
+    v(b.declarantAddress || d.plaintiffAddress || "", 175, 720);
+    const cityLine = [d.plaintiffCity, d.plaintiffState, d.plaintiffZip].filter(Boolean).join(" ");
+    v(b.declarantCityLine || cityLine, 175, 707);
+    v(b.declarantPhone || d.plaintiffPhone, 200, 630);
+    v(b.declarantEmail || d.plaintiffEmail, 200, 613);
+    v(b.declarantName || d.plaintiffName, 200, 596);
+    v(d.countyName || b.countyName || "", 200, 560);
+    v(d.plaintiffName, 215, 464);
+    v(d.defendantName, 215, 441);
+    v(d.caseNumber, 430, 471);
+
+    if (b.declarationTitle) {
+      const tw = fontBold.widthOfTextAtSize(b.declarationTitle, 10);
+      mc030Page.drawText(b.declarationTitle, { x: (PW - tw) / 2, y: 416, size: 10, font: fontBold, color: BLACK });
+    }
+    if (b.declarationText) wrapVal(mc030Page, font, b.declarationText, 54, 395, 510, 9, 13, 22);
+    v(b.signDate || today(), 65, 121);
+    v(b.declarantName || d.plaintiffName, 45, 78);
+
+    // ── Exhibit pages ────────────────────────────────────────────────────────
+    if (exhibitIds.length > 0) {
+      const docs = await db.select().from(documentsTable).where(
+        and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
+      );
+      const docMap = new Map(docs.map((doc) => [doc.id, doc]));
+      const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+      for (let i = 0; i < exhibitIds.length; i++) {
+        const doc = docMap.get(exhibitIds[i]);
+        if (!doc || !doc.storageObjectPath) continue;
+        const letter = LETTERS[i] ?? String(i + 1);
+        const label = `EXHIBIT ${letter}`;
+
+        function stampExhibit(page: any) {
+          const lw = fontBold.widthOfTextAtSize(label, 10);
+          page.drawRectangle({ x: PW - lw - 22, y: 28, width: lw + 16, height: 18, color: rgb(1, 1, 1), borderColor: BLACK, borderWidth: 0.7 });
+          page.drawText(label, { x: PW - lw - 14, y: 33, size: 10, font: fontBold, color: BLACK });
+        }
+
+        try {
+          const file = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
+          const [fileBuffer] = await file.download() as [Buffer, unknown];
+          const mime = doc.mimeType;
+
+          if (mime === "application/pdf") {
+            const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
+            const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
+            copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
+          } else if (mime === "image/png" || mime === "image/jpeg" || mime === "image/jpg") {
+            const exPage = masterDoc.addPage([PW, PH]);
+            const img = mime === "image/png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
+            const { width: iw, height: ih } = img.scale(1);
+            const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
+            const dw = iw * scale; const dh = ih * scale;
+            exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
+            exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
+            stampExhibit(exPage);
+          } else {
+            // DOCX or other: placeholder page
+            const ph = masterDoc.addPage([PW, PH]);
+            ph.drawText(`${label}`, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
+            ph.drawText(`Document: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
+            ph.drawText(`(Word document — print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
+            stampExhibit(ph);
+          }
+        } catch (docErr) {
+          console.error(`[MC-030 Exhibits] Failed to embed exhibit ${letter}:`, docErr);
+        }
+      }
+    }
+
+    const pdfBytes = await masterDoc.save();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="MC030-Filing-Packet-Case-${id}.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("MC-030 with-exhibits PDF error:", err?.message, err?.stack);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to generate filing packet." });
   }
 });
 
