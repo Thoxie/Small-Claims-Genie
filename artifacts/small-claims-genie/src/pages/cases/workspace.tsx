@@ -1976,7 +1976,7 @@ function ChatTab({ caseId }: { caseId: number }) {
 
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100dvh - 145px)", minHeight: "480px" }}>
+    <div className="flex flex-col" style={{ height: "520px" }}>
       {/* Top bar */}
       <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex items-center gap-2">
@@ -2039,10 +2039,11 @@ function ChatTab({ caseId }: { caseId: number }) {
         )}
       </div>
 
-      {/* Input bar — anchored to bottom of the chat tab, not the window */}
-      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-3 py-2">
+      {/* Input bar */}
+      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-3 py-3">
         <div className="flex items-center gap-2">
-          <div className="flex-1 relative">
+          {/* Textarea + mic inside it, as one pill */}
+          <div className="flex-1 relative flex items-center">
             <textarea
               value={input}
               onChange={(e) => {
@@ -2059,36 +2060,36 @@ function ChatTab({ caseId }: { caseId: number }) {
                   el.style.height = "auto";
                 }
               }}
-              placeholder={isRecording ? "🔴 Recording — release mic to stop…" : i18n.chat.placeholder}
+              placeholder={isRecording ? "🔴 Recording — release to stop…" : i18n.chat.placeholder}
               rows={1}
               disabled={isRecording}
-              className="w-full resize-none overflow-hidden rounded-full border border-input bg-background px-4 py-2 pr-10 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
-              style={{ minHeight: "38px", maxHeight: "120px" }}
+              className="w-full resize-none overflow-hidden rounded-full border border-input bg-background pl-4 pr-10 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
+              style={{ minHeight: "42px", maxHeight: "120px" }}
             />
-            {/* Mic — inside the input, right edge */}
-            <Button
-              size="icon"
-              variant="ghost"
-              className={`absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground hover:text-primary'}`}
+            {/* Mic sits at the right end, inside the pill */}
+            <button
+              type="button"
               onMouseDown={handleVoiceStart}
               onMouseUp={handleVoiceStop}
               onMouseLeave={isRecording ? handleVoiceStop : undefined}
               onTouchStart={handleVoiceStart}
               onTouchEnd={handleVoiceStop}
               aria-label={isRecording ? "Recording — release to stop" : "Hold to record"}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground hover:text-primary'}`}
             >
               <Mic className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
-          {/* Send — right of input */}
-          <Button
+          {/* Send button — directly to the right, same height as pill */}
+          <button
+            type="button"
             onClick={() => { sendMessage(input); }}
-            size="icon"
-            className="h-9 w-9 rounded-full shrink-0"
             disabled={isTyping || isRecording || !input.trim()}
+            className="h-[42px] w-[42px] shrink-0 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+            aria-label="Send"
           >
             <Send className="h-4 w-4 ml-0.5" />
-          </Button>
+          </button>
         </div>
       </div>
     </div>
