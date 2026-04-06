@@ -1976,7 +1976,7 @@ function ChatTab({ caseId }: { caseId: number }) {
 
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100dvh - 290px)", minHeight: "540px" }}>
+    <div className="flex flex-col" style={{ height: "calc(100dvh - 145px)", minHeight: "480px" }}>
       {/* Top bar */}
       <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex items-center gap-2">
@@ -4255,20 +4255,23 @@ function HearingPrepTab({ caseId, currentCase }: { caseId: number; currentCase: 
   // ── Landing — two tiles ─────────────────────────────────────────────────────
   if (!sessionStarted && prepMode === null) {
     return (
-      <div className="p-6 md:p-10 flex flex-col items-center gap-8 text-center max-w-2xl mx-auto">
-        <div className="relative">
-          <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-xl">
-            <Gavel className="h-10 w-10 text-white" />
+      <div className="p-6 md:p-10 flex flex-col items-center gap-8 max-w-2xl mx-auto">
+        {/* Header — icon left, text right, centered together */}
+        <div className="flex items-center gap-5 w-full justify-center">
+          <div className="relative shrink-0">
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-xl">
+              <Gavel className="h-10 w-10 text-white" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0d6b5e] flex items-center justify-center border-2 border-white">
+              <Star className="h-3.5 w-3.5 text-white fill-white" />
+            </div>
           </div>
-          <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0d6b5e] flex items-center justify-center border-2 border-white">
-            <Star className="h-3.5 w-3.5 text-white fill-white" />
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Hearing Prep Coach</h2>
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed max-w-xs">
+              Two ways to get ready for your court date. Start with your statement, then practice with the AI judge.
+            </p>
           </div>
-        </div>
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Hearing Prep Coach</h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-relaxed max-w-md mx-auto">
-            Two ways to get ready for your court date. Start with your statement, then practice with the AI judge.
-          </p>
         </div>
 
         {/* Two tiles */}
