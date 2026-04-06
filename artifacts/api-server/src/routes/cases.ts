@@ -309,7 +309,7 @@ function buildAdvisorBrief(
 
   lines.push("\n-- CLAIM --");
   lines.push(`Claim Type: ${c.claimType || "[not entered]"}`);
-  lines.push(`Claim Amount: ${c.claimAmount ? `$${c.claimAmount}` : "[not entered]"}`);
+  lines.push(`Claim Amount: ${c.claimAmount ? `$${Number(c.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "[not entered]"}`);
   lines.push(`Incident Date: ${c.incidentDate || "[not entered]"}`);
   lines.push(`Description:\n${c.claimDescription || "[not entered]"}`);
   lines.push(`How Amount Calculated:\n${c.howAmountCalculated || "[not entered]"}`);

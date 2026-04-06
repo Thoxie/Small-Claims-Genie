@@ -114,7 +114,9 @@ router.get("/cases/:id/forms/sc100-word", async (req, res): Promise<void> => {
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
 
   try {
-  const claimAmountStr = c.claimAmount ? `$${c.claimAmount.toFixed(2)}` : "___________";
+  const claimAmountStr = c.claimAmount
+    ? `$${Number(c.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : "___________";
   const defendantAddr = [c.defendantAddress, c.defendantCity, c.defendantState, c.defendantZip].filter(Boolean).join(", ");
   const plaintiffAddr = [c.plaintiffAddress, c.plaintiffCity, c.plaintiffState, c.plaintiffZip].filter(Boolean).join(", ");
   const countyDisplay = c.countyId ? c.countyId.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()) : "___________";

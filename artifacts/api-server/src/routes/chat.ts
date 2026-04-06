@@ -173,7 +173,7 @@ function buildCaseContext(caseRecord: typeof casesTable.$inferSelect, docs: type
   // ── Claim Details (Step 2) ───────────────────────────────────────────────
   parts.push("\n-- CLAIM --");
   parts.push(`Claim Type: ${caseRecord.claimType || "[not entered]"}`);
-  parts.push(`Claim Amount: ${caseRecord.claimAmount ? `$${caseRecord.claimAmount}` : "[not entered]"}`);
+  parts.push(`Claim Amount: ${caseRecord.claimAmount ? `$${Number(caseRecord.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "[not entered]"}`);
   parts.push(`Incident Date: ${caseRecord.incidentDate || "[not entered]"}`);
   parts.push(`Claim Description:\n${caseRecord.claimDescription || "[not entered]"}`);
   parts.push(`How Amount Calculated:\n${caseRecord.howAmountCalculated || "[not entered]"}`);
