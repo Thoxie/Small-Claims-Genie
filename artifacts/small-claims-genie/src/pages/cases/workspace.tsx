@@ -1972,7 +1972,8 @@ function ChatTab({ caseId }: { caseId: number }) {
 
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-260px)] min-h-[520px]">
+    <div className="flex flex-col">
+      {/* Top bar */}
       <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <CheckCircle className="h-4 w-4 shrink-0" /> Your AI Genie is trained on your uploaded documents.
@@ -2003,10 +2004,11 @@ function ChatTab({ caseId }: { caseId: number }) {
           </div>
         )}
       </div>
-      
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+
+      {/* Messages — padded at bottom so content isn't hidden behind the fixed input bar */}
+      <div className="overflow-y-auto p-4 space-y-4 pb-36" ref={scrollRef} style={{ minHeight: "480px" }}>
         {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-60">
+          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground opacity-60">
             <div className="text-4xl mb-4">🧞</div>
             <p>Ask anything about your case.</p>
           </div>
@@ -2033,11 +2035,12 @@ function ChatTab({ caseId }: { caseId: number }) {
         )}
       </div>
 
-      <div className="p-4 border-t bg-card mt-auto">
-        <div className={`text-xs text-center mb-2 font-medium transition-colors ${isRecording ? 'text-destructive animate-pulse' : 'text-muted-foreground/60'}`}>
+      {/* Fixed input bar — sticks to bottom of screen, sits on top of bottom nav */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-4 pt-3 pb-4">
+        <div className={`text-xs text-center mb-2 font-medium transition-colors ${isRecording ? 'text-destructive animate-pulse' : 'text-muted-foreground/50'}`}>
           {isRecording ? i18n.chat.recording : i18n.chat.micHint}
         </div>
-        <div className="flex items-end gap-2 relative">
+        <div className="flex items-end gap-2">
           <div className="flex-1 relative">
             <textarea
               value={input}
@@ -2061,6 +2064,7 @@ function ChatTab({ caseId }: { caseId: number }) {
               className="w-full resize-none overflow-hidden rounded-3xl border-2 border-input bg-background px-4 py-3 pr-12 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-50 transition-colors"
               style={{ minHeight: "44px", maxHeight: "160px" }}
             />
+            {/* Mic — inside the chat box, bottom-right corner */}
             <Button
               size="icon"
               variant="ghost"
@@ -2075,7 +2079,12 @@ function ChatTab({ caseId }: { caseId: number }) {
               <Mic className="h-5 w-5" />
             </Button>
           </div>
-          <Button onClick={() => { sendMessage(input); }} size="icon" className="h-11 w-11 rounded-full shrink-0 mb-0.5" disabled={isTyping || isRecording}>
+          <Button
+            onClick={() => { sendMessage(input); }}
+            size="icon"
+            className="h-11 w-11 rounded-full shrink-0 mb-0.5"
+            disabled={isTyping || isRecording}
+          >
             <Send className="h-5 w-5 ml-1" />
           </Button>
         </div>
