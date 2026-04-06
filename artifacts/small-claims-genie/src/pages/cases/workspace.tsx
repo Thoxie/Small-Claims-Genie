@@ -157,6 +157,7 @@ export default function CaseWorkspace() {
   const [activeTab, setActiveTab] = useState("intake");
   
   const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
+  const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
   
   if (caseLoading) {
     return <div className="container mx-auto p-8"><Skeleton className="h-12 w-1/3 mb-8" /><Skeleton className="h-96 w-full" /></div>;
@@ -175,39 +176,74 @@ export default function CaseWorkspace() {
         Your Cases
       </Link>
 
-      {/* Case header */}
-      <div className="bg-card px-4 py-3 rounded-xl border shadow-sm">
-        <div className="flex items-start justify-between gap-3">
-          {/* Legal caption */}
-          <div className="flex items-end gap-2 flex-1 min-w-0 flex-wrap">
-            {/* Plaintiff */}
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
-              <p className="text-sm font-bold text-foreground leading-snug truncate">{currentCase.plaintiffName || "—"}</p>
-            </div>
-            {/* v. separator */}
-            <span className="text-sm font-normal text-muted-foreground pb-0.5 shrink-0">v.</span>
-            {/* Defendant */}
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
-              <p className="text-sm font-bold text-foreground leading-snug truncate">{currentCase.defendantName || "—"}</p>
-            </div>
-            {/* Metadata chips */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-0 w-full mt-0.5">
-              {currentCase.caseNumber && (
-                <span className="text-xs text-muted-foreground">Case No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span></span>
-              )}
-              <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{currentCase.claimAmount ? `$${Number(currentCase.claimAmount).toLocaleString()}` : "Not set"}</span></span>
-              {currentCase.countyId && (
-                <span className="text-xs text-muted-foreground">{currentCase.countyId} County</span>
-              )}
+      {/* Combined case header + readiness score */}
+      {(() => {
+        const score = readiness?.score ?? (currentCase as any).readinessScore ?? 0;
+        const borderColor = score >= 80 ? "border-green-400" : score >= 50 ? "border-yellow-400" : "border-red-400";
+        const scoreColor = score >= 80 ? "text-green-600" : score >= 50 ? "text-yellow-600" : "text-red-500";
+        const scoreLabel = score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info";
+        return (
+          <div className={`bg-card px-4 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
+            <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+
+              {/* LEFT: legal caption */}
+              <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
+                  <p className="text-sm font-bold text-foreground leading-tight truncate">{currentCase.plaintiffName || "—"}</p>
+                </div>
+                <span className="text-xs text-muted-foreground shrink-0">v.</span>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
+                  <p className="text-sm font-bold text-foreground leading-tight truncate">{currentCase.defendantName || "—"}</p>
+                </div>
+                <div className="flex items-center gap-x-3 gap-y-0 flex-wrap ml-1">
+                  {currentCase.caseNumber && (
+                    <span className="text-xs text-muted-foreground">No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span></span>
+                  )}
+                  <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{(currentCase as any).claimAmount ? `$${Number((currentCase as any).claimAmount).toLocaleString()}` : "—"}</span></span>
+                  {(currentCase as any).countyId && (
+                    <span className="text-xs text-muted-foreground">{(currentCase as any).countyId} County</span>
+                  )}
+                </div>
+              </div>
+
+              {/* DIVIDER */}
+              <div className="hidden sm:block w-px self-stretch bg-border shrink-0" />
+
+              {/* RIGHT: readiness score + checkmarks */}
+              <div className="flex items-center gap-3 shrink-0">
+                {/* Score number */}
+                <div className="flex flex-col items-center shrink-0">
+                  <span className={`text-3xl font-black leading-none ${scoreColor}`}>{score}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground leading-none mt-0.5">Readiness</span>
+                  <span className={`text-[10px] font-bold ${scoreColor} leading-none mt-0.5`}>{scoreLabel}</span>
+                </div>
+                {/* Checkmarks + missing */}
+                {((readiness?.strengths?.length ?? 0) + (readiness?.missingFields?.length ?? 0)) > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 max-w-xs sm:max-w-sm">
+                    {readiness?.strengths?.map((s: string, i: number) => (
+                      <div key={i} className="flex items-start gap-1 text-[10px] text-green-700 leading-tight">
+                        <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />{s}
+                      </div>
+                    ))}
+                    {readiness?.missingFields?.map((f: string, i: number) => (
+                      <div key={i} className="flex items-start gap-1 text-[10px] text-destructive leading-tight">
+                        <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />{f}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Status badge */}
+                <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0">
+                  {currentCase.status.replace('_', ' ')}
+                </Badge>
+              </div>
+
             </div>
           </div>
-          <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs shrink-0 mt-0.5">
-            {currentCase.status.replace('_', ' ')}
-          </Badge>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Tab navigation — click any tab to switch sections */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -2880,8 +2916,6 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
 
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
-  const color = score >= 80 ? "text-green-500" : score >= 50 ? "text-yellow-500" : "text-red-500";
-  const barColor = score >= 80 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
 
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 
@@ -2958,40 +2992,6 @@ function FormsTab({ caseId, currentCase, onSwitchToIntake }: { caseId: number, c
         <h2 className="text-2xl font-bold">Court Forms Library</h2>
         <p className="text-muted-foreground text-sm">California small claims forms — click any form to learn more or generate it.</p>
       </div>
-
-      {/* Readiness Banner */}
-      <Card className={`border-2 ${score >= 80 ? "border-green-400 bg-green-50" : score >= 50 ? "border-yellow-400 bg-yellow-50" : "border-red-400 bg-red-50"}`}>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            {/* Score */}
-            <div className="flex items-center gap-3 shrink-0">
-              <div className={`text-5xl font-black leading-none ${color}`}>{score}</div>
-              <div className="flex flex-col gap-1 min-w-[80px]">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{i18n.forms.readinessScore}</span>
-                <div className="w-20 bg-muted rounded-full h-2 overflow-hidden">
-                  <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${score}%` }}></div>
-                </div>
-                <span className={`text-xs font-semibold ${color}`}>{score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info"}</span>
-              </div>
-            </div>
-            {/* Divider */}
-            <div className="hidden sm:block w-px self-stretch bg-border" />
-            {/* Details */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0.5">
-              {readiness?.strengths && readiness.strengths.map((s: string, i: number) => (
-                <div key={i} className="flex items-start gap-1.5 text-xs text-green-700">
-                  <CheckCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-green-500" />{s}
-                </div>
-              ))}
-              {readiness?.missingFields && readiness.missingFields.map((f: string, i: number) => (
-                <div key={i} className="flex items-start gap-1.5 text-xs text-destructive">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{f}
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Case Summary Card */}
       <Card className="bg-muted/30 border-dashed">
