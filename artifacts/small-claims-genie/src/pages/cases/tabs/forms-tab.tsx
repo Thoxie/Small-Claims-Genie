@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Gavel, Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
@@ -498,19 +498,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="p-4 md:p-6 space-y-8">
-
-      {/* Hearing Prep Banner */}
-      <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="h-14 w-14 shrink-0 rounded-full bg-amber-500 flex items-center justify-center shadow-md"><Gavel className="h-7 w-7 text-white" /></div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="font-bold text-amber-900 text-base">Practice Before Your Hearing</h3>
-            <span className="rounded-full bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">New</span>
-          </div>
-          <p className="text-sm text-amber-800">The Hearing Prep Coach acts as a real judge — asking you the same questions you'll face in court.</p>
-        </div>
-        <Button onClick={onSwitchToPrep} className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white gap-2 font-semibold"><Gavel className="h-4 w-4" />Start Practice</Button>
-      </div>
 
       {/* ── PHASE 1: Filing Package ────────────────────────────────────────── */}
       <section>

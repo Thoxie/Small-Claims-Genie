@@ -131,7 +131,7 @@ export default function CaseWorkspace() {
             </TabsTrigger>
             <TabsTrigger value="prep" className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all" data-testid="tab-prep">
               <Gavel className="h-4 w-4 shrink-0" />
-              <span className="leading-tight">Prep</span>
+              <span className="leading-tight text-center">Prep for<br/>Hearing</span>
             </TabsTrigger>
           </TabsList>
         </div>

@@ -121,6 +121,16 @@ export function HearingPrepTab({ caseId, currentCase }: { caseId: number; curren
   if (!sessionStarted && prepMode === null) {
     return (
       <div className="p-6 md:p-10 flex flex-col items-center gap-8 max-w-2xl mx-auto">
+        <div className="w-full rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="h-14 w-14 shrink-0 rounded-full bg-amber-500 flex items-center justify-center shadow-md"><Gavel className="h-7 w-7 text-white" /></div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <h3 className="font-bold text-amber-900 text-base">Practice Before Your Hearing</h3>
+              <span className="rounded-full bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">New</span>
+            </div>
+            <p className="text-sm text-amber-800">The Hearing Prep Coach acts as a real judge — asking you the same questions you'll face in court.</p>
+          </div>
+        </div>
         <div className="flex items-center gap-5 w-full justify-center">
           <div className="relative shrink-0">
             <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-xl">
