@@ -228,7 +228,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
               <Gavel className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="font-bold text-gray-900 text-base">Mock Trial with Judge Chen</p>
+              <p className="font-bold text-gray-900 text-base">Practice Hearing Session</p>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">Practice answering real judge questions in a simulated courtroom.</p>
             </div>
             <p className="text-xs font-semibold text-amber-700 flex items-center gap-1">Practice session →</p>
@@ -375,7 +375,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0"><Gavel className="h-5 w-5 text-white" /></div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Mock Trial with Judge Chen</h2>
+            <h2 className="text-lg font-bold text-gray-900">Practice Hearing Session</h2>
             <p className="text-xs text-muted-foreground">AI-simulated courtroom — practice before the real thing</p>
           </div>
         </div>
@@ -399,7 +399,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
         <div className="rounded-xl border bg-background p-4 space-y-3">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">How the session works</p>
           {[
-            { num: "1", text: "Judge Chen opens the session and asks you to explain your case in your own words" },
+            { num: "1", text: "The session opens — you are asked to explain your case in your own words" },
             { num: "2", text: "The judge follows up with the same questions a real judge would ask — amounts, dates, evidence" },
             { num: "3", text: "You keep going until you feel confident, then ask for personal feedback" },
           ].map(({ num, text }) => (
@@ -419,7 +419,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
         )}
         <div className="flex flex-col gap-3">
           <Button size="lg" onClick={startSession} className="w-full gap-3 text-base h-12 bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl transition-all">
-            <Gavel className="h-5 w-5" /> Enter Judge Chen's Courtroom
+            <Gavel className="h-5 w-5" /> Begin Your Practice Hearing
           </Button>
           <p className="text-xs text-muted-foreground text-center">This is practice only — nothing is sent to the court.</p>
           <button type="button" onClick={() => setPrepMode("statement")} className="text-xs text-muted-foreground hover:text-foreground text-center hover:underline">← Build your statement first</button>
@@ -434,7 +434,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
         <div className="flex items-center gap-3">
           <div className="h-9 w-9 rounded-full bg-amber-500 flex items-center justify-center shadow-sm"><Gavel className="h-5 w-5 text-white" /></div>
           <div>
-            <p className="text-sm font-bold text-gray-900">Judge Chen's Courtroom</p>
+            <p className="text-sm font-bold text-gray-900">Practice Hearing</p>
             <p className="text-xs text-muted-foreground">Practice session — answer as you would in real court</p>
           </div>
         </div>
