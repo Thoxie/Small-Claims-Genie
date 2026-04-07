@@ -464,12 +464,21 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
           </div>
         )}
       </div>
-      <div className="p-4 border-t bg-card mt-auto">
-        <div className={`text-xs text-center mb-2 font-medium transition-colors ${isRecording ? "text-destructive animate-pulse" : "text-muted-foreground/60"}`}>
-          {isRecording ? "Recording — release to send" : "Speak your answer or type below — press Enter to send"}
+      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 pt-1.5 pb-3">
+        <div className="flex items-center justify-end mb-1.5">
+          {isRecording ? (
+            <span className="flex items-center gap-1 text-[10px] font-medium text-destructive animate-pulse">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
+              Recording… release mic to stop
+            </span>
+          ) : (
+            <span className="text-[10px] text-muted-foreground/70">
+              Hold <span className="font-semibold">mic</span> to record voice
+            </span>
+          )}
         </div>
-        <div className="flex items-end gap-2">
-          <div className="flex-1 relative">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 relative flex items-center">
             <textarea
               ref={textareaRef}
               value={input}
@@ -477,7 +486,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
                 setInput(e.target.value);
                 const el = e.target as HTMLTextAreaElement;
                 el.style.height = "auto";
-                el.style.height = Math.min(el.scrollHeight, 160) + "px";
+                el.style.height = Math.min(el.scrollHeight, 120) + "px";
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
@@ -485,20 +494,28 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
               placeholder="Type your answer here… speak naturally, like you would in court"
               rows={1}
               disabled={isRecording || isTyping}
-              className="w-full resize-none overflow-hidden rounded-3xl border-2 border-input bg-background px-4 py-3 pr-12 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-0 disabled:opacity-50 transition-colors"
-              style={{ minHeight: "44px", maxHeight: "160px" }}
+              className="w-full resize-none overflow-hidden rounded-full border border-input bg-background pl-4 pr-10 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
+              style={{ minHeight: "42px", maxHeight: "120px" }}
             />
-            <Button size="icon" variant="ghost"
-              className={`absolute right-2 bottom-1.5 rounded-full transition-colors ${isRecording ? "text-destructive animate-pulse bg-destructive/10" : "text-muted-foreground"}`}
+            <button
+              type="button"
               onMouseDown={handleVoiceStart} onMouseUp={handleVoiceStop} onMouseLeave={isRecording ? handleVoiceStop : undefined}
               onTouchStart={handleVoiceStart} onTouchEnd={handleVoiceStop}
-              aria-label={isRecording ? "Recording — release to send" : "Hold to record voice answer"}>
-              <Mic className="h-5 w-5" />
-            </Button>
+              aria-label={isRecording ? "Recording — release to stop" : "Hold to record"}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-full transition-colors ${isRecording ? "text-destructive animate-pulse bg-destructive/10" : "text-muted-foreground hover:text-amber-600"}`}
+            >
+              <Mic className="h-4 w-4" />
+            </button>
           </div>
-          <Button onClick={() => sendMessage(input)} size="icon" className="h-11 w-11 rounded-full shrink-0 mb-0.5 bg-amber-500 hover:bg-amber-600" disabled={isTyping || isRecording || !input.trim()}>
-            <Send className="h-5 w-5 ml-0.5" />
-          </Button>
+          <button
+            type="button"
+            onClick={() => sendMessage(input)}
+            disabled={isTyping || isRecording || !input.trim()}
+            className="h-[42px] w-[42px] shrink-0 flex items-center justify-center rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40 disabled:pointer-events-none transition-colors"
+            aria-label="Send"
+          >
+            <Send className="h-4 w-4 ml-0.5" />
+          </button>
         </div>
       </div>
     </div>
