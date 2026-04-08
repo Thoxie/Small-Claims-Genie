@@ -96,10 +96,10 @@ export function HearingInfoCard({ caseId, initialData }: { caseId: number; initi
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 const INTAKE_TABS = [
-  { num: 1, label: "Parties" },
-  { num: 2, label: "Claim" },
-  { num: 3, label: "Demand" },
-  { num: 4, label: "Review" },
+  { num: 1, label: "Enter The Parties" },
+  { num: 2, label: "Make Your Claim" },
+  { num: 3, label: "Send Demand Letter" },
+  { num: 4, label: "Review Your Case" },
 ] as const;
 
 // Required fields per tab — checked on Complete Intake
@@ -192,7 +192,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
       {activeTab === 4 && <HearingInfoCard caseId={caseId} initialData={initialData} />}
 
       {/* ── Numbered tab bar ── */}
-      <div className="flex border-b border-gray-200 mb-5 -mx-4 md:-mx-5 px-4 md:px-5 overflow-x-auto no-scrollbar">
+      <div className="flex gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1.5 mb-5 overflow-x-auto no-scrollbar">
         {INTAKE_TABS.map(({ num, label }) => {
           const active = activeTab === num;
           return (
@@ -200,19 +200,19 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
               key={num}
               onClick={() => setActiveTab(num as 1 | 2 | 3 | 4)}
               className={[
-                "flex flex-col items-center gap-1 px-5 md:px-10 pb-3 pt-1 text-[11px] font-semibold transition-all relative shrink-0",
+                "flex items-center gap-2.5 flex-1 min-w-0 px-3 py-2.5 rounded-lg transition-all text-left",
                 active
-                  ? "text-[#0d6b5e] border-b-2 border-[#14b8a6] -mb-px"
-                  : "text-gray-400 hover:text-gray-600",
+                  ? "bg-white shadow-sm text-[#0d6b5e] border border-gray-200"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
               ].join(" ")}
             >
               <span className={[
-                "inline-flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold transition-all",
-                active ? "bg-[#14b8a6] text-white" : "bg-gray-100 text-gray-500",
+                "inline-flex items-center justify-center w-9 h-9 rounded-full text-base font-bold shrink-0 transition-all",
+                active ? "bg-[#14b8a6] text-white" : "bg-gray-200 text-gray-500",
               ].join(" ")}>
                 {num}
               </span>
-              <span>{label}</span>
+              <span className="hidden sm:block text-xs font-semibold leading-snug">{label}</span>
             </button>
           );
         })}
