@@ -449,6 +449,36 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     finally { setDownloadingForm(null); }
   }
 
+  async function downloadSignedSC100(signatureDataUrl?: string) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    setDownloadingPdf(true); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const endpoint = signatureDataUrl ? "sc100/signed" : "sc100";
+      const filename = signatureDataUrl ? `SC100-Signed-Case-${caseId}.pdf` : `SC100-Case-${caseId}.pdf`;
+      let res: Response;
+      if (signatureDataUrl) {
+        res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ signatureDataUrl, token }),
+        });
+      } else {
+        res = await fetch(`/api/cases/${caseId}/forms/${endpoint}?token=${encodeURIComponent(token)}`, { method: "GET" });
+      }
+      if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError((err as any).error || "Failed to generate PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch { setDownloadError("Download failed — please try again."); }
+    finally { setDownloadingPdf(false); }
+  }
+
   async function viewSC100() {
     if (isDraftMode) { toast({ title: "Subscribe to View", description: "Start your subscription to preview your pre-filled SC-100." }); return; }
     setViewingPdf(true);
@@ -1109,8 +1139,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       <SignaturePadModal
         open={sigModalOpen}
         onClose={() => setSigModalOpen(false)}
-        onSign={(dataUrl) => { setSigModalOpen(false); downloadForm(`sc100?signatureDataUrl=${encodeURIComponent(dataUrl)}`, `SC100-Case-${caseId}.pdf`, setDownloadingPdf); }}
-        onSkipSign={() => { setSigModalOpen(false); downloadForm("sc100", `SC100-Case-${caseId}.pdf`, setDownloadingPdf); }}
+        onSign={(dataUrl) => { setSigModalOpen(false); downloadSignedSC100(dataUrl); }}
+        onSkipSign={() => { setSigModalOpen(false); downloadSignedSC100(); }}
       />
 
       {/* Guide Dialog */}
