@@ -39,13 +39,13 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
       <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center px-3 md:px-4 h-[70px] md:h-[84px]">
 
-          {/* Left: Logo + Home button — fixed width to balance right side */}
-          <div className="flex items-center gap-2 md:gap-3 shrink-0 w-[160px] md:w-[220px]">
-            <Link href="/" className="flex items-center shrink-0">
+          {/* Left: logo mark + Home tab — mirrors right side exactly */}
+          <div className="flex items-center gap-1 md:gap-2 shrink-0 w-[120px] md:w-[180px]">
+            <Link href="/" className="flex items-center shrink-0" title="Small Claims Genie home">
               <img
                 src={logoPath}
                 alt="Small Claims Genie"
-                className="h-[50px] md:h-[66px] w-auto"
+                className="h-8 w-auto md:h-9"
               />
             </Link>
             <Link
@@ -88,8 +88,8 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
             </div>
           </div>
 
-          {/* Right: Exit Case + user avatar — fixed width to match left side */}
-          <div className="flex items-center justify-end gap-2 md:gap-3 shrink-0 w-[160px] md:w-[220px]">
+          {/* Right: Exit Case tab + user avatar — mirrors left side */}
+          <div className="flex items-center justify-end gap-1 md:gap-2 shrink-0 w-[120px] md:w-[180px]">
             <Link
               href="/dashboard"
               title="Exit case and return to dashboard"
