@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useSaveIntakeProgress,
@@ -18,7 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { CalendarIcon, Loader2, Sparkles, CheckCircle, CheckSquare2, Square, RotateCcw, Maximize2, MapPin, Phone, Mail, Globe, ExternalLink } from "lucide-react";
+import { CalendarIcon, Loader2, Sparkles, CheckCircle, CheckSquare2, Square, RotateCcw, Maximize2, MapPin, Phone, Mail, Globe, ExternalLink, LogOut } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -103,7 +104,7 @@ export function HearingInfoCard({ caseId, initialData }: { caseId: number; initi
 }
 
 // ─── Step 1 ───────────────────────────────────────────────────────────────────
-function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: any) => void, saving?: boolean }) {
+function Step1({ initialData, onNext, saving, onSaveExit }: { initialData: any, onNext: (d: any) => void, saving?: boolean, onSaveExit: (d: any) => void }) {
   const { data: counties } = useListCounties();
   const form = useForm({
     resolver: zodResolver(intakeStep1Schema),
@@ -286,7 +287,11 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
             </div>
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-between items-center pt-2">
+            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Save & Exit
+            </Button>
             <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
             </Button>
@@ -298,7 +303,7 @@ function Step1({ initialData, onNext, saving }: { initialData: any, onNext: (d: 
 }
 
 // ─── Step 2 ───────────────────────────────────────────────────────────────────
-function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, onAdvisorOpened }: { caseId: number, initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean, autoOpenAdvisor?: boolean, onAdvisorOpened?: () => void }) {
+function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, onAdvisorOpened, onSaveExit }: { caseId: number, initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean, autoOpenAdvisor?: boolean, onAdvisorOpened?: () => void, onSaveExit: (d: any) => void }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
 
@@ -489,8 +494,14 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
             </Button>
           </div>
 
-          <div className="flex justify-between pt-2">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+          <div className="flex justify-between items-center pt-2">
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+              <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Save & Exit
+              </Button>
+            </div>
             <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
             </Button>
@@ -653,7 +664,7 @@ function Step2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, o
 }
 
 // ─── Step 3 ───────────────────────────────────────────────────────────────────
-function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean }) {
+function Step3({ initialData, onNext, onBack, saving, onSaveExit }: { initialData: any, onNext: (d: any) => void, onBack: () => void, saving?: boolean, onSaveExit: (d: any) => void }) {
   const form = useForm({
     resolver: zodResolver(intakeStep3Schema),
     defaultValues: {
@@ -733,8 +744,14 @@ function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNe
               )}
             </div>
           </div>
-          <div className="flex justify-between pt-2">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+          <div className="flex justify-between items-center pt-2">
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+              <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Save & Exit
+              </Button>
+            </div>
             <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
             </Button>
@@ -746,7 +763,7 @@ function Step3({ initialData, onNext, onBack, saving }: { initialData: any, onNe
 }
 
 // ─── Step 4 ───────────────────────────────────────────────────────────────────
-function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initialData: any, onComplete: (d: any) => void, onBack: () => void, saving?: boolean, onCheckCase?: () => void }) {
+function Step4({ initialData, onComplete, onBack, saving, onCheckCase, onSaveExit }: { initialData: any, onComplete: (d: any) => void, onBack: () => void, saving?: boolean, onCheckCase?: () => void, onSaveExit: (d: any) => void }) {
   const form = useForm({
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
@@ -885,8 +902,14 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
             </div>
           )}
 
-          <div className="flex justify-between pt-2">
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+          <div className="flex justify-between items-center pt-2">
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
+              <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Save & Exit
+              </Button>
+            </div>
             <Button type="submit" size="lg" data-testid="button-complete-intake" disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8">
               {saving ? "Saving…" : "Complete Intake ✓"}
             </Button>
@@ -901,6 +924,7 @@ function Step4({ initialData, onComplete, onBack, saving, onCheckCase }: { initi
 export function IntakeTab({ caseId, initialData }: { caseId: number, initialData: any }) {
   const [step, setStep] = useState(Math.min(initialData.intakeStep || 1, 4));
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
+  const [, navigate] = useLocation();
   const saveIntake = useSaveIntakeProgress();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -935,6 +959,18 @@ export function IntakeTab({ caseId, initialData }: { caseId: number, initialData
     });
   };
 
+  const handleSaveExit = (formData: any) => {
+    saveIntake.mutate({ id: caseId, data: { step, data: formData } }, {
+      onSuccess: () => {
+        invalidateAll();
+        navigate("/dashboard");
+      },
+      onError: () => {
+        navigate("/dashboard");
+      },
+    });
+  };
+
   const progress = (step / 4) * 100;
   const stepLabels = ["Parties & Filing County", "Claim Details", "Prior Demand & Venue", "Eligibility & Review"];
 
@@ -958,10 +994,10 @@ export function IntakeTab({ caseId, initialData }: { caseId: number, initialData
         <Progress value={progress} className="h-2 [&>div]:bg-[#14b8a6]" />
       </div>
 
-      {step === 1 && <Step1 initialData={initialData} onNext={handleNext} saving={saveIntake.isPending} />}
-      {step === 2 && <Step2 caseId={caseId} initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} autoOpenAdvisor={autoOpenAdvisor} onAdvisorOpened={() => setAutoOpenAdvisor(false)} />}
-      {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} saving={saveIntake.isPending} />}
-      {step === 4 && <Step4 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(3)} saving={saveIntake.isPending} onCheckCase={goToAdvisor} />}
+      {step === 1 && <Step1 initialData={initialData} onNext={handleNext} saving={saveIntake.isPending} onSaveExit={handleSaveExit} />}
+      {step === 2 && <Step2 caseId={caseId} initialData={initialData} onNext={handleNext} onBack={() => setStep(1)} saving={saveIntake.isPending} autoOpenAdvisor={autoOpenAdvisor} onAdvisorOpened={() => setAutoOpenAdvisor(false)} onSaveExit={handleSaveExit} />}
+      {step === 3 && <Step3 initialData={initialData} onNext={handleNext} onBack={() => setStep(2)} saving={saveIntake.isPending} onSaveExit={handleSaveExit} />}
+      {step === 4 && <Step4 initialData={initialData} onComplete={handleComplete} onBack={() => setStep(3)} saving={saveIntake.isPending} onCheckCase={goToAdvisor} onSaveExit={handleSaveExit} />}
     </div>
   );
 }
