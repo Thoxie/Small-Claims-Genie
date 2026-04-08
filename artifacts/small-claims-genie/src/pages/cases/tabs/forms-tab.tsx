@@ -314,14 +314,12 @@ export function SignaturePadModal({ open, onClose, onSign, onSkipSign }: { open:
           {!hasDrawn && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><p className="text-muted-foreground/40 text-sm select-none">Sign here ↑</p></div>}
         </div>
         <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-4 py-3 leading-relaxed">By signing, you declare under penalty of perjury under the laws of the State of California that the information on your SC-100 is true and correct.</p>
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="ghost" size="sm" onClick={clearCanvas} disabled={!hasDrawn} className="gap-1.5"><RotateCcw className="h-3.5 w-3.5" />Clear</Button>
-          <div className="flex gap-2 ml-auto">
-            <Button variant="outline" onClick={onSkipSign}>Skip — Download Without Signature</Button>
-            <Button onClick={handleSign} disabled={!hasDrawn} className="gap-2 bg-[#0d6b5e] hover:bg-[#0a5549] text-white">
-              <Download className="h-4 w-4" />Sign &amp; Download
-            </Button>
-          </div>
+        <DialogFooter className="gap-2">
+          <Button variant="ghost" size="sm" onClick={clearCanvas} disabled={!hasDrawn} className="gap-1.5 sm:mr-auto"><RotateCcw className="h-3.5 w-3.5" />Clear</Button>
+          <Button variant="outline" onClick={onSkipSign}>Skip — No Signature</Button>
+          <Button onClick={handleSign} disabled={!hasDrawn} className="gap-2 bg-[#0d6b5e] hover:bg-[#0a5549] text-white">
+            <Download className="h-4 w-4" />Sign &amp; Download
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

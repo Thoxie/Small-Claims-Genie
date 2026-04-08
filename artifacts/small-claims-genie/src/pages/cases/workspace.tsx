@@ -128,7 +128,7 @@ export default function CaseWorkspace() {
             </TabsTrigger>
             <TabsTrigger value="forms" className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-forms">
               <Scale className="h-4 w-4 shrink-0" />
-              <span className="leading-tight">Forms</span>
+              <span className="leading-tight">Court Forms</span>
             </TabsTrigger>
             <TabsTrigger value="prep" className="flex flex-col items-center gap-1 py-2.5 px-1 text-xs font-semibold rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all" data-testid="tab-prep">
               <Gavel className="h-4 w-4 shrink-0" />
