@@ -2,8 +2,10 @@ import { useMemo } from "react";
 import { addDays, addYears, addMonths, differenceInDays, parseISO, isValid, format } from "date-fns";
 import { AlertCircle, CheckCircle, Clock, CalendarDays, AlertTriangle, Info, Scale, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HearingInfoCard } from "./intake-tab";
 
 interface Props {
+  caseId: number;
   currentCase: any;
 }
 
@@ -115,7 +117,7 @@ function printDeadlines(deadlines: Deadline[], caseName: string, today: Date) {
   w.document.close();
 }
 
-export function DeadlineCalculatorTab({ currentCase }: Props) {
+export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const today = useMemo(() => new Date(), []);
 
   const incidentDate = useMemo(() => parseIncidentDate(currentCase.incidentDate || ""), [currentCase.incidentDate]);
@@ -230,6 +232,7 @@ export function DeadlineCalculatorTab({ currentCase }: Props) {
 
   return (
     <div className="p-6 space-y-6">
+      <HearingInfoCard caseId={caseId} initialData={currentCase} />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">

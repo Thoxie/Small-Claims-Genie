@@ -150,7 +150,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             <HearingPrepTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
           )}
           {activeTab === "deadlines" && (
-            <DeadlineCalculatorTab currentCase={currentCase} />
+            <DeadlineCalculatorTab caseId={caseId} currentCase={currentCase} />
           )}
         </div>
 
