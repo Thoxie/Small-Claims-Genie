@@ -4,11 +4,13 @@ import {
   useGetCase,
   useGetCaseReadiness,
 } from "@workspace/api-client-react";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle, AlertCircle } from "lucide-react";
-import { WorkspaceLayout } from "@/components/workspace-layout";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, AlertCircle, PlusCircle } from "lucide-react";
+import { WorkspaceLayout, WORKSPACE_TABS } from "@/components/workspace-layout";
+import { Link } from "wouter";
 
 import { IntakeTab } from "./tabs/intake-tab";
 import { DocumentsTab } from "./tabs/documents-tab";
@@ -40,7 +42,24 @@ export default function CaseWorkspace() {
   if (!currentCase) {
     return (
       <WorkspaceLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-        <div className="container mx-auto p-8">Case not found.</div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-8 text-center">
+          <div className="text-5xl">📋</div>
+          <h2 className="text-xl font-bold text-foreground">No case found</h2>
+          <p className="text-muted-foreground max-w-sm">
+            This case doesn't exist or may have been removed. Start a new case to get going.
+          </p>
+          <div className="flex gap-3">
+            <Button asChild>
+              <Link href="/cases/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Start a New Case
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard">Back to Dashboard</Link>
+            </Button>
+          </div>
+        </div>
       </WorkspaceLayout>
     );
   }
@@ -113,9 +132,14 @@ export default function CaseWorkspace() {
           </div>
         </div>
 
-        {/* ── Tab content (no TabsList — tabs live in the header) ── */}
+        {/* ── Tab content — tabs live in the header; hidden list keeps Radix happy ── */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className={`border rounded-lg bg-card shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
+          <TabsList className="hidden">
+            {WORKSPACE_TABS.map((t) => (
+              <TabsTrigger key={t.value} value={t.value}>{t.label}</TabsTrigger>
+            ))}
+          </TabsList>
+          <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
             <TabsContent value="intake" className="p-0 m-0">
               <IntakeTab caseId={caseId} initialData={currentCase} />
             </TabsContent>

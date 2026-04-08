@@ -32,7 +32,7 @@ interface WorkspaceLayoutProps {
 
 export function WorkspaceLayout({ children, activeTab, setActiveTab }: WorkspaceLayoutProps) {
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-gray-50">
+    <div className="min-h-[100dvh] flex flex-col bg-white">
 
       {/* ── Workspace nav header ── */}
       <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
@@ -92,7 +92,7 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
       </header>
 
       {/* Page content */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col bg-white">
         {children}
       </main>
     </div>
