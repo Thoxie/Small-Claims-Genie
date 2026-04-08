@@ -4,12 +4,11 @@ import {
   useGetCase,
   useGetCaseReadiness,
 } from "@workspace/api-client-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, PlusCircle } from "lucide-react";
-import { WorkspaceLayout, WORKSPACE_TABS } from "@/components/workspace-layout";
+import { WorkspaceLayout } from "@/components/workspace-layout";
 import { Link } from "wouter";
 
 import { IntakeTab } from "./tabs/intake-tab";
@@ -132,37 +131,31 @@ export default function CaseWorkspace() {
           </div>
         </div>
 
-        {/* ── Tab content — tabs live in the header; hidden list keeps Radix happy ── */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="hidden">
-            {WORKSPACE_TABS.map((t) => (
-              <TabsTrigger key={t.value} value={t.value}>{t.label}</TabsTrigger>
-            ))}
-          </TabsList>
-          <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
-            <TabsContent value="intake" className="p-0 m-0">
-              <IntakeTab caseId={caseId} initialData={currentCase} />
-            </TabsContent>
-            <TabsContent value="documents" className="p-0 m-0">
-              <DocumentsTab caseId={caseId} evidenceChecklist={(currentCase as any)?.evidenceChecklist || []} />
-            </TabsContent>
-            <TabsContent value="chat" className="p-0 m-0">
-              <ChatTab caseId={caseId} isDraftMode={false} currentCase={currentCase} />
-            </TabsContent>
-            <TabsContent value="demand-letter" className="p-0 m-0">
-              <DemandLetterTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
-            </TabsContent>
-            <TabsContent value="forms" className="p-0 m-0">
-              <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
-            </TabsContent>
-            <TabsContent value="prep" className="p-0 m-0">
-              <HearingPrepTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
-            </TabsContent>
-            <TabsContent value="deadlines" className="p-0 m-0">
-              <DeadlineCalculatorTab currentCase={currentCase} />
-            </TabsContent>
-          </div>
-        </Tabs>
+        {/* ── Tab content — plain conditional rendering, no Radix dependency ── */}
+        <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
+          {activeTab === "intake" && (
+            <IntakeTab caseId={caseId} initialData={currentCase} />
+          )}
+          {activeTab === "documents" && (
+            <DocumentsTab caseId={caseId} evidenceChecklist={(currentCase as any)?.evidenceChecklist || []} />
+          )}
+          {activeTab === "chat" && (
+            <ChatTab caseId={caseId} isDraftMode={false} currentCase={currentCase} />
+          )}
+          {activeTab === "demand-letter" && (
+            <DemandLetterTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
+          )}
+          {activeTab === "forms" && (
+            <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
+          )}
+          {activeTab === "prep" && (
+            <HearingPrepTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
+          )}
+          {activeTab === "deadlines" && (
+            <DeadlineCalculatorTab currentCase={currentCase} />
+          )}
+        </div>
+
       </div>
     </WorkspaceLayout>
   );
