@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import {
-  X,
+  LogOut,
   Home,
   ClipboardList,
   FileText,
@@ -88,16 +88,17 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
             </div>
           </div>
 
-          {/* Right: user avatar + X close — fixed width to match left side */}
+          {/* Right: Exit Case + user avatar — fixed width to match left side */}
           <div className="flex items-center justify-end gap-2 md:gap-3 shrink-0 w-[160px] md:w-[220px]">
-            <UserButton afterSignOutUrl="/sign-in" />
             <Link
               href="/dashboard"
-              title="Back to your cases"
-              className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition-colors border border-gray-200"
+              title="Exit case and return to dashboard"
+              className="flex flex-col items-center justify-center gap-1 px-2 md:px-3 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all min-w-[48px]"
             >
-              <X className="h-4 w-4 md:h-5 md:w-5" />
+              <LogOut className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0" />
+              <span className="whitespace-nowrap">Exit Case</span>
             </Link>
+            <UserButton afterSignOutUrl="/sign-in" />
           </div>
         </div>
       </header>
