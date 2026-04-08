@@ -243,13 +243,18 @@ Statutes of limitation are calculated per claim type under CCP §§337–339 (2�
 
 ## Tab Structure (Case Workspace)
 
+The workspace nav bar shows: **[Logo] [Exit Case | Intake | Docs | Ask Genie AI | Demand Letter | Court Forms | Prep for Hearing | Deadlines] [User Avatar]**
+
+Exit Case (LogOut icon) is equidistant with all other tabs and returns the user to the dashboard. The logo is displayed at full nav height on the left, pushed right for visual balance.
+
 | # | Tab | Purpose |
 |---|---|---|
+| — | Exit Case | Returns user to case dashboard; styled identically to workspace tabs |
 | 1 | Intake | All case details — plaintiff, defendant, incident, amount, county |
 | 2 | Docs | Upload evidence — OCR auto-runs; document checklist from AI advisor |
 | 3 | Ask Genie AI | Streaming AI chat grounded on uploaded documents |
 | 4 | Demand Letter | Generate demand letter, settlement offer, or settlement agreement |
-| 5 | Forms | SC-100 auto-fill + all 11 CA small claims forms with guides |
+| 5 | Court Forms | SC-100 auto-fill + all 11 CA small claims forms with guides |
 | 6 | Prep for Hearing | Practice hearing session + opening statement builder |
 | 7 | Deadlines | SOL calculator, service windows, appeal deadlines |
 
