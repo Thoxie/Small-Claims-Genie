@@ -115,7 +115,8 @@ function drawPage1(page: any, bg: any) {
 
 function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
+  const LIFT = 4.5; // 1/16 inch upward shift
+  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
 
   // ── Court / courthouse info (top header section) ────────────────────────
   // "SUPERIOR COURT OF CALIFORNIA, COUNTY OF ___" → county name
@@ -189,25 +190,26 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
     const linesNeeded = countWrapLines(font, desc, 490, 9);
     if (linesNeeded > DESC_MAX_LINES) {
       // Draw 7 lines then stamp overflow note on line 8
-      wrapVal(page, font, desc, 63, 163, 490, 9, 12, DESC_OVERFLOW_LINES);
-      const noteY = 163 - DESC_OVERFLOW_LINES * 12;
+      wrapVal(page, font, desc, 63, 163 + LIFT, 490, 9, 12, DESC_OVERFLOW_LINES);
+      const noteY = 163 + LIFT - DESC_OVERFLOW_LINES * 12;
       val(page, font, "(Continued — see attached MC-030 Declaration for full statement)", 63, noteY, 8);
     } else {
-      wrapVal(page, font, desc, 63, 163, 490, 9, 12, DESC_MAX_LINES);
+      wrapVal(page, font, desc, 63, 163 + LIFT, 490, 9, 12, DESC_MAX_LINES);
     }
   }
 }
 
 function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-  const xm = (cx: number, cy: number) => xmark(page, cx, cy, 5);
+  const LIFT = 4.5; // 1/16 inch upward shift
+  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+  const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
   v(c.plaintiffName, 132, 745);
   v(c.caseNumber, 515, 745);
   v(c.incidentDate, 217, 690);
   v(c.dateStarted, 320, 674);
   v(c.dateThrough, 465, 674);
-  if (c.howAmountCalculated) wrapVal(page, font, c.howAmountCalculated, 63, 642, 480, 9, 12, 5);
+  if (c.howAmountCalculated) wrapVal(page, font, c.howAmountCalculated, 63, 642 + LIFT, 480, 9, 12, 5);
   if (c.priorDemandMade === true) xm(70, 492);
   if (c.priorDemandMade === false) xm(125, 492);
   const venueBasisMap: Record<string, string> = {
@@ -233,8 +235,9 @@ function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
 
 function drawPage4(page: any, font: any, c: Record<string, any>, bg: any) {
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-  const xm = (cx: number, cy: number) => xmark(page, cx, cy, 5);
+  const LIFT = 4.5; // 1/16 inch upward shift
+  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+  const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
   v(c.plaintiffName, 132, 745);
   v(c.caseNumber, 515, 745);
   if (c.filedMoreThan12Claims === true) xm(71, 673);
@@ -269,7 +272,7 @@ async function buildSC100Pdf(
     const sigImg = await pdfDoc.embedPng(signaturePngBytes);
     const SIG_W = 240;
     const SIG_H = 30;
-    p4.drawImage(sigImg, { x: 248, y: 482, width: SIG_W, height: SIG_H });
+    p4.drawImage(sigImg, { x: 248, y: 482 + 4.5, width: SIG_W, height: SIG_H });
   }
   return pdfDoc.save();
 }
