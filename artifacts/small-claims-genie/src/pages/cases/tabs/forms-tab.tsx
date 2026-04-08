@@ -376,7 +376,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const [downloadingWithOverrides, setDownloadingWithOverrides] = useState(false);
 
   // ── MC-030 inline editor state ─────────────────────────────────────────────
-  const [mc030Title, setMc030Title] = useState("");
+  const [mc030Title, setMc030Title] = useState(
+    currentCase?.plaintiffName ? `Declaration of ${currentCase.plaintiffName} in Support of Claim` : ""
+  );
   const [mc030Text, setMc030Text] = useState("");
   const [mc030AiGenerating, setMc030AiGenerating] = useState(false);
   const [mc030AiError, setMc030AiError] = useState<string | null>(null);
@@ -693,13 +695,13 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">MC-030</span>
                 <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-[#0d6b5e]/10 text-[#0d6b5e] border border-[#0d6b5e]/20">Step 1B — Declaration + Exhibits</span>
-                {descriptionNeedsMC030 && <Badge variant="destructive" className="text-[10px] py-0">Required</Badge>}
+                <Badge variant="destructive" className="text-[10px] py-0">Required</Badge>
               </div>
               <a href="https://www.courts.ca.gov/documents/mc030.pdf" target="_blank" rel="noopener noreferrer" className="shrink-0 text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
             </div>
             <h4 className="font-semibold text-sm leading-tight mb-1">Sworn Declaration + Attached Evidence</h4>
             <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-              Write your sworn statement under penalty of perjury. Select documents from your uploads to attach as labeled exhibits (Exhibit A, B, C…) — all bundled into one PDF.
+              This declaration is <strong className="text-foreground">required with every SC-100 filing</strong> — it strengthens your case by giving the court your sworn statement of facts. Your name is pre-filled to match the SC-100. Add your statement below, attach supporting documents as labeled exhibits (Exhibit A, B, C…), and download as one PDF.
             </p>
 
             {/* Declaration title */}

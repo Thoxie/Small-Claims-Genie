@@ -210,6 +210,8 @@ function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
   v(c.dateStarted, 320, 674);
   v(c.dateThrough, 465, 674);
   if (c.howAmountCalculated) wrapVal(page, font, c.howAmountCalculated, 63, 642 + LIFT, 480, 9, 12, 5);
+  // "Check here if you need more space — attach MC-030 Declaration" — always checked
+  xm(36, 554);
   if (c.priorDemandMade === true) xm(70, 492);
   if (c.priorDemandMade === false) xm(125, 492);
   const venueBasisMap: Record<string, string> = {
