@@ -301,26 +301,28 @@ export function SignaturePadModal({ open, onClose, onSign, onSkipSign }: { open:
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><PenLine className="h-5 w-5 text-primary" />Sign Your SC-100</DialogTitle>
           <p className="text-sm text-muted-foreground mt-1">Draw your signature below using your mouse or finger.</p>
         </DialogHeader>
         <div className="rounded-xl border-2 border-dashed border-input bg-[#fdfdfc] relative overflow-hidden" style={{ touchAction: "none" }}>
-          <canvas ref={canvasRef} width={680} height={160} className="w-full cursor-crosshair" style={{ display: "block" }}
+          <canvas ref={canvasRef} width={600} height={150} className="w-full cursor-crosshair" style={{ display: "block" }}
             onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
             onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
-          <div className="absolute bottom-8 left-8 right-8 border-b border-gray-300 pointer-events-none" />
+          <div className="absolute bottom-6 left-6 right-6 border-b border-gray-300 pointer-events-none" />
           {!hasDrawn && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><p className="text-muted-foreground/40 text-sm select-none">Sign here ↑</p></div>}
         </div>
         <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-4 py-3 leading-relaxed">By signing, you declare under penalty of perjury under the laws of the State of California that the information on your SC-100 is true and correct.</p>
-        <DialogFooter className="gap-2">
-          <Button variant="ghost" size="sm" onClick={clearCanvas} disabled={!hasDrawn} className="gap-1.5 sm:mr-auto"><RotateCcw className="h-3.5 w-3.5" />Clear</Button>
-          <Button variant="outline" onClick={onSkipSign}>Skip — No Signature</Button>
-          <Button onClick={handleSign} disabled={!hasDrawn} className="gap-2 bg-[#0d6b5e] hover:bg-[#0a5549] text-white">
-            <Download className="h-4 w-4" />Sign &amp; Download
-          </Button>
-        </DialogFooter>
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <Button onClick={handleSign} disabled={!hasDrawn} className="flex-1 gap-2 bg-[#0d6b5e] hover:bg-[#0a5549] text-white">
+              <Download className="h-4 w-4" />Sign &amp; Download
+            </Button>
+            <Button variant="ghost" size="icon" onClick={clearCanvas} disabled={!hasDrawn} title="Clear signature"><RotateCcw className="h-4 w-4" /></Button>
+          </div>
+          <Button variant="outline" onClick={onSkipSign} className="w-full text-sm">Skip — Download Without Signature</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
