@@ -148,10 +148,12 @@ function Router() {
           </Layout>
         </Route>
 
-        {/* ── Case workspace — proper Route so useParams() gets the :id ── */}
-        {/* CaseWorkspace renders its own WorkspaceLayout (no standard nav)  */}
+        {/* ── Case workspace — render-prop so the id is passed explicitly     ── */}
+        {/* (children-syntax in Wouter doesn't reliably push params to context) */}
         <Route path="/cases/:id">
-          <RequireAuth><CaseWorkspace /></RequireAuth>
+          {(params: { id?: string }) => (
+            <RequireAuth><CaseWorkspace caseIdParam={params.id ?? ""} /></RequireAuth>
+          )}
         </Route>
 
         {/* ── All other routes — standard Layout + nav ── */}

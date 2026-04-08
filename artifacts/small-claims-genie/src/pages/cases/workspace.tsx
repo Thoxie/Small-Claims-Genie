@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useParams } from "wouter";
 import {
   useGetCase,
   useGetCaseReadiness,
@@ -19,9 +18,8 @@ import { DemandLetterTab } from "./tabs/demand-letter-tab";
 import { HearingPrepTab } from "./tabs/hearing-prep-tab";
 import { DeadlineCalculatorTab } from "./tabs/deadline-calculator-tab";
 
-export default function CaseWorkspace() {
-  const params = useParams();
-  const caseId = parseInt(params.id || "0", 10);
+export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) {
+  const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useState("intake");
 
   const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
