@@ -74,8 +74,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     <WorkspaceLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div className="container mx-auto px-4 pt-3 pb-6 max-w-6xl flex flex-col gap-3">
 
-        {/* ── Readiness card ── */}
-        <div className={`bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
+        {/* ── Readiness card — only shown on the Prep tab ── */}
+        {activeTab === "prep" && <div className={`bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
           <div className="grid grid-cols-2 gap-4 items-center">
             <div className="flex flex-col gap-1.5">
               <div className="flex items-end gap-2">
@@ -127,7 +127,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               </div>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* ── Tab content — plain conditional rendering, no Radix dependency ── */}
         <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
