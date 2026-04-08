@@ -137,6 +137,16 @@ function Router() {
   if (location.startsWith("/sign-up")) return <SignUpPage />;
   if (location.startsWith("/sign-in")) return <SignInPage />;
 
+  // Case workspace uses its own custom layout (gray nav with tabs in header)
+  if (/^\/cases\/\d+/.test(location)) {
+    return (
+      <>
+        <AuthTokenBridge />
+        <RequireAuth><CaseWorkspace /></RequireAuth>
+      </>
+    );
+  }
+
   return (
     <>
       {/* Token bridge: sets up API auth when user is signed in.
