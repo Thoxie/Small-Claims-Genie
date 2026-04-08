@@ -112,6 +112,9 @@ function Step1({ initialData, onNext, saving, onSaveExit }: { initialData: any, 
       countyId: initialData.countyId || "",
       courthouseId: initialData.courthouseId || "",
       plaintiffName: initialData.plaintiffName || "",
+      plaintiffIsBusiness: initialData.plaintiffIsBusiness || false,
+      secondPlaintiffName: initialData.secondPlaintiffName || "",
+      plaintiffTitle: initialData.plaintiffTitle || "",
       plaintiffPhone: initialData.plaintiffPhone || "",
       plaintiffAddress: initialData.plaintiffAddress || "",
       plaintiffCity: initialData.plaintiffCity || "",
@@ -130,6 +133,7 @@ function Step1({ initialData, onNext, saving, onSaveExit }: { initialData: any, 
   });
 
   const isBusiness = form.watch("defendantIsBusinessOrEntity");
+  const plaintiffIsBusiness = form.watch("plaintiffIsBusiness");
   const selectedCountyId = form.watch("countyId");
   const selectedCourthouseId = form.watch("courthouseId");
 
@@ -216,9 +220,37 @@ function Step1({ initialData, onNext, saving, onSaveExit }: { initialData: any, 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="rounded-xl border p-5 space-y-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Your Information (Plaintiff)</h3>
-              <FormField control={form.control} name="plaintiffName" render={({ field }) => (
-                <FormItem><FormLabel>Full Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormField control={form.control} name="plaintiffIsBusiness" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <FormLabel className="font-normal cursor-pointer">I am filing as a business or organization</FormLabel>
+                </FormItem>
               )} />
+              <FormField control={form.control} name="plaintiffName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{plaintiffIsBusiness ? "Business / Organization Name" : "Your Full Name"} <span className="text-destructive">*</span></FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              {plaintiffIsBusiness && (
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField control={form.control} name="secondPlaintiffName" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Name (Individual) <span className="text-destructive">*</span></FormLabel>
+                      <FormControl><Input {...field} placeholder="First Last" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="plaintiffTitle" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Title / Position</FormLabel>
+                      <FormControl><Input {...field} placeholder="e.g. Owner, President" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <FormField control={form.control} name="plaintiffPhone" render={({ field }) => (
                   <FormItem>

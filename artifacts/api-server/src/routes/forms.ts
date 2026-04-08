@@ -75,23 +75,6 @@ function wrapVal(page: any, font: any, text: string | null | undefined, x: numbe
   return y;
 }
 
-// Count how many lines a block of text would need at given width/size
-function countWrapLines(font: any, text: string, maxW: number, size: number): number {
-  if (!text) return 0;
-  const words = text.split(/\s+/);
-  let line = "";
-  let count = 1;
-  for (const word of words) {
-    const cand = line ? line + " " + word : word;
-    if (font.widthOfTextAtSize(cand, size) > maxW && line) {
-      count++;
-      line = word;
-    } else {
-      line = cand;
-    }
-  }
-  return count;
-}
 
 function xmark(page: any, cx: number, cy: number, size = 5) {
   const h = size / 2;
@@ -137,12 +120,28 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
   }
 
   // ── Case caption ────────────────────────────────────────────────────────
-  v(c.plaintiffName, 132, 725);
+  // Caption shows business name if filing as business, otherwise individual name
+  const captionName = c.plaintiffName || "";
+  v(captionName, 132, 725);
   v(c.caseNumber, 515, 725);
 
+  // ── Hearing info (in FOR COURT USE ONLY area — filled once hearing is assigned) ──
+  if (c.hearingDate)      v(c.hearingDate,      415, 757);
+  if (c.hearingTime)      v(c.hearingTime,      415, 746);
+  if (c.hearingCourtroom) v(c.hearingCourtroom, 415, 735);
+  if (c.hearingJudge)     v(c.hearingJudge,     415, 724);
+
   // ── Plaintiff section ───────────────────────────────────────────────────
+  // Line 1: business name OR individual name (plaintiffName)
   v(c.plaintiffName, 95, 674);
   v(c.plaintiffPhone, 455, 674);
+  // Line 2: if filing as business, show individual name + title on second name line
+  if (c.plaintiffIsBusiness && c.secondPlaintiffName) {
+    const indivLine = c.plaintiffTitle
+      ? `${c.secondPlaintiffName}, ${c.plaintiffTitle}`
+      : c.secondPlaintiffName;
+    v(indivLine, 95, 662);
+  }
   v(c.plaintiffAddress, 133, 655);
   v(c.plaintiffCity, 373, 655);
   v(c.plaintiffState || "CA", 476, 655);
@@ -182,21 +181,9 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
     v(`${Number(c.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 300, 194);
   }
 
-  // ── Claim description — detect overflow, stamp MC-030 note if needed ───
-  const DESC_MAX_LINES = 8;
-  const DESC_OVERFLOW_LINES = 7; // leave line 8 for the reference note
-  const desc = String(c.claimDescription || "").trim();
-  if (desc) {
-    const linesNeeded = countWrapLines(font, desc, 490, 9);
-    if (linesNeeded > DESC_MAX_LINES) {
-      // Draw 7 lines then stamp overflow note on line 8
-      wrapVal(page, font, desc, 63, 163 + LIFT, 490, 9, 12, DESC_OVERFLOW_LINES);
-      const noteY = 163 + LIFT - DESC_OVERFLOW_LINES * 12;
-      val(page, font, "(Continued — see attached MC-030 Declaration for full statement)", 63, noteY, 8);
-    } else {
-      wrapVal(page, font, desc, 63, 163 + LIFT, 490, 9, 12, DESC_MAX_LINES);
-    }
-  }
+  // ── Claim description — always reference MC-030 Declaration ────────────
+  const signerName = c.secondPlaintiffName || c.plaintiffName || "";
+  val(page, font, `See attached: Declaration of ${signerName} (MC-030)`, 63, 163 + LIFT, 9);
 }
 
 function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
@@ -248,7 +235,12 @@ function drawPage4(page: any, font: any, c: Record<string, any>, bg: any) {
   if (c.claimOver2500 !== true) xm(331, 650);
   const declDate = c.declarationDate || today();
   v(declDate, 65, 501);
-  v(c.plaintiffName, 36, 476);
+  // Signature print name: individual if business filing, otherwise plaintiff name
+  const printName = c.plaintiffIsBusiness && c.secondPlaintiffName
+    ? c.secondPlaintiffName
+    : c.plaintiffName;
+  const printTitle = c.plaintiffTitle ? `, ${c.plaintiffTitle}` : "";
+  v(`${printName}${printTitle}`, 36, 476);
 }
 
 // ─── SC-100 shared builder ────────────────────────────────────────────────────
