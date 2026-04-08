@@ -20,7 +20,7 @@ Live at → **[smallclaimsgenie.com](https://smallclaimsgenie.com)**
 | **Settlement Offer Generator** | Strategic offer letter with slider for 50–100% of claim amount |
 | **Settlement Agreement Generator** | Binding mutual release agreement with payment terms |
 | **Court Forms** | SC-100, MC-030, SC-104, FW-001, SC-100A, SC-103, SC-105, SC-112A, SC-120, SC-140, SC-150 — all 11 CA small claims forms |
-| **SC-100 PDF Auto-Fill** | Official form background + typed data overlay, court-ready for printing |
+| **SC-100 PDF Auto-Fill** | Official form background + typed data overlay, court-ready for printing; View filled form in-browser, Edit any field before download |
 | **Case Advisor** | AI analysis of case strength with evidence checklist per claim type |
 | **Hearing Prep** | Practice Hearing Session (AI-simulated court Q&A) + Opening Statement Builder |
 | **Deadline Calculator** | SOL by claim type (CCP §§337–339), service windows, 70/30-day business rules, appeal window |

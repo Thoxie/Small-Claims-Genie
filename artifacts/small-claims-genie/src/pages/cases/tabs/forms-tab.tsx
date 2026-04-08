@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner, DraftLockedButton } from "@/components/draft-overlay";
 
@@ -356,6 +356,12 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [sigModalOpen, setSigModalOpen] = useState(false);
 
+  // ── SC-100 view / edit overrides state ─────────────────────────────────────
+  const [viewingPdf, setViewingPdf] = useState(false);
+  const [sc100EditOpen, setSc100EditOpen] = useState(false);
+  const [sc100Fields, setSc100Fields] = useState<Record<string, string>>({});
+  const [downloadingWithOverrides, setDownloadingWithOverrides] = useState(false);
+
   // ── MC-030 inline editor state ─────────────────────────────────────────────
   const [mc030Title, setMc030Title] = useState("");
   const [mc030Text, setMc030Text] = useState("");
@@ -441,6 +447,92 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       setModalFormId(null);
     } catch { setDownloadError("Download failed — please try again."); }
     finally { setDownloadingForm(null); }
+  }
+
+  async function viewSC100() {
+    if (isDraftMode) { toast({ title: "Subscribe to View", description: "Start your subscription to preview your pre-filled SC-100." }); return; }
+    setViewingPdf(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/forms/sc100`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) throw new Error("Failed to load PDF");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, "_blank");
+      if (!win) toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." });
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch {
+      toast({ title: "Could not load SC-100", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setViewingPdf(false);
+    }
+  }
+
+  function openSC100EditDialog() {
+    const cc = currentCase as Record<string, any>;
+    setSc100Fields({
+      plaintiffName: cc.plaintiffName ?? "",
+      plaintiffAddress: cc.plaintiffAddress ?? "",
+      plaintiffCity: cc.plaintiffCity ?? "",
+      plaintiffState: cc.plaintiffState ?? "CA",
+      plaintiffZip: cc.plaintiffZip ?? "",
+      plaintiffPhone: cc.plaintiffPhone ?? "",
+      plaintiffEmail: cc.plaintiffEmail ?? "",
+      defendantName: cc.defendantName ?? "",
+      defendantAddress: cc.defendantAddress ?? "",
+      defendantCity: cc.defendantCity ?? "",
+      defendantState: cc.defendantState ?? "CA",
+      defendantZip: cc.defendantZip ?? "",
+      defendantPhone: cc.defendantPhone ?? "",
+      claimAmount: cc.claimAmount != null ? String(cc.claimAmount) : "",
+      claimDescription: cc.claimDescription ?? "",
+      howAmountCalculated: cc.howAmountCalculated ?? "",
+      incidentDate: cc.incidentDate ?? "",
+      priorDemandMade: cc.priorDemandMade === true ? "yes" : cc.priorDemandMade === false ? "no" : "",
+      isSuingPublicEntity: cc.isSuingPublicEntity === true ? "yes" : cc.isSuingPublicEntity === false ? "no" : "",
+      isAttyFeeDispute: cc.isAttyFeeDispute === true ? "yes" : cc.isAttyFeeDispute === false ? "no" : "",
+      filedMoreThan12Claims: cc.filedMoreThan12Claims === true ? "yes" : cc.filedMoreThan12Claims === false ? "no" : "",
+    });
+    setSc100EditOpen(true);
+  }
+
+  async function downloadWithOverrides() {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    setDownloadingWithOverrides(true);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) throw new Error("Token failed");
+      const { token } = await tokenRes.json();
+      const overrides: Record<string, any> = { token };
+      // Map yes/no strings back to booleans for the fields that need it
+      for (const [k, v] of Object.entries(sc100Fields)) {
+        if (["priorDemandMade", "isSuingPublicEntity", "isAttyFeeDispute", "filedMoreThan12Claims"].includes(k)) {
+          overrides[k] = v === "yes" ? true : v === "no" ? false : null;
+        } else if (k === "claimAmount") {
+          overrides[k] = v ? Number(v) : null;
+        } else {
+          overrides[k] = v || null;
+        }
+      }
+      const res = await fetch(`/api/cases/${caseId}/forms/sc100/with-overrides?download=1`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(overrides),
+      });
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "Generation failed"); }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = `SC100-Case-${caseId}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setSc100EditOpen(false);
+      toast({ title: "SC-100 downloaded", description: "Your customized SC-100 has been saved." });
+    } catch (e: any) {
+      toast({ title: "Download failed", description: e?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setDownloadingWithOverrides(false);
+    }
   }
 
   async function generateMC030Declaration(): Promise<string | null> {
@@ -531,9 +623,19 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                 Your description is long — the PDF will include a note to see the attached MC-030 Declaration (Step 1B below).
               </div>
             )}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap mb-3">
               <Button className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
-                onClick={() => setSigModalOpen(true)} disabled={downloadingPdf}>
+                onClick={viewSC100} disabled={viewingPdf || downloadingPdf}>
+                {viewingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <Eye className="h-3 w-3" />}View My SC-100
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 px-3 border-[#0d6b5e]/40 text-[#0d6b5e] hover:bg-[#0d6b5e]/5"
+                onClick={openSC100EditDialog} disabled={viewingPdf || downloadingPdf}>
+                <Pencil className="h-3 w-3" />Edit Fields
+              </Button>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Button className="gap-1.5 bg-[#14b8a6] hover:bg-[#0d9488] text-white h-8 text-xs px-3"
+                onClick={() => setSigModalOpen(true)} disabled={downloadingPdf || viewingPdf}>
                 {downloadingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Sign &amp; Download SC-100
               </Button>
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId("sc100")}>
@@ -819,6 +921,177 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
           ))}
         </div>
       </section>
+
+      {/* ── SC-100 Edit Fields Dialog ──────────────────────────────────────── */}
+      <Dialog open={sc100EditOpen} onOpenChange={(o) => { if (!o) setSc100EditOpen(false); }}>
+        <DialogContent className="max-w-2xl max-h-[92vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 pt-5 pb-4 border-b shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">SC-100</span>
+                <DialogTitle className="text-base font-bold">Edit Form Fields</DialogTitle>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Review and correct any details before downloading. Changes here only affect the downloaded PDF — your case data is unchanged.</p>
+          </DialogHeader>
+          <ScrollArea className="flex-1 overflow-y-auto">
+            <div className="px-6 py-5 space-y-6">
+
+              {/* Plaintiff */}
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#0d6b5e] mb-3">You (Plaintiff)</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">Full Name</label>
+                    <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                      value={sc100Fields.plaintiffName ?? ""} onChange={e => setSc100Fields(p => ({ ...p, plaintiffName: e.target.value }))} placeholder="Your full legal name" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">Street Address</label>
+                    <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                      value={sc100Fields.plaintiffAddress ?? ""} onChange={e => setSc100Fields(p => ({ ...p, plaintiffAddress: e.target.value }))} placeholder="Street address" />
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    <div className="col-span-2">
+                      <label className="block text-xs font-semibold mb-1">City</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.plaintiffCity ?? ""} onChange={e => setSc100Fields(p => ({ ...p, plaintiffCity: e.target.value }))} placeholder="City" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">State</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.plaintiffState ?? "CA"} onChange={e => setSc100Fields(p => ({ ...p, plaintiffState: e.target.value }))} placeholder="CA" maxLength={2} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-semibold mb-1">ZIP Code</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.plaintiffZip ?? ""} onChange={e => setSc100Fields(p => ({ ...p, plaintiffZip: e.target.value }))} placeholder="ZIP" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">Phone</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.plaintiffPhone ?? ""} onChange={e => setSc100Fields(p => ({ ...p, plaintiffPhone: e.target.value }))} placeholder="(555) 000-0000" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">Email</label>
+                      <input type="email" className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.plaintiffEmail ?? ""} onChange={e => setSc100Fields(p => ({ ...p, plaintiffEmail: e.target.value }))} placeholder="you@email.com" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Defendant */}
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#0d6b5e] mb-3">Defendant</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">Full Name / Business Name</label>
+                    <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                      value={sc100Fields.defendantName ?? ""} onChange={e => setSc100Fields(p => ({ ...p, defendantName: e.target.value }))} placeholder="Defendant's full legal name or business name" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">Street Address</label>
+                    <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                      value={sc100Fields.defendantAddress ?? ""} onChange={e => setSc100Fields(p => ({ ...p, defendantAddress: e.target.value }))} placeholder="Street address" />
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    <div className="col-span-2">
+                      <label className="block text-xs font-semibold mb-1">City</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.defendantCity ?? ""} onChange={e => setSc100Fields(p => ({ ...p, defendantCity: e.target.value }))} placeholder="City" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">State</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.defendantState ?? "CA"} onChange={e => setSc100Fields(p => ({ ...p, defendantState: e.target.value }))} placeholder="CA" maxLength={2} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-semibold mb-1">ZIP Code</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.defendantZip ?? ""} onChange={e => setSc100Fields(p => ({ ...p, defendantZip: e.target.value }))} placeholder="ZIP" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">Defendant Phone</label>
+                    <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                      value={sc100Fields.defendantPhone ?? ""} onChange={e => setSc100Fields(p => ({ ...p, defendantPhone: e.target.value }))} placeholder="(555) 000-0000" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Claim Details */}
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#0d6b5e] mb-3">Claim Details</h4>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">Claim Amount ($)</label>
+                      <input type="number" min="0" className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.claimAmount ?? ""} onChange={e => setSc100Fields(p => ({ ...p, claimAmount: e.target.value }))} placeholder="0.00" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">Date(s) of Incident</label>
+                      <input className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                        value={sc100Fields.incidentDate ?? ""} onChange={e => setSc100Fields(p => ({ ...p, incidentDate: e.target.value }))} placeholder="e.g. January 15, 2024" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">Why You Are Owed This Money <span className="text-rose-500">*</span></label>
+                    <textarea rows={4} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] resize-none"
+                      value={sc100Fields.claimDescription ?? ""} onChange={e => setSc100Fields(p => ({ ...p, claimDescription: e.target.value }))} placeholder="Briefly explain what happened and why you are owed this amount." />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">How You Calculated the Amount</label>
+                    <textarea rows={3} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] resize-none"
+                      value={sc100Fields.howAmountCalculated ?? ""} onChange={e => setSc100Fields(p => ({ ...p, howAmountCalculated: e.target.value }))} placeholder="e.g. Unpaid balance of $1,500 plus security deposit of $900" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Form Questions */}
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#0d6b5e] mb-3">Form Questions</h4>
+                <div className="space-y-3">
+                  {[
+                    { key: "priorDemandMade", label: "Did you ask the defendant for payment before filing?", hint: "Required on the SC-100 form" },
+                    { key: "isSuingPublicEntity", label: "Are you suing a government agency or public entity?", hint: "e.g. city, county, school district" },
+                    { key: "isAttyFeeDispute", label: "Is this a dispute over attorney fees?", hint: "Attorney fee arbitration disputes only" },
+                    { key: "filedMoreThan12Claims", label: "Have you filed more than 12 small claims cases in California in the last 12 months?", hint: "" },
+                  ].map(({ key, label, hint }) => (
+                    <div key={key} className="flex items-start justify-between gap-4 py-2 border-b border-border/50 last:border-0">
+                      <div>
+                        <p className="text-xs font-semibold">{label}</p>
+                        {hint && <p className="text-[10px] text-muted-foreground mt-0.5">{hint}</p>}
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        {["yes", "no"].map(opt => (
+                          <button key={opt} type="button"
+                            onClick={() => setSc100Fields(p => ({ ...p, [key]: p[key] === opt ? "" : opt }))}
+                            className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${(sc100Fields as any)[key] === opt ? "bg-[#0d6b5e] text-white border-[#0d6b5e]" : "bg-background text-foreground border-input hover:border-[#14b8a6]"}`}>
+                            {opt === "yes" ? "Yes" : "No"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </ScrollArea>
+          <DialogFooter className="px-6 py-4 border-t shrink-0 flex-row gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => setSc100EditOpen(false)} className="h-8 text-xs px-4">Cancel</Button>
+            <Button size="sm" onClick={downloadWithOverrides} disabled={downloadingWithOverrides}
+              className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-4">
+              {downloadingWithOverrides ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+              Download with Edits
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Modals ─────────────────────────────────────────────────────────── */}
       {modalFormId && (

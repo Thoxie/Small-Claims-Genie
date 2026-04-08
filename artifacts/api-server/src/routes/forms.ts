@@ -321,6 +321,38 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
   }
 });
 
+// ─── SC-100 with field overrides (preview / download with edits) ───────────────
+router.post("/cases/:id/forms/sc100/with-overrides", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  const overrides = req.body as Record<string, any>;
+  // Merge overrides on top of case data (token field stripped)
+  const { token: _t, signatureDataUrl, ...fields } = overrides;
+  let sigBytes: Buffer | undefined;
+  if (signatureDataUrl) {
+    const base64 = (signatureDataUrl as string).replace(/^data:image\/\w+;base64,/, "");
+    sigBytes = Buffer.from(base64, "base64");
+  }
+  const merged = { ...(c as unknown as Record<string, any>), ...fields };
+  const isDownload = req.query.download === "1";
+  try {
+    const pdfBytes = await buildSC100Pdf(merged, sigBytes);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", isDownload
+      ? `attachment; filename="SC100-Case-${id}.pdf"`
+      : `inline; filename="SC100-Case-${id}.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("SC-100 override PDF error:", err?.message, err?.stack);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-100 PDF." });
+  }
+});
+
 router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
