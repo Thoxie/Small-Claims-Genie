@@ -50,7 +50,7 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
             <Link
               href="/dashboard"
               title="Exit case and return to dashboard"
-              className="flex flex-col items-center justify-center gap-1 px-2 md:px-3 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all min-w-[52px]"
+              className="flex flex-col items-center justify-center gap-1 px-2 md:px-4 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all min-w-[60px] md:min-w-[80px]"
             >
               <LogOut className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0" />
               <span className="whitespace-nowrap">Exit Case</span>
