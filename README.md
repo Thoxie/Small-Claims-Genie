@@ -6,6 +6,11 @@ Small Claims Genie walks lower-income individuals and small businesses through e
 
 Live at → **[smallclaimsgenie.com](https://smallclaimsgenie.com)**
 
+**Latest changes (2026-04-08):**
+- **FW-001 PDF generation** — Request to Waive Court Fees now generates a fully filled 2-page PDF using the official Judicial Council form background (downloaded at 300 DPI). Supports all three eligibility bases (5a public benefits, 5b income threshold, 5c hardship), auto-checks the relevant benefit boxes from free-text input, and generates page 2 with income/expense breakdown for 5b/5c filers.
+- **Business plaintiff intake** — New checkbox "I am filing as a business or organization" in Step 1; conditional fields for individual name + title; all fields saved to DB.
+- **SC-100 PDF fixes** — Hearing date/time/courtroom/judge overlaid on page 2; business plaintiff rendered as two lines (business name + individual name/title); description always references attached MC-030; page 4 signature uses individual name + title for business filers.
+
 ---
 
 ## What It Does
