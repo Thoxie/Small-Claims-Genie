@@ -137,54 +137,54 @@ function Router() {
   if (location.startsWith("/sign-up")) return <SignUpPage />;
   if (location.startsWith("/sign-in")) return <SignInPage />;
 
-  // Case workspace uses its own custom layout (gray nav with tabs in header)
-  if (/^\/cases\/\d+/.test(location)) {
-    return (
-      <>
-        <AuthTokenBridge />
-        <RequireAuth><CaseWorkspace /></RequireAuth>
-      </>
-    );
-  }
-
   return (
     <>
-      {/* Token bridge: sets up API auth when user is signed in.
-          Harmless for signed-out users — getToken() just returns null. */}
       <AuthTokenBridge />
-      <Layout>
-        <Switch>
-          {/* ── Public routes — no login required ───────────────────── */}
-          <Route path="/" component={Landing} />
-          <Route path="/counties" component={Counties} />
-          <Route path="/resources" component={Resources} />
-          <Route path="/how-it-works" component={HowItWorks} />
-          <Route path="/faq" component={FAQ} />
-          <Route path="/types-of-cases" component={TypesOfCases} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/tos" component={TermsOfService} />
-
-          {/* ── Protected routes — login required ───────────────────── */}
-          <Route path="/dashboard">
-            <RequireAuth><Dashboard /></RequireAuth>
-          </Route>
-          <Route path="/resume">
-            <RequireAuth><Resume /></RequireAuth>
-          </Route>
-          <Route path="/cases/new">
+      <Switch>
+        {/* ── /cases/new — must come before /cases/:id so "new" isn't treated as an ID ── */}
+        <Route path="/cases/new">
+          <Layout>
             <RequireAuth><NewCase /></RequireAuth>
-          </Route>
-          <Route path="/cases/:id">
-            <RequireAuth><CaseWorkspace /></RequireAuth>
-          </Route>
-          <Route path="/sc100">
-            <RequireAuth><SC100Generator /></RequireAuth>
-          </Route>
+          </Layout>
+        </Route>
 
-          <Route component={NotFound} />
-        </Switch>
-      </Layout>
+        {/* ── Case workspace — proper Route so useParams() gets the :id ── */}
+        {/* CaseWorkspace renders its own WorkspaceLayout (no standard nav)  */}
+        <Route path="/cases/:id">
+          <RequireAuth><CaseWorkspace /></RequireAuth>
+        </Route>
+
+        {/* ── All other routes — standard Layout + nav ── */}
+        <Route>
+          <Layout>
+            <Switch>
+              {/* Public */}
+              <Route path="/" component={Landing} />
+              <Route path="/counties" component={Counties} />
+              <Route path="/resources" component={Resources} />
+              <Route path="/how-it-works" component={HowItWorks} />
+              <Route path="/faq" component={FAQ} />
+              <Route path="/types-of-cases" component={TypesOfCases} />
+              <Route path="/pricing" component={Pricing} />
+              <Route path="/terms" component={Terms} />
+              <Route path="/tos" component={TermsOfService} />
+
+              {/* Protected */}
+              <Route path="/dashboard">
+                <RequireAuth><Dashboard /></RequireAuth>
+              </Route>
+              <Route path="/resume">
+                <RequireAuth><Resume /></RequireAuth>
+              </Route>
+              <Route path="/sc100">
+                <RequireAuth><SC100Generator /></RequireAuth>
+              </Route>
+
+              <Route component={NotFound} />
+            </Switch>
+          </Layout>
+        </Route>
+      </Switch>
     </>
   );
 }
