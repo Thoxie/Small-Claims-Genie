@@ -1014,7 +1014,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number, initialData
 
   return (
     <div className="p-4 md:p-5">
-      <HearingInfoCard caseId={caseId} initialData={initialData} />
+      {step === 4 && <HearingInfoCard caseId={caseId} initialData={initialData} />}
       <div className="mb-5">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
