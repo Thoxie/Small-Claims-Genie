@@ -1,5 +1,9 @@
 # Small Claims Genie — Workspace
 
+## Agent Instructions
+
+- **GitHub**: Never push to GitHub unless the user explicitly asks. No automatic pushes after commits.
+
 ## Overview
 
 California small claims court SaaS app. Helps lower-income individuals and small businesses navigate CA small claims court. Full-stack pnpm monorepo with Express API, React+Vite frontend, PostgreSQL database, and AI-powered features (OCR, chat, voice).
