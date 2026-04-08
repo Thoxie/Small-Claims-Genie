@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import {
   X,
+  Home,
   ClipboardList,
   FileText,
   MessageSquare,
@@ -36,29 +37,39 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
 
       {/* ── Workspace nav header ── */}
       <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center px-3 md:px-6 h-[70px] md:h-[84px]">
+        <div className="flex items-center px-3 md:px-4 h-[70px] md:h-[84px]">
 
-          {/* Logo — shifted ~1 inch right on desktop */}
-          <Link href="/" className="flex items-center shrink-0 ml-0 md:ml-16">
-            <img
-              src={logoPath}
-              alt="Small Claims Genie"
-              className="h-[50px] md:h-[66px] w-auto"
-            />
-          </Link>
+          {/* Left: Logo + Home button — fixed width to balance right side */}
+          <div className="flex items-center gap-2 md:gap-3 shrink-0 w-[160px] md:w-[220px]">
+            <Link href="/" className="flex items-center shrink-0">
+              <img
+                src={logoPath}
+                alt="Small Claims Genie"
+                className="h-[50px] md:h-[66px] w-auto"
+              />
+            </Link>
+            <Link
+              href="/"
+              title="Go to Home"
+              className="flex flex-col items-center justify-center gap-1 px-2 md:px-3 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all min-w-[48px]"
+            >
+              <Home className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0" />
+              <span>Home</span>
+            </Link>
+          </div>
 
           {/* Tabs — centered, scrollable on mobile */}
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
-            <div className="flex items-center justify-center gap-1 md:gap-3 min-w-max md:min-w-0 mx-auto py-1 px-2">
+            <div className="flex items-center justify-center gap-1 md:gap-2 min-w-max md:min-w-0 mx-auto py-1 px-2">
               {WORKSPACE_TABS.map((tab) => (
                 <button
                   key={tab.value}
                   onClick={() => setActiveTab(tab.value)}
                   className={[
                     "flex flex-col items-center justify-center gap-1",
-                    "px-3 md:px-5 py-2 rounded-lg",
+                    "px-2 md:px-4 py-2 rounded-lg",
                     "text-[10px] md:text-[11px] font-semibold leading-tight",
-                    "min-w-[64px] md:min-w-[86px] transition-all",
+                    "min-w-[60px] md:min-w-[80px] transition-all",
                     activeTab === tab.value
                       ? "bg-[#1e293b] text-white shadow-md"
                       : "text-gray-500 hover:bg-gray-100 hover:text-gray-800",
@@ -77,8 +88,8 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
             </div>
           </div>
 
-          {/* Right: user avatar + X close */}
-          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          {/* Right: user avatar + X close — fixed width to match left side */}
+          <div className="flex items-center justify-end gap-2 md:gap-3 shrink-0 w-[160px] md:w-[220px]">
             <UserButton afterSignOutUrl="/sign-in" />
             <Link
               href="/dashboard"
