@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { i18n } from "@/lib/i18n";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { Button } from "@/components/ui/button";
-import { Wand2, Menu, X } from "lucide-react";
+import { Wand2, Menu, X, Sparkles } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 
 const NAV_LINKS = [
@@ -61,6 +61,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Right side actions */}
           <div className="flex items-center gap-2 md:gap-3">
+
+            {/* Ask Genie Help button */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-help-genie"))}
+              className="hidden sm:flex items-center gap-1.5 h-8 md:h-9 px-3 md:px-4 rounded-full border border-[#14b8a6] text-[#0d6b5e] bg-[#f0fffe] hover:bg-[#ddf6f3] font-semibold text-xs md:text-sm transition-colors shrink-0"
+            >
+              <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span>Ask Genie</span>
+            </button>
 
             {/* Start or Resume Your Case — always visible, shorter label on small phones */}
             <Button

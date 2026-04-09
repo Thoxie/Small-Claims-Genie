@@ -9,6 +9,7 @@ import {
   Scale,
   Gavel,
   CalendarDays,
+  Sparkles,
 } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
@@ -104,8 +105,16 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
             </div>
           </div>
 
-          {/* User avatar — far right */}
-          <div className="flex items-center shrink-0 pr-4 md:pr-6">
+          {/* Ask Genie + user avatar — far right */}
+          <div className="flex items-center gap-2 shrink-0 pr-4 md:pr-6">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-help-genie"))}
+              className="hidden sm:flex items-center gap-1 h-7 md:h-8 px-2.5 md:px-3 rounded-full border border-[#14b8a6] text-[#0d6b5e] bg-[#f0fffe] hover:bg-[#ddf6f3] font-semibold text-[10px] md:text-xs transition-colors"
+              title="Ask Genie Help"
+            >
+              <Sparkles className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+              <span>Ask Genie</span>
+            </button>
             <UserButton afterSignOutUrl="/sign-in" />
           </div>
 

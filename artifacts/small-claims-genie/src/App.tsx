@@ -6,6 +6,7 @@ import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { HelpGenieWidget } from "@/components/help-genie-widget";
 import NotFound from "@/pages/not-found";
 
 // Pages
@@ -214,6 +215,7 @@ function App() {
               </ErrorBoundary>
             </WouterRouter>
             <Toaster />
+            <HelpGenieWidget />
           </TooltipProvider>
         </QueryClientProvider>
       </ClerkProvider>
