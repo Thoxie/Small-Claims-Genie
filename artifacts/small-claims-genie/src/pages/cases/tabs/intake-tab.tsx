@@ -119,8 +119,9 @@ const REQUIRED: { tab: number; key: string; label: string }[] = [
 
 // ─── Intake Tab ───────────────────────────────────────────────────────────────
 export function IntakeTab({ caseId, initialData }: { caseId: number; initialData: any }) {
+  const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [activeTab, setActiveTab] = useState<1 | 2 | 3 | 4>(
-    (Math.min(initialData.intakeStep || 1, 4) as 1 | 2 | 3 | 4)
+    isFreshCase ? 1 : (Math.min(initialData.intakeStep || 1, 4) as 1 | 2 | 3 | 4)
   );
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
