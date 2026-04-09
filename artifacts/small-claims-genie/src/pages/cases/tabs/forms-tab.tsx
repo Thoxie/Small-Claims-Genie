@@ -394,6 +394,39 @@ export function SignaturePadModal({ open, onClose, onSign, onSkipSign }: { open:
   );
 }
 
+// ─── Packet Rules Engine ──────────────────────────────────────────────────────
+function getRecommendedForms(c: any): Array<{ id: string; number: string; required: boolean; reason: string }> {
+  if (!c?.plaintiffName) return [];
+
+  const forms: Array<{ id: string; number: string; required: boolean; reason: string }> = [];
+
+  forms.push({ id: "sc100", number: "SC-100", required: true,
+    reason: "Required to open every small claims case — file this first." });
+
+  if (c.plaintiffIsBusiness || c.defendantIsBusinessOrEntity) {
+    forms.push({ id: "sc103", number: "SC-103", required: true,
+      reason: c.plaintiffIsBusiness
+        ? "You are filing as a business — DBA registration form required."
+        : "You are suing a business — DBA registration form required." });
+  }
+
+  if (c.secondPlaintiffName) {
+    forms.push({ id: "sc100a", number: "SC-100A", required: true,
+      reason: "You have more than one plaintiff — file this alongside SC-100." });
+  }
+
+  forms.push({ id: "mc030", number: "MC-030", required: true,
+    reason: "Sworn declaration filed at the same time as SC-100." });
+
+  forms.push({ id: "sc104", number: "SC-104", required: true,
+    reason: "Proves the defendant was properly served with your court papers." });
+
+  forms.push({ id: "fw001", number: "FW-001", required: false,
+    reason: "Optional — request to waive filing fees if you qualify financially." });
+
+  return forms;
+}
+
 // ─── Phase Header ─────────────────────────────────────────────────────────────
 function PhaseHeader({ number, title, subtitle }: { number: number; title: string; subtitle: string }) {
   return (
@@ -749,6 +782,37 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     <div className="p-4 md:p-6 space-y-8">
 
       {isDraftMode && <DraftModeBanner />}
+
+      {/* ── YOUR PACKET ────────────────────────────────────────────────────── */}
+      {(() => {
+        const packet = getRecommendedForms(currentCase);
+        if (packet.length === 0) return null;
+        return (
+          <section className="rounded-xl border-2 border-[#14b8a6] bg-[#f0fffe] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Package className="h-5 w-5 text-[#0d6b5e] shrink-0" />
+              <h3 className="font-bold text-[#0d6b5e] text-base">Your Forms Packet</h3>
+              <span className="text-xs text-muted-foreground">— based on your case details</span>
+            </div>
+            <div className="space-y-2">
+              {packet.map(f => (
+                <div key={f.id} className="flex items-center gap-3 bg-white rounded-lg px-4 py-2.5 border border-[#14b8a6]/20">
+                  <span className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ${f.required ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"}`}>
+                    {f.number}
+                  </span>
+                  <span className="text-sm text-foreground flex-1">{f.reason}</span>
+                  <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wide ${f.required ? "text-[#0d6b5e]" : "text-muted-foreground"}`}>
+                    {f.required ? "Required" : "Optional"}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+              All forms below are still available — this packet shows only what applies to your specific case.
+            </p>
+          </section>
+        );
+      })()}
 
       {/* ── PHASE 1: Filing Package ────────────────────────────────────────── */}
       <section>
