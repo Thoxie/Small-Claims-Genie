@@ -168,7 +168,7 @@ export function HelpGenieWidget() {
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm leading-tight">Ask Genie — Help</p>
+              <p className="text-white font-bold text-sm leading-tight">Quick Help</p>
               <p className="text-white/70 text-[11px] leading-tight">App guide · CA small claims</p>
             </div>
             <button onClick={handleClose}
@@ -314,7 +314,7 @@ export function HelpGenieWidget() {
         {open
           ? <ChevronDown className="h-4 w-4 shrink-0" />
           : <Sparkles className="h-4 w-4 shrink-0" />}
-        <span>{open ? "Close" : "Ask Genie"}</span>
+        <span>{open ? "Close" : "Quick Help"}</span>
       </button>
     </>
   );

@@ -68,7 +68,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               className="hidden sm:flex items-center gap-1.5 h-8 md:h-9 px-3 md:px-4 rounded-full border border-[#14b8a6] text-[#0d6b5e] bg-[#f0fffe] hover:bg-[#ddf6f3] font-semibold text-xs md:text-sm transition-colors shrink-0"
             >
               <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span>Ask Genie</span>
+              <span>Quick Help</span>
             </button>
 
             {/* Start or Resume Your Case — always visible, shorter label on small phones */}
