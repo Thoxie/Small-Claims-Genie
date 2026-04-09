@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Mail, Handshake, PenLine, Loader2, Download, AlertCircle, CheckSquare2, Square } from "lucide-react";
-import { DraftOverlay, DraftLockedButton, DraftModeBanner } from "@/components/draft-overlay";
 
 type DemandLetterTone = "formal" | "firm" | "friendly";
 
@@ -22,7 +21,7 @@ const SETTLE_CHECKLIST = [
   { id: "reminder", label: "Set a calendar reminder for your response deadline", detail: "If no response by the deadline, proceed with your court case." },
 ];
 
-export function DemandLetterTab({ caseId, currentCase, isDraftMode = false }: { caseId: number; currentCase: any; isDraftMode?: boolean }) {
+export function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase: any }) {
   const { getToken } = useAuth();
   const [mode, setMode] = useState<"demand" | "settlement" | "agreement">("demand");
 
@@ -250,7 +249,6 @@ export function DemandLetterTab({ caseId, currentCase, isDraftMode = false }: { 
 
   return (
     <div className="p-6 space-y-6">
-      {isDraftMode && <DraftModeBanner />}
       <div className="flex items-center gap-1 p-1 bg-muted rounded-xl w-fit flex-wrap">
         {[
           { value: "demand", icon: <Mail className="h-4 w-4" />, label: "Demand Letter" },
@@ -272,11 +270,9 @@ export function DemandLetterTab({ caseId, currentCase, isDraftMode = false }: { 
               <p className="text-sm text-muted-foreground mt-1">Generate a professional pre-litigation demand letter using your case details.</p>
             </div>
             {text.trim() && (
-              isDraftMode
-                ? <DraftLockedButton label="Subscribe to Download" />
-                : <Button onClick={downloadPdf} disabled={isDownloading} className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
-                    {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PDF
-                  </Button>
+              <Button onClick={downloadPdf} disabled={isDownloading} className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
+                {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PDF
+              </Button>
             )}
           </div>
           {!hasRequiredInfo && (
@@ -307,15 +303,11 @@ export function DemandLetterTab({ caseId, currentCase, isDraftMode = false }: { 
                 <p className="text-sm font-semibold">Letter Preview</p>
                 <p className="text-xs text-muted-foreground">You can edit the text below before downloading.</p>
               </div>
-              <DraftOverlay isDraftMode={isDraftMode}>
-                <Textarea value={text} onChange={e => setText(e.target.value)} className="font-mono text-sm leading-relaxed min-h-[520px] resize-y" placeholder={isGenerating ? "Generating your demand letter…" : ""} readOnly={isGenerating} />
-              </DraftOverlay>
+              <Textarea value={text} onChange={e => setText(e.target.value)} className="font-mono text-sm leading-relaxed min-h-[520px] resize-y" placeholder={isGenerating ? "Generating your demand letter…" : ""} readOnly={isGenerating} />
               {!isGenerating && text.trim() && (
-                isDraftMode
-                  ? <DraftLockedButton label="Subscribe to Download PDF" fullWidth size="lg" className="mt-2" />
-                  : <Button onClick={downloadPdf} disabled={isDownloading} className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white mt-2" size="lg">
-                      {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download as PDF
-                    </Button>
+                <Button onClick={downloadPdf} disabled={isDownloading} className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white mt-2" size="lg">
+                  {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download as PDF
+                </Button>
               )}
             </div>
           )}
@@ -423,15 +415,11 @@ export function DemandLetterTab({ caseId, currentCase, isDraftMode = false }: { 
                 <p className="text-sm font-semibold">Letter Preview</p>
                 <p className="text-xs text-muted-foreground">You can edit before downloading.</p>
               </div>
-              <DraftOverlay isDraftMode={isDraftMode}>
-                <Textarea value={settlementText} onChange={e => setSettlementText(e.target.value)} className="font-mono text-sm leading-relaxed min-h-[520px] resize-y" placeholder={isGeneratingSettle ? "Generating your settlement offer…" : ""} readOnly={isGeneratingSettle} />
-              </DraftOverlay>
+              <Textarea value={settlementText} onChange={e => setSettlementText(e.target.value)} className="font-mono text-sm leading-relaxed min-h-[520px] resize-y" placeholder={isGeneratingSettle ? "Generating your settlement offer…" : ""} readOnly={isGeneratingSettle} />
               {!isGeneratingSettle && settlementText.trim() && (
-                isDraftMode
-                  ? <DraftLockedButton label="Subscribe to Download PDF" fullWidth size="lg" />
-                  : <Button onClick={downloadSettlePdf} disabled={isDownloadingSettle} className="w-full gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" size="lg">
-                      {isDownloadingSettle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download as PDF
-                    </Button>
+                <Button onClick={downloadSettlePdf} disabled={isDownloadingSettle} className="w-full gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" size="lg">
+                  {isDownloadingSettle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download as PDF
+                </Button>
               )}
               {!isGeneratingSettle && settlementText.trim() && (
                 <div className="rounded-2xl border border-[#a8e6df] bg-[#f0fffe] p-5 space-y-3">
@@ -541,15 +529,11 @@ export function DemandLetterTab({ caseId, currentCase, isDraftMode = false }: { 
                 <p className="text-sm font-semibold">Agreement Preview</p>
                 <p className="text-xs text-muted-foreground">Edit to fill in [BLANK] fields before printing.</p>
               </div>
-              <DraftOverlay isDraftMode={isDraftMode}>
-                <Textarea value={agreementText} onChange={e => setAgreementText(e.target.value)} className="font-mono text-sm leading-relaxed min-h-[620px] resize-y" placeholder={isGeneratingAgreement ? "Drafting your settlement agreement…" : ""} readOnly={isGeneratingAgreement} />
-              </DraftOverlay>
+              <Textarea value={agreementText} onChange={e => setAgreementText(e.target.value)} className="font-mono text-sm leading-relaxed min-h-[620px] resize-y" placeholder={isGeneratingAgreement ? "Drafting your settlement agreement…" : ""} readOnly={isGeneratingAgreement} />
               {!isGeneratingAgreement && agreementText.trim() && (
-                isDraftMode
-                  ? <DraftLockedButton label="Subscribe to Download PDF" fullWidth size="lg" />
-                  : <Button onClick={downloadAgreementPdf} disabled={isDownloadingAgreement} className="w-full gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" size="lg">
-                      {isDownloadingAgreement ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download as PDF
-                    </Button>
+                <Button onClick={downloadAgreementPdf} disabled={isDownloadingAgreement} className="w-full gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" size="lg">
+                  {isDownloadingAgreement ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download as PDF
+                </Button>
               )}
               {!isGeneratingAgreement && agreementText.trim() && (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 space-y-2">

@@ -141,7 +141,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             <ChatTab caseId={caseId} isDraftMode={false} currentCase={currentCase} />
           )}
           {activeTab === "demand-letter" && (
-            <DemandLetterTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
+            <DemandLetterTab caseId={caseId} currentCase={currentCase} />
           )}
           {activeTab === "forms" && (
             <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
