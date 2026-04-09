@@ -391,7 +391,12 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
     const bg = await pdfDoc.embedPng(loadAsset("mc030_hq-1.png"));
     const page = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
+    const LIFT = 4.5;
+    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+
+    // Compute county display name from countyId (e.g. "los-angeles" → "Los Angeles")
+    const countyDisplay = String(d.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const courtCityZip = [d.courthouseCity, "CA", d.courthouseZip].filter(Boolean).join(" ");
 
     // Attorney / party block (top left)
     v(b.declarantName || d.plaintiffName, 175, 733);
@@ -403,11 +408,12 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
     // Attorney FOR (party represented)
     v(b.declarantName || d.plaintiffName, 200, 596);
     // Court (Superior Court of California, County of __)
-    v(d.countyName || b.countyName || "", 200, 560); // county name after "COUNTY OF"
-    v(b.courtStreet || "", 200, 544);
+    v(countyDisplay, 200, 560);
+    v(b.courtStreet || d.courthouseAddress || "", 200, 544);
+    // Mailing address — same as street if not separately provided
     v(b.courtMailingAddress || "", 200, 529);
-    v(b.courtCityZip || "", 200, 514);
-    v(b.branchName || "", 200, 499);
+    v(b.courtCityZip || courtCityZip, 200, 514);
+    v(b.branchName || d.courthouseName || "", 200, 499);
     // Parties
     v(d.plaintiffName, 215, 464);
     v(d.defendantName, 215, 441);
@@ -418,12 +424,12 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
     if (b.declarationTitle) {
       const titleWidth = fontBold.widthOfTextAtSize(b.declarationTitle, 10);
       const titleX = (PW - titleWidth) / 2;
-      (page as any).drawText(b.declarationTitle, { x: titleX, y: 416, size: 10, font: fontBold, color: BLACK });
+      (page as any).drawText(b.declarationTitle, { x: titleX, y: 416 + LIFT, size: 10, font: fontBold, color: BLACK });
     }
 
     // Declaration body text — word-wrapped into the large blank area
     if (b.declarationText) {
-      wrapVal(page, font, b.declarationText, 54, 395, 510, 9, 13, 22);
+      wrapVal(page, font, b.declarationText, 54, 395 + LIFT, 510, 9, 13, 22);
     }
 
     // Date + signature area
@@ -466,7 +472,11 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     const bg = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
     const mc030Page = masterDoc.addPage([PW, PH]);
     mc030Page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const v = (t: any, x: number, y: number, s = 9) => val(mc030Page, font, t, x, y, s);
+    const LIFT = 4.5;
+    const v = (t: any, x: number, y: number, s = 9) => val(mc030Page, font, t, x, y + LIFT, s);
+
+    const countyDisplay = String(d.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const courtCityZip = [d.courthouseCity, "CA", d.courthouseZip].filter(Boolean).join(" ");
 
     v(b.declarantName || d.plaintiffName, 175, 733);
     v(b.declarantAddress || d.plaintiffAddress || "", 175, 720);
@@ -475,16 +485,20 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     v(b.declarantPhone || d.plaintiffPhone, 200, 630);
     v(b.declarantEmail || d.plaintiffEmail, 200, 613);
     v(b.declarantName || d.plaintiffName, 200, 596);
-    v(d.countyName || b.countyName || "", 200, 560);
+    v(countyDisplay, 200, 560);
+    v(b.courtStreet || d.courthouseAddress || "", 200, 544);
+    v(b.courtMailingAddress || "", 200, 529);
+    v(b.courtCityZip || courtCityZip, 200, 514);
+    v(b.branchName || d.courthouseName || "", 200, 499);
     v(d.plaintiffName, 215, 464);
     v(d.defendantName, 215, 441);
     v(d.caseNumber, 430, 471);
 
     if (b.declarationTitle) {
       const tw = fontBold.widthOfTextAtSize(b.declarationTitle, 10);
-      mc030Page.drawText(b.declarationTitle, { x: (PW - tw) / 2, y: 416, size: 10, font: fontBold, color: BLACK });
+      mc030Page.drawText(b.declarationTitle, { x: (PW - tw) / 2, y: 416 + LIFT, size: 10, font: fontBold, color: BLACK });
     }
-    if (b.declarationText) wrapVal(mc030Page, font, b.declarationText, 54, 395, 510, 9, 13, 22);
+    if (b.declarationText) wrapVal(mc030Page, font, b.declarationText, 54, 395 + LIFT, 510, 9, 13, 22);
     v(b.signDate || today(), 65, 121);
     v(b.declarantName || d.plaintiffName, 45, 78);
 
@@ -571,8 +585,9 @@ router.post("/cases/:id/forms/sc100a", async (req, res): Promise<void> => {
     const bg = await pdfDoc.embedPng(loadAsset("sc100a_hq-1.png"));
     const page = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-    const xm = (cx: number, cy: number) => xmark(page, cx, cy, 5);
+    const LIFT = 4.5;
+    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+    const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
     // Case Number top right
     v(d.caseNumber, 425, 756);
@@ -661,8 +676,9 @@ router.post("/cases/:id/forms/sc103", async (req, res): Promise<void> => {
     const bg = await pdfDoc.embedPng(loadAsset("sc103_hq-1.png"));
     const page = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-    const xm = (cx: number, cy: number) => xmark(page, cx, cy, 5);
+    const LIFT = 4.5;
+    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+    const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
     v(d.caseNumber, 425, 756);
 
@@ -735,13 +751,14 @@ router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {
     ]);
 
     // ── Page 1 ──
+    const LIFT = 4.5;
     const p1 = pdfDoc.addPage([PW, PH]);
     p1.drawImage(bg1, { x: 0, y: 0, width: PW, height: PH });
-    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y, s);
-    const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy, 5);
+    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
+    const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy + LIFT, 5);
 
     // Right column — court info
-    v1(b.courtStreet || "", 376, 612);  // court street address in the box
+    v1(b.courtStreet || "", 376, 612);
     v1(d.caseNumber, 376, 550);
     v1(caseName, 376, 507);
     v1(b.hearingDate, 376, 463);
@@ -763,8 +780,8 @@ router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {
     // ── Page 2 ──
     const p2 = pdfDoc.addPage([PW, PH]);
     p2.drawImage(bg2, { x: 0, y: 0, width: PW, height: PH });
-    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y, s);
-    const xm2 = (cx: number, cy: number) => xmark(p2, cx, cy, 5);
+    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y + LIFT, s);
+    const xm2 = (cx: number, cy: number) => xmark(p2, cx, cy + LIFT, 5);
 
     v2(caseName, 72, 754);
     v2(d.caseNumber, 425, 754);
@@ -831,10 +848,11 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
     ]);
 
     // ── Page 1 — Request ──
+    const LIFT = 4.5;
     const p1 = pdfDoc.addPage([PW, PH]);
     p1.drawImage(bg1, { x: 0, y: 0, width: PW, height: PH });
-    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y, s);
-    const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy, 5);
+    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
+    const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy + LIFT, 5);
 
     // Right column — court + case
     v1(b.courtStreet || "", 376, 606);
@@ -853,10 +871,10 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
     if (parties[2]) { v1(parties[2].name, 100, 351); v1(parties[2].address, 295, 351); }
 
     // Item 3 — order requested
-    wrapVal(p1, font, b.orderRequested, 63, 291, 490, 9, 13, 5);
+    wrapVal(p1, font, b.orderRequested, 63, 291 + LIFT, 490, 9, 13, 5);
 
     // Item 4 — reason
-    wrapVal(p1, font, b.orderReason, 63, 218, 490, 9, 13, 5);
+    wrapVal(p1, font, b.orderReason, 63, 218 + LIFT, 490, 9, 13, 5);
 
     // Date + name
     v1(b.signDate || today(), 72, 129);
@@ -865,7 +883,7 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
     // ── Page 2 — Answer (pre-fill header only; other party fills) ──
     const p2 = pdfDoc.addPage([PW, PH]);
     p2.drawImage(bg2, { x: 0, y: 0, width: PW, height: PH });
-    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y, s);
+    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y + LIFT, s);
     v2(b.courtStreet || "", 376, 606);
     v2(d.caseNumber, 376, 549);
     v2(caseName, 376, 505);
@@ -903,8 +921,9 @@ router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
     const bg = await pdfDoc.embedPng(loadAsset("sc112a_hq-1.png"));
     const page = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-    const xm = (cx: number, cy: number) => xmark(page, cx, cy, 5);
+    const LIFT = 4.5;
+    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+    const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
     v(d.caseNumber, 425, 756);
 
@@ -975,11 +994,12 @@ router.post("/cases/:id/forms/sc120", async (req, res): Promise<void> => {
     pdfDoc.addPage([PW, PH]).drawImage(bg1, { x: 0, y: 0, width: PW, height: PH });
 
     // ── Page 2 — Parties + Claim ──
+    const LIFT = 4.5;
     const p2 = pdfDoc.addPage([PW, PH]);
     p2.drawImage(bg2, { x: 0, y: 0, width: PW, height: PH });
-    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y, s);
+    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y + LIFT, s);
 
-    v2(d.defendantName, 72, 754);  // "Defendant (list names):" header
+    v2(d.defendantName, 72, 754);
     v2(d.caseNumber, 425, 754);
 
     // Item 1 — Plaintiff info (the person who filed SC-100)
@@ -1002,15 +1022,15 @@ router.post("/cases/:id/forms/sc120", async (req, res): Promise<void> => {
 
     // Item 3 — Counter-claim
     if (b.counterClaimAmount) v2(Number(b.counterClaimAmount).toFixed(2), 385, 352);
-    if (b.counterClaimReason) wrapVal(p2, font, b.counterClaimReason, 63, 320, 490, 9, 12, 5);
+    if (b.counterClaimReason) wrapVal(p2, font, b.counterClaimReason, 63, 320 + LIFT, 490, 9, 12, 5);
     v2(b.counterClaimDate || "", 345, 256);
-    if (b.counterClaimReason) wrapVal(p2, font, b.counterClaimHowCalculated || "", 63, 225, 490, 9, 12, 4);
+    if (b.counterClaimReason) wrapVal(p2, font, b.counterClaimHowCalculated || "", 63, 225 + LIFT, 490, 9, 12, 4);
 
     // ── Page 3 — Questions + Declaration ──
     const p3 = pdfDoc.addPage([PW, PH]);
     p3.drawImage(bg3, { x: 0, y: 0, width: PW, height: PH });
-    const v3 = (t: any, x: number, y: number, s = 9) => val(p3, font, t, x, y, s);
-    const xm3 = (cx: number, cy: number) => xmark(p3, cx, cy, 5);
+    const v3 = (t: any, x: number, y: number, s = 9) => val(p3, font, t, x, y + LIFT, s);
+    const xm3 = (cx: number, cy: number) => xmark(p3, cx, cy + LIFT, 5);
 
     v3(d.defendantName, 72, 754);
     v3(d.caseNumber, 425, 754);
@@ -1059,8 +1079,9 @@ router.post("/cases/:id/forms/sc140", async (req, res): Promise<void> => {
     const bg = await pdfDoc.embedPng(loadAsset("sc140_hq-1.png"));
     const page = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-    const xm = (cx: number, cy: number) => xmark(page, cx, cy, 5);
+    const LIFT = 4.5;
+    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+    const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
     // Court name and address of court
     v(b.courtName || "", 285, 754);
@@ -1120,8 +1141,9 @@ router.post("/cases/:id/forms/sc150", async (req, res): Promise<void> => {
     const bg = await pdfDoc.embedPng(loadAsset("sc150_hq-1.png"));
     const page = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y, s);
-    const xm = (cx: number, cy: number) => xmark(page, cx, cy, 5);
+    const LIFT = 4.5;
+    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+    const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
     // Right column — court + case
     v(b.courtStreet || "", 376, 606);
@@ -1195,10 +1217,11 @@ router.post("/cases/:id/forms/fw001", async (req, res): Promise<void> => {
 
     // ── PAGE 1 ──────────────────────────────────────────────────────────────
     const bg1 = await pdfDoc.embedPng(loadAsset("fw001_hq-1.png"));
+    const LIFT = 4.5;
     const p1  = pdfDoc.addPage([PW, PH]);
     p1.drawImage(bg1, { x: 0, y: 0, width: PW, height: PH });
-    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y, s);
-    const xm1 = (cx: number, cy: number, sz = 5) => xmark(p1, cx, cy, sz);
+    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
+    const xm1 = (cx: number, cy: number, sz = 5) => xmark(p1, cx, cy + LIFT, sz);
 
     // ── Standard CA form header (court + case info) ──────────────────────
     // Left column — attorney/party block (we put plaintiff info here)
@@ -1289,7 +1312,7 @@ router.post("/cases/:id/forms/fw001", async (req, res): Promise<void> => {
       const bg2 = await pdfDoc.embedPng(loadAsset("fw001_hq-2.png"));
       const p2  = pdfDoc.addPage([PW, PH]);
       p2.drawImage(bg2, { x: 0, y: 0, width: PW, height: PH });
-      const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y, s);
+      const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y + LIFT, s);
 
       // Header: name and case number
       v2(signerName, 90, 762, 8);

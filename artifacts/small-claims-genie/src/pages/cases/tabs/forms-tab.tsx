@@ -136,6 +136,52 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
     { title: "Trial Dates", fields: [{ key: "currentTrialDate", label: "My trial is now scheduled for (Item 2)", type: "date", required: true }, { key: "postponeUntilDate", label: "I ask the court to postpone until (approximately) (Item 3)", type: "date" }]},
     { title: "Reasons", fields: [{ key: "postponeReason", label: "I am asking for this postponement because (Item 4)", type: "textarea", required: true, placeholder: "Explain why you need a postponement..." }, { key: "withinTenDaysReason", label: "If trial is within 10 days — why didn't you ask sooner? (Item 5)", type: "textarea", placeholder: "Only fill this in if your trial is within the next 10 days..." }, { key: "signDate", label: "Date signed", type: "date" }]},
   ]},
+  sc105: { title: "Request for Court Order and Answer (SC-105)", subtitle: "Ask the court to issue a specific order. Review the pre-filled fields and add what's missing.", endpoint: "sc105", filename: (id) => `SC105-Case-${id}.pdf`, groups: [
+    { title: "Court Address", fields: [{ key: "courtStreet", label: "Court Street Address", type: "text" }]},
+    { title: "Who Is Requesting (Item 1)", fields: [
+      { key: "requestingPartyName", label: "Your full name", type: "text", required: true },
+      { key: "requestingPartyAddress", label: "Your mailing address", type: "text" },
+      { key: "requestingPartyRole", label: "You are the", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
+    ]},
+    { title: "Who Should Be Notified (Item 2)", fields: [
+      { key: "notice1Name", label: "Name of party to notify #1", type: "text", required: true },
+      { key: "notice1Address", label: "Address of party #1", type: "text" },
+      { key: "notice2Name", label: "Name of party to notify #2 (if any)", type: "text" },
+      { key: "notice2Address", label: "Address of party #2", type: "text" },
+      { key: "notice3Name", label: "Name of party to notify #3 (if any)", type: "text" },
+      { key: "notice3Address", label: "Address of party #3", type: "text" },
+    ]},
+    { title: "Order Requested (Item 3)", fields: [{ key: "orderRequested", label: "What court order are you asking for?", type: "textarea", required: true, placeholder: "e.g. Continue the hearing date to allow additional time to gather evidence." }]},
+    { title: "Reason (Item 4)", fields: [{ key: "orderReason", label: "Why are you asking for this order?", type: "textarea", required: true, placeholder: "Explain the facts that support your request..." }]},
+    { title: "Signature", fields: [{ key: "signDate", label: "Date signed", type: "date" }]},
+  ]},
+  sc120: { title: "Defendant's Claim and ORDER (SC-120)", subtitle: "File a counter-claim against the plaintiff. Review the pre-filled fields and add your claim details.", endpoint: "sc120", filename: (id) => `SC120-Case-${id}.pdf`, groups: [
+    { title: "Your Counter-Claim (Item 3)", fields: [
+      { key: "counterClaimAmount", label: "Amount you are claiming ($)", type: "text", required: true, placeholder: "e.g. 2500.00" },
+      { key: "counterClaimDate", label: "Date the incident or breach occurred", type: "date" },
+      { key: "counterClaimReason", label: "Why do you believe the plaintiff owes you this amount?", type: "textarea", required: true, placeholder: "Describe what happened and why you are owed this money..." },
+      { key: "counterClaimHowCalculated", label: "How did you calculate this amount?", type: "textarea", placeholder: "e.g. Property damage $1,500 + out-of-pocket costs $300..." },
+    ]},
+    { title: "Form Questions", fields: [
+      { key: "priorDemand", label: "Did you ask the plaintiff for payment before filing?", type: "select", required: true, options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+      { key: "attyFeeDispute", label: "Is this a dispute over attorney fees?", type: "select", required: true, options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+      { key: "suingPublicEntity", label: "Are you suing a government agency or public entity?", type: "select", required: true, options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+      { key: "moreThan12", label: "Have you filed more than 12 small claims cases in California in the last 12 months?", type: "select", required: true, options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] },
+    ]},
+    { title: "Signature", fields: [{ key: "signDate", label: "Date signed", type: "date" }]},
+  ]},
+  sc140: { title: "Notice of Appeal (SC-140)", subtitle: "Appeal a small claims judgment to superior court. Review the pre-filled fields and complete the appeal details.", endpoint: "sc140", filename: (id) => `SC140-Case-${id}.pdf`, groups: [
+    { title: "Court Information", fields: [{ key: "courtName", label: "Court name and address", type: "text" }]},
+    { title: "Who Is Appealing", fields: [
+      { key: "appellantName", label: "Your full name (appellant)", type: "text", required: true },
+      { key: "appellantRole", label: "I am the", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
+    ]},
+    { title: "Appeal Details", fields: [
+      { key: "appealType", label: "I am appealing from a", type: "select", required: true, options: [{ value: "judgment", label: "Judgment after hearing" }, { value: "motion_to_vacate", label: "Motion to vacate a default judgment" }] },
+      { key: "appealFiledDate", label: "Date of the judgment or order being appealed", type: "date", required: true },
+    ]},
+    { title: "Signature", fields: [{ key: "signDate", label: "Date signed", type: "date" }]},
+  ]},
 };
 
 // ─── Form Assistant Modal ──────────────────────────────────────────────────────
@@ -190,6 +236,15 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
       }
       d.partiesServed = parties;
       for (let i = 1; i <= 5; i++) { delete d[`party${i}Name`]; delete d[`party${i}Address`]; }
+    }
+    if (formId === "sc105") {
+      const parties: { name: string; address: string }[] = [];
+      for (let i = 1; i <= 3; i++) {
+        const name = formData[`notice${i}Name`];
+        if (name) parties.push({ name, address: formData[`notice${i}Address`] || "" });
+      }
+      d.noticeParties = parties;
+      for (let i = 1; i <= 3; i++) { delete d[`notice${i}Name`]; delete d[`notice${i}Address`]; }
     }
     return d;
   }
@@ -628,8 +683,63 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     setModalInitialValues({
       party1Name: currentCase.defendantName || "",
       party1Address: defAddr,
+      mailingCity: (currentCase as any).courthouseCity || "",
+      mailingDate: (currentCase as any).hearingDate || "",
     });
     setModalFormId("sc112a");
+  }
+
+  function getInitialValues(formId: string): Record<string, string> {
+    const cc = currentCase as Record<string, any>;
+    const courthouseStreet = cc.courthouseAddress || "";
+    const plaintiffAddr = [cc.plaintiffAddress, cc.plaintiffCity, cc.plaintiffState || "CA", cc.plaintiffZip].filter(Boolean).join(", ");
+    const defAddr = [cc.defendantAddress, cc.defendantCity, cc.defendantState || "CA", cc.defendantZip].filter(Boolean).join(", ");
+    const countyName = String(cc.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const courthouseLabel = cc.courthouseName ? `${cc.courthouseName} — ${courthouseStreet}` : courthouseStreet;
+    switch (formId) {
+      case "sc103": return {
+        attachedTo: "sc100",
+        signerName: cc.plaintiffName || "",
+        fbnCounty: countyName,
+      };
+      case "sc104": return {
+        courtStreet: courthouseStreet,
+        hearingDate: cc.hearingDate || "",
+        hearingTime: cc.hearingTime || "",
+        hearingDept: cc.hearingCourtroom || "",
+        personServedName: cc.defendantIsBusinessOrEntity ? "" : (cc.defendantName || ""),
+        businessName: cc.defendantIsBusinessOrEntity ? (cc.defendantName || "") : "",
+        docsServed_sc100: "yes",
+      };
+      case "sc105": return {
+        courtStreet: courthouseStreet,
+        requestingPartyName: cc.plaintiffName || "",
+        requestingPartyAddress: plaintiffAddr,
+        requestingPartyRole: "plaintiff",
+        notice1Name: cc.defendantName || "",
+        notice1Address: defAddr,
+      };
+      case "sc120": return {
+        priorDemand: "false",
+        attyFeeDispute: "false",
+        suingPublicEntity: "false",
+        moreThan12: "false",
+      };
+      case "sc140": return {
+        courtName: courthouseLabel,
+        appellantRole: "plaintiff",
+        appellantName: cc.plaintiffName || "",
+      };
+      case "sc150": return {
+        courtStreet: courthouseStreet,
+        requestingPartyName: cc.plaintiffName || "",
+        requestingPartyAddress: plaintiffAddr,
+        requestingPartyPhone: cc.plaintiffPhone || "",
+        requestingPartyRole: "plaintiff",
+        currentTrialDate: cc.hearingDate || "",
+      };
+      default: return {};
+    }
   }
 
   const EXHIBIT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -834,7 +944,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">The defendant appears to operate under a business name. SC-103 connects the DBA name to the legal owner and must be filed as a separate form alongside your SC-100 — hand both to the clerk at the same time.</p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2 border-orange-400 text-orange-800 hover:bg-orange-100"
-                    onClick={() => { setModalInitialValues({}); setModalFormId("sc103"); }} disabled={downloadingForm === "sc103"}>
+                    onClick={() => { setModalInitialValues(getInitialValues("sc103")); setModalFormId("sc103"); }} disabled={downloadingForm === "sc103"}>
                     {downloadingForm === "sc103" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Download SC-103
                   </Button>
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" onClick={() => setGuideDialogFormId("sc103")}><Info className="h-3 w-3" />Guide</Button>
@@ -959,7 +1069,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                 {form.available && (
                   FORM_FIELD_CONFIG[form.id] ? (
                     <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"
-                      onClick={() => { setModalInitialValues({}); setModalFormId(form.id); }} disabled={downloadingForm === form.id}>
+                      onClick={() => { setModalInitialValues(getInitialValues(form.id)); setModalFormId(form.id); }} disabled={downloadingForm === form.id}>
                       {downloadingForm === form.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Download PDF
                     </Button>
                   ) : (
