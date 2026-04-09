@@ -73,6 +73,24 @@ router.post("/cases/:id/chat", async (req, res): Promise<void> => {
     return;
   }
 
+  // ── DEV TESTING SHORTCUT: "repeat verbatim" dumps raw case record ──────────
+  if (parsed.data.content.toLowerCase().includes("repeat verbatim")) {
+    const [devCase] = await db.select().from(casesTable).where(eq(casesTable.id, id));
+    const devDocs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+    const rawDump = devCase
+      ? `[DEV — RAW CASE RECORD]\n\n${buildCaseContext(devCase, devDocs)}`
+      : "[DEV] Case record not found.";
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    await db.insert(chatMessagesTable).values({ caseId: id, role: "user", content: parsed.data.content });
+    await db.insert(chatMessagesTable).values({ caseId: id, role: "assistant", content: rawDump });
+    res.write(`data: ${JSON.stringify({ content: rawDump })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+    return;
+  }
+
   const onTopic = await isOnTopic(parsed.data.content);
   if (!onTopic) {
     res.setHeader("Content-Type", "text/event-stream");
