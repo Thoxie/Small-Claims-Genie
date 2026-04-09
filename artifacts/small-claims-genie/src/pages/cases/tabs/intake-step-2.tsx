@@ -206,26 +206,23 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
             )} />
           </div>
 
-          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex-1">
-              <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
-              <p className="text-xs text-[#4a9990] mt-0.5">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement.</p>
-            </div>
-            <Button type="button" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2">
-              <Sparkles className="h-4 w-4" /> Check My Case
-            </Button>
-          </div>
-
-          <div className="flex justify-between items-center pt-2">
-            <div className="flex gap-2">
+          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 flex items-center gap-3">
+            <div className="flex gap-2 shrink-0">
               <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
               <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Save & Exit
               </Button>
             </div>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
+            <div className="flex-1 px-3 min-w-0">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
+              <p className="text-xs text-[#4a9990] mt-0.5 leading-relaxed">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement.</p>
+            </div>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="shrink-0">
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
+            </Button>
+            <Button type="button" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2">
+              <Sparkles className="h-4 w-4" /> Check My Case
             </Button>
           </div>
         </form>
