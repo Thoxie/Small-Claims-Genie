@@ -1,0 +1,19 @@
+Spec: california_small_claims_product_spec_forms_hierarchy.docx
+
+I grounded these in the current California Courts / Judicial Council materials, including the statewide small-claims forms overview, the plaintiff start-case instructions, and the current form pages for SC-100, SC-100A, SC-103, SC-101, SC-104, SC-104A, SC-112A, SC-109, MC-030, MC-031, FW-001, and FW-003. The official plaintiff start flow identifies SC-100 as the required start form, with SC-100A, SC-103, and SC-101 as conditional attachments; California also uses the same basic statewide form set across courts, though counties may require local add-ons.
+
+I also corrected the service hierarchy in the deliverables: SC-104 is the opening small-claims proof-of-service form, SC-104A is only for the specific substituted-service mailing case, and SC-112A is for later papers served by mail, not the opening SC-100 / SC-120 packet. MC-030 is included as a primary app form by your product choice, not because California requires it in the baseline start packet.
+
+If you want, next I can turn this into a stricter engineering artifact: a JSON schema plus deterministic rules map for your form-generation engine.
+
+into a stricter engineering design document that would be submitted to a top engineer to create the code.
+
+I’m converting the current product-spec material into an implementation-grade engineering design doc with architecture, rules engine, schemas, APIs, validation, and test requirements. The goal is something an experienced engineer can execute against without guessing.
+
+I have the current official form set confirmed. I’m now packaging it as an implementation document rather than a product memo: explicit decision tables, required data fields, branching logic, APIs, schemas, and test cases so an engineer can build against it directly.
+
+Thought for 9m 1s
+
+I created the stricter engineering design document here: california_small_claims_engineering_design_document.docx.
+
+It is written as an implementation document for a senior engineer, not a product memo. It covers the plaintiff-only California beta, the canonical form hierarchy, deterministic rule IDs, normalized intake schema, packet-decision object, business-name and agent-for-service logic, service-method branching, county-local-form gating, API boundaries, validation and blocking rules, QA matrix, and acceptance criteria. I also preserved the distinction between the official statewide plaintiff baseline and your product decision to always generate MC-030 with SC-100. That distinction matters because California’s official plaintiff start-case guidance identifies SC-100 as the required start form and SC-100A, SC-103, and SC-101 as conditional attachments, while California also states that all courts use the same basic statewide small-claims form set but some courts still require local forms. The service logic in the spec is aligned to the current official SC-104, SC-104A, SC-112A, and SC-109 materials, plus the current California Courts guidance on service timing and serving businesses.
