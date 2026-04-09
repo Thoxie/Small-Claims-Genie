@@ -167,7 +167,13 @@ function buildCaseContext(caseRecord: typeof casesTable.$inferSelect, docs: type
 
   // ── Plaintiff (Step 1) ───────────────────────────────────────────────────
   parts.push("\n-- PLAINTIFF --");
-  parts.push(`Name: ${caseRecord.plaintiffName || "[not entered]"}`);
+  if (caseRecord.plaintiffIsBusiness) {
+    parts.push(`Filing As: Business / Organization`);
+    parts.push(`Business Name: ${caseRecord.plaintiffName || "[not entered]"}`);
+    parts.push(`Individual Filing: ${caseRecord.secondPlaintiffName || "[not entered]"}${caseRecord.plaintiffTitle ? `, ${caseRecord.plaintiffTitle}` : ""}`);
+  } else {
+    parts.push(`Name: ${caseRecord.plaintiffName || "[not entered]"}`);
+  }
   parts.push(`Phone: ${caseRecord.plaintiffPhone || "[not entered]"}`);
   parts.push(`Email: ${caseRecord.plaintiffEmail || "[not entered]"}`);
   parts.push(`Address: ${[caseRecord.plaintiffAddress, caseRecord.plaintiffCity, caseRecord.plaintiffState || "CA", caseRecord.plaintiffZip].filter(Boolean).join(", ") || "[not entered]"}`);
@@ -188,7 +194,22 @@ function buildCaseContext(caseRecord: typeof casesTable.$inferSelect, docs: type
   if (caseRecord.courthouseName) parts.push(`Courthouse: ${caseRecord.courthouseName}`);
   if (caseRecord.courthouseAddress) parts.push(`Courthouse Address: ${[caseRecord.courthouseAddress, caseRecord.courthouseCity, caseRecord.courthouseZip].filter(Boolean).join(", ")}`);
   if (caseRecord.courthousePhone) parts.push(`Courthouse Phone: ${caseRecord.courthousePhone}`);
+  if (caseRecord.courthouseClerkEmail) parts.push(`Courthouse Clerk Email: ${caseRecord.courthouseClerkEmail}`);
+  if (caseRecord.courthouseWebsite) parts.push(`Courthouse Website: ${caseRecord.courthouseWebsite}`);
   if (caseRecord.filingFee) parts.push(`Filing Fee: $${caseRecord.filingFee}`);
+
+  // ── Hearing Info (entered after filing) ──────────────────────────────────
+  parts.push("\n-- HEARING INFO --");
+  if (caseRecord.caseNumber || caseRecord.hearingDate) {
+    if (caseRecord.caseNumber) parts.push(`Court Case Number: ${caseRecord.caseNumber}`);
+    if (caseRecord.hearingDate) parts.push(`Hearing Date: ${caseRecord.hearingDate}`);
+    if (caseRecord.hearingTime) parts.push(`Hearing Time: ${caseRecord.hearingTime}`);
+    if (caseRecord.hearingCourtroom) parts.push(`Dept / Courtroom: ${caseRecord.hearingCourtroom}`);
+    if (caseRecord.hearingJudge) parts.push(`Judge: ${caseRecord.hearingJudge}`);
+    if (caseRecord.hearingNotes) parts.push(`Hearing Notes: ${caseRecord.hearingNotes}`);
+  } else {
+    parts.push("Not yet assigned — user has not received court's response with case number and hearing date.");
+  }
 
   // ── Claim Details (Step 2) ───────────────────────────────────────────────
   parts.push("\n-- CLAIM --");
@@ -221,9 +242,24 @@ function buildCaseContext(caseRecord: typeof casesTable.$inferSelect, docs: type
   parts.push("\n-- DEMAND LETTER --");
   if (caseRecord.demandLetterText) {
     parts.push(`Tone: ${caseRecord.demandLetterTone || "standard"}`);
-    parts.push(`Demand Letter Written: Yes (${caseRecord.demandLetterText.length} chars)`);
+    const dlTruncated = caseRecord.demandLetterText.length > 4000;
+    parts.push(`Full Text:\n${caseRecord.demandLetterText.slice(0, 4000)}${dlTruncated ? "\n... [truncated]" : ""}`);
   } else {
-    parts.push("Demand Letter Written: No");
+    parts.push("Not yet generated.");
+  }
+
+  // ── Settlement Letter & Agreement ────────────────────────────────────────
+  parts.push("\n-- SETTLEMENT --");
+  if (caseRecord.settlementLetterText) {
+    const slTruncated = caseRecord.settlementLetterText.length > 3000;
+    parts.push(`Settlement Letter Tone: ${caseRecord.settlementLetterTone || "standard"}`);
+    parts.push(`Settlement Letter:\n${caseRecord.settlementLetterText.slice(0, 3000)}${slTruncated ? "\n... [truncated]" : ""}`);
+  } else {
+    parts.push("Settlement letter: Not yet generated.");
+  }
+  if (caseRecord.settlementAgreementText) {
+    const saTruncated = caseRecord.settlementAgreementText.length > 3000;
+    parts.push(`Settlement Agreement:\n${caseRecord.settlementAgreementText.slice(0, 3000)}${saTruncated ? "\n... [truncated]" : ""}`);
   }
 
   // ── Evidence Checklist ───────────────────────────────────────────────────
