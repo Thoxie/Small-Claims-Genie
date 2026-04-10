@@ -11,7 +11,6 @@ import {
   getGetCaseQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
@@ -71,9 +70,6 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
         <div className="flex items-center gap-2">
           <p className="flex-1 min-w-0 text-sm font-medium truncate">{doc.label || doc.filename || "Untitled"}</p>
           {saving && <span className="text-[10px] text-muted-foreground shrink-0">saving…</span>}
-          {doc.ocrText && (
-            <Badge variant="outline" className="text-[10px] shrink-0 border-[#a8e6df] text-[#0d6b5e]">OCR</Badge>
-          )}
         </div>
         <input
           className="w-full text-xs text-foreground/60 bg-transparent border-b border-transparent hover:border-muted-foreground/40 focus:border-primary/60 focus:outline-none transition-colors mt-0.5 placeholder:text-foreground/40"
