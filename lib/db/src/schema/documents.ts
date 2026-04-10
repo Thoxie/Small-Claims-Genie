@@ -9,6 +9,7 @@ export const documentsTable = pgTable("documents", {
   filename: text("filename").notNull(),
   originalName: text("original_name").notNull(),
   label: text("label"),
+  description: text("description"),
   mimeType: text("mime_type").notNull(),
   fileSize: integer("file_size").notNull(),
   fileData: text("file_data"),

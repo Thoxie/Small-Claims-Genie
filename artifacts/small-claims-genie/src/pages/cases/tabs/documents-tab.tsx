@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+This is the SC100H that I just downloaded Double check your GitHub push I reviewed GitHub and it looks like the files import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useListDocuments,
@@ -146,36 +146,15 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
 
       <div className="space-y-4">
         {documents?.map((doc: any) => (
-          <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg bg-background">
-            <div className="flex items-center gap-4">
-              <div className="bg-primary/10 p-2 rounded"><FileText className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="font-medium">{doc.originalName}</p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant={doc.ocrStatus === 'complete' ? 'secondary' : 'outline'}
-                    className={`text-[10px] ${doc.ocrStatus === 'complete' ? 'text-green-700 bg-green-100' : doc.ocrStatus === 'failed' ? 'text-red-700 bg-red-100' : ''}`}>
-                    {doc.ocrStatus === 'complete' ? i18n.documents.complete : doc.ocrStatus === 'failed' ? i18n.documents.failed : i18n.documents.processing}
-                  </Badge>
-                  <span>{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : ""}</span>
-                  {doc.createdAt && (
-                    <span>
-                      {new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      {" · "}
-                      {new Date(doc.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={() => window.open(`/api/cases/${caseId}/documents/${doc.id}/file`, "_blank")} className="text-muted-foreground hover:text-primary hover:bg-primary/10" aria-label="View document">
-                <Eye className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(doc.id)} disabled={deleteDoc.isPending} className="text-destructive hover:bg-destructive/10">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <DocTile
+            key={doc.id}
+            doc={doc}
+            caseId={caseId}
+            onDelete={() => handleDelete(doc.id)}
+            deleting={deleteDoc.isPending}
+            getToken={getToken}
+            onSaved={invalidateDocAndScore}
+          />
         ))}
         {(!documents || documents.length === 0) && (
           <div className="rounded-xl border border-dashed border-muted-foreground/25 bg-muted/10 p-6 mt-2">

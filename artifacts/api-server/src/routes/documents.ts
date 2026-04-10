@@ -317,6 +317,24 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
   });
 });
 
+router.patch("/cases/:id/documents/:docId", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const rawDocId = Array.isArray(req.params.docId) ? req.params.docId[0] : req.params.docId;
+  const id = parseInt(rawId, 10);
+  const docId = parseInt(rawDocId, 10);
+  if (isNaN(id) || isNaN(docId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  const ownedCase = await getOwnedCase(id, userId);
+  if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
+  const { label, description } = req.body;
+  const update: Record<string, any> = {};
+  if (typeof label === "string") update.label = label.trim() || null;
+  if (typeof description === "string") update.description = description.trim() || null;
+  const [updated] = await db.update(documentsTable).set(update).where(eq(documentsTable.id, docId)).returning();
+  if (!updated) { res.status(404).json({ error: "Document not found" }); return; }
+  res.json(updated);
+});
+
 router.delete("/cases/:id/documents/:docId", async (req, res): Promise<void> => {
   const userId = getUserId(req);
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
