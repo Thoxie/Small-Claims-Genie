@@ -190,21 +190,24 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-1 bg-muted rounded-lg p-1 mb-6 w-fit">
+      <div className="flex gap-6 mb-6">
         <button
           type="button"
           onClick={() => setActiveTab("checklist")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+          className={`flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all border-2 shadow-sm min-w-[220px] justify-center ${
             activeTab === "checklist"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-[#f0fffe] text-[#0d6b5e] border-[#14b8a6] shadow-[#14b8a6]/20 shadow-md"
+              : "bg-background text-muted-foreground border-muted-foreground/25 hover:border-[#14b8a6]/50 hover:text-[#0d6b5e] hover:bg-[#f0fffe]/50"
           }`}
         >
-          <ClipboardList className="h-4 w-4" />
-          Document Checklist
+          <ClipboardList className="h-5 w-5 shrink-0" />
+          <span>
+            <span className={`block text-[10px] font-medium uppercase tracking-wider mb-0.5 ${activeTab === "checklist" ? "text-[#14b8a6]" : "text-muted-foreground/60"}`}>Click here</span>
+            Document Checklist
+          </span>
           {checklistCount > 0 && (
-            <span className={`text-[11px] rounded-full px-1.5 py-0.5 font-semibold ${
-              activeTab === "checklist" ? "bg-primary/10 text-primary" : "bg-muted-foreground/20 text-muted-foreground"
+            <span className={`ml-auto text-[11px] rounded-full px-1.5 py-0.5 font-semibold ${
+              activeTab === "checklist" ? "bg-[#14b8a6]/15 text-[#0d6b5e]" : "bg-muted text-muted-foreground"
             }`}>
               {checkedItems.size}/{checklistCount}
             </span>
@@ -213,17 +216,20 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
         <button
           type="button"
           onClick={() => setActiveTab("uploads")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+          className={`flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all border-2 shadow-sm min-w-[220px] justify-center ${
             activeTab === "uploads"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-[#f0fffe] text-[#0d6b5e] border-[#14b8a6] shadow-[#14b8a6]/20 shadow-md"
+              : "bg-background text-muted-foreground border-muted-foreground/25 hover:border-[#14b8a6]/50 hover:text-[#0d6b5e] hover:bg-[#f0fffe]/50"
           }`}
         >
-          <FileText className="h-4 w-4" />
-          My Uploads
+          <FileText className="h-5 w-5 shrink-0" />
+          <span>
+            <span className={`block text-[10px] font-medium uppercase tracking-wider mb-0.5 ${activeTab === "uploads" ? "text-[#14b8a6]" : "text-muted-foreground/60"}`}>Click here</span>
+            My Uploads
+          </span>
           {uploadCount > 0 && (
-            <span className={`text-[11px] rounded-full px-1.5 py-0.5 font-semibold ${
-              activeTab === "uploads" ? "bg-primary/10 text-primary" : "bg-muted-foreground/20 text-muted-foreground"
+            <span className={`ml-auto text-[11px] rounded-full px-1.5 py-0.5 font-semibold ${
+              activeTab === "uploads" ? "bg-[#14b8a6]/15 text-[#0d6b5e]" : "bg-muted text-muted-foreground"
             }`}>
               {uploadCount}
             </span>
