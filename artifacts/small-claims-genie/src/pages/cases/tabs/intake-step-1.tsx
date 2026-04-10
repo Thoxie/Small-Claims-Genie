@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useListCounties } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,17 @@ interface Props {
 
 export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) {
   const { data: counties } = useListCounties();
+
+  const [plaintiffMailingDiffers, setPlaintiffMailingDiffers] = useState(
+    !!(initialData.plaintiffMailingAddress)
+  );
+  const [defendantMailingDiffers, setDefendantMailingDiffers] = useState(
+    !!(initialData.defendantMailingAddress)
+  );
+  const [agentAddressExpanded, setAgentAddressExpanded] = useState(
+    !!(initialData.defendantAgentStreet)
+  );
+
   const form = useForm({
     resolver: zodResolver(intakeStep1Schema),
     defaultValues: {
@@ -35,14 +47,33 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
       plaintiffState: initialData.plaintiffState || "CA",
       plaintiffZip: initialData.plaintiffZip || "",
       plaintiffEmail: initialData.plaintiffEmail || "",
+      plaintiffMailingAddress: initialData.plaintiffMailingAddress || "",
+      plaintiffMailingCity: initialData.plaintiffMailingCity || "",
+      plaintiffMailingState: initialData.plaintiffMailingState || "CA",
+      plaintiffMailingZip: initialData.plaintiffMailingZip || "",
+      secondPlaintiffPhone: initialData.secondPlaintiffPhone || "",
+      secondPlaintiffAddress: initialData.secondPlaintiffAddress || "",
+      secondPlaintiffCity: initialData.secondPlaintiffCity || "",
+      secondPlaintiffState: initialData.secondPlaintiffState || "CA",
+      secondPlaintiffZip: initialData.secondPlaintiffZip || "",
+      secondPlaintiffEmail: initialData.secondPlaintiffEmail || "",
       defendantIsBusinessOrEntity: initialData.defendantIsBusinessOrEntity || false,
       defendantName: initialData.defendantName || "",
       defendantAgentName: initialData.defendantAgentName || "",
+      defendantAgentTitle: initialData.defendantAgentTitle || "",
+      defendantAgentStreet: initialData.defendantAgentStreet || "",
+      defendantAgentCity: initialData.defendantAgentCity || "",
+      defendantAgentState: initialData.defendantAgentState || "CA",
+      defendantAgentZip: initialData.defendantAgentZip || "",
       defendantPhone: initialData.defendantPhone || "",
       defendantAddress: initialData.defendantAddress || "",
       defendantCity: initialData.defendantCity || "",
       defendantState: initialData.defendantState || "CA",
       defendantZip: initialData.defendantZip || "",
+      defendantMailingAddress: initialData.defendantMailingAddress || "",
+      defendantMailingCity: initialData.defendantMailingCity || "",
+      defendantMailingState: initialData.defendantMailingState || "CA",
+      defendantMailingZip: initialData.defendantMailingZip || "",
     }
   });
 
@@ -63,21 +94,41 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
     : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, CA ${selectedCounty.courthouseZip}` : "";
   const courtPhone = selectedCourthouse?.phone ?? selectedCounty?.phone;
 
+  const handleSubmit = (data: any) => {
+    if (!plaintiffMailingDiffers) {
+      data.plaintiffMailingAddress = "";
+      data.plaintiffMailingCity = "";
+      data.plaintiffMailingState = "";
+      data.plaintiffMailingZip = "";
+    }
+    if (!defendantMailingDiffers) {
+      data.defendantMailingAddress = "";
+      data.defendantMailingCity = "";
+      data.defendantMailingState = "";
+      data.defendantMailingZip = "";
+    }
+    if (!agentAddressExpanded || !isBusiness) {
+      data.defendantAgentStreet = "";
+      data.defendantAgentCity = "";
+      data.defendantAgentState = "";
+      data.defendantAgentZip = "";
+    }
+    onNext({
+      ...data,
+      courthouseName: courtName || null,
+      courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
+      courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
+      courthouseZip: selectedCourthouse?.zip ?? selectedCounty?.courthouseZip ?? null,
+      courthousePhone: courtPhone || null,
+      courthouseWebsite: selectedCounty?.website ?? null,
+      courthouseClerkEmail: selectedCounty?.clerkEmail ?? null,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit((data) => {
-          onNext({
-            ...data,
-            courthouseName: courtName || null,
-            courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
-            courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
-            courthouseZip: selectedCourthouse?.zip ?? selectedCounty?.courthouseZip ?? null,
-            courthousePhone: courtPhone || null,
-            courthouseWebsite: selectedCounty?.website ?? null,
-            courthouseClerkEmail: selectedCounty?.clerkEmail ?? null,
-          });
-        })} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
 
           <div className="rounded-xl border bg-muted/20 p-4">
             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County &amp; Court</h3>
@@ -132,6 +183,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* ── Plaintiff ── */}
             <div className="rounded-xl border p-5 space-y-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Your Information (Plaintiff)</h3>
               <FormField control={form.control} name="plaintiffIsBusiness" render={({ field }) => (
@@ -191,8 +243,40 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                   <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
+
+              {/* Mailing address toggle */}
+              <div className="flex items-center space-x-2 pt-1">
+                <Checkbox
+                  id="plaintiff-mailing-toggle"
+                  checked={plaintiffMailingDiffers}
+                  onCheckedChange={(v) => setPlaintiffMailingDiffers(!!v)}
+                />
+                <label htmlFor="plaintiff-mailing-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                  My mailing address is different from my street address
+                </label>
+              </div>
+              {plaintiffMailingDiffers && (
+                <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mailing Address</p>
+                  <FormField control={form.control} name="plaintiffMailingAddress" render={({ field }) => (
+                    <FormItem><FormLabel>Street</FormLabel><FormControl><Input {...field} placeholder="P.O. Box or different street" /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-5 gap-2">
+                    <FormField control={form.control} name="plaintiffMailingCity" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="plaintiffMailingState" render={({ field }) => (
+                      <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="plaintiffMailingZip" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                </div>
+              )}
             </div>
 
+            {/* ── Defendant ── */}
             <div className="rounded-xl border p-5 space-y-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Defendant Information</h3>
               <FormField control={form.control} name="defendantIsBusinessOrEntity" render={({ field }) => (
@@ -204,11 +288,58 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
               <FormField control={form.control} name="defendantName" render={({ field }) => (
                 <FormItem><FormLabel>{isBusiness ? "Business Name" : "Full Name"} <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
+
+              {/* Agent for service (business/entity defendants) */}
               {isBusiness && (
-                <FormField control={form.control} name="defendantAgentName" render={({ field }) => (
-                  <FormItem><FormLabel>Agent for Service of Process (if known)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
+                <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Agent for Service of Process</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField control={form.control} name="defendantAgentName" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Agent Name (if known)</FormLabel>
+                        <FormControl><Input {...field} placeholder="e.g. John Smith" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="defendantAgentTitle" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Job Title (if known)</FormLabel>
+                        <FormControl><Input {...field} placeholder="e.g. CEO, Registered Agent" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="agent-address-toggle"
+                      checked={agentAddressExpanded}
+                      onCheckedChange={(v) => setAgentAddressExpanded(!!v)}
+                    />
+                    <label htmlFor="agent-address-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                      Agent's address differs from business address
+                    </label>
+                  </div>
+                  {agentAddressExpanded && (
+                    <div className="space-y-2">
+                      <FormField control={form.control} name="defendantAgentStreet" render={({ field }) => (
+                        <FormItem><FormLabel>Agent Street Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <div className="grid grid-cols-5 gap-2">
+                        <FormField control={form.control} name="defendantAgentCity" render={({ field }) => (
+                          <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="defendantAgentState" render={({ field }) => (
+                          <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="defendantAgentZip" render={({ field }) => (
+                          <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
+
               <FormField control={form.control} name="defendantPhone" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
@@ -230,6 +361,37 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                   <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
+
+              {/* Defendant mailing address toggle */}
+              <div className="flex items-center space-x-2 pt-1">
+                <Checkbox
+                  id="defendant-mailing-toggle"
+                  checked={defendantMailingDiffers}
+                  onCheckedChange={(v) => setDefendantMailingDiffers(!!v)}
+                />
+                <label htmlFor="defendant-mailing-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                  Defendant's mailing address is different
+                </label>
+              </div>
+              {defendantMailingDiffers && (
+                <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Defendant Mailing Address</p>
+                  <FormField control={form.control} name="defendantMailingAddress" render={({ field }) => (
+                    <FormItem><FormLabel>Street</FormLabel><FormControl><Input {...field} placeholder="P.O. Box or different street" /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-5 gap-2">
+                    <FormField control={form.control} name="defendantMailingCity" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="defendantMailingState" render={({ field }) => (
+                      <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="defendantMailingZip" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

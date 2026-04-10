@@ -383,6 +383,10 @@ function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
   // ── §4 Prior demand ───────────────────────────────────────────────────────
   if (c.priorDemandMade === true)  xm(70,  469);
   if (c.priorDemandMade === false) xm(125, 469);
+  // "If no, explain why not:" — 3 blank lines below yes/no row
+  if (c.priorDemandMade === false && c.priorDemandWhyNot) {
+    wrapVal(page, font, c.priorDemandWhyNot, 63, 452 + LIFT, 490, 9, 12, 3);
+  }
 
   // ── §5 Venue — one checkbox per option letter (a–e) ──────────────────────
   // Option "a" covers sub-items (1)–(4); there is ONE checkbox for the whole group.

@@ -24,12 +24,14 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
       isSuingPublicEntity: initialData.isSuingPublicEntity || false,
       publicEntityClaimFiledDate: initialData.publicEntityClaimFiledDate || "",
       isAttyFeeDispute: initialData.isAttyFeeDispute || false,
+      hadArbitration: initialData.hadArbitration || false,
       filedMoreThan12Claims: initialData.filedMoreThan12Claims || false,
       claimOver2500: initialData.claimOver2500 || false,
     }
   });
 
   const suingPublic = form.watch("isSuingPublicEntity");
+  const attyFeeDispute = form.watch("isAttyFeeDispute");
 
   return (
     <div className="space-y-5 text-sm">
@@ -57,6 +59,17 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
                     <FormLabel>When did you file a government claim with them?</FormLabel>
                     <FormControl><Input type="date" {...field} /></FormControl>
                     <FormMessage />
+                  </FormItem>
+                )} />
+              )}
+              {attyFeeDispute && (
+                <FormField control={form.control} name="hadArbitration" render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">Have you already gone through arbitration about these fees?</FormLabel>
+                      <p className="text-xs text-muted-foreground">If yes, you must fill out and attach form SC-101.</p>
+                    </div>
                   </FormItem>
                 )} />
               )}

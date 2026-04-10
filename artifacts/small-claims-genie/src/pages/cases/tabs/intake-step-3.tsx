@@ -23,6 +23,7 @@ export function IntakeStep3({ initialData, onNext, onBack, saving, onSaveExit }:
     defaultValues: {
       priorDemandMade: initialData.priorDemandMade ?? false,
       priorDemandDescription: initialData.priorDemandDescription || "",
+      priorDemandWhyNot: initialData.priorDemandWhyNot || "",
       courthouseId: initialData.courthouseId || "",
       venueBasis: initialData.venueBasis || "",
       venueReason: initialData.venueReason || "",
@@ -62,6 +63,16 @@ export function IntakeStep3({ initialData, onNext, onBack, saving, onSaveExit }:
                   <FormItem>
                     <FormLabel>How and when did you ask them?</FormLabel>
                     <FormControl><Textarea className="min-h-[100px]" placeholder="e.g. Sent a text on Oct 1st and an email on Oct 5th demanding payment." {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
+              {!madeDemand && (
+                <FormField control={form.control} name="priorDemandWhyNot" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Why not? (optional — goes on the form)</FormLabel>
+                    <FormControl><Textarea className="min-h-[80px]" placeholder="e.g. Defendant refuses to communicate, or it would be unsafe to contact them." {...field} /></FormControl>
+                    <p className="text-xs text-muted-foreground">The form asks you to explain if you have not yet made a demand. Leave blank if you prefer not to answer.</p>
                     <FormMessage />
                   </FormItem>
                 )} />
