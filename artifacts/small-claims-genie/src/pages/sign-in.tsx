@@ -4,6 +4,12 @@ import { Layout } from "@/components/layout";
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function SignInPage() {
+  // Honor the ?redirect= param set by RequireAuth so the user lands back
+  // on the page they were trying to reach (e.g. /cases/new).
+  const params = new URLSearchParams(window.location.search);
+  const redirectTo = params.get("redirect") || "/resume";
+  const forceRedirect = base + redirectTo;
+
   return (
     <Layout>
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-[#ddf6f3] to-white py-12 px-4">
@@ -16,7 +22,7 @@ export default function SignInPage() {
           <SignIn
             routing="virtual"
             signUpUrl={`${base}/sign-up`}
-            fallbackRedirectUrl={`${base}/`}
+            forceRedirectUrl={forceRedirect}
             appearance={{
               elements: {
                 rootBox: "w-full",

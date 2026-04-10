@@ -7,6 +7,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 export default function SignUpPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Honor the ?redirect= param set by RequireAuth so the user lands back
+  // on the page they were trying to reach (e.g. /cases/new).
+  const params = new URLSearchParams(window.location.search);
+  const redirectTo = params.get("redirect") || "/resume";
+  const forceRedirect = base + redirectTo;
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -43,7 +49,7 @@ export default function SignUpPage() {
             <SignUp
               routing="virtual"
               signInUrl={`${base}/sign-in`}
-              fallbackRedirectUrl={`${base}/`}
+              forceRedirectUrl={forceRedirect}
               appearance={{
                 elements: {
                   rootBox: "w-full",
