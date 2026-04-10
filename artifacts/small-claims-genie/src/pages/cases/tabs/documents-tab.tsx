@@ -1,4 +1,4 @@
-This is the SC100H that I just downloaded Double check your GitHub push I reviewed GitHub and it looks like the files import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useListDocuments,

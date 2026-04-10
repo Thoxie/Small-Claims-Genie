@@ -9,6 +9,7 @@ import { db } from "@workspace/db";
 import { documentsTable } from "@workspace/db";
 import { inArray, and, eq } from "drizzle-orm";
 import { ObjectStorageService } from "../lib/objectStorage";
+import { openai } from "@workspace/integrations-openai-ai-server";
 
 const objectStorage = new ObjectStorageService();
 
@@ -88,6 +89,125 @@ function loadAsset(filename: string): Buffer {
 
 function today(): string {
   return new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+}
+
+// ─── Date / time formatters ───────────────────────────────────────────────────
+function formatDateDisplay(d: string | null | undefined): string {
+  if (!d) return "";
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(d.trim());
+  if (iso) return `${iso[2]}/${iso[3]}/${iso[1]}`;
+  return d;
+}
+
+function formatTimeDisplay(t: string | null | undefined): string {
+  if (!t) return "";
+  const m = /^(\d{1,2}):(\d{2})/.exec(t.trim());
+  if (!m) return t;
+  const h = parseInt(m[1], 10);
+  const min = m[2];
+  const period = h >= 12 ? "p.m." : "a.m.";
+  const h12 = h % 12 || 12;
+  return `${h12}:${min} ${period}`;
+}
+
+// ─── SC-100 deterministic enrichment ─────────────────────────────────────────
+function enrichForSC100(c: Record<string, any>): Record<string, any> {
+  const e = { ...c };
+
+  // 1. Format hearing date/time
+  if (e.hearingDate) e.hearingDate = formatDateDisplay(e.hearingDate);
+  if (e.hearingTime) e.hearingTime = formatTimeDisplay(e.hearingTime);
+
+  // 2. Parse incidentDate (may be "MM/dd/yyyy" or "MM/dd/yyyy – MM/dd/yyyy")
+  if (e.incidentDate) {
+    const parts = e.incidentDate.split("–").map((s: string) => s.trim()).filter(Boolean);
+    e.dateStarted = parts[0] || e.incidentDate;
+    e.dateThrough = parts[1] || parts[0] || e.incidentDate;
+    e.incidentDate = parts[0] || e.incidentDate;
+  }
+
+  // 3. Map venueZip from defendant or courthouse
+  if (!e.venueZip) e.venueZip = e.defendantZip || e.courthouseZip || "";
+
+  // 4. Auto-compute claimOver2500
+  if (e.claimAmount != null) {
+    e.claimOver2500 = Number(e.claimAmount) > 2500;
+  }
+
+  // 5. Default venueBasis if not set
+  if (!e.venueBasis) e.venueBasis = "where_defendant_lives";
+
+  // 6. Default priorDemandMade if null/undefined (not set in intake = false)
+  if (e.priorDemandMade == null) e.priorDemandMade = false;
+
+  // 7. Default filedMoreThan12Claims = false for most plaintiffs
+  if (e.filedMoreThan12Claims == null) e.filedMoreThan12Claims = false;
+
+  // 8. isAttyFeeDispute default false
+  if (e.isAttyFeeDispute == null) e.isAttyFeeDispute = false;
+
+  // 9. Default isSuingPublicEntity = false if not set
+  if (e.isSuingPublicEntity == null) e.isSuingPublicEntity = false;
+
+  // 10. Default defendant agent address from defendant business address
+  if (e.defendantIsBusinessOrEntity) {
+    if (!e.defendantAgentStreet) e.defendantAgentStreet = e.defendantAddress || "";
+    if (!e.defendantAgentCity)   e.defendantAgentCity   = e.defendantCity || "";
+    if (!e.defendantAgentState)  e.defendantAgentState  = e.defendantState || "CA";
+    if (!e.defendantAgentZip)    e.defendantAgentZip    = e.defendantZip || "";
+  }
+
+  // 11. declarationDate = today
+  if (!e.declarationDate) e.declarationDate = today();
+
+  return e;
+}
+
+// ─── SC-100 AI enrichment ─────────────────────────────────────────────────────
+async function aiEnrichForSC100(c: Record<string, any>): Promise<Record<string, any>> {
+  const needsFill = !c.howAmountCalculated || !c.venueBasis || c.isAttyFeeDispute == null || c.isSuingPublicEntity == null;
+  if (!needsFill) return c;
+
+  try {
+    const prompt = `You are a California small claims court expert helping fill out an SC-100 form.
+
+Case data:
+${JSON.stringify({
+  claimType: c.claimType,
+  claimAmount: c.claimAmount,
+  claimDescription: c.claimDescription,
+  howAmountCalculated: c.howAmountCalculated,
+  defendantName: c.defendantName,
+  incidentDate: c.incidentDate,
+  venueBasis: c.venueBasis,
+  priorDemandMade: c.priorDemandMade,
+  isAttyFeeDispute: c.isAttyFeeDispute,
+  isSuingPublicEntity: c.isSuingPublicEntity,
+}, null, 2)}
+
+Return ONLY a JSON object (no markdown) filling in ONLY the fields that are null/undefined/empty:
+- venueBasis: one of "where_defendant_lives" | "where_damage_happened" | "where_plaintiff_injured" | "where_contract_made_broken" | "buyer_household_goods" | "retail_installment" | "vehicle_finance" | "other"
+- howAmountCalculated: concise explanation of how $${c.claimAmount} was calculated (1-2 sentences)
+- isAttyFeeDispute: boolean — true ONLY if claim is an attorney fee dispute
+- isSuingPublicEntity: boolean — true ONLY if defendant is a government agency/city/county/district
+- priorDemandMade: boolean — true if claimDescription implies plaintiff asked for payment before filing
+
+Only include a field if it is currently null/empty. Skip fields that already have values.`;
+
+    const resp = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 300,
+      temperature: 0,
+      response_format: { type: "json_object" },
+    });
+    const raw = resp.choices[0]?.message?.content || "{}";
+    const filled = JSON.parse(raw);
+    return { ...c, ...filled };
+  } catch (err) {
+    console.error("SC-100 AI enrichment error:", err);
+    return c;
+  }
 }
 
 // ─── SC-100 Page drawing functions ────────────────────────────────────────────
@@ -280,7 +400,8 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
   try {
-    const pdfBytes = await buildSC100Pdf(c as unknown as Record<string, any>);
+    const enriched = await aiEnrichForSC100(enrichForSC100(c as unknown as Record<string, any>));
+    const pdfBytes = await buildSC100Pdf(enriched);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="SC100-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
@@ -302,12 +423,12 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
   const { signatureDataUrl } = req.body as { signatureDataUrl?: string };
   let sigBytes: Buffer | undefined;
   if (signatureDataUrl) {
-    // data:image/png;base64,<data>
     const base64 = signatureDataUrl.replace(/^data:image\/\w+;base64,/, "");
     sigBytes = Buffer.from(base64, "base64");
   }
   try {
-    const pdfBytes = await buildSC100Pdf(c as unknown as Record<string, any>, sigBytes);
+    const enriched = await aiEnrichForSC100(enrichForSC100(c as unknown as Record<string, any>));
+    const pdfBytes = await buildSC100Pdf(enriched, sigBytes);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="SC100-Signed-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
@@ -327,7 +448,6 @@ router.post("/cases/:id/forms/sc100/with-overrides", async (req, res): Promise<v
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
   const overrides = req.body as Record<string, any>;
-  // Merge overrides on top of case data (token field stripped)
   const { token: _t, signatureDataUrl, ...fields } = overrides;
   let sigBytes: Buffer | undefined;
   if (signatureDataUrl) {
@@ -337,7 +457,8 @@ router.post("/cases/:id/forms/sc100/with-overrides", async (req, res): Promise<v
   const merged = { ...(c as unknown as Record<string, any>), ...fields };
   const isDownload = req.query.download === "1";
   try {
-    const pdfBytes = await buildSC100Pdf(merged, sigBytes);
+    const enriched = await aiEnrichForSC100(enrichForSC100(merged));
+    const pdfBytes = await buildSC100Pdf(enriched, sigBytes);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", isDownload
       ? `attachment; filename="SC100-Case-${id}.pdf"`
