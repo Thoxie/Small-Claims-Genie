@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo } from "react";
+import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo, useState } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
@@ -27,7 +27,14 @@ import Pricing from "@/pages/pricing";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 
-const PUBLISHABLE_KEY = (import.meta.env.VITE_CLERK_PUBLISHABLE_KEY_DEV || import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) as string;
+// In development (Vite dev server), use the dev Clerk key if available.
+// In production builds, ALWAYS use the production key — never the dev key,
+// because dev Clerk instances refuse to initialize at non-localhost domains.
+const PUBLISHABLE_KEY = (
+  import.meta.env.DEV
+    ? (import.meta.env.VITE_CLERK_PUBLISHABLE_KEY_DEV || import.meta.env.VITE_CLERK_PUBLISHABLE_KEY)
+    : import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+) as string;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -116,8 +123,35 @@ function LoadingScreen() {
 function RequireAuth({ children }: { children: ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
   const [location] = useLocation();
+  const [timedOut, setTimedOut] = useState(false);
 
-  if (!isLoaded) return <LoadingScreen />;
+  // If Clerk hasn't loaded after 8 s, the key is likely misconfigured.
+  // Show an actionable message instead of spinning forever.
+  useEffect(() => {
+    if (isLoaded) return;
+    const id = setTimeout(() => setTimedOut(true), 8000);
+    return () => clearTimeout(id);
+  }, [isLoaded]);
+
+  if (!isLoaded) {
+    if (timedOut) {
+      return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 p-8 text-center">
+          <p className="text-xl font-bold text-primary">Taking longer than expected…</p>
+          <p className="text-muted-foreground max-w-sm text-sm">
+            Authentication couldn't finish loading. Please try refreshing the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors text-sm"
+          >
+            Refresh
+          </button>
+        </div>
+      );
+    }
+    return <LoadingScreen />;
+  }
 
   if (!isSignedIn) {
     const returnTo = location !== "/sign-in" && location !== "/sign-up"
