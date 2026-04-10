@@ -252,7 +252,7 @@ function drawPage1(page: any, font: any, c: Record<string, any>, bg: any) {
   // Build "Plaintiff v. Defendant" style case name
   if (c.plaintiffName && c.defendantName) {
     const caseName = `${c.plaintiffName} v. ${c.defendantName}`;
-    v(caseName, 337, 540, 8);
+    v(caseName, 337, 480, 8);
   }
 }
 
@@ -262,67 +262,67 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
   const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
 
   // ── Page header: "Plaintiff (list names):" + "Case Number:" box ─────────
-  v(c.plaintiffName, 163, 772);
-  if (c.caseNumber) v(c.caseNumber, 440, 762);
+  v(c.plaintiffName, 163, 748);
+  if (c.caseNumber) v(c.caseNumber, 440, 748);
 
   // ── §1 Plaintiff ─────────────────────────────────────────────────────────
-  v(c.plaintiffName,           95,  708);
-  v(c.plaintiffPhone,         462,  708);
-  v(c.plaintiffAddress,       133,  694);
-  v(c.plaintiffCity,          370,  694);
-  v(c.plaintiffState || "CA", 472,  694);
-  v(c.plaintiffZip,           499,  694);
+  v(c.plaintiffName,           95,  682);
+  v(c.plaintiffPhone,         462,  682);
+  v(c.plaintiffAddress,       133,  655);
+  v(c.plaintiffCity,          370,  655);
+  v(c.plaintiffState || "CA", 472,  655);
+  v(c.plaintiffZip,           499,  655);
   if (c.plaintiffMailingAddress) {
-    v(c.plaintiffMailingAddress,       197, 664);
-    v(c.plaintiffMailingCity,          370, 664);
-    v(c.plaintiffMailingState || "CA", 472, 664);
-    v(c.plaintiffMailingZip,           499, 664);
+    v(c.plaintiffMailingAddress,       197, 628);
+    v(c.plaintiffMailingCity,          370, 628);
+    v(c.plaintiffMailingState || "CA", 472, 628);
+    v(c.plaintiffMailingZip,           499, 628);
   }
-  v(c.plaintiffEmail, 191, 636);
+  v(c.plaintiffEmail, 191, 601);
 
   // ── §1 Second plaintiff (if any) ─────────────────────────────────────────
   if (c.secondPlaintiffName) {
     const p2Name = c.plaintiffTitle
       ? `${c.secondPlaintiffName}, ${c.plaintiffTitle}`
       : c.secondPlaintiffName;
-    v(p2Name, 95, 606);
-    if (c.secondPlaintiffPhone) v(c.secondPlaintiffPhone, 462, 606);
+    v(p2Name, 95, 566);
+    if (c.secondPlaintiffPhone) v(c.secondPlaintiffPhone, 462, 566);
     if (c.secondPlaintiffAddress) {
-      v(c.secondPlaintiffAddress,          133, 590);
-      v(c.secondPlaintiffCity   || "",     370, 590);
-      v(c.secondPlaintiffState  || "CA",   472, 590);
-      v(c.secondPlaintiffZip    || "",     499, 590);
+      v(c.secondPlaintiffAddress,          133, 550);
+      v(c.secondPlaintiffCity   || "",     370, 550);
+      v(c.secondPlaintiffState  || "CA",   472, 550);
+      v(c.secondPlaintiffZip    || "",     499, 550);
     }
     if (c.secondPlaintiffMailingAddress) {
-      v(c.secondPlaintiffMailingAddress,          197, 565);
-      v(c.secondPlaintiffMailingCity   || "",     370, 565);
-      v(c.secondPlaintiffMailingState  || "CA",   472, 565);
-      v(c.secondPlaintiffMailingZip    || "",     499, 565);
+      v(c.secondPlaintiffMailingAddress,          197, 521);
+      v(c.secondPlaintiffMailingCity   || "",     370, 521);
+      v(c.secondPlaintiffMailingState  || "CA",   472, 521);
+      v(c.secondPlaintiffMailingZip    || "",     499, 521);
     }
-    if (c.secondPlaintiffEmail) v(c.secondPlaintiffEmail, 191, 549);
+    if (c.secondPlaintiffEmail) v(c.secondPlaintiffEmail, 191, 490);
   }
 
   // ── §2 Defendant ─────────────────────────────────────────────────────────
-  v(c.defendantName,           95,  461);
-  v(c.defendantPhone,         462,  461);
-  v(c.defendantAddress,       133,  437);
-  v(c.defendantCity,          370,  437);
-  v(c.defendantState || "CA", 472,  437);
-  v(c.defendantZip,           499,  437);
+  v(c.defendantName,           95,  400);
+  v(c.defendantPhone,         462,  400);
+  v(c.defendantAddress,       133,  385);
+  v(c.defendantCity,          370,  385);
+  v(c.defendantState || "CA", 472,  385);
+  v(c.defendantZip,           499,  385);
   if (c.defendantMailingAddress) {
-    v(c.defendantMailingAddress,        215, 411);
-    v(c.defendantMailingCity,           370, 411);
-    v(c.defendantMailingState || "CA",  472, 411);
-    v(c.defendantMailingZip,            499, 411);
+    v(c.defendantMailingAddress,        215, 356);
+    v(c.defendantMailingCity,           370, 356);
+    v(c.defendantMailingState || "CA",  472, 356);
+    v(c.defendantMailingZip,            499, 356);
   }
   // Agent for service (if defendant is a business/entity)
   if (c.defendantIsBusinessOrEntity && c.defendantAgentName) {
-    v(c.defendantAgentName,           95,  355);
-    v(c.defendantAgentTitle || "",   413,  355);
-    v(c.defendantAgentStreet || "", 124,  332);
-    v(c.defendantAgentCity   || "", 341,  332);
-    v(c.defendantAgentState  || "CA", 441, 332);
-    v(c.defendantAgentZip    || "", 469,  332);
+    v(c.defendantAgentName,           95,  283);
+    v(c.defendantAgentTitle || "",   413,  283);
+    v(c.defendantAgentStreet || "", 124,  268);
+    v(c.defendantAgentCity   || "", 341,  268);
+    v(c.defendantAgentState  || "CA", 441, 268);
+    v(c.defendantAgentZip    || "", 469,  268);
   }
 
   // ── §3 Claim amount ───────────────────────────────────────────────────────
@@ -332,7 +332,7 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }),
-      300, 260
+      370, 216
     );
   }
 
@@ -342,7 +342,7 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
   if (desc) {
     const endNote = " (See attached MC-030 Declaration for full details.)";
     const maxW = 480;
-    const startY = 222;
+    const startY = 185;
     const lineH = 12;
     const maxLines = 5;
     // Try to fit description; if it needs more than maxLines, truncate + append note
@@ -352,7 +352,7 @@ function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
   } else {
     // No description yet — reference the declaration
     const signerName = c.secondPlaintiffName || c.plaintiffName || "";
-    val(page, font, `See attached MC-030 Declaration of ${signerName}.`, 63, 222 + LIFT, 9);
+    val(page, font, `See attached MC-030 Declaration of ${signerName}.`, 63, 185 + LIFT, 9);
   }
 }
 
@@ -363,26 +363,26 @@ function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
   const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
   // ── Page header ───────────────────────────────────────────────────────────
-  v(c.plaintiffName, 163, 772);
-  if (c.caseNumber) v(c.caseNumber, 440, 762);
+  v(c.plaintiffName, 163, 748);
+  if (c.caseNumber) v(c.caseNumber, 440, 748);
 
   // ── §3b When did this happen? ─────────────────────────────────────────────
-  v(c.incidentDate, 217, 719);
+  v(c.incidentDate, 217, 702);
   // Date range (if applicable)
-  if (c.dateStarted) v(c.dateStarted, 335, 703);
-  if (c.dateThrough)  v(c.dateThrough,  470, 703);
+  if (c.dateStarted) v(c.dateStarted, 335, 695);
+  if (c.dateThrough)  v(c.dateThrough,  470, 695);
 
   // ── §3c How did you calculate the money owed? ─────────────────────────────
   if (c.howAmountCalculated) {
-    wrapVal(page, font, c.howAmountCalculated, 63, 672 + LIFT, 480, 9, 12, 5);
+    wrapVal(page, font, c.howAmountCalculated, 63, 648 + LIFT, 480, 9, 12, 5);
   }
 
   // ── "Check here if you need more space — attach MC-030" always checked ────
-  xm(36, 577);
+  xm(36, 575);
 
   // ── §4 Prior demand ───────────────────────────────────────────────────────
-  if (c.priorDemandMade === true)  xm(70,  514);
-  if (c.priorDemandMade === false) xm(125, 514);
+  if (c.priorDemandMade === true)  xm(70,  469);
+  if (c.priorDemandMade === false) xm(125, 469);
 
   // ── §5 Venue — one checkbox per option letter (a–e) ──────────────────────
   // Option "a" covers sub-items (1)–(4); there is ONE checkbox for the whole group.
@@ -397,32 +397,32 @@ function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
     other:                     "e",
   };
   const venueCheckboxes: Record<string, [number, number]> = {
-    a: [90, 454],
-    b: [67, 398],
-    c: [67, 357],
-    d: [67, 318],
-    e: [67, 283],
+    a: [90, 420],
+    b: [67, 371],
+    c: [67, 331],
+    d: [67, 290],
+    e: [67, 253],
   };
   const vSel = venueBasisMap[c.venueBasis ?? ""];
   if (vSel && venueCheckboxes[vSel]) {
     const [cx, cy] = venueCheckboxes[vSel];
     xm(cx, cy);
   }
-  if (vSel === "e" && c.venueReason) v(c.venueReason, 167, 279);
+  if (vSel === "e" && c.venueReason) v(c.venueReason, 167, 249);
 
   // ── §6 Zip code of courthouse ─────────────────────────────────────────────
-  v(c.venueZip, 415, 242);
+  v(c.venueZip, 415, 194);
 
   // ── §7 Attorney fee dispute ───────────────────────────────────────────────
-  if (c.isAttyFeeDispute === true)                          xm(364, 216);
-  if (c.isAttyFeeDispute === false || !c.isAttyFeeDispute) xm(417, 216);
-  if (c.isAttyFeeDispute && c.hadArbitration)               xm(503, 201);
+  if (c.isAttyFeeDispute === true)                          xm(364, 174);
+  if (c.isAttyFeeDispute === false || !c.isAttyFeeDispute) xm(417, 174);
+  if (c.isAttyFeeDispute && c.hadArbitration)               xm(503, 162);
 
   // ── §8 Suing a public entity ──────────────────────────────────────────────
-  if (c.isSuingPublicEntity === true)  xm(250, 183);
-  if (c.isSuingPublicEntity !== true)  xm(303, 183);
+  if (c.isSuingPublicEntity === true)  xm(250, 150);
+  if (c.isSuingPublicEntity !== true)  xm(303, 150);
   if (c.isSuingPublicEntity && c.publicEntityClaimFiledDate) {
-    v(c.publicEntityClaimFiledDate, 453, 168);
+    v(c.publicEntityClaimFiledDate, 453, 133);
   }
 }
 
@@ -433,27 +433,27 @@ function drawPage4(page: any, font: any, c: Record<string, any>, bg: any) {
   const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
   // ── Page header ───────────────────────────────────────────────────────────
-  v(c.plaintiffName, 163, 772);
-  if (c.caseNumber) v(c.caseNumber, 440, 762);
+  v(c.plaintiffName, 163, 748);
+  if (c.caseNumber) v(c.caseNumber, 440, 748);
 
   // ── §9 Filed more than 12 claims? ────────────────────────────────────────
-  if (c.filedMoreThan12Claims === true)  xm(71,  696);
-  if (c.filedMoreThan12Claims !== true)  xm(122, 696);
+  if (c.filedMoreThan12Claims === true)  xm(71,  682);
+  if (c.filedMoreThan12Claims !== true)  xm(122, 682);
 
   // ── §10 Claim more than $2,500? ───────────────────────────────────────────
-  if (c.claimOver2500 === true)  xm(284, 672);
-  if (c.claimOver2500 !== true)  xm(331, 672);
+  if (c.claimOver2500 === true)  xm(284, 663);
+  if (c.claimOver2500 !== true)  xm(331, 663);
 
   // ── §11 Declaration ───────────────────────────────────────────────────────
   const declDate = c.declarationDate || today();
-  v(declDate, 65, 578);
+  v(declDate, 65, 506);
 
   // Print name: individual name if business filing, otherwise plaintiff name
   const printName = c.plaintiffIsBusiness && c.secondPlaintiffName
     ? c.secondPlaintiffName
     : c.plaintiffName;
   const printTitle = c.plaintiffTitle ? `, ${c.plaintiffTitle}` : "";
-  v(`${printName}${printTitle}`, 36, 552);
+  v(`${printName}${printTitle}`, 36, 488);
 }
 
 // ─── SC-100 shared builder ────────────────────────────────────────────────────
