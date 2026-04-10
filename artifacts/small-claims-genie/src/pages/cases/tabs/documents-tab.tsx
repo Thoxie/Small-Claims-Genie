@@ -29,6 +29,7 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
   const [label, setLabel] = useState(doc.label || doc.filename || "");
   const [description, setDescription] = useState(doc.description || "");
   const [saving, setSaving] = useState(false);
+  const [viewing, setViewing] = useState(false);
 
   const save = async (nextLabel: string, nextDesc: string) => {
     if (nextLabel === (doc.label || doc.filename || "") && nextDesc === (doc.description || "")) return;
@@ -45,11 +46,20 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
     setSaving(false);
   };
 
-  const handleLabelKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") { e.currentTarget.blur(); }
-  };
-  const handleDescKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") { e.currentTarget.blur(); }
+  const handleView = async () => {
+    if (viewing) return;
+    setViewing(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/documents/${doc.id}/file`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error("Failed to load document");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch { /* silent */ }
+    setViewing(false);
   };
 
   return (
@@ -64,7 +74,7 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
             value={label}
             onChange={e => setLabel(e.target.value)}
             onBlur={() => save(label, description)}
-            onKeyDown={handleLabelKeyDown}
+            onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
             maxLength={120}
             placeholder="Document name"
           />
@@ -78,19 +88,23 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
           value={description}
           onChange={e => setDescription(e.target.value)}
           onBlur={() => save(label, description)}
-          onKeyDown={handleDescKeyDown}
+          onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
           maxLength={80}
           placeholder="Add a note…"
         />
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        {doc.fileUrl && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" aria-label="View document">
-              <Eye className="h-4 w-4" />
-            </a>
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-primary"
+          onClick={handleView}
+          disabled={viewing}
+          aria-label="View document"
+          title="View document"
+        >
+          <Eye className={`h-4 w-4 ${viewing ? "animate-pulse" : ""}`} />
+        </Button>
         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={onDelete} disabled={deleting} aria-label="Delete document">
           <Trash2 className="h-4 w-4" />
         </Button>
