@@ -211,156 +211,249 @@ Only include a field if it is currently null/empty. Skip fields that already hav
 }
 
 // ─── SC-100 Page drawing functions ────────────────────────────────────────────
+//
+// Coordinate system: PDF points (612×792), origin bottom-left.
+// PNG backgrounds are 2550×3300 px at 300 DPI → scale = 4.167 px/pt.
+// Convert PNG y (from top) to PDF y (from bottom): pdf_y = 792 - png_y/4.167
+// LIFT = 4.5 pt (≈1/16 inch) upward shift applied to all text placements
+// to sit on the field lines rather than below them.
+//
+// Page layout (SC-100, Rev. January 1, 2026):
+//   Page 1 — Instructions + right-column: court name/address (plaintiff fills),
+//             case number/name (court fills), trial date (court fills)
+//   Page 2 — §1 Plaintiff, §2 Defendant, §3a claim amount + description
+//   Page 3 — §3b date/§3c how calculated, §4 prior demand, §5 venue,
+//             §6 zip, §7 atty fee, §8 public entity
+//   Page 4 — §9 filed >12 claims, §10 claim >$2500, §11 declaration + sig
 
-function drawPage1(page: any, bg: any) {
+function drawPage1(page: any, font: any, c: Record<string, any>, bg: any) {
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-}
-
-function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
-  page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-  const LIFT = 4.5; // 1/16 inch upward shift
+  const LIFT = 4.5;
   const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
 
-  // ── Court / courthouse info (top header section) ────────────────────────
-  // "SUPERIOR COURT OF CALIFORNIA, COUNTY OF ___" → county name
+  // ── Right column: "Fill in court name and street address" box ───────────
+  // The box has "Superior Court of California, County of" pre-printed.
+  // County name goes right after "County of" on the same line.
   if (c.countyId) {
     const countyDisplay = String(c.countyId)
       .replace(/-/g, " ")
       .replace(/\b\w/g, (l: string) => l.toUpperCase());
-    v(countyDisplay, 166, 779);
+    v(countyDisplay, 475, 628);
   }
-  // Courthouse name (e.g. "Stanley Mosk Courthouse")
-  if (c.courthouseName) v(c.courthouseName, 60, 765);
-  // Courthouse street address
-  if (c.courthouseAddress) v(c.courthouseAddress, 60, 752);
-  // Courthouse city + zip (only if it won't conflict — keep it tight)
+  // Street address of courthouse on the next line inside the box
+  if (c.courthouseName)    v(c.courthouseName,    337, 614);
+  if (c.courthouseAddress) v(c.courthouseAddress,  337, 600);
   if (c.courthouseCity || c.courthouseZip) {
     const cityZip = [c.courthouseCity, "CA", c.courthouseZip].filter(Boolean).join(" ");
-    v(cityZip, 60, 739);
+    v(cityZip, 337, 586);
   }
 
-  // ── Case caption ────────────────────────────────────────────────────────
-  // Caption shows business name if filing as business, otherwise individual name
-  const captionName = c.plaintiffName || "";
-  v(captionName, 132, 725);
-  v(c.caseNumber, 515, 725);
+  // ── Right column: "Case Name" (plaintiff fills; case number filled by court) ──
+  // Build "Plaintiff v. Defendant" style case name
+  if (c.plaintiffName && c.defendantName) {
+    const caseName = `${c.plaintiffName} v. ${c.defendantName}`;
+    v(caseName, 337, 540, 8);
+  }
+}
 
-  // ── Hearing info (in FOR COURT USE ONLY area — filled once hearing is assigned) ──
-  if (c.hearingDate)      v(c.hearingDate,      415, 757);
-  if (c.hearingTime)      v(c.hearingTime,      415, 746);
-  if (c.hearingCourtroom) v(c.hearingCourtroom, 415, 735);
-  if (c.hearingJudge)     v(c.hearingJudge,     415, 724);
+function drawPage2(page: any, font: any, c: Record<string, any>, bg: any) {
+  page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
+  const LIFT = 4.5;
+  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
 
-  // ── Plaintiff section ───────────────────────────────────────────────────
-  // Line 1: business name OR individual name (plaintiffName)
-  v(c.plaintiffName, 95, 674);
-  v(c.plaintiffPhone, 455, 674);
-  // Line 2: if filing as business, show individual name + title on second name line
-  if (c.plaintiffIsBusiness && c.secondPlaintiffName) {
-    const indivLine = c.plaintiffTitle
+  // ── Page header: "Plaintiff (list names):" + "Case Number:" box ─────────
+  v(c.plaintiffName, 163, 772);
+  if (c.caseNumber) v(c.caseNumber, 440, 762);
+
+  // ── §1 Plaintiff ─────────────────────────────────────────────────────────
+  v(c.plaintiffName,           95,  708);
+  v(c.plaintiffPhone,         462,  708);
+  v(c.plaintiffAddress,       133,  694);
+  v(c.plaintiffCity,          370,  694);
+  v(c.plaintiffState || "CA", 472,  694);
+  v(c.plaintiffZip,           499,  694);
+  if (c.plaintiffMailingAddress) {
+    v(c.plaintiffMailingAddress,       197, 664);
+    v(c.plaintiffMailingCity,          370, 664);
+    v(c.plaintiffMailingState || "CA", 472, 664);
+    v(c.plaintiffMailingZip,           499, 664);
+  }
+  v(c.plaintiffEmail, 191, 636);
+
+  // ── §1 Second plaintiff (if any) ─────────────────────────────────────────
+  if (c.secondPlaintiffName) {
+    const p2Name = c.plaintiffTitle
       ? `${c.secondPlaintiffName}, ${c.plaintiffTitle}`
       : c.secondPlaintiffName;
-    v(indivLine, 95, 662);
+    v(p2Name, 95, 606);
+    if (c.secondPlaintiffPhone) v(c.secondPlaintiffPhone, 462, 606);
+    if (c.secondPlaintiffAddress) {
+      v(c.secondPlaintiffAddress,          133, 590);
+      v(c.secondPlaintiffCity   || "",     370, 590);
+      v(c.secondPlaintiffState  || "CA",   472, 590);
+      v(c.secondPlaintiffZip    || "",     499, 590);
+    }
+    if (c.secondPlaintiffMailingAddress) {
+      v(c.secondPlaintiffMailingAddress,          197, 565);
+      v(c.secondPlaintiffMailingCity   || "",     370, 565);
+      v(c.secondPlaintiffMailingState  || "CA",   472, 565);
+      v(c.secondPlaintiffMailingZip    || "",     499, 565);
+    }
+    if (c.secondPlaintiffEmail) v(c.secondPlaintiffEmail, 191, 549);
   }
-  v(c.plaintiffAddress, 133, 655);
-  v(c.plaintiffCity, 373, 655);
-  v(c.plaintiffState || "CA", 476, 655);
-  v(c.plaintiffZip, 503, 655);
-  if (c.plaintiffMailingAddress) {
-    v(c.plaintiffMailingAddress, 197, 626);
-    v(c.plaintiffMailingCity, 373, 626);
-    v(c.plaintiffMailingState || "CA", 476, 626);
-    v(c.plaintiffMailingZip, 503, 626);
-  }
-  v(c.plaintiffEmail, 191, 600);
 
-  // ── Defendant section ───────────────────────────────────────────────────
-  v(c.defendantName, 95, 390);
-  v(c.defendantPhone, 455, 390);
-  v(c.defendantAddress, 133, 371);
-  v(c.defendantCity, 372, 371);
-  v(c.defendantState || "CA", 473, 371);
-  v(c.defendantZip, 500, 371);
+  // ── §2 Defendant ─────────────────────────────────────────────────────────
+  v(c.defendantName,           95,  461);
+  v(c.defendantPhone,         462,  461);
+  v(c.defendantAddress,       133,  437);
+  v(c.defendantCity,          370,  437);
+  v(c.defendantState || "CA", 472,  437);
+  v(c.defendantZip,           499,  437);
   if (c.defendantMailingAddress) {
-    v(c.defendantMailingAddress, 215, 343);
-    v(c.defendantMailingCity, 372, 343);
-    v(c.defendantMailingState || "CA", 473, 343);
-    v(c.defendantMailingZip, 500, 343);
+    v(c.defendantMailingAddress,        215, 411);
+    v(c.defendantMailingCity,           370, 411);
+    v(c.defendantMailingState || "CA",  472, 411);
+    v(c.defendantMailingZip,            499, 411);
   }
+  // Agent for service (if defendant is a business/entity)
   if (c.defendantIsBusinessOrEntity && c.defendantAgentName) {
-    v(c.defendantAgentName, 95, 283);
-    v(c.defendantAgentTitle || "", 413, 283);
-    v(c.defendantAgentStreet || "", 124, 261);
-    v(c.defendantAgentCity || "", 341, 261);
-    v(c.defendantAgentState || "CA", 441, 261);
-    v(c.defendantAgentZip || "", 469, 261);
+    v(c.defendantAgentName,           95,  355);
+    v(c.defendantAgentTitle || "",   413,  355);
+    v(c.defendantAgentStreet || "", 124,  332);
+    v(c.defendantAgentCity   || "", 341,  332);
+    v(c.defendantAgentState  || "CA", 441, 332);
+    v(c.defendantAgentZip    || "", 469,  332);
   }
 
-  // ── Claim amount ────────────────────────────────────────────────────────
+  // ── §3 Claim amount ───────────────────────────────────────────────────────
   if (c.claimAmount) {
-    v(`${Number(c.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 300, 194);
+    v(
+      Number(c.claimAmount).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      300, 260
+    );
   }
 
-  // ── Claim description — always reference MC-030 Declaration ────────────
-  const signerName = c.secondPlaintiffName || c.plaintiffName || "";
-  val(page, font, `See attached: Declaration of ${signerName} (MC-030)`, 63, 163 + LIFT, 9);
+  // ── §3a Why defendant owes — actual description, truncated to fit ─────────
+  // The form has ~5 lines for this. If description is long we note MC-030.
+  const desc = c.claimDescription || "";
+  if (desc) {
+    const endNote = " (See attached MC-030 Declaration for full details.)";
+    const maxW = 480;
+    const startY = 222;
+    const lineH = 12;
+    const maxLines = 5;
+    // Try to fit description; if it needs more than maxLines, truncate + append note
+    const remaining = wrapVal(page, font, desc + endNote, 63, startY + LIFT, maxW, 9, lineH, maxLines);
+    // If wrapVal returned before finishing (ran out of lines), that's fine — MC-030 covers rest
+    void remaining;
+  } else {
+    // No description yet — reference the declaration
+    const signerName = c.secondPlaintiffName || c.plaintiffName || "";
+    val(page, font, `See attached MC-030 Declaration of ${signerName}.`, 63, 222 + LIFT, 9);
+  }
 }
 
 function drawPage3(page: any, font: any, c: Record<string, any>, bg: any) {
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-  const LIFT = 4.5; // 1/16 inch upward shift
+  const LIFT = 4.5;
   const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
   const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
-  v(c.plaintiffName, 132, 745);
-  v(c.caseNumber, 515, 745);
-  v(c.incidentDate, 217, 690);
-  v(c.dateStarted, 320, 674);
-  v(c.dateThrough, 465, 674);
-  if (c.howAmountCalculated) wrapVal(page, font, c.howAmountCalculated, 63, 642 + LIFT, 480, 9, 12, 5);
-  // "Check here if you need more space — attach MC-030 Declaration" — always checked
-  xm(36, 554);
-  if (c.priorDemandMade === true) xm(70, 492);
-  if (c.priorDemandMade === false) xm(125, 492);
+
+  // ── Page header ───────────────────────────────────────────────────────────
+  v(c.plaintiffName, 163, 772);
+  if (c.caseNumber) v(c.caseNumber, 440, 762);
+
+  // ── §3b When did this happen? ─────────────────────────────────────────────
+  v(c.incidentDate, 217, 719);
+  // Date range (if applicable)
+  if (c.dateStarted) v(c.dateStarted, 335, 703);
+  if (c.dateThrough)  v(c.dateThrough,  470, 703);
+
+  // ── §3c How did you calculate the money owed? ─────────────────────────────
+  if (c.howAmountCalculated) {
+    wrapVal(page, font, c.howAmountCalculated, 63, 672 + LIFT, 480, 9, 12, 5);
+  }
+
+  // ── "Check here if you need more space — attach MC-030" always checked ────
+  xm(36, 577);
+
+  // ── §4 Prior demand ───────────────────────────────────────────────────────
+  if (c.priorDemandMade === true)  xm(70,  514);
+  if (c.priorDemandMade === false) xm(125, 514);
+
+  // ── §5 Venue — one checkbox per option letter (a–e) ──────────────────────
+  // Option "a" covers sub-items (1)–(4); there is ONE checkbox for the whole group.
   const venueBasisMap: Record<string, string> = {
-    where_defendant_lives: "a1", where_damage_happened: "a2", where_plaintiff_injured: "a3",
-    where_contract_made_broken: "a4", buyer_household_goods: "b", retail_installment: "c",
-    vehicle_finance: "d", other: "e",
+    where_defendant_lives:     "a",
+    where_damage_happened:     "a",
+    where_plaintiff_injured:   "a",
+    where_contract_made_broken:"a",
+    buyer_household_goods:     "b",
+    retail_installment:        "c",
+    vehicle_finance:           "d",
+    other:                     "e",
   };
   const venueCheckboxes: Record<string, [number, number]> = {
-    a1: [90, 374], a2: [90, 361], a3: [90, 348], a4: [321, 374],
-    b: [67, 319], c: [67, 278], d: [67, 250], e: [67, 223],
+    a: [90, 454],
+    b: [67, 398],
+    c: [67, 357],
+    d: [67, 318],
+    e: [67, 283],
   };
   const vSel = venueBasisMap[c.venueBasis ?? ""];
-  if (vSel && venueCheckboxes[vSel]) { const [cx, cy] = venueCheckboxes[vSel]; xm(cx, cy); }
-  if (vSel === "e" && c.venueReason) v(c.venueReason, 167, 218);
-  v(c.venueZip, 415, 180);
-  if (c.isAttyFeeDispute === true) xm(364, 151);
-  if (c.isAttyFeeDispute === false || !c.isAttyFeeDispute) xm(417, 151);
-  if (c.isAttyFeeDispute && c.hadArbitration) xm(503, 137);
-  if (c.isSuingPublicEntity === true) xm(250, 117);
-  if (c.isSuingPublicEntity !== true) xm(303, 117);
-  if (c.isSuingPublicEntity && c.publicEntityClaimFiledDate) v(c.publicEntityClaimFiledDate, 453, 102);
+  if (vSel && venueCheckboxes[vSel]) {
+    const [cx, cy] = venueCheckboxes[vSel];
+    xm(cx, cy);
+  }
+  if (vSel === "e" && c.venueReason) v(c.venueReason, 167, 279);
+
+  // ── §6 Zip code of courthouse ─────────────────────────────────────────────
+  v(c.venueZip, 415, 242);
+
+  // ── §7 Attorney fee dispute ───────────────────────────────────────────────
+  if (c.isAttyFeeDispute === true)                          xm(364, 216);
+  if (c.isAttyFeeDispute === false || !c.isAttyFeeDispute) xm(417, 216);
+  if (c.isAttyFeeDispute && c.hadArbitration)               xm(503, 201);
+
+  // ── §8 Suing a public entity ──────────────────────────────────────────────
+  if (c.isSuingPublicEntity === true)  xm(250, 183);
+  if (c.isSuingPublicEntity !== true)  xm(303, 183);
+  if (c.isSuingPublicEntity && c.publicEntityClaimFiledDate) {
+    v(c.publicEntityClaimFiledDate, 453, 168);
+  }
 }
 
 function drawPage4(page: any, font: any, c: Record<string, any>, bg: any) {
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-  const LIFT = 4.5; // 1/16 inch upward shift
+  const LIFT = 4.5;
   const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
   const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
-  v(c.plaintiffName, 132, 745);
-  v(c.caseNumber, 515, 745);
-  if (c.filedMoreThan12Claims === true) xm(71, 673);
-  if (c.filedMoreThan12Claims !== true) xm(122, 673);
-  if (c.claimOver2500 === true) xm(284, 650);
-  if (c.claimOver2500 !== true) xm(331, 650);
+
+  // ── Page header ───────────────────────────────────────────────────────────
+  v(c.plaintiffName, 163, 772);
+  if (c.caseNumber) v(c.caseNumber, 440, 762);
+
+  // ── §9 Filed more than 12 claims? ────────────────────────────────────────
+  if (c.filedMoreThan12Claims === true)  xm(71,  696);
+  if (c.filedMoreThan12Claims !== true)  xm(122, 696);
+
+  // ── §10 Claim more than $2,500? ───────────────────────────────────────────
+  if (c.claimOver2500 === true)  xm(284, 672);
+  if (c.claimOver2500 !== true)  xm(331, 672);
+
+  // ── §11 Declaration ───────────────────────────────────────────────────────
   const declDate = c.declarationDate || today();
-  v(declDate, 65, 501);
-  // Signature print name: individual if business filing, otherwise plaintiff name
+  v(declDate, 65, 578);
+
+  // Print name: individual name if business filing, otherwise plaintiff name
   const printName = c.plaintiffIsBusiness && c.secondPlaintiffName
     ? c.secondPlaintiffName
     : c.plaintiffName;
   const printTitle = c.plaintiffTitle ? `, ${c.plaintiffTitle}` : "";
-  v(`${printName}${printTitle}`, 36, 476);
+  v(`${printName}${printTitle}`, 36, 552);
 }
 
 // ─── SC-100 shared builder ────────────────────────────────────────────────────
@@ -375,18 +468,17 @@ async function buildSC100Pdf(
     const bytes = fs.readFileSync(path.join(assetDir, `sc100_hq-${i}.png`));
     return pdfDoc.embedPng(bytes);
   }));
-  drawPage1(pdfDoc.addPage([PW, PH]), bgImages[0]);
+  drawPage1(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[0]);
   drawPage2(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[1]);
   drawPage3(pdfDoc.addPage([PW, PH]), font, caseData, bgImages[2]);
   const p4 = pdfDoc.addPage([PW, PH]);
   drawPage4(p4, font, caseData, bgImages[3]);
-  // Embed drawn signature if provided — placed at the signature line on page 4
-  // Signature line sits between the date field (y≈501) and print-name (y≈476)
+  // Embed drawn signature — sits between date (y≈578) and print-name (y≈552) on page 4
   if (signaturePngBytes) {
     const sigImg = await pdfDoc.embedPng(signaturePngBytes);
     const SIG_W = 240;
     const SIG_H = 30;
-    p4.drawImage(sigImg, { x: 248, y: 482 + 4.5, width: SIG_W, height: SIG_H });
+    p4.drawImage(sigImg, { x: 248, y: 558 + 4.5, width: SIG_W, height: SIG_H });
   }
   return pdfDoc.save();
 }
