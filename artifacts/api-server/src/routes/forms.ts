@@ -710,7 +710,9 @@ router.post("/cases/:id/forms/sc100a", async (req, res): Promise<void> => {
     const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
     const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
-    // Case Number top right
+    // Header — case caption + case number
+    const sc100aCaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
+    v(sc100aCaseName, 72, 756);
     v(d.caseNumber, 425, 756);
 
     // Item 1 — Additional Plaintiffs (slots for 2)
@@ -801,7 +803,11 @@ router.post("/cases/:id/forms/sc103", async (req, res): Promise<void> => {
     const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
     const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
+    const sc103CaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
+    v(sc103CaseName, 72, 756);
     v(d.caseNumber, 425, 756);
+    if (d.courthouseName) v(d.courthouseName, 72, 742);
+    if (d.courthouseAddress) v(d.courthouseAddress, 72, 730);
 
     // Attached to
     if (b.attachedTo === "sc100") xm(156, 736);
@@ -878,13 +884,13 @@ router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {
     const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
     const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy + LIFT, 5);
 
-    // Right column — court info
-    v1(b.courtStreet || "", 376, 612);
+    // Right column — court info (body params override case data)
+    v1(b.courtStreet || d.courthouseAddress || d.courthouseName || "", 376, 612);
     v1(d.caseNumber, 376, 550);
     v1(caseName, 376, 507);
-    v1(b.hearingDate, 376, 463);
-    v1(b.hearingTime, 376, 435);
-    v1(b.hearingDept, 490, 435);
+    v1(b.hearingDate || formatDateDisplay(d.hearingDate) || "", 376, 463);
+    v1(b.hearingTime || formatTimeDisplay(d.hearingTime) || "", 376, 435);
+    v1(b.hearingDept || d.hearingCourtroom || "", 490, 435);
 
     // Item 1a — person served
     v1(b.personServedName, 100, 440);
@@ -975,8 +981,8 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
     const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
     const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy + LIFT, 5);
 
-    // Right column — court + case
-    v1(b.courtStreet || "", 376, 606);
+    // Right column — court + case (auto-fill from case data)
+    v1(b.courtStreet || d.courthouseAddress || d.courthouseName || "", 376, 606);
     v1(d.caseNumber, 376, 549);
     v1(caseName, 376, 505);
 
@@ -1046,7 +1052,11 @@ router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
     const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
     const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
+    const sc112aCaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
+    v(sc112aCaseName, 72, 756);
     v(d.caseNumber, 425, 756);
+    if (d.courthouseName) v(d.courthouseName, 72, 742);
+    if (d.courthouseAddress) v(d.courthouseAddress, 72, 730);
 
     // Item 1 — Server info
     v(b.serverName, 72, 696);
@@ -1122,6 +1132,8 @@ router.post("/cases/:id/forms/sc120", async (req, res): Promise<void> => {
 
     v2(d.defendantName, 72, 754);
     v2(d.caseNumber, 425, 754);
+    if (d.courthouseName) v2(d.courthouseName, 250, 754, 8);
+    if (d.courthouseAddress) v2(d.courthouseAddress, 250, 742, 8);
 
     // Item 1 — Plaintiff info (the person who filed SC-100)
     v2(d.plaintiffName, 72, 688); v2(d.plaintiffPhone, 448, 688);
@@ -1204,8 +1216,8 @@ router.post("/cases/:id/forms/sc140", async (req, res): Promise<void> => {
     const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
     const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
-    // Court name and address of court
-    v(b.courtName || "", 285, 754);
+    // Court name and address of court (auto-fill from case data)
+    v(b.courtName || d.courthouseName || d.courthouseAddress || "", 285, 754);
     // Case number
     v(d.caseNumber, 900 * 0.24, 745);  // center area
 
@@ -1266,8 +1278,8 @@ router.post("/cases/:id/forms/sc150", async (req, res): Promise<void> => {
     const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
     const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
-    // Right column — court + case
-    v(b.courtStreet || "", 376, 606);
+    // Right column — court + case (auto-fill from case data)
+    v(b.courtStreet || d.courthouseAddress || d.courthouseName || "", 376, 606);
     v(d.caseNumber, 376, 549);
     v(caseName, 376, 505);
 
