@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import {
   LogOut,
-  LayoutDashboard,
   ClipboardList,
   FileText,
   MessageSquare,
@@ -64,16 +63,6 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
               >
                 <LogOut className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0" />
                 <span className="whitespace-nowrap">Exit Case</span>
-              </Link>
-
-              {/* My Cases */}
-              <Link
-                href="/dashboard"
-                title="View all your cases"
-                className="flex flex-col items-center justify-center gap-1 px-2 md:px-4 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold leading-tight min-w-[60px] md:min-w-[80px] transition-all text-gray-500 hover:bg-blue-50 hover:text-blue-600"
-              >
-                <LayoutDashboard className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0" />
-                <span className="whitespace-nowrap">My Cases</span>
               </Link>
 
               {/* 7 workspace tabs */}
