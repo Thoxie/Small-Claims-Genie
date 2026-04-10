@@ -17,6 +17,88 @@ import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
+// ─── DocTile ─────────────────────────────────────────────────────────────────
+function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
+  doc: any;
+  caseId: number;
+  onDelete: () => void;
+  deleting: boolean;
+  getToken: () => Promise<string | null>;
+  onSaved: () => void;
+}) {
+  const [label, setLabel] = useState(doc.label || doc.filename || "");
+  const [description, setDescription] = useState(doc.description || "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async (nextLabel: string, nextDesc: string) => {
+    if (nextLabel === (doc.label || doc.filename || "") && nextDesc === (doc.description || "")) return;
+    setSaving(true);
+    try {
+      const token = await getToken();
+      await fetch(`/api/cases/${caseId}/documents/${doc.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ label: nextLabel, description: nextDesc }),
+      });
+      onSaved();
+    } catch { /* silent */ }
+    setSaving(false);
+  };
+
+  const handleLabelKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") { e.currentTarget.blur(); }
+  };
+  const handleDescKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") { e.currentTarget.blur(); }
+  };
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm">
+      <div className="shrink-0 h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+        <FileText className="h-4 w-4 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <input
+            className="flex-1 min-w-0 text-sm font-medium bg-transparent border-b border-transparent hover:border-muted-foreground/40 focus:border-primary focus:outline-none transition-colors truncate"
+            value={label}
+            onChange={e => setLabel(e.target.value)}
+            onBlur={() => save(label, description)}
+            onKeyDown={handleLabelKeyDown}
+            maxLength={120}
+            placeholder="Document name"
+          />
+          {saving && <span className="text-[10px] text-muted-foreground shrink-0">saving…</span>}
+          {doc.ocrText && (
+            <Badge variant="outline" className="text-[10px] shrink-0 border-[#a8e6df] text-[#0d6b5e]">OCR</Badge>
+          )}
+        </div>
+        <input
+          className="w-full text-xs text-muted-foreground bg-transparent border-b border-transparent hover:border-muted-foreground/30 focus:border-primary/60 focus:outline-none transition-colors mt-0.5 placeholder:text-muted-foreground/40"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          onBlur={() => save(label, description)}
+          onKeyDown={handleDescKeyDown}
+          maxLength={80}
+          placeholder="Add a note…"
+        />
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        {doc.fileUrl && (
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" aria-label="View document">
+              <Eye className="h-4 w-4" />
+            </a>
+          </Button>
+        )}
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={onDelete} disabled={deleting} aria-label="Delete document">
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[] }) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
   const uploadDoc = useUploadDocument();
