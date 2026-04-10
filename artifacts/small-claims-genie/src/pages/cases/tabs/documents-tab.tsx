@@ -69,22 +69,14 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <input
-            className="flex-1 min-w-0 text-sm font-medium bg-transparent border-b border-transparent hover:border-muted-foreground/40 focus:border-primary focus:outline-none transition-colors truncate"
-            value={label}
-            onChange={e => setLabel(e.target.value)}
-            onBlur={() => save(label, description)}
-            onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
-            maxLength={120}
-            placeholder="Document name"
-          />
+          <p className="flex-1 min-w-0 text-sm font-medium truncate">{doc.label || doc.filename || "Untitled"}</p>
           {saving && <span className="text-[10px] text-muted-foreground shrink-0">saving…</span>}
           {doc.ocrText && (
             <Badge variant="outline" className="text-[10px] shrink-0 border-[#a8e6df] text-[#0d6b5e]">OCR</Badge>
           )}
         </div>
         <input
-          className="w-full text-xs text-muted-foreground bg-transparent border-b border-transparent hover:border-muted-foreground/30 focus:border-primary/60 focus:outline-none transition-colors mt-0.5 placeholder:text-muted-foreground/40"
+          className="w-full text-xs text-foreground/60 bg-transparent border-b border-transparent hover:border-muted-foreground/40 focus:border-primary/60 focus:outline-none transition-colors mt-0.5 placeholder:text-foreground/40"
           value={description}
           onChange={e => setDescription(e.target.value)}
           onBlur={() => save(label, description)}
