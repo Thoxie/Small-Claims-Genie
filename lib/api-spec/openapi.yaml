@@ -653,6 +653,32 @@ components:
           type: string
         plaintiffEmail:
           type: string
+        plaintiffMailingAddress:
+          type: string
+        plaintiffMailingCity:
+          type: string
+        plaintiffMailingState:
+          type: string
+        plaintiffMailingZip:
+          type: string
+        plaintiffIsBusiness:
+          type: boolean
+        plaintiffTitle:
+          type: string
+        secondPlaintiffName:
+          type: string
+        secondPlaintiffPhone:
+          type: string
+        secondPlaintiffAddress:
+          type: string
+        secondPlaintiffCity:
+          type: string
+        secondPlaintiffState:
+          type: string
+        secondPlaintiffZip:
+          type: string
+        secondPlaintiffEmail:
+          type: string
         defendantName:
           type: string
         defendantPhone:
@@ -665,9 +691,27 @@ components:
           type: string
         defendantZip:
           type: string
+        defendantMailingAddress:
+          type: string
+        defendantMailingCity:
+          type: string
+        defendantMailingState:
+          type: string
+        defendantMailingZip:
+          type: string
         defendantIsBusinessOrEntity:
           type: boolean
         defendantAgentName:
+          type: string
+        defendantAgentTitle:
+          type: string
+        defendantAgentStreet:
+          type: string
+        defendantAgentCity:
+          type: string
+        defendantAgentState:
+          type: string
+        defendantAgentZip:
           type: string
         claimDescription:
           type: string
@@ -679,15 +723,35 @@ components:
           type: boolean
         priorDemandDescription:
           type: string
+        priorDemandWhyNot:
+          type: string
         venueReason:
           type: string
         venueBasis:
+          type: string
+        courthouseId:
+          type: string
+        courthouseName:
+          type: string
+        courthouseAddress:
+          type: string
+        courthouseCity:
+          type: string
+        courthouseZip:
+          type: string
+        courthousePhone:
+          type: string
+        courthouseWebsite:
+          type: string
+        courthouseClerkEmail:
           type: string
         isSuingPublicEntity:
           type: boolean
         publicEntityClaimFiledDate:
           type: string
         isAttyFeeDispute:
+          type: boolean
+        hadArbitration:
           type: boolean
         filedMoreThan12Claims:
           type: boolean
@@ -767,6 +831,32 @@ components:
           type: string
         plaintiffEmail:
           type: string
+        plaintiffMailingAddress:
+          type: string
+        plaintiffMailingCity:
+          type: string
+        plaintiffMailingState:
+          type: string
+        plaintiffMailingZip:
+          type: string
+        plaintiffIsBusiness:
+          type: boolean
+        plaintiffTitle:
+          type: string
+        secondPlaintiffName:
+          type: string
+        secondPlaintiffPhone:
+          type: string
+        secondPlaintiffAddress:
+          type: string
+        secondPlaintiffCity:
+          type: string
+        secondPlaintiffState:
+          type: string
+        secondPlaintiffZip:
+          type: string
+        secondPlaintiffEmail:
+          type: string
         defendantName:
           type: string
         defendantPhone:
@@ -779,9 +869,27 @@ components:
           type: string
         defendantZip:
           type: string
+        defendantMailingAddress:
+          type: string
+        defendantMailingCity:
+          type: string
+        defendantMailingState:
+          type: string
+        defendantMailingZip:
+          type: string
         defendantIsBusinessOrEntity:
           type: boolean
         defendantAgentName:
+          type: string
+        defendantAgentTitle:
+          type: string
+        defendantAgentStreet:
+          type: string
+        defendantAgentCity:
+          type: string
+        defendantAgentState:
+          type: string
+        defendantAgentZip:
           type: string
         claimDescription:
           type: string
@@ -793,15 +901,35 @@ components:
           type: boolean
         priorDemandDescription:
           type: string
+        priorDemandWhyNot:
+          type: string
         venueReason:
           type: string
         venueBasis:
+          type: string
+        courthouseId:
+          type: string
+        courthouseName:
+          type: string
+        courthouseAddress:
+          type: string
+        courthouseCity:
+          type: string
+        courthouseZip:
+          type: string
+        courthousePhone:
+          type: string
+        courthouseWebsite:
+          type: string
+        courthouseClerkEmail:
           type: string
         isSuingPublicEntity:
           type: boolean
         publicEntityClaimFiledDate:
           type: string
         isAttyFeeDispute:
+          type: boolean
+        hadArbitration:
           type: boolean
         filedMoreThan12Claims:
           type: boolean
