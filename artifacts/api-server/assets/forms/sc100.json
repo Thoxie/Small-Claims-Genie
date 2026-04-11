@@ -1,0 +1,112 @@
+{
+  "id": "sc100",
+  "name": "SC-100 Plaintiff's Claim and Order to Go to Small Claims Court",
+  "lift": 4.5,
+  "defaultSize": 9,
+  "backgroundAssets": [
+    "sc100_hq-1.png",
+    "sc100_hq-2.png",
+    "sc100_hq-3.png",
+    "sc100_hq-4.png"
+  ],
+  "fields": [
+    { "id": "p1_county",              "page": 1, "type": "text", "source": "countyDisplay",      "x": 475, "y": 628, "condition": { "exists": "countyDisplay" } },
+    { "id": "p1_courthouse_name",     "page": 1, "type": "text", "source": "courthouseName",      "x": 337, "y": 614, "condition": { "exists": "courthouseName" } },
+    { "id": "p1_courthouse_address",  "page": 1, "type": "text", "source": "courthouseAddress",   "x": 337, "y": 600, "condition": { "exists": "courthouseAddress" } },
+    { "id": "p1_courthouse_location", "page": 1, "type": "text", "source": "courthouseLocation",  "x": 337, "y": 586, "condition": { "exists": "courthouseLocation" } },
+    { "id": "p1_case_name",           "page": 1, "type": "text", "source": "caseNameDisplay",     "x": 337, "y": 480, "size": 8, "condition": { "exists": "caseNameDisplay" } },
+
+    { "id": "p2_header_plaintiff",    "page": 2, "type": "text", "source": "plaintiffName",       "x": 163, "y": 748 },
+    { "id": "p2_header_case_number",  "page": 2, "type": "text", "source": "caseNumber",          "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
+
+    { "id": "p2_p1_name",             "page": 2, "type": "text", "source": "plaintiffName",       "x":  95, "y": 682 },
+    { "id": "p2_p1_phone",            "page": 2, "type": "text", "source": "plaintiffPhone",      "x": 462, "y": 682 },
+    { "id": "p2_p1_address",          "page": 2, "type": "text", "source": "plaintiffAddress",    "x": 133, "y": 655 },
+    { "id": "p2_p1_city",             "page": 2, "type": "text", "source": "plaintiffCity",       "x": 370, "y": 655 },
+    { "id": "p2_p1_state",            "page": 2, "type": "text", "source": "plaintiffState",      "x": 472, "y": 655, "fallback": "CA" },
+    { "id": "p2_p1_zip",              "page": 2, "type": "text", "source": "plaintiffZip",        "x": 499, "y": 655 },
+
+    { "id": "p2_p1_mailing_address",  "page": 2, "type": "text", "source": "plaintiffMailingAddress", "x": 197, "y": 628, "condition": { "exists": "plaintiffMailingAddress" } },
+    { "id": "p2_p1_mailing_city",     "page": 2, "type": "text", "source": "plaintiffMailingCity",    "x": 370, "y": 628, "condition": { "exists": "plaintiffMailingAddress" } },
+    { "id": "p2_p1_mailing_state",    "page": 2, "type": "text", "source": "plaintiffMailingState",   "x": 472, "y": 628, "fallback": "CA", "condition": { "exists": "plaintiffMailingAddress" } },
+    { "id": "p2_p1_mailing_zip",      "page": 2, "type": "text", "source": "plaintiffMailingZip",     "x": 499, "y": 628, "condition": { "exists": "plaintiffMailingAddress" } },
+
+    { "id": "p2_p1_email",            "page": 2, "type": "text", "source": "plaintiffEmail",     "x": 191, "y": 601 },
+
+    { "id": "p2_p2_name",             "page": 2, "type": "text", "source": "p2NameTitle",         "x":  95, "y": 566, "condition": { "exists": "secondPlaintiffName" } },
+    { "id": "p2_p2_phone",            "page": 2, "type": "text", "source": "secondPlaintiffPhone","x": 462, "y": 566, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffPhone"] } },
+    { "id": "p2_p2_address",          "page": 2, "type": "text", "source": "secondPlaintiffAddress","x": 133, "y": 550, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffAddress"] } },
+    { "id": "p2_p2_city",             "page": 2, "type": "text", "source": "secondPlaintiffCity", "x": 370, "y": 550, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffAddress"] } },
+    { "id": "p2_p2_state",            "page": 2, "type": "text", "source": "secondPlaintiffState","x": 472, "y": 550, "fallback": "CA", "condition": { "all": ["secondPlaintiffName", "secondPlaintiffAddress"] } },
+    { "id": "p2_p2_zip",              "page": 2, "type": "text", "source": "secondPlaintiffZip",  "x": 499, "y": 550, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffAddress"] } },
+
+    { "id": "p2_p2_mailing_address",  "page": 2, "type": "text", "source": "secondPlaintiffMailingAddress", "x": 197, "y": 521, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffMailingAddress"] } },
+    { "id": "p2_p2_mailing_city",     "page": 2, "type": "text", "source": "secondPlaintiffMailingCity",    "x": 370, "y": 521, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffMailingAddress"] } },
+    { "id": "p2_p2_mailing_state",    "page": 2, "type": "text", "source": "secondPlaintiffMailingState",   "x": 472, "y": 521, "fallback": "CA", "condition": { "all": ["secondPlaintiffName", "secondPlaintiffMailingAddress"] } },
+    { "id": "p2_p2_mailing_zip",      "page": 2, "type": "text", "source": "secondPlaintiffMailingZip",     "x": 499, "y": 521, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffMailingAddress"] } },
+    { "id": "p2_p2_email",            "page": 2, "type": "text", "source": "secondPlaintiffEmail","x": 191, "y": 490, "condition": { "all": ["secondPlaintiffName", "secondPlaintiffEmail"] } },
+
+    { "id": "p2_def_name",            "page": 2, "type": "text", "source": "defendantName",       "x":  95, "y": 400 },
+    { "id": "p2_def_phone",           "page": 2, "type": "text", "source": "defendantPhone",      "x": 462, "y": 400 },
+    { "id": "p2_def_address",         "page": 2, "type": "text", "source": "defendantAddress",    "x": 133, "y": 385 },
+    { "id": "p2_def_city",            "page": 2, "type": "text", "source": "defendantCity",       "x": 370, "y": 385 },
+    { "id": "p2_def_state",           "page": 2, "type": "text", "source": "defendantState",      "x": 472, "y": 385, "fallback": "CA" },
+    { "id": "p2_def_zip",             "page": 2, "type": "text", "source": "defendantZip",        "x": 499, "y": 385 },
+
+    { "id": "p2_def_mailing_address", "page": 2, "type": "text", "source": "defendantMailingAddress", "x": 215, "y": 356, "condition": { "exists": "defendantMailingAddress" } },
+    { "id": "p2_def_mailing_city",    "page": 2, "type": "text", "source": "defendantMailingCity",    "x": 370, "y": 356, "condition": { "exists": "defendantMailingAddress" } },
+    { "id": "p2_def_mailing_state",   "page": 2, "type": "text", "source": "defendantMailingState",   "x": 472, "y": 356, "fallback": "CA", "condition": { "exists": "defendantMailingAddress" } },
+    { "id": "p2_def_mailing_zip",     "page": 2, "type": "text", "source": "defendantMailingZip",     "x": 499, "y": 356, "condition": { "exists": "defendantMailingAddress" } },
+
+    { "id": "p2_agent_name",          "page": 2, "type": "text", "source": "defendantAgentName",  "x":  95, "y": 283, "condition": { "exists": "hasAgent" } },
+    { "id": "p2_agent_title",         "page": 2, "type": "text", "source": "defendantAgentTitle", "x": 413, "y": 283, "condition": { "exists": "hasAgent" } },
+    { "id": "p2_agent_street",        "page": 2, "type": "text", "source": "defendantAgentStreet","x": 124, "y": 268, "condition": { "exists": "hasAgent" } },
+    { "id": "p2_agent_city",          "page": 2, "type": "text", "source": "defendantAgentCity",  "x": 341, "y": 268, "condition": { "exists": "hasAgent" } },
+    { "id": "p2_agent_state",         "page": 2, "type": "text", "source": "defendantAgentState", "x": 441, "y": 268, "fallback": "CA", "condition": { "exists": "hasAgent" } },
+    { "id": "p2_agent_zip",           "page": 2, "type": "text", "source": "defendantAgentZip",   "x": 469, "y": 268, "condition": { "exists": "hasAgent" } },
+
+    { "id": "p2_claim_amount",        "page": 2, "type": "text",     "source": "claimAmountFormatted",    "x": 370, "y": 216, "condition": { "exists": "claimAmountFormatted" } },
+    { "id": "p2_claim_description",   "page": 2, "type": "wrapText", "source": "claimDescriptionForForm", "x":  63, "y": 185, "wrap": { "maxW": 480, "lineH": 12, "maxLines": 5 } },
+
+    { "id": "p3_header_plaintiff",    "page": 3, "type": "text", "source": "plaintiffName",  "x": 163, "y": 748 },
+    { "id": "p3_header_case_number",  "page": 3, "type": "text", "source": "caseNumber",     "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
+
+    { "id": "p3_incident_date",       "page": 3, "type": "text", "source": "incidentDate",   "x": 217, "y": 702 },
+    { "id": "p3_date_started",        "page": 3, "type": "text", "source": "dateStarted",    "x": 335, "y": 695, "condition": { "exists": "dateStarted" } },
+    { "id": "p3_date_through",        "page": 3, "type": "text", "source": "dateThrough",    "x": 470, "y": 695, "condition": { "exists": "dateThrough" } },
+
+    { "id": "p3_how_calculated",      "page": 3, "type": "wrapText", "source": "howAmountCalculated", "x": 63, "y": 648, "wrap": { "maxW": 480, "lineH": 12, "maxLines": 5 }, "condition": { "exists": "howAmountCalculated" } },
+
+    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 36, "y": 575 },
+
+    { "id": "p3_demand_yes",          "page": 3, "type": "xmark", "x":  70, "y": 469, "condition": { "isTrue":  "priorDemandMade" } },
+    { "id": "p3_demand_no",           "page": 3, "type": "xmark", "x": 125, "y": 469, "condition": { "isFalse": "priorDemandMade" } },
+    { "id": "p3_demand_why_not",      "page": 3, "type": "wrapText", "source": "priorDemandWhyNot", "x": 63, "y": 452, "wrap": { "maxW": 490, "lineH": 12, "maxLines": 3 }, "condition": { "exists": "priorDemandWhyNot" } },
+
+    { "id": "p3_venue_check",         "page": 3, "type": "xmarkFromMap", "source": "venueBasisLetter", "condition": { "exists": "venueBasisLetter" },
+      "map": { "a": [90, 420], "b": [67, 371], "c": [67, 331], "d": [67, 290], "e": [67, 253] } },
+    { "id": "p3_venue_other_reason",  "page": 3, "type": "text", "source": "venueReason", "x": 167, "y": 249, "condition": { "exists": "isVenueOther" } },
+
+    { "id": "p3_venue_zip",           "page": 3, "type": "text", "source": "venueZip",           "x": 415, "y": 194 },
+
+    { "id": "p3_atty_fee_yes",        "page": 3, "type": "xmark", "x": 364, "y": 174, "condition": { "isTrue":  "isAttyFeeDispute" } },
+    { "id": "p3_atty_fee_no",         "page": 3, "type": "xmark", "x": 417, "y": 174, "condition": { "notTrue": "isAttyFeeDispute" } },
+    { "id": "p3_arbitration_check",   "page": 3, "type": "xmark", "x": 503, "y": 162, "condition": { "isTrue":  "attyFeeAndArbitration" } },
+
+    { "id": "p3_public_entity_yes",   "page": 3, "type": "xmark", "x": 250, "y": 150, "condition": { "isTrue":  "isSuingPublicEntity" } },
+    { "id": "p3_public_entity_no",    "page": 3, "type": "xmark", "x": 303, "y": 150, "condition": { "notTrue": "isSuingPublicEntity" } },
+    { "id": "p3_public_entity_date",  "page": 3, "type": "text",  "source": "publicEntityClaimFiledDate", "x": 453, "y": 133, "condition": { "isTrue": "publicEntityHasDate" } },
+
+    { "id": "p4_header_plaintiff",    "page": 4, "type": "text", "source": "plaintiffName",  "x": 163, "y": 748 },
+    { "id": "p4_header_case_number",  "page": 4, "type": "text", "source": "caseNumber",     "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
+
+    { "id": "p4_12claims_yes",        "page": 4, "type": "xmark", "x":  71, "y": 682, "condition": { "isTrue":  "filedMoreThan12Claims" } },
+    { "id": "p4_12claims_no",         "page": 4, "type": "xmark", "x": 122, "y": 682, "condition": { "notTrue": "filedMoreThan12Claims" } },
+
+    { "id": "p4_over2500_yes",        "page": 4, "type": "xmark", "x": 284, "y": 663, "condition": { "isTrue":  "claimOver2500" } },
+    { "id": "p4_over2500_no",         "page": 4, "type": "xmark", "x": 331, "y": 663, "condition": { "notTrue": "claimOver2500" } },
+
+    { "id": "p4_decl_date",           "page": 4, "type": "text", "source": "declarationDate",    "x":  65, "y": 506 },
+    { "id": "p4_print_name",          "page": 4, "type": "text", "source": "declarantNameTitle",  "x":  36, "y": 488 }
+  ]
+}
