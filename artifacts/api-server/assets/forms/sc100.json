@@ -10,11 +10,11 @@
     "sc100_hq-4.png"
   ],
   "fields": [
-    { "id": "p1_county",              "page": 1, "type": "text", "source": "countyDisplay",      "x": 475, "y": 628, "condition": { "exists": "countyDisplay" } },
+    { "id": "p1_county",              "page": 1, "type": "text", "source": "countyDisplay",      "x": 475, "y": 568, "condition": { "exists": "countyDisplay" } },
     { "id": "p1_courthouse_name",     "page": 1, "type": "text", "source": "courthouseName",      "x": 337, "y": 614, "condition": { "exists": "courthouseName" } },
     { "id": "p1_courthouse_address",  "page": 1, "type": "text", "source": "courthouseAddress",   "x": 337, "y": 600, "condition": { "exists": "courthouseAddress" } },
     { "id": "p1_courthouse_location", "page": 1, "type": "text", "source": "courthouseLocation",  "x": 337, "y": 586, "condition": { "exists": "courthouseLocation" } },
-    { "id": "p1_case_name",           "page": 1, "type": "text", "source": "caseNameDisplay",     "x": 337, "y": 480, "size": 8, "condition": { "exists": "caseNameDisplay" } },
+    { "id": "p1_case_name",           "page": 1, "type": "text", "source": "caseNameDisplay",     "x": 337, "y": 442, "size": 8, "condition": { "exists": "caseNameDisplay" } },
 
     { "id": "p2_header_plaintiff",    "page": 2, "type": "text", "source": "plaintiffName",       "x": 163, "y": 748 },
     { "id": "p2_header_case_number",  "page": 2, "type": "text", "source": "caseNumber",          "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
@@ -72,30 +72,30 @@
     { "id": "p3_header_case_number",  "page": 3, "type": "text", "source": "caseNumber",     "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
 
     { "id": "p3_incident_date",       "page": 3, "type": "text", "source": "incidentDate",   "x": 217, "y": 702 },
-    { "id": "p3_date_started",        "page": 3, "type": "text", "source": "dateStarted",    "x": 335, "y": 695, "condition": { "exists": "dateStarted" } },
-    { "id": "p3_date_through",        "page": 3, "type": "text", "source": "dateThrough",    "x": 470, "y": 695, "condition": { "exists": "dateThrough" } },
+    { "id": "p3_date_started",        "page": 3, "type": "text", "source": "dateStarted",    "x": 335, "y": 684, "condition": { "exists": "hasDateRange" } },
+    { "id": "p3_date_through",        "page": 3, "type": "text", "source": "dateThrough",    "x": 470, "y": 684, "condition": { "exists": "hasDateRange" } },
 
     { "id": "p3_how_calculated",      "page": 3, "type": "wrapText", "source": "howAmountCalculated", "x": 63, "y": 648, "wrap": { "maxW": 480, "lineH": 12, "maxLines": 5 }, "condition": { "exists": "howAmountCalculated" } },
 
-    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 36, "y": 575 },
+    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 36, "y": 586 },
 
-    { "id": "p3_demand_yes",          "page": 3, "type": "xmark", "x":  70, "y": 469, "condition": { "isTrue":  "priorDemandMade" } },
-    { "id": "p3_demand_no",           "page": 3, "type": "xmark", "x": 125, "y": 469, "condition": { "isFalse": "priorDemandMade" } },
+    { "id": "p3_demand_yes",          "page": 3, "type": "xmark", "x":  70, "y": 489, "condition": { "isTrue":  "priorDemandMade" } },
+    { "id": "p3_demand_no",           "page": 3, "type": "xmark", "x": 125, "y": 489, "condition": { "isFalse": "priorDemandMade" } },
     { "id": "p3_demand_why_not",      "page": 3, "type": "wrapText", "source": "priorDemandWhyNot", "x": 63, "y": 452, "wrap": { "maxW": 490, "lineH": 12, "maxLines": 3 }, "condition": { "exists": "priorDemandWhyNot" } },
 
     { "id": "p3_venue_check",         "page": 3, "type": "xmarkFromMap", "source": "venueBasisLetter", "condition": { "exists": "venueBasisLetter" },
-      "map": { "a": [90, 420], "b": [67, 371], "c": [67, 331], "d": [67, 290], "e": [67, 253] } },
+      "map": { "a": [67, 391], "b": [67, 349], "c": [67, 311], "d": [67, 279], "e": [67, 249] } },
     { "id": "p3_venue_other_reason",  "page": 3, "type": "text", "source": "venueReason", "x": 167, "y": 249, "condition": { "exists": "isVenueOther" } },
 
     { "id": "p3_venue_zip",           "page": 3, "type": "text", "source": "venueZip",           "x": 415, "y": 194 },
 
-    { "id": "p3_atty_fee_yes",        "page": 3, "type": "xmark", "x": 364, "y": 174, "condition": { "isTrue":  "isAttyFeeDispute" } },
-    { "id": "p3_atty_fee_no",         "page": 3, "type": "xmark", "x": 417, "y": 174, "condition": { "notTrue": "isAttyFeeDispute" } },
+    { "id": "p3_atty_fee_yes",        "page": 3, "type": "xmark", "x": 364, "y": 167, "condition": { "isTrue":  "isAttyFeeDispute" } },
+    { "id": "p3_atty_fee_no",         "page": 3, "type": "xmark", "x": 417, "y": 167, "condition": { "notTrue": "isAttyFeeDispute" } },
     { "id": "p3_arbitration_check",   "page": 3, "type": "xmark", "x": 503, "y": 162, "condition": { "isTrue":  "attyFeeAndArbitration" } },
 
-    { "id": "p3_public_entity_yes",   "page": 3, "type": "xmark", "x": 250, "y": 150, "condition": { "isTrue":  "isSuingPublicEntity" } },
-    { "id": "p3_public_entity_no",    "page": 3, "type": "xmark", "x": 303, "y": 150, "condition": { "notTrue": "isSuingPublicEntity" } },
-    { "id": "p3_public_entity_date",  "page": 3, "type": "text",  "source": "publicEntityClaimFiledDate", "x": 453, "y": 133, "condition": { "isTrue": "publicEntityHasDate" } },
+    { "id": "p3_public_entity_yes",   "page": 3, "type": "xmark", "x": 250, "y": 136, "condition": { "isTrue":  "isSuingPublicEntity" } },
+    { "id": "p3_public_entity_no",    "page": 3, "type": "xmark", "x": 303, "y": 136, "condition": { "notTrue": "isSuingPublicEntity" } },
+    { "id": "p3_public_entity_date",  "page": 3, "type": "text",  "source": "publicEntityClaimFiledDate", "x": 453, "y": 121, "condition": { "isTrue": "publicEntityHasDate" } },
 
     { "id": "p4_header_plaintiff",    "page": 4, "type": "text", "source": "plaintiffName",  "x": 163, "y": 748 },
     { "id": "p4_header_case_number",  "page": 4, "type": "text", "source": "caseNumber",     "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },

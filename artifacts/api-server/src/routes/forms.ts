@@ -133,10 +133,19 @@ function enrichForSC100(c: Record<string, any>): Record<string, any> {
 
   // 2. Parse incidentDate (may be "MM/dd/yyyy" or "MM/dd/yyyy – MM/dd/yyyy")
   if (e.incidentDate) {
-    const parts = e.incidentDate.split("–").map((s: string) => s.trim()).filter(Boolean);
-    e.dateStarted = parts[0] || e.incidentDate;
-    e.dateThrough = parts[1] || parts[0] || e.incidentDate;
+    const parts = e.incidentDate.split(/[–\-]/).map((s: string) => s.trim()).filter(Boolean);
     e.incidentDate = parts[0] || e.incidentDate;
+    if (parts.length >= 2 && parts[1] !== parts[0]) {
+      // Actual date range — fill both start and through
+      e.dateStarted   = parts[0];
+      e.dateThrough   = parts[1];
+      e.hasDateRange  = true;
+    } else {
+      // Single date — only incidentDate is used; date-range row stays blank
+      e.dateStarted  = undefined;
+      e.dateThrough  = undefined;
+      e.hasDateRange = undefined;
+    }
   }
 
   // 3. Map venueZip from defendant or courthouse
@@ -186,10 +195,11 @@ function enrichForSC100(c: Record<string, any>): Record<string, any> {
       .filter(Boolean).join(" ");
   }
 
-  // Second plaintiff name + optional title (e.g. business rep)
+  // Second plaintiff name + optional title (use second plaintiff's own title if provided)
   if (e.secondPlaintiffName) {
-    e.p2NameTitle = e.plaintiffTitle
-      ? `${e.secondPlaintiffName}, ${e.plaintiffTitle}`
+    const p2Title = e.secondPlaintiffTitle || "";
+    e.p2NameTitle = p2Title
+      ? `${e.secondPlaintiffName}, ${p2Title}`
       : e.secondPlaintiffName;
   }
 
@@ -372,6 +382,121 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
   }
 });
 
+// ─── SC-100 HTML coordinate viewer (no auth — dev calibration tool) ──────────
+// GET /api/forms/sc100/coordinate-viewer
+// Renders an HTML page showing all 4 SC-100 pages with form PNG as background
+// and every field overlaid at its exact coordinate. Instant visual calibration.
+router.get("/forms/sc100/coordinate-viewer", (_req, res): void => {
+  const LIFT = SC100_CONFIG.lift ?? 4.5;
+  const PH = 792;
+
+  const SAMPLE: Record<string, any> = {
+    // Primary plaintiff (individual)
+    plaintiffName: "Jane A. Doe", plaintiffPhone: "(619) 555-0101",
+    plaintiffAddress: "123 Main Street", plaintiffCity: "San Diego",
+    plaintiffState: "CA", plaintiffZip: "92101", plaintiffEmail: "jane.doe@email.com",
+    plaintiffMailingAddress: "P.O. Box 4400", plaintiffMailingCity: "San Diego",
+    plaintiffMailingState: "CA", plaintiffMailingZip: "92112",
+    // Second plaintiff (co-plaintiff — same household)
+    secondPlaintiffName: "John B. Doe", secondPlaintiffPhone: "(619) 555-0202",
+    secondPlaintiffAddress: "123 Main Street", secondPlaintiffCity: "San Diego",
+    secondPlaintiffState: "CA", secondPlaintiffZip: "92101",
+    secondPlaintiffEmail: "john.doe@email.com",
+    // Defendant (business)
+    defendantName: "ACME Auto Repair LLC", defendantPhone: "(619) 555-0303",
+    defendantAddress: "456 Commerce Blvd", defendantCity: "Chula Vista",
+    defendantState: "CA", defendantZip: "91911",
+    defendantIsBusinessOrEntity: true, defendantAgentName: "Robert Smith",
+    defendantAgentTitle: "Registered Agent", defendantAgentStreet: "789 Agent Row",
+    defendantAgentCity: "Chula Vista", defendantAgentState: "CA", defendantAgentZip: "91911",
+    claimAmount: 3750, claimDescription: "Defendant performed negligent brake repair on plaintiff's 2019 Honda Civic.",
+    howAmountCalculated: "Tow: $225. Rental: $325. Re-repair: $3,200. Total: $3,750.",
+    incidentDate: "01/15/2026", countyId: "san-diego",
+    courthouseName: "South County Division – Chula Vista",
+    courthouseAddress: "500 3rd Ave", courthouseCity: "Chula Vista", courthouseZip: "91910",
+    caseNumber: "24SC012345", venueBasis: "where_defendant_lives",
+    priorDemandMade: true, isAttyFeeDispute: false, isSuingPublicEntity: false,
+    filedMoreThan12Claims: false, declarationDate: "04/13/2026",
+  };
+  const data = enrichForSC100(SAMPLE);
+
+  // Build one <div> block per page
+  const pageBlocks = [1, 2, 3, 4].map(pageNum => {
+    const bgAsset = SC100_CONFIG.backgroundAssets[pageNum - 1];
+    const fields = SC100_CONFIG.fields.filter(f => f.page === pageNum);
+
+    const overlays = fields.map(f => {
+      const liftedY = (f.y ?? 0) + LIFT;
+      // PDF y=0 is bottom; CSS top=0 is top → invert
+      const cssTop  = PH - liftedY;
+      const cssLeft = f.x ?? 0;
+      const size    = f.size ?? SC100_CONFIG.defaultSize ?? 9;
+
+      let displayVal = "";
+      let color = "#0033cc";
+
+      if (f.type === "text" || f.type === "wrapText") {
+        const src = f.source ?? "";
+        displayVal = src.includes("{{")
+          ? src.replace(/\{\{(\w+)\}\}/g, (_: string, k: string) => String(data[k] ?? ""))
+          : String(data[src] ?? f.fallback ?? `[${src}]`);
+        color = "#0033cc";
+      } else if (f.type === "xmark") {
+        displayVal = "✕";
+        color = "#cc0000";
+      } else if (f.type === "xmarkFromMap") {
+        // Find the first map entry for display
+        if (f.map) {
+          const key = data[f.source ?? ""] ?? Object.keys(f.map)[0];
+          const coords = f.map[String(key)];
+          if (coords) {
+            const [mx, my] = coords;
+            const mCssTop  = PH - (my + LIFT);
+            const mCssLeft = mx;
+            return `<div style="position:absolute;left:${mCssLeft}px;top:${mCssTop}px;color:#cc0000;font-size:10px;font-weight:bold;z-index:10;" title="${f.id}">✕</div>
+              <div style="position:absolute;left:${mCssLeft}px;top:${mCssTop - 8}px;color:#555;font-size:5px;z-index:10;">${f.id}</div>`;
+          }
+        }
+        return "";
+      }
+
+      const truncated = displayVal.length > 35 ? displayVal.slice(0, 35) + "…" : displayVal;
+      return `
+        <div style="position:absolute;left:${cssLeft}px;top:${cssTop}px;color:${color};font-size:${size}px;font-family:Helvetica,Arial,sans-serif;white-space:nowrap;z-index:10;line-height:1;" title="${f.id}: ${displayVal}">${truncated}</div>
+        <div style="position:absolute;left:${cssLeft}px;top:${cssTop - 7}px;color:#888;font-size:5px;z-index:10;white-space:nowrap;">${f.id}</div>
+        <div style="position:absolute;left:${cssLeft - 3}px;top:${cssTop + size/2 - 1}px;width:6px;height:1px;background:#f00;z-index:11;"></div>
+        <div style="position:absolute;left:${cssLeft - 0.5}px;top:${cssTop + size/2 - 3}px;width:1px;height:7px;background:#f00;z-index:11;"></div>`;
+    }).join("");
+
+    return `
+      <div style="margin-bottom:40px;">
+        <h2 style="font-size:14px;font-family:sans-serif;margin:0 0 4px;">Page ${pageNum}</h2>
+        <div style="position:relative;width:612px;height:792px;border:1px solid #999;overflow:hidden;background:#fff;">
+          <img src="/form-assets/${bgAsset}" style="position:absolute;top:0;left:0;width:612px;height:792px;" />
+          ${overlays}
+        </div>
+      </div>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>SC-100 Coordinate Viewer</title>
+<style>
+  body{margin:24px;background:#e8e8e8;font-family:sans-serif;}
+  h1{font-size:18px;margin-bottom:4px;}
+  p{font-size:12px;color:#555;margin-bottom:20px;}
+</style>
+</head><body>
+<h1>SC-100 Live Coordinate Viewer</h1>
+<p>Blue = text fields &nbsp;|&nbsp; Red ✕ = checkboxes &nbsp;|&nbsp; Red crosshair = exact anchor point &nbsp;|&nbsp; Grey micro-label = field ID<br>
+Hover any element to see its field ID and value. Edit <code>assets/forms/sc100.json</code> and refresh to see changes instantly.</p>
+${pageBlocks}
+</body></html>`;
+
+  res.setHeader("Content-Type", "text/html");
+  res.send(html);
+});
+
 // ─── SC-100 debug preview (no auth — dev calibration tool) ───────────────────
 // GET /forms/sc100/debug-preview?mode=debug|sample
 // Generates a 4-page SC-100 with realistic sample data.
@@ -404,8 +529,7 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
     secondPlaintiffMailingCity:    "San Diego",
     secondPlaintiffMailingState:   "CA",
     secondPlaintiffMailingZip:     "92112",
-    plaintiffTitle:         "Owner",
-    plaintiffIsBusiness:    true,
+    plaintiffIsBusiness:    false,
     // Defendant
     defendantName:          "ACME Auto Repair LLC",
     defendantPhone:         "(619) 555-0303",
