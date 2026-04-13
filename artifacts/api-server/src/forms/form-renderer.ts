@@ -154,18 +154,42 @@ function drawWrapped(
   }
 }
 
+// ─── Debug overlay helpers ────────────────────────────────────────────────────
+
+const RED    = rgb(1, 0, 0);
+const BLUE   = rgb(0, 0.3, 1);
+
+/** Draw a small red cross-hair at (cx, cy) to mark a field anchor point. */
+function drawDebugDot(page: any, cx: number, cy: number) {
+  const H = 3;
+  page.drawLine({ start: { x: cx - H, y: cy }, end: { x: cx + H, y: cy }, thickness: 0.5, color: RED });
+  page.drawLine({ start: { x: cx, y: cy - H }, end: { x: cx, y: cy + H }, thickness: 0.5, color: RED });
+}
+
+/** Draw a small blue label above a debug point. */
+function drawDebugLabel(page: any, font: any, label: string, cx: number, cy: number) {
+  page.drawText(label, { x: cx, y: cy + 4, size: 4.5, font, color: BLUE });
+}
+
 // ─── Main renderer ────────────────────────────────────────────────────────────
+
+export type BuildFormPdfOptions = {
+  /**
+   * When true, draws red crosshairs at every field anchor and blue field-id
+   * labels above each crosshair. Use this to calibrate coordinates: generate
+   * a debug PDF, compare visually to the blank form, then adjust sc100.json.
+   */
+  debug?: boolean;
+};
 
 /**
  * Build a multi-page PDF from a FormConfig + enriched data object.
  *
- * @param config     Parsed FormConfig (from JSON)
- * @param data       Enriched case data (all derived fields pre-computed)
- * @param assetDir   Absolute path to the folder containing background PNGs
+ * @param config      Parsed FormConfig (from JSON)
+ * @param data        Enriched case data (all derived fields pre-computed)
+ * @param assetDir    Absolute path to the folder containing background PNGs
  * @param extraRender Optional callback for things not expressible in config
- *                   (e.g. embedding a signature image). Receives the array of
- *                   pdf-lib page objects, the PDFDocument, the embedded font,
- *                   and the enriched data.
+ * @param options     { debug: true } draws red crosshairs + blue labels at every field
  */
 export async function buildFormPdf(
   config: FormConfig,
@@ -176,11 +200,13 @@ export async function buildFormPdf(
     pdfDoc: PDFDocument,
     font: any,
     data: Record<string, any>
-  ) => Promise<void>
+  ) => Promise<void>,
+  options: BuildFormPdfOptions = {}
 ): Promise<Uint8Array> {
   const LIFT         = config.lift        ?? 4.5;
   const DEFAULT_SIZE = config.defaultSize ?? 9;
   const PW = 612, PH = 792;
+  const { debug = false } = options;
 
   const pdfDoc = await PDFDocument.create();
   const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -205,18 +231,27 @@ export async function buildFormPdf(
     const page = pages[field.page - 1];
     if (!page) continue;
 
-    // Skip if condition not met
-    if (field.condition && !evalCondition(field.condition, data)) continue;
+    // In debug mode, always render ALL fields regardless of condition
+    if (!debug && field.condition && !evalCondition(field.condition, data)) continue;
 
     const liftedY = field.y + LIFT;
     const size    = field.size ?? DEFAULT_SIZE;
 
+    // ── Debug overlay: crosshair + label at every anchor ──────────────────
+    // xmarkFromMap has no own x/y — its anchor comes from the map itself
+    if (debug && field.type !== "xmarkFromMap" && field.x != null) {
+      drawDebugDot(page, field.x, liftedY);
+      drawDebugLabel(page, font, field.id, field.x, liftedY);
+    }
+
     switch (field.type) {
       case "text": {
         if (!field.source) break;
-        const text = resolveSource(field.source, data, field.fallback);
+        const text = debug
+          ? (resolveSource(field.source, data, field.fallback) ?? `[${field.source}]`)
+          : resolveSource(field.source, data, field.fallback);
         if (!text) break;
-        page.drawText(text, { x: field.x, y: liftedY, size, font, color: BLACK });
+        page.drawText(text, { x: field.x, y: liftedY, size, font, color: debug ? BLUE : BLACK });
         break;
       }
 
@@ -227,7 +262,9 @@ export async function buildFormPdf(
 
       case "wrapText": {
         if (!field.source || !field.wrap) break;
-        const text = resolveSource(field.source, data, field.fallback);
+        const text = debug
+          ? (resolveSource(field.source, data, field.fallback) ?? `[${field.source}]`)
+          : resolveSource(field.source, data, field.fallback);
         if (!text) break;
         drawWrapped(page, font, text, field.x, liftedY, size, field.wrap);
         break;
@@ -235,11 +272,12 @@ export async function buildFormPdf(
 
       case "xmarkFromMap": {
         if (!field.source || !field.map) break;
-        const key    = data[field.source];
+        const key    = data[field.source] ?? (debug ? Object.keys(field.map)[0] : null);
         if (!key) break;
         const coords = field.map[String(key)];
         if (!coords) break;
         const [mx, my] = coords;
+        if (debug) drawDebugDot(page, mx, my + LIFT);
         drawXmark(page, mx, my + LIFT);
         break;
       }

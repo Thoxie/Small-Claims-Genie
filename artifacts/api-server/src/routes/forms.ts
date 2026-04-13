@@ -372,6 +372,103 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
   }
 });
 
+// ─── SC-100 debug preview (no auth — dev calibration tool) ───────────────────
+// GET /forms/sc100/debug-preview?mode=debug|sample
+// Generates a 4-page SC-100 with realistic sample data.
+// mode=debug  → red crosshairs + blue labels at every field anchor
+// mode=sample → clean PDF with sample data, no overlays
+router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
+  const debugMode = req.query.mode !== "sample";
+  const SAMPLE: Record<string, any> = {
+    // Plaintiff
+    plaintiffName:          "Jane A. Doe",
+    plaintiffPhone:         "(619) 555-0101",
+    plaintiffAddress:       "123 Main Street",
+    plaintiffCity:          "San Diego",
+    plaintiffState:         "CA",
+    plaintiffZip:           "92101",
+    plaintiffEmail:         "jane.doe@email.com",
+    plaintiffMailingAddress:"P.O. Box 4400",
+    plaintiffMailingCity:   "San Diego",
+    plaintiffMailingState:  "CA",
+    plaintiffMailingZip:    "92112",
+    // Second plaintiff / business rep
+    secondPlaintiffName:    "John B. Doe",
+    secondPlaintiffPhone:   "(619) 555-0202",
+    secondPlaintiffAddress: "123 Main Street",
+    secondPlaintiffCity:    "San Diego",
+    secondPlaintiffState:   "CA",
+    secondPlaintiffZip:     "92101",
+    secondPlaintiffEmail:   "john.doe@email.com",
+    secondPlaintiffMailingAddress: "P.O. Box 4400",
+    secondPlaintiffMailingCity:    "San Diego",
+    secondPlaintiffMailingState:   "CA",
+    secondPlaintiffMailingZip:     "92112",
+    plaintiffTitle:         "Owner",
+    plaintiffIsBusiness:    true,
+    // Defendant
+    defendantName:          "ACME Auto Repair LLC",
+    defendantPhone:         "(619) 555-0303",
+    defendantAddress:       "456 Commerce Blvd",
+    defendantCity:          "Chula Vista",
+    defendantState:         "CA",
+    defendantZip:           "91911",
+    defendantMailingAddress:"P.O. Box 9900",
+    defendantMailingCity:   "Chula Vista",
+    defendantMailingState:  "CA",
+    defendantMailingZip:    "91912",
+    defendantIsBusinessOrEntity: true,
+    defendantAgentName:     "Robert Smith",
+    defendantAgentTitle:    "Registered Agent",
+    defendantAgentStreet:   "789 Agent Row",
+    defendantAgentCity:     "Chula Vista",
+    defendantAgentState:    "CA",
+    defendantAgentZip:      "91911",
+    // Claim
+    claimAmount:            3750.00,
+    claimDescription:       "Defendant performed negligent brake repair on plaintiff's 2019 Honda Civic on 01/15/2026. Brakes failed two weeks later causing $3,750 in damages including tow, rental car, and re-repair costs.",
+    howAmountCalculated:    "Tow truck: $225. Rental car 5 days × $65/day: $325. Re-repair at certified shop: $3,200. Total: $3,750.",
+    incidentDate:           "01/15/2026",
+    // Court
+    countyId:               "san-diego",
+    courthouseName:         "South County Division – Chula Vista",
+    courthouseAddress:      "500 3rd Ave",
+    courthouseCity:         "Chula Vista",
+    courthouseZip:          "91910",
+    caseNumber:             "24SC012345",
+    hearingDate:            "2026-06-15",
+    hearingTime:            "09:00",
+    hearingCourtroom:       "D23",
+    // Venue / other flags
+    venueBasis:             "where_defendant_lives",
+    priorDemandMade:        true,
+    priorDemandWhyNot:      "",
+    isAttyFeeDispute:       false,
+    hadArbitration:         false,
+    isSuingPublicEntity:    false,
+    filedMoreThan12Claims:  false,
+    declarationDate:        "04/13/2026",
+  };
+  try {
+    const enriched = enrichForSC100(SAMPLE);
+    const pdfBytes = await buildFormPdf(
+      SC100_CONFIG,
+      enriched,
+      ASSET_DIR,
+      undefined,
+      { debug: debugMode }
+    );
+    const label = debugMode ? "DEBUG" : "SAMPLE";
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="SC100-${label}-Preview.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("SC-100 preview error:", err?.message, err?.stack);
+    res.status(500).json({ error: err?.message ?? "Preview failed" });
+  }
+});
+
 // ─── SC-100 with field overrides (preview / download with edits) ───────────────
 router.post("/cases/:id/forms/sc100/with-overrides", async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
