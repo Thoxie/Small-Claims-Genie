@@ -67,6 +67,10 @@ export default defineConfig({
         target: `http://localhost:${process.env.API_PORT ?? 18080}`,
         changeOrigin: true,
       },
+      "/form-assets": {
+        target: `http://localhost:${process.env.API_PORT ?? 18080}`,
+        changeOrigin: true,
+      },
     },
     fs: {
       strict: true,

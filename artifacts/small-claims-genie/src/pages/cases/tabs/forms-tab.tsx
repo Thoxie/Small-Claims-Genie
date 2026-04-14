@@ -586,9 +586,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     if (isDraftMode) { toast({ title: "Subscribe to View", description: "Start your subscription to preview your pre-filled SC-100." }); return; }
     setViewingPdf(true);
     try {
-      const token = await getToken();
-      const res = await fetch(`/api/cases/${caseId}/forms/sc100`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-      if (!res.ok) throw new Error("Failed to load PDF");
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { toast({ title: "Could not authorize preview", description: "Please try again.", variant: "destructive" }); return; }
+      const { token } = await tokenRes.json();
+      const res = await fetch(`/api/cases/${caseId}/forms/sc100?token=${encodeURIComponent(token)}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast({ title: "Could not load SC-100", description: (err as any).error || "Please try again.", variant: "destructive" });
+        return;
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const win = window.open(url, "_blank");
