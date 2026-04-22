@@ -11,10 +11,10 @@
   ],
   "fields": [
     { "id": "p1_county",              "page": 1, "type": "text", "source": "countyDisplay",      "x": 475, "y": 568, "condition": { "exists": "countyDisplay" } },
-    { "id": "p1_courthouse_name",     "page": 1, "type": "text", "source": "courthouseName",      "x": 337, "y": 614, "condition": { "exists": "courthouseName" } },
-    { "id": "p1_courthouse_address",  "page": 1, "type": "text", "source": "courthouseAddress",   "x": 337, "y": 600, "condition": { "exists": "courthouseAddress" } },
-    { "id": "p1_courthouse_location", "page": 1, "type": "text", "source": "courthouseLocation",  "x": 337, "y": 586, "condition": { "exists": "courthouseLocation" } },
-    { "id": "p1_case_name",           "page": 1, "type": "text", "source": "caseNameDisplay",     "x": 337, "y": 442, "size": 8, "condition": { "exists": "caseNameDisplay" } },
+    { "id": "p1_courthouse_name",     "page": 1, "type": "text", "source": "courthouseName",      "x": 362, "y": 614, "size": 8, "condition": { "exists": "courthouseName" } },
+    { "id": "p1_courthouse_address",  "page": 1, "type": "text", "source": "courthouseAddress",   "x": 362, "y": 600, "size": 8, "condition": { "exists": "courthouseAddress" } },
+    { "id": "p1_courthouse_location", "page": 1, "type": "text", "source": "courthouseLocation",  "x": 362, "y": 586, "size": 8, "condition": { "exists": "courthouseLocation" } },
+    { "id": "p1_case_name",           "page": 1, "type": "text", "source": "caseNameDisplay",     "x": 362, "y": 442, "size": 8, "condition": { "exists": "caseNameDisplay" } },
 
     { "id": "p2_header_plaintiff",    "page": 2, "type": "text", "source": "plaintiffName",       "x": 163, "y": 748 },
     { "id": "p2_header_case_number",  "page": 2, "type": "text", "source": "caseNumber",          "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
