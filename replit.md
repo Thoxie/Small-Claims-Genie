@@ -24,7 +24,7 @@ California small claims court SaaS app. Helps lower-income individuals and small
 - **API codegen**: Orval (from OpenAPI spec in `lib/api-spec/openapi.yaml`)
 - **Build**: esbuild (API), Vite (frontend)
 - **AI**: OpenAI via Replit proxy (`@workspace/integrations-openai-ai-server`, `@workspace/integrations-openai-ai-react`)
-- **PDF generation**: pdf-lib (SC-100 uses official PNG backgrounds + bbox-derived text overlays)
+- **PDF generation**: @react-pdf/renderer for SC-100 (React JSX components with CSS absolute positioning over 300 DPI PNG backgrounds); pdf-lib for MC-030 and other older forms
 
 ## Branding
 

@@ -10,7 +10,8 @@ import { documentsTable } from "@workspace/db";
 import { inArray, and, eq } from "drizzle-orm";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { buildFormPdf, type FormConfig } from "../forms/form-renderer";
+import { type FormConfig } from "../forms/form-renderer";
+import { buildSC100Pdf as buildSC100ReactPdf } from "../forms/sc100-react-pdf";
 
 // ─── Load form configs at startup (JSON files in assets/forms/) ────────────────
 const ASSET_DIR  = path.join(__dirname, "..", "assets");
@@ -328,23 +329,8 @@ Only include a field if it is currently null/empty. Skip fields that already hav
 async function buildSC100Pdf(
   caseData: Record<string, any>,
   signaturePngBytes?: Buffer
-): Promise<Uint8Array> {
-  return buildFormPdf(
-    SC100_CONFIG,
-    caseData,
-    ASSET_DIR,
-    // Extra rendering not expressible in JSON: embed drawn signature on page 4
-    signaturePngBytes
-      ? async (pages, pdfDoc) => {
-          const sigImg = await pdfDoc.embedPng(signaturePngBytes);
-          // Signature sits between declaration date (y≈506) and print name (y≈488)
-          pages[3].drawImage(sigImg, {
-            x: 248, y: 558 + 4.5,
-            width: 240, height: 30,
-          });
-        }
-      : undefined
-  );
+): Promise<Buffer> {
+  return buildSC100ReactPdf(caseData, ASSET_DIR, signaturePngBytes);
 }
 
 // ─── SC-100 routes ────────────────────────────────────────────────────────────
@@ -588,13 +574,7 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
   };
   try {
     const enriched = enrichForSC100(SAMPLE);
-    const pdfBytes = await buildFormPdf(
-      SC100_CONFIG,
-      enriched,
-      ASSET_DIR,
-      undefined,
-      { debug: debugMode }
-    );
+    const pdfBytes = await buildSC100ReactPdf(enriched, ASSET_DIR);
     const label = debugMode ? "DEBUG" : "SAMPLE";
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="SC100-${label}-Preview.pdf"`);
