@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useGetCase,
   useGetCaseReadiness,
@@ -10,6 +10,30 @@ import { CheckCircle, AlertCircle, PlusCircle } from "lucide-react";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 import { Link } from "wouter";
 
+const VALID_TABS = ["intake", "documents", "chat", "demand-letter", "forms", "prep", "deadlines"];
+
+function getTabFromHash(): string {
+  const hash = window.location.hash.slice(1);
+  return VALID_TABS.includes(hash) ? hash : "intake";
+}
+
+function useHashTab(): [string, (tab: string) => void] {
+  const [activeTab, setActiveTabState] = useState(getTabFromHash);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    window.location.hash = tab;
+  };
+
+  useEffect(() => {
+    const onHashChange = () => setActiveTabState(getTabFromHash());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  return [activeTab, setActiveTab];
+}
+
 import { IntakeTab } from "./tabs/intake-tab";
 import { DocumentsTab } from "./tabs/documents-tab";
 import { ChatTab } from "./tabs/chat-tab";
@@ -20,7 +44,7 @@ import { DeadlineCalculatorTab } from "./tabs/deadline-calculator-tab";
 
 export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) {
   const caseId = parseInt(caseIdParam || "0", 10);
-  const [activeTab, setActiveTab] = useState("intake");
+  const [activeTab, setActiveTab] = useHashTab();
 
   const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
