@@ -10,7 +10,7 @@
     "sc100_hq-4.png"
   ],
   "fields": [
-    { "id": "p1_county",              "page": 1, "type": "text", "source": "countyDisplay",      "x": 475, "y": 568, "condition": { "exists": "countyDisplay" } },
+    { "id": "p1_county",              "page": 1, "type": "text", "source": "countyDisplay",      "x": 380, "y": 568, "condition": { "exists": "countyDisplay" } },
     { "id": "p1_courthouse_name",     "page": 1, "type": "text", "source": "courthouseName",      "x": 380, "y": 542, "size": 8, "condition": { "exists": "courthouseName" } },
     { "id": "p1_courthouse_address",  "page": 1, "type": "text", "source": "courthouseAddress",   "x": 380, "y": 528, "size": 8, "condition": { "exists": "courthouseAddress" } },
     { "id": "p1_courthouse_location", "page": 1, "type": "text", "source": "courthouseLocation",  "x": 380, "y": 514, "size": 8, "condition": { "exists": "courthouseLocation" } },
@@ -75,9 +75,9 @@
     { "id": "p3_date_started",        "page": 3, "type": "text", "source": "dateStarted",    "x": 335, "y": 684, "condition": { "exists": "hasDateRange" } },
     { "id": "p3_date_through",        "page": 3, "type": "text", "source": "dateThrough",    "x": 470, "y": 684, "condition": { "exists": "hasDateRange" } },
 
-    { "id": "p3_how_calculated",      "page": 3, "type": "wrapText", "source": "howAmountCalculated", "x": 63, "y": 648, "wrap": { "maxW": 480, "lineH": 12, "maxLines": 5 }, "condition": { "exists": "howAmountCalculated" } },
+    { "id": "p3_how_calculated",      "page": 3, "type": "wrapText", "source": "howAmountCalculated", "x": 63, "y": 641, "wrap": { "maxW": 480, "lineH": 13, "maxLines": 3 }, "condition": { "exists": "howAmountCalculated" } },
 
-    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 36, "y": 586 },
+    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 36, "y": 586, "condition": { "exists": "needsMC031" } },
 
     { "id": "p3_demand_yes",          "page": 3, "type": "xmark", "x":  70, "y": 489, "condition": { "isTrue":  "priorDemandMade" } },
     { "id": "p3_demand_no",           "page": 3, "type": "xmark", "x": 125, "y": 489, "condition": { "isFalse": "priorDemandMade" } },

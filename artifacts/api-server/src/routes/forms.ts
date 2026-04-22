@@ -211,13 +211,26 @@ function enrichForSC100(c: Record<string, any>): Record<string, any> {
     });
   }
 
-  // Description for §3a — always has content (description + MC-030 note, or fallback)
+  // Description for §3a — truncate to ~5 lines (≈80 chars/line at 9pt, maxW=480)
+  const MAX_DESC_CHARS = 360; // ~4.5 lines at 80 chars/line — leaves room for note
   const desc = e.claimDescription || "";
   if (desc) {
-    e.claimDescriptionForForm = desc + " (See attached MC-030 Declaration for full details.)";
+    if (desc.length > MAX_DESC_CHARS) {
+      e.claimDescriptionForForm = desc.slice(0, MAX_DESC_CHARS).trimEnd() + "… (see MC-030)";
+      e.needsMC031 = true;
+    } else {
+      e.claimDescriptionForForm = desc;
+    }
   } else {
     const signer = e.secondPlaintiffName || e.plaintiffName || "";
     e.claimDescriptionForForm = `See attached MC-030 Declaration of ${signer}.`;
+  }
+
+  // howAmountCalculated: if longer than ~3 lines (≈80 chars/line), flag overflow
+  const MAX_HOW_CHARS = 210; // 3 lines × 70 chars
+  const howText = e.howAmountCalculated || "";
+  if (howText.length > MAX_HOW_CHARS) {
+    e.needsMC031 = true;
   }
 
   // Venue basis → single letter for xmarkFromMap
