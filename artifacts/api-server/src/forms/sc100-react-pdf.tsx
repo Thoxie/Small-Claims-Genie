@@ -259,31 +259,31 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         <X x={36}  y={586} show={d.needsMC031} />
 
         {/* Section 4 — prior demand */}
-        <X x={70}  y={489} show={d.priorDemandMade === true} />
-        <X x={125} y={489} show={d.priorDemandMade === false} />
+        <X x={64}  y={489} show={d.priorDemandMade === true} />
+        <X x={116} y={489} show={d.priorDemandMade === false} />
         {d.priorDemandWhyNot && (
           <W x={63} y={452} maxW={490} lineH={12}>{d.priorDemandWhyNot}</W>
         )}
 
         {/* Section 5 — venue */}
-        {d.venueBasisLetter === "a" && <X x={67} y={391} show />}
-        {d.venueBasisLetter === "b" && <X x={67} y={349} show />}
-        {d.venueBasisLetter === "c" && <X x={67} y={311} show />}
-        {d.venueBasisLetter === "d" && <X x={67} y={279} show />}
-        {d.venueBasisLetter === "e" && <X x={67} y={249} show />}
-        {d.isVenueOther && <T x={167} y={249}>{d.venueReason}</T>}
+        {d.venueBasisLetter === "a" && <X x={79} y={373} show />}
+        {d.venueBasisLetter === "b" && <X x={79} y={317} show />}
+        {d.venueBasisLetter === "c" && <X x={79} y={276} show />}
+        {d.venueBasisLetter === "d" && <X x={79} y={249} show />}
+        {d.venueBasisLetter === "e" && <X x={79} y={220} show />}
+        {d.isVenueOther && <T x={167} y={217}>{d.venueReason}</T>}
 
         {/* Section 6 — venue zip */}
         <T x={415} y={194}>{d.venueZip}</T>
 
         {/* Section 7 — attorney fee dispute */}
-        <X x={364} y={167} show={d.isAttyFeeDispute === true} />
-        <X x={417} y={167} show={!d.isAttyFeeDispute} />
-        <X x={503} y={162} show={d.attyFeeAndArbitration === true} />
+        <X x={358} y={153} show={d.isAttyFeeDispute === true} />
+        <X x={409} y={153} show={!d.isAttyFeeDispute} />
+        <X x={503} y={138} show={d.attyFeeAndArbitration === true} />
 
         {/* Section 8 — public entity */}
-        <X x={250} y={136} show={d.isSuingPublicEntity === true} />
-        <X x={303} y={136} show={!d.isSuingPublicEntity} />
+        <X x={244} y={118} show={d.isSuingPublicEntity === true} />
+        <X x={295} y={118} show={!d.isSuingPublicEntity} />
         {d.publicEntityHasDate && (
           <T x={453} y={121}>{d.publicEntityClaimFiledDate}</T>
         )}
@@ -298,12 +298,12 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         {d.caseNumber && <T x={440} y={748}>{d.caseNumber}</T>}
 
         {/* 12+ claims filed this year */}
-        <X x={71}  y={682} show={d.filedMoreThan12Claims === true} />
-        <X x={122} y={682} show={!d.filedMoreThan12Claims} />
+        <X x={64}  y={675} show={d.filedMoreThan12Claims === true} />
+        <X x={113} y={675} show={!d.filedMoreThan12Claims} />
 
         {/* Claim over $2,500 */}
-        <X x={284} y={663} show={d.claimOver2500 === true} />
-        <X x={331} y={663} show={!d.claimOver2500} />
+        <X x={276} y={657} show={d.claimOver2500 === true} />
+        <X x={322} y={657} show={!d.claimOver2500} />
 
         {/* Declaration */}
         <T x={65}  y={506}>{d.declarationDate}</T>
