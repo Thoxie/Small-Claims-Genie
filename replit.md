@@ -127,6 +127,7 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 - `req.params.id` is `string | string[]` — always parse: `Array.isArray(req.params.id) ? req.params.id[0] : req.params.id`
 - Async handlers must return `Promise<void>`
 - The API build uses esbuild (not tsc), so TypeScript type errors won't fail the build
+- **CRITICAL for form coordinate work**: The API server runs COMPILED code (`dist/index.mjs`), NOT source files directly. Editing `sc100-react-pdf.tsx` has NO effect until `restart_workflow("artifacts/api-server: API Server")` is called to trigger a fresh `pnpm run build`. All coordinate tests must be done after an explicit workflow restart.
 
 ## Environment
 
@@ -208,7 +209,7 @@ All coordinates pixel-verified against `sc100_hq-3.png` and `sc100_hq-4.png` at 
 | Date started (§3b range) | 335 | 673 | — | "Date started:" blank |
 | Date through (§3b range) | 470 | 673 | — | "Through:" blank |
 | How calculated (§3c) | 63 | 641 | 13 | First fill line of §3c |
-| MC-031 checkbox | 63 | 586 | — | "Check here if you need more space" |
+| MC-031 checkbox | 63 | 579 | — | "Check here if you need more space" |
 | Prior demand why not | 63 | 457 | 14 | Fill lines below "If no, explain why not:" |
 
 ### MC-031 Overflow Logic

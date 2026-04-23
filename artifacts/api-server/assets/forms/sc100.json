@@ -77,7 +77,7 @@
 
     { "id": "p3_how_calculated",      "page": 3, "type": "wrapText", "source": "howAmountCalculated", "x": 63, "y": 641, "wrap": { "maxW": 480, "lineH": 13, "maxLines": 3 }, "condition": { "exists": "howAmountCalculated" } },
 
-    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 63, "y": 586, "condition": { "exists": "needsMC031" } },
+    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 63, "y": 579, "condition": { "exists": "needsMC031" } },
 
     { "id": "p3_demand_yes",          "page": 3, "type": "xmark", "x":  64, "y": 489, "condition": { "isTrue":  "priorDemandMade" } },
     { "id": "p3_demand_no",           "page": 3, "type": "xmark", "x": 116, "y": 489, "condition": { "isFalse": "priorDemandMade" } },
