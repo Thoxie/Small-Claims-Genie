@@ -710,6 +710,76 @@ router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
   }
 });
 
+// ─── SC-100 GPT-4o independent evaluation (dev only) ──────────────────────────
+router.post("/forms/sc100/evaluate", async (_req, res): Promise<void> => {
+  try {
+    const pages = [1, 2, 3, 4].map((n) => {
+      const candidates = [`/tmp/v7-page-${n}.png`, `/tmp/verified-page-${n}.png`];
+      for (const p of candidates) if (fs.existsSync(p)) return { page: n, path: p };
+      throw new Error(`No PNG found for page ${n}`);
+    });
+
+    const SAMPLE = `INTAKE DATA THAT SHOULD APPEAR IN THIS FORM:
+Page 1 Court box: County=San Diego, Courthouse=South County Division – Chula Vista, Address=500 3rd Ave, City/State/Zip=Chula Vista CA 91910; Case Name=Jane A. Doe v. ACME Auto Repair LLC
+Page 2 §1 Plaintiff 1: Jane A. Doe | (619) 555-0101 | 123 Main Street, San Diego CA 92101 | Mailing: PO Box 4400 San Diego CA 92112 | jane.doe@email.com
+Page 2 §1 Plaintiff 2: John B. Doe | (619) 555-0202 | 123 Main Street, San Diego CA 92101 | Mailing: PO Box 4400 San Diego CA 92112 | john.doe@email.com
+Page 2 §2 Defendant: ACME Auto Repair LLC | (619) 555-0303 | 456 Commerce Blvd, Chula Vista CA 91911 | Mailing: PO Box 9900, Chula Vista CA 91912
+Page 2 §2 Agent: Robert Smith | Registered Agent | 789 Agent Row, Chula Vista CA 91911
+Page 2 §3 Claim Amount: $3,750.00
+Page 2 §3a Description: Defendant performed negligent brake repair on plaintiff's 2019 Honda Civic on 01/15/2026. Brakes failed causing $3,750 in damages.
+Page 3 §3b Incident Date: 01/15/2026
+Page 3 §3c Calculation: Tow truck: $225. Rental car 5 days x $65/day: $325. Re-repair at certified shop: $3,200. Total: $3,750.
+Page 3 §4 Prior demand: YES checkbox should be marked
+Page 3 §5 Venue: Option a (where defendant lives or does business) should be checked
+Page 3 §6 Venue zip: 91911
+Page 3 §7 Attorney fee dispute: NO checkbox should be marked
+Page 3 §8 Suing public entity: NO checkbox should be marked
+Page 4 §9 Filed 12+ claims: NO checkbox should be marked
+Page 4 §10 Claim over $2,500: YES checkbox should be marked
+Page 4 Declaration date: 04/13/2026 | Declarant printed name: Jane A. Doe`;
+
+    const PROMPT = `You are a California superior court clerk and legal document QA expert. Evaluate this auto-filled SC-100 Small Claims form across all 4 pages.
+
+${SAMPLE}
+
+For EACH page (1 through 4), list every filled field visible and report:
+- Field label / section number
+- Value visible on the form
+- CORRECT or WRONG or MISSING vs the intake data
+- Position: GOOD (text on blank line/box) | SLIGHTLY OFF (minor overlap but readable) | MISALIGNED (hard to read overlap)
+
+For every checkbox and X mark: state which option is marked, whether the mark is inside the checkbox square, and whether the correct option was selected per intake data.
+
+End with:
+PAGE GRADES: Page 1: A-F, Page 2: A-F, Page 3: A-F, Page 4: A-F
+OVERALL GRADE: A-F
+CRITICAL ISSUES: List anything a court clerk would flag, reject, or question.`;
+
+    const imageContent = pages.map(({ path: p }) => ({
+      type: "image_url" as const,
+      image_url: {
+        url: `data:image/png;base64,${fs.readFileSync(p).toString("base64")}`,
+        detail: "high" as const,
+      },
+    }));
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      max_completion_tokens: 4096,
+      temperature: 0,
+      messages: [{
+        role: "user",
+        content: [{ type: "text", text: PROMPT }, ...imageContent],
+      }],
+    });
+
+    res.json({ ok: true, evaluation: response.choices[0].message.content });
+  } catch (err: any) {
+    console.error("[evaluate]", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
 // ─── SC-100 with field overrides (preview / download with edits) ───────────────
 router.post("/cases/:id/forms/sc100/with-overrides", async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
