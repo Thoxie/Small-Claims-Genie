@@ -12,3 +12,9 @@ id = "id39iHwjE1eCrL-nhSJKq"
 uri = "file://attached_assets/playwright-sc100-final.pdf"
 type = "pdf"
 title = "SC-100 — Clean Playwright build (post-audit)"
+
+[[outputs]]
+id = "q_xGz9DlvPEmk4VYXJD1h"
+uri = "file://attached_assets/case13-server-direct-bypass.pdf"
+type = "pdf"
+title = "Case 13 — Fresh from server, browser bypassed entirely"
