@@ -18,3 +18,27 @@ id = "q_xGz9DlvPEmk4VYXJD1h"
 uri = "file://attached_assets/case13-server-direct-bypass.pdf"
 type = "pdf"
 title = "Case 13 — Fresh from server, browser bypassed entirely"
+
+[[outputs]]
+id = "FdOkrICqgnXMXd3XISslL"
+uri = "file://attached_assets/form-preview/page-1.png"
+type = "image"
+title = "Page 1 — Court info box"
+
+[[outputs]]
+id = "zeJQrlk4zhulCry3eJOjo"
+uri = "file://attached_assets/form-preview/page-2.png"
+type = "image"
+title = "Page 2 — Plaintiff / Defendant / Claim amount"
+
+[[outputs]]
+id = "TIS7AuvG0vKJocbLj2pN1"
+uri = "file://attached_assets/form-preview/page-3.png"
+type = "image"
+title = "Page 3 — Claim details / Venue / Checkboxes"
+
+[[outputs]]
+id = "2yKRlMGfQasUfmnG7FEPx"
+uri = "file://attached_assets/form-preview/page-4.png"
+type = "image"
+title = "Page 4 — Declaration / Signature"
