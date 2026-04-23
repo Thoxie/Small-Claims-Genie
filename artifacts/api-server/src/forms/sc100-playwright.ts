@@ -211,6 +211,13 @@ const FB: Record<string, Record<string, FieldCoord>> = {
 // ── HTML generation helpers ────────────────────────────────────────────────────
 // All coordinates are CSS top-left in pt. No conversion needed.
 
+// City names longer than 11 chars (e.g. "ORANGE COUNTY") can overflow the
+// fixed city column (~91pt). Auto-shrink to 9pt so they always fit.
+function cityFontSz(city: string | null | undefined): string {
+  if (!city || city.length <= 11) return "";
+  return "font-size:9pt;";
+}
+
 function esc(s: string | null | undefined): string {
   if (!s) return "";
   return s
@@ -307,13 +314,13 @@ function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string 
       ${f("2", "plaintiffName",  d.plaintiffName)}
       ${f("2", "plaintiffPhone", d.plaintiffPhone)}
       ${f("2", "plaintiffStreet", d.plaintiffAddress)}
-      ${f("2", "plaintiffCity",   d.plaintiffCity)}
+      ${f("2", "plaintiffCity",   d.plaintiffCity,  cityFontSz(d.plaintiffCity))}
       ${f("2", "plaintiffState",  d.plaintiffState ?? "CA")}
       ${f("2", "plaintiffZip",    d.plaintiffZip)}
 
       ${d.plaintiffMailingAddress ? `
         ${f("2", "plaintiffMailingStreet", d.plaintiffMailingAddress)}
-        ${f("2", "plaintiffMailingCity",   d.plaintiffMailingCity)}
+        ${f("2", "plaintiffMailingCity",   d.plaintiffMailingCity,  cityFontSz(d.plaintiffMailingCity))}
         ${f("2", "plaintiffMailingState",  d.plaintiffMailingState ?? "CA")}
         ${f("2", "plaintiffMailingZip",    d.plaintiffMailingZip)}
       ` : ""}
@@ -324,12 +331,12 @@ function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string 
         ${f("2", "p2Name",  d.p2NameTitle ?? d.secondPlaintiffName)}
         ${f("2", "p2Phone", d.secondPlaintiffPhone)}
         ${f("2", "p2Street", d.secondPlaintiffAddress)}
-        ${f("2", "p2City",   d.secondPlaintiffCity)}
+        ${f("2", "p2City",   d.secondPlaintiffCity,  cityFontSz(d.secondPlaintiffCity))}
         ${f("2", "p2State",  d.secondPlaintiffState ?? "CA")}
         ${f("2", "p2Zip",    d.secondPlaintiffZip)}
         ${d.secondPlaintiffMailingAddress ? `
           ${f("2", "p2MailingStreet", d.secondPlaintiffMailingAddress)}
-          ${f("2", "p2MailingCity",   d.secondPlaintiffMailingCity)}
+          ${f("2", "p2MailingCity",   d.secondPlaintiffMailingCity,  cityFontSz(d.secondPlaintiffMailingCity))}
           ${f("2", "p2MailingState",  d.secondPlaintiffMailingState ?? "CA")}
           ${f("2", "p2MailingZip",    d.secondPlaintiffMailingZip)}
         ` : ""}
@@ -339,13 +346,13 @@ function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string 
       ${f("2", "defendantName",  d.defendantName)}
       ${f("2", "defendantPhone", d.defendantPhone)}
       ${f("2", "defendantStreet", d.defendantAddress)}
-      ${f("2", "defendantCity",   d.defendantCity)}
+      ${f("2", "defendantCity",   d.defendantCity,  cityFontSz(d.defendantCity))}
       ${f("2", "defendantState",  d.defendantState ?? "CA")}
       ${f("2", "defendantZip",    d.defendantZip)}
 
       ${d.defendantMailingAddress ? `
         ${f("2", "defendantMailingStreet", d.defendantMailingAddress)}
-        ${f("2", "defendantMailingCity",   d.defendantMailingCity)}
+        ${f("2", "defendantMailingCity",   d.defendantMailingCity,  cityFontSz(d.defendantMailingCity))}
         ${f("2", "defendantMailingState",  d.defendantMailingState ?? "CA")}
         ${f("2", "defendantMailingZip",    d.defendantMailingZip)}
       ` : ""}
@@ -354,7 +361,7 @@ function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string 
         ${f("2", "agentName",   d.defendantAgentName)}
         ${f("2", "agentTitle",  d.defendantAgentTitle)}
         ${f("2", "agentStreet", d.defendantAgentStreet)}
-        ${f("2", "agentCity",   d.defendantAgentCity)}
+        ${f("2", "agentCity",   d.defendantAgentCity,  cityFontSz(d.defendantAgentCity))}
         ${f("2", "agentState",  d.defendantAgentState ?? "CA")}
         ${f("2", "agentZip",    d.defendantAgentZip)}
       ` : ""}

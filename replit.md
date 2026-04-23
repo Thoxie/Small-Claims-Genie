@@ -151,18 +151,53 @@ Then follow `PUBLISH_CHECKLIST.md` for the manual UI steps.
 
 ## SC-100 Form Architecture
 
-The SC-100 PDF is generated using `@react-pdf/renderer` — a React JSX component (`sc100-react-pdf.tsx`) that renders case data over 300 DPI PNG form backgrounds.
+The SC-100 PDF is generated using **Playwright + Chromium** — HTML/CSS absolute positioning over base64-embedded 300 DPI PNG backgrounds. Chromium renders the HTML page to a PDF. This approach eliminates the coordinate approximation errors that plagued the old @react-pdf/renderer approach.
+
+### Key Files
+
+- `artifacts/api-server/src/forms/sc100-playwright.ts` — PDF builder; `buildSC100PlaywrightPdf()` + `cityFontSz()` helper
+- `artifacts/api-server/assets/forms/sc100-field-map.json` — v2.4 coordinate map (all 4 pages)
+- `artifacts/api-server/assets/sc100_hq-{1,2,3,4}.png` — 300 DPI form backgrounds
 
 ### Coordinate System
 
-- **Engine**: @react-pdf/renderer with CSS absolute positioning on a 612pt × 792pt page
-- **Origin**: TOP-LEFT (unlike old pdf-lib which used bottom-left)
-- **Helper functions in sc100-react-pdf.tsx**:
-  - `py(y, size)` → converts bottom-up `y` to top-down CSS `top`: `792 - y - size*0.72`
-  - `<T x y>` → positions text at (x, py(y)) in absolute CSS
-  - `<X x y show>` → renders "X" mark at (x, py(y)) when `show === true`
-  - `<W x y maxW lineH>` → wraps long text within a bounding box
+- **Engine**: Playwright/Chromium — HTML `<div>` elements with `position:absolute`, `left`, `top` in CSS pt units
+- **Origin**: TOP-LEFT (CSS standard)
+- **Page size**: 612pt × 792pt
+- **Field map**: `sc100-field-map.json` — one object per page (pages 1–4), each key is a field name with `{x, y, size}`
 - **PNG assets**: `artifacts/api-server/assets/sc100_hq-{1,2,3,4}.png` — 300 DPI, 2550×3300px
+
+### City/State/Zip Alignment (v2.4)
+
+| Column | x (pt) | Notes |
+|--------|---------|-------|
+| City | 365 | Plaintiff, p2, defendant rows |
+| State | 456 | All address rows |
+| Zip | 492 | All address rows |
+| Agent City | 348 | Agent row uses its own narrower layout |
+
+**Auto-shrink**: `cityFontSz(city)` returns `font-size:9pt;` when city name exceeds 11 chars (e.g. "ORANGE COUNTY" = 13 chars → 9pt), preventing overflow into the State column.
+
+### Field Map Version History
+
+| Version | Change |
+|---------|--------|
+| v2.0 | Initial Playwright migration with GPT-4o OCR calibration |
+| v2.1 | First GPT-4o verify pass — 50-field correction |
+| v2.2 | GPT-4o evaluate pass — A grade on all 4 pages |
+| v2.3 | City x unified to 365, state to 456, zip to 492; added cityFontSz() |
+| v2.4 | **Reverted page 2 y-coordinates** to v2.2 original values (second verify pass had incorrectly shifted all page 2 fields down 8pt); kept improved x-coordinates |
+
+**Important**: Do NOT run the `/forms/sc100/verify` endpoint without careful visual inspection afterward — GPT-4o verify passes have historically introduced systematic y-coordinate errors (shifting all fields by ±8pt in the wrong direction).
+
+### Debug Endpoints (no auth required)
+
+- `GET /api/forms/sc100/debug-preview?mode=sample` — 4-page SC-100 with built-in sample data
+- `GET /api/forms/sc100/debug-preview?mode=debug` — same with red crosshairs at field anchors
+- `POST /api/forms/sc100/debug-preview-custom` — custom data body, returns PDF
+- `POST /api/forms/sc100/horiz-check` — GPT-4o horizontal alignment analysis (⚠️ rate-limited)
+- `POST /api/forms/sc100/calibrate` — full GPT-4o recalibration (expensive — do not abuse)
+- `POST /api/forms/sc100/verify` — GPT-4o coordinate correction pass (⚠️ has historically made things worse)
 
 ### Checkbox Calibration Methodology (pixel-verified)
 

@@ -637,6 +637,109 @@ router.post("/forms/sc100/calibrate", async (_req, res): Promise<void> => {
 
 // ─── SC-100 verification pass (dev only — no auth) ────────────────────────────
 // POST /api/forms/sc100/verify
+// ─── SC-100 horizontal-only GPT-4o analysis (dev only) ───────────────────────
+// Generates a filled PDF with realistic data (including long city names),
+// converts to PNG, compares against blank form, reports horizontal issues only.
+router.post("/forms/sc100/horiz-check", async (_req, res): Promise<void> => {
+  const { execSync } = await import("child_process");
+  const os = await import("os");
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sc100-horiz-"));
+  try {
+    const HORIZ_SAMPLE: Record<string, any> = {
+      plaintiffName: "Paul Andrew", plaintiffPhone: "(650) 646-1925",
+      plaintiffAddress: "3020 Bridgeway", plaintiffCity: "Sausalito",
+      plaintiffState: "CA", plaintiffZip: "94965",
+      plaintiffEmail: "Paul@innitstreetwear.com",
+      defendantName: "ACME AUTO REPAIR INC", defendantPhone: "(555) 555-5555",
+      defendantAddress: "18 Butler Avenue", defendantCity: "ORANGE COUNTY",
+      defendantState: "CA", defendantZip: "94022",
+      defendantIsBusinessOrEntity: true,
+      defendantAgentName: "JOHN DOE", defendantAgentTitle: "OWNER",
+      defendantAgentStreet: "18 Butler Avenue", defendantAgentCity: "ORANGE COUNTY",
+      defendantAgentState: "CA", defendantAgentZip: "94022",
+      claimAmount: 5000,
+      claimDescription: "On April 1, 2026, defendant performed negligent engine work.",
+      howAmountCalculated: "$1,542.42 from contract and cancelled check.",
+      incidentDate: "04/01/2026",
+      countyId: "merced", countyDisplay: "Merced",
+      courthouseName: "Merced County Superior Court",
+      courthouseAddress: "627 W 21st St",
+      courthouseCity: "Merced", courthouseZip: "95340",
+      caseNumber: "26SC001234",
+      venueBasis: "where_defendant_lives",
+      priorDemandMade: true, isAttyFeeDispute: false, isSuingPublicEntity: false,
+      filedMoreThan12Claims: false, claimOver2500: true,
+      declarationDate: "04/23/2026",
+    };
+    const enriched = enrichForSC100(HORIZ_SAMPLE);
+    const pdfBytes = await buildSC100PlaywrightPdf(enriched, ASSET_DIR);
+    const pdfPath = path.join(tmpDir, "filled.pdf");
+    fs.writeFileSync(pdfPath, pdfBytes);
+
+    execSync(`pdftoppm -r 200 -png "${pdfPath}" "${path.join(tmpDir, "page")}"`, { timeout: 30000 });
+
+    const filledPngs = [1, 2, 3, 4].map((n) => {
+      const p = path.join(tmpDir, `page-${n}.png`);
+      return fs.existsSync(p) ? p : path.join(tmpDir, `page-0${n}.png`);
+    });
+    // Also save to /tmp for evaluate endpoint
+    filledPngs.forEach((p, i) => {
+      if (fs.existsSync(p)) fs.copyFileSync(p, `/tmp/horiz-page-${i + 1}.png`);
+    });
+
+    const blankPngs = [1, 2, 3, 4].map((n) => path.join(ASSET_DIR, `sc100_hq-${n}.png`));
+
+    const buildImg = (p: string) => ({
+      type: "image_url" as const,
+      image_url: { url: `data:image/png;base64,${fs.readFileSync(p).toString("base64")}`, detail: "high" as const },
+    });
+
+    const PROMPT = `You are a California court form expert performing HORIZONTAL alignment QA on this SC-100 small claims form.
+
+I'm providing 8 images in order: blank-page-1, filled-page-1, blank-page-2, filled-page-2, blank-page-3, filled-page-3, blank-page-4, filled-page-4.
+
+The plaintiff is "Paul Andrew", defendant is "ACME AUTO REPAIR INC", city is "Orange County" (a longer city name than typical).
+
+Focus ONLY on horizontal (left-right, x-axis) alignment. Ignore vertical position — assume y-coords are acceptable.
+
+For EACH filled page, list every text field and checkbox. For each:
+1. Field name / section (e.g., "Plaintiff name", "Defendant city", "Venue checkbox A")
+2. Is the LEFT EDGE of the typed text correctly aligned with where text should START on that blank line? (CORRECT | TOO FAR LEFT | TOO FAR RIGHT)
+3. Does the typed text overflow (extend past the right edge of its designated box/column)? (NO OVERFLOW | OVERFLOWS INTO adjacent field | OVERFLOWS OFF PAGE)
+4. For checkboxes: is the X mark centered within the checkbox square? (CENTERED | SHIFTED LEFT | SHIFTED RIGHT)
+
+Pay special attention to:
+- City / State / Zip columns (do they start in the right spot, does long city text overflow into state?)
+- Phone number columns (right-side alignment)
+- Header bar (plaintiff name / case number row at top of page 2+)
+- Address rows (does street start after the label ends?)
+
+End with:
+HORIZONTAL ISSUES FOUND: list only the fields that need x-coordinate adjustment, with direction (move left N pt / move right N pt).
+If no issues, say "ALL HORIZONTAL POSITIONS CORRECT".`;
+
+    const images = [];
+    for (let i = 0; i < 4; i++) {
+      images.push(buildImg(blankPngs[i]));
+      images.push(buildImg(filledPngs[i]));
+    }
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      max_completion_tokens: 4096,
+      temperature: 0,
+      messages: [{ role: "user", content: [{ type: "text", text: PROMPT }, ...images] }],
+    });
+
+    res.json({ ok: true, analysis: response.choices[0].message.content });
+  } catch (err: any) {
+    console.error("[horiz-check]", err?.message, err?.stack);
+    res.status(500).json({ error: err?.message });
+  } finally {
+    try { execSync(`rm -rf "${tmpDir}"`); } catch {}
+  }
+});
+
 // Generates a sample filled PDF, converts to PNG, sends both blank + filled
 // images to GPT-4o, gets per-field correction offsets, updates field map.
 router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
