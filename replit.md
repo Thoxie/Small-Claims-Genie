@@ -199,9 +199,17 @@ All coordinates pixel-verified against `sc100_hq-3.png` and `sc100_hq-4.png` at 
 | 10 Over $2500 | Yes | 276 | 657 | ~402 |
 | 10 Over $2500 | No | 322 | 657 | ~402 |
 
-### Other Page 3 Notable Calibrations
-- `p3_how_calculated`: x=63, y=641 (section 3c fill lines)
-- `p3_mc030_check`: x=36, y=586 (MC-030 overflow checkbox)
+### Text Field Calibrations (pixel-verified against 300dpi blank form)
+| Field | x | y | lineH | Notes |
+|---|---|---|---|---|
+| Claim amount (§3 header) | 370 | 193 | — | Sits in fill blank right of "$" |
+| Claim description (§3a) | 63 | 163 | 14 | First fill line below "a. Why..." label |
+| Incident date (§3b) | 217 | 689 | — | On date fill blank |
+| Date started (§3b range) | 335 | 673 | — | "Date started:" blank |
+| Date through (§3b range) | 470 | 673 | — | "Through:" blank |
+| How calculated (§3c) | 63 | 641 | 13 | First fill line of §3c |
+| MC-031 checkbox | 63 | 586 | — | "Check here if you need more space" |
+| Prior demand why not | 63 | 457 | 14 | Fill lines below "If no, explain why not:" |
 
 ### MC-031 Overflow Logic
 - `claimDescriptionForForm`: if > 360 chars → truncates with "… (see MC-030)"; sets `needsMC031=true`

@@ -65,46 +65,46 @@
     { "id": "p2_agent_state",         "page": 2, "type": "text", "source": "defendantAgentState", "x": 441, "y": 268, "fallback": "CA", "condition": { "exists": "hasAgent" } },
     { "id": "p2_agent_zip",           "page": 2, "type": "text", "source": "defendantAgentZip",   "x": 469, "y": 268, "condition": { "exists": "hasAgent" } },
 
-    { "id": "p2_claim_amount",        "page": 2, "type": "text",     "source": "claimAmountFormatted",    "x": 370, "y": 216, "condition": { "exists": "claimAmountFormatted" } },
-    { "id": "p2_claim_description",   "page": 2, "type": "wrapText", "source": "claimDescriptionForForm", "x":  63, "y": 185, "wrap": { "maxW": 480, "lineH": 12, "maxLines": 5 } },
+    { "id": "p2_claim_amount",        "page": 2, "type": "text",     "source": "claimAmountFormatted",    "x": 370, "y": 193, "condition": { "exists": "claimAmountFormatted" } },
+    { "id": "p2_claim_description",   "page": 2, "type": "wrapText", "source": "claimDescriptionForForm", "x":  63, "y": 163, "wrap": { "maxW": 480, "lineH": 14, "maxLines": 5 } },
 
     { "id": "p3_header_plaintiff",    "page": 3, "type": "text", "source": "plaintiffName",  "x": 163, "y": 748 },
     { "id": "p3_header_case_number",  "page": 3, "type": "text", "source": "caseNumber",     "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
 
-    { "id": "p3_incident_date",       "page": 3, "type": "text", "source": "incidentDate",   "x": 217, "y": 702 },
-    { "id": "p3_date_started",        "page": 3, "type": "text", "source": "dateStarted",    "x": 335, "y": 684, "condition": { "exists": "hasDateRange" } },
-    { "id": "p3_date_through",        "page": 3, "type": "text", "source": "dateThrough",    "x": 470, "y": 684, "condition": { "exists": "hasDateRange" } },
+    { "id": "p3_incident_date",       "page": 3, "type": "text", "source": "incidentDate",   "x": 217, "y": 689 },
+    { "id": "p3_date_started",        "page": 3, "type": "text", "source": "dateStarted",    "x": 335, "y": 673, "condition": { "exists": "hasDateRange" } },
+    { "id": "p3_date_through",        "page": 3, "type": "text", "source": "dateThrough",    "x": 470, "y": 673, "condition": { "exists": "hasDateRange" } },
 
     { "id": "p3_how_calculated",      "page": 3, "type": "wrapText", "source": "howAmountCalculated", "x": 63, "y": 641, "wrap": { "maxW": 480, "lineH": 13, "maxLines": 3 }, "condition": { "exists": "howAmountCalculated" } },
 
-    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 36, "y": 586, "condition": { "exists": "needsMC031" } },
+    { "id": "p3_mc030_check",         "page": 3, "type": "xmark", "x": 63, "y": 586, "condition": { "exists": "needsMC031" } },
 
-    { "id": "p3_demand_yes",          "page": 3, "type": "xmark", "x":  70, "y": 489, "condition": { "isTrue":  "priorDemandMade" } },
-    { "id": "p3_demand_no",           "page": 3, "type": "xmark", "x": 125, "y": 489, "condition": { "isFalse": "priorDemandMade" } },
-    { "id": "p3_demand_why_not",      "page": 3, "type": "wrapText", "source": "priorDemandWhyNot", "x": 63, "y": 452, "wrap": { "maxW": 490, "lineH": 12, "maxLines": 3 }, "condition": { "exists": "priorDemandWhyNot" } },
+    { "id": "p3_demand_yes",          "page": 3, "type": "xmark", "x":  64, "y": 489, "condition": { "isTrue":  "priorDemandMade" } },
+    { "id": "p3_demand_no",           "page": 3, "type": "xmark", "x": 116, "y": 489, "condition": { "isFalse": "priorDemandMade" } },
+    { "id": "p3_demand_why_not",      "page": 3, "type": "wrapText", "source": "priorDemandWhyNot", "x": 63, "y": 457, "wrap": { "maxW": 490, "lineH": 14, "maxLines": 3 }, "condition": { "exists": "priorDemandWhyNot" } },
 
     { "id": "p3_venue_check",         "page": 3, "type": "xmarkFromMap", "source": "venueBasisLetter", "condition": { "exists": "venueBasisLetter" },
-      "map": { "a": [67, 391], "b": [67, 349], "c": [67, 311], "d": [67, 279], "e": [67, 249] } },
-    { "id": "p3_venue_other_reason",  "page": 3, "type": "text", "source": "venueReason", "x": 167, "y": 249, "condition": { "exists": "isVenueOther" } },
+      "map": { "a": [79, 373], "b": [79, 317], "c": [79, 276], "d": [79, 249], "e": [79, 220] } },
+    { "id": "p3_venue_other_reason",  "page": 3, "type": "text", "source": "venueReason", "x": 167, "y": 217, "condition": { "exists": "isVenueOther" } },
 
     { "id": "p3_venue_zip",           "page": 3, "type": "text", "source": "venueZip",           "x": 415, "y": 194 },
 
-    { "id": "p3_atty_fee_yes",        "page": 3, "type": "xmark", "x": 364, "y": 167, "condition": { "isTrue":  "isAttyFeeDispute" } },
-    { "id": "p3_atty_fee_no",         "page": 3, "type": "xmark", "x": 417, "y": 167, "condition": { "notTrue": "isAttyFeeDispute" } },
-    { "id": "p3_arbitration_check",   "page": 3, "type": "xmark", "x": 503, "y": 162, "condition": { "isTrue":  "attyFeeAndArbitration" } },
+    { "id": "p3_atty_fee_yes",        "page": 3, "type": "xmark", "x": 358, "y": 153, "condition": { "isTrue":  "isAttyFeeDispute" } },
+    { "id": "p3_atty_fee_no",         "page": 3, "type": "xmark", "x": 409, "y": 153, "condition": { "notTrue": "isAttyFeeDispute" } },
+    { "id": "p3_arbitration_check",   "page": 3, "type": "xmark", "x": 503, "y": 138, "condition": { "isTrue":  "attyFeeAndArbitration" } },
 
-    { "id": "p3_public_entity_yes",   "page": 3, "type": "xmark", "x": 250, "y": 136, "condition": { "isTrue":  "isSuingPublicEntity" } },
-    { "id": "p3_public_entity_no",    "page": 3, "type": "xmark", "x": 303, "y": 136, "condition": { "notTrue": "isSuingPublicEntity" } },
+    { "id": "p3_public_entity_yes",   "page": 3, "type": "xmark", "x": 244, "y": 118, "condition": { "isTrue":  "isSuingPublicEntity" } },
+    { "id": "p3_public_entity_no",    "page": 3, "type": "xmark", "x": 295, "y": 118, "condition": { "notTrue": "isSuingPublicEntity" } },
     { "id": "p3_public_entity_date",  "page": 3, "type": "text",  "source": "publicEntityClaimFiledDate", "x": 453, "y": 121, "condition": { "isTrue": "publicEntityHasDate" } },
 
     { "id": "p4_header_plaintiff",    "page": 4, "type": "text", "source": "plaintiffName",  "x": 163, "y": 748 },
     { "id": "p4_header_case_number",  "page": 4, "type": "text", "source": "caseNumber",     "x": 440, "y": 748, "condition": { "exists": "caseNumber" } },
 
-    { "id": "p4_12claims_yes",        "page": 4, "type": "xmark", "x":  71, "y": 682, "condition": { "isTrue":  "filedMoreThan12Claims" } },
-    { "id": "p4_12claims_no",         "page": 4, "type": "xmark", "x": 122, "y": 682, "condition": { "notTrue": "filedMoreThan12Claims" } },
+    { "id": "p4_12claims_yes",        "page": 4, "type": "xmark", "x":  64, "y": 675, "condition": { "isTrue":  "filedMoreThan12Claims" } },
+    { "id": "p4_12claims_no",         "page": 4, "type": "xmark", "x": 113, "y": 675, "condition": { "notTrue": "filedMoreThan12Claims" } },
 
-    { "id": "p4_over2500_yes",        "page": 4, "type": "xmark", "x": 284, "y": 663, "condition": { "isTrue":  "claimOver2500" } },
-    { "id": "p4_over2500_no",         "page": 4, "type": "xmark", "x": 331, "y": 663, "condition": { "notTrue": "claimOver2500" } },
+    { "id": "p4_over2500_yes",        "page": 4, "type": "xmark", "x": 276, "y": 657, "condition": { "isTrue":  "claimOver2500" } },
+    { "id": "p4_over2500_no",         "page": 4, "type": "xmark", "x": 322, "y": 657, "condition": { "notTrue": "claimOver2500" } },
 
     { "id": "p4_decl_date",           "page": 4, "type": "text", "source": "declarationDate",    "x":  65, "y": 506 },
     { "id": "p4_print_name",          "page": 4, "type": "text", "source": "declarantNameTitle",  "x":  36, "y": 488 }

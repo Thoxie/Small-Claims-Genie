@@ -256,7 +256,7 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
           </>
         )}
         <W x={63} y={641} maxW={480} lineH={13}>{d.howAmountCalculated}</W>
-        <X x={36}  y={586} show={d.needsMC031} />
+        <X x={63}  y={586} show={d.needsMC031} />
 
         {/* Section 4 — prior demand */}
         <X x={64}  y={489} show={d.priorDemandMade === true} />
