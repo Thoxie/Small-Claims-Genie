@@ -345,6 +345,7 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
     const enriched = await aiEnrichForSC100(enrichForSC100(c as unknown as Record<string, any>));
     const pdfBytes = await buildSC100Pdf(enriched);
     res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Disposition", `attachment; filename="SC100-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
@@ -372,6 +373,7 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
     const enriched = await aiEnrichForSC100(enrichForSC100(c as unknown as Record<string, any>));
     const pdfBytes = await buildSC100Pdf(enriched, sigBytes);
     res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Disposition", `attachment; filename="SC100-Signed-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
@@ -503,6 +505,7 @@ router.post("/forms/sc100/debug-preview-custom", async (req, res): Promise<void>
     const enriched = enrichForSC100(caseData);
     const pdfBytes = await buildSC100PlaywrightPdf(enriched, ASSET_DIR);
     res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Disposition", `inline; filename="SC100-custom.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
@@ -593,6 +596,7 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
     const pdfBytes = await buildSC100PlaywrightPdf(enriched, ASSET_DIR);
     const label = debugMode ? "DEBUG" : "SAMPLE";
     res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Disposition", `inline; filename="SC100-${label}-Preview.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
@@ -933,6 +937,7 @@ router.post("/cases/:id/forms/sc100a", async (req, res): Promise<void> => {
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Disposition", `attachment; filename="SC100A-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
