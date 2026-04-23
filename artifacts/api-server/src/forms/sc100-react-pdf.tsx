@@ -25,15 +25,15 @@ const py = (y: number, size: number = 9): number =>
 const S = StyleSheet.create({
   page:  { width: PW, height: PH, position: "relative", backgroundColor: "#fff" },
   bg:    { position: "absolute", top: 0, left: 0, width: PW, height: PH },
-  t9:    { position: "absolute", fontFamily: "Helvetica", fontSize: 9, color: "#000", lineHeight: 1 },
+  t9:    { position: "absolute", fontFamily: "Helvetica", fontSize: 11, color: "#000", lineHeight: 1 },
   t8:    { position: "absolute", fontFamily: "Helvetica", fontSize: 8, color: "#000", lineHeight: 1 },
   x:     { position: "absolute", fontFamily: "Helvetica", fontSize: 10, color: "#000", lineHeight: 1 },
-  wrap:  { position: "absolute", fontFamily: "Helvetica", fontSize: 9, color: "#000" },
+  wrap:  { position: "absolute", fontFamily: "Helvetica", fontSize: 11, color: "#000" },
 });
 
 // ── Field helpers ──────────────────────────────────────────────────────────────
 const T = ({
-  x, y, size = 9, children,
+  x, y, size = 11, children,
 }: { x: number; y: number; size?: number; children?: string | null | undefined }) => {
   if (!children) return null;
   return <Text style={[size === 8 ? S.t8 : S.t9, { left: x, top: py(y, size) }]}>{children}</Text>;
@@ -45,7 +45,7 @@ const X = ({ x, y, show }: { x: number; y: number; show?: boolean | null }) => {
 };
 
 const W = ({
-  x, y, maxW, lineH, size = 9, children,
+  x, y, maxW, lineH, size = 11, children,
 }: { x: number; y: number; maxW: number; lineH: number; size?: number; children?: string | null | undefined }) => {
   if (!children) return null;
   return (
@@ -165,8 +165,8 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         {d.caseNumber && <T x={440} y={748}>{d.caseNumber}</T>}
 
         {/* ── Plaintiff 1 ── */}
-        <T x={95}  y={682}>{d.plaintiffName}</T>
-        <T x={462} y={682}>{d.plaintiffPhone}</T>
+        <T x={95}  y={674}>{d.plaintiffName}</T>
+        <T x={462} y={674}>{d.plaintiffPhone}</T>
         <T x={133} y={655}>{d.plaintiffAddress}</T>
         <T x={370} y={655}>{d.plaintiffCity}</T>
         <T x={472} y={655}>{d.plaintiffState ?? "CA"}</T>
@@ -207,30 +207,30 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         )}
 
         {/* ── Defendant ── */}
-        <T x={95}  y={400}>{d.defendantName}</T>
-        <T x={462} y={400}>{d.defendantPhone}</T>
-        <T x={133} y={385}>{d.defendantAddress}</T>
-        <T x={370} y={385}>{d.defendantCity}</T>
-        <T x={472} y={385}>{d.defendantState ?? "CA"}</T>
-        <T x={499} y={385}>{d.defendantZip}</T>
+        <T x={95}  y={389}>{d.defendantName}</T>
+        <T x={462} y={389}>{d.defendantPhone}</T>
+        <T x={133} y={372}>{d.defendantAddress}</T>
+        <T x={370} y={372}>{d.defendantCity}</T>
+        <T x={472} y={372}>{d.defendantState ?? "CA"}</T>
+        <T x={499} y={372}>{d.defendantZip}</T>
         {d.defendantMailingAddress && (
           <>
-            <T x={215} y={356}>{d.defendantMailingAddress}</T>
-            <T x={370} y={356}>{d.defendantMailingCity}</T>
-            <T x={472} y={356}>{d.defendantMailingState ?? "CA"}</T>
-            <T x={499} y={356}>{d.defendantMailingZip}</T>
+            <T x={215} y={344}>{d.defendantMailingAddress}</T>
+            <T x={370} y={344}>{d.defendantMailingCity}</T>
+            <T x={472} y={344}>{d.defendantMailingState ?? "CA"}</T>
+            <T x={499} y={344}>{d.defendantMailingZip}</T>
           </>
         )}
 
         {/* ── Registered agent (business defendants) ── */}
         {d.hasAgent && (
           <>
-            <T x={95}  y={283}>{d.defendantAgentName}</T>
-            <T x={413} y={283}>{d.defendantAgentTitle}</T>
-            <T x={124} y={268}>{d.defendantAgentStreet}</T>
-            <T x={341} y={268}>{d.defendantAgentCity}</T>
-            <T x={441} y={268}>{d.defendantAgentState ?? "CA"}</T>
-            <T x={469} y={268}>{d.defendantAgentZip}</T>
+            <T x={95}  y={266}>{d.defendantAgentName}</T>
+            <T x={413} y={266}>{d.defendantAgentTitle}</T>
+            <T x={124} y={251}>{d.defendantAgentStreet}</T>
+            <T x={341} y={251}>{d.defendantAgentCity}</T>
+            <T x={441} y={251}>{d.defendantAgentState ?? "CA"}</T>
+            <T x={469} y={251}>{d.defendantAgentZip}</T>
           </>
         )}
 
@@ -248,11 +248,11 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         {d.caseNumber && <T x={440} y={748}>{d.caseNumber}</T>}
 
         {/* Section 3 — when / how calculated */}
-        <T x={217} y={689}>{d.incidentDate}</T>
+        <T x={217} y={697}>{d.incidentDate}</T>
         {d.hasDateRange && (
           <>
-            <T x={335} y={673}>{d.dateStarted}</T>
-            <T x={470} y={673}>{d.dateThrough}</T>
+            <T x={335} y={681}>{d.dateStarted}</T>
+            <T x={470} y={681}>{d.dateThrough}</T>
           </>
         )}
         <W x={63} y={641} maxW={480} lineH={13}>{d.howAmountCalculated}</W>
@@ -266,26 +266,26 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         )}
 
         {/* Section 5 — venue */}
-        {d.venueBasisLetter === "a" && <X x={79} y={373} show />}
-        {d.venueBasisLetter === "b" && <X x={79} y={317} show />}
-        {d.venueBasisLetter === "c" && <X x={79} y={276} show />}
-        {d.venueBasisLetter === "d" && <X x={79} y={249} show />}
-        {d.venueBasisLetter === "e" && <X x={79} y={220} show />}
-        {d.isVenueOther && <T x={167} y={217}>{d.venueReason}</T>}
+        {d.venueBasisLetter === "a" && <X x={79} y={370} show />}
+        {d.venueBasisLetter === "b" && <X x={79} y={311} show />}
+        {d.venueBasisLetter === "c" && <X x={79} y={272} show />}
+        {d.venueBasisLetter === "d" && <X x={79} y={251} show />}
+        {d.venueBasisLetter === "e" && <X x={79} y={227} show />}
+        {d.isVenueOther && <T x={167} y={226}>{d.venueReason}</T>}
 
         {/* Section 6 — venue zip */}
-        <T x={415} y={194}>{d.venueZip}</T>
+        <T x={415} y={206}>{d.venueZip}</T>
 
         {/* Section 7 — attorney fee dispute */}
-        <X x={358} y={153} show={d.isAttyFeeDispute === true} />
-        <X x={409} y={153} show={!d.isAttyFeeDispute} />
-        <X x={503} y={138} show={d.attyFeeAndArbitration === true} />
+        <X x={358} y={161} show={d.isAttyFeeDispute === true} />
+        <X x={409} y={161} show={!d.isAttyFeeDispute} />
+        <X x={503} y={154} show={d.attyFeeAndArbitration === true} />
 
         {/* Section 8 — public entity */}
-        <X x={244} y={118} show={d.isSuingPublicEntity === true} />
-        <X x={295} y={118} show={!d.isSuingPublicEntity} />
+        <X x={244} y={138} show={d.isSuingPublicEntity === true} />
+        <X x={295} y={138} show={!d.isSuingPublicEntity} />
         {d.publicEntityHasDate && (
-          <T x={453} y={121}>{d.publicEntityClaimFiledDate}</T>
+          <T x={453} y={139}>{d.publicEntityClaimFiledDate}</T>
         )}
       </Page>
 
@@ -298,12 +298,12 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         {d.caseNumber && <T x={440} y={748}>{d.caseNumber}</T>}
 
         {/* 12+ claims filed this year */}
-        <X x={64}  y={675} show={d.filedMoreThan12Claims === true} />
-        <X x={113} y={675} show={!d.filedMoreThan12Claims} />
+        <X x={64}  y={673} show={d.filedMoreThan12Claims === true} />
+        <X x={113} y={673} show={!d.filedMoreThan12Claims} />
 
         {/* Claim over $2,500 */}
-        <X x={276} y={657} show={d.claimOver2500 === true} />
-        <X x={322} y={657} show={!d.claimOver2500} />
+        <X x={276} y={660} show={d.claimOver2500 === true} />
+        <X x={322} y={660} show={!d.claimOver2500} />
 
         {/* Declaration */}
         <T x={65}  y={506}>{d.declarationDate}</T>
