@@ -11,7 +11,6 @@ import { inArray, and, eq } from "drizzle-orm";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { type FormConfig } from "../forms/form-renderer";
-import { buildSC100Pdf as buildSC100ReactPdf } from "../forms/sc100-react-pdf";
 import { buildSC100Pdf as buildSC100PlaywrightPdf } from "../forms/sc100-playwright";
 
 // ─── Load form configs at startup (JSON files in assets/forms/) ────────────────
@@ -591,7 +590,7 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
   };
   try {
     const enriched = enrichForSC100(SAMPLE);
-    const pdfBytes = await buildSC100ReactPdf(enriched, ASSET_DIR);
+    const pdfBytes = await buildSC100PlaywrightPdf(enriched, ASSET_DIR);
     const label = debugMode ? "DEBUG" : "SAMPLE";
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="SC100-${label}-Preview.pdf"`);

@@ -6,3 +6,9 @@ id = "dOigRAQT9R1PGpos3ZuyL"
 uri = "file://attached_assets/playwright-sc100-test.pdf"
 type = "pdf"
 title = "SC-100 — Playwright HTML-to-PDF (first build)"
+
+[[outputs]]
+id = "id39iHwjE1eCrL-nhSJKq"
+uri = "file://attached_assets/playwright-sc100-final.pdf"
+type = "pdf"
+title = "SC-100 — Clean Playwright build (post-audit)"
