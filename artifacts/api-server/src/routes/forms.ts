@@ -496,6 +496,22 @@ ${pageBlocks}
   res.send(html);
 });
 
+// ─── SC-100 custom-data debug preview (no auth — dev calibration only) ────────
+router.post("/forms/sc100/debug-preview-custom", async (req, res): Promise<void> => {
+  try {
+    const caseData = req.body as Record<string, any>;
+    const enriched = enrichForSC100(caseData);
+    const pdfBytes = await buildSC100ReactPdf(enriched, ASSET_DIR);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="SC100-custom.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("Custom debug preview error:", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
 // ─── SC-100 debug preview (no auth — dev calibration tool) ───────────────────
 // GET /forms/sc100/debug-preview?mode=debug|sample
 // Generates a 4-page SC-100 with realistic sample data.

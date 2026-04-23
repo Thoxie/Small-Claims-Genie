@@ -235,8 +235,8 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         )}
 
         {/* ── Claim ── */}
-        <T x={370} y={216}>{d.claimAmountFormatted}</T>
-        <W x={63} y={173} maxW={480} lineH={12}>{d.claimDescriptionForForm}</W>
+        <T x={370} y={193}>{d.claimAmountFormatted}</T>
+        <W x={63} y={163} maxW={480} lineH={14}>{d.claimDescriptionForForm}</W>
       </Page>
 
       {/* ══════════════ PAGE 3 — Claim details ══════════════ */}
@@ -248,11 +248,11 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         {d.caseNumber && <T x={440} y={748}>{d.caseNumber}</T>}
 
         {/* Section 3 — when / how calculated */}
-        <T x={217} y={702}>{d.incidentDate}</T>
+        <T x={217} y={689}>{d.incidentDate}</T>
         {d.hasDateRange && (
           <>
-            <T x={335} y={684}>{d.dateStarted}</T>
-            <T x={470} y={684}>{d.dateThrough}</T>
+            <T x={335} y={673}>{d.dateStarted}</T>
+            <T x={470} y={673}>{d.dateThrough}</T>
           </>
         )}
         <W x={63} y={641} maxW={480} lineH={13}>{d.howAmountCalculated}</W>
@@ -262,7 +262,7 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         <X x={64}  y={489} show={d.priorDemandMade === true} />
         <X x={116} y={489} show={d.priorDemandMade === false} />
         {d.priorDemandWhyNot && (
-          <W x={63} y={452} maxW={490} lineH={12}>{d.priorDemandWhyNot}</W>
+          <W x={63} y={457} maxW={490} lineH={14}>{d.priorDemandWhyNot}</W>
         )}
 
         {/* Section 5 — venue */}
