@@ -12,6 +12,7 @@ import { ObjectStorageService } from "../lib/objectStorage";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { type FormConfig } from "../forms/form-renderer";
 import { buildSC100Pdf as buildSC100ReactPdf } from "../forms/sc100-react-pdf";
+import { buildSC100Pdf as buildSC100PlaywrightPdf } from "../forms/sc100-playwright";
 
 // ─── Load form configs at startup (JSON files in assets/forms/) ────────────────
 const ASSET_DIR  = path.join(__dirname, "..", "assets");
@@ -330,7 +331,7 @@ async function buildSC100Pdf(
   caseData: Record<string, any>,
   signaturePngBytes?: Buffer
 ): Promise<Buffer> {
-  return buildSC100ReactPdf(caseData, ASSET_DIR, signaturePngBytes);
+  return buildSC100PlaywrightPdf(caseData, ASSET_DIR, signaturePngBytes);
 }
 
 // ─── SC-100 routes ────────────────────────────────────────────────────────────
@@ -501,7 +502,7 @@ router.post("/forms/sc100/debug-preview-custom", async (req, res): Promise<void>
   try {
     const caseData = req.body as Record<string, any>;
     const enriched = enrichForSC100(caseData);
-    const pdfBytes = await buildSC100ReactPdf(enriched, ASSET_DIR);
+    const pdfBytes = await buildSC100PlaywrightPdf(enriched, ASSET_DIR);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="SC100-custom.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);

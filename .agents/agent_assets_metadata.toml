@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "dOigRAQT9R1PGpos3ZuyL"
+uri = "file://attached_assets/playwright-sc100-test.pdf"
+type = "pdf"
+title = "SC-100 — Playwright HTML-to-PDF (first build)"

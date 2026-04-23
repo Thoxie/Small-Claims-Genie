@@ -239,6 +239,9 @@ importers:
       pino-http:
         specifier: ^10
         version: 10.5.0
+      playwright-core:
+        specifier: ^1.59.1
+        version: 1.59.1
       react:
         specifier: 'catalog:'
         version: 19.1.0
@@ -3523,6 +3526,11 @@ packages:
 
   pino@9.14.0:
     resolution: {integrity: sha512-8OEwKp5juEvb/MjpIc4hjqfgCNysrS94RIOMXYvpYCdm/jglrKEiAYmiumbmGhCvs+IcInsphYDFwqrjr7398w==}
+    hasBin: true
+
+  playwright-core@1.59.1:
+    resolution: {integrity: sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==}
+    engines: {node: '>=18'}
     hasBin: true
 
   png-js@2.0.0:
@@ -7387,6 +7395,8 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.1
       thread-stream: 3.1.0
+
+  playwright-core@1.59.1: {}
 
   png-js@2.0.0:
     dependencies:
