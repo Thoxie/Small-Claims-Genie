@@ -6,9 +6,9 @@
   "pages": {
     "1": {
       "countyDisplay":     { "x": 404,  "y": 210, "size": 11 },
-      "courthouseName":    { "x": 393,  "y": 223, "size": 8  },
-      "courthouseAddress": { "x": 393,  "y": 236, "size": 8  },
-      "courthouseLocation":{ "x": 393,  "y": 249, "size": 8  },
+      "courthouseName":    { "x": 403,  "y": 223, "size": 8  },
+      "courthouseAddress": { "x": 403,  "y": 236, "size": 8  },
+      "courthouseLocation":{ "x": 403,  "y": 249, "size": 8  },
       "caseNameDisplay":   { "x": 393,  "y": 355, "size": 8  }
     },
     "2": {
