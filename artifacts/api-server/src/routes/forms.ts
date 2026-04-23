@@ -12,7 +12,7 @@ import { ObjectStorageService } from "../lib/objectStorage";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { type FormConfig } from "../forms/form-renderer";
 import { buildSC100Pdf as buildSC100PlaywrightPdf, refreshFieldMap } from "../forms/sc100-playwright";
-import { calibrateSC100 } from "../forms/sc100-calibrate";
+import { calibrateSC100, verifySC100 } from "../forms/sc100-calibrate";
 
 // ─── Load form configs at startup (JSON files in assets/forms/) ────────────────
 const ASSET_DIR  = path.join(__dirname, "..", "assets");
@@ -632,6 +632,81 @@ router.post("/forms/sc100/calibrate", async (_req, res): Promise<void> => {
   } catch (err: any) {
     console.error("[calibrate] Calibration error:", err?.message, err?.stack);
     res.status(500).json({ error: err?.message ?? "Calibration failed" });
+  }
+});
+
+// ─── SC-100 verification pass (dev only — no auth) ────────────────────────────
+// POST /api/forms/sc100/verify
+// Generates a sample filled PDF, converts to PNG, sends both blank + filled
+// images to GPT-4o, gets per-field correction offsets, updates field map.
+router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
+  const { execSync } = await import("child_process");
+  const os = await import("os");
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sc100-verify-"));
+
+  try {
+    // 1. Generate sample PDF with current calibrated coordinates
+    console.log("[verify] Generating sample PDF...");
+    const VERIFY_SAMPLE: Record<string, any> = {
+      plaintiffName: "Jane A. Doe", plaintiffPhone: "(619) 555-0101",
+      plaintiffAddress: "123 Main Street", plaintiffCity: "San Diego",
+      plaintiffState: "CA", plaintiffZip: "92101", plaintiffEmail: "jane.doe@email.com",
+      plaintiffMailingAddress: "P.O. Box 4400", plaintiffMailingCity: "San Diego",
+      plaintiffMailingState: "CA", plaintiffMailingZip: "92112",
+      secondPlaintiffName: "John B. Doe", secondPlaintiffPhone: "(619) 555-0202",
+      secondPlaintiffAddress: "123 Main Street", secondPlaintiffCity: "San Diego",
+      secondPlaintiffState: "CA", secondPlaintiffZip: "92101",
+      secondPlaintiffEmail: "john.doe@email.com",
+      defendantName: "ACME Auto Repair LLC", defendantPhone: "(619) 555-0303",
+      defendantAddress: "456 Commerce Blvd", defendantCity: "Chula Vista",
+      defendantState: "CA", defendantZip: "91911",
+      defendantIsBusinessOrEntity: true, defendantAgentName: "Robert Smith",
+      defendantAgentTitle: "Registered Agent", defendantAgentStreet: "789 Agent Row",
+      defendantAgentCity: "Chula Vista", defendantAgentState: "CA", defendantAgentZip: "91911",
+      claimAmount: 3750, claimDescription: "Defendant performed negligent brake repair.",
+      howAmountCalculated: "Tow: $225. Rental: $325. Re-repair: $3,200. Total: $3,750.",
+      incidentDate: "01/15/2026", countyId: "san-diego",
+      courthouseName: "South County Division – Chula Vista",
+      courthouseAddress: "500 3rd Ave", courthouseCity: "Chula Vista", courthouseZip: "91910",
+      caseNumber: "24SC012345", venueBasis: "where_defendant_lives",
+      priorDemandMade: true, isAttyFeeDispute: false, isSuingPublicEntity: false,
+      filedMoreThan12Claims: false, declarationDate: "04/13/2026",
+    };
+    const enriched = enrichForSC100(VERIFY_SAMPLE);
+    const pdfBytes = await buildSC100PlaywrightPdf(enriched, ASSET_DIR);
+    const pdfPath = path.join(tmpDir, "filled.pdf");
+    fs.writeFileSync(pdfPath, pdfBytes);
+
+    // 2. Convert filled PDF → PNG pages at 200 dpi
+    console.log("[verify] Converting PDF to PNGs...");
+    execSync(`pdftoppm -r 200 -png "${pdfPath}" "${path.join(tmpDir, "page")}"`, { timeout: 30000 });
+
+    const filledPngPaths = [1, 2, 3, 4].map((n) => {
+      const p = path.join(tmpDir, `page-${n}.png`);
+      return fs.existsSync(p) ? p : path.join(tmpDir, `page-0${n}.png`);
+    });
+
+    // 3. Run verification pass
+    console.log("[verify] Running GPT-4o verification pass...");
+    const updatedMap = await verifySC100(ASSET_DIR, filledPngPaths);
+    refreshFieldMap(ASSET_DIR);
+    console.log("[verify] Verification complete. Field map updated and hot-reloaded.");
+
+    res.json({
+      ok: true,
+      message: "Verification complete. Corrected field map saved and hot-reloaded.",
+      summary: Object.fromEntries(
+        Object.entries(updatedMap.pages).map(([page, fields]) => [
+          `page${page}`,
+          Object.keys(fields).length + " fields",
+        ])
+      ),
+    });
+  } catch (err: any) {
+    console.error("[verify] Error:", err?.message, err?.stack);
+    res.status(500).json({ error: err?.message ?? "Verification failed" });
+  } finally {
+    try { execSync(`rm -rf "${tmpDir}"`); } catch {}
   }
 });
 

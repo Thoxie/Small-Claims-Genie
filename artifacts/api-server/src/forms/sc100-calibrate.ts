@@ -662,6 +662,111 @@ ${fieldList}`;
   return result;
 }
 
+// ── Verification pass: compare filled form vs blank, correct offsets ──────────
+// filledPngPaths: array of 4 PNG paths (one per page) of a generated filled PDF
+// Returns an updated field map with corrections applied
+export async function verifySC100(
+  assetDir: string,
+  filledPngPaths: string[]
+): Promise<SC100FieldMap> {
+  const mapPath = path.join(assetDir, "forms", "sc100-field-map.json");
+  if (!fs.existsSync(mapPath)) {
+    throw new Error("No field map found — run calibration first.");
+  }
+
+  const fieldMap: SC100FieldMap = JSON.parse(fs.readFileSync(mapPath, "utf8"));
+  console.log("[sc100-verify] Starting verification pass...");
+
+  await Promise.all(
+    [1, 2, 3, 4].map(async (pageNum) => {
+      const blankPngPath = path.join(assetDir, `sc100_hq-${pageNum}.png`);
+      const filledPngPath = filledPngPaths[pageNum - 1];
+      if (!fs.existsSync(blankPngPath) || !fs.existsSync(filledPngPath)) {
+        console.warn(`[sc100-verify] Skipping page ${pageNum} — PNG missing`);
+        return;
+      }
+
+      const pageKey = String(pageNum);
+      const currentCoords = fieldMap.pages[pageKey] ?? {};
+      if (Object.keys(currentCoords).length === 0) return;
+
+      const blankB64  = fs.readFileSync(blankPngPath).toString("base64");
+      const filledB64 = fs.readFileSync(filledPngPath).toString("base64");
+
+      // Build a readable list of current field positions for GPT-4o
+      const fieldList = Object.entries(currentCoords)
+        .map(([id, c]) => `"${id}": currently at x=${c.x}pt, y=${c.y}pt`)
+        .join("\n");
+
+      const prompt = `You are verifying field alignment on page ${pageNum} of a California SC-100 small claims court form.
+
+You have two images:
+- IMAGE 1 (first image): The BLANK form background — showing printed labels, underlines, and boxes.
+- IMAGE 2 (second image): The FILLED form — the same form with typed text placed on it.
+
+The page is ${PAGE_W} points wide × ${PAGE_H} points tall.
+
+Your job: for each field below, look at IMAGE 2 and evaluate whether the typed text is correctly positioned ON the printed underline or inside the correct box. 
+
+If text appears ABOVE the line → positive dy needed (move text down).
+If text appears BELOW the line → negative dy needed (move text up).
+If text starts too far LEFT → positive dx needed (move right).
+If text starts too far RIGHT → negative dx needed (move left).
+If text is correctly positioned → dx: 0, dy: 0.
+
+Return ONLY a valid JSON object. Keys are field IDs, values are {"dx": number, "dy": number} corrections in pt.
+Only include fields that need correction (skip correctly placed fields or set dx:0, dy:0).
+
+Current field positions:
+${fieldList}`;
+
+      console.log(`[sc100-verify] Verifying page ${pageNum} (${Object.keys(currentCoords).length} fields)...`);
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-5.4",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: { url: `data:image/png;base64,${blankB64}`, detail: "high" },
+              },
+              {
+                type: "image_url",
+                image_url: { url: `data:image/png;base64,${filledB64}`, detail: "high" },
+              },
+              { type: "text", text: prompt },
+            ],
+          },
+        ],
+        max_completion_tokens: 1500,
+        temperature: 0,
+        response_format: { type: "json_object" },
+      });
+
+      const raw = response.choices[0]?.message?.content || "{}";
+      const corrections = JSON.parse(raw) as Record<string, { dx: number; dy: number }>;
+
+      let corrected = 0;
+      for (const [fieldId, delta] of Object.entries(corrections)) {
+        if (!fieldMap.pages[pageKey][fieldId]) continue;
+        if (delta.dx === 0 && delta.dy === 0) continue;
+        fieldMap.pages[pageKey][fieldId].x = Math.round((fieldMap.pages[pageKey][fieldId].x + delta.dx) * 10) / 10;
+        fieldMap.pages[pageKey][fieldId].y = Math.round((fieldMap.pages[pageKey][fieldId].y + delta.dy) * 10) / 10;
+        corrected++;
+      }
+      console.log(`[sc100-verify] Page ${pageNum} done — ${corrected} fields corrected.`);
+    })
+  );
+
+  fieldMap.generated = new Date().toISOString();
+  const outputPath = path.join(assetDir, "forms", "sc100-field-map.json");
+  fs.writeFileSync(outputPath, JSON.stringify(fieldMap, null, 2));
+  console.log(`[sc100-verify] Verified field map saved to ${outputPath}`);
+  return fieldMap;
+}
+
 // ── Main export: calibrate all 4 pages and save to JSON ──────────────────────
 export async function calibrateSC100(assetDir: string): Promise<SC100FieldMap> {
   console.log("[sc100-calibrate] Starting calibration of all 4 pages...");
