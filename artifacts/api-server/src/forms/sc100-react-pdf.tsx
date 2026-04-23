@@ -225,17 +225,17 @@ const SC100Pdf: React.FC<{ data: SC100Data; assetDir: string; signatureDataUrl?:
         {/* ── Registered agent (business defendants) ── */}
         {d.hasAgent && (
           <>
-            <T x={95}  y={266}>{d.defendantAgentName}</T>
-            <T x={413} y={266}>{d.defendantAgentTitle}</T>
-            <T x={124} y={251}>{d.defendantAgentStreet}</T>
-            <T x={341} y={251}>{d.defendantAgentCity}</T>
-            <T x={441} y={251}>{d.defendantAgentState ?? "CA"}</T>
-            <T x={469} y={251}>{d.defendantAgentZip}</T>
+            <T x={95}  y={283}>{d.defendantAgentName}</T>
+            <T x={413} y={283}>{d.defendantAgentTitle}</T>
+            <T x={124} y={268}>{d.defendantAgentStreet}</T>
+            <T x={341} y={268}>{d.defendantAgentCity}</T>
+            <T x={441} y={268}>{d.defendantAgentState ?? "CA"}</T>
+            <T x={469} y={268}>{d.defendantAgentZip}</T>
           </>
         )}
 
         {/* ── Claim ── */}
-        <T x={370} y={193}>{d.claimAmountFormatted}</T>
+        <T x={295} y={193}>{d.claimAmountFormatted}</T>
         <W x={63} y={163} maxW={480} lineH={14}>{d.claimDescriptionForForm}</W>
       </Page>
 
