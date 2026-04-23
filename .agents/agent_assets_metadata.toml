@@ -48,3 +48,27 @@ id = "1MgwrFaUeC6YmgAIz-_k_"
 uri = "file://SC100-Preview.pdf"
 type = "pdf"
 title = "SC-100 Preview (AI-Calibrated)"
+
+[[outputs]]
+id = "wKFZJ1XfLhIl3G2kqSqzI"
+uri = "file://attached_assets/form-preview-v2/page-1.png"
+type = "image"
+title = "Page 1 — Instructions & Court Info"
+
+[[outputs]]
+id = "xit1wuh6sbvwf1J2Y4w4d"
+uri = "file://attached_assets/form-preview-v2/page-2.png"
+type = "image"
+title = "Page 2 — Plaintiff / Defendant / Claim"
+
+[[outputs]]
+id = "TTY8mRXkCRumKgN2C5AxZ"
+uri = "file://attached_assets/form-preview-v2/page-3.png"
+type = "image"
+title = "Page 3 — Dates / Venue / Checkboxes"
+
+[[outputs]]
+id = "o8-LU3U4-wo6fQDQvjzgG"
+uri = "file://attached_assets/form-preview-v2/page-4.png"
+type = "image"
+title = "Page 4 — Declaration"
