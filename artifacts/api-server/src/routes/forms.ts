@@ -11,7 +11,8 @@ import { inArray, and, eq } from "drizzle-orm";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { type FormConfig } from "../forms/form-renderer";
-import { buildSC100Pdf as buildSC100PlaywrightPdf } from "../forms/sc100-playwright";
+import { buildSC100Pdf as buildSC100PlaywrightPdf, refreshFieldMap } from "../forms/sc100-playwright";
+import { calibrateSC100 } from "../forms/sc100-calibrate";
 
 // ─── Load form configs at startup (JSON files in assets/forms/) ────────────────
 const ASSET_DIR  = path.join(__dirname, "..", "assets");
@@ -603,6 +604,34 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
   } catch (err: any) {
     console.error("SC-100 preview error:", err?.message, err?.stack);
     res.status(500).json({ error: err?.message ?? "Preview failed" });
+  }
+});
+
+// ─── SC-100 AI calibration (dev only — no auth) ──────────────────────────────
+// POST /api/forms/sc100/calibrate
+// Sends each form page PNG to GPT-4o vision, gets exact field coordinates,
+// saves sc100-field-map.json, and hot-reloads the field map in memory.
+// Run once after any form background image change. ~30 seconds to complete.
+router.post("/forms/sc100/calibrate", async (_req, res): Promise<void> => {
+  try {
+    console.log("[calibrate] Starting SC-100 field map calibration...");
+    const fieldMap = await calibrateSC100(ASSET_DIR);
+    refreshFieldMap(ASSET_DIR);
+    console.log("[calibrate] Calibration complete. Field map hot-reloaded.");
+    res.json({
+      ok: true,
+      message: "Calibration complete. Field map saved and hot-reloaded.",
+      summary: Object.fromEntries(
+        Object.entries(fieldMap.pages).map(([page, fields]) => [
+          `page${page}`,
+          Object.keys(fields).length + " fields",
+        ])
+      ),
+      fieldMap,
+    });
+  } catch (err: any) {
+    console.error("[calibrate] Calibration error:", err?.message, err?.stack);
+    res.status(500).json({ error: err?.message ?? "Calibration failed" });
   }
 });
 

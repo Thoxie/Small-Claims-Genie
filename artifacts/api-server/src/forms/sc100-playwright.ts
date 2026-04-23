@@ -2,6 +2,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { execSync } from "child_process";
 import { chromium } from "playwright-core";
+import type { SC100FieldMap, FieldCoord } from "./sc100-calibrate";
 
 export interface SC100Data {
   countyDisplay?: string;
@@ -76,213 +77,350 @@ export interface SC100Data {
   [key: string]: unknown;
 }
 
-// ── Page dimensions in points (1pt = 1/72 inch) ───────────────────────────────
-const PW = 612;
-const PH = 792;
+// ── Page dimensions ────────────────────────────────────────────────────────────
+const PW = 612;  // points wide
+const PH = 792;  // points tall
 
-// ── Same coordinate conversion as React-PDF version ───────────────────────────
-// In CSS with pt units: top=0 is TOP of page. y is measured from BOTTOM.
-// py() converts from bottom-origin y to top-origin CSS top value.
-const py = (y: number, size: number = 11): number => PH - y - size * 0.72;
+// ── Field map (loaded once at startup, refreshed after calibration) ───────────
+// All coordinates are CSS top-left in pt: x=0 is left, y=0 is TOP of page.
+// This eliminates the old py() bottom-origin formula entirely.
+let _fieldMap: SC100FieldMap | null = null;
+let _fieldMapAssetDir: string | null = null;
+
+function loadFieldMap(assetDir: string): SC100FieldMap | null {
+  const mapPath = path.join(assetDir, "forms", "sc100-field-map.json");
+  if (!fs.existsSync(mapPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(mapPath, "utf8")) as SC100FieldMap;
+  } catch {
+    return null;
+  }
+}
+
+export function refreshFieldMap(assetDir: string): void {
+  _fieldMapAssetDir = assetDir;
+  _fieldMap = loadFieldMap(assetDir);
+}
+
+function getCoord(
+  pageKey: string,
+  fieldId: string,
+  fallback: FieldCoord
+): FieldCoord {
+  const map = _fieldMap;
+  if (map) {
+    const coord = map.pages[pageKey]?.[fieldId];
+    if (coord) return coord;
+  }
+  return fallback;
+}
+
+// ── Hardcoded fallback coordinates (CSS top-origin pt) ────────────────────────
+// These are used when no calibrated field map exists.
+// Computed from the original bottom-origin values via: top = 792 - y - size*0.72
+// Once calibration runs and saves sc100-field-map.json these are never used.
+const FB: Record<string, Record<string, FieldCoord>> = {
+  "1": {
+    countyDisplay:     { x: 384, y: 216,  size: 11 },
+    courthouseName:    { x: 380, y: 244,  size: 8 },
+    courthouseAddress: { x: 380, y: 258,  size: 8 },
+    courthouseLocation:{ x: 380, y: 272,  size: 8 },
+    caseNameDisplay:   { x: 362, y: 344,  size: 8 },
+  },
+  "2": {
+    plaintiffNameHeader:  { x: 163, y: 36,  size: 9 },
+    caseNumberHeader:     { x: 440, y: 36,  size: 9 },
+    plaintiffName:        { x: 95,  y: 110, size: 11 },
+    plaintiffPhone:       { x: 462, y: 110, size: 11 },
+    plaintiffStreet:      { x: 133, y: 129, size: 11 },
+    plaintiffCity:        { x: 370, y: 129, size: 11 },
+    plaintiffState:       { x: 472, y: 129, size: 11 },
+    plaintiffZip:         { x: 499, y: 129, size: 11 },
+    plaintiffMailingStreet:{ x: 197, y: 156, size: 11 },
+    plaintiffMailingCity: { x: 370, y: 156, size: 11 },
+    plaintiffMailingState:{ x: 472, y: 156, size: 11 },
+    plaintiffMailingZip:  { x: 499, y: 156, size: 11 },
+    plaintiffEmail:       { x: 191, y: 183, size: 11 },
+    p2Name:               { x: 95,  y: 218, size: 11 },
+    p2Phone:              { x: 462, y: 218, size: 11 },
+    p2Street:             { x: 133, y: 234, size: 11 },
+    p2City:               { x: 370, y: 234, size: 11 },
+    p2State:              { x: 472, y: 234, size: 11 },
+    p2Zip:                { x: 499, y: 234, size: 11 },
+    p2MailingStreet:      { x: 197, y: 263, size: 11 },
+    p2MailingCity:        { x: 370, y: 263, size: 11 },
+    p2MailingState:       { x: 472, y: 263, size: 11 },
+    p2MailingZip:         { x: 499, y: 263, size: 11 },
+    p2Email:              { x: 191, y: 294, size: 11 },
+    defendantName:        { x: 95,  y: 395, size: 11 },
+    defendantPhone:       { x: 462, y: 395, size: 11 },
+    defendantStreet:      { x: 133, y: 412, size: 11 },
+    defendantCity:        { x: 370, y: 412, size: 11 },
+    defendantState:       { x: 472, y: 412, size: 11 },
+    defendantZip:         { x: 499, y: 412, size: 11 },
+    defendantMailingStreet:{ x: 215, y: 440, size: 11 },
+    defendantMailingCity: { x: 370, y: 440, size: 11 },
+    defendantMailingState:{ x: 472, y: 440, size: 11 },
+    defendantMailingZip:  { x: 499, y: 440, size: 11 },
+    agentName:            { x: 95,  y: 501, size: 11 },
+    agentTitle:           { x: 413, y: 501, size: 11 },
+    agentStreet:          { x: 124, y: 516, size: 11 },
+    agentCity:            { x: 341, y: 516, size: 11 },
+    agentState:           { x: 441, y: 516, size: 11 },
+    agentZip:             { x: 469, y: 516, size: 11 },
+    claimAmount:          { x: 295, y: 591, size: 11 },
+    claimDescription:     { x: 63,  y: 621, size: 10 },
+  },
+  "3": {
+    p3PlaintiffHeader:  { x: 163, y: 36,  size: 9 },
+    p3CaseNumberHeader: { x: 440, y: 36,  size: 9 },
+    incidentDate:       { x: 217, y: 87,  size: 11 },
+    dateStarted:        { x: 335, y: 103, size: 11 },
+    dateThrough:        { x: 470, y: 103, size: 11 },
+    howAmountCalculated:{ x: 63,  y: 143, size: 10 },
+    needsMC031:         { x: 63,  y: 206, size: 10 },
+    priorDemandYes:     { x: 64,  y: 296, size: 10 },
+    priorDemandNo:      { x: 116, y: 296, size: 10 },
+    priorDemandWhyNot:  { x: 63,  y: 327, size: 10 },
+    venueA:             { x: 79,  y: 415, size: 10 },
+    venueB:             { x: 79,  y: 474, size: 10 },
+    venueC:             { x: 79,  y: 513, size: 10 },
+    venueD:             { x: 79,  y: 534, size: 10 },
+    venueE:             { x: 79,  y: 558, size: 10 },
+    venueOtherText:     { x: 167, y: 558, size: 10 },
+    venueZip:           { x: 415, y: 578, size: 11 },
+    attyFeeYes:         { x: 358, y: 624, size: 10 },
+    attyFeeNo:          { x: 409, y: 624, size: 10 },
+    attyArbitration:    { x: 503, y: 631, size: 10 },
+    publicEntityYes:    { x: 244, y: 647, size: 10 },
+    publicEntityNo:     { x: 295, y: 647, size: 10 },
+    publicEntityDate:   { x: 453, y: 645, size: 11 },
+  },
+  "4": {
+    p4PlaintiffHeader:  { x: 163, y: 36,  size: 9 },
+    p4CaseNumberHeader: { x: 440, y: 36,  size: 9 },
+    filed12Yes:         { x: 64,  y: 112, size: 10 },
+    filed12No:          { x: 113, y: 112, size: 10 },
+    over2500Yes:        { x: 276, y: 125, size: 10 },
+    over2500No:         { x: 322, y: 125, size: 10 },
+    declarationDate:    { x: 65,  y: 278, size: 11 },
+    declarantName:      { x: 36,  y: 296, size: 11 },
+  },
+};
+
+// ── HTML generation helpers ────────────────────────────────────────────────────
+// All coordinates are CSS top-left in pt. No conversion needed.
+
+function esc(s: string | null | undefined): string {
+  if (!s) return "";
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function fieldAt(coord: FieldCoord, text: string | null | undefined, extraStyle = ""): string {
+  if (!text) return "";
+  const size = coord.size ?? 11;
+  return `<div class="f" style="left:${coord.x}pt;top:${coord.y}pt;font-size:${size}pt;${extraStyle}">${esc(text)}</div>`;
+}
+
+function wrapAt(coord: FieldCoord, text: string | null | undefined, maxW: number, lineH: number): string {
+  if (!text) return "";
+  const size = coord.size ?? 10;
+  return `<div class="f wrap" style="left:${coord.x}pt;top:${coord.y}pt;font-size:${size}pt;width:${maxW}pt;line-height:${lineH / size};">${esc(text)}</div>`;
+}
+
+function xmarkAt(coord: FieldCoord, show: boolean | null | undefined): string {
+  if (!show) return "";
+  const size = coord.size ?? 10;
+  return `<div class="f" style="left:${coord.x}pt;top:${coord.y}pt;font-size:${size}pt;">X</div>`;
+}
+
+function sigAt(sigDataUrl: string | undefined, coord: FieldCoord, w: number, h: number): string {
+  if (!sigDataUrl) return "";
+  return `<img class="sig" src="${sigDataUrl}" style="left:${coord.x}pt;top:${coord.y}pt;width:${w}pt;height:${h}pt;" />`;
+}
+
+// ── Shorthand: resolve coord from map or fallback, then render ────────────────
+function f(page: string, id: string, text: string | null | undefined, extraStyle = ""): string {
+  const coord = getCoord(page, id, FB[page]?.[id] ?? { x: 0, y: 0 });
+  return fieldAt(coord, text, extraStyle);
+}
+function w(page: string, id: string, text: string | null | undefined, maxW: number, lineH: number): string {
+  const coord = getCoord(page, id, FB[page]?.[id] ?? { x: 0, y: 0 });
+  return wrapAt(coord, text, maxW, lineH);
+}
+function x(page: string, id: string, show: boolean | null | undefined): string {
+  const coord = getCoord(page, id, FB[page]?.[id] ?? { x: 0, y: 0 });
+  return xmarkAt(coord, show);
+}
 
 // ── Find the system Chromium binary ──────────────────────────────────────────
 function findChromium(): string {
   if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
   try {
-    return execSync("which chromium 2>/dev/null || which chromium-browser 2>/dev/null || which google-chrome 2>/dev/null", { encoding: "utf8" }).trim().split("\n")[0];
+    return execSync(
+      "which chromium 2>/dev/null || which chromium-browser 2>/dev/null || which google-chrome 2>/dev/null",
+      { encoding: "utf8" }
+    )
+      .trim()
+      .split("\n")[0];
   } catch {
     throw new Error("Chromium not found. Set CHROMIUM_PATH environment variable.");
   }
 }
 
-// ── Escape HTML entities ──────────────────────────────────────────────────────
-function esc(s: string | null | undefined): string {
-  if (!s) return "";
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-// ── HTML generation helpers ───────────────────────────────────────────────────
-
-function field(
-  x: number,
-  y: number,
-  text: string | null | undefined,
-  size = 11,
-  extraStyle = ""
-): string {
-  if (!text) return "";
-  const top = py(y, size);
-  return `<div class="f" style="left:${x}pt;top:${top}pt;font-size:${size}pt;${extraStyle}">${esc(text)}</div>`;
-}
-
-function xmark(x: number, y: number, show: boolean | null | undefined): string {
-  if (!show) return "";
-  const top = py(y, 10);
-  return `<div class="f" style="left:${x}pt;top:${top}pt;font-size:10pt;">X</div>`;
-}
-
-function wrapField(
-  x: number,
-  y: number,
-  text: string | null | undefined,
-  maxW: number,
-  lineH: number,
-  size = 11
-): string {
-  if (!text) return "";
-  const top = py(y, size);
-  return `<div class="f wrap" style="left:${x}pt;top:${top}pt;font-size:${size}pt;width:${maxW}pt;line-height:${lineH / size};">${esc(text)}</div>`;
-}
-
-// ── Signature image helper ────────────────────────────────────────────────────
-function sigImg(sigDataUrl: string | undefined, x: number, y: number, w: number, h: number): string {
-  if (!sigDataUrl) return "";
-  const top = py(y, h);
-  return `<img class="sig" src="${sigDataUrl}" style="left:${x}pt;top:${top}pt;width:${w}pt;height:${h}pt;" />`;
-}
-
 // ── Build the full 4-page HTML document ──────────────────────────────────────
 function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string {
-  // Embed PNGs as base64 so Playwright can load them without file:// restrictions
-  const bg = (n: number) => {
+  // Load field map on first use (or after calibration refresh)
+  if (_fieldMapAssetDir !== assetDir) {
+    refreshFieldMap(assetDir);
+  }
+
+  const bg = (n: number): string => {
     const pngPath = path.join(assetDir, `sc100_hq-${n}.png`);
     const b64 = fs.readFileSync(pngPath).toString("base64");
     return `data:image/png;base64,${b64}`;
   };
 
-  // PAGE 1 — Instructions + court info box
+  // ── PAGE 1: Instructions + court info ──────────────────────────────────────
   const page1 = `
     <div class="page">
       <img class="bg" src="${bg(1)}" />
-      ${field(384, 568, d.countyDisplay)}
-      ${field(380, 542, d.courthouseName, 8)}
-      ${field(380, 528, d.courthouseAddress, 8)}
-      ${field(380, 514, d.courthouseLocation, 8)}
-      ${field(362, 442, d.caseNameDisplay, 8)}
+      ${f("1", "countyDisplay",      d.countyDisplay)}
+      ${f("1", "courthouseName",     d.courthouseName)}
+      ${f("1", "courthouseAddress",  d.courthouseAddress)}
+      ${f("1", "courthouseLocation", d.courthouseLocation)}
+      ${f("1", "caseNameDisplay",    d.caseNameDisplay)}
     </div>`;
 
-  // PAGE 2 — Plaintiff / Defendant / Claim
+  // ── PAGE 2: Plaintiff / Defendant / Claim ──────────────────────────────────
   const page2 = `
     <div class="page">
       <img class="bg" src="${bg(2)}" />
 
-      ${field(163, 748, d.plaintiffName)}
-      ${d.caseNumber ? field(440, 748, d.caseNumber) : ""}
+      ${f("2", "plaintiffNameHeader", d.plaintiffName)}
+      ${f("2", "caseNumberHeader",    d.caseNumber)}
 
-      ${field(95,  674, d.plaintiffName)}
-      ${field(462, 674, d.plaintiffPhone)}
-      ${field(133, 655, d.plaintiffAddress)}
-      ${field(370, 655, d.plaintiffCity)}
-      ${field(472, 655, d.plaintiffState ?? "CA")}
-      ${field(499, 655, d.plaintiffZip)}
+      ${f("2", "plaintiffName",  d.plaintiffName)}
+      ${f("2", "plaintiffPhone", d.plaintiffPhone)}
+      ${f("2", "plaintiffStreet", d.plaintiffAddress)}
+      ${f("2", "plaintiffCity",   d.plaintiffCity)}
+      ${f("2", "plaintiffState",  d.plaintiffState ?? "CA")}
+      ${f("2", "plaintiffZip",    d.plaintiffZip)}
+
       ${d.plaintiffMailingAddress ? `
-        ${field(197, 628, d.plaintiffMailingAddress)}
-        ${field(370, 628, d.plaintiffMailingCity)}
-        ${field(472, 628, d.plaintiffMailingState ?? "CA")}
-        ${field(499, 628, d.plaintiffMailingZip)}
+        ${f("2", "plaintiffMailingStreet", d.plaintiffMailingAddress)}
+        ${f("2", "plaintiffMailingCity",   d.plaintiffMailingCity)}
+        ${f("2", "plaintiffMailingState",  d.plaintiffMailingState ?? "CA")}
+        ${f("2", "plaintiffMailingZip",    d.plaintiffMailingZip)}
       ` : ""}
-      ${field(191, 601, d.plaintiffEmail)}
+
+      ${f("2", "plaintiffEmail", d.plaintiffEmail)}
 
       ${d.secondPlaintiffName ? `
-        ${field(95,  566, d.p2NameTitle)}
-        ${d.secondPlaintiffPhone ? field(462, 566, d.secondPlaintiffPhone) : ""}
-        ${d.secondPlaintiffAddress ? `
-          ${field(133, 550, d.secondPlaintiffAddress)}
-          ${field(370, 550, d.secondPlaintiffCity)}
-          ${field(472, 550, d.secondPlaintiffState ?? "CA")}
-          ${field(499, 550, d.secondPlaintiffZip)}
-        ` : ""}
+        ${f("2", "p2Name",  d.p2NameTitle ?? d.secondPlaintiffName)}
+        ${f("2", "p2Phone", d.secondPlaintiffPhone)}
+        ${f("2", "p2Street", d.secondPlaintiffAddress)}
+        ${f("2", "p2City",   d.secondPlaintiffCity)}
+        ${f("2", "p2State",  d.secondPlaintiffState ?? "CA")}
+        ${f("2", "p2Zip",    d.secondPlaintiffZip)}
         ${d.secondPlaintiffMailingAddress ? `
-          ${field(197, 521, d.secondPlaintiffMailingAddress)}
-          ${field(370, 521, d.secondPlaintiffMailingCity)}
-          ${field(472, 521, d.secondPlaintiffMailingState ?? "CA")}
-          ${field(499, 521, d.secondPlaintiffMailingZip)}
+          ${f("2", "p2MailingStreet", d.secondPlaintiffMailingAddress)}
+          ${f("2", "p2MailingCity",   d.secondPlaintiffMailingCity)}
+          ${f("2", "p2MailingState",  d.secondPlaintiffMailingState ?? "CA")}
+          ${f("2", "p2MailingZip",    d.secondPlaintiffMailingZip)}
         ` : ""}
-        ${d.secondPlaintiffEmail ? field(191, 490, d.secondPlaintiffEmail) : ""}
+        ${f("2", "p2Email", d.secondPlaintiffEmail)}
       ` : ""}
 
-      ${field(95,  389, d.defendantName)}
-      ${field(462, 389, d.defendantPhone)}
-      ${field(133, 372, d.defendantAddress)}
-      ${field(370, 372, d.defendantCity)}
-      ${field(472, 372, d.defendantState ?? "CA")}
-      ${field(499, 372, d.defendantZip)}
+      ${f("2", "defendantName",  d.defendantName)}
+      ${f("2", "defendantPhone", d.defendantPhone)}
+      ${f("2", "defendantStreet", d.defendantAddress)}
+      ${f("2", "defendantCity",   d.defendantCity)}
+      ${f("2", "defendantState",  d.defendantState ?? "CA")}
+      ${f("2", "defendantZip",    d.defendantZip)}
+
       ${d.defendantMailingAddress ? `
-        ${field(215, 344, d.defendantMailingAddress)}
-        ${field(370, 344, d.defendantMailingCity)}
-        ${field(472, 344, d.defendantMailingState ?? "CA")}
-        ${field(499, 344, d.defendantMailingZip)}
+        ${f("2", "defendantMailingStreet", d.defendantMailingAddress)}
+        ${f("2", "defendantMailingCity",   d.defendantMailingCity)}
+        ${f("2", "defendantMailingState",  d.defendantMailingState ?? "CA")}
+        ${f("2", "defendantMailingZip",    d.defendantMailingZip)}
       ` : ""}
 
       ${d.hasAgent ? `
-        ${field(95,  283, d.defendantAgentName)}
-        ${field(413, 283, d.defendantAgentTitle)}
-        ${field(124, 268, d.defendantAgentStreet)}
-        ${field(341, 268, d.defendantAgentCity)}
-        ${field(441, 268, d.defendantAgentState ?? "CA")}
-        ${field(469, 268, d.defendantAgentZip)}
+        ${f("2", "agentName",   d.defendantAgentName)}
+        ${f("2", "agentTitle",  d.defendantAgentTitle)}
+        ${f("2", "agentStreet", d.defendantAgentStreet)}
+        ${f("2", "agentCity",   d.defendantAgentCity)}
+        ${f("2", "agentState",  d.defendantAgentState ?? "CA")}
+        ${f("2", "agentZip",    d.defendantAgentZip)}
       ` : ""}
 
-      ${field(295, 193, d.claimAmountFormatted)}
-      ${wrapField(63, 163, d.claimDescriptionForForm, 480, 14)}
+      ${f("2", "claimAmount", d.claimAmountFormatted)}
+      ${w("2", "claimDescription", d.claimDescriptionForForm, 480, 14)}
     </div>`;
 
-  // PAGE 3 — Claim details
+  // ── PAGE 3: Claim details / venue / checkboxes ─────────────────────────────
   const page3 = `
     <div class="page">
       <img class="bg" src="${bg(3)}" />
 
-      ${field(163, 748, d.plaintiffName)}
-      ${d.caseNumber ? field(440, 748, d.caseNumber) : ""}
+      ${f("3", "p3PlaintiffHeader",  d.plaintiffName)}
+      ${f("3", "p3CaseNumberHeader", d.caseNumber)}
 
-      ${field(217, 697, d.incidentDate)}
+      ${f("3", "incidentDate", d.incidentDate)}
       ${d.hasDateRange ? `
-        ${field(335, 681, d.dateStarted)}
-        ${field(470, 681, d.dateThrough)}
+        ${f("3", "dateStarted", d.dateStarted)}
+        ${f("3", "dateThrough", d.dateThrough)}
       ` : ""}
-      ${wrapField(63, 641, d.howAmountCalculated, 480, 13)}
-      ${xmark(63, 579, d.needsMC031)}
 
-      ${xmark(64,  489, d.priorDemandMade === true)}
-      ${xmark(116, 489, d.priorDemandMade === false)}
-      ${d.priorDemandWhyNot ? wrapField(63, 457, d.priorDemandWhyNot, 490, 14) : ""}
+      ${w("3", "howAmountCalculated", d.howAmountCalculated, 480, 13)}
+      ${x("3", "needsMC031", d.needsMC031)}
 
-      ${d.venueBasisLetter === "a" ? xmark(79, 370, true) : ""}
-      ${d.venueBasisLetter === "b" ? xmark(79, 311, true) : ""}
-      ${d.venueBasisLetter === "c" ? xmark(79, 272, true) : ""}
-      ${d.venueBasisLetter === "d" ? xmark(79, 251, true) : ""}
-      ${d.venueBasisLetter === "e" ? xmark(79, 227, true) : ""}
-      ${d.isVenueOther ? field(167, 226, d.venueReason) : ""}
+      ${x("3", "priorDemandYes", d.priorDemandMade === true)}
+      ${x("3", "priorDemandNo",  d.priorDemandMade === false)}
+      ${d.priorDemandWhyNot ? w("3", "priorDemandWhyNot", d.priorDemandWhyNot, 490, 14) : ""}
 
-      ${field(415, 206, d.venueZip)}
+      ${x("3", "venueA", d.venueBasisLetter === "a")}
+      ${x("3", "venueB", d.venueBasisLetter === "b")}
+      ${x("3", "venueC", d.venueBasisLetter === "c")}
+      ${x("3", "venueD", d.venueBasisLetter === "d")}
+      ${x("3", "venueE", d.venueBasisLetter === "e")}
+      ${d.isVenueOther ? f("3", "venueOtherText", d.venueReason) : ""}
 
-      ${xmark(358, 161, d.isAttyFeeDispute === true)}
-      ${xmark(409, 161, !d.isAttyFeeDispute)}
-      ${xmark(503, 154, d.attyFeeAndArbitration === true)}
+      ${f("3", "venueZip", d.venueZip)}
 
-      ${xmark(244, 138, d.isSuingPublicEntity === true)}
-      ${xmark(295, 138, !d.isSuingPublicEntity)}
-      ${d.publicEntityHasDate ? field(453, 139, d.publicEntityClaimFiledDate) : ""}
+      ${x("3", "attyFeeYes",      d.isAttyFeeDispute === true)}
+      ${x("3", "attyFeeNo",       d.isAttyFeeDispute === false)}
+      ${x("3", "attyArbitration", d.attyFeeAndArbitration === true)}
+
+      ${x("3", "publicEntityYes", d.isSuingPublicEntity === true)}
+      ${x("3", "publicEntityNo",  d.isSuingPublicEntity === false)}
+      ${d.publicEntityHasDate ? f("3", "publicEntityDate", d.publicEntityClaimFiledDate) : ""}
     </div>`;
 
-  // PAGE 4 — Declaration
+  // ── PAGE 4: Declaration ────────────────────────────────────────────────────
+  const sigCoord = getCoord("4", "signature", { x: 248, y: 212 });
   const page4 = `
     <div class="page" style="page-break-after:avoid;">
       <img class="bg" src="${bg(4)}" />
 
-      ${field(163, 748, d.plaintiffName)}
-      ${d.caseNumber ? field(440, 748, d.caseNumber) : ""}
+      ${f("4", "p4PlaintiffHeader",  d.plaintiffName)}
+      ${f("4", "p4CaseNumberHeader", d.caseNumber)}
 
-      ${xmark(64,  673, d.filedMoreThan12Claims === true)}
-      ${xmark(113, 673, !d.filedMoreThan12Claims)}
+      ${x("4", "filed12Yes", d.filedMoreThan12Claims === true)}
+      ${x("4", "filed12No",  d.filedMoreThan12Claims === false || d.filedMoreThan12Claims == null)}
 
-      ${xmark(276, 660, d.claimOver2500 === true)}
-      ${xmark(322, 660, !d.claimOver2500)}
+      ${x("4", "over2500Yes", d.claimOver2500 === true)}
+      ${x("4", "over2500No",  d.claimOver2500 === false || d.claimOver2500 == null)}
 
-      ${field(65,  506, d.declarationDate)}
-      ${field(36,  488, d.declarantNameTitle)}
+      ${f("4", "declarationDate", d.declarationDate)}
+      ${f("4", "declarantName",   d.declarantNameTitle)}
 
-      ${sigImg(sigDataUrl, 248, 558, 240, 30)}
+      ${sigAt(sigDataUrl, sigCoord, 240, 30)}
     </div>`;
 
   return `<!DOCTYPE html>
@@ -343,7 +481,7 @@ ${page4}
 </html>`;
 }
 
-// ── Public render function ────────────────────────────────────────────────────
+// ── Public render function ─────────────────────────────────────────────────────
 export async function buildSC100Pdf(
   data: SC100Data,
   assetDir: string,

@@ -42,3 +42,9 @@ id = "2yKRlMGfQasUfmnG7FEPx"
 uri = "file://attached_assets/form-preview/page-4.png"
 type = "image"
 title = "Page 4 — Declaration / Signature"
+
+[[outputs]]
+id = "1MgwrFaUeC6YmgAIz-_k_"
+uri = "file://SC100-Preview.pdf"
+type = "pdf"
+title = "SC-100 Preview (AI-Calibrated)"
