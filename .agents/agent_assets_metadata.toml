@@ -72,3 +72,9 @@ id = "o8-LU3U4-wo6fQDQvjzgG"
 uri = "file://attached_assets/form-preview-v2/page-4.png"
 type = "image"
 title = "Page 4 — Declaration"
+
+[[outputs]]
+id = "Z7VYClufUjdVVYe0EnYW8"
+uri = "file://small-claims-genie-backup.tar.gz"
+type = "unspecified"
+title = "Small Claims Genie — Source Code Backup"
