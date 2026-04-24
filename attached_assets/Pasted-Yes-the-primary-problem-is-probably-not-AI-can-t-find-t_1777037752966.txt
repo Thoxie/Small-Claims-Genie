@@ -1,0 +1,62 @@
+Yes — the primary problem is probably not “AI can’t find the spot.” It is that PDF forms, rendered PNGs, browser pixels, and PDF coordinates all use different coordinate systems. Puppeteer/PNG pixel targeting is usually the least reliable foundation for court forms.
+My top three solutions, in order:
+
+
+Fill the PDF’s actual form fields, not visual coordinates.
+
+
+If SC-100 is a fillable Judicial Council PDF, the best method is to inspect its AcroForm fields and fill them by field name. This avoids coordinates entirely.
+Use a PDF library such as:
+pdf-lib in Node/Replit
+pdftk or qpdf for field inspection
+PyMuPDF or pypdf in Python
+Adobe Acrobat as a reference/debug tool
+The workflow should be:
+Extract all field names from the PDF.
+Map your app’s data fields to the PDF’s field names.
+Fill the form fields programmatically.
+Flatten the PDF only after the text appears correctly.
+Render the final PDF to PNG and visually compare.
+This is the cleanest solution if the court PDF has fillable fields. For California Judicial Council forms, this is often the correct approach.
+Example field-inspection command if available:
+pdftk sc100.pdf dump_data_fields
+Or with pdf-lib, Replit can run a script that lists fields:
+// scripts/list-pdf-fields.jsconst fs = require("fs");const { PDFDocument } = require("pdf-lib");async function main() {  const pdfBytes = fs.readFileSync("sc100.pdf");  const pdfDoc = await PDFDocument.load(pdfBytes);  const form = pdfDoc.getForm();  for (const field of form.getFields()) {    console.log(field.constructor.name, ":", field.getName());  }}main();
+
+
+If the PDF is not fillable, use a coordinate-map workflow in PDF points, not Puppeteer pixels.
+
+
+PDF coordinates are usually measured in points, where 72 points = 1 inch. The origin is typically bottom-left. PNG/browser coordinates usually start top-left. That mismatch causes most placement errors.
+The correct non-fillable workflow is:
+Render the PDF page to a PNG at a fixed DPI, such as 144 or 200.
+Use a click/box-picking tool to select the exact rectangle where each text value belongs.
+Convert PNG pixel coordinates into PDF point coordinates.
+Stamp the text directly onto the PDF using those PDF coordinates.
+Re-render the final PDF to verify alignment.
+The conversion is generally:
+pdf_x = image_x / scalepdf_y = page_height_points - (image_y / scale)scale = dpi / 72
+For example, at 144 DPI:
+scale = 144 / 72 = 2
+So a click at PNG pixel (300, 500) becomes approximately:
+pdf_x = 150pdf_y = page_height_points - 250
+This is much more reliable than trying to have Puppeteer guess positions. Puppeteer is useful for previewing, but I would not use it as the source of truth for PDF placement.
+
+
+Build a reusable “court form template” layer per form/version.
+
+
+For court forms, I would create a JSON template for each form and revision date. Example:
+{  "form": "SC-100",  "version": "2026-01-01",  "pages": {    "1": {      "plaintiff_name": {        "x": 82,        "y": 692,        "width": 245,        "height": 16,        "fontSize": 10      },      "defendant_name": {        "x": 82,        "y": 612,        "width": 245,        "height": 16,        "fontSize": 10      }    }  }}
+Then your app does not “discover” locations every time. It simply loads the correct template for SC-100, SC-104, etc., and writes data into pre-tested boxes.
+This is the best production approach if you plan to support multiple court forms. The setup takes longer, but once calibrated, it is far more reliable.
+For SC-100 specifically, my recommended order is:
+First, determine whether the downloaded SC-100 has usable fillable AcroForm fields. If yes, fill fields by field name. Do not use PNG coordinate detection.
+Second, if field filling fails because the form has broken appearances, weird embedded JavaScript, or nonstandard widgets, still use the field names but regenerate appearances and flatten carefully.
+Third, if the form is not reliably fillable, create a fixed SC-100 coordinate template and stamp text by PDF points.
+The three questions I would ask Replit or your developer are:
+Does the SC-100 PDF have AcroForm fields, and can they list the exact field names?
+Are they trying to place text onto the original PDF, or are they rendering it to an image/HTML page and then rebuilding a PDF from that?
+Are the positioning errors consistent, meaning everything is shifted by the same amount, or are they random field-by-field?
+If everything is shifted the same amount, it is a coordinate conversion issue. If some fields are right and others are wrong, it is probably page scaling, crop box/media box mismatch, font size, or wrapping. If it changes between runs, Puppeteer/browser rendering is the likely source of instability.
+My practical recommendation: stop using AI vision and Puppeteer as the main placement method. Use either AcroForm field filling or a fixed PDF-coordinate template with a visual verification step.
