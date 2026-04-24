@@ -1622,8 +1622,8 @@ router.post("/cases/:id/forms/sc103", async (req, res): Promise<void> => {
     };
     const sel = typeMap[b.businessType ?? ""];
     if (sel) xm(sel[0], sel[1]);
-    // "other (specify):" text field — pdfY≈521, after the (specify): label
-    if (b.businessType === "other" && b.businessTypeOther) v(b.businessTypeOther, 335, 516);
+    // "other (specify):" free-text field — pdfY≈521, placeholder xMin=421
+    if (b.businessType === "other" && b.businessTypeOther) v(b.businessTypeOther, 421, 516);
 
     // ── Item 3 — County ──────────────────────────────────────────────────────
     // Long label spans full width at pdfY≈453; data field on blank line below at pdfY≈443
