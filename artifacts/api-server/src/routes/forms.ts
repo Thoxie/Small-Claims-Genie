@@ -1297,6 +1297,128 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
 });
 
 // ─── SC-100A Other Plaintiffs or Defendants ───────────────────────────────────
+// Coordinates measured from court placeholder PDF via pdftotext -bbox.
+// Formula: v_param_y = 792 - measuredY - 11.5   (LIFT=4.5 applied in helper)
+// All x positions shifted +6pt right (one character) per user spec.
+//
+// b.additionalPlaintiffs: [{name,phone,street,city,state,zip,mailingStreet,mailingCity,mailingState,mailingZip}]
+// b.additionalDefendants: [{name,phone,street,city,state,zip,mailingStreet,mailingCity,mailingState,mailingZip,agentName,agentTitle,agentStreet,agentCity,agentState,agentZip}]
+
+async function buildSC100APdf(
+  d: Record<string, any>,
+  b: Record<string, any>,
+  sig1Bytes?: Buffer,
+  sig2Bytes?: Buffer
+): Promise<Uint8Array> {
+  const addPl: any[]  = b.additionalPlaintiffs || [];
+  const addDef: any[] = b.additionalDefendants || [];
+
+  const pdfDoc   = await PDFDocument.create();
+  const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const bg       = await pdfDoc.embedPng(loadAsset("sc100a_hq-1.png"));
+  const page     = pdfDoc.addPage([PW, PH]);
+  page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
+
+  const LIFT = 4.5;
+  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+
+  // ── Header — case caption (left) + case number (right) ─────────────────────
+  // Short title sits in the narrow bar ABOVE the SC-100A logo banner (~v_y=762).
+  // Case Number box is at v_y=739 on the right side of the logo bar.
+  const sc100aCaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
+  v(sc100aCaseName, 78, 762);       // above SC-100A logo bar (short-title area)
+  v(d.caseNumber,   409, 739);      // inside Case Number box, x=402.7+6
+
+  // ── Plaintiff 1 ─────────────────────────────────────────────────────────────
+  // name measured y=117.2, x=175.7 | street y=133.7, x=131.0 | phone x=440.2
+  const p1 = addPl[0];
+  if (p1) {
+    v(p1.name,                182, 663);   // measured y=117.2 → v_y=663
+    v(p1.street,              137, 647);   // measured y=133.7 → v_y=647
+    v(p1.phone,               446, 647);   // same row, x=440.2+6
+    v(p1.city,                 88, 631);   // measured y=150.0 → v_y=631, x+8 clears "City:" label
+    v(p1.state   || "CA",     305, 631);   // x=298.6+6
+    v(p1.zip,                 378, 631);   // x=371.5+6
+    if (p1.mailingStreet) {
+      v(p1.mailingStreet,     201, 614);   // measured y=166.8 → v_y=614
+      v(p1.mailingCity,        88, 597);   // measured y=183.1 → v_y=597
+      v(p1.mailingState || "CA", 305, 597);
+      v(p1.mailingZip,        377, 597);
+    }
+  }
+
+  // ── Plaintiff 2 ─────────────────────────────────────────────────────────────
+  // name measured y=216.0, x=168.5 | street y=232.6
+  const p2 = addPl[1];
+  if (p2) {
+    v(p2.name,                175, 565);   // measured y=216.0 → v_y=565
+    v(p2.street,              137, 548);   // measured y=232.6 → v_y=548
+    v(p2.phone,               446, 548);
+    v(p2.city,                 88, 533);   // measured y=247.9 → v_y=533
+    v(p2.state   || "CA",     305, 533);
+    v(p2.zip,                 377, 533);
+    if (p2.mailingStreet) {
+      v(p2.mailingStreet,     201, 517);   // measured y=263.8 → v_y=517
+      v(p2.mailingCity,        88, 500);   // measured y=280.1 → v_y=500
+      v(p2.mailingState || "CA", 305, 500);
+      v(p2.mailingZip,        377, 500);
+    }
+  }
+
+  // ── Additional Defendant ─────────────────────────────────────────────────────
+  // name measured y=360.0 | street y=375.6 | city y=390.5
+  const def1 = addDef[0];
+  if (def1) {
+    v(def1.name,              182, 421);   // measured y=360.0 → v_y=421
+    v(def1.street,            137, 405);   // measured y=375.6 → v_y=405
+    v(def1.phone,             445, 405);   // x=439.2+6
+    v(def1.city,               88, 390);   // measured y=390.5 → v_y=390
+    v(def1.state || "CA",     305, 390);
+    v(def1.zip,               377, 390);
+    if (def1.mailingStreet) {
+      v(def1.mailingStreet,   201, 375);   // measured y=405.9 → v_y=375
+      v(def1.mailingCity,      88, 359);   // measured y=421.2 → v_y=359
+      v(def1.mailingState || "CA", 305, 359);
+      v(def1.mailingZip,      377, 359);
+    }
+    // ── Agent for service of process ─────────────────────────────────────────
+    // measured y=462.0 → v_y=319 | street y=478.3 → v_y=302 | city y=492.7 → v_y=288
+    if (def1.agentName) {
+      v(def1.agentName,       103, 319);   // x=97.0+6
+      v(def1.agentTitle,      403, 319);   // x=397.4+6
+      v(def1.agentStreet,     112, 302);   // x=105.6+6
+      v(def1.agentCity,        88, 288);   // x=73.9+8 clears "City:" label
+      v(def1.agentState || "CA", 305, 288);
+      v(def1.agentZip,        377, 288);
+    }
+  }
+
+  // ── Date + printed names ────────────────────────────────────────────────────
+  // Sig 1 date: measured y=626.0 → v_y=155  name: measured y=640.8 → v_y=140
+  // Sig 2 date: measured y=669.2 → v_y=111  name: measured y=684.0 → v_y=97
+  const signDate = b.signDate || today();
+  v(signDate,                  69, 155);   // date row 1: x=63.4+6
+  v(addPl[0]?.name || d.plaintiffName || "", 43, 140);  // printed name 1: x=37.4+6
+  v(signDate,                  69, 111);   // date row 2
+  v(addPl[1]?.name || "",      43,  97);   // printed name 2
+
+  // ── Signature images ────────────────────────────────────────────────────────
+  // Sig 1 sits just above the "Plaintiff signature" label at measured y=640.8
+  // → pdf-lib baseline y=140; image top ≈ y=142+40=182 → fits between rows
+  async function embedSig(bytes: Buffer, x: number, y: number) {
+    const img = await pdfDoc.embedPng(bytes);
+    const { width: sw, height: sh } = img.scale(1);
+    const maxW = 185, maxH = 38;
+    const scale = Math.min(maxW / sw, maxH / sh, 1);
+    page.drawImage(img, { x, y, width: sw * scale, height: sh * scale });
+  }
+  if (sig1Bytes) await embedSig(sig1Bytes, 355, 142);   // sig 1: x=349.4+6, y=142
+  if (sig2Bytes) await embedSig(sig2Bytes, 355,  98);   // sig 2: x=349.4+6, y=98
+
+  return pdfDoc.save();
+}
+
 router.post("/cases/:id/forms/sc100a", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
@@ -1306,79 +1428,8 @@ router.post("/cases/:id/forms/sc100a", async (req, res): Promise<void> => {
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
   const d = c as unknown as Record<string, any>;
   const b = req.body as Record<string, any>;
-  // b.additionalPlaintiffs: [{name,phone,street,city,state,zip,mailingStreet,mailingCity,mailingState,mailingZip}]
-  // b.additionalDefendants: [{name,phone,street,city,state,zip,mailingStreet,mailingCity,mailingState,mailingZip,agentName,agentTitle,agentStreet,agentCity,agentState,agentZip}]
-  const addPl: any[] = b.additionalPlaintiffs || [];
-  const addDef: any[] = b.additionalDefendants || [];
   try {
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const bg = await pdfDoc.embedPng(loadAsset("sc100a_hq-1.png"));
-    const page = pdfDoc.addPage([PW, PH]);
-    page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const LIFT = 4.5;
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
-    const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
-
-    // Header — case caption + case number
-    const sc100aCaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-    v(sc100aCaseName, 72, 756);
-    v(d.caseNumber, 425, 756);
-
-    // Item 1 — Additional Plaintiffs (slots for 2)
-    const p1 = addPl[0];
-    if (p1) {
-      v(p1.name, 220, 683);
-      v(p1.phone, 443, 683);
-      v(p1.street, 165, 669);
-      v(p1.city, 86, 653); v(p1.state || "CA", 338, 653); v(p1.zip, 390, 653);
-      if (p1.mailingStreet) {
-        v(p1.mailingStreet, 185, 638);
-        v(p1.mailingCity, 86, 623); v(p1.mailingState || "CA", 338, 623); v(p1.mailingZip, 390, 623);
-      }
-    }
-    const p2 = addPl[1];
-    if (p2) {
-      v(p2.name, 220, 575);
-      v(p2.phone, 443, 575);
-      v(p2.street, 165, 561);
-      v(p2.city, 86, 546); v(p2.state || "CA", 338, 546); v(p2.zip, 390, 546);
-      if (p2.mailingStreet) {
-        v(p2.mailingStreet, 185, 531);
-        v(p2.mailingCity, 86, 516); v(p2.mailingState || "CA", 338, 516); v(p2.mailingZip, 390, 516);
-      }
-    }
-
-    // Item 2 — Additional Defendants (slot for 1)
-    const def1 = addDef[0];
-    if (def1) {
-      v(def1.name, 220, 479);
-      v(def1.phone, 443, 479);
-      v(def1.street, 165, 465);
-      v(def1.city, 86, 450); v(def1.state || "CA", 338, 450); v(def1.zip, 390, 450);
-      if (def1.mailingStreet) {
-        v(def1.mailingStreet, 185, 435);
-        v(def1.mailingCity, 86, 420); v(def1.mailingState || "CA", 338, 420); v(def1.mailingZip, 390, 420);
-      }
-      if (def1.agentName) {
-        v(def1.agentName, 100, 399);
-        v(def1.agentTitle, 285, 399);
-        v(def1.agentStreet, 100, 385);
-        v(def1.agentCity, 86, 370); v(def1.agentState || "CA", 338, 370); v(def1.agentZip, 390, 370);
-      }
-    }
-
-    // Item 3 — Claim over $2500
-    if (d.claimOver2500 === true) xm(176, 349);
-    else xm(204, 349);
-
-    // Date + signatures
-    v(b.signDate || today(), 65, 234);
-    v(addPl[0]?.name || "", 45, 218);
-    v(b.signDate || today(), 65, 191);
-    v(addPl[1]?.name || "", 45, 175);
-
-    const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await buildSC100APdf(d, b);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Disposition", `attachment; filename="SC100A-Case-${id}.pdf"`);
@@ -1387,6 +1438,37 @@ router.post("/cases/:id/forms/sc100a", async (req, res): Promise<void> => {
   } catch (err: any) {
     console.error("SC-100A PDF error:", err?.message, err?.stack);
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-100A PDF." });
+  }
+});
+
+// ─── SC-100A signed (draw-to-sign, two signature slots) ───────────────────────
+router.post("/cases/:id/forms/sc100a/signed", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  const d = c as unknown as Record<string, any>;
+  const b = req.body as Record<string, any>;
+  const { signature1DataUrl, signature2DataUrl } = b as {
+    signature1DataUrl?: string;
+    signature2DataUrl?: string;
+  };
+  function toBytes(dataUrl: string | undefined): Buffer | undefined {
+    if (!dataUrl) return undefined;
+    return Buffer.from(dataUrl.replace(/^data:image\/\w+;base64,/, ""), "base64");
+  }
+  try {
+    const pdfBytes = await buildSC100APdf(d, b, toBytes(signature1DataUrl), toBytes(signature2DataUrl));
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Content-Disposition", `attachment; filename="SC100A-Signed-Case-${id}.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("SC-100A signed PDF error:", err?.message, err?.stack);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed SC-100A PDF." });
   }
 });
 
