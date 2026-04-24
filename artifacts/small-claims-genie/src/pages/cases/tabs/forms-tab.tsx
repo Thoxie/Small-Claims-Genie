@@ -92,8 +92,28 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
     { title: "Hearing Information", fields: [{ key: "courtStreet", label: "Court Street Address", type: "text" }, { key: "hearingDate", label: "Hearing Date", type: "date" }, { key: "hearingTime", label: "Hearing Time", type: "text", placeholder: "e.g. 9:00 a.m." }, { key: "hearingDept", label: "Department", type: "text", placeholder: "e.g. 97" }]},
     { title: "Who Was Served (Item 1)", fields: [{ key: "personServedName", label: "Person served (if serving a person)", type: "text" }, { key: "businessName", label: "Business/entity served (if serving a business)", type: "text" }, { key: "authorizedPerson", label: "Person authorized to accept service", type: "text" }, { key: "authorizedTitle", label: "Their job title", type: "text" }]},
     { title: "Documents Served (Item 3)", fields: [{ key: "docsServed_sc100", label: "SC-100 (Plaintiff's Claim)", type: "select", options: [{ value: "yes", label: "Yes — served this" }, { value: "no", label: "No" }] }, { key: "docsServed_sc120", label: "SC-120 (Defendant's Claim)", type: "select", options: [{ value: "yes", label: "Yes — served this" }, { value: "no", label: "No" }] }, { key: "docsServedOther", label: "Other documents (describe)", type: "text" }]},
-    { title: "How Service Was Made (Item 4)", fields: [{ key: "serviceMethod", label: "Service method", type: "select", required: true, options: [{ value: "personal", label: "Personal Service (handed directly to person)" }, { value: "substituted", label: "Substituted Service (left with another adult)" }] }, { key: "serviceDate", label: "Date of service", type: "date", required: true }, { key: "serviceTime", label: "Time of service", type: "text", placeholder: "e.g. 2:30 p.m." }, { key: "serviceAddress", label: "Address where served", type: "text" }]},
-    { title: "Server Information", fields: [{ key: "serverName", label: "Server's full name", type: "text", required: true }, { key: "serverAddress", label: "Server's address", type: "text" }, { key: "serverCity", label: "City", type: "text" }, { key: "serverState", label: "State", type: "text", placeholder: "CA" }, { key: "signDate", label: "Date signed by server", type: "date" }]},
+    { title: "How Service Was Made (Item 4)", fields: [
+      { key: "serviceMethod", label: "Service method", type: "select", required: true, options: [{ value: "personal", label: "Personal Service (handed directly to person)" }, { value: "substituted", label: "Substituted Service (left with another adult)" }] },
+      { key: "serviceDate", label: "Date of service", type: "date", required: true },
+      { key: "serviceTime", label: "Time of service", type: "text", placeholder: "e.g. 2:30 p.m." },
+      { key: "serviceAddress", label: "Address where served", type: "text" },
+      { key: "serviceCity", label: "City", type: "text" },
+      { key: "serviceState", label: "State", type: "text", placeholder: "CA" },
+      { key: "serviceZip", label: "ZIP code", type: "text" },
+      { key: "subPersonDesc", label: "Substituted service only — name/description of person who received papers", type: "text" },
+      { key: "mailingDate", label: "Substituted service only — date envelope mailed", type: "date" },
+      { key: "mailingFrom", label: "Substituted service only — city/state mailed from", type: "text" },
+    ]},
+    { title: "Server Information", fields: [
+      { key: "serverName", label: "Server's full name", type: "text", required: true },
+      { key: "serverPhone", label: "Server's phone number", type: "text" },
+      { key: "serverAddress", label: "Server's street address", type: "text" },
+      { key: "serverCity", label: "City", type: "text" },
+      { key: "serverState", label: "State", type: "text", placeholder: "CA" },
+      { key: "serverZip", label: "ZIP code", type: "text" },
+      { key: "serverFee", label: "Fee for service (if any, numbers only)", type: "text" },
+      { key: "signDate", label: "Date signed by server", type: "date" },
+    ]},
   ]},
   sc112a: { title: "Proof of Service by Mail (SC-112A)", subtitle: "To be completed by the person who mailed the court papers — NOT by you.", endpoint: "sc112a", filename: (id) => `SC112A-Case-${id}.pdf`, groups: [
     { title: "Who Mailed the Papers (Item 1)", fields: [
@@ -457,6 +477,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
+  const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
+  const [sc104FormBody, setSc104FormBody] = useState<Record<string, any> | null>(null);
 
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
   const [viewingPdf, setViewingPdf] = useState(false);
@@ -566,6 +588,33 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      setModalFormId(null);
+    } catch { setDownloadError("Download failed — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
+  async function downloadSignedSC104(signatureDataUrl?: string, body?: Record<string, any> | null) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    setDownloadingForm("sc104"); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const formBody = body || sc104FormBody || {};
+      const endpoint = signatureDataUrl ? "sc104/signed" : "sc104";
+      const filename = signatureDataUrl ? `SC104-Signed-Case-${caseId}.pdf` : `SC104-Case-${caseId}.pdf`;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formBody, signatureDataUrl, token }),
+      });
+      if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError(err.error || "Failed to generate SC-104 PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       setModalFormId(null);
     } catch { setDownloadError("Download failed — please try again."); }
     finally { setDownloadingForm(null); }
@@ -1392,7 +1441,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
           caseId={caseId}
           initialValues={modalInitialValues}
           onClose={() => setModalFormId(null)}
-          onDownload={downloadFormPost}
+          onDownload={(endpoint, filename, body) => {
+            if (endpoint === "sc104") {
+              setSc104FormBody(body);
+              setModalFormId(null);
+              setSc104SigModalOpen(true);
+            } else {
+              downloadFormPost(endpoint, filename, body);
+            }
+          }}
           onAiGenerate={modalFormId === "mc030" ? generateMC030Declaration : undefined}
         />
       )}
@@ -1411,6 +1468,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
         disclaimer="By signing, you declare under penalty of perjury under the laws of the State of California that the foregoing is true and correct."
         onSign={(dataUrl) => { setMc030SigModalOpen(false); downloadSignedMC030(dataUrl); }}
         onSkipSign={() => { setMc030SigModalOpen(false); downloadMC030Packet(); }}
+      />
+
+      <SignaturePadModal
+        open={sc104SigModalOpen}
+        onClose={() => setSc104SigModalOpen(false)}
+        formTitle="SC-104"
+        disclaimer="By signing, the server declares under penalty of perjury under the laws of the State of California that they are at least 18 years old, not named in this case, and that the information above is true and correct."
+        onSign={(dataUrl) => { setSc104SigModalOpen(false); downloadSignedSC104(dataUrl); }}
+        onSkipSign={() => { setSc104SigModalOpen(false); downloadSignedSC104(); }}
       />
 
       {/* Guide Dialog */}

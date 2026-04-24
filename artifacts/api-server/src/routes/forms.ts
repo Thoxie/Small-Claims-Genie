@@ -1655,6 +1655,141 @@ router.post("/cases/:id/forms/sc103", async (req, res): Promise<void> => {
 });
 
 // ─── SC-104 Proof of Service (2 pages) ───────────────────────────────────────
+// All coordinates calibrated from placeholder PDF (pdftotext -bbox, 612×792pt, LIFT=4.5).
+// v(text, x, v_param)  → draws at pdf-lib y = v_param + LIFT
+// xm(cx, cy)           → X-mark at pdf-lib y = cy + LIFT
+// Signature image placed at x=334, y=83 on page 2 ("Server signs here after serving").
+
+async function buildSC104Pdf(
+  d: Record<string, any>,
+  b: Record<string, any>,
+  sigBytes?: Buffer,
+): Promise<Uint8Array> {
+  const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
+  const docs: string[] = b.docsServed || [];
+
+  const pdfDoc = await PDFDocument.create();
+  const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const [bg1, bg2] = await Promise.all([
+    pdfDoc.embedPng(loadAsset("sc104_hq-1.png")),
+    pdfDoc.embedPng(loadAsset("sc104_hq-2.png")),
+  ]);
+  const LIFT = 4.5;
+
+  // ── Page 1 ────────────────────────────────────────────────────────────────
+  const p1 = pdfDoc.addPage([PW, PH]);
+  p1.drawImage(bg1, { x: 0, y: 0, width: PW, height: PH });
+  const v1  = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
+  const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy + LIFT, 5);
+
+  // Right column — court info box
+  // "Court name and street address" placeholder at x=407, pdfY=556 → v=552
+  v1(b.courtStreet || d.courthouseAddress || "", 407, 552);
+  // "Case Number:" label at pdfY=484; data 15pt below at pdfY≈469 → v=465
+  if (d.caseNumber) v1(d.caseNumber, 399, 465);
+  // "Case name" placeholder at x=407, pdfY=437 → v=433
+  v1(caseName, 407, 433);
+  // "Hearing Date:" label at pdfY=413; data inline at x=460 → v=409
+  v1(b.hearingDate || formatDateDisplay(d.hearingDate) || "", 460, 409);
+  // "Time:" label at pdfY=389 (x=399); "Dept.:" label at x=505; data inline → v=385
+  v1(b.hearingTime || formatTimeDisplay(d.hearingTime) || "", 425, 385);
+  v1(b.hearingDept || d.hearingCourtroom || "",              537, 385);
+
+  // Item 1a — person served
+  // "Person being served" placeholder at x=102, pdfY=442 → v=438
+  v1(b.personServedName, 102, 438);
+
+  // Item 1b — business/entity served
+  // "Business or Agency Name" placeholder at x=80, pdfY=389 → v=385 (left column, same row as Time/Dept right column)
+  v1(b.businessName,     80, 385);
+  // "Person Authorized for Service" at x=80, pdfY=373 → v=369; "Job Title" at x=349, v=369
+  v1(b.authorizedPerson, 80, 369);
+  v1(b.authorizedTitle, 349, 369);
+
+  // Item 3 — documents served checkboxes (placeholder did not mark these; positions kept from previous calibration)
+  if (docs.includes("sc100")) xm1(53, 298);
+  if (docs.includes("sc120")) xm1(53, 279);
+  if (docs.includes("other")) { xm1(53, 108); v1(b.docsServedOther, 100, 108); }
+
+  // ── Page 2 ────────────────────────────────────────────────────────────────
+  const p2 = pdfDoc.addPage([PW, PH]);
+  p2.drawImage(bg2, { x: 0, y: 0, width: PW, height: PH });
+  const v2  = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y + LIFT, s);
+  const xm2 = (cx: number, cy: number) => xmark(p2, cx, cy + LIFT, 5);
+
+  // Page 2 header — "Case name: Case name" at x=106, pdfY=732 → v=728
+  v2(caseName,      106, 728);
+  // "Case Number:" label at pdfY=743 (right side); data inline → x=449, v=739
+  if (d.caseNumber) v2(d.caseNumber, 449, 739);
+
+  // Item 4a — Personal Service
+  // "a." label at pdfY=682; checkbox left of it → xm2(53, 677)
+  // "Date served" placeholder at x=142, pdfY=666 → v=662
+  // "Time served" placeholder at x=342, pdfY=666 → v=662
+  // "Service address" placeholder at x=160, pdfY=656 → v=652
+  // "City State Zip" placeholders at pdfY=642 → v=638; x=115, 412, 490
+  if (b.serviceMethod === "personal") {
+    xm2(53, 677);
+    v2(b.serviceDate, 142, 662);
+    v2(b.serviceTime, 342, 662);
+    v2(b.serviceAddress, 160, 652);
+    v2(b.serviceCity,            115, 638);
+    v2(b.serviceState || "CA",   412, 638);
+    v2(b.serviceZip,             490, 638);
+  }
+
+  // Item 4b — Substituted Service
+  // "b." label at pdfY=608; checkbox → xm2(53, 603)
+  // "Date substituted service" at x=170, pdfY=526 → v=522
+  // "Time" at x=370, pdfY=526 → v=522
+  // "At this address:" label at pdfY=499; data inline → x=133, v=495
+  // "City State Zip" at pdfY=457 → v=453; x=115, 408, 482
+  // "Name or description..." label at pdfY=463; desc inline → x=80, v=459
+  // "Mailing date" at x=235, pdfY=389 → v=385
+  // "City, state mailed from" at x=425, pdfY=389 → v=385
+  if (b.serviceMethod === "substituted") {
+    xm2(53, 603);
+    v2(b.serviceDate, 170, 522);
+    v2(b.serviceTime, 370, 522);
+    if (b.serviceAddress) v2(b.serviceAddress, 133, 495);
+    v2(b.serviceCity,            115, 453);
+    v2(b.serviceState || "CA",   408, 453);
+    v2(b.serviceZip,             482, 453);
+    if (b.subPersonDesc) v2(b.subPersonDesc, 80, 459);
+    if (b.mailingDate) v2(b.mailingDate, 235, 385);
+    if (b.mailingFrom) v2(b.mailingFrom, 425, 385);
+  }
+
+  // Item 5 — Server information
+  // "Name:" at pdfY=254 → v=250; data at x=85.  "Phone:" at x=420 → data at x=450.
+  v2(b.serverName,            85, 250);
+  v2(b.serverPhone,          450, 250);
+  // "Address:" at pdfY=235 → v=231; data at x=95.
+  v2(b.serverAddress,         95, 231);
+  // "City:" at pdfY=218 → v=214; "State:" at x=378; "Zip:" at x=447
+  v2(b.serverCity,            95, 214);
+  v2(b.serverState || "CA",  405, 214);
+  v2(b.serverZip,            472, 214);
+  // "Fee for service: $" at pdfY=199 → v=195; data after "$" at x=145
+  if (b.serverFee) v2(b.serverFee, 145, 195);
+
+  // Item 6 — Declaration / signature
+  // "Date:" label at pdfY=109 → data at x=85, v=105
+  v2(b.signDate || today(), 85, 105);
+  // "Type or print server's name" at pdfY=77; printed name at x=63, v=73
+  v2(b.serverName, 63, 73);
+  // "Server signs here after serving" at x=334.1, pdfY=77 → embed signature image at x=334, y=83
+  if (sigBytes) {
+    const sigImg = await pdfDoc.embedPng(sigBytes);
+    const { width: sw, height: sh } = sigImg.scale(1);
+    const maxW = 200, maxH = 38;
+    const scale = Math.min(maxW / sw, maxH / sh, 1);
+    p2.drawImage(sigImg, { x: 334, y: 83, width: sw * scale, height: sh * scale });
+  }
+
+  return pdfDoc.save();
+}
+
 router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
@@ -1664,87 +1799,8 @@ router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
   const d = c as unknown as Record<string, any>;
   const b = req.body as Record<string, any>;
-  // b.courtStreet (court address to type in box), b.hearingDate, b.hearingTime, b.hearingDept
-  // b.personServedName (if serving person), b.businessName, b.authorizedPerson, b.authorizedTitle
-  // b.docsServed: string[] — "sc100", "sc120", "other"
-  // b.docsServedOther: string
-  // b.serviceMethod: "personal" | "substituted"
-  // b.serviceDate, b.serviceTime (am/pm), b.serviceAddress, b.serviceCity, b.serviceState, b.serviceZip
-  // b.subPersonDesc (if substituted — who received)
-  // b.serverName, b.serverPhone, b.serverAddress, b.serverCity, b.serverState, b.serverZip, b.serverFee
-  const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-  const docs: string[] = b.docsServed || [];
   try {
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const [bg1, bg2] = await Promise.all([
-      pdfDoc.embedPng(loadAsset("sc104_hq-1.png")),
-      pdfDoc.embedPng(loadAsset("sc104_hq-2.png")),
-    ]);
-
-    // ── Page 1 ──
-    const LIFT = 4.5;
-    const p1 = pdfDoc.addPage([PW, PH]);
-    p1.drawImage(bg1, { x: 0, y: 0, width: PW, height: PH });
-    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
-    const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy + LIFT, 5);
-
-    // Right column — court info (body params override case data)
-    v1(b.courtStreet || d.courthouseAddress || d.courthouseName || "", 376, 612);
-    v1(d.caseNumber, 376, 550);
-    v1(caseName, 376, 507);
-    v1(b.hearingDate || formatDateDisplay(d.hearingDate) || "", 376, 463);
-    v1(b.hearingTime || formatTimeDisplay(d.hearingTime) || "", 376, 435);
-    v1(b.hearingDept || d.hearingCourtroom || "", 490, 435);
-
-    // Item 1a — person served
-    v1(b.personServedName, 100, 440);
-    // Item 1b — business served
-    v1(b.businessName, 72, 398);
-    v1(b.authorizedPerson, 175, 384);
-    v1(b.authorizedTitle, 370, 384);
-
-    // Item 3 — documents served checkboxes
-    if (docs.includes("sc100")) xm1(53, 298);
-    if (docs.includes("sc120")) xm1(53, 279);
-    if (docs.includes("other")) { xm1(53, 108); v1(b.docsServedOther, 100, 108); }
-
-    // ── Page 2 ──
-    const p2 = pdfDoc.addPage([PW, PH]);
-    p2.drawImage(bg2, { x: 0, y: 0, width: PW, height: PH });
-    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y + LIFT, s);
-    const xm2 = (cx: number, cy: number) => xmark(p2, cx, cy + LIFT, 5);
-
-    v2(caseName, 72, 754);
-    v2(d.caseNumber, 425, 754);
-
-    if (b.serviceMethod === "personal") {
-      xm2(60, 700);
-      v2(b.serviceDate, 172, 700);
-      v2(b.serviceTime, 374, 700);
-      v2(b.serviceAddress, 72, 680);
-      v2(b.serviceCity, 72, 661); v2(b.serviceState || "CA", 335, 661); v2(b.serviceZip, 415, 661);
-    } else if (b.serviceMethod === "substituted") {
-      xm2(60, 577);
-      v2(b.serviceDate, 172, 433);
-      v2(b.serviceTime, 374, 433);
-      v2(b.serviceAddress, 72, 412);
-      v2(b.serviceCity, 72, 393); v2(b.serviceState || "CA", 335, 393); v2(b.serviceZip, 415, 393);
-      v2(b.subPersonDesc, 72, 360);
-    }
-
-    // Item 5 — Server info
-    v2(b.serverName, 72, 198);
-    v2(b.serverPhone, 395, 198);
-    v2(b.serverAddress, 72, 181);
-    v2(b.serverCity, 72, 163); v2(b.serverState || "CA", 335, 163); v2(b.serverZip, 415, 163);
-    if (b.serverFee) v2(`$${b.serverFee}`, 72, 147);
-
-    // Item 6 — Date + name
-    v2(b.signDate || today(), 72, 103);
-    v2(b.serverName, 72, 77);
-
-    const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await buildSC104Pdf(d, b);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="SC104-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
@@ -1752,6 +1808,33 @@ router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {
   } catch (err: any) {
     console.error("SC-104 PDF error:", err?.message, err?.stack);
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-104 PDF." });
+  }
+});
+
+router.post("/cases/:id/forms/sc104/signed", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  const d = c as unknown as Record<string, any>;
+  const b = req.body as Record<string, any>;
+  const { signatureDataUrl } = b as { signatureDataUrl?: string };
+  function toBytes(dataUrl: string | undefined): Buffer | undefined {
+    if (!dataUrl) return undefined;
+    return Buffer.from(dataUrl.replace(/^data:image\/\w+;base64,/, ""), "base64");
+  }
+  try {
+    const pdfBytes = await buildSC104Pdf(d, b, toBytes(signatureDataUrl));
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Content-Disposition", `attachment; filename="SC104-Signed-Case-${id}.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("SC-104 signed PDF error:", err?.message, err?.stack);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed SC-104 PDF." });
   }
 });
 
