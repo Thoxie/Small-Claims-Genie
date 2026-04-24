@@ -465,8 +465,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const [downloadingWithOverrides, setDownloadingWithOverrides] = useState(false);
 
   // ── MC-030 inline editor state ─────────────────────────────────────────────
-  const [mc030Title, setMc030Title] = useState(
-    currentCase?.plaintiffName ? `Declaration of ${currentCase.plaintiffName} in Support of Claim` : ""
+  const [mc030Title, setMc030Title] = useState<string>(
+    (currentCase as any)?.mc030DeclarationTitle ||
+    (currentCase?.plaintiffName ? `DECLARATION OF ${currentCase.plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM` : "")
   );
   const [mc030Text, setMc030Text] = useState("");
   const [mc030AiGenerating, setMc030AiGenerating] = useState(false);
@@ -490,6 +491,23 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     }
     fetchDocs();
   }, [caseId]);
+
+  // ── Auto-save mc030Title to DB whenever it changes (debounced 1s) ──────────
+  const mc030TitleInitial = useRef(mc030Title);
+  useEffect(() => {
+    if (mc030Title === mc030TitleInitial.current) return; // skip initial render
+    const t = setTimeout(async () => {
+      try {
+        const token = await getToken();
+        await fetch(`/api/cases/${caseId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ mc030DeclarationTitle: mc030Title }),
+        });
+      } catch { /* silent — best-effort */ }
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [mc030Title]);
 
   useEffect(() => {
     if (downloadError) { toast({ title: "Download failed", description: downloadError, variant: "destructive" }); setDownloadError(null); }
@@ -685,6 +703,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       const data = await res.json();
       const text = data.declarationText ?? null;
       if (text) setMc030Text(text);
+      // Capture generated title so SC-100 Section 3 can match the MC-030 exactly
+      if (data.declarationTitle) {
+        mc030TitleInitial.current = data.declarationTitle; // avoid double-PATCH (save already done by server)
+        setMc030Title(data.declarationTitle);
+      }
       return text;
     } catch { setMc030AiError("AI generation failed — please try again."); return null; }
     finally { setMc030AiGenerating(false); }

@@ -74,4 +74,5 @@ export interface UpdateCaseBody {
   intakeStep?: number;
   intakeComplete?: boolean;
   readinessScore?: number;
+  mc030DeclarationTitle?: string;
 }

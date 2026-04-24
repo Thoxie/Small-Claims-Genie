@@ -436,7 +436,17 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
       ],
     });
     const text = completion.choices[0]?.message?.content ?? "";
-    res.json({ declarationText: text });
+
+    // Derive a declaration title and persist it so SC-100 Section 3 can reference it exactly
+    const plaintiffName = caseRecord.plaintiffName ?? "Declarant";
+    const declarationTitle = caseRecord.mc030DeclarationTitle
+      || `DECLARATION OF ${plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM`;
+    db.update(casesTable)
+      .set({ mc030DeclarationTitle: declarationTitle })
+      .where(eq(casesTable.id, id))
+      .catch((e: any) => console.error("MC-030 title save error:", e));
+
+    res.json({ declarationText: text, declarationTitle });
   } catch (err: any) {
     console.error("MC-030 AI error:", err?.message);
     res.status(500).json({ error: "Failed to generate declaration. Please try again." });

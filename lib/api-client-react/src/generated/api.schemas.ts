@@ -104,6 +104,7 @@ export interface Case {
   intakeComplete?: boolean;
   documentCount?: number;
   readinessScore?: number;
+  mc030DeclarationTitle?: string;
   createdAt: string;
   updatedAt: string;
 }

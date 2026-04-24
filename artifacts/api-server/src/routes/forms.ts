@@ -6,7 +6,7 @@ import type { Request, Response } from "express";
 import * as fs from "fs";
 import * as path from "path";
 import { db } from "@workspace/db";
-import { documentsTable } from "@workspace/db";
+import { documentsTable, casesTable } from "@workspace/db";
 import { inArray, and, eq } from "drizzle-orm";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { openai } from "@workspace/integrations-openai-ai-server";
@@ -273,12 +273,75 @@ function enrichForSC100(c: Record<string, any>): Record<string, any> {
 }
 
 // ─── SC-100 AI enrichment ─────────────────────────────────────────────────────
-async function aiEnrichForSC100(c: Record<string, any>): Promise<Record<string, any>> {
-  const needsFill = !c.howAmountCalculated || !c.venueBasis || c.isAttyFeeDispute == null || c.isSuingPublicEntity == null;
-  if (!needsFill) return c;
+// ── AI: generate a 2-3 sentence Section 3 summary + MC-030 reference ────────
+async function generateSC100ClaimSummary(c: Record<string, any>): Promise<string> {
+  const plaintiffName = String(c.plaintiffName || "Plaintiff");
+  const defendantName = String(c.defendantName || "Defendant");
+  const claimDesc     = String(c.claimDescription || "");
+  const incidentDate  = c.incidentDate ? formatDateDisplay(c.incidentDate) : "";
+  const claimAmount   = c.claimAmount
+    ? `$${Number(c.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+    : "an amount to be determined";
+
+  // Use the saved MC-030 title if available; otherwise use a reliable default formula
+  const mc030Title: string = c.mc030DeclarationTitle
+    || `Declaration of ${plaintiffName} in Support of Claim`;
 
   try {
-    const prompt = `You are a California small claims court expert helping fill out an SC-100 form.
+    const prompt = [
+      `Write a 2-3 sentence summary for Section 3 of a California SC-100 small claims form.`,
+      ``,
+      `Case facts:`,
+      `- Plaintiff: ${plaintiffName}`,
+      `- Defendant: ${defendantName}`,
+      `- Claim amount: ${claimAmount}`,
+      incidentDate ? `- Date of incident: ${incidentDate}` : "",
+      claimDesc    ? `- Description: ${claimDesc}`         : "",
+      ``,
+      `Rules:`,
+      `- Plain text only, no markdown, no quotes`,
+      `- Maximum 300 characters total for the summary sentences`,
+      `- Cover who, what happened, and the dollar amount`,
+      `- Do NOT include any signature, name, date, or closing`,
+      `- Stop after 2-3 sentences — do NOT add the MC-030 reference; that is appended separately`,
+      ``,
+      `Return ONLY the plain summary text.`,
+    ].filter(Boolean).join("\n");
+
+    const resp = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 150,
+      temperature: 0.3,
+    });
+
+    let summary = (resp.choices[0]?.message?.content || "").trim().replace(/^["']|["']$/g, "");
+
+    // Cap at 300 chars, breaking cleanly on sentence boundary
+    if (summary.length > 300) {
+      summary = summary.slice(0, 300).trimEnd();
+      const lastPeriod = summary.lastIndexOf(".");
+      if (lastPeriod > 80) summary = summary.slice(0, lastPeriod + 1);
+    }
+
+    return `${summary} (see MC-030 Declaration: ${mc030Title})`;
+  } catch {
+    // Graceful fallback — use existing description with reference appended
+    const fallback = claimDesc.length > 300 ? claimDesc.slice(0, 300).trimEnd() + "…" : claimDesc;
+    return fallback
+      ? `${fallback} (see MC-030 Declaration: ${mc030Title})`
+      : `See attached MC-030 Declaration: ${mc030Title}.`;
+  }
+}
+
+async function aiEnrichForSC100(c: Record<string, any>): Promise<Record<string, any>> {
+  const needsFill = !c.howAmountCalculated || !c.venueBasis || c.isAttyFeeDispute == null || c.isSuingPublicEntity == null;
+
+  // Run both tasks in parallel: field-filling (if needed) + AI Section 3 description
+  const [filledFields, claimDescriptionForForm] = await Promise.all([
+    needsFill ? (async () => {
+      try {
+        const prompt = `You are a California small claims court expert helping fill out an SC-100 form.
 
 Case data:
 ${JSON.stringify({
@@ -303,20 +366,24 @@ Return ONLY a JSON object (no markdown) filling in ONLY the fields that are null
 
 Only include a field if it is currently null/empty. Skip fields that already have values.`;
 
-    const resp = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 300,
-      temperature: 0,
-      response_format: { type: "json_object" },
-    });
-    const raw = resp.choices[0]?.message?.content || "{}";
-    const filled = JSON.parse(raw);
-    return { ...c, ...filled };
-  } catch (err) {
-    console.error("SC-100 AI enrichment error:", err);
-    return c;
-  }
+        const resp = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 300,
+          temperature: 0,
+          response_format: { type: "json_object" },
+        });
+        return JSON.parse(resp.choices[0]?.message?.content || "{}") as Record<string, any>;
+      } catch (err) {
+        console.error("SC-100 AI field enrichment error:", err);
+        return {} as Record<string, any>;
+      }
+    })() : Promise.resolve({} as Record<string, any>),
+
+    generateSC100ClaimSummary(c),
+  ]);
+
+  return { ...c, ...filledFields, claimDescriptionForForm };
 }
 
 // ─── SC-100 shared builder (config-driven) ───────────────────────────────────
@@ -1137,6 +1204,14 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
       declarationText  = declarationText  || ai.declarationText;
     }
 
+    // Persist the declaration title so SC-100 Section 3 can reference it exactly
+    if (declarationTitle) {
+      db.update(casesTable)
+        .set({ mc030DeclarationTitle: declarationTitle })
+        .where(eq(casesTable.id, id))
+        .catch((e: any) => console.error("MC-030 title save error:", e));
+    }
+
     const pdfDoc   = await PDFDocument.create();
     const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -1181,6 +1256,14 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       const ai = await generateMC030Declaration(d);
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
+    }
+
+    // Persist the declaration title so SC-100 Section 3 can reference it exactly
+    if (declarationTitle) {
+      db.update(casesTable)
+        .set({ mc030DeclarationTitle: declarationTitle })
+        .where(eq(casesTable.id, id))
+        .catch((e: any) => console.error("MC-030 title save error:", e));
     }
 
     const pdfDoc   = await PDFDocument.create();
@@ -1242,6 +1325,14 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
       const ai = await generateMC030Declaration(d);
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
+    }
+
+    // Persist the declaration title so SC-100 Section 3 can reference it exactly
+    if (declarationTitle) {
+      db.update(casesTable)
+        .set({ mc030DeclarationTitle: declarationTitle })
+        .where(eq(casesTable.id, id))
+        .catch((e: any) => console.error("MC-030 title save error:", e));
     }
 
     // ── MC-030 page ──────────────────────────────────────────────────────────

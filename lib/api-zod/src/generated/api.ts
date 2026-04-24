@@ -416,6 +416,7 @@ export const UpdateCaseBody = zod.object({
   intakeStep: zod.number().optional(),
   intakeComplete: zod.boolean().optional(),
   readinessScore: zod.number().optional(),
+  mc030DeclarationTitle: zod.string().optional(),
 });
 
 export const UpdateCaseResponse = zod.object({
