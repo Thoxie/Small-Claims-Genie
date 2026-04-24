@@ -1128,22 +1128,22 @@ function drawMC030Page(
   if (declarationTitle) {
     const titleSize = 11;
     const tw = fontBold.widthOfTextAtSize(declarationTitle, titleSize);
-    const tx = Math.max(56, (PW - tw) / 2);
+    const tx = Math.max(36, (PW - tw) / 2);
     page.drawText(declarationTitle, { x: tx, y: 494 + LIFT, size: titleSize, font: fontBold, color: BLACK });
   }
 
   // ── Declaration body — numbered paragraphs ──────────────────────────────────
-  // 11pt Helvetica, 13pt leading, ¼-inch wider margins on each side.
+  // 11pt Helvetica, 13pt leading, full-width margins matching the printed form lines.
   // Body start v_y=467, must stop before the pre-printed "I declare" text (~v_y=185).
   if (declarationText) {
     const paragraphs = declarationText.split(/\n/).map(p => p.trim()).filter(Boolean);
     let bodyY = 467 + LIFT;
-    const bodyX    = 56;          // left margin raised ¼ inch (was 38)
-    const bodyMaxW = 500;         // 612-56-56 (¼ inch wider on each side)
+    const bodyX    = 36;          // left margin: flush with form's printed rule lines
+    const bodyMaxW = 540;         // 612-36-36 = 540 — maximum usable width on the form
     const bodySize = 11;
     const bodyLineH = 13;         // proper leading for 11pt
-    const paraGap   = 4;
-    const maxTotalLines = 22;     // 22 × 13pt = 286pt, fits before "I declare" line
+    const paraGap   = 3;
+    const maxTotalLines = 24;     // 24 × 13pt = 312pt, fits before "I declare" line
     let linesUsed = 0;
 
     for (let pi = 0; pi < paragraphs.length && linesUsed < maxTotalLines; pi++) {
@@ -1177,8 +1177,7 @@ function drawMC030Page(
   // ── Signature area ─────────────────────────────────────────────────────────
   // Date: measured y=624.1 → v_y=157  (uses vs — no DOWN)
   vs(b.signDate || today(), 77, 157);
-  // Printed name: measured y=662.1 → v_y=119
-  vs(b.declarantName || d.plaintiffName, 48, 119);
+  // NOTE: Printed name is already hard-printed on the form background — do NOT re-draw it.
 
   // ── Plaintiff checkbox ──────────────────────────────────────────────────────
   // Bottom row: "□ Attorney for  □ Plaintiff  □ Petitioner  □ Defendant"
