@@ -1404,12 +1404,8 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
 });
 
 // ─── SC-100A Other Plaintiffs or Defendants ───────────────────────────────────
-// Coordinates measured from court placeholder PDF via pdftotext -bbox.
-// Formula: v_param_y = 792 - measuredY - 11.5   (LIFT=4.5 applied in helper)
-// All x positions shifted +6pt right (one character) per user spec.
-//
-// b.additionalPlaintiffs: [{name,phone,street,city,state,zip,mailingStreet,mailingCity,mailingState,mailingZip}]
-// b.additionalDefendants: [{name,phone,street,city,state,zip,mailingStreet,mailingCity,mailingState,mailingZip,agentName,agentTitle,agentStreet,agentCity,agentState,agentZip}]
+// Coordinates calibrated from placeholder PDF via pdftotext -bbox (612×792pt page, LIFT=4.5).
+// Party data is pulled directly from the case record; no extra fields needed in the request body.
 
 async function buildSC100APdf(
   d: Record<string, any>,
@@ -1417,12 +1413,27 @@ async function buildSC100APdf(
   sig1Bytes?: Buffer,
   sig2Bytes?: Buffer
 ): Promise<Uint8Array> {
-  const addPl: any[]  = b.additionalPlaintiffs || [];
-  const addDef: any[] = b.additionalDefendants || [];
+  // Party data is read directly from the case record (intake data) — no extra prompts needed.
+  // SC-100A: "Other Plaintiff 1" = second plaintiff, "Other Plaintiff 2" = third plaintiff (none in DB),
+  //          "Other Defendant" = second defendant (none in DB — primary is on SC-100).
+  const p1 = d.secondPlaintiffName ? {
+    name:         d.secondPlaintiffName,
+    phone:        d.secondPlaintiffPhone        || "",
+    street:       d.secondPlaintiffAddress      || "",
+    city:         d.secondPlaintiffCity         || "",
+    state:        d.secondPlaintiffState        || "CA",
+    zip:          d.secondPlaintiffZip          || "",
+    mailingStreet:d.secondPlaintiffMailingAddress || "",
+    mailingCity:  d.secondPlaintiffMailingCity   || "",
+    mailingState: d.secondPlaintiffMailingState  || "CA",
+    mailingZip:   d.secondPlaintiffMailingZip    || "",
+  } : null;
+  // No third plaintiff or second defendant stored in DB — those sections left blank.
+  const p2: null  = null;
+  const def1: null = null;
 
   const pdfDoc   = await PDFDocument.create();
   const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const bg       = await pdfDoc.embedPng(loadAsset("sc100a_hq-1.png"));
   const page     = pdfDoc.addPage([PW, PH]);
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
@@ -1430,85 +1441,61 @@ async function buildSC100APdf(
   const LIFT = 4.5;
   const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
 
-  // ── Header — case caption (left) + case number (right) ─────────────────────
-  // Short title sits in the narrow bar ABOVE the SC-100A logo banner (~v_y=762).
-  // Case Number box is at v_y=739 on the right side of the logo bar.
-  const sc100aCaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-  v(sc100aCaseName, 78, 762);       // above SC-100A logo bar (short-title area)
-  v(d.caseNumber,   409, 739);      // inside Case Number box, x=402.7+6
+  // ── Header — case number (top-right box) ────────────────────────────────────
+  // Placeholder: "Case number" at x=403, pdfY=743 → v_param=738.5≈739
+  if (d.caseNumber) v(d.caseNumber, 403, 739);
 
-  // ── Plaintiff 1 ─────────────────────────────────────────────────────────────
-  // name measured y=117.2, x=175.7 | street y=133.7, x=131.0 | phone x=440.2
-  const p1 = addPl[0];
+  // ── Other Plaintiff 1 (= second plaintiff from intake) ──────────────────────
+  // Coordinates calibrated from placeholder PDF (pdftotext bbox, 612×792pt):
+  //   name  x=176, pdfY=668 → v=663  |  street x=131, pdfY=652 → v=647
+  //   phone x=440, pdfY=652 → v=647  |  city x=74, pdfY=636 → v=631
+  //   state x=299, pdfY=636 → v=631  |  zip x=372, pdfY=636 → v=631
+  //   mailing addr x=195, pdfY=619 → v=614
+  //   mailing city x=74, pdfY=602 → v=597  |  state x=299  |  zip x=371
   if (p1) {
-    v(p1.name,                182, 663);   // measured y=117.2 → v_y=663
-    v(p1.street,              137, 647);   // measured y=133.7 → v_y=647
-    v(p1.phone,               446, 647);   // same row, x=440.2+6
-    v(p1.city,                 88, 631);   // measured y=150.0 → v_y=631, x+8 clears "City:" label
-    v(p1.state   || "CA",     305, 631);   // x=298.6+6
-    v(p1.zip,                 378, 631);   // x=371.5+6
+    v(p1.name,               176, 663);
+    v(p1.street,             131, 647);
+    v(p1.phone,              440, 647);
+    v(p1.city,                74, 631);
+    v(p1.state  || "CA",     299, 631);
+    v(p1.zip,                372, 631);
     if (p1.mailingStreet) {
-      v(p1.mailingStreet,     201, 614);   // measured y=166.8 → v_y=614
-      v(p1.mailingCity,        88, 597);   // measured y=183.1 → v_y=597
-      v(p1.mailingState || "CA", 305, 597);
-      v(p1.mailingZip,        377, 597);
+      v(p1.mailingStreet,    195, 614);
+      v(p1.mailingCity,       74, 597);
+      v(p1.mailingState || "CA", 299, 597);
+      v(p1.mailingZip,       371, 597);
     }
   }
 
-  // ── Plaintiff 2 ─────────────────────────────────────────────────────────────
-  // name measured y=216.0, x=168.5 | street y=232.6
-  const p2 = addPl[1];
+  // ── Other Plaintiff 2 (third plaintiff — not collected in intake, left blank) ─
+  // Placeholder: name x=168, pdfY=569 → v=564  |  street x=131, pdfY=553 → v=548
+  //   phone x=440  |  city x=74, pdfY=538 → v=533  |  state x=299  |  zip x=371
+  //   mailing addr x=195, pdfY=522 → v=517
+  //   mailing city x=74, pdfY=505 → v=500
   if (p2) {
-    v(p2.name,                175, 565);   // measured y=216.0 → v_y=565
-    v(p2.street,              137, 548);   // measured y=232.6 → v_y=548
-    v(p2.phone,               446, 548);
-    v(p2.city,                 88, 533);   // measured y=247.9 → v_y=533
-    v(p2.state   || "CA",     305, 533);
-    v(p2.zip,                 377, 533);
-    if (p2.mailingStreet) {
-      v(p2.mailingStreet,     201, 517);   // measured y=263.8 → v_y=517
-      v(p2.mailingCity,        88, 500);   // measured y=280.1 → v_y=500
-      v(p2.mailingState || "CA", 305, 500);
-      v(p2.mailingZip,        377, 500);
-    }
+    // p2 is always null — placeholder block retained for future expansion
   }
 
-  // ── Additional Defendant ─────────────────────────────────────────────────────
-  // name measured y=360.0 | street y=375.6 | city y=390.5
-  const def1 = addDef[0];
+  // ── Other Defendant (second defendant — not collected in intake, left blank) ─
+  // Placeholder: name x=176, pdfY=425 → v=420  |  street x=131, pdfY=410 → v=405
+  //   phone x=439  |  city x=74, pdfY=395 → v=390  |  state x=299  |  zip x=371
+  //   mailing addr x=195, pdfY=380 → v=375
+  //   mailing city x=74, pdfY=364 → v=359
+  //   agent name x=97, pdfY=324 → v=319  |  agent title x=397
+  //   agent street x=106, pdfY=307 → v=302
+  //   agent city x=74, pdfY=293 → v=288  |  state x=299  |  zip x=371
   if (def1) {
-    v(def1.name,              182, 421);   // measured y=360.0 → v_y=421
-    v(def1.street,            137, 405);   // measured y=375.6 → v_y=405
-    v(def1.phone,             445, 405);   // x=439.2+6
-    v(def1.city,               88, 390);   // measured y=390.5 → v_y=390
-    v(def1.state || "CA",     305, 390);
-    v(def1.zip,               377, 390);
-    if (def1.mailingStreet) {
-      v(def1.mailingStreet,   201, 375);   // measured y=405.9 → v_y=375
-      v(def1.mailingCity,      88, 359);   // measured y=421.2 → v_y=359
-      v(def1.mailingState || "CA", 305, 359);
-      v(def1.mailingZip,      377, 359);
-    }
-    // ── Agent for service of process ─────────────────────────────────────────
-    // measured y=462.0 → v_y=319 | street y=478.3 → v_y=302 | city y=492.7 → v_y=288
-    if (def1.agentName) {
-      v(def1.agentName,       103, 319);   // x=97.0+6
-      v(def1.agentTitle,      403, 319);   // x=397.4+6
-      v(def1.agentStreet,     112, 302);   // x=105.6+6
-      v(def1.agentCity,        88, 288);   // x=73.9+8 clears "City:" label
-      v(def1.agentState || "CA", 305, 288);
-      v(def1.agentZip,        377, 288);
-    }
+    // def1 is always null — placeholder block retained for future expansion
   }
 
   // ── Date + printed names ────────────────────────────────────────────────────
-  // Sig 1 date: measured y=626.0 → v_y=155  name: measured y=640.8 → v_y=140
-  // Sig 2 date: measured y=669.2 → v_y=111  name: measured y=684.0 → v_y=97
+  // Placeholder: date1 x=63, pdfY=159 → v=154  |  name1 x=37, pdfY=144 → v=139
+  //              date2 x=63, pdfY=116 → v=111  |  name2 x=37, pdfY=101 → v=96
   const signDate = b.signDate || today();
-  v(signDate,                  69, 155);   // date row 1: x=63.4+6
-  v(addPl[0]?.name || d.plaintiffName || "", 43, 140);  // printed name 1: x=37.4+6
-  v(signDate,                  69, 111);   // date row 2
-  v(addPl[1]?.name || "",      43,  97);   // printed name 2
+  v(signDate,                           63, 154);
+  v(p1?.name || d.plaintiffName || "",  37, 139);
+  v(signDate,                           63, 111);
+  v("",                                 37,  96);   // third plaintiff name (none)
 
   // ── Signature images ────────────────────────────────────────────────────────
   // Sig 1 sits just above the "Plaintiff signature" label at measured y=640.8

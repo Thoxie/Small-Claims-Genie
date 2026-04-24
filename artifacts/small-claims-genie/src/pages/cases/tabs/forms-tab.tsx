@@ -1091,7 +1091,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">If your case involves more than two parties total, file this form separately alongside your SC-100 — hand both to the clerk at the same time. It adds space for up to two additional plaintiffs and one additional defendant.</p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"
-                    onClick={() => { setModalInitialValues({}); setModalFormId("sc100a"); }} disabled={downloadingForm === "sc100a"}>
+                    onClick={() => downloadFormPost("sc100a", `SC100A-Case-${caseId}.pdf`, {})} disabled={downloadingForm === "sc100a"}>
                     {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Download SC-100A
                   </Button>
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" onClick={() => setGuideDialogFormId("sc100a")}><Info className="h-3 w-3" />Guide</Button>
