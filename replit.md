@@ -24,8 +24,9 @@ California small claims court SaaS app. Helps lower-income individuals and small
 - **API codegen**: Orval (from OpenAPI spec in `lib/api-spec/openapi.yaml`)
 - **Build**: esbuild (API), Vite (frontend)
 - **AI**: OpenAI via Replit proxy (`@workspace/integrations-openai-ai-server`, `@workspace/integrations-openai-ai-react`)
-- **PDF generation**: Playwright + Chromium (headless) for SC-100 — HTML/CSS absolute positioning over base64-embedded 300 DPI PNG backgrounds, rendered by Chromium to PDF (eliminates React-PDF coordinate approximation errors); pdf-lib for MC-030 and other older forms
-- **SC-100 field map** (`artifacts/api-server/assets/forms/sc100-field-map.json` v3.0-measured): All field coordinates extracted directly from the court's own placeholder-filled PDF using `pdftotext -bbox` (top-left PDF-point origin). No AI vision used. Checked coordinates are kept from manual calibration. Do NOT re-enable AI/GPT calibration — it guesses pixel coordinates which override the accurate measured values.
+- **PDF generation**: Playwright + Chromium (headless) for SC-100 — HTML/CSS absolute positioning over base64-embedded 300 DPI PNG backgrounds, rendered by Chromium to PDF (eliminates React-PDF coordinate approximation errors); pdf-lib for MC-030 and other forms
+- **SC-100 field map** (`artifacts/api-server/assets/forms/sc100-field-map.json` v3.0-measured): All field coordinates extracted directly from the court's own placeholder-filled PDF using `pdftotext -bbox` (top-left PDF-point origin). No AI vision used. Do NOT re-enable AI/GPT calibration — it guesses pixel coordinates which override accurate measured values.
+- **MC-030 coordinates** (v1.0-measured): All field positions extracted from court placeholder PDF (`attached_assets/mc030_filled_1777040904930.pdf`) via `pdftotext -bbox`. Conversion formula: `v_param_y = 792 - measuredY - 11.5` (LIFT=4.5 applied inside helper). Both `/cases/:id/forms/mc030` and `/cases/:id/forms/mc030-with-exhibits` use `drawMC030Page()` helper. AI declaration auto-generated via `generateMC030Declaration()` using gpt-4o-mini when body not provided in request.
 
 ## Branding
 

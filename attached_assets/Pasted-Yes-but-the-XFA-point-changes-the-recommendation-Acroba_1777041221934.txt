@@ -1,0 +1,41 @@
+Yes, but the XFA point changes the recommendation.
+Acrobat Pro can create AcroForm PDFs, but it generally cannot directly convert an XFA form into an editable AcroForm while preserving the form fields. Adobe says XFA uses different technology from standard PDF forms and that Acrobat Pro is not designed to edit the XFA XML directly. Adobe’s workaround is to save/print the XFA form to a normal PDF, but that flattens it and removes the original form fields/interactivity. 
+So the correct workflow is not “convert XFA to AcroForm.” It is:
+
+
+Open the XFA SC-100 in Acrobat Pro.
+
+
+Print it to Adobe PDF or save/export it so the XFA is flattened into a normal static PDF.
+
+
+Open that flattened PDF.
+
+
+Use Tools → Prepare Form.
+
+
+Let Acrobat detect fields, then manually fix field placement.
+
+
+Rename the fields cleanly for your app, such as plaintiff_name, defendant_name, claim_amount, etc.
+
+
+Set field appearance to no border/no fill.
+
+
+Save this as your app’s master AcroForm template.
+
+
+Adobe’s “Prepare Form” tool is specifically designed to create fillable fields from static PDFs and lets you add, move, delete, and adjust form fields. 
+To get Acrobat Pro, use Adobe’s official Acrobat pricing page. Current listing shows Acrobat Pro as a subscription product, with Adobe listing it at US$19.99/month annual billed monthly for individuals, though pricing can vary by plan, region, and promotions. 
+Official page:
+Adobe Acrobat Pro plans and pricing
+The important check after you create the file is this:
+pdftk your-template.pdf dump_data_fields
+or in Node:
+const { PDFDocument } = require("pdf-lib");const fs = require("fs");const bytes = fs.readFileSync("your-template.pdf");const pdfDoc = await PDFDocument.load(bytes);const form = pdfDoc.getForm();for (const field of form.getFields()) {  console.log(field.getName());}
+If it lists normal field names, your app can fill it systematically. If it still says XFA or gives no usable AcroForm fields, it is not ready.
+For your specific project, the best path is:
+XFA SC-100 → flatten/print to static PDF → Acrobat Pro Prepare Form → manually correct fields → save as AcroForm template → Replit fills by field name → final output gets flattened for filing.
+That is the reliable production workflow.

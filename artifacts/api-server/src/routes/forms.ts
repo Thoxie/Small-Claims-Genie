@@ -938,8 +938,123 @@ router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => 
 });
 
 // ─── MC-030 Declaration ───────────────────────────────────────────────────────
-// All coords: pdf_x = png_x * 0.24, pdf_y = 792 − png_y * 0.24
-// PNG background: 2550×3300 @300 DPI. PDF page: 612×792 pts.
+// Coordinates measured directly from court placeholder PDF using pdftotext -bbox.
+// Formula: v_param_y = 792 - measuredY - 11.5  (converts top-left pts → pdf-lib baseline)
+// LIFT = 4.5 is applied inside v() helper, so actual rendered y = v_param_y + LIFT.
+
+async function generateMC030Declaration(d: Record<string, any>): Promise<{ declarationTitle: string; declarationText: string }> {
+  const plaintiffName  = String(d.plaintiffName  || "Plaintiff");
+  const defendantName  = String(d.defendantName  || "Defendant");
+  const claimAmount    = d.claimAmount  ? `$${Number(d.claimAmount).toFixed(2)}` : "an amount to be determined";
+  const claimDesc      = String(d.claimDescription || "");
+  const incidentDate   = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
+
+  const prompt = [
+    `You are a California small claims court legal assistant. Write content for a MC-030 Declaration form filed by ${plaintiffName} against ${defendantName}.`,
+    ``,
+    `Case facts:`,
+    `- Plaintiff: ${plaintiffName}`,
+    `- Defendant: ${defendantName}`,
+    `- Claim amount: ${claimAmount}`,
+    incidentDate ? `- Date of incident: ${incidentDate}` : "",
+    claimDesc    ? `- Case description: ${claimDesc}` : "",
+    ``,
+    `Return a JSON object with exactly two fields:`,
+    `1. "declarationTitle": A concise all-caps title for this declaration (e.g. "DECLARATION OF ${plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM FOR BREACH OF CONTRACT"). Max 90 characters.`,
+    `2. "declarationText": The body of the declaration in first person. Start with "I, ${plaintiffName}, declare:" and describe the facts, timeline, evidence, and damages in clear plain English suitable for a small claims court judge. Write approximately 20-22 lines worth of text (about 1,800-2,200 characters). Do NOT include "I declare under penalty of perjury" — that is already printed on the form. End with a brief summary of the relief requested.`,
+    ``,
+    `Respond with only the JSON object, no markdown.`,
+  ].filter(Boolean).join("\n");
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.4,
+    max_tokens: 1200,
+    response_format: { type: "json_object" },
+  });
+
+  try {
+    const parsed = JSON.parse(completion.choices[0]?.message?.content || "{}") as { declarationTitle?: string; declarationText?: string };
+    return {
+      declarationTitle: parsed.declarationTitle || `DECLARATION OF ${plaintiffName.toUpperCase()}`,
+      declarationText:  parsed.declarationText  || claimDesc,
+    };
+  } catch {
+    return {
+      declarationTitle: `DECLARATION OF ${plaintiffName.toUpperCase()}`,
+      declarationText:  claimDesc,
+    };
+  }
+}
+
+function drawMC030Page(
+  page: any,
+  font: any,
+  fontBold: any,
+  d: Record<string, any>,
+  b: Record<string, any>,
+  declarationTitle: string,
+  declarationText: string
+) {
+  const LIFT = 4.5;
+  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+
+  const countyDisplay = String(d.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  const courtCityZip  = [d.courthouseCity, "CA", d.courthouseZip].filter(Boolean).join(" ");
+  const cityLine      = [d.plaintiffCity, d.plaintiffState, d.plaintiffZip].filter(Boolean).join(" ");
+
+  // ── Attorney / party block (top-left) ──────────────────────────────────────
+  // Measured: name y=46.4 x=47.5 | street y=59.6 x=47.5 | city y=73.7 x=47.5
+  v(b.declarantName  || d.plaintiffName,           48,  734);
+  v(b.declarantAddress || d.plaintiffAddress || "", 48,  721);
+  v(b.declarantCityLine || cityLine,                48,  707);
+  // Phone/fax row: measured y=104.5 x=127.3
+  v(b.declarantPhone || d.plaintiffPhone,          127, 676);
+  // Email row: measured y=115.9 x=127.3
+  v(b.declarantEmail || d.plaintiffEmail,          127, 665);
+  // Attorney for: measured y=129.1 x=127.3
+  v("Self-Representing",                           127, 651);
+
+  // ── Court block ────────────────────────────────────────────────────────────
+  // County: measured y=144.3 x=238.1
+  v(b.courtCounty || countyDisplay,                238, 636);
+  // Street address: measured y=155.5 x=127.3
+  v(b.courtStreet || d.courthouseAddress || "",    127, 625);
+  // City/zip: measured y=178.6 x=127.3
+  v(b.courtCityZip || courtCityZip,               127, 602);
+  // Branch name: measured y=190.0 x=127.3
+  v(b.branchName   || d.courthouseName || "Small Claims Division", 127, 591);
+
+  // ── Parties ────────────────────────────────────────────────────────────────
+  // Plaintiff/petitioner: measured y=207.9 x=153.9
+  v(d.plaintiffName,  154, 573);
+  // Defendant/respondent: measured y=224.4 x=153.9
+  v(d.defendantName,  154, 556);
+  // Case number (right col, estimated above CASE NUMBER: label at measured y=247.3)
+  v(d.caseNumber,     413, 544);
+
+  // ── Declaration title — centered, bold ─────────────────────────────────────
+  // Measured: y=286.5 → v_y=494
+  if (declarationTitle) {
+    const tw = fontBold.widthOfTextAtSize(declarationTitle, 9);
+    const tx = Math.max(38, (PW - tw) / 2);
+    page.drawText(declarationTitle, { x: tx, y: 494 + LIFT, size: 9, font: fontBold, color: BLACK });
+  }
+
+  // ── Declaration body — word-wrapped ────────────────────────────────────────
+  // Measured: body starts y=313.5 → v_y=467; space to y=612.1 ≈ 23 lines
+  if (declarationText) {
+    wrapVal(page, font, declarationText, 38, 467 + LIFT, 536, 9, 13, 23);
+  }
+
+  // ── Signature area ─────────────────────────────────────────────────────────
+  // Date: measured y=624.1 → v_y=157
+  v(b.signDate || today(), 77, 157);
+  // Printed name: measured y=662.1 → v_y=119
+  v(b.declarantName || d.plaintiffName, 48, 119);
+}
+
 router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
@@ -950,56 +1065,22 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
   const d = c as unknown as Record<string, any>;
   const b = req.body as Record<string, any>;
   try {
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    // Generate AI declaration if caller didn't supply one
+    let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+    if (!declarationTitle || !declarationText) {
+      const ai = await generateMC030Declaration(d);
+      declarationTitle = declarationTitle || ai.declarationTitle;
+      declarationText  = declarationText  || ai.declarationText;
+    }
+
+    const pdfDoc   = await PDFDocument.create();
+    const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const bg = await pdfDoc.embedPng(loadAsset("mc030_hq-1.png"));
-    const page = pdfDoc.addPage([PW, PH]);
+    const bg       = await pdfDoc.embedPng(loadAsset("mc030_hq-1.png"));
+    const page     = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const LIFT = 4.5;
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
 
-    // Compute county display name from countyId (e.g. "los-angeles" → "Los Angeles")
-    const countyDisplay = String(d.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-    const courtCityZip = [d.courthouseCity, "CA", d.courthouseZip].filter(Boolean).join(" ");
-
-    // Attorney / party block (top left)
-    v(b.declarantName || d.plaintiffName, 175, 733);
-    v(b.declarantAddress || d.plaintiffAddress || "", 175, 720);
-    const cityLine = [d.plaintiffCity, d.plaintiffState, d.plaintiffZip].filter(Boolean).join(" ");
-    v(b.declarantCityLine || cityLine, 175, 707);
-    v(b.declarantPhone || d.plaintiffPhone, 200, 630);
-    v(b.declarantEmail || d.plaintiffEmail, 200, 613);
-    // Attorney FOR (party represented)
-    v(b.declarantName || d.plaintiffName, 200, 596);
-    // Court (Superior Court of California, County of __)
-    v(countyDisplay, 200, 560);
-    v(b.courtStreet || d.courthouseAddress || "", 200, 544);
-    // Mailing address — same as street if not separately provided
-    v(b.courtMailingAddress || "", 200, 529);
-    v(b.courtCityZip || courtCityZip, 200, 514);
-    v(b.branchName || d.courthouseName || "", 200, 499);
-    // Parties
-    v(d.plaintiffName, 215, 464);
-    v(d.defendantName, 215, 441);
-    // Case number (right column)
-    v(d.caseNumber, 430, 471);
-
-    // Declaration title centered in box (optional)
-    if (b.declarationTitle) {
-      const titleWidth = fontBold.widthOfTextAtSize(b.declarationTitle, 10);
-      const titleX = (PW - titleWidth) / 2;
-      (page as any).drawText(b.declarationTitle, { x: titleX, y: 416 + LIFT, size: 10, font: fontBold, color: BLACK });
-    }
-
-    // Declaration body text — word-wrapped into the large blank area
-    if (b.declarationText) {
-      wrapVal(page, font, b.declarationText, 54, 395 + LIFT, 510, 9, 13, 22);
-    }
-
-    // Date + signature area
-    v(b.signDate || today(), 65, 121);
-    v(b.declarantName || d.plaintiffName, 45, 78);
+    drawMC030Page(page, font, fontBold, d, b, declarationTitle, declarationText);
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
@@ -1033,39 +1114,19 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     const font = await masterDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await masterDoc.embedFont(StandardFonts.HelveticaBold);
 
+    // ── Generate AI declaration if not provided ───────────────────────────────
+    let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+    if (!declarationTitle || !declarationText) {
+      const ai = await generateMC030Declaration(d);
+      declarationTitle = declarationTitle || ai.declarationTitle;
+      declarationText  = declarationText  || ai.declarationText;
+    }
+
     // ── MC-030 page ──────────────────────────────────────────────────────────
     const bg = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
     const mc030Page = masterDoc.addPage([PW, PH]);
     mc030Page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const LIFT = 4.5;
-    const v = (t: any, x: number, y: number, s = 9) => val(mc030Page, font, t, x, y + LIFT, s);
-
-    const countyDisplay = String(d.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-    const courtCityZip = [d.courthouseCity, "CA", d.courthouseZip].filter(Boolean).join(" ");
-
-    v(b.declarantName || d.plaintiffName, 175, 733);
-    v(b.declarantAddress || d.plaintiffAddress || "", 175, 720);
-    const cityLine = [d.plaintiffCity, d.plaintiffState, d.plaintiffZip].filter(Boolean).join(" ");
-    v(b.declarantCityLine || cityLine, 175, 707);
-    v(b.declarantPhone || d.plaintiffPhone, 200, 630);
-    v(b.declarantEmail || d.plaintiffEmail, 200, 613);
-    v(b.declarantName || d.plaintiffName, 200, 596);
-    v(countyDisplay, 200, 560);
-    v(b.courtStreet || d.courthouseAddress || "", 200, 544);
-    v(b.courtMailingAddress || "", 200, 529);
-    v(b.courtCityZip || courtCityZip, 200, 514);
-    v(b.branchName || d.courthouseName || "", 200, 499);
-    v(d.plaintiffName, 215, 464);
-    v(d.defendantName, 215, 441);
-    v(d.caseNumber, 430, 471);
-
-    if (b.declarationTitle) {
-      const tw = fontBold.widthOfTextAtSize(b.declarationTitle, 10);
-      mc030Page.drawText(b.declarationTitle, { x: (PW - tw) / 2, y: 416 + LIFT, size: 10, font: fontBold, color: BLACK });
-    }
-    if (b.declarationText) wrapVal(mc030Page, font, b.declarationText, 54, 395 + LIFT, 510, 9, 13, 22);
-    v(b.signDate || today(), 65, 121);
-    v(b.declarantName || d.plaintiffName, 45, 78);
+    drawMC030Page(mc030Page, font, fontBold, d, b, declarationTitle, declarationText);
 
     // ── Exhibit pages ────────────────────────────────────────────────────────
     if (exhibitIds.length > 0) {
