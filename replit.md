@@ -25,6 +25,7 @@ California small claims court SaaS app. Helps lower-income individuals and small
 - **Build**: esbuild (API), Vite (frontend)
 - **AI**: OpenAI via Replit proxy (`@workspace/integrations-openai-ai-server`, `@workspace/integrations-openai-ai-react`)
 - **PDF generation**: Playwright + Chromium (headless) for SC-100 — HTML/CSS absolute positioning over base64-embedded 300 DPI PNG backgrounds, rendered by Chromium to PDF (eliminates React-PDF coordinate approximation errors); pdf-lib for MC-030 and other older forms
+- **SC-100 field map** (`artifacts/api-server/assets/forms/sc100-field-map.json` v3.0-measured): All field coordinates extracted directly from the court's own placeholder-filled PDF using `pdftotext -bbox` (top-left PDF-point origin). No AI vision used. Checked coordinates are kept from manual calibration. Do NOT re-enable AI/GPT calibration — it guesses pixel coordinates which override the accurate measured values.
 
 ## Branding
 
