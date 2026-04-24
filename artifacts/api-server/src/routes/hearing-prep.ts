@@ -79,7 +79,7 @@ function buildHearingPrepContext(caseRecord: typeof casesTable.$inferSelect, doc
 
 router.post("/cases/:id/hearing-prep", async (req, res): Promise<void> => {
   const userId = getUserId(req);
-  const rateCheck = checkAiRateLimit(userId);
+  const rateCheck = await checkAiRateLimit(userId);
   if (!rateCheck.allowed) {
     res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
     return;

@@ -156,7 +156,7 @@ router.get("/cases/:id/demand-letter", async (req, res): Promise<void> => {
 // POST — generate demand letter via AI (SSE stream), save on completion
 router.post("/cases/:id/demand-letter", async (req, res): Promise<void> => {
   const userId = getUserId(req);
-  const rateCheck = checkAiRateLimit(userId);
+  const rateCheck = await checkAiRateLimit(userId);
   if (!rateCheck.allowed) {
     res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
     return;
@@ -377,7 +377,7 @@ IMPORTANT: Use only the facts provided. Never invent facts. The dollar amount mu
 
 router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   const userId = getUserId(req);
-  const rateCheck = checkAiRateLimit(userId);
+  const rateCheck = await checkAiRateLimit(userId);
   if (!rateCheck.allowed) {
     res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes.` });
     return;
@@ -505,7 +505,7 @@ router.get("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
 // POST — generate settlement letter via SSE stream
 router.post("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
   const userId = getUserId(req);
-  const rateCheck = checkAiRateLimit(userId);
+  const rateCheck = await checkAiRateLimit(userId);
   if (!rateCheck.allowed) {
     res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes.` });
     return;
@@ -701,7 +701,7 @@ router.get("/cases/:id/settlement-agreement", async (req, res): Promise<void> =>
 // POST — generate settlement agreement via SSE
 router.post("/cases/:id/settlement-agreement", async (req, res): Promise<void> => {
   const userId = getUserId(req);
-  const rateCheck = checkAiRateLimit(userId);
+  const rateCheck = await checkAiRateLimit(userId);
   if (!rateCheck.allowed) {
     res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes.` });
     return;
