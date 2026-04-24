@@ -960,14 +960,14 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
     claimDesc    ? `- Case description: ${claimDesc}` : "",
     ``,
     `Return a JSON object with exactly two fields:`,
-    `1. "declarationTitle": All-caps title, max 85 characters. Must be specific to the case. Example: "DECLARATION OF ${plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM FOR BREACH OF CONTRACT"`,
-    `2. "declarationText": Exactly 10-12 numbered paragraphs. Each paragraph is on its own line separated by a single \\n character. Each paragraph starts with its number and a period (e.g. "1. "). Each paragraph is 1-3 concise sentences. Total length: 900-1,200 characters.`,
-    `   STRICT RULES — violation will break the form:`,
-    `   - Plain text only. No asterisks, no markdown, no bold, no brackets.`,
-    `   - Separate paragraphs with \\n only (single newline, not double).`,
-    `   - Do NOT include "I declare under penalty of perjury" — it is already printed on the form.`,
-    `   - Do NOT include any signature, printed name, or closing line.`,
-    `   - Last paragraph must request the specific dollar relief.`,
+    `1. "declarationTitle": All-caps title, max 80 characters. Specific to the case facts.`,
+    `2. "declarationText": Exactly 8 numbered paragraphs separated by \\n. Each paragraph starts with its number and a period ("1. "). Each paragraph is ONE concise sentence, max 100 characters. Total length: 550-700 characters.`,
+    `   STRICT RULES — violation will break the PDF form layout:`,
+    `   - Plain text only. Absolutely NO asterisks, NO markdown, NO bold, NO brackets.`,
+    `   - Separate paragraphs with \\n only (single newline, never double).`,
+    `   - Do NOT include "I declare under penalty of perjury" — already printed on the form.`,
+    `   - Do NOT include any signature, date, or closing line.`,
+    `   - Last paragraph must state the specific dollar amount requested.`,
     ``,
     `Respond with only the JSON object.`,
   ].filter(Boolean).join("\n");
@@ -1045,26 +1045,27 @@ function drawMC030Page(
   // Case number (right col, above CASE NUMBER: label at measured y=247.3)
   v(d.caseNumber,     413, 544);
 
-  // ── Declaration title — centered, bold ─────────────────────────────────────
+  // ── Declaration title — centered, bold, 11pt ────────────────────────────────
   // Measured: y=286.5 → v_y=494  (no DOWN — declaration area is correctly placed)
   if (declarationTitle) {
-    const tw = fontBold.widthOfTextAtSize(declarationTitle, 9);
-    const tx = Math.max(38, (PW - tw) / 2);
-    page.drawText(declarationTitle, { x: tx, y: 494 + LIFT, size: 9, font: fontBold, color: BLACK });
+    const titleSize = 11;
+    const tw = fontBold.widthOfTextAtSize(declarationTitle, titleSize);
+    const tx = Math.max(56, (PW - tw) / 2);
+    page.drawText(declarationTitle, { x: tx, y: 494 + LIFT, size: titleSize, font: fontBold, color: BLACK });
   }
 
   // ── Declaration body — numbered paragraphs ──────────────────────────────────
-  // Each paragraph on its own line (\n-separated). 9pt font, 11pt leading,
-  // 4pt gap between paragraphs. Measured body start y=313.5 → v_y=467.
+  // 11pt Helvetica, 13pt leading, ¼-inch wider margins on each side.
+  // Body start v_y=467, must stop before the pre-printed "I declare" text (~v_y=185).
   if (declarationText) {
     const paragraphs = declarationText.split(/\n/).map(p => p.trim()).filter(Boolean);
     let bodyY = 467 + LIFT;
-    const bodyX = 38;
-    const bodyMaxW = 536;
-    const bodySize = 9;
-    const bodyLineH = 11;
-    const paraGap = 4;
-    const maxTotalLines = 28;
+    const bodyX    = 56;          // left margin raised ¼ inch (was 38)
+    const bodyMaxW = 500;         // 612-56-56 (¼ inch wider on each side)
+    const bodySize = 11;
+    const bodyLineH = 13;         // proper leading for 11pt
+    const paraGap   = 4;
+    const maxTotalLines = 22;     // 22 × 13pt = 286pt, fits before "I declare" line
     let linesUsed = 0;
 
     for (let pi = 0; pi < paragraphs.length && linesUsed < maxTotalLines; pi++) {
@@ -1100,6 +1101,11 @@ function drawMC030Page(
   vs(b.signDate || today(), 77, 157);
   // Printed name: measured y=662.1 → v_y=119
   vs(b.declarantName || d.plaintiffName, 48, 119);
+
+  // ── Plaintiff checkbox ──────────────────────────────────────────────────────
+  // Bottom row: "□ Attorney for  □ Plaintiff  □ Petitioner  □ Defendant"
+  // Plaintiff checkbox center at pdf-lib x≈408, v_y≈80 (LIFT applied directly)
+  xmark(page, 408, 80 + LIFT, 5);
 }
 
 router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {

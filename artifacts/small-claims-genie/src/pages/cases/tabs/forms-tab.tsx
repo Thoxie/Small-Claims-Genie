@@ -329,7 +329,7 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
 }
 
 // ─── Signature Pad Modal ──────────────────────────────────────────────────────
-export function SignaturePadModal({ open, onClose, onSign, onSkipSign }: { open: boolean; onClose: () => void; onSign: (dataUrl: string) => void; onSkipSign: () => void }) {
+export function SignaturePadModal({ open, onClose, onSign, onSkipSign, formTitle = "SC-100", disclaimer }: { open: boolean; onClose: () => void; onSign: (dataUrl: string) => void; onSkipSign: () => void; formTitle?: string; disclaimer?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
@@ -369,7 +369,7 @@ export function SignaturePadModal({ open, onClose, onSign, onSkipSign }: { open:
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><PenLine className="h-5 w-5 text-primary" />Sign Your SC-100</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><PenLine className="h-5 w-5 text-primary" />Sign Your {formTitle}</DialogTitle>
           <p className="text-sm text-muted-foreground mt-1">Draw your signature below using your mouse or finger.</p>
         </DialogHeader>
         <div className="rounded-xl border-2 border-dashed border-input bg-[#fdfdfc] relative overflow-hidden" style={{ touchAction: "none" }}>
@@ -379,7 +379,7 @@ export function SignaturePadModal({ open, onClose, onSign, onSkipSign }: { open:
           <div className="absolute bottom-6 left-6 right-6 border-b border-gray-300 pointer-events-none" />
           {!hasDrawn && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><p className="text-muted-foreground/40 text-sm select-none">Sign here ↑</p></div>}
         </div>
-        <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-4 py-3 leading-relaxed">By signing, you declare under penalty of perjury under the laws of the State of California that the information on your SC-100 is true and correct.</p>
+        <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-4 py-3 leading-relaxed">{disclaimer ?? `By signing, you declare under penalty of perjury under the laws of the State of California that the information on your ${formTitle} is true and correct.`}</p>
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
             <Button onClick={handleSign} disabled={!hasDrawn} className="flex-1 gap-2 bg-[#0d6b5e] hover:bg-[#0a5549] text-white">
@@ -456,6 +456,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const [modalInitialValues, setModalInitialValues] = useState<Record<string, string>>({});
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [sigModalOpen, setSigModalOpen] = useState(false);
+  const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
 
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
   const [viewingPdf, setViewingPdf] = useState(false);
@@ -714,6 +715,32 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     finally { setBuildingPacket(false); }
   }
 
+  async function downloadSignedMC030(signatureDataUrl: string) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    if (!mc030Text.trim()) { toast({ title: "Declaration required", description: "Please write or generate your declaration text first.", variant: "destructive" }); return; }
+    setBuildingPacket(true);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" }); return; }
+      const { token } = await tokenRes.json();
+      const res = await fetch(`/api/cases/${caseId}/forms/mc030/signed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl }),
+      });
+      if (!res.ok) { const err = await res.json().catch(() => ({})); toast({ title: "Build failed", description: (err as any).error || "Failed to build signed MC-030.", variant: "destructive" }); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `MC030-Signed-Case-${caseId}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: "Signed MC-030 downloaded", description: "Your signed declaration is ready to file." });
+    } catch { toast({ title: "Download failed", description: "Please try again.", variant: "destructive" }); }
+    finally { setBuildingPacket(false); }
+  }
+
   function toggleExhibit(docId: number) {
     setSelectedExhibits(prev => prev.includes(docId) ? prev.filter(id => id !== docId) : [...prev, docId]);
   }
@@ -958,6 +985,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                 onClick={downloadMC030Packet} disabled={buildingPacket || !mc030Text.trim()}>
                 {buildingPacket ? <Loader2 className="h-3 w-3 animate-spin" /> : <Package className="h-3 w-3" />}
                 {buildingPacket ? "Building packet…" : selectedExhibits.length > 0 ? `Build Filing Packet (MC-030 + ${selectedExhibits.length} Exhibit${selectedExhibits.length > 1 ? "s" : ""})` : "Download MC-030"}
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 px-3 border-[#0d6b5e]/40 text-[#0d6b5e] hover:bg-[#0d6b5e]/10"
+                onClick={() => { if (!mc030Text.trim()) { toast({ title: "Declaration required", description: "Please write or generate your declaration text first.", variant: "destructive" }); return; } setMc030SigModalOpen(true); }}
+                disabled={buildingPacket}>
+                <PenLine className="h-3 w-3" />Sign &amp; Download
               </Button>
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId("mc030")}>
                 <Info className="h-3 w-3" />How to Fill This
@@ -1347,6 +1379,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
         onClose={() => setSigModalOpen(false)}
         onSign={(dataUrl) => { setSigModalOpen(false); downloadSignedSC100(dataUrl); }}
         onSkipSign={() => { setSigModalOpen(false); downloadSignedSC100(); }}
+      />
+
+      <SignaturePadModal
+        open={mc030SigModalOpen}
+        onClose={() => setMc030SigModalOpen(false)}
+        formTitle="MC-030"
+        disclaimer="By signing, you declare under penalty of perjury under the laws of the State of California that the foregoing is true and correct."
+        onSign={(dataUrl) => { setMc030SigModalOpen(false); downloadSignedMC030(dataUrl); }}
+        onSkipSign={() => { setMc030SigModalOpen(false); downloadMC030Packet(); }}
       />
 
       {/* Guide Dialog */}
