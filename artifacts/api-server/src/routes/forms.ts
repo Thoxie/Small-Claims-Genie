@@ -966,8 +966,8 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
     `   - Plain text only. Absolutely NO asterisks, NO markdown, NO bold, NO brackets.`,
     `   - Separate paragraphs with \\n only (single newline, never double).`,
     `   - Do NOT include "I declare under penalty of perjury" — already printed on the form.`,
-    `   - Do NOT include any signature, date, or closing line.`,
-    `   - Last paragraph must state the specific dollar amount requested.`,
+    `   - The form already has a printed signature block, date line, and printed name line at the bottom — NEVER add any of those to the text. Do not end with a name, a date, "Respectfully", "Sincerely", "Signed", or any closing statement whatsoever.`,
+    `   - Paragraph 8 must end with the specific dollar amount requested and nothing else after it.`,
     ``,
     `Respond with only the JSON object.`,
   ].filter(Boolean).join("\n");
@@ -980,11 +980,22 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
     response_format: { type: "json_object" },
   });
 
+  // Strip any trailing non-numbered lines the AI may add (closings, names, dates, signatures).
+  // All valid declaration paragraphs start with "N. " so any trailing line that doesn't
+  // follow that pattern is extra closure content and should be removed.
+  function stripClosingLines(text: string): string {
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    while (lines.length > 0 && !/^\d+\./.test(lines[lines.length - 1])) {
+      lines.pop();
+    }
+    return lines.join("\n");
+  }
+
   try {
     const parsed = JSON.parse(completion.choices[0]?.message?.content || "{}") as { declarationTitle?: string; declarationText?: string };
     return {
       declarationTitle: parsed.declarationTitle || `DECLARATION OF ${plaintiffName.toUpperCase()}`,
-      declarationText:  parsed.declarationText  || claimDesc,
+      declarationText:  stripClosingLines(parsed.declarationText  || claimDesc),
     };
   } catch {
     return {
