@@ -950,7 +950,7 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
   const incidentDate   = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
 
   const prompt = [
-    `You are a California small claims court legal assistant. Write content for a MC-030 Declaration form filed by ${plaintiffName} against ${defendantName}.`,
+    `You are drafting a California small claims court MC-030 Declaration for ${plaintiffName} against ${defendantName}.`,
     ``,
     `Case facts:`,
     `- Plaintiff: ${plaintiffName}`,
@@ -960,10 +960,16 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
     claimDesc    ? `- Case description: ${claimDesc}` : "",
     ``,
     `Return a JSON object with exactly two fields:`,
-    `1. "declarationTitle": A concise all-caps title for this declaration (e.g. "DECLARATION OF ${plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM FOR BREACH OF CONTRACT"). Max 90 characters.`,
-    `2. "declarationText": The body of the declaration in first person. Start with "I, ${plaintiffName}, declare:" and describe the facts, timeline, evidence, and damages in clear plain English suitable for a small claims court judge. Write approximately 20-22 lines worth of text (about 1,800-2,200 characters). Do NOT include "I declare under penalty of perjury" — that is already printed on the form. End with a brief summary of the relief requested.`,
+    `1. "declarationTitle": All-caps title, max 85 characters. Must be specific to the case. Example: "DECLARATION OF ${plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM FOR BREACH OF CONTRACT"`,
+    `2. "declarationText": Exactly 10-12 numbered paragraphs. Each paragraph is on its own line separated by a single \\n character. Each paragraph starts with its number and a period (e.g. "1. "). Each paragraph is 1-3 concise sentences. Total length: 900-1,200 characters.`,
+    `   STRICT RULES — violation will break the form:`,
+    `   - Plain text only. No asterisks, no markdown, no bold, no brackets.`,
+    `   - Separate paragraphs with \\n only (single newline, not double).`,
+    `   - Do NOT include "I declare under penalty of perjury" — it is already printed on the form.`,
+    `   - Do NOT include any signature, printed name, or closing line.`,
+    `   - Last paragraph must request the specific dollar relief.`,
     ``,
-    `Respond with only the JSON object, no markdown.`,
+    `Respond with only the JSON object.`,
   ].filter(Boolean).join("\n");
 
   const completion = await openai.chat.completions.create({
@@ -998,7 +1004,12 @@ function drawMC030Page(
   declarationText: string
 ) {
   const LIFT = 4.5;
-  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+  // DOWN shifts the party/court header section down by ~half a line so text
+  // lands on the printed form lines. Does NOT apply to the declaration or
+  // signature area (those are positioned correctly already).
+  const DOWN = 6;
+  const v  = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT - DOWN, s);
+  const vs = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s); // signature area — no DOWN
 
   const countyDisplay = String(d.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   const courtCityZip  = [d.courthouseCity, "CA", d.courthouseZip].filter(Boolean).join(" ");
@@ -1009,9 +1020,9 @@ function drawMC030Page(
   v(b.declarantName  || d.plaintiffName,           48,  734);
   v(b.declarantAddress || d.plaintiffAddress || "", 48,  721);
   v(b.declarantCityLine || cityLine,                48,  707);
-  // Phone/fax row: measured y=104.5 x=127.3
+  // Phone: measured y=104.5 x=127.3
   v(b.declarantPhone || d.plaintiffPhone,          127, 676);
-  // Email row: measured y=115.9 x=127.3
+  // Email: measured y=115.9 x=127.3
   v(b.declarantEmail || d.plaintiffEmail,          127, 665);
   // Attorney for: measured y=129.1 x=127.3
   v("Self-Representing",                           127, 651);
@@ -1031,28 +1042,64 @@ function drawMC030Page(
   v(d.plaintiffName,  154, 573);
   // Defendant/respondent: measured y=224.4 x=153.9
   v(d.defendantName,  154, 556);
-  // Case number (right col, estimated above CASE NUMBER: label at measured y=247.3)
+  // Case number (right col, above CASE NUMBER: label at measured y=247.3)
   v(d.caseNumber,     413, 544);
 
   // ── Declaration title — centered, bold ─────────────────────────────────────
-  // Measured: y=286.5 → v_y=494
+  // Measured: y=286.5 → v_y=494  (no DOWN — declaration area is correctly placed)
   if (declarationTitle) {
     const tw = fontBold.widthOfTextAtSize(declarationTitle, 9);
     const tx = Math.max(38, (PW - tw) / 2);
     page.drawText(declarationTitle, { x: tx, y: 494 + LIFT, size: 9, font: fontBold, color: BLACK });
   }
 
-  // ── Declaration body — word-wrapped ────────────────────────────────────────
-  // Measured: body starts y=313.5 → v_y=467; space to y=612.1 ≈ 23 lines
+  // ── Declaration body — numbered paragraphs ──────────────────────────────────
+  // Each paragraph on its own line (\n-separated). 9pt font, 11pt leading,
+  // 4pt gap between paragraphs. Measured body start y=313.5 → v_y=467.
   if (declarationText) {
-    wrapVal(page, font, declarationText, 38, 467 + LIFT, 536, 9, 13, 23);
+    const paragraphs = declarationText.split(/\n/).map(p => p.trim()).filter(Boolean);
+    let bodyY = 467 + LIFT;
+    const bodyX = 38;
+    const bodyMaxW = 536;
+    const bodySize = 9;
+    const bodyLineH = 11;
+    const paraGap = 4;
+    const maxTotalLines = 28;
+    let linesUsed = 0;
+
+    for (let pi = 0; pi < paragraphs.length && linesUsed < maxTotalLines; pi++) {
+      const words = paragraphs[pi].split(/\s+/);
+      let line = "";
+
+      for (const word of words) {
+        const cand = line ? line + " " + word : word;
+        if (font.widthOfTextAtSize(cand, bodySize) > bodyMaxW && line) {
+          page.drawText(line, { x: bodyX, y: bodyY, size: bodySize, font, color: BLACK });
+          bodyY -= bodyLineH;
+          linesUsed++;
+          line = word;
+          if (linesUsed >= maxTotalLines) break;
+        } else {
+          line = cand;
+        }
+      }
+      if (line && linesUsed < maxTotalLines) {
+        page.drawText(line, { x: bodyX, y: bodyY, size: bodySize, font, color: BLACK });
+        bodyY -= bodyLineH;
+        linesUsed++;
+      }
+      // Gap between paragraphs (not after the last one)
+      if (pi < paragraphs.length - 1 && linesUsed < maxTotalLines) {
+        bodyY -= paraGap;
+      }
+    }
   }
 
   // ── Signature area ─────────────────────────────────────────────────────────
-  // Date: measured y=624.1 → v_y=157
-  v(b.signDate || today(), 77, 157);
+  // Date: measured y=624.1 → v_y=157  (uses vs — no DOWN)
+  vs(b.signDate || today(), 77, 157);
   // Printed name: measured y=662.1 → v_y=119
-  v(b.declarantName || d.plaintiffName, 48, 119);
+  vs(b.declarantName || d.plaintiffName, 48, 119);
 }
 
 router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
@@ -1090,6 +1137,64 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
   } catch (err: any) {
     console.error("MC-030 PDF error:", err?.message, err?.stack);
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate MC-030 PDF." });
+  }
+});
+
+// ─── MC-030 signed (draw-to-sign) ─────────────────────────────────────────────
+// Accepts the same body as mc030 plus signatureDataUrl (PNG data URL from
+// the signature canvas). Embeds the signature image at the declarant line.
+router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  const d = c as unknown as Record<string, any>;
+  const b = req.body as Record<string, any>;
+  const { signatureDataUrl } = b as { signatureDataUrl?: string };
+  let sigBytes: Buffer | undefined;
+  if (signatureDataUrl) {
+    const base64 = signatureDataUrl.replace(/^data:image\/\w+;base64,/, "");
+    sigBytes = Buffer.from(base64, "base64");
+  }
+  try {
+    let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+    if (!declarationTitle || !declarationText) {
+      const ai = await generateMC030Declaration(d);
+      declarationTitle = declarationTitle || ai.declarationTitle;
+      declarationText  = declarationText  || ai.declarationText;
+    }
+
+    const pdfDoc   = await PDFDocument.create();
+    const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const bg       = await pdfDoc.embedPng(loadAsset("mc030_hq-1.png"));
+    const page     = pdfDoc.addPage([PW, PH]);
+    page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
+
+    drawMC030Page(page, font, fontBold, d, b, declarationTitle, declarationText);
+
+    // Embed signature image at the SIGNATURE OF DECLARANT position
+    // Measured: label "(SIGNATURE OF DECLARANT)" at y=682 x=392.9
+    // Signature image sits just above this label: pdf-lib y≈112, x=370, max 190×42
+    if (sigBytes) {
+      const sigImg = await pdfDoc.embedPng(sigBytes);
+      const { width: sw, height: sh } = sigImg.scale(1);
+      const maxW = 190, maxH = 42;
+      const scale = Math.min(maxW / sw, maxH / sh, 1);
+      page.drawImage(sigImg, { x: 370, y: 112, width: sw * scale, height: sh * scale });
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Content-Disposition", `attachment; filename="MC030-Signed-Case-${id}.pdf"`);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err: any) {
+    console.error("MC-030 signed PDF error:", err?.message, err?.stack);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed MC-030 PDF." });
   }
 });
 
