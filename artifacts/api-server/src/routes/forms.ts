@@ -1593,6 +1593,11 @@ router.post("/cases/:id/forms/sc103", async (req, res): Promise<void> => {
   // b.businessName, b.businessAddress, b.mailingAddress
   // b.businessType: "individual"|"association"|"partnership"|"corporation"|"llc"|"other"
   // b.businessTypeOther, b.fbnCounty, b.fbnNumber, b.fbnExpiry, b.signerName, b.signerTitle
+  //
+  // Coordinates calibrated from placeholder PDF (font 10pt, 612×792 pt page).
+  // v(text, x, v_param)  → draws at pdf-lib y = v_param + LIFT (4.5)
+  // xm(cx, cy)           → X-mark at pdf-lib y = cy + LIFT
+  // All v_param = pdftotext_pdfY − 4.5  where pdfY = 792 − pdftotext_yMax
   try {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -1603,40 +1608,53 @@ router.post("/cases/:id/forms/sc103", async (req, res): Promise<void> => {
     const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
     const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
-    const sc103CaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-    v(sc103CaseName, 72, 756);
-    v(d.caseNumber, 425, 756);
-    if (d.courthouseName) v(d.courthouseName, 72, 742);
-    if (d.courthouseAddress) v(d.courthouseAddress, 72, 730);
+    // ── Case number (top-right box) ──────────────────────────────────────────
+    // "Case Number:" label at pdfY≈745; value field is the box below it at pdfY≈734
+    if (d.caseNumber) v(d.caseNumber, 404, 730);
 
-    // Attached to
-    if (b.attachedTo === "sc100") xm(156, 736);
-    else if (b.attachedTo === "sc120") xm(234, 736);
+    // ── Attached-to checkboxes ("This form is attached to: □ Form SC-100  □ Form SC-120")
+    // Both checkboxes on pdfY≈701 line; box centers just left of each label
+    if (b.attachedTo === "sc100") xm(193, 696);
+    else if (b.attachedTo === "sc120") xm(287, 696);
 
-    // Item 1 — Business info
-    v(b.businessName, 150, 666);
-    v(b.businessAddress, 192, 649);
-    v(b.mailingAddress, 150, 634);
+    // ── Item 1 — Business information ─────────────────────────────────────────
+    // "Business name of the person suing:" label at pdfY≈629; data right of label
+    if (b.businessName)    v(b.businessName,    225, 626);
+    // "Business address (not a P.O. Box):" label at pdfY≈612; data right of label
+    if (b.businessAddress) v(b.businessAddress, 314, 609);
+    // "Mailing address (if different):" label at pdfY≈595; data right of label
+    if (b.mailingAddress)  v(b.mailingAddress,  207, 592);
 
-    // Item 2 — Business type checkboxes
+    // ── Item 2 — Business-type checkboxes (check ONLY one) ────────────────────
+    // Left column: individual (pdfY≈548), association (≈534), partnership (≈521)
+    // Right column: corporation (≈548), llc (≈534), other (≈521)
     const typeMap: Record<string, [number, number]> = {
-      individual:   [56, 590], association: [56, 575], partnership: [56, 560],
-      corporation:  [255, 590], llc:        [255, 575], other:       [255, 560],
+      individual:  [68, 543],  corporation: [237, 543],
+      association: [68, 529],  llc:         [237, 529],
+      partnership: [68, 516],  other:       [237, 516],
     };
     const sel = typeMap[b.businessType ?? ""];
     if (sel) xm(sel[0], sel[1]);
-    if (b.businessType === "other" && b.businessTypeOther) v(b.businessTypeOther, 312, 560);
+    // "other (specify):" text field — pdfY≈521, after the (specify): label
+    if (b.businessType === "other" && b.businessTypeOther) v(b.businessTypeOther, 335, 516);
 
-    // Item 3 — County
-    v(b.fbnCounty, 72, 476);
-    // Item 4 — FBN number
-    v(b.fbnNumber, 300, 440);
-    // Item 5 — Expiry
-    v(b.fbnExpiry, 280, 404);
+    // ── Item 3 — County ──────────────────────────────────────────────────────
+    // Long label spans full width at pdfY≈453; data field on blank line below at pdfY≈443
+    if (b.fbnCounty) v(b.fbnCounty, 66, 439);
 
-    // Date + signature
-    v(b.signDate || today(), 72, 255);
-    v(b.signerName || d.plaintiffName, 72, 225);
+    // ── Item 4 — FBN Statement number ────────────────────────────────────────
+    // "Your Fictitious Business Name Statement number:" label at pdfY≈416; data right of label
+    if (b.fbnNumber) v(b.fbnNumber, 365, 412);
+
+    // ── Item 5 — FBN Statement expiration date ────────────────────────────────
+    // "Date your FBN Statement expires:" label at pdfY≈386; data right of label
+    if (b.fbnExpiry) v(b.fbnExpiry, 389, 383);
+
+    // ── Item 6 — Declaration / signature area ─────────────────────────────────
+    // "Date:" label at pdfY≈281; value immediately right of label
+    v(b.signDate || today(), 91, 277);
+    // Printed name line at pdfY≈251 (above "Type or print your name and title" instruction)
+    v(b.signerName || d.plaintiffName, 67, 247);
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
