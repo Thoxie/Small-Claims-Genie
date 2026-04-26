@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Mail, Handshake, PenLine, Loader2, Download, AlertCircle, CheckSquare2, Square } from "lucide-react";
+import { Mail, Handshake, PenLine, Loader2, Download, AlertCircle, CheckSquare2, Square, FileText, Scale, MessageCircle, CheckCircle2 } from "lucide-react";
 
 type DemandLetterTone = "formal" | "firm" | "friendly";
 
-const TONE_META: { value: DemandLetterTone; label: string; description: string }[] = [
-  { value: "formal",   label: "Formal",   description: "Neutral, professional tone — facts stated plainly" },
-  { value: "firm",     label: "Firm",     description: "Assertive & deadline-focused — legal basis emphasized" },
-  { value: "friendly", label: "Friendly", description: "Cooperative tone — prefers settlement over court" },
+const TONE_META: { value: DemandLetterTone; label: string; description: string; icon: ReactNode }[] = [
+  { value: "formal",   label: "Formal",   description: "Neutral, professional — facts stated plainly",         icon: <FileText className="h-5 w-5" /> },
+  { value: "firm",     label: "Firm",     description: "Assertive & deadline-focused — legal basis emphasized", icon: <Scale className="h-5 w-5" /> },
+  { value: "friendly", label: "Friendly", description: "Cooperative — prefers settlement over court",           icon: <MessageCircle className="h-5 w-5" /> },
 ];
 
 const SETTLE_CHECKLIST = [
@@ -306,16 +306,42 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
             </div>
           )}
           <div>
-            <p className="text-sm font-semibold mb-3">Select Tone</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {TONE_META.map(({ value, label, description }) => (
-                <button key={value} type="button" onClick={() => handleToneChange(value)}
-                  className={`rounded-lg border-2 p-4 text-left transition-all relative ${tone === value ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"}`}>
-                  <span className="block font-semibold text-sm">{label}</span>
-                  <span className="block text-xs text-muted-foreground mt-1">{description}</span>
-                  {letters[value] && <span className="absolute top-2 right-2 text-[10px] text-primary font-medium bg-primary/10 rounded px-1.5 py-0.5">Generated</span>}
-                </button>
-              ))}
+            <p className="text-sm font-semibold mb-3">Choose a tone — you can generate all three versions</p>
+            <div className="flex items-stretch gap-0 p-1.5 bg-muted rounded-xl">
+              {TONE_META.map(({ value, label, description, icon }, idx) => {
+                const active = tone === value;
+                const generated = !!letters[value];
+                return (
+                  <div key={value} className="flex items-stretch flex-1 min-w-0">
+                    {idx > 0 && (
+                      <div className={["h-auto w-0.5 shrink-0 rounded-full mx-1 self-stretch", generated || active ? "bg-[#14b8a6]" : "bg-gray-300"].join(" ")} />
+                    )}
+                    <button type="button" onClick={() => handleToneChange(value)}
+                      className={[
+                        "flex-1 flex flex-col items-center text-center gap-2 px-3 py-4 rounded-lg transition-all relative",
+                        active
+                          ? "bg-[#14b8a6] text-white border-2 border-black shadow-md"
+                          : generated
+                          ? "bg-background border-2 border-[#14b8a6] text-[#0d6b5e] hover:bg-white"
+                          : "bg-background/60 border-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-background",
+                      ].join(" ")}>
+                      <span className={[
+                        "inline-flex items-center justify-center w-9 h-9 rounded-full shrink-0 transition-all",
+                        active    ? "bg-white text-[#14b8a6]" :
+                        generated ? "bg-[#14b8a6] text-white" :
+                                    "bg-gray-200 text-gray-500",
+                      ].join(" ")}>
+                        {generated && !active ? <CheckCircle2 className="h-5 w-5" /> : icon}
+                      </span>
+                      <span className={["text-sm leading-snug", active ? "font-bold" : "font-semibold"].join(" ")}>{label}</span>
+                      <span className={["text-xs leading-snug hidden sm:block", active ? "text-white/90" : "text-muted-foreground"].join(" ")}>{description}</span>
+                      {generated && active && (
+                        <span className="text-[10px] bg-white/20 rounded-full px-2 py-0.5 font-medium">Generated</span>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
           <Button onClick={generate} disabled={isGenerating || !hasRequiredInfo} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-5" size="lg">
