@@ -134,11 +134,11 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County &amp; Court</h3>
             <div className="flex flex-wrap gap-3 items-end mb-3">
               <FormField control={form.control} name="countyId" render={({ field }) => (
-                <FormItem className="flex-1 min-w-[200px]">
+                <FormItem className="w-[280px] shrink-0">
                   <FormLabel className="font-semibold">California County <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Select your county" /></SelectTrigger>
+                      <SelectTrigger className="h-10 w-[280px]"><SelectValue placeholder="Select your county" /></SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-72 overflow-y-auto">
                       {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
