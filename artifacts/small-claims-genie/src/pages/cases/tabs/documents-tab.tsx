@@ -179,17 +179,9 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
 
   return (
     <div className="p-6 md:p-8">
-      {/* Upload button */}
-      <div className="flex justify-end mb-4">
-        <Button onClick={() => fileInputRef.current?.click()} disabled={uploadDoc.isPending} data-testid="button-upload-doc">
-          <Paperclip className="h-4 w-4 mr-2" />
-          {uploadDoc.isPending ? i18n.documents.processing : i18n.documents.uploadBtn}
-        </Button>
+      {/* Sub-tabs + Upload button — same row */}
+      <div className="flex items-center gap-6 mb-6">
         <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.docx" onChange={handleUpload} />
-      </div>
-
-      {/* Sub-tabs */}
-      <div className="flex gap-6 mb-6">
         <button
           type="button"
           onClick={() => setActiveTab("checklist")}
@@ -234,6 +226,10 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
             </span>
           )}
         </button>
+        <Button className="ml-auto shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploadDoc.isPending} data-testid="button-upload-doc">
+          <Paperclip className="h-4 w-4 mr-2" />
+          {uploadDoc.isPending ? i18n.documents.processing : i18n.documents.uploadBtn}
+        </Button>
       </div>
 
       {/* ── Checklist Tab ── */}
