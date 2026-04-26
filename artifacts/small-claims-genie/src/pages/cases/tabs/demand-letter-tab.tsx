@@ -380,7 +380,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
         <>
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2"><Handshake className="h-5 w-5 text-[#0d6b5e]" />Settlement Offer Generator</h2>
-            <p className="text-sm text-muted-foreground mt-1">Generate a strategic settlement offer letter — tailored to your case and claim amount.</p>
+            <p className="text-sm text-muted-foreground mt-1">Create a strategic settlement offer letter — tailored to your case and claim amount.</p>
           </div>
           <div className="rounded-2xl border border-[#a8e6df] bg-[#f0fffe] p-5 space-y-3">
             <p className="text-sm font-bold text-[#0d6b5e]">When to use a Settlement Offer</p>
