@@ -262,8 +262,8 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
               Recording… release mic to stop
             </span>
           ) : (
-            <span className="text-[10px] text-muted-foreground/70">
-              Hold <span className="font-semibold">mic</span> to record voice
+            <span className="text-xs font-bold text-muted-foreground/70">
+              Hold mic to record voice
             </span>
           )}
         </div>
