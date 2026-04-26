@@ -483,7 +483,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
               </button>
             </div>
             <div className="bg-black aspect-video">
-              <video className="w-full h-full" controls autoPlay src="/intake-step1-tutorial.mp4" />
+              <video className="w-full h-full" controls autoPlay src={`${import.meta.env.BASE_URL}intake-step1-tutorial.mp4`} />
             </div>
             <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between">
               <p className="text-xs text-gray-600">After watching, fill in your plaintiff and defendant information below.</p>
