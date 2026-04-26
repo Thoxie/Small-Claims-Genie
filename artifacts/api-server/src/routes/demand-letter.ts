@@ -119,13 +119,21 @@ The case data includes a field called "Amount Sought." This is the ONLY dollar f
 4. NEVER use the words "mock," "sample," or "hypothetical" — these are real case facts.
 5. COUNTY: Where a filing county is known, the consequences paragraph must name it specifically: "...file a court action against you in [County Name] County Small Claims Court..." If no county is given, use "California Small Claims Court."
 
-═══ LENGTH & STRUCTURE RULES ═══
-Target: 4 tight body paragraphs. One page. No padding.
+═══ OPENING PARAGRAPH — CRITICAL RULE ═══
+NEVER open with "I, [Name]" or introduce the sender by name in the body text. The sender's name belongs only in the signature block — it is unknown who will sign the letter.
+- WRONG: "I, Paul Andrews, am writing to demand payment..."
+- WRONG: "I, the undersigned, hereby notify you..."
+- RIGHT: "This letter serves as formal notice that payment of $X is owed and remains outstanding."
+- RIGHT: "On [date], [event occurred]. Despite [what happened], payment has not been received."
+State facts objectively — refer to the sender's property, vehicle, services, etc. without naming the sender in the body.
 
-Paragraph 1 — Opening (2 sentences max): Who you are, what this letter is about.
-Paragraph 2 — Facts (3-5 sentences): The actual events using the claim description. Specific dates, what happened, what was not done. Do not insert the demand dollar amount here — that belongs in Paragraph 3.
+═══ LENGTH & STRUCTURE RULES ═══
+Target: 4 tight body paragraphs. ONE PAGE ONLY — this is a hard limit. If content risks spilling to a second page, tighten every paragraph. No padding, no filler, no repetition.
+
+Paragraph 1 — Opening (2 sentences max): The purpose of this letter and the amount owed. No names in the body — the sender is identified only in the signature block.
+Paragraph 2 — Facts (3-4 sentences max): The actual events using the claim description. Specific dates, what happened, what was not done. Do not insert the demand dollar amount here — that belongs in Paragraph 3.
 Paragraph 3 — Demand (2-3 sentences): State the exact "Amount Sought" value as the demand. Clear deadline (14 days from today). No hedging.
-Paragraph 4 — Consequences (2-3 sentences): What happens if they don't pay. Must use "court action against you" language — NOT "small claims action." Reference court costs added on top.
+Paragraph 4 — Consequences (2 sentences max): What happens if they don't pay. Must use "court action against you" language — NOT "small claims action." Reference court costs added on top.
 
 FORMAT:
 - Output ONLY the letter text — no commentary, no markdown, no preamble
@@ -478,8 +486,9 @@ const SETTLEMENT_SYSTEM = `You are a professional legal document writer helping 
 RULES:
 - Output ONLY the letter text — no commentary, no markdown, no preamble
 - Standard business letter format: Sender block → Date → Recipient block → RE: line → Body → Signature block
-- 3–4 paragraphs. Plain English. No legal jargon.
-- Paragraph 1: Who you are, that a dispute exists, that you are proposing to resolve it without a hearing.
+- 3–4 paragraphs. Plain English. No legal jargon. ONE PAGE — hard limit.
+- NEVER open with "I, [Name]" or introduce the sender by name in the body. The sender's name belongs only in the signature block.
+- Paragraph 1: State that a dispute exists and that this letter proposes resolution without a hearing — no sender name in the body.
 - Paragraph 2: Brief factual summary — what happened, what is owed. Reference the original claim amount, then frame the settlement amount as a practical offer.
 - Paragraph 3: The settlement offer — state the exact settlement amount, any installment terms, and the response deadline.
 - Paragraph 4: Consequences and close — what happens if they don't respond. Reference hearing date if known.
