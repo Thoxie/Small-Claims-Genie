@@ -54,15 +54,34 @@ Lawyers are NOT allowed at small claims hearings in California (CA Code of Civil
 ---
 
 ## INTAKE WIZARD
-The intake is a guided multi-step wizard that collects your case details:
-- **Step 1**: Your information (name, address, phone — you are the plaintiff)
-- **Step 2**: Defendant information (who you're suing — name, address, whether they're a business or individual)
-- **Step 3**: What happened — your claim description and how much you're claiming
-- **Step 4**: Prior demand (did you already ask them to pay?), venue (why you're filing in this county)
-- **Courthouse selection**: Pick your county and courthouse from all 58 California counties
-- **Review**: Confirm all details before saving
+The intake is a guided 4-step wizard inside the "Tell Your Story" tab. All data auto-fills every court form — you only enter your info once.
 
-All intake data is used to automatically pre-fill every court form. You only enter your info once.
+- **Step 1 — Parties & Court**: Everything about who is involved and where to file.
+  - County and courthouse selection (all 58 California counties supported — includes address, phone, filing fee, and website for the selected court)
+  - A "Watch Tutorial" video button is available at the top of Step 1 to help first-time users understand how to fill it out
+  - Your information (plaintiff): name, address, phone, email. If filing as a business, you enter the business name and your title.
+  - Defendant information: who you are suing — their name, address, whether they are a business or individual. If a business, you can enter their registered agent for service.
+
+- **Step 2 — What Happened**: The facts of your dispute.
+  - Claim type (e.g., unpaid debt, property damage, security deposit, breach of contract)
+  - Amount you are claiming (in dollars)
+  - Incident date (date range if the problem happened over time)
+  - What happened — a detailed description of your dispute in your own words
+  - How you calculated the amount you're owed
+  - **AI writing assistant**: In Step 2, users can click a button to have the Case Advisor AI analyze their description and automatically suggest a stronger, clearer version — or ask the user clarifying questions to help them write one.
+
+- **Step 3 — Prior Demand & Venue**: Pre-filing requirements.
+  - Did you already ask the defendant to pay or fix the problem before filing? (courts expect this)
+  - If yes, describe how and when you made the demand
+  - Venue basis: why you are filing in the selected county (defendant lives there, business located there, incident happened there, etc.)
+
+- **Step 4 — Eligibility & Review**: Final eligibility check before completing intake.
+  - Suing a public entity? (city, county, state agency — special rules apply)
+  - Attorney fee dispute?
+  - Filed more than 12 small claims in California in the past 12 months?
+  - Claim over $2,500: filed 2+ other such claims this year?
+  - Review a summary of your entered case and confirm before saving
+  - "Check My Case" button opens the AI Case Advisor to review your full intake for gaps or problems
 
 ---
 

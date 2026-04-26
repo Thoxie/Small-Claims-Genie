@@ -8,6 +8,16 @@
 
 3. **Collaboration protocol — ask questions when relevant, present options.** This is a collaboration. The user is the owner; the agent is the lead developer. When a decision point arises that requires the user's input, ask — but only if it is genuinely needed and will save rework. Do not ask unnecessary questions. When presenting choices, always offer exactly three options and clearly mark the recommended one as Option 1. Format: Option 1 (Recommended): ..., Option 2: ..., Option 3: ...
 
+4. **AI prompts must stay in sync with the UI — always.** Whenever you make any of the following changes, you MUST also update the AI system prompts in `artifacts/api-server/src/routes/chat.ts` (Case Advisor) and `artifacts/api-server/src/routes/help-chat.ts` (Help Genie) to reflect the change:
+   - Tab name changes or tab additions/removals in the case workspace
+   - Intake step structure changes (what fields live in which step, step count, step labels)
+   - New features added to any tab (new modes, new buttons, new AI capabilities)
+   - New form types added to the Court Forms tab
+   - New tone options in the Demand Letter tab
+   - Changes to what the Hearing Prep tab offers (modes, functionality)
+   - Any workflow or process change a user might ask the AI about
+   This is non-negotiable. The AI is the primary user support channel; if the prompts are stale, users get wrong guidance. Treat prompt updates as part of every UI feature task.
+
 ## Overview
 
 California small claims court SaaS app. Helps lower-income individuals and small businesses navigate CA small claims court. Full-stack pnpm monorepo with Express API, React+Vite frontend, PostgreSQL database, and AI-powered features (OCR, chat, voice).
