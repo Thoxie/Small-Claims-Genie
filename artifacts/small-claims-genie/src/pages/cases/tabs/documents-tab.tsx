@@ -179,9 +179,8 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
 
   return (
     <div className="p-6 md:p-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">{i18n.documents.title}</h2>
+      {/* Upload button */}
+      <div className="flex justify-end mb-4">
         <Button onClick={() => fileInputRef.current?.click()} disabled={uploadDoc.isPending} data-testid="button-upload-doc">
           <Paperclip className="h-4 w-4 mr-2" />
           {uploadDoc.isPending ? i18n.documents.processing : i18n.documents.uploadBtn}
