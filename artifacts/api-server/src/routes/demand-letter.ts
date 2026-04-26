@@ -27,6 +27,7 @@ function parseTone(value: unknown): DemandLetterTone {
 const TONE_INSTRUCTIONS: Record<string, string> = {
   formal: `TONE — FORMAL (Professional Notice):
 - Write as a calm, official notice of debt — no emotion, no pleading, no hostility
+- NO names in the body. No plaintiff name, no defendant name. Use "you"/"your" for the defendant. Facts only.
 - State facts in plain declarative sentences: "On [date], [event occurred]. Payment of $X remains due."
 - The consequence sentence must read: "In the event payment is not received by the deadline, I will file a court action against you in [County] Small Claims Court seeking the full amount owed plus court costs and filing fees."
 - Do not soften or hedge the consequence — state it as certain fact
@@ -34,6 +35,7 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
 
   firm: `TONE — FIRM (Assertive Demand):
 - Open with a direct statement of the debt owed — no pleasantries
+- NO names in the body. No plaintiff name, no defendant name. Use "you"/"your" for the defendant. Facts only.
 - State the facts crisply. Every sentence should apply pressure without being hostile.
 - Emphasize the deadline prominently: "You have until [date] to remit payment in full."
 - The consequence sentence must read: "Failure to pay by this date will result in a court action filed against you in [County] Small Claims Court. I will seek the full amount owed, plus court filing fees, service costs, and any other relief the court deems appropriate."
@@ -41,7 +43,8 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
 - This letter should feel like the last warning before legal action — because it is.`,
 
   friendly: `TONE — FRIENDLY (Resolution-Oriented):
-- Acknowledge any prior relationship or dealings in the opening sentence
+- Acknowledge any prior dealings in the opening sentence without using names — reference the transaction or matter directly
+- NO names in the body. No plaintiff name, no defendant name. Use "you"/"your" for the defendant. Facts only.
 - Express a genuine preference for resolving this without court involvement
 - State the facts plainly but without accusation — "It appears there may be a misunderstanding regarding..."
 - Keep the payment request clear: the dollar amount and deadline must not be buried
@@ -119,13 +122,19 @@ The case data includes a field called "Amount Sought." This is the ONLY dollar f
 4. NEVER use the words "mock," "sample," or "hypothetical" — these are real case facts.
 5. COUNTY: Where a filing county is known, the consequences paragraph must name it specifically: "...file a court action against you in [County Name] County Small Claims Court..." If no county is given, use "California Small Claims Court."
 
-═══ OPENING PARAGRAPH — CRITICAL RULE ═══
-NEVER open with "I, [Name]" or introduce the sender by name in the body text. The sender's name belongs only in the signature block — it is unknown who will sign the letter.
-- WRONG: "I, Paul Andrews, am writing to demand payment..."
-- WRONG: "I, the undersigned, hereby notify you..."
-- RIGHT: "This letter serves as formal notice that payment of $X is owed and remains outstanding."
-- RIGHT: "On [date], [event occurred]. Despite [what happened], payment has not been received."
-State facts objectively — refer to the sender's property, vehicle, services, etc. without naming the sender in the body.
+═══ NAMES IN THE BODY — CRITICAL RULES ═══
+The PLAINTIFF name must NEVER appear anywhere in the body paragraphs. It belongs only in the sender block at the top and the signature line at the bottom. The plaintiff is signing this letter — their name does not need to be stated in the text.
+- WRONG: "I, Paul Andrews, am writing to demand payment of $5,000."
+- WRONG: "As Paul Andrews, I am hereby demanding..."
+- WRONG: "The undersigned, Paul Andrews, demands payment."
+- RIGHT: "This letter serves as formal demand for payment of $5,000 currently owed and outstanding."
+- RIGHT: "On April 1, 2026, my vehicle was damaged. To date, no payment has been received."
+
+The DEFENDANT name must also NOT appear in the body paragraphs. The letter is addressed directly to the defendant — use "you" and "your" throughout.
+- WRONG: "John Smith has failed to pay the amount owed."
+- RIGHT: "You have failed to remit the amount owed despite prior notice."
+
+Write the body entirely in factual, impersonal terms. The facts speak — no declarations, no self-identification.
 
 ═══ LENGTH & STRUCTURE RULES ═══
 Target: 4 tight body paragraphs. ONE PAGE ONLY — this is a hard limit. If content risks spilling to a second page, tighten every paragraph. No padding, no filler, no repetition.
