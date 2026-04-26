@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
 import {
@@ -193,28 +193,45 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
       {activeTab === 4 && <HearingInfoCard caseId={caseId} initialData={initialData} />}
 
       {/* ── Numbered tab bar ── */}
-      <div className="flex gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1.5 mb-5 overflow-x-auto no-scrollbar">
-        {INTAKE_TABS.map(({ num, label }) => {
+      <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-1.5 mb-5 overflow-x-auto no-scrollbar">
+        {INTAKE_TABS.map(({ num, label }, idx) => {
           const active = activeTab === num;
+          const completed = num < activeTab;
           return (
-            <button
-              key={num}
-              onClick={() => setActiveTab(num as 1 | 2 | 3 | 4)}
-              className={[
-                "flex items-center gap-2.5 flex-1 min-w-0 px-3 py-2.5 rounded-lg transition-all text-left",
-                active
-                  ? "bg-white shadow-sm text-[#0d6b5e] border border-gray-200"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
-              ].join(" ")}
-            >
-              <span className={[
-                "inline-flex items-center justify-center w-9 h-9 rounded-full text-base font-bold shrink-0 transition-all",
-                active ? "bg-[#14b8a6] text-white" : "bg-gray-200 text-gray-500",
-              ].join(" ")}>
-                {num}
-              </span>
-              <span className="hidden sm:block text-xs font-semibold leading-snug">{label}</span>
-            </button>
+            <Fragment key={num}>
+              {idx > 0 && (
+                <div className={[
+                  "h-0.5 w-3 shrink-0 rounded-full transition-colors duration-300 mx-0.5",
+                  completed ? "bg-[#14b8a6]" : "bg-gray-300",
+                ].join(" ")} />
+              )}
+              <button
+                onClick={() => setActiveTab(num as 1 | 2 | 3 | 4)}
+                className={[
+                  "flex items-center gap-2.5 flex-1 min-w-0 px-3 rounded-lg transition-all text-left",
+                  active
+                    ? "bg-[#14b8a6] text-white border-2 border-black shadow-md py-3"
+                    : completed
+                    ? "text-[#0d6b5e] hover:bg-white/50 py-2.5"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-white/50 py-2.5",
+                ].join(" ")}
+              >
+                <span className={[
+                  "inline-flex items-center justify-center w-9 h-9 rounded-full text-base font-bold shrink-0 transition-all",
+                  active
+                    ? "bg-white text-[#14b8a6]"
+                    : completed
+                    ? "bg-[#14b8a6] text-white"
+                    : "bg-gray-200 text-gray-500",
+                ].join(" ")}>
+                  {num}
+                </span>
+                <span className={[
+                  "hidden sm:block text-xs leading-snug",
+                  active ? "font-bold" : "font-semibold",
+                ].join(" ")}>{label}</span>
+              </button>
+            </Fragment>
           );
         })}
       </div>
