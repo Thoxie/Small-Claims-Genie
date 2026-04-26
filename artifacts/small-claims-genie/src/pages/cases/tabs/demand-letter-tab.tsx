@@ -374,7 +374,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold">Letter Preview</p>
-                <p className="text-xs text-muted-foreground">You can edit the text below before downloading.</p>
+                <p className="text-xs text-muted-foreground font-bold">You can edit the text below before downloading.</p>
               </div>
               <Textarea value={text} onChange={e => setText(e.target.value)} className="font-mono text-sm leading-relaxed min-h-[520px] resize-y" placeholder={isGenerating ? "Generating your demand letter…" : ""} readOnly={isGenerating} />
               {!isGenerating && text.trim() && (
