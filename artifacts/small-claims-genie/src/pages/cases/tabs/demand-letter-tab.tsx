@@ -271,19 +271,41 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
     ? `${settlePct}% of your claim (${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(settleAmount)})`
     : `${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(settleAmount)}`;
 
+  const LETTER_MODES = [
+    { value: "demand",     icon: <Mail className="h-6 w-6" />,      label: "Demand\nLetter",       sub: "Send before filing" },
+    { value: "settlement", icon: <Handshake className="h-6 w-6" />, label: "Settlement\nOffer",     sub: "Propose a deal" },
+    { value: "agreement",  icon: <PenLine className="h-6 w-6" />,   label: "Settlement\nAgreement", sub: "Finalize in writing" },
+  ] as const;
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center gap-1 p-1 bg-muted rounded-xl w-fit flex-wrap">
-        {[
-          { value: "demand", icon: <Mail className="h-4 w-4" />, label: "Demand Letter" },
-          { value: "settlement", icon: <Handshake className="h-4 w-4" />, label: "Settlement Offer" },
-          { value: "agreement", icon: <PenLine className="h-4 w-4" />, label: "Settlement Agreement" },
-        ].map(({ value, icon, label }) => (
-          <button key={value} type="button" onClick={() => setMode(value as typeof mode)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mode === value ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-            {icon} {label}
-          </button>
-        ))}
+      <div className="flex items-stretch gap-0 p-1.5 bg-muted rounded-xl">
+        {LETTER_MODES.map(({ value, icon, label, sub }, idx) => {
+          const active = mode === value;
+          return (
+            <div key={value} className="flex items-stretch flex-1 min-w-0">
+              {idx > 0 && (
+                <div className="h-auto w-0.5 shrink-0 rounded-full mx-1 self-stretch bg-gray-300" />
+              )}
+              <button
+                type="button"
+                onClick={() => setMode(value as typeof mode)}
+                className={[
+                  "flex-1 flex flex-col items-center justify-center text-center gap-2 px-3 py-4 rounded-lg transition-all",
+                  active
+                    ? "bg-[#14b8a6] text-white border-2 border-black shadow-md"
+                    : "bg-background/60 border-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-background",
+                ].join(" ")}
+              >
+                <span className={["inline-flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all", active ? "bg-white/20" : "bg-gray-100"].join(" ")}>
+                  {icon}
+                </span>
+                <span className={["text-sm whitespace-pre-line leading-tight", active ? "font-bold" : "font-semibold"].join(" ")}>{label}</span>
+                <span className={["text-xs hidden sm:block", active ? "text-white/85" : "text-muted-foreground"].join(" ")}>{sub}</span>
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       {mode === "demand" && (
