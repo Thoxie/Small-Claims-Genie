@@ -27,6 +27,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
 
   const [text, setText] = useState("");
   const [tone, setTone] = useState<DemandLetterTone>("formal");
+  const [letters, setLetters] = useState<Record<DemandLetterTone, string>>({ formal: "", firm: "", friendly: "" });
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -65,11 +66,28 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
         const res = await fetch(`/api/cases/${caseId}/demand-letter`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) throw new Error();
         const data = await res.json();
-        if (!cancelled) { if (data.text) setText(data.text); if (data.tone) setTone(data.tone as DemandLetterTone); setLoaded(true); }
+        if (!cancelled) {
+          const loaded: Record<DemandLetterTone, string> = {
+            formal:   data.letters?.formal   || "",
+            firm:     data.letters?.firm     || "",
+            friendly: data.letters?.friendly || "",
+          };
+          setLetters(loaded);
+          const activeTone: DemandLetterTone = (data.tone as DemandLetterTone) || "formal";
+          setTone(activeTone);
+          setText(loaded[activeTone] || "");
+          setLoaded(true);
+        }
       } catch { if (!cancelled) setLoaded(true); }
     })();
     return () => { cancelled = true; };
   }, [caseId, getToken]);
+
+  function handleToneChange(newTone: DemandLetterTone) {
+    setTone(newTone);
+    setText(letters[newTone] || "");
+    setError(null);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -104,11 +122,13 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
   async function generate() {
     if (isGenerating) return;
     setIsGenerating(true); setError(null); setText("");
+    const currentTone = tone;
+    let fullText = "";
     try {
       const token = await getToken();
       const res = await fetch(`/api/cases/${caseId}/demand-letter`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ tone }),
+        body: JSON.stringify({ tone: currentTone }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); setError(err.error ?? "Generation failed"); return; }
       const reader = res.body?.getReader();
@@ -122,9 +142,13 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
         const lines = buffer.split("\n"); buffer = lines.pop() ?? "";
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
-          try { const p = JSON.parse(line.slice(6)); if (p.content) setText(prev => prev + p.content); } catch { /* ignore */ }
+          try {
+            const p = JSON.parse(line.slice(6));
+            if (p.content) { fullText += p.content; setText(prev => prev + p.content); }
+          } catch { /* ignore */ }
         }
       }
+      if (fullText) setLetters(prev => ({ ...prev, [currentTone]: fullText }));
     } catch (e: any) { setError(e.message ?? "Unexpected error"); }
     finally { setIsGenerating(false); }
   }
@@ -285,16 +309,17 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
             <p className="text-sm font-semibold mb-3">Select Tone</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {TONE_META.map(({ value, label, description }) => (
-                <button key={value} type="button" onClick={() => setTone(value)}
-                  className={`rounded-lg border-2 p-4 text-left transition-all ${tone === value ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"}`}>
+                <button key={value} type="button" onClick={() => handleToneChange(value)}
+                  className={`rounded-lg border-2 p-4 text-left transition-all relative ${tone === value ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"}`}>
                   <span className="block font-semibold text-sm">{label}</span>
                   <span className="block text-xs text-muted-foreground mt-1">{description}</span>
+                  {letters[value] && <span className="absolute top-2 right-2 text-[10px] text-primary font-medium bg-primary/10 rounded px-1.5 py-0.5">Generated</span>}
                 </button>
               ))}
             </div>
           </div>
           <Button onClick={generate} disabled={isGenerating || !hasRequiredInfo} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-5" size="lg">
-            {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin" />Generating letter…</> : <><Mail className="h-4 w-4" />{text.trim() ? "Regenerate Demand Letter" : "Generate Demand Letter"}</>}
+            {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin" />Generating letter…</> : <><Mail className="h-4 w-4" />{letters[tone] ? "Regenerate Letter" : "Generate Letter"} — {TONE_META.find(t => t.value === tone)?.label}</>}
           </Button>
           {error && <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3"><AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" /><p className="text-sm text-destructive">{error}</p></div>}
           {(text.trim() || isGenerating) && (

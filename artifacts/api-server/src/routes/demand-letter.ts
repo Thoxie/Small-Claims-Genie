@@ -167,6 +167,11 @@ router.get("/cases/:id/demand-letter", async (req, res): Promise<void> => {
   res.json({
     text: caseRecord.demandLetterText ?? null,
     tone: caseRecord.demandLetterTone ?? null,
+    letters: {
+      formal:   caseRecord.demandLetterTextFormal   ?? null,
+      firm:     caseRecord.demandLetterTextFirm     ?? null,
+      friendly: caseRecord.demandLetterTextFriendly ?? null,
+    },
   });
 });
 
@@ -236,9 +241,14 @@ router.post("/cases/:id/demand-letter", async (req, res): Promise<void> => {
     }
   }
 
-  // Save generated letter to DB
+  // Save generated letter to DB — per-tone column + legacy single column
+  const toneField =
+    tone === "formal"   ? { demandLetterTextFormal:   fullText } :
+    tone === "firm"     ? { demandLetterTextFirm:     fullText } :
+                          { demandLetterTextFriendly: fullText };
+
   await db.update(casesTable)
-    .set({ demandLetterText: fullText, demandLetterTone: tone })
+    .set({ demandLetterText: fullText, demandLetterTone: tone, ...toneField })
     .where(eq(casesTable.id, id));
 
   res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
