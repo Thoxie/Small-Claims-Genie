@@ -195,19 +195,20 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
 
   if (!sessionStarted && prepMode === null) {
     return (
-      <div className="p-6 md:p-10 flex flex-col items-center gap-8 max-w-2xl mx-auto">
-        <div className="w-full rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-          <div className="relative shrink-0">
-            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-xl">
-              <Gavel className="h-10 w-10 text-white" />
-            </div>
-            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0d6b5e] flex items-center justify-center border-2 border-white">
-              <Star className="h-3.5 w-3.5 text-white fill-white" />
-            </div>
-          </div>
+      <div className="p-6 md:p-8 flex flex-col gap-8 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between border-b border-amber-200 pb-5">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl md:text-3xl font-bold text-amber-900">Hearing Prep Coach</h2>
-            <p className="text-amber-800 mt-1 text-sm leading-relaxed">Two ways to get ready for your court date. The Hearing Prep Coach acts as a real judge — asking you the same questions you'll face in court.</p>
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+              <Gavel className="h-6 w-6 text-amber-500 shrink-0" />
+              Hearing Prep Coach
+            </h2>
+            <p className="text-sm text-gray-500 mt-1.5 ml-[34px] leading-relaxed">
+              Two ways to get ready for your court date. The Hearing Prep Coach acts as a real judge — asking you the same questions you'll face in court.
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 shrink-0 ml-6">
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+            AI-Powered Practice
           </div>
         </div>
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
