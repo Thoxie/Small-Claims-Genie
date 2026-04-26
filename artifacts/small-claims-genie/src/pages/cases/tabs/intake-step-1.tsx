@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogOut } from "lucide-react";
+import { LogOut, Play, X, ChevronRight, BookOpen } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -28,6 +28,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
   const [defendantMailingDiffers, setDefendantMailingDiffers] = useState(
     !!(initialData.defendantMailingAddress)
   );
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const [agentAddressExpanded, setAgentAddressExpanded] = useState(
     !!(initialData.defendantAgentStreet)
   );
@@ -127,6 +128,49 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
 
   return (
     <div className="space-y-4">
+
+      {/* ── Step header with video card ── */}
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex-1">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <span className="w-7 h-7 rounded-full bg-[#14b8a6] text-white flex items-center justify-center text-sm font-black shrink-0">1</span>
+            The Parties
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1 ml-9">
+            Enter the full legal name and contact details for both you (plaintiff) and the person or business you're suing (defendant).
+          </p>
+        </div>
+
+        {/* ── Video tutorial card ── */}
+        <div
+          onClick={() => setTutorialOpen(true)}
+          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          title="Watch the tutorial for this step"
+        >
+          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+              <BookOpen className="w-16 h-16 text-white" />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                <Play className="w-5 h-5 text-white ml-1" fill="white" />
+              </div>
+              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+            </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 1</div>
+          </div>
+          <div className="bg-background px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold">Entering the Parties</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Who is suing whom?</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+          </div>
+        </div>
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
 
@@ -406,6 +450,49 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
           </div>
         </form>
       </Form>
+
+      {/* ── Video modal ── */}
+      {tutorialOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setTutorialOpen(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden w-[720px] max-w-[95vw]"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Step 1 Tutorial — Entering the Parties</p>
+                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="bg-black aspect-video">
+              <video className="w-full h-full" controls autoPlay src="/intake-step1-tutorial.mp4" />
+            </div>
+            <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between">
+              <p className="text-xs text-gray-600">After watching, fill in your plaintiff and defendant information below.</p>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
+              >
+                Close &amp; Start Filling
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
