@@ -3,11 +3,11 @@ import { Link, useLocation } from "wouter";
 import {
   LogOut,
   LayoutDashboard,
-  ClipboardList,
-  FileText,
+  BookOpen,
+  FolderOpen,
   MessageSquare,
   Mail,
-  Scale,
+  FilePlus2,
   Gavel,
   CalendarDays,
   X,
@@ -19,13 +19,13 @@ import { useListCases } from "@workspace/api-client-react";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 
 export const WORKSPACE_TABS = [
-  { value: "intake",        label: "Intake",            icon: ClipboardList },
-  { value: "documents",     label: "Docs",              icon: FileText },
-  { value: "chat",          label: "Ask Genie AI",      icon: MessageSquare },
-  { value: "demand-letter", label: "Demand Letter",     icon: Mail },
-  { value: "forms",         label: "Court Forms",       icon: Scale },
-  { value: "prep",          label: "Prep for\nHearing", icon: Gavel },
-  { value: "deadlines",     label: "Deadlines",         icon: CalendarDays },
+  { value: "intake",        label: "Tell Your\nStory",      icon: BookOpen  },
+  { value: "documents",     label: "My\nEvidence",          icon: FolderOpen },
+  { value: "chat",          label: "Ask\nGenie AI",         icon: MessageSquare },
+  { value: "demand-letter", label: "Send a\nDemand",        icon: Mail },
+  { value: "forms",         label: "Create Court\nForms",   icon: FilePlus2 },
+  { value: "prep",          label: "Prep for\nHearing",     icon: Gavel },
+  { value: "deadlines",     label: "Deadlines",             icon: CalendarDays },
 ] as const;
 
 export type WorkspaceTab = (typeof WORKSPACE_TABS)[number]["value"];
@@ -104,13 +104,7 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
                   ].join(" ")}
                 >
                   <tab.icon className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0" />
-                  {tab.value === "prep" ? (
-                    <span className="text-center whitespace-pre-line leading-none">
-                      {"Prep for\nHearing"}
-                    </span>
-                  ) : (
-                    <span className="text-center">{tab.label}</span>
-                  )}
+                  <span className="text-center whitespace-pre-line leading-[1.2]">{tab.label}</span>
                 </button>
               ))}
             </div>
