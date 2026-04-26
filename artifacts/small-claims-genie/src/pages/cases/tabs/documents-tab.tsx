@@ -185,20 +185,20 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
         <button
           type="button"
           onClick={() => setActiveTab("checklist")}
-          className={`flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all border-2 shadow-sm min-w-[220px] justify-center ${
+          className={`flex flex-1 items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all border-2 shadow-sm justify-center ${
             activeTab === "checklist"
-              ? "bg-[#f0fffe] text-[#0d6b5e] border-[#14b8a6] shadow-[#14b8a6]/20 shadow-md"
-              : "bg-background text-muted-foreground border-muted-foreground/25 hover:border-[#14b8a6]/50 hover:text-[#0d6b5e] hover:bg-[#f0fffe]/50"
+              ? "bg-[#f0fffe] text-[#0d6b5e] border-[#0d6b5e] shadow-[#0d6b5e]/20 shadow-md"
+              : "bg-background text-muted-foreground border-muted-foreground/25 hover:border-[#0d6b5e]/50 hover:text-[#0d6b5e] hover:bg-[#f0fffe]/50"
           }`}
         >
-          <ClipboardList className="h-5 w-5 shrink-0" />
+          <ClipboardList className="h-6 w-6 shrink-0" />
           <span>
-            <span className={`block text-[10px] font-medium uppercase tracking-wider mb-0.5 ${activeTab === "checklist" ? "text-[#14b8a6]" : "text-muted-foreground/60"}`}>Click here</span>
+            <span className={`block text-[10px] font-medium uppercase tracking-wider mb-0.5 ${activeTab === "checklist" ? "text-[#0d6b5e]" : "text-muted-foreground/60"}`}>Click here</span>
             Document Checklist
           </span>
           {checklistCount > 0 && (
             <span className={`ml-auto text-[11px] rounded-full px-1.5 py-0.5 font-semibold ${
-              activeTab === "checklist" ? "bg-[#14b8a6]/15 text-[#0d6b5e]" : "bg-muted text-muted-foreground"
+              activeTab === "checklist" ? "bg-[#0d6b5e]/15 text-[#0d6b5e]" : "bg-muted text-muted-foreground"
             }`}>
               {checkedItems.size}/{checklistCount}
             </span>
@@ -207,20 +207,20 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
         <button
           type="button"
           onClick={() => setActiveTab("uploads")}
-          className={`flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all border-2 shadow-sm min-w-[220px] justify-center ${
+          className={`flex flex-1 items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all border-2 shadow-sm justify-center ${
             activeTab === "uploads"
-              ? "bg-[#f0fffe] text-[#0d6b5e] border-[#14b8a6] shadow-[#14b8a6]/20 shadow-md"
-              : "bg-background text-muted-foreground border-muted-foreground/25 hover:border-[#14b8a6]/50 hover:text-[#0d6b5e] hover:bg-[#f0fffe]/50"
+              ? "bg-[#f0fffe] text-[#0d6b5e] border-[#0d6b5e] shadow-[#0d6b5e]/20 shadow-md"
+              : "bg-background text-muted-foreground border-muted-foreground/25 hover:border-[#0d6b5e]/50 hover:text-[#0d6b5e] hover:bg-[#f0fffe]/50"
           }`}
         >
-          <FileText className="h-5 w-5 shrink-0" />
+          <FileText className="h-6 w-6 shrink-0" />
           <span>
-            <span className={`block text-[10px] font-medium uppercase tracking-wider mb-0.5 ${activeTab === "uploads" ? "text-[#14b8a6]" : "text-muted-foreground/60"}`}>Click here</span>
+            <span className={`block text-[10px] font-medium uppercase tracking-wider mb-0.5 ${activeTab === "uploads" ? "text-[#0d6b5e]" : "text-muted-foreground/60"}`}>Click here</span>
             My Uploads
           </span>
           {uploadCount > 0 && (
             <span className={`ml-auto text-[11px] rounded-full px-1.5 py-0.5 font-semibold ${
-              activeTab === "uploads" ? "bg-[#14b8a6]/15 text-[#0d6b5e]" : "bg-muted text-muted-foreground"
+              activeTab === "uploads" ? "bg-[#0d6b5e]/15 text-[#0d6b5e]" : "bg-muted text-muted-foreground"
             }`}>
               {uploadCount}
             </span>
