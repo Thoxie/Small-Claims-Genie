@@ -207,8 +207,6 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
 
   return (
     <div className="p-4 md:p-5">
-      {activeTab === 4 && <HearingInfoCard caseId={caseId} initialData={initialData} />}
-
       {/* ── Numbered tab bar ── */}
       <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-1.5 mb-5 overflow-x-auto no-scrollbar">
         {INTAKE_TABS.map(({ num, label }, idx) => {
