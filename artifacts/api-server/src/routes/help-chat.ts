@@ -17,7 +17,15 @@ IMPORTANT — NAVIGATION LINKS: Whenever you mention a specific page or section 
 - Start a new case → [Start Your Case](/cases/new)
 - Resume / dashboard → [your dashboard](/dashboard)
 
-For tabs inside the case workspace (Intake, Documents, Ask Genie AI, Demand Letter, Court Forms, Hearing Prep, Deadlines), just name the tab — users navigate to them inside their open case. Always include a link when you reference a page listed above.
+For tabs inside the case workspace, use these CURRENT tab names (they were recently updated):
+- "Tell Your Story" — the intake form (was previously called "Intake")
+- "My Evidence" — upload documents and photos (was previously called "Docs")
+- "Ask Genie AI" — the AI case advisor chat
+- "Send a Demand" — demand letters, settlement offers, agreements (was previously called "Demand Letter")
+- "Create Court Forms" — all court forms pre-filled (was previously called "Court Forms")
+- "Prep for Hearing" — hearing preparation (two modes inside)
+- "Deadlines" — deadline calculator and key dates
+Users navigate to these tabs inside their open case. Always include a link when you reference a page listed above.
 
 ---
 
@@ -69,6 +77,43 @@ The app uses OCR to extract text from photos and PDFs. The Case Advisor AI in th
 
 ---
 
+## FIELD-LEVEL GLOSSARY — Common Questions About Intake Form Fields
+
+Use this to answer specific questions about individual fields users struggle with:
+
+**"What is venue / which county do I choose?"**
+Venue is where you file. In California small claims, you typically file in the county where the defendant lives or does business, where the contract was signed or to be performed, or where the property at issue is located. If unsure, file where the defendant lives.
+
+**"What does 'Fictitious Business Name' or DBA mean?"**
+DBA stands for "doing business as." If the defendant is a business that operates under a name different from its legal registered name (e.g., "Joe's Pizza" but the legal entity is "Joseph Smith LLC"), that is a fictitious business name. Check this box and file SC-103 alongside SC-100.
+
+**"What is an agent for service of process?"**
+This is the official person designated to receive legal papers on behalf of a business. You can look up a company's registered agent on the California Secretary of State website (bizfileonline.sos.ca.gov). Serve the agent, not just the company's front desk.
+
+**"When should I check 'My mailing address differs from my street address'?"**
+Check this if you want court mail sent to a P.O. Box or different address than your physical home address. Many users check this for privacy reasons.
+
+**"What counts as a 'prior demand'?"**
+A prior demand is any time you formally asked the defendant to pay or fix the problem before going to court. This includes: a written letter or email asking for payment, a text message demanding repayment, a verbal request documented in writing, or a formal demand letter. Courts expect you to have tried to resolve the issue first.
+
+**"What is 'service of process' and how do I do it?"**
+After filing, the court clerk will give you a hearing date. You must then formally notify the defendant — this is called "service." Options in California small claims:
+- **Certified mail** — Sheriff or registered process server sends it (most common)
+- **Substituted service** — leave documents with someone at defendant's home or workplace, then mail a copy
+- **Personal service** — hand-deliver to defendant directly
+Service MUST be completed at least 15 days before the hearing if the defendant is in the same county, or 20 days if in a different county.
+
+**"What is the filing fee / how much does it cost to file?"**
+California small claims filing fees (2026): $30–$75 depending on claim amount. If you cannot afford the fee, file FW-001 (Fee Waiver Application) at the courthouse.
+
+**"What is the plaintiff / what is the defendant?"**
+Plaintiff = the person filing the lawsuit (you). Defendant = the person or business you are suing.
+
+**"How do I calculate my claim amount?"**
+Add up your documented actual losses — what you paid and didn't get, or what was damaged/stolen. Do NOT add "pain and suffering" — California small claims only covers economic damages. You can add filing fees after you file.
+
+---
+
 ## ASK GENIE AI TAB (Case Advisor)
 A private AI chat that knows YOUR specific case — your facts, defendant details, claim amount, and all your uploaded documents. Ask anything:
 - "Is my case strong?"
@@ -80,14 +125,30 @@ Voice input is available. The AI reads your uploaded documents and gives persona
 
 ---
 
-## DEMAND LETTER TAB
+## DEMAND LETTER TAB ("Send a Demand")
 Generate a professional pre-litigation demand letter. Sending one before filing is strongly recommended — many disputes resolve here. Three modes:
 
-1. **Demand Letter** — formal letter demanding payment by a deadline. Tone options: Formal, Firm, or Friendly. Download as PDF.
-2. **Settlement Offer** — propose a reduced amount (typically 60–85% of claim) with payment deadline and installment options. Download as PDF.
-3. **Settlement Agreement** — formal written agreement both parties sign once they agree on terms. Includes confidentiality clause option. Download as PDF.
+1. **Demand Letter** — formal letter demanding payment by a specific deadline. Download as PDF.
+2. **Settlement Offer** — propose a reduced amount (typically 60–85% of claim) with payment deadline and optional installment plan. Download as PDF.
+3. **Settlement Agreement** — a binding written agreement both parties sign once they agree on terms. Includes optional confidentiality clause. Download as PDF.
+
+### Demand Letter Tone Options
+The Demand Letter (mode 1) lets you pick a tone. All three tones generate legally complete letters — the difference is voice and relationship strategy:
+
+- **Formal** — Coldly professional, strict legal language, zero warmth. Best for strangers, businesses, or when the relationship is already burned. Signals you are serious and court-ready.
+- **Firm** — Direct and assertive but not hostile. The most commonly recommended tone. Puts pressure on the defendant while keeping the door open for a quick resolution.
+- **Friendly** — Polite and cooperative language, emphasizes wanting a fair resolution. Best when you still have an ongoing relationship with the defendant (neighbor, family member, former friend) or genuinely want to avoid court.
+
+You can switch between tones instantly — the app saves a separate letter for each tone so you can compare them side by side before sending.
 
 California courts look favorably on plaintiffs who tried to resolve before filing.
+
+### After You Download the Demand Letter
+1. Print the letter (or save as PDF)
+2. Send via **certified mail with return receipt** (USPS Form 3800 + 3811) — this creates a paper trail proving the defendant received it
+3. Keep the green return receipt card when it comes back — bring it to court as proof of delivery
+4. Set a realistic response deadline (typically 10–14 business days)
+5. If no response, proceed to file your SC-100
 
 ---
 
@@ -110,18 +171,26 @@ All California small claims forms pre-filled from your intake data. Two sections
 
 All forms are pre-filled. You review in a modal, edit if needed, and download as a court-ready PDF. No handwriting required.
 
+### After You Download the SC-100 — Step by Step
+1. **Print two copies** of the SC-100 (one for the court, one for your records)
+2. **Go to your county courthouse's small claims clerk window** (not the main clerk — look for the small claims division specifically)
+3. **Pay the filing fee** ($30–$75 depending on claim amount). Bring cash or check — some courthouses don't take credit cards.
+4. **The clerk stamps your SC-100 and assigns a hearing date** — write this down immediately
+5. **Serve the defendant** — you must notify them of the lawsuit using certified mail or a process server. This must be done at least 15 days before the hearing (20 days if the defendant is in a different county).
+6. **File proof of service (SC-112A)** — after the defendant is served, return to the courthouse and file SC-112A to confirm service was completed
+7. **Gather your evidence** — organize everything you'll bring to the hearing (receipts, contracts, photos, texts, emails, repair estimates)
+8. **Use Hearing Prep** — run through the Mock Trial and build your Court-Ready Statement before hearing day
+
 ---
 
-## HEARING PREP TAB
-The AI generates a personalized hearing prep guide for your specific case:
-- Suggested opening statement (what to say first to the judge)
-- Evidence presentation order
-- Anticipated questions from the judge or defendant
-- Rebuttal talking points
-- What to bring to the courthouse
-- Tips for presenting clearly and confidently
+## HEARING PREP TAB ("Prep for Hearing")
+Two distinct modes — users choose one when they open the tab:
 
-Print or save it to review before your hearing.
+**Mode 1 — Court-Ready Statement**
+The AI builds a personalized, polished statement for what to say when the judge first asks you to explain your case. It uses your case facts and uploaded documents to suggest an opening statement, evidence order, key points to hit, and what NOT to say. Users can edit and refine it, then print or save before the hearing.
+
+**Mode 2 — AI Mock Trial (Practice with a Judge)**
+An interactive AI simulation where the AI plays the role of a real small claims judge. It asks the same kinds of questions a judge would ask — "What proof do you have?", "Did you try to resolve this first?", "Why do you believe you're owed this amount?" — and gives feedback on the user's answers. This is practice so users aren't caught off guard on hearing day. Users can speak their answers using voice input or type them.
 
 ---
 
