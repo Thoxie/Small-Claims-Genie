@@ -120,12 +120,29 @@ const REQUIRED: { tab: number; key: string; label: string }[] = [
 // ─── Intake Tab ───────────────────────────────────────────────────────────────
 export function IntakeTab({ caseId, initialData }: { caseId: number; initialData: any }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
-  const [activeTab, setActiveTab] = useState<1 | 2 | 3 | 4>(
-    isFreshCase ? 1 : (Math.min(initialData.intakeStep || 1, 4) as 1 | 2 | 3 | 4)
-  );
+  const [, navigate] = useLocation();
+
+  // Derive initial step: sessionStorage → DB value → 1
+  // sessionStorage survives refresh but not a new tab/session, so the user always
+  // lands back on exactly the step they were on before hitting refresh.
+  const getInitialStep = (): 1 | 2 | 3 | 4 => {
+    const stored = sessionStorage.getItem(`intake-step-${caseId}`);
+    const fromSession = stored ? parseInt(stored) : NaN;
+    if (fromSession >= 1 && fromSession <= 4) return fromSession as 1 | 2 | 3 | 4;
+    if (isFreshCase) return 1;
+    return Math.min(initialData.intakeStep || 1, 4) as 1 | 2 | 3 | 4;
+  };
+
+  const [activeTab, setActiveTabState] = useState<1 | 2 | 3 | 4>(getInitialStep);
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
-  const [, navigate] = useLocation();
+
+  // Wrap setActiveTab to keep sessionStorage in sync
+  const setActiveTab = (step: 1 | 2 | 3 | 4) => {
+    sessionStorage.setItem(`intake-step-${caseId}`, String(step));
+    setActiveTabState(step);
+  };
+
   const saveIntake = useSaveIntakeProgress();
   const queryClient = useQueryClient();
   const { toast } = useToast();
