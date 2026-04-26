@@ -292,13 +292,14 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
 
       {mode === "demand" && (
         <>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold flex items-center gap-2"><Mail className="h-5 w-5 text-primary" />Demand Letter Generator</h2>
-              <p className="text-sm text-muted-foreground mt-1">Generate a professional pre-litigation demand letter using your case details.</p>
-            </div>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-bold flex items-center gap-2 flex-1 min-w-0">
+              <Mail className="h-5 w-5 text-primary shrink-0" />
+              <span className="whitespace-nowrap">Demand Letter Generator</span>
+              <span className="font-normal text-muted-foreground whitespace-nowrap"> - Generate a professional pre-litigation demand letter using your case details.</span>
+            </h2>
             {text.trim() && (
-              <Button onClick={downloadPdf} disabled={isDownloading} className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
+              <Button onClick={downloadPdf} disabled={isDownloading} className="gap-2 bg-amber-500 hover:bg-amber-600 text-white shrink-0">
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PDF
               </Button>
             )}
