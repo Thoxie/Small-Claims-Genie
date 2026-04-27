@@ -138,13 +138,17 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
   try {
     const uploadURL = await objectStorage.getObjectEntityUploadURL();
     storageObjectPath = objectStorage.normalizeObjectEntityPath(uploadURL);
-    await fetch(uploadURL, {
+    const gcsUploadRes = await fetch(uploadURL, {
       method: "PUT",
       headers: { "Content-Type": req.file.mimetype },
       // @ts-ignore — Node 18+ fetch accepts Buffer
       body: req.file.buffer,
       duplex: "half",
+      signal: AbortSignal.timeout(60_000),
     } as RequestInit);
+    if (!gcsUploadRes.ok) {
+      throw new Error(`GCS PUT returned ${gcsUploadRes.status}`);
+    }
   } catch (storageErr) {
     console.error("[Storage] GCS upload failed:", storageErr);
     res.status(503).json({ error: "File storage is temporarily unavailable. Please try again in a moment." });

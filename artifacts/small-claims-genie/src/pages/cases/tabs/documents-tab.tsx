@@ -163,11 +163,16 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
-    await uploadDoc.mutateAsync({ id: caseId, data: { file, label: file.name } });
-    invalidateDocAndScore();
-    toast({ title: "Document uploaded", description: "OCR text extraction is running in the background." });
     e.target.value = "";
-    setActiveTab("uploads");
+    try {
+      await uploadDoc.mutateAsync({ id: caseId, data: { file, label: file.name } });
+      invalidateDocAndScore();
+      toast({ title: "Document uploaded", description: "OCR text extraction is running in the background." });
+      setActiveTab("uploads");
+    } catch (err: any) {
+      const msg = err?.data?.error ?? err?.message ?? "Upload failed — please try again.";
+      toast({ title: "Upload failed", description: msg, variant: "destructive" });
+    }
   };
 
   const handleDelete = (docId: number) => {
