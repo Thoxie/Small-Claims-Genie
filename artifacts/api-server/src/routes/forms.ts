@@ -1912,7 +1912,7 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   const parties: any[] = b.noticeParties || [];
 
   function setField(form: any, name: string, value: string) {
-    try { form.getTextField(name).setText(value || ""); } catch { /* field may not exist */ }
+    try { const f = form.getTextField(name); f.setFontSize(11); f.setText(value || ""); } catch { /* field may not exist */ }
   }
   function checkBox(form: any, name: string, checked: boolean) {
     try { if (checked) form.getCheckBox(name).check(); else form.getCheckBox(name).uncheck(); } catch { /* field may not exist */ }
