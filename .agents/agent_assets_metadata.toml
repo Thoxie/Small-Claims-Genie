@@ -78,3 +78,15 @@ id = "Z7VYClufUjdVVYe0EnYW8"
 uri = "file://small-claims-genie-backup.tar.gz"
 type = "unspecified"
 title = "Small Claims Genie — Source Code Backup"
+
+[[outputs]]
+id = "gG-LWu12kfff9h6sklmDs"
+uri = "file://backups/small-claims-genie_backup_20260427_211438.tar.gz"
+type = "unspecified"
+title = "Download Backup — small-claims-genie_backup_20260427_211438.tar.gz (1.7 GB)"
+
+[[outputs]]
+id = "dxfzYBUGGrz7771KHyQcp"
+uri = "file://backups/scg_code_20260427_213517.tar.gz"
+type = "unspecified"
+title = "Source Code Backup — 12 MB (downloadable)"

@@ -53,3 +53,6 @@ Thumbs.db
 *.mov
 *.avi
 *.mkv
+
+# Local backup archives (keep out of git)
+backups/
