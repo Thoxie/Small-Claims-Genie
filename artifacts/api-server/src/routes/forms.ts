@@ -1838,6 +1838,61 @@ router.post("/cases/:id/forms/sc104/signed", async (req, res): Promise<void> => 
   }
 });
 
+// ─── SC-105 AI Draft ──────────────────────────────────────────────────────────
+router.post("/cases/:id/forms/sc105/ai-draft", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = getUserId(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  const d = c as unknown as Record<string, any>;
+
+  const plaintiffName  = String(d.plaintiffName  || "Plaintiff");
+  const defendantName  = String(d.defendantName  || "Defendant");
+  const claimAmount    = d.claimAmount ? `$${Number(d.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2 })}` : "an amount to be determined";
+  const claimDesc      = String(d.claimDescription || "");
+  const incidentDate   = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
+  const hearingDate    = d.hearingDate  ? formatDateDisplay(d.hearingDate)  : "";
+
+  const prompt = [
+    `You are a California small claims court expert helping a self-represented litigant complete SC-105 (Request for Court Order and Answer).`,
+    ``,
+    `Case context:`,
+    `- Plaintiff: ${plaintiffName}`,
+    `- Defendant: ${defendantName}`,
+    `- Claim amount: ${claimAmount}`,
+    incidentDate ? `- Date of incident: ${incidentDate}` : "",
+    hearingDate  ? `- Hearing date: ${hearingDate}`      : "",
+    claimDesc    ? `- Case description: ${claimDesc}`    : "",
+    ``,
+    `Return a JSON object with exactly two fields:`,
+    `1. "orderRequested": A single concise sentence (max 200 characters) stating the specific court order being requested. Use plain legal English. Start with an action verb (e.g. "Continue…", "Order…", "Allow…"). No markdown.`,
+    `2. "orderReason": Two to four sentences (max 500 characters total) explaining the factual basis for the request. Reference the case facts. Plain text only, no markdown, no bullet points.`,
+    ``,
+    `Respond with only the JSON object.`,
+  ].filter(Boolean).join("\n");
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      max_tokens: 400,
+      response_format: { type: "json_object" },
+    });
+
+    const parsed = JSON.parse(completion.choices[0]?.message?.content || "{}") as { orderRequested?: string; orderReason?: string };
+    res.json({
+      orderRequested: (parsed.orderRequested || "").trim().replace(/^["']|["']$/g, ""),
+      orderReason:    (parsed.orderReason    || "").trim().replace(/^["']|["']$/g, ""),
+    });
+  } catch (err: any) {
+    console.error("SC-105 AI draft error:", err?.message);
+    res.status(500).json({ error: "AI draft failed — please try again." });
+  }
+});
+
 // ─── SC-105 Request for Court Order and Answer (AcroForm fill) ───────────────
 router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);

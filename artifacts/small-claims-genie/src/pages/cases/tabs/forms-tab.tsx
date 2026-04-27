@@ -205,17 +205,20 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
 };
 
 // ─── Form Assistant Modal ──────────────────────────────────────────────────────
-function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload, onAiGenerate }: {
+function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload, onAiGenerate, onAiDraftSC105 }: {
   formId: string; caseId: number; initialValues?: Record<string, string>;
   onClose: () => void;
   onDownload: (endpoint: string, filename: string, body: Record<string, any>) => void;
   onAiGenerate?: () => Promise<string | null>;
+  onAiDraftSC105?: () => Promise<{ orderRequested: string; orderReason: string }>;
 }) {
   const cfg = FORM_FIELD_CONFIG[formId];
   const [formData, setFormData] = useState<Record<string, string>>(() => initialValues ?? {});
   const [validationMsg, setValidationMsg] = useState<string | null>(null);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [sc105AiGenerating, setSc105AiGenerating] = useState(false);
+  const [sc105AiError, setSc105AiError] = useState<string | null>(null);
 
   if (!cfg) return null;
 
@@ -229,6 +232,22 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
       if (text) setFormData(prev => ({ ...prev, declarationText: text }));
     } catch { setAiError("AI generation failed — please try again."); }
     finally { setAiGenerating(false); }
+  }
+
+  async function handleAiDraftSC105() {
+    if (!onAiDraftSC105) return;
+    setSc105AiGenerating(true); setSc105AiError(null);
+    try {
+      const result = await onAiDraftSC105();
+      if (result) {
+        setFormData(prev => ({
+          ...prev,
+          ...(result.orderRequested ? { orderRequested: result.orderRequested } : {}),
+          ...(result.orderReason    ? { orderReason:    result.orderReason    } : {}),
+        }));
+      }
+    } catch { setSc105AiError("AI draft failed — please try again."); }
+    finally { setSc105AiGenerating(false); }
   }
 
   function buildBody(): Record<string, any> {
@@ -319,6 +338,16 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
                               {aiGenerating ? "Writing declaration…" : "AI Draft Declaration"}
                             </button>
                             {aiError && <p className="text-xs text-rose-600">{aiError}</p>}
+                          </div>
+                        )}
+                        {field.key === "orderRequested" && onAiDraftSC105 && (
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <button onClick={handleAiDraftSC105} disabled={sc105AiGenerating}
+                              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#0d6b5e]/10 text-[#0d6b5e] hover:bg-[#0d6b5e]/20 transition-colors disabled:opacity-50">
+                              {sc105AiGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                              {sc105AiGenerating ? "Drafting…" : "AI Draft Items 3 & 4"}
+                            </button>
+                            {sc105AiError && <p className="text-xs text-rose-600">{sc105AiError}</p>}
                           </div>
                         )}
                       </div>
@@ -741,6 +770,17 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     } finally {
       setDownloadingWithOverrides(false);
     }
+  }
+
+  async function generateSC105Draft(): Promise<{ orderRequested: string; orderReason: string }> {
+    const clerkToken = await getToken();
+    const res = await fetch(`/api/cases/${caseId}/forms/sc105/ai-draft`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${clerkToken}` }, body: JSON.stringify({}) });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as any).error || "AI draft failed — please try again.");
+    }
+    const data = await res.json();
+    return { orderRequested: data.orderRequested || "", orderReason: data.orderReason || "" };
   }
 
   async function generateMC030Declaration(): Promise<string | null> {
@@ -1451,6 +1491,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
             }
           }}
           onAiGenerate={modalFormId === "mc030" ? generateMC030Declaration : undefined}
+          onAiDraftSC105={modalFormId === "sc105" ? generateSC105Draft : undefined}
         />
       )}
 
