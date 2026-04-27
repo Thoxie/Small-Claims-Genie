@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, PDFName, PDFString } from "pdf-lib";
 import { getOwnedCase, getUserId } from "../lib/owned-case";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import type { Request, Response } from "express";
@@ -1912,7 +1912,14 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   const parties: any[] = b.noticeParties || [];
 
   function setField(form: any, name: string, value: string) {
-    try { const f = form.getTextField(name); f.setFontSize(11); f.setText(value || ""); } catch { /* field may not exist */ }
+    try {
+      const f = form.getTextField(name);
+      // The converted AcroForm uses octal-escaped DA strings (\057 for /, \056 for .)
+      // which break pdf-lib's setFontSize regex. Overwrite DA directly with a clean
+      // Helvetica 11 default appearance so text renders at the correct size.
+      f.acroField.dict.set(PDFName.of("DA"), PDFString.of("/Helv 11 Tf 0 g"));
+      f.setText(value || "");
+    } catch { /* field may not exist */ }
   }
   function checkBox(form: any, name: string, checked: boolean) {
     try { if (checked) form.getCheckBox(name).check(); else form.getCheckBox(name).uncheck(); } catch { /* field may not exist */ }
