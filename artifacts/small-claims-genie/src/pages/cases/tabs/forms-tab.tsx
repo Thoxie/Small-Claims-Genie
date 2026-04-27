@@ -150,11 +150,15 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
       { key: "signDate", label: "Date this form is signed", type: "date" },
     ]},
   ]},
-  sc150: { title: "Request to Postpone Trial (SC-150)", subtitle: "Ask the court to reschedule your hearing.", endpoint: "sc150", filename: (id) => `SC150-Case-${id}.pdf`, groups: [
-    { title: "Court Information", fields: [{ key: "courtStreet", label: "Court Street Address", type: "text" }]},
-    { title: "Your Information (Item 1)", fields: [{ key: "requestingPartyName", label: "Your full name", type: "text", required: true }, { key: "requestingPartyAddress", label: "Your mailing address", type: "text" }, { key: "requestingPartyPhone", label: "Your phone number", type: "text" }, { key: "requestingPartyRole", label: "You are a", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] }]},
-    { title: "Trial Dates", fields: [{ key: "currentTrialDate", label: "My trial is now scheduled for (Item 2)", type: "date", required: true }, { key: "postponeUntilDate", label: "I ask the court to postpone until (approximately) (Item 3)", type: "date" }]},
-    { title: "Reasons", fields: [{ key: "postponeReason", label: "I am asking for this postponement because (Item 4)", type: "textarea", required: true, placeholder: "Explain why you need a postponement..." }, { key: "withinTenDaysReason", label: "If trial is within 10 days — why didn't you ask sooner? (Item 5)", type: "textarea", placeholder: "Only fill this in if your trial is within the next 10 days..." }, { key: "signDate", label: "Date signed", type: "date" }]},
+  sc150: { title: "Request to Postpone Trial (SC-150)", subtitle: "Your name, address, and hearing date are already filled in. Just answer the questions below.", endpoint: "sc150", filename: (id) => `SC150-Case-${id}.pdf`, groups: [
+    { title: "Your Role (Item 1)", fields: [
+      { key: "requestingPartyRole", label: "You are filing this as the", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
+    ]},
+    { title: "Postponement Request", fields: [
+      { key: "postponeUntilDate", label: "Postpone until approximately (Item 3 — optional)", type: "date" },
+      { key: "postponeReason", label: "Why are you asking to postpone? (Item 4)", type: "textarea", required: true, placeholder: "Explain why you need more time..." },
+      { key: "withinTenDaysReason", label: "If your trial is within 10 days — why didn't you ask sooner? (Item 5, optional)", type: "textarea", placeholder: "Only fill this in if your trial is within the next 10 days..." },
+    ]},
   ]},
   sc105: { title: "Request for Court Order and Answer (SC-105)", subtitle: "Your name, address, and the other party's info are already filled in. Just answer the two questions below.", endpoint: "sc105", filename: (id) => `SC105-Case-${id}.pdf`, groups: [
     { title: "Your Role (Item 1)", fields: [
