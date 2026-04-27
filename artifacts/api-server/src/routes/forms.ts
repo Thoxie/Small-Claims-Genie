@@ -1838,7 +1838,7 @@ router.post("/cases/:id/forms/sc104/signed", async (req, res): Promise<void> => 
   }
 });
 
-// ─── SC-105 Request for Court Order and Answer (2 pages) ─────────────────────
+// ─── SC-105 Request for Court Order and Answer (AcroForm fill) ───────────────
 router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
@@ -1853,56 +1853,56 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   // b.orderRequested: string
   // b.orderReason: string
   const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
+  const courtInfo = b.courtStreet || d.courthouseAddress || d.courthouseName || "";
   const parties: any[] = b.noticeParties || [];
+
+  function setField(form: any, name: string, value: string) {
+    try { form.getTextField(name).setText(value || ""); } catch { /* field may not exist */ }
+  }
+  function checkBox(form: any, name: string, checked: boolean) {
+    try { if (checked) form.getCheckBox(name).check(); else form.getCheckBox(name).uncheck(); } catch { /* field may not exist */ }
+  }
+
   try {
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const [bg1, bg2] = await Promise.all([
-      pdfDoc.embedPng(loadAsset("sc105_hq-1.png")),
-      pdfDoc.embedPng(loadAsset("sc105_hq-2.png")),
-    ]);
+    const acroBytes = loadAsset("forms/sc105_acroform.pdf");
+    const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
+    const form = pdfDoc.getForm();
 
     // ── Page 1 — Request ──
-    const LIFT = 4.5;
-    const p1 = pdfDoc.addPage([PW, PH]);
-    p1.drawImage(bg1, { x: 0, y: 0, width: PW, height: PH });
-    const v1 = (t: any, x: number, y: number, s = 9) => val(p1, font, t, x, y + LIFT, s);
-    const xm1 = (cx: number, cy: number) => xmark(p1, cx, cy + LIFT, 5);
-
-    // Right column — court + case (auto-fill from case data)
-    v1(b.courtStreet || d.courthouseAddress || d.courthouseName || "", 376, 606);
-    v1(d.caseNumber, 376, 549);
-    v1(caseName, 376, 505);
+    setField(form, "SC-105[0].Page1[0].RightCaption[0].CourtInfo[0]", courtInfo);
+    setField(form, "SC-105[0].Page1[0].RightCaption[0].CaseNumber[0]", d.caseNumber || "");
+    setField(form, "SC-105[0].Page1[0].RightCaption[0].CaseName[0]", caseName);
 
     // Item 1 — who is asking
-    v1(b.requestingPartyName, 100, 474);
-    v1(b.requestingPartyAddress, 100, 460);
-    if (b.requestingPartyRole === "defendant") xm1(156, 437);
-    if (b.requestingPartyRole === "plaintiff") xm1(218, 437);
+    setField(form, "SC-105[0].Page1[0].List1[0].Item[0].FullName3[0]", b.requestingPartyName || "");
+    setField(form, "SC-105[0].Page1[0].List1[0].Item[0].FullName2[0]", b.requestingPartyAddress || "");
+    checkBox(form, "SC-105[0].Page1[0].List1[0].Item[0].Level5[0]", b.requestingPartyRole === "defendant");
+    checkBox(form, "SC-105[0].Page1[0].List1[0].Item[0].Level5[1]", b.requestingPartyRole === "plaintiff");
 
-    // Item 2 — notice parties
-    if (parties[0]) { v1(parties[0].name, 100, 386); v1(parties[0].address, 295, 386); }
-    if (parties[1]) { v1(parties[1].name, 100, 369); v1(parties[1].address, 295, 369); }
-    if (parties[2]) { v1(parties[2].name, 100, 351); v1(parties[2].address, 295, 351); }
+    // Item 2 — notice parties (up to 3)
+    setField(form, "SC-105[0].Page1[0].List2[0].Item1[0].Make1_ft[0]", parties[0]?.name || "");
+    setField(form, "SC-105[0].Page1[0].List2[0].Item1[0].Model1_ft[0]", parties[0]?.address || "");
+    setField(form, "SC-105[0].Page1[0].List2[0].Item1[0].Make2_ft[0]", parties[1]?.name || "");
+    setField(form, "SC-105[0].Page1[0].List2[0].Item1[0].Model2_ft[0]", parties[1]?.address || "");
+    setField(form, "SC-105[0].Page1[0].List2[0].Item1[0].Make3_ft[0]", parties[2]?.name || "");
+    setField(form, "SC-105[0].Page1[0].List2[0].Item1[0].Model3_ft[0]", parties[2]?.address || "");
 
     // Item 3 — order requested
-    wrapVal(p1, font, b.orderRequested, 63, 291 + LIFT, 490, 9, 13, 5);
+    setField(form, "SC-105[0].Page1[0].List3[0].item3[0].Specify[0].Disagree_ft1[0]", b.orderRequested || "");
 
-    // Item 4 — reason
-    wrapVal(p1, font, b.orderReason, 63, 218 + LIFT, 490, 9, 13, 5);
+    // Item 4 — reason / facts
+    setField(form, "SC-105[0].Page1[0].List4[0].item4[0].Explain[0].Disagree_ft6[0]", b.orderReason || "");
 
-    // Date + name
-    v1(b.signDate || today(), 72, 129);
-    v1(b.requestingPartyName, 45, 107);
+    // Signature block
+    setField(form, "SC-105[0].Page1[0].Sign[0].SigDate4[0]", b.signDate || today());
+    setField(form, "SC-105[0].Page1[0].Sign[0].SigName[0]", b.requestingPartyName || "");
 
-    // ── Page 2 — Answer (pre-fill header only; other party fills) ──
-    const p2 = pdfDoc.addPage([PW, PH]);
-    p2.drawImage(bg2, { x: 0, y: 0, width: PW, height: PH });
-    const v2 = (t: any, x: number, y: number, s = 9) => val(p2, font, t, x, y + LIFT, s);
-    v2(b.courtStreet || "", 376, 606);
-    v2(d.caseNumber, 376, 549);
-    v2(caseName, 376, 505);
+    // ── Page 2 — Answer (pre-fill header only; other party fills out the rest) ──
+    setField(form, "SC-105[0].Page2[0].RightCaption[0].CourtInfo[0]", courtInfo);
+    setField(form, "SC-105[0].Page2[0].RightCaption[0].CaseNumber[0]", d.caseNumber || "");
+    setField(form, "SC-105[0].Page2[0].RightCaption[0].CaseName[0]", caseName);
 
+    form.flatten();
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="SC105-Case-${id}.pdf"`);
