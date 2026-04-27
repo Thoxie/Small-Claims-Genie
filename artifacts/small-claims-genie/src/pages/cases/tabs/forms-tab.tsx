@@ -156,24 +156,18 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
     { title: "Trial Dates", fields: [{ key: "currentTrialDate", label: "My trial is now scheduled for (Item 2)", type: "date", required: true }, { key: "postponeUntilDate", label: "I ask the court to postpone until (approximately) (Item 3)", type: "date" }]},
     { title: "Reasons", fields: [{ key: "postponeReason", label: "I am asking for this postponement because (Item 4)", type: "textarea", required: true, placeholder: "Explain why you need a postponement..." }, { key: "withinTenDaysReason", label: "If trial is within 10 days — why didn't you ask sooner? (Item 5)", type: "textarea", placeholder: "Only fill this in if your trial is within the next 10 days..." }, { key: "signDate", label: "Date signed", type: "date" }]},
   ]},
-  sc105: { title: "Request for Court Order and Answer (SC-105)", subtitle: "Ask the court to issue a specific order. Review the pre-filled fields and add what's missing.", endpoint: "sc105", filename: (id) => `SC105-Case-${id}.pdf`, groups: [
-    { title: "Court Address", fields: [{ key: "courtStreet", label: "Court Street Address", type: "text" }]},
-    { title: "Who Is Requesting (Item 1)", fields: [
-      { key: "requestingPartyName", label: "Your full name", type: "text", required: true },
-      { key: "requestingPartyAddress", label: "Your mailing address", type: "text" },
-      { key: "requestingPartyRole", label: "You are the", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
+  sc105: { title: "Request for Court Order and Answer (SC-105)", subtitle: "Your name, address, and the other party's info are already filled in. Just answer the two questions below.", endpoint: "sc105", filename: (id) => `SC105-Case-${id}.pdf`, groups: [
+    { title: "Your Role (Item 1)", fields: [
+      { key: "requestingPartyRole", label: "You are filing this as the", type: "select", required: true, options: [{ value: "plaintiff", label: "Plaintiff" }, { value: "defendant", label: "Defendant" }] },
     ]},
-    { title: "Who Should Be Notified (Item 2)", fields: [
-      { key: "notice1Name", label: "Name of party to notify #1", type: "text", required: true },
-      { key: "notice1Address", label: "Address of party #1", type: "text" },
-      { key: "notice2Name", label: "Name of party to notify #2 (if any)", type: "text" },
-      { key: "notice2Address", label: "Address of party #2", type: "text" },
-      { key: "notice3Name", label: "Name of party to notify #3 (if any)", type: "text" },
-      { key: "notice3Address", label: "Address of party #3", type: "text" },
+    { title: "Additional Parties to Notify (Item 2 — optional)", fields: [
+      { key: "notice2Name", label: "Additional party name (if any)", type: "text" },
+      { key: "notice2Address", label: "Their address", type: "text" },
+      { key: "notice3Name", label: "Third party name (if any)", type: "text" },
+      { key: "notice3Address", label: "Their address", type: "text" },
     ]},
     { title: "Order Requested (Item 3)", fields: [{ key: "orderRequested", label: "What court order are you asking for?", type: "textarea", required: true, placeholder: "e.g. Continue the hearing date to allow additional time to gather evidence." }]},
     { title: "Reason (Item 4)", fields: [{ key: "orderReason", label: "Why are you asking for this order?", type: "textarea", required: true, placeholder: "Explain the facts that support your request..." }]},
-    { title: "Signature", fields: [{ key: "signDate", label: "Date signed", type: "date" }]},
   ]},
   sc120: { title: "Defendant's Claim and ORDER (SC-120)", subtitle: "File a counter-claim against the plaintiff. Review the pre-filled fields and add your claim details.", endpoint: "sc120", filename: (id) => `SC120-Case-${id}.pdf`, groups: [
     { title: "Your Counter-Claim (Item 3)", fields: [

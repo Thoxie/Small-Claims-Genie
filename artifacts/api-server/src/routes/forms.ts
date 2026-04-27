@@ -1957,7 +1957,6 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
     setField(form, "SC-105[0].Page2[0].RightCaption[0].CaseNumber[0]", d.caseNumber || "");
     setField(form, "SC-105[0].Page2[0].RightCaption[0].CaseName[0]", caseName);
 
-    form.flatten();
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="SC105-Case-${id}.pdf"`);
