@@ -1217,35 +1217,55 @@ function drawMC030Page(
     let bodyY = 494 + LIFT;
     const bodyX    = 36;          // left margin: 1/2 inch (36pt) — matches form's printed rule lines
     const bodyMaxW = 540;         // 612-36-36 = 540 — body width with 1/2 inch margins on each side
-    const bodySize = 10.5;        // 10.5pt body font — fits longer declarations
-    const bodyLineH = 11.5;       // 11.5pt line height — tight, uniform throughout
-    const paraGap   = 0;          // no extra gap between paragraphs — equal spacing throughout
-    const maxTotalLines = 26;     // 26 × 11.5pt = 299pt, fits between bodyY=498.5 and "I declare" line (~188) with margin
-    let linesUsed = 0;
+    const bodySize    = 10.5;  // 10.5pt body font — fits longer declarations
+    const bodyLineH   = 11.5;  // 11.5pt line height — tight, uniform throughout
+    const maxTotalLines = 26;  // 26 × 11.5pt = 299pt, fits between bodyY=498.5 and "I declare" line (~188)
 
-    for (let pi = 0; pi < paragraphs.length && linesUsed < maxTotalLines; pi++) {
-      const words = paragraphs[pi].split(/\s+/);
+    // ── Pass 1: wrap every paragraph into display lines, stop at maxTotalLines ──
+    // We do this before drawing so we know the total line count and can
+    // distribute any leftover vertical space as equal inter-paragraph gaps.
+    const allParaLines: string[][] = [];
+    let totalLinesCount = 0;
+
+    for (const para of paragraphs) {
+      if (totalLinesCount >= maxTotalLines) break;
+      const words = para.split(/\s+/);
+      const lines: string[] = [];
       let line = "";
-
       for (const word of words) {
         const cand = line ? line + " " + word : word;
         if (font.widthOfTextAtSize(cand, bodySize) > bodyMaxW && line) {
-          page.drawText(line, { x: bodyX, y: bodyY, size: bodySize, font, color: BLACK });
-          bodyY -= bodyLineH;
-          linesUsed++;
+          lines.push(line);
           line = word;
-          if (linesUsed >= maxTotalLines) break;
         } else {
           line = cand;
         }
       }
-      if (line && linesUsed < maxTotalLines) {
-        page.drawText(line, { x: bodyX, y: bodyY, size: bodySize, font, color: BLACK });
+      if (line) lines.push(line);
+      allParaLines.push(lines);
+      totalLinesCount += lines.length;
+    }
+
+    // ── Compute dynamic inter-paragraph gap ──────────────────────────────────
+    // If the text uses fewer than 26 lines, distribute the leftover vertical
+    // space evenly between paragraphs so the declaration fills the form body.
+    // Cap at 24pt (~2 blank lines) to avoid over-spacing short declarations.
+    const numGaps = allParaLines.length - 1;
+    const spareLines = Math.max(0, maxTotalLines - totalLinesCount);
+    const paraGap = numGaps > 0 && spareLines > 0
+      ? Math.min((spareLines * bodyLineH) / numGaps, 24)
+      : 0;
+
+    // ── Pass 2: render ───────────────────────────────────────────────────────
+    let linesUsed = 0;
+    for (let pi = 0; pi < allParaLines.length; pi++) {
+      for (const lineText of allParaLines[pi]) {
+        if (linesUsed >= maxTotalLines) break;
+        page.drawText(lineText, { x: bodyX, y: bodyY, size: bodySize, font, color: BLACK });
         bodyY -= bodyLineH;
         linesUsed++;
       }
-      // Gap between paragraphs (not after the last one)
-      if (pi < paragraphs.length - 1 && linesUsed < maxTotalLines) {
+      if (pi < allParaLines.length - 1) {
         bodyY -= paraGap;
       }
     }
