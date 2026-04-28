@@ -1053,6 +1053,14 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
   // follow that pattern is extra closure content and should be removed.
   function stripClosingLines(text: string): string {
     const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    // Strip leading non-numbered lines (e.g. "MC-030 Declaration", "DECLARATION OF JANE DOE",
+    // "RE: ...", or any title/header the AI or user may have prepended). The MC-030 form is
+    // pre-printed with "DECLARATION" and "MC-030" so a typed header is always a duplicate.
+    while (lines.length > 0 && !/^\d+\./.test(lines[0])) {
+      lines.shift();
+    }
+    // Strip trailing non-numbered lines (e.g. "I declare under penalty of perjury..." closing
+    // — the form is pre-printed with that text near the bottom).
     while (lines.length > 0 && !/^\d+\./.test(lines[lines.length - 1])) {
       lines.pop();
     }
@@ -1140,8 +1148,8 @@ function drawMC030Page(
     let bodyY = 494 + LIFT;
     const bodyX    = 72;          // left margin: 1 inch (36pt extra inset from form's printed rule lines for readability)
     const bodyMaxW = 468;         // 612-72-72 = 468 — body width with 1 inch margins on each side
-    const bodySize = 11;
-    const bodyLineH = 13;         // proper leading for 11pt
+    const bodySize = 10;          // 10pt body font (1.3x leading via bodyLineH=13 stays comfortable)
+    const bodyLineH = 13;         // 13pt leading kept from 11pt — gives roomier line spacing at 10pt
     const paraGap   = 3;
     const maxTotalLines = 26;     // 26 × 13pt = 338pt, fits between v_y=498.5 and "I declare" line (~185)
     let linesUsed = 0;
