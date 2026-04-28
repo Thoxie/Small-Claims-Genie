@@ -220,6 +220,13 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
 
   if (!cfg) return null;
 
+  // Dynamic prompts: only ask for fields that aren't already known from intake/case data.
+  // Any field whose initialValue has a non-empty value is hidden; its value is still submitted
+  // because formData was seeded from initialValues. Groups left with zero fields are hidden too.
+  const visibleGroups = cfg.groups
+    .map(g => ({ ...g, fields: g.fields.filter(f => !(initialValues?.[f.key] ?? "").toString().trim()) }))
+    .filter(g => g.fields.length > 0);
+
   function set(key: string, value: string) { setFormData(prev => ({ ...prev, [key]: value })); }
 
   async function handleAiGenerate() {
@@ -287,7 +294,8 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
   }
 
   function handleSubmit() {
-    const required = cfg.groups.flatMap(g => g.fields).filter(f => f.required);
+    // Only validate fields that are still being prompted for — pre-filled fields are already known.
+    const required = visibleGroups.flatMap(g => g.fields).filter(f => f.required);
     const missing = required.filter(f => !formData[f.key]?.trim());
     if (missing.length > 0) { setValidationMsg(`Please fill in: ${missing.map(f => f.label).join(", ")}`); return; }
     setValidationMsg(null);
@@ -308,7 +316,10 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
           </button>
         </div>
         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-6">
-          {cfg.groups.map((group) => (
+          {visibleGroups.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">All required information is already on file. Click <span className="font-semibold">Generate PDF</span> to download.</p>
+          )}
+          {visibleGroups.map((group) => (
             <div key={group.title}>
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#0d6b5e] mb-3">{group.title}</h3>
               <div className="space-y-3">

@@ -410,7 +410,9 @@ function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string 
     </div>`;
 
   // ── PAGE 4: Declaration ────────────────────────────────────────────────────
-  const sigCoord = getCoord("4", "signature", { x: 248, y: 212 });
+  // Signature position: per user calibration, shift +1" right (+72pt) and +1.5" down (+108pt)
+  // from previous { x: 248, y: 212 }. Coordinates are CSS top-origin (y increases downward).
+  const sigCoord = getCoord("4", "signature", { x: 320, y: 320 });
   const page4 = `
     <div class="page" style="page-break-after:avoid;">
       <img class="bg" src="${bg(4)}" />
