@@ -396,11 +396,11 @@ function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string 
   // ── PAGE 4: Declaration ────────────────────────────────────────────────────
   // Signature position: calibrated against actual SC-100 page 4 PNG via probe.
   // The "Plaintiff signs here" underline is at approximately y=295pt. With sig
-  // height of 30pt, top:y=211 puts the signature bottom at y=241 — about 0.75"
-  // ABOVE the signature line, per user request to raise the bottom of the
-  // signature 1 inch (72pt) from where it had been rendering.
+  // height of 30pt, top:y=259 puts the signature bottom at y=289 — sitting
+  // right at the signature line. Per user feedback, y=211 was 3x too high;
+  // y=259 lowers it 48pt (2/3") back down to the correct position.
   // Coordinates are CSS top-origin (y increases downward).
-  const sigCoord = getCoord("4", "signature", { x: 320, y: 211 });
+  const sigCoord = getCoord("4", "signature", { x: 320, y: 259 });
   const page4 = `
     <div class="page" style="page-break-after:avoid;">
       <img class="bg" src="${bg(4)}" />
