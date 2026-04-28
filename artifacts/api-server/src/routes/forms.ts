@@ -1138,8 +1138,8 @@ function drawMC030Page(
   if (declarationText) {
     const paragraphs = declarationText.split(/\n/).map(p => p.trim()).filter(Boolean);
     let bodyY = 494 + LIFT;
-    const bodyX    = 36;          // left margin: flush with form's printed rule lines
-    const bodyMaxW = 540;         // 612-36-36 = 540 — maximum usable width on the form
+    const bodyX    = 72;          // left margin: 1 inch (36pt extra inset from form's printed rule lines for readability)
+    const bodyMaxW = 468;         // 612-72-72 = 468 — body width with 1 inch margins on each side
     const bodySize = 11;
     const bodyLineH = 13;         // proper leading for 11pt
     const paraGap   = 3;
