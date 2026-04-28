@@ -482,8 +482,15 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="bg-black aspect-video">
-              <video className="w-full h-full" controls autoPlay src={`${import.meta.env.BASE_URL}intake-step1-tutorial.mp4`} />
+            <div className="bg-black flex items-center justify-center" style={{ height: "min(80vh, 740px)" }}>
+              <iframe
+                className="h-full"
+                style={{ aspectRatio: "9 / 16", maxWidth: "100%", border: 0 }}
+                src="https://www.tiktok.com/embed/v2/7633866903466839317"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
+                allowFullScreen
+                title="Small Claims Genie — Intake Step 1 Tutorial"
+              />
             </div>
             <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between">
               <p className="text-xs text-gray-600">After watching, fill in your plaintiff and defendant information below.</p>
