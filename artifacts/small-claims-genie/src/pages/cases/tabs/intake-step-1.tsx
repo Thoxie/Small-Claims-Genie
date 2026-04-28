@@ -482,11 +482,11 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="bg-black aspect-video w-full">
+            <div className="bg-black flex items-center justify-center" style={{ height: "min(80vh, 740px)" }}>
               <iframe
-                className="w-full h-full"
-                style={{ border: 0 }}
-                src="https://www.tiktok.com/player/v1/7633866903466839317?autoplay=1&controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1&loop=0&music_info=0&description=0&rel=0&native_context_menu=0&closed_caption=1"
+                className="h-full"
+                style={{ aspectRatio: "9 / 16", maxWidth: "100%", border: 0 }}
+                src="https://www.tiktok.com/player/v1/7633866903466839317?controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1&loop=0&music_info=0&description=0&rel=0&native_context_menu=0&closed_caption=1"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
                 allowFullScreen
                 title="Small Claims Genie — Intake Step 1 Tutorial"
