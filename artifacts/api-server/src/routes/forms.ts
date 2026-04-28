@@ -1147,8 +1147,8 @@ function drawMC030Page(
     let bodyY = 494 + LIFT;
     const bodyX    = 72;          // left margin: 1 inch (36pt extra inset from form's printed rule lines for readability)
     const bodyMaxW = 468;         // 612-72-72 = 468 — body width with 1 inch margins on each side
-    const bodySize = 10;          // 10pt body font (1.3x leading via bodyLineH=13 stays comfortable)
-    const bodyLineH = 13;         // 13pt leading kept from 11pt — gives roomier line spacing at 10pt
+    const bodySize = 11;          // 11pt body font (per user preference)
+    const bodyLineH = 13;         // 13pt leading — comfortable at 11pt
     const paraGap   = 3;
     const maxTotalLines = 26;     // 26 × 13pt = 338pt, fits between v_y=498.5 and "I declare" line (~185)
     let linesUsed = 0;
