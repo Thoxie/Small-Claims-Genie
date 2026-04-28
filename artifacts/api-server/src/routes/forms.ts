@@ -1031,9 +1031,9 @@ export function stripMC030Wrappers(text: string): string {
 // MC-030 body layout constants — the renderer MUST honor these.
 // Exported so other routes (e.g. /mc030-ai) can measure declaration text
 // against the form's hard physical limits before returning it to the client.
-export const MC030_BODY_SIZE   = 11;   // 11pt body font
+export const MC030_BODY_SIZE   = 10.5; // 10.5pt body font — small enough to fit longer declarations
 export const MC030_BODY_MAX_W  = 540;  // 612 - 36 - 36 (1/2 inch margins)
-export const MC030_MAX_LINES   = 25;   // hard cap; anything beyond is truncated by the renderer
+export const MC030_MAX_LINES   = 26;   // hard cap; anything beyond is truncated by the renderer
 
 // Measure how many wrapped lines the given declaration text would consume on
 // the MC-030 page using the same wrapping algorithm as drawMC030Page().
@@ -1181,10 +1181,10 @@ function drawMC030Page(
     let bodyY = 494 + LIFT;
     const bodyX    = 36;          // left margin: 1/2 inch (36pt) — matches form's printed rule lines
     const bodyMaxW = 540;         // 612-36-36 = 540 — body width with 1/2 inch margins on each side
-    const bodySize = 11;          // 11pt body font
-    const bodyLineH = 12;         // 12pt line height — tight, uniform throughout
+    const bodySize = 10.5;        // 10.5pt body font — fits longer declarations
+    const bodyLineH = 11.5;       // 11.5pt line height — tight, uniform throughout
     const paraGap   = 0;          // no extra gap between paragraphs — equal spacing throughout
-    const maxTotalLines = 25;     // 25 × 12pt = 300pt, fits between bodyY=498.5 and "I declare" line (~188) with margin
+    const maxTotalLines = 26;     // 26 × 11.5pt = 299pt, fits between bodyY=498.5 and "I declare" line (~188) with margin
     let linesUsed = 0;
 
     for (let pi = 0; pi < paragraphs.length && linesUsed < maxTotalLines; pi++) {

@@ -403,12 +403,12 @@ CONTENT ORDER:
 5. Applicable California statutes (list each statute cited as a separate numbered paragraph explaining how it applies).
 
 SPACE CONSTRAINT (HARD LIMIT):
-The pre-printed MC-030 form has a fixed body area. Your declaration is rendered at 11pt Helvetica with 1/2 inch (36pt) margins on each side. Total available space: approximately 25 lines of text. At ~88 characters per line, that is ~2,200 characters maximum.
-- Aim for 6 to 12 short numbered paragraphs.
+The pre-printed MC-030 form has a fixed body area. Your declaration is rendered at 10.5pt Helvetica with 1/2 inch (36pt) margins on each side. Total available space: approximately 26 lines of text. At ~92 characters per line, that is ~2,400 characters maximum.
+- Aim for 6 to 13 short numbered paragraphs.
 - Each paragraph: 1 to 3 sentences, no more.
-- Total length target: 1,400 to 1,900 characters of body text.
+- Total length target: 1,500 to 2,100 characters of body text.
 - If the facts could fill more space, prioritize the most legally important ones (who/what/when, dollar amount, attempts to resolve, statutes).
-Anything beyond the 25-line limit will be physically truncated by the renderer and never reach the court. Stay well within the limit.
+Anything beyond the 26-line limit will be physically truncated by the renderer and never reach the court. Stay well within the limit.
 
 IMPORTANT: Use only the facts provided. Never invent facts. The dollar amount must match the Amount Sought exactly. Your output must contain ONLY numbered paragraphs — no opening title, no closing perjury statement, no signature block.`;
 
