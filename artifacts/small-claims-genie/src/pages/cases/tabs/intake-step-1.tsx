@@ -462,7 +462,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
           onClick={() => setTutorialOpen(false)}
         >
           <div
-            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden w-[720px] max-w-[95vw]"
+            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-[95vw] max-h-[95vh] flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
@@ -482,7 +482,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="bg-black flex items-center justify-center" style={{ height: "min(80vh, 740px)" }}>
+            <div className="bg-black flex-1 flex items-center justify-center min-h-0" style={{ minHeight: "min(82vh, 900px)" }}>
               <iframe
                 className="h-full"
                 style={{ aspectRatio: "9 / 16", maxWidth: "100%", border: 0 }}
