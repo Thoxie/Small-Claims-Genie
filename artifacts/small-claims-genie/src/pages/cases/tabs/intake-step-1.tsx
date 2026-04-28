@@ -492,8 +492,18 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                 title="Small Claims Genie — Intake Step 1 Tutorial"
               />
             </div>
-            <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between">
-              <p className="text-xs text-gray-600">After watching, fill in your plaintiff and defendant information below.</p>
+            <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
+                Trouble seeing the video?{" "}
+                <a
+                  href="https://www.tiktok.com/@smallclaimsgenie/video/7633866903466839317"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#14b8a6] hover:text-[#0d9488] underline"
+                >
+                  Open it on TikTok ↗
+                </a>
+              </p>
               <button
                 onClick={() => setTutorialOpen(false)}
                 className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
