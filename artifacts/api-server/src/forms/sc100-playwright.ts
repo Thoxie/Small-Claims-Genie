@@ -400,7 +400,7 @@ function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string 
   // right at the signature line. Per user feedback, y=211 was 3x too high;
   // y=259 lowers it 48pt (2/3") back down to the correct position.
   // Coordinates are CSS top-origin (y increases downward).
-  const sigCoord = getCoord("4", "signature", { x: 320, y: 295 });
+  const sigCoord = getCoord("4", "signature", { x: 320, y: 289 });
   const page4 = `
     <div class="page" style="page-break-after:avoid;">
       <img class="bg" src="${bg(4)}" />
