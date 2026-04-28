@@ -1124,27 +1124,26 @@ function drawMC030Page(
   // Case number (right col, above CASE NUMBER: label at measured y=247.3)
   v(d.caseNumber,     413, 544);
 
-  // ── Declaration title — centered, bold, 11pt ────────────────────────────────
-  // Measured: y=286.5 → v_y=494  (no DOWN — declaration area is correctly placed)
-  if (declarationTitle) {
-    const titleSize = 11;
-    const tw = fontBold.widthOfTextAtSize(declarationTitle, titleSize);
-    const tx = Math.max(36, (PW - tw) / 2);
-    page.drawText(declarationTitle, { x: tx, y: 494 + LIFT, size: titleSize, font: fontBold, color: BLACK });
-  }
+  // ── Declaration title — REMOVED ─────────────────────────────────────────────
+  // The form is pre-printed with "DECLARATION" in the title box (top) and again
+  // as a footer (bottom). Drawing an AI-generated title here created a visible
+  // duplicate, so the title rendering has been removed and the body now starts
+  // higher to fill the reclaimed space.
+  void declarationTitle;
 
   // ── Declaration body — numbered paragraphs ──────────────────────────────────
   // 11pt Helvetica, 13pt leading, full-width margins matching the printed form lines.
-  // Body start v_y=467, must stop before the pre-printed "I declare" text (~v_y=185).
+  // Body start v_y=494 (reused old title baseline), must stop before the
+  // pre-printed "I declare" text (~v_y=185).
   if (declarationText) {
     const paragraphs = declarationText.split(/\n/).map(p => p.trim()).filter(Boolean);
-    let bodyY = 467 + LIFT;
+    let bodyY = 494 + LIFT;
     const bodyX    = 36;          // left margin: flush with form's printed rule lines
     const bodyMaxW = 540;         // 612-36-36 = 540 — maximum usable width on the form
     const bodySize = 11;
     const bodyLineH = 13;         // proper leading for 11pt
     const paraGap   = 3;
-    const maxTotalLines = 24;     // 24 × 13pt = 312pt, fits before "I declare" line
+    const maxTotalLines = 26;     // 26 × 13pt = 338pt, fits between v_y=498.5 and "I declare" line (~185)
     let linesUsed = 0;
 
     for (let pi = 0; pi < paragraphs.length && linesUsed < maxTotalLines; pi++) {
