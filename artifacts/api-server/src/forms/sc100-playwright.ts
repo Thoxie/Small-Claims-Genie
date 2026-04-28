@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
-import { execSync } from "child_process";
-import { chromium } from "playwright-core";
+import { withPage } from "./chromium-pool";
 import type { SC100FieldMap, FieldCoord } from "./sc100-calibrate";
 
 export interface SC100Data {
@@ -264,21 +263,6 @@ function x(page: string, id: string, show: boolean | null | undefined): string {
   return xmarkAt(coord, show);
 }
 
-// ── Find the system Chromium binary ──────────────────────────────────────────
-function findChromium(): string {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  try {
-    return execSync(
-      "which chromium 2>/dev/null || which chromium-browser 2>/dev/null || which google-chrome 2>/dev/null",
-      { encoding: "utf8" }
-    )
-      .trim()
-      .split("\n")[0];
-  } catch {
-    throw new Error("Chromium not found. Set CHROMIUM_PATH environment variable.");
-  }
-}
-
 // ── Build the full 4-page HTML document ──────────────────────────────────────
 function buildHtml(d: SC100Data, assetDir: string, sigDataUrl?: string): string {
   // Load field map on first use (or after calibration refresh)
@@ -502,20 +486,8 @@ export async function buildSC100Pdf(
     : undefined;
 
   const html = buildHtml(data, assetDir, sigDataUrl);
-  const executablePath = findChromium();
 
-  const browser = await chromium.launch({
-    executablePath,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-    ],
-  });
-
-  try {
-    const page = await browser.newPage();
+  return withPage(async (page) => {
     await page.setContent(html, { waitUntil: "networkidle" });
     const pdfBuffer = await page.pdf({
       width: "8.5in",
@@ -524,7 +496,5 @@ export async function buildSC100Pdf(
       margin: { top: 0, right: 0, bottom: 0, left: 0 },
     });
     return Buffer.from(pdfBuffer);
-  } finally {
-    await browser.close();
-  }
+  });
 }

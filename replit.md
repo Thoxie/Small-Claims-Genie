@@ -39,7 +39,7 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
 -   **Voice:** Push-to-talk functionality uses `useVoiceRecorder` for Whisper transcription and AI integration.
 -   **Demand Letter:** SSE streaming generation with PDF download.
 -   **PDF Generation:**
-    -   **SC-100:** Generated using Playwright + Chromium, rendering HTML/CSS with absolute positioning over base64-embedded 300 DPI PNG backgrounds for precise field placement. Coordinates are stored in `sc100-field-map.json`, derived from `pdftotext -bbox`.
+    -   **SC-100:** Generated using Playwright + Chromium, rendering HTML/CSS with absolute positioning over base64-embedded 300 DPI PNG backgrounds for precise field placement. Coordinates are stored in `sc100-field-map.json`, derived from `pdftotext -bbox`. Uses a singleton warm-browser pool (`forms/chromium-pool.ts`) to avoid the ~2-4s Chromium cold-launch on every request — browser is pre-warmed at server start, pages are created/closed per request, browser auto-relaunches on disconnect, and shutdown drains in-flight renders for up to 5s.
     -   **MC-030:** Utilizes `pdf-lib` for form filling; includes an AI declaration auto-generation feature.
     -   **SC-105:** Uses AcroForm filling with `pdf-lib` for efficient and accurate form population. This is the preferred method for future forms.
 -   **Readiness Score:** A metric (0-100) based on intake completeness (60pts), document submission (30pts), and prior demand letters (10pts).
