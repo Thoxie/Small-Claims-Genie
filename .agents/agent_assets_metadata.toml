@@ -96,3 +96,9 @@ id = "-Qn_UTGlMskL2iqxi8Q_A"
 uri = "file://backups/small-claims-genie_20260428132138.zip"
 type = "unspecified"
 title = "Source Code Backup ZIP — 11.3 MB"
+
+[[outputs]]
+id = "S9W6eGgH8IukyNVsnDTHp"
+uri = "file://attached_assets/sig-probe.png"
+type = "image"
+title = "SC-100 Page 4 — actual signature position with current code (y:50)"
