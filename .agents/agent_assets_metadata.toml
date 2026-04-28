@@ -102,3 +102,9 @@ id = "S9W6eGgH8IukyNVsnDTHp"
 uri = "file://attached_assets/sig-probe.png"
 type = "image"
 title = "SC-100 Page 4 — actual signature position with current code (y:50)"
+
+[[outputs]]
+id = "ZfOKgAcML_Sdzl8PpUQFb"
+uri = "file://attached_assets/sig-probe-y295.png"
+type = "image"
+title = "Probe: signature at y=295pt sits on the 'Plaintiff signs here' line"
