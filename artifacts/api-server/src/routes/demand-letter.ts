@@ -383,34 +383,49 @@ const STATUTE_MAP: Record<string, string[]> = {
   ],
 };
 
-const MC030_SYSTEM = `You are a California legal document drafter helping a self-represented party in small claims court. Write a MC-030 Declaration — a sworn statement under penalty of perjury.
+const MC030_SYSTEM = `You are a California legal document drafter helping a self-represented small claims plaintiff. You are writing the BODY of a MC-030 Declaration — a sworn statement under penalty of perjury that the judge will read BEFORE the hearing to understand the case.
 
-FORMAT RULES:
-- Start the very first line with "1." — a numbered paragraph. Do NOT prepend any title, header, label, caption, or document name (the form is already pre-printed with "DECLARATION" and "MC-030").
-- Specifically, NEVER output anything like "MC-030", "MC-030 Declaration", "DECLARATION", "Declaration of [Name]", "RE:", "In the Matter of...", or any all-caps heading line before paragraph 1.
-- End the very last line with the final numbered paragraph. Do NOT append any signature, typed name, "[Signature]" placeholder, "/s/" mark, perjury closing statement ("I declare under penalty of perjury..."), execution clause ("...executed on [DATE] in [City], California"), or any line that does not start with a number followed by a period. The form is already pre-printed with the perjury declaration AND the signature line at the bottom — anything you add there will be a duplicate.
-- Number every paragraph starting at 1. Every line of your output must start with "N." where N is the paragraph number.
-- One fact or idea per paragraph. Keep each paragraph 2–4 sentences max.
-- Write in first person ("I," "me," "my").
-- Do not use bullet points, headers, or markdown (no **bold**, *italic*, _underline_, or backticks).
-- Do not use the word "aforementioned," "herein," or other legalese.
+PURPOSE:
+The judge has 5–10 minutes per case. Your job is to give the judge a clear, factual narrative of what happened, focused on the facts that will WIN OR LOSE the case. Skip anything that does not directly help the judge understand who is right.
 
-CONTENT ORDER:
-1. Who you are and your relationship to the case.
-2. Chronological facts — what happened, specific dates, specific amounts, specific actions taken.
-3. What you did to try to resolve the matter before filing.
-4. What relief you are seeking and why the amount is fair.
-5. Applicable California statutes (list each statute cited as a separate numbered paragraph explaining how it applies).
+FORMAT:
+- Write as a flowing factual NARRATIVE in plain English, broken into short paragraphs (2–5 sentences each).
+- DO NOT number the paragraphs. No "1.", "2.", "3." Plain narrative paragraphs only, separated by blank lines.
+- DO NOT use headings, bullet points, markdown, bold, italics, or backticks.
+- Write in the first person ("I", "me", "my").
+- No legalese. Never use "aforementioned," "herein," "the party of the first part," or similar.
+- DO NOT include a title at the top (the form is pre-printed with "DECLARATION" and "MC-030").
+- DO NOT include a perjury closing or signature block at the bottom (the form is pre-printed with both).
+
+CONTENT — WHAT TO INCLUDE (in roughly this order, but woven into a natural narrative):
+1. Who you are and your relationship to the defendant — one or two sentences.
+2. The agreement, transaction, or interaction at the heart of the dispute — what it was, when it happened, and any specific dollar amounts.
+3. What went wrong — the specific breach, harm, or wrongful act, with dates and specifics.
+4. What you did to try to resolve it before filing — phone calls, emails, demand letter, attempts to contact (and the dates).
+5. The defendant's response (or non-response).
+6. Your damages — the exact dollar amount you are seeking and a brief explanation of how it was calculated.
+7. EVIDENCE — explicitly mention each piece of supporting evidence the plaintiff has provided, by name (e.g., "the contract attached as Exhibit A," "the cancelled check dated January 5," "the inspection report from Joe's Auto"), and state what fact each piece proves. This is REQUIRED — the judge needs to know what you are submitting and why it matters.
+
+STATUTES — DEFAULT IS NONE:
+Do NOT cite California statutes by default. Applying the law is the judge's job; your job is to give the judge the facts. Most small claims cases (broken contract, unpaid debt, security deposit dispute, property damage, simple consumer disputes) are decided on the facts alone and need NO statute citations.
+ONLY cite a statute if it is genuinely necessary to explain why the defendant's conduct was wrongful — for example, a specific consumer-protection statute that defines a particular violation, or a statute that creates a specific right that the defendant denied. When in doubt, leave statutes out.
+
+EVIDENCE IS REQUIRED:
+You MUST reference every supporting document the plaintiff has uploaded in this case, by its descriptive name, and tell the judge what it proves. If the case has no uploaded documents at all, write a single neutral sentence acknowledging that the plaintiff will be presenting their own testimony at the hearing.
+
+DEMAND LETTER:
+If a demand letter has been provided as a fact source, mine it for relevant facts (dates, amounts, attempts to resolve, the defendant's reply or silence). Do NOT copy the demand letter wholesale. Do NOT mention "demand letter" as a self-reference in the narrative — instead, refer to "the written demand I sent on [date]" and treat it as part of your resolution-attempt facts.
 
 SPACE CONSTRAINT (HARD LIMIT):
-The pre-printed MC-030 form has a fixed body area. Your declaration is rendered at 10.5pt Helvetica with 1/2 inch (36pt) margins on each side. Total available space: approximately 26 lines of text. At ~92 characters per line, that is ~2,400 characters maximum.
-- Aim for 6 to 13 short numbered paragraphs.
-- Each paragraph: 1 to 3 sentences, no more.
-- Total length target: 1,500 to 2,100 characters of body text.
-- If the facts could fill more space, prioritize the most legally important ones (who/what/when, dollar amount, attempts to resolve, statutes).
-Anything beyond the 26-line limit will be physically truncated by the renderer and never reach the court. Stay well within the limit.
+The MC-030 form's body area is fixed. Your text is rendered at 10.5pt Helvetica with 1/2 inch margins. Total available space: ~26 lines, ~92 characters per line, ~2,400 characters maximum.
+- Aim for 4 to 7 narrative paragraphs.
+- Total body length: 1,500 to 2,200 characters.
+- Anything beyond 26 lines is physically truncated by the renderer and will never reach the court. Stay within the limit.
 
-IMPORTANT: Use only the facts provided. Never invent facts. The dollar amount must match the Amount Sought exactly. Your output must contain ONLY numbered paragraphs — no opening title, no closing perjury statement, no signature block.`;
+STRICT RULES:
+- Use ONLY the facts provided in the case context. NEVER invent facts, dates, dollar amounts, witnesses, or evidence.
+- The dollar amount you state must match the Amount Sought exactly.
+- Output ONLY the narrative body — no title, no perjury closing, no signature block.`;
 
 router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   const userId = getUserId(req);
@@ -428,7 +443,6 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
 
-  const statutes = STATUTE_MAP[caseRecord.claimType ?? "Other"] ?? STATUTE_MAP["Other"];
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   const amt = caseRecord.claimAmount
     ? `$${Number(caseRecord.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -438,27 +452,43 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
     `=== CASE FACTS ===`,
     `Plaintiff (Declarant): ${caseRecord.plaintiffName ?? "[Plaintiff]"}`,
     `Defendant: ${caseRecord.defendantName ?? "[Defendant]"}`,
-    `Amount Sought (AUTHORITATIVE): ${amt}`,
+    `Amount Sought (AUTHORITATIVE — your declaration must state this exact amount): ${amt}`,
     `Claim Type: ${caseRecord.claimType ?? "Not specified"}`,
     caseRecord.incidentDate ? `Incident Date: ${caseRecord.incidentDate}` : "",
-    caseRecord.claimDescription ? `\nFull Claim Description:\n${caseRecord.claimDescription}` : "",
-    caseRecord.howAmountCalculated ? `\nHow Amount Was Calculated:\n${caseRecord.howAmountCalculated}` : "",
+    caseRecord.claimDescription ? `\nPlaintiff's Description of What Happened:\n${caseRecord.claimDescription}` : "",
+    caseRecord.howAmountCalculated ? `\nHow the Amount Was Calculated:\n${caseRecord.howAmountCalculated}` : "",
     caseRecord.priorDemandMade != null ? `Prior Demand Made: ${caseRecord.priorDemandMade ? "Yes" : "No"}` : "",
     caseRecord.priorDemandDescription ? `Prior Demand Details: ${caseRecord.priorDemandDescription}` : "",
+    caseRecord.priorDemandWhyNot ? `Why No Prior Demand Was Made: ${caseRecord.priorDemandWhyNot}` : "",
     caseRecord.countyId ? `Filing County: ${caseRecord.countyId} County` : "",
     caseRecord.plaintiffCity ? `Declarant City: ${caseRecord.plaintiffCity}` : "",
     `Today's Date: ${today}`,
-    `\n=== APPLICABLE CALIFORNIA STATUTES ===`,
-    ...statutes,
   ].filter(Boolean);
 
+  // Demand letter — fact source only. Mine it for dates / amounts / resolution attempts.
+  if (caseRecord.demandLetterText) {
+    parts.push(
+      `\n=== DEMAND LETTER (fact source — already sent to defendant) ===`,
+      `Use this letter to extract concrete facts (dates, dollar amounts, what was demanded, attempts to resolve). Do NOT copy it verbatim and do NOT call it out as "the demand letter" in the narrative — refer to "the written demand I sent on [date]" instead.`,
+      caseRecord.demandLetterText.slice(0, 4000),
+    );
+  }
+
+  // Evidence — the AI MUST reference each item by name in the narrative.
   if (docs.length > 0) {
-    parts.push(`\n=== SUPPORTING DOCUMENTS ===`);
-    for (const doc of docs.slice(0, 4)) {
+    parts.push(`\n=== EVIDENCE — supporting documents the plaintiff has uploaded ===`);
+    parts.push(`(REQUIRED: reference each item below by name in your declaration narrative, and tell the judge what fact it proves.)`);
+    for (const doc of docs.slice(0, 8)) {
+      const tag = [doc.label, doc.description].filter(Boolean).join(" — ");
+      const heading = tag ? `"${doc.originalName}" (${tag})` : `"${doc.originalName}"`;
+      parts.push(`\nEvidence item: ${heading}`);
       if (doc.ocrText && !doc.ocrText.startsWith("[")) {
-        parts.push(`Document: "${doc.originalName}"\n${doc.ocrText.slice(0, 2000)}`);
+        parts.push(`Contents extracted from document:\n${doc.ocrText.slice(0, 1500)}`);
       }
     }
+  } else {
+    parts.push(`\n=== EVIDENCE ===`);
+    parts.push(`No supporting documents have been uploaded for this case. In the declaration, briefly note that the plaintiff will be presenting their testimony at the hearing.`);
   }
 
   const userContent = parts.join("\n");

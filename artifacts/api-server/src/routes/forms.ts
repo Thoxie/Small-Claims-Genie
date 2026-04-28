@@ -1018,14 +1018,50 @@ router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => 
 // leading and trailing non-numbered lines are removed defensively.
 export function stripMC030Wrappers(text: string): string {
   if (!text) return "";
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-  while (lines.length > 0 && !/^\d+\./.test(lines[0])) {
-    lines.shift();
-  }
-  while (lines.length > 0 && !/^\d+\./.test(lines[lines.length - 1])) {
-    lines.pop();
-  }
-  return lines.join("\n");
+  const lines = text.split("\n");
+
+  // A line at the TOP that looks like a title/header/caption — should be stripped.
+  const isTopWrapper = (l: string): boolean => {
+    const t = l.trim();
+    if (!t) return true;
+    if (/^MC[-\s]*0?30\b/i.test(t)) return true;
+    if (/^DECLARATION\b/i.test(t)) return true;
+    if (/^RE\s*:/i.test(t)) return true;
+    if (/^IN THE MATTER OF\b/i.test(t)) return true;
+    if (/^IN SUPPORT OF\b/i.test(t)) return true;
+    if (/^#+\s/.test(t)) return true; // markdown heading
+    // Short, all-caps line with no terminal punctuation → header/caption.
+    if (t.length <= 80 && /[A-Z]/.test(t) && t === t.toUpperCase() && !/[.!?]$/.test(t)) return true;
+    return false;
+  };
+
+  // A line at the BOTTOM that looks like perjury closing or signature block — strip.
+  const isBottomWrapper = (l: string): boolean => {
+    const t = l.trim();
+    if (!t) return true;
+    if (/penalty\s+of\s+perjury/i.test(t)) return true;
+    if (/^I\s+declare\b/i.test(t)) return true;
+    if (/under\s+the\s+laws\s+of\s+the\s+state\s+of\s+california/i.test(t)) return true;
+    if (/foregoing\s+is\s+true\s+and\s+correct/i.test(t)) return true;
+    if (/^Executed\b.*\b(California|on\s|20\d{2}|\d{4})/i.test(t)) return true;
+    if (/^Dated?\s*[:.]/i.test(t)) return true;
+    if (/^Date\s*[:.]/i.test(t)) return true;
+    if (/^\/s\//.test(t) || /\/s\/$/.test(t)) return true;
+    if (/^\[?\s*signature\s*\]?$/i.test(t)) return true;
+    if (/^\[?\s*sig\s*\]?$/i.test(t)) return true;
+    if (/^_+$/.test(t)) return true; // underscored signature line
+    if (/^Signature of\b/i.test(t)) return true;
+    if (/^(Plaintiff|Declarant|Defendant)\s*$/i.test(t)) return true;
+    // Typed name under signature (e.g., "John Q. Doe") — short, name-shaped, no terminal punctuation.
+    if (t.length <= 50 && /^[A-Z][a-zA-Z'.\-]+(\s+[A-Z][a-zA-Z'.\-]+){0,3}$/.test(t) && !/[.!?]$/.test(t)) return true;
+    return false;
+  };
+
+  let start = 0;
+  let end = lines.length;
+  while (start < end && isTopWrapper(lines[start])) start++;
+  while (end > start && isBottomWrapper(lines[end - 1])) end--;
+  return lines.slice(start, end).join("\n").trim();
 }
 
 // MC-030 body layout constants — the renderer MUST honor these.
