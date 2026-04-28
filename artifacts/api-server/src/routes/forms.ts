@@ -1909,20 +1909,22 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   // b.orderRequested: string
   // b.orderReason: string
   const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-  // Build full multi-line court info block: county, courthouse, street, city/state/zip, phone.
-  // The SC-105 CourtInfo box is a single multi-line text field; users normally type the full
-  // court address into it, and the printed labels on the form align with each line of input.
+  // Build the multi-line court info block. The SC-105 form has these labels PRINTED on it:
+  //   "Superior Court of California, County of ___"
+  //   "Name of Court:" (if different)
+  //   street/city/state/zip lines
+  //   "Telephone Number:"
+  // So the data must fill the BLANKS only — never repeat the printed labels.
   const county = CALIFORNIA_COUNTIES.find((cc) => cc.id === d.countyId);
   const courtInfoLines: string[] = [];
   if (county) {
-    courtInfoLines.push(`Superior Court of California, County of ${county.name}`);
-    if (county.courthouseName) courtInfoLines.push(county.courthouseName);
-    if (county.courthouseAddress) courtInfoLines.push(county.courthouseAddress);
+    courtInfoLines.push(county.name);                                        // fills "County of ___"
+    if (county.courthouseName) courtInfoLines.push(county.courthouseName);   // name of court line
+    if (county.courthouseAddress) courtInfoLines.push(county.courthouseAddress); // street line
     const cityZip = [county.courthouseCity, county.courthouseZip ? `CA ${county.courthouseZip}` : null].filter(Boolean).join(", ");
-    if (cityZip) courtInfoLines.push(cityZip);
-    if (county.phone) courtInfoLines.push(`Tel: ${county.phone}`);
+    if (cityZip) courtInfoLines.push(cityZip);                               // city/state/zip line
+    if (county.phone) courtInfoLines.push(county.phone);                     // phone line (no "Tel:" — label is printed)
   } else {
-    // Fallback to free-text fields if county not found
     if (d.courthouseName) courtInfoLines.push(d.courthouseName);
     if (d.courthouseAddress) courtInfoLines.push(d.courthouseAddress);
   }
