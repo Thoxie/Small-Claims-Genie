@@ -8,6 +8,7 @@ import * as path from "path";
 import { db } from "@workspace/db";
 import { documentsTable, casesTable } from "@workspace/db";
 import { inArray, and, eq } from "drizzle-orm";
+import { CALIFORNIA_COUNTIES } from "./counties";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { type FormConfig } from "../forms/form-renderer";
@@ -1908,7 +1909,24 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   // b.orderRequested: string
   // b.orderReason: string
   const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-  const courtInfo = b.courtStreet || d.courthouseAddress || d.courthouseName || "";
+  // Build full multi-line court info block: county, courthouse, street, city/state/zip, phone.
+  // The SC-105 CourtInfo box is a single multi-line text field; users normally type the full
+  // court address into it, and the printed labels on the form align with each line of input.
+  const county = CALIFORNIA_COUNTIES.find((cc) => cc.id === d.countyId);
+  const courtInfoLines: string[] = [];
+  if (county) {
+    courtInfoLines.push(`Superior Court of California, County of ${county.name}`);
+    if (county.courthouseName) courtInfoLines.push(county.courthouseName);
+    if (county.courthouseAddress) courtInfoLines.push(county.courthouseAddress);
+    const cityZip = [county.courthouseCity, county.courthouseZip ? `CA ${county.courthouseZip}` : null].filter(Boolean).join(", ");
+    if (cityZip) courtInfoLines.push(cityZip);
+    if (county.phone) courtInfoLines.push(`Tel: ${county.phone}`);
+  } else {
+    // Fallback to free-text fields if county not found
+    if (d.courthouseName) courtInfoLines.push(d.courthouseName);
+    if (d.courthouseAddress) courtInfoLines.push(d.courthouseAddress);
+  }
+  const courtInfo = courtInfoLines.join("\n") || b.courtStreet || "";
   const parties: any[] = b.noticeParties || [];
 
   function setField(form: any, name: string, value: string) {
