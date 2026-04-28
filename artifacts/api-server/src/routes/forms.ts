@@ -1028,6 +1028,40 @@ export function stripMC030Wrappers(text: string): string {
   return lines.join("\n");
 }
 
+// MC-030 body layout constants — the renderer MUST honor these.
+// Exported so other routes (e.g. /mc030-ai) can measure declaration text
+// against the form's hard physical limits before returning it to the client.
+export const MC030_BODY_SIZE   = 11;   // 11pt body font
+export const MC030_BODY_MAX_W  = 540;  // 612 - 36 - 36 (1/2 inch margins)
+export const MC030_MAX_LINES   = 25;   // hard cap; anything beyond is truncated by the renderer
+
+// Measure how many wrapped lines the given declaration text would consume on
+// the MC-030 page using the same wrapping algorithm as drawMC030Page().
+// This is what /mc030-ai uses to decide whether to ask the model for a
+// shorter rewrite.
+export async function measureMC030BodyLines(text: string): Promise<number> {
+  if (!text) return 0;
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const paragraphs = text.split(/\n/).map(p => p.trim()).filter(Boolean);
+  let lines = 0;
+  for (const p of paragraphs) {
+    const words = p.split(/\s+/);
+    let line = "";
+    for (const w of words) {
+      const cand = line ? line + " " + w : w;
+      if (font.widthOfTextAtSize(cand, MC030_BODY_SIZE) > MC030_BODY_MAX_W && line) {
+        lines++;
+        line = w;
+      } else {
+        line = cand;
+      }
+    }
+    if (line) lines++;
+  }
+  return lines;
+}
+
 async function generateMC030Declaration(d: Record<string, any>): Promise<{ declarationTitle: string; declarationText: string }> {
   const plaintiffName  = String(d.plaintiffName  || "Plaintiff");
   const defendantName  = String(d.defendantName  || "Defendant");
@@ -1147,10 +1181,10 @@ function drawMC030Page(
     let bodyY = 494 + LIFT;
     const bodyX    = 36;          // left margin: 1/2 inch (36pt) — matches form's printed rule lines
     const bodyMaxW = 540;         // 612-36-36 = 540 — body width with 1/2 inch margins on each side
-    const bodySize = 11;          // 11pt body font (per user preference)
-    const bodyLineH = 13;         // 13pt leading — comfortable at 11pt
-    const paraGap   = 3;
-    const maxTotalLines = 26;     // 26 × 13pt = 338pt, fits between v_y=498.5 and "I declare" line (~185)
+    const bodySize = 11;          // 11pt body font
+    const bodyLineH = 12;         // 12pt line height — tight, uniform throughout
+    const paraGap   = 0;          // no extra gap between paragraphs — equal spacing throughout
+    const maxTotalLines = 25;     // 25 × 12pt = 300pt, fits between bodyY=498.5 and "I declare" line (~188) with margin
     let linesUsed = 0;
 
     for (let pi = 0; pi < paragraphs.length && linesUsed < maxTotalLines; pi++) {

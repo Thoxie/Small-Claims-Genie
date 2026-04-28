@@ -6,7 +6,7 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
 import { checkAiRateLimit } from "../lib/rate-limiter";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { stripMC030Wrappers } from "./forms";
+import { stripMC030Wrappers, measureMC030BodyLines, MC030_MAX_LINES } from "./forms";
 
 const router: IRouter = Router();
 
@@ -402,6 +402,14 @@ CONTENT ORDER:
 4. What relief you are seeking and why the amount is fair.
 5. Applicable California statutes (list each statute cited as a separate numbered paragraph explaining how it applies).
 
+SPACE CONSTRAINT (HARD LIMIT):
+The pre-printed MC-030 form has a fixed body area. Your declaration is rendered at 11pt Helvetica with 1/2 inch (36pt) margins on each side. Total available space: approximately 25 lines of text. At ~88 characters per line, that is ~2,200 characters maximum.
+- Aim for 6 to 12 short numbered paragraphs.
+- Each paragraph: 1 to 3 sentences, no more.
+- Total length target: 1,400 to 1,900 characters of body text.
+- If the facts could fill more space, prioritize the most legally important ones (who/what/when, dollar amount, attempts to resolve, statutes).
+Anything beyond the 25-line limit will be physically truncated by the renderer and never reach the court. Stay well within the limit.
+
 IMPORTANT: Use only the facts provided. Never invent facts. The dollar amount must match the Amount Sought exactly. Your output must contain ONLY numbered paragraphs — no opening title, no closing perjury statement, no signature block.`;
 
 router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
@@ -469,7 +477,48 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
     // at the bottom. Even with the system prompt forbidding these, models can
     // still slip them in — this guarantees the textarea the user sees only
     // contains the numbered body paragraphs.
-    const declarationText = stripMC030Wrappers(rawText);
+    let declarationText = stripMC030Wrappers(rawText);
+
+    // ── Auto-shrink loop ──────────────────────────────────────────────────────
+    // If the draft would overflow the form's hard physical line cap, ask the
+    // model to compress it (preserving facts/dates/dollar amounts/statutes).
+    // Up to 2 retries; we keep the best (shortest) version.
+    let lineCount = await measureMC030BodyLines(declarationText);
+    let shrinkAttempts = 0;
+    const maxShrinkAttempts = 2;
+    while (lineCount > MC030_MAX_LINES && shrinkAttempts < maxShrinkAttempts) {
+      shrinkAttempts++;
+      try {
+        const shrink = await openai.chat.completions.create({
+          model: "gpt-4o",
+          max_tokens: 2000,
+          messages: [
+            { role: "system", content: MC030_SYSTEM },
+            { role: "user", content:
+              `Your previous draft is ${lineCount} lines. The MC-030 form's hard physical limit is ${MC030_MAX_LINES} lines. ` +
+              `Rewrite the SAME facts to fit within ${MC030_MAX_LINES} lines (target ${MC030_MAX_LINES - 2} lines for safety). ` +
+              `Keep every dollar amount, date, party name, and statute citation intact — do not drop any fact. ` +
+              `Compress by tightening sentences, removing filler words, and merging related points. ` +
+              `Output ONLY numbered paragraphs (no title, no perjury closing, no signature block).\n\n` +
+              `Previous draft to compress:\n${declarationText}` },
+          ],
+        });
+        const newRaw = shrink.choices[0]?.message?.content ?? "";
+        const newStripped = stripMC030Wrappers(newRaw);
+        const newCount = await measureMC030BodyLines(newStripped);
+        if (newStripped && newCount < lineCount) {
+          declarationText = newStripped;
+          lineCount = newCount;
+        } else {
+          break; // not improving; stop spending tokens
+        }
+      } catch (e) {
+        // If the shrink call fails, fall through with whatever we have.
+        req.log?.warn?.({ err: e }, "MC-030 shrink attempt failed");
+        break;
+      }
+    }
+    req.log?.info?.({ lineCount, shrinkAttempts, fits: lineCount <= MC030_MAX_LINES }, "MC-030 declaration line count");
 
     // Derive a declaration title and persist it so SC-100 Section 3 can reference it exactly
     const plaintiffName = caseRecord.plaintiffName ?? "Declarant";
