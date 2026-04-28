@@ -6,6 +6,7 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
 import { checkAiRateLimit } from "../lib/rate-limiter";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { stripMC030Wrappers } from "./forms";
 
 const router: IRouter = Router();
 
@@ -387,12 +388,12 @@ const MC030_SYSTEM = `You are a California legal document drafter helping a self
 FORMAT RULES:
 - Start the very first line with "1." — a numbered paragraph. Do NOT prepend any title, header, label, caption, or document name (the form is already pre-printed with "DECLARATION" and "MC-030").
 - Specifically, NEVER output anything like "MC-030", "MC-030 Declaration", "DECLARATION", "Declaration of [Name]", "RE:", "In the Matter of...", or any all-caps heading line before paragraph 1.
-- Number every paragraph starting at 1.
+- End the very last line with the final numbered paragraph. Do NOT append any signature, typed name, "[Signature]" placeholder, "/s/" mark, perjury closing statement ("I declare under penalty of perjury..."), execution clause ("...executed on [DATE] in [City], California"), or any line that does not start with a number followed by a period. The form is already pre-printed with the perjury declaration AND the signature line at the bottom — anything you add there will be a duplicate.
+- Number every paragraph starting at 1. Every line of your output must start with "N." where N is the paragraph number.
 - One fact or idea per paragraph. Keep each paragraph 2–4 sentences max.
 - Write in first person ("I," "me," "my").
-- Do not use bullet points, headers, or markdown.
+- Do not use bullet points, headers, or markdown (no **bold**, *italic*, _underline_, or backticks).
 - Do not use the word "aforementioned," "herein," or other legalese.
-- End with a closing paragraph: "I declare under penalty of perjury under the laws of the State of California that the foregoing is true and correct, and that this declaration was executed on [DATE] in [City], California."
 
 CONTENT ORDER:
 1. Who you are and your relationship to the case.
@@ -400,9 +401,8 @@ CONTENT ORDER:
 3. What you did to try to resolve the matter before filing.
 4. What relief you are seeking and why the amount is fair.
 5. Applicable California statutes (list each statute cited as a separate numbered paragraph explaining how it applies).
-6. Closing declaration paragraph.
 
-IMPORTANT: Use only the facts provided. Never invent facts. The dollar amount must match the Amount Sought exactly.`;
+IMPORTANT: Use only the facts provided. Never invent facts. The dollar amount must match the Amount Sought exactly. Your output must contain ONLY numbered paragraphs — no opening title, no closing perjury statement, no signature block.`;
 
 router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   const userId = getUserId(req);
@@ -464,7 +464,12 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
         { role: "user", content: `Write the MC-030 declaration now.\n\n${userContent}` },
       ],
     });
-    const text = completion.choices[0]?.message?.content ?? "";
+    const rawText = completion.choices[0]?.message?.content ?? "";
+    // Strip any title/header line at the top and any signature/perjury closing
+    // at the bottom. Even with the system prompt forbidding these, models can
+    // still slip them in — this guarantees the textarea the user sees only
+    // contains the numbered body paragraphs.
+    const declarationText = stripMC030Wrappers(rawText);
 
     // Derive a declaration title and persist it so SC-100 Section 3 can reference it exactly
     const plaintiffName = caseRecord.plaintiffName ?? "Declarant";
@@ -475,7 +480,7 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
       .where(eq(casesTable.id, id))
       .catch((e: any) => console.error("MC-030 title save error:", e));
 
-    res.json({ declarationText: text, declarationTitle });
+    res.json({ declarationText, declarationTitle });
   } catch (err: any) {
     console.error("MC-030 AI error:", err?.message);
     res.status(500).json({ error: "Failed to generate declaration. Please try again." });

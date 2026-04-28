@@ -1010,6 +1010,24 @@ router.get("/cases/:id/forms/sc100/preview", async (req, res): Promise<void> => 
 // Formula: v_param_y = 792 - measuredY - 11.5  (converts top-left pts → pdf-lib baseline)
 // LIFT = 4.5 is applied inside v() helper, so actual rendered y = v_param_y + LIFT.
 
+// Strip wrapper lines (titles, headers, perjury closing, signature blocks) from a
+// declaration body. The MC-030 form is pre-printed with a "DECLARATION" title at
+// the top, an "I declare under penalty of perjury..." closing line near the
+// bottom, and a signature line — so any of those typed in the body would be a
+// duplicate. Only lines starting with "N." (a numbered paragraph) are kept;
+// leading and trailing non-numbered lines are removed defensively.
+export function stripMC030Wrappers(text: string): string {
+  if (!text) return "";
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  while (lines.length > 0 && !/^\d+\./.test(lines[0])) {
+    lines.shift();
+  }
+  while (lines.length > 0 && !/^\d+\./.test(lines[lines.length - 1])) {
+    lines.pop();
+  }
+  return lines.join("\n");
+}
+
 async function generateMC030Declaration(d: Record<string, any>): Promise<{ declarationTitle: string; declarationText: string }> {
   const plaintiffName  = String(d.plaintiffName  || "Plaintiff");
   const defendantName  = String(d.defendantName  || "Defendant");
@@ -1048,35 +1066,16 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
     response_format: { type: "json_object" },
   });
 
-  // Strip any trailing non-numbered lines the AI may add (closings, names, dates, signatures).
-  // All valid declaration paragraphs start with "N. " so any trailing line that doesn't
-  // follow that pattern is extra closure content and should be removed.
-  function stripClosingLines(text: string): string {
-    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-    // Strip leading non-numbered lines (e.g. "MC-030 Declaration", "DECLARATION OF JANE DOE",
-    // "RE: ...", or any title/header the AI or user may have prepended). The MC-030 form is
-    // pre-printed with "DECLARATION" and "MC-030" so a typed header is always a duplicate.
-    while (lines.length > 0 && !/^\d+\./.test(lines[0])) {
-      lines.shift();
-    }
-    // Strip trailing non-numbered lines (e.g. "I declare under penalty of perjury..." closing
-    // — the form is pre-printed with that text near the bottom).
-    while (lines.length > 0 && !/^\d+\./.test(lines[lines.length - 1])) {
-      lines.pop();
-    }
-    return lines.join("\n");
-  }
-
   try {
     const parsed = JSON.parse(completion.choices[0]?.message?.content || "{}") as { declarationTitle?: string; declarationText?: string };
     return {
       declarationTitle: parsed.declarationTitle || `DECLARATION OF ${plaintiffName.toUpperCase()}`,
-      declarationText:  stripClosingLines(parsed.declarationText  || claimDesc),
+      declarationText:  stripMC030Wrappers(parsed.declarationText  || claimDesc),
     };
   } catch {
     return {
       declarationTitle: `DECLARATION OF ${plaintiffName.toUpperCase()}`,
-      declarationText:  claimDesc,
+      declarationText:  stripMC030Wrappers(claimDesc),
     };
   }
 }
@@ -1210,6 +1209,9 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
     }
+    // Always strip wrappers regardless of source (body, AI, or saved DB content) so
+    // any title/header/perjury-closing/signature lines never reach the renderer.
+    declarationText = stripMC030Wrappers(declarationText || "");
 
     // Persist the declaration title so SC-100 Section 3 can reference it exactly
     if (declarationTitle) {
@@ -1264,6 +1266,8 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
     }
+    // Always strip wrappers regardless of source.
+    declarationText = stripMC030Wrappers(declarationText || "");
 
     // Persist the declaration title so SC-100 Section 3 can reference it exactly
     if (declarationTitle) {
@@ -1333,6 +1337,8 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
     }
+    // Always strip wrappers regardless of source.
+    declarationText = stripMC030Wrappers(declarationText || "");
 
     // Persist the declaration title so SC-100 Section 3 can reference it exactly
     if (declarationTitle) {
