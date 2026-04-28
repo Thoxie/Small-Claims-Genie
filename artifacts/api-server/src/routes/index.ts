@@ -14,6 +14,7 @@ import sc100WordRouter from "./sc100-word";
 import demandLetterRouter from "./demand-letter";
 import hearingPrepRouter from "./hearing-prep";
 import storageRouter from "./storage";
+import backupDownloadRouter from "./backup-download";
 
 const router: IRouter = Router();
 
@@ -22,6 +23,7 @@ router.use(healthRouter);
 router.use(countiesRouter);
 router.use(storageRouter);
 router.use(helpChatRouter);
+router.use(backupDownloadRouter);
 
 // Form downloads — accept ?token query param (token issued by protected endpoint below)
 router.use(formsRouter);
