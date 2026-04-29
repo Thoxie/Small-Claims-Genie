@@ -27,6 +27,20 @@ const SC100_CONFIG = loadFormConfig("sc100.json");
 
 const objectStorage = new ObjectStorageService();
 
+// Fetches the raw bytes of a stored document.
+// Supports both object-storage (storageObjectPath) and legacy base64-in-DB (fileData).
+async function getDocumentBuffer(doc: { storageObjectPath: string | null; fileData?: string | null }): Promise<Buffer> {
+  if (doc.storageObjectPath) {
+    const gcsFile = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
+    const response = await objectStorage.downloadObject(gcsFile);
+    return Buffer.from(await response.arrayBuffer());
+  }
+  if (doc.fileData) {
+    return Buffer.from(doc.fileData, "base64");
+  }
+  throw new Error("Document has no file content (neither storageObjectPath nor fileData)");
+}
+
 const router: IRouter = Router();
 
 // ─── Auth helper ─────────────────────────────────────────────────────────────
@@ -1400,7 +1414,7 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
 
       for (let i = 0; i < exhibitIds.length; i++) {
         const doc = docMap.get(exhibitIds[i]);
-        if (!doc || !doc.storageObjectPath) continue;
+        if (!doc) continue;
         const letter = LETTERS[i] ?? String(i + 1);
         const label = `EXHIBIT ${letter}`;
 
@@ -1411,15 +1425,14 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
         }
 
         try {
-          const file = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
-          const [fileBuffer] = await file.download() as [Buffer, unknown];
+          const fileBuffer = await getDocumentBuffer(doc);
           const mime = doc.mimeType;
 
           if (mime === "application/pdf") {
             const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
             const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
             copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
-          } else if (mime === "image/png" || mime === "image/jpeg" || mime === "image/jpg") {
+          } else if (mime?.startsWith("image/")) {
             const exPage = masterDoc.addPage([PW, PH]);
             const img = mime === "image/png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
             const { width: iw, height: ih } = img.scale(1);
@@ -1508,7 +1521,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
 
       for (let i = 0; i < exhibitIds.length; i++) {
         const doc = docMap.get(exhibitIds[i]);
-        if (!doc || !doc.storageObjectPath) continue;
+        if (!doc) continue;
         const letter = LETTERS[i] ?? String(i + 1);
         const label = `EXHIBIT ${letter}`;
 
@@ -1519,15 +1532,14 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
         }
 
         try {
-          const file = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
-          const [fileBuffer] = await file.download() as [Buffer, unknown];
+          const fileBuffer = await getDocumentBuffer(doc);
           const mime = doc.mimeType;
 
           if (mime === "application/pdf") {
             const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
             const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
             copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
-          } else if (mime === "image/png" || mime === "image/jpeg" || mime === "image/jpg") {
+          } else if (mime?.startsWith("image/")) {
             const exPage = masterDoc.addPage([PW, PH]);
             const img = mime === "image/png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
             const { width: iw, height: ih } = img.scale(1);
