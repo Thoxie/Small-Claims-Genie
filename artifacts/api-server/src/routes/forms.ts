@@ -4,7 +4,15 @@ import { getOwnedCase, getUserId } from "../lib/owned-case";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import type { Request, Response } from "express";
 import * as fs from "fs";
+import * as fsp from "fs/promises";
 import * as path from "path";
+import * as os from "os";
+import { execFile } from "child_process";
+import { promisify } from "util";
+import mammoth from "mammoth";
+import { withPage } from "../forms/chromium-pool";
+
+const execFileAsync = promisify(execFile);
 import { db } from "@workspace/db";
 import { documentsTable, casesTable } from "@workspace/db";
 import { inArray, and, eq } from "drizzle-orm";
@@ -27,12 +35,113 @@ const SC100_CONFIG = loadFormConfig("sc100.json");
 
 const objectStorage = new ObjectStorageService();
 
-// Detect actual image format from buffer magic bytes (not MIME type, which can be wrong).
-function detectImageFormat(buf: Buffer): "png" | "jpeg" | null {
-  if (buf.length < 4) return null;
+// ─── Exhibit helpers ──────────────────────────────────────────────────────────
+
+// Detect actual file format from magic bytes — more reliable than stored MIME type.
+function sniffFormat(buf: Buffer): "pdf" | "jpeg" | "png" | "docx" | "webp" | "unknown" {
+  if (buf.length < 12) return "unknown";
+  if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46) return "pdf";  // %PDF
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpeg";                    // FF D8 FF
   if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "png";  // PNG
-  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpeg";                    // JPEG
-  return null; // WebP, HEIC, BMP, etc. — not embeddable in PDF directly
+  if (buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04) return "docx"; // ZIP (DOCX/XLSX)
+  if (buf.slice(0, 4).toString("ascii") === "RIFF" && buf.slice(8, 12).toString("ascii") === "WEBP") return "webp";
+  return "unknown";
+}
+
+// Convert any image format (WebP, HEIC, TIFF, etc.) to JPEG using ImageMagick.
+async function imageToJpeg(buf: Buffer): Promise<Buffer> {
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const inPath  = path.join(os.tmpdir(), `ex-${id}-in`);
+  const outPath = path.join(os.tmpdir(), `ex-${id}-out.jpg`);
+  try {
+    await fsp.writeFile(inPath, buf);
+    await execFileAsync("magick", [inPath, "-quality", "90", outPath]);
+    return await fsp.readFile(outPath);
+  } finally {
+    fsp.unlink(inPath).catch(() => {});
+    fsp.unlink(outPath).catch(() => {});
+  }
+}
+
+// Convert DOCX to PDF using mammoth (→ HTML) then Playwright (→ PDF).
+async function docxToPdf(buf: Buffer): Promise<Buffer> {
+  const { value: html } = await mammoth.convertToHtml({ buffer: buf });
+  const fullHtml = `<!DOCTYPE html><html><head><style>
+    body{font-family:Arial,sans-serif;margin:40px;font-size:12px;line-height:1.6;color:#000}
+    h1,h2,h3{margin-bottom:8px}
+    table{border-collapse:collapse;width:100%}
+    td,th{border:1px solid #ccc;padding:6px;text-align:left}
+    p{margin:0 0 8px}
+  </style></head><body>${html}</body></html>`;
+  return await withPage(async (page) => {
+    await page.setContent(fullHtml, { waitUntil: "domcontentloaded" });
+    const pdfBuf = await page.pdf({
+      format: "Letter",
+      margin: { top: "0.75in", bottom: "0.75in", left: "0.75in", right: "0.75in" },
+    });
+    return Buffer.from(pdfBuf);
+  });
+}
+
+// Embed one document as exhibit pages into masterDoc, stamping the first page with the label.
+async function embedExhibitPages(
+  masterDoc: PDFDocument,
+  fileBuffer: Buffer,
+  mimeType: string | null,
+  originalName: string,
+  label: string,
+  font: any,
+  fontBold: any
+): Promise<void> {
+  const fmt = sniffFormat(fileBuffer);
+
+  // Helper: draw the exhibit stamp box bottom-right of a page
+  function stampExhibit(page: any) {
+    const lw = fontBold.widthOfTextAtSize(label, 10);
+    page.drawRectangle({ x: PW - lw - 22, y: 28, width: lw + 16, height: 18, color: rgb(1, 1, 1), borderColor: BLACK, borderWidth: 0.7 });
+    page.drawText(label, { x: PW - lw - 14, y: 33, size: 10, font: fontBold, color: BLACK });
+  }
+
+  // Helper: draw an image buffer (jpeg or png) centered on a new page
+  async function embedImagePage(imgBuf: Buffer, isJpeg: boolean) {
+    const exPage = masterDoc.addPage([PW, PH]);
+    const img = isJpeg ? await masterDoc.embedJpg(imgBuf) : await masterDoc.embedPng(imgBuf);
+    const { width: iw, height: ih } = img.scale(1);
+    const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
+    const dw = iw * scale; const dh = ih * scale;
+    exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
+    exPage.drawText(originalName, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
+    stampExhibit(exPage);
+  }
+
+  // Helper: embed a PDF buffer as pages
+  async function embedPdfBuffer(pdfBuf: Buffer) {
+    const extDoc = await PDFDocument.load(pdfBuf, { ignoreEncryption: true });
+    const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
+    copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
+  }
+
+  if (fmt === "pdf") {
+    await embedPdfBuffer(fileBuffer);
+  } else if (fmt === "jpeg") {
+    await embedImagePage(fileBuffer, true);
+  } else if (fmt === "png") {
+    await embedImagePage(fileBuffer, false);
+  } else if (fmt === "docx") {
+    const pdfBuf = await docxToPdf(fileBuffer);
+    await embedPdfBuffer(pdfBuf);
+  } else if (fmt === "webp" || (fmt === "unknown" && mimeType?.startsWith("image/"))) {
+    // WebP, HEIC, TIFF, or any other image format — convert to JPEG via ImageMagick
+    const jpegBuf = await imageToJpeg(fileBuffer);
+    await embedImagePage(jpegBuf, true);
+  } else {
+    // Truly unknown format — labeled placeholder so at least the exhibit is acknowledged
+    const ph = masterDoc.addPage([PW, PH]);
+    ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
+    ph.drawText(`File: ${originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
+    ph.drawText(`(Unsupported format — please convert to PDF and re-upload)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
+    stampExhibit(ph);
+  }
 }
 
 // Fetches the raw bytes of a stored document.
@@ -1426,46 +1535,9 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
         if (!doc) continue;
         const letter = LETTERS[i] ?? String(i + 1);
         const label = `EXHIBIT ${letter}`;
-
-        function stampExhibit(pg: any) {
-          const lw = fontBold.widthOfTextAtSize(label, 10);
-          pg.drawRectangle({ x: PW - lw - 22, y: 28, width: lw + 16, height: 18, color: rgb(1, 1, 1), borderColor: BLACK, borderWidth: 0.7 });
-          pg.drawText(label, { x: PW - lw - 14, y: 33, size: 10, font: fontBold, color: BLACK });
-        }
-
         try {
           const fileBuffer = await getDocumentBuffer(doc);
-          const mime = doc.mimeType;
-
-          if (mime === "application/pdf") {
-            const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
-            const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
-            copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
-          } else if (mime?.startsWith("image/") || detectImageFormat(fileBuffer) !== null) {
-            const fmt = detectImageFormat(fileBuffer);
-            if (fmt !== null) {
-              const exPage = masterDoc.addPage([PW, PH]);
-              const img = fmt === "png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
-              const { width: iw, height: ih } = img.scale(1);
-              const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
-              const dw = iw * scale; const dh = ih * scale;
-              exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
-              exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
-              stampExhibit(exPage);
-            } else {
-              const ph = masterDoc.addPage([PW, PH]);
-              ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
-              ph.drawText(`Image: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
-              ph.drawText(`(Format not supported for direct embedding — print and attach separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
-              stampExhibit(ph);
-            }
-          } else {
-            const ph = masterDoc.addPage([PW, PH]);
-            ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
-            ph.drawText(`Document: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
-            ph.drawText(`(Print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
-            stampExhibit(ph);
-          }
+          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.originalName, label, font, fontBold);
         } catch (docErr) {
           console.error(`[MC-030 Signed] Failed to embed exhibit ${letter}:`, docErr);
         }
@@ -1542,50 +1614,9 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
         if (!doc) continue;
         const letter = LETTERS[i] ?? String(i + 1);
         const label = `EXHIBIT ${letter}`;
-
-        function stampExhibit(page: any) {
-          const lw = fontBold.widthOfTextAtSize(label, 10);
-          page.drawRectangle({ x: PW - lw - 22, y: 28, width: lw + 16, height: 18, color: rgb(1, 1, 1), borderColor: BLACK, borderWidth: 0.7 });
-          page.drawText(label, { x: PW - lw - 14, y: 33, size: 10, font: fontBold, color: BLACK });
-        }
-
         try {
           const fileBuffer = await getDocumentBuffer(doc);
-          const mime = doc.mimeType;
-
-          if (mime === "application/pdf") {
-            const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
-            const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
-            copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
-          } else if (mime?.startsWith("image/") || detectImageFormat(fileBuffer) !== null) {
-            // Use buffer magic bytes to determine format — MIME type stored in DB can be wrong
-            // and common phone formats (WebP, HEIC) won't embed directly in PDF.
-            const fmt = detectImageFormat(fileBuffer);
-            if (fmt !== null) {
-              const exPage = masterDoc.addPage([PW, PH]);
-              const img = fmt === "png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
-              const { width: iw, height: ih } = img.scale(1);
-              const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
-              const dw = iw * scale; const dh = ih * scale;
-              exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
-              exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
-              stampExhibit(exPage);
-            } else {
-              // WebP, HEIC, or other non-embeddable image format — placeholder
-              const ph = masterDoc.addPage([PW, PH]);
-              ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
-              ph.drawText(`Image: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
-              ph.drawText(`(Format not supported for direct embedding — print and attach separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
-              stampExhibit(ph);
-            }
-          } else {
-            // DOCX, XLSX, or other non-PDF/image: placeholder page
-            const ph = masterDoc.addPage([PW, PH]);
-            ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
-            ph.drawText(`Document: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
-            ph.drawText(`(Print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
-            stampExhibit(ph);
-          }
+          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.originalName, label, font, fontBold);
         } catch (docErr) {
           console.error(`[MC-030 Exhibits] Failed to embed exhibit ${letter}:`, docErr);
         }
