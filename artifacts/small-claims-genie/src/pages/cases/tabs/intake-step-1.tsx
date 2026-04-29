@@ -485,7 +485,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
             <div className="bg-black flex items-center justify-center" style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}>
               <iframe
                 style={{ width: "100%", height: "100%", border: 0 }}
-                src="https://www.youtube.com/embed/1Lh7pyzod54?autoplay=1&rel=0&modestbranding=1"
+                src="https://www.youtube.com/embed/IZ4vKOn2o2I?autoplay=1&rel=0&modestbranding=1"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
                 title="Small Claims Genie — Intake Step 1 Tutorial"
@@ -495,7 +495,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
               <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
                 Trouble seeing the video?{" "}
                 <a
-                  href="https://youtu.be/1Lh7pyzod54"
+                  href="https://youtu.be/IZ4vKOn2o2I"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold text-[#14b8a6] hover:text-[#0d9488] underline"
