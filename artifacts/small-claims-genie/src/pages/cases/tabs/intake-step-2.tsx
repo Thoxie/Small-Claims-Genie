@@ -437,32 +437,19 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <a
-              href="https://www.youtube.com/watch?v=IZ4vKOn2o2I"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative block bg-black overflow-hidden"
-              style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}
-            >
-              <img
-                src="https://img.youtube.com/vi/IZ4vKOn2o2I/hqdefault.jpg"
-                alt="Small Claims Genie Step 2 Tutorial"
-                className="w-full h-full object-cover opacity-80"
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-xl hover:bg-red-500 transition-colors">
-                  <svg className="w-9 h-9 text-white ml-1.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </div>
-                <span className="text-white text-sm font-semibold drop-shadow-lg bg-black/40 px-3 py-1 rounded-full">
-                  Watch tutorial on YouTube ↗
-                </span>
-              </div>
-            </a>
+            <iframe
+              width="800"
+              height="450"
+              src="https://www.youtube.com/embed/IZ4vKOn2o2I?autoplay=1"
+              title="Step 2 Tutorial — Upload My Evidence"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="block"
+            />
             <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
               <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
-                Click the thumbnail above to watch the tutorial on YouTube.
+                Video plays above — click X or press Escape to return to your case.
               </p>
               <button
                 onClick={() => setTutorialOpen(false)}

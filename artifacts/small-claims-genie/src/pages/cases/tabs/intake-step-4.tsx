@@ -352,24 +352,16 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <a
-              href="https://www.youtube.com/watch?v=WI3i9F2KJAI"
-              target="_blank"
-              rel="noopener noreferrer"
+            <iframe
+              width="800"
+              height="450"
+              src="https://www.youtube.com/embed/WI3i9F2KJAI?autoplay=1"
+              title="Step 4 Tutorial — Final Checks"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
               className="block"
-              onClick={e => e.stopPropagation()}
-            >
-              <iframe
-                width="800"
-                height="450"
-                src="https://www.youtube.com/embed/WI3i9F2KJAI?autoplay=1"
-                title="Step 4 Tutorial — Final Checks"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="block"
-              />
-            </a>
+            />
           </div>
         </div>
       )}
