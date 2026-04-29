@@ -4,13 +4,25 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm, copyFile } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(artifactDir, "../..");
+
+// The banner shim lets CJS-style `require()` calls work inside ESM output
+// files. It is appended to every output file (main bundle, workers, and shared
+// chunks) so that dynamic require()s from bundled CJS modules don't throw.
+const esmCjsShim = `import { createRequire as __bannerCrReq } from 'node:module';
+import __bannerPath from 'node:path';
+import __bannerUrl from 'node:url';
+
+globalThis.require = __bannerCrReq(import.meta.url);
+globalThis.__filename = __bannerUrl.fileURLToPath(import.meta.url);
+globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
+    `;
 
 async function buildAll() {
   const tscBin = path.resolve(rootDir, "node_modules/.bin/tsc");
@@ -31,6 +43,12 @@ async function buildAll() {
     outdir: distDir,
     outExtension: { ".js": ".mjs" },
     logLevel: "info",
+    // splitting: true extracts code shared between the main bundle and the
+    // pino worker entry points (added by esbuildPluginPino) into shared
+    // chunks. This prevents each worker from bundling its own copy of pino's
+    // transitive deps (sonic-boom, on-exit-leak-free, etc.), keeping worker
+    // files at ~56 KB rather than ~150 KB each.
+    splitting: true,
     // Some packages may not be bundleable, so we externalize them, we can add more here as needed.
     // Some of the packages below may not be imported or installed, but we're adding them in case they are in the future.
     // Examples of unbundleable packages:
@@ -158,16 +176,11 @@ async function buildAll() {
       // pino relies on workers to handle logging, instead of externalizing it we use a plugin to handle it
       esbuildPluginPino({ transports: ["pino-pretty"] })
     ],
-    // Make sure packages that are cjs only (e.g. express) but are bundled continue to work in our esm output file
+    // Make sure packages that are cjs only (e.g. express) but are bundled
+    // continue to work in our esm output file. Applied to all output files
+    // (main bundle, worker entries, and shared chunks) so require() always works.
     banner: {
-      js: `import { createRequire as __bannerCrReq } from 'node:module';
-import __bannerPath from 'node:path';
-import __bannerUrl from 'node:url';
-
-globalThis.require = __bannerCrReq(import.meta.url);
-globalThis.__filename = __bannerUrl.fileURLToPath(import.meta.url);
-globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
-    `,
+      js: esmCjsShim,
     },
   });
 }
