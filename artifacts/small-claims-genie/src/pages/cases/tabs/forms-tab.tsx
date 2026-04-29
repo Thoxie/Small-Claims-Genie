@@ -1602,10 +1602,23 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </DialogHeader>
                 <ScrollArea className="max-h-[60vh]">
                   <div className="px-6 py-5 space-y-6">
-                    <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/20 flex flex-col items-center justify-center gap-2 py-10 px-4">
-                      <svg className="text-muted-foreground/40" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                      <p className="text-sm font-medium text-muted-foreground">Video guide — coming soon</p>
-                    </div>
+                    {guideDialogForm.number === "SC-100" ? (
+                      <iframe
+                        width="100%"
+                        height="400"
+                        src="https://www.youtube.com/embed/kdvESHfL9mg?autoplay=0"
+                        title="How to Fill the SC-100"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="block rounded-lg"
+                      />
+                    ) : (
+                      <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/20 flex flex-col items-center justify-center gap-2 py-10 px-4">
+                        <svg className="text-muted-foreground/40" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <p className="text-sm font-medium text-muted-foreground">Video guide — coming soon</p>
+                      </div>
+                    )}
                     {guide && (
                       <div className="space-y-6">
                         <div className="rounded-xl bg-[#ddf6f3] border border-[#0d6b5e]/20 px-5 py-4">
