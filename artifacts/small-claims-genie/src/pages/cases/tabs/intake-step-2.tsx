@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,13 +45,6 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
-  useEffect(() => {
-    if (autoOpenAdvisor) {
-      openAdvisor();
-      onAdvisorOpened?.();
-    }
-  }, []);
-
   type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
   const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
@@ -63,7 +56,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const [refinedStatement, setRefinedStatement] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const openAdvisor = async () => {
+  const openAdvisor = useCallback(async () => {
     const values = form.getValues();
     if (!values.claimDescription || values.claimDescription.trim().length < 10) {
       toast({ title: "Add a description first", description: "Write at least a sentence about what happened so the advisor can help.", variant: "destructive" });
@@ -98,7 +91,14 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
       setAdvisorPhase("idle");
       setAdvisorOpen(false);
     }
-  };
+  }, [caseId, form, getToken, toast]);
+
+  useEffect(() => {
+    if (autoOpenAdvisor) {
+      void openAdvisor();
+      onAdvisorOpened?.();
+    }
+  }, [autoOpenAdvisor, openAdvisor, onAdvisorOpened]);
 
   const refineStatement = async () => {
     setAdvisorPhase("refining");

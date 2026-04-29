@@ -556,7 +556,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       finally { setDocsLoading(false); }
     }
     fetchDocs();
-  }, [caseId]);
+  }, [caseId, getToken]);
 
   // Whenever the documents list changes, auto-select any document not yet in the
   // selection (preserves manual deselections the user has made).
@@ -586,7 +586,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       } catch { /* silent — best-effort */ }
     }, 1000);
     return () => clearTimeout(t);
-  }, [mc030Title]);
+  }, [mc030Title, caseId, getToken]);
 
   useEffect(() => {
     if (downloadError) { toast({ title: "Download failed", description: downloadError, variant: "destructive" }); setDownloadError(null); }
