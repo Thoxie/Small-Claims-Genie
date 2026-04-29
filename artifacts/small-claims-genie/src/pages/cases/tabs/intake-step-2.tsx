@@ -440,8 +440,8 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
             <div className="bg-black flex items-center justify-center" style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}>
               <iframe
                 style={{ width: "100%", height: "100%", border: 0 }}
-                src="https://www.youtube.com/embed/1Lh7pyzod54?autoplay=1&rel=0&modestbranding=1"
-                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                src="https://www.youtube.com/embed/1Lh7pyzod54?rel=0&modestbranding=1"
+                allow="encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
                 title="Small Claims Genie — Intake Step 2 Tutorial"
               />
