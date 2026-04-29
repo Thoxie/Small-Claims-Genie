@@ -878,13 +878,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   }
 
   function openSC112A() {
-    const defAddr = [currentCase.defendantAddress, currentCase.defendantCity, currentCase.defendantState, currentCase.defendantZip].filter(Boolean).join(", ");
-    setModalInitialValues({
-      party1Name: currentCase.defendantName || "",
-      party1Address: defAddr,
-      mailingCity: (currentCase as any).courthouseCity || "",
-      mailingDate: (currentCase as any).hearingDate || "",
-    });
+    setModalInitialValues(getInitialValues("sc112a"));
     setModalFormId("sc112a");
   }
 
@@ -896,6 +890,19 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     const countyName = String(cc.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const courthouseLabel = cc.courthouseName ? `${cc.courthouseName} — ${courthouseStreet}` : courthouseStreet;
     switch (formId) {
+      case "sc112a": {
+        const defMailingAddr = [
+          cc.defendantMailingAddress || cc.defendantAddress,
+          cc.defendantMailingCity || cc.defendantCity,
+          cc.defendantMailingState || cc.defendantState || "CA",
+          cc.defendantMailingZip || cc.defendantZip,
+        ].filter(Boolean).join(", ");
+        return {
+          party1Name: cc.defendantName || "",
+          party1Address: defMailingAddr,
+          mailingCity: cc.plaintiffCity || "",
+        };
+      }
       case "sc103": return {
         attachedTo: "sc100",
         signerName: cc.plaintiffName || "",
