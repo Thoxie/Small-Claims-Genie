@@ -545,7 +545,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       try {
         const token = await getToken();
         const res = await fetch(`/api/cases/${caseId}/documents`, { headers: { Authorization: `Bearer ${token}` } });
-        if (res.ok) setDocuments(await res.json());
+        if (res.ok) {
+          const docs = await res.json();
+          setDocuments(docs);
+          setSelectedExhibits(docs.map((d: any) => d.id));
+        }
       } catch { /* silent */ }
       finally { setDocsLoading(false); }
     }
@@ -1071,8 +1075,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-semibold text-foreground">Attach Exhibits from Your Uploads</span>
-                {documents.length > 0 && <span className="text-[10px] text-muted-foreground">({selectedExhibits.length} selected)</span>}
+                <span className="text-xs font-semibold text-foreground">Attached Exhibits</span>
+                {documents.length > 0 && <span className="text-[10px] text-muted-foreground">({selectedExhibits.length} of {documents.length} included — uncheck to exclude)</span>}
               </div>
               {docsLoading ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground py-2"><Loader2 className="h-3 w-3 animate-spin" />Loading uploaded documents…</div>
