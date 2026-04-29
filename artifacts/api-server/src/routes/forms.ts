@@ -1822,7 +1822,7 @@ async function buildSC100APdf(
   // Party data is read directly from the case record (intake data) — no extra prompts needed.
   // SC-100A: "Other Plaintiff 1" = second plaintiff, "Other Plaintiff 2" = third plaintiff (none in DB),
   //          "Other Defendant" = second defendant (none in DB — primary is on SC-100).
-  const p1 = d.secondPlaintiffName ? {
+  const dbP1 = d.secondPlaintiffName ? {
     name:         d.secondPlaintiffName,
     phone:        d.secondPlaintiffPhone        || "",
     street:       d.secondPlaintiffAddress      || "",
@@ -1834,10 +1834,15 @@ async function buildSC100APdf(
     mailingState: d.secondPlaintiffMailingState  || "CA",
     mailingZip:   d.secondPlaintiffMailingZip    || "",
   } : null;
-  // Optional extra parties passed in from the form body (if user entered them in the modal).
-  const p2 = (b.extraPlaintiff && b.extraPlaintiff.name) ? b.extraPlaintiff as {
+  // Optional extra plaintiff entered in the SC-100A modal.
+  const extraPlaintiff = (b.extraPlaintiff && b.extraPlaintiff.name) ? b.extraPlaintiff as {
     name: string; phone: string; street: string; city: string; state: string; zip: string;
   } : null;
+  // Fill slots in order: p1 = first available "Other Plaintiff", p2 = second.
+  // If the DB already has a second plaintiff, it occupies slot 1 and the modal entry goes to slot 2.
+  // If the DB has no second plaintiff, promote the modal entry to slot 1 so the form isn't left blank.
+  const p1 = dbP1 ?? extraPlaintiff;
+  const p2 = dbP1 ? extraPlaintiff : null;
   const def1 = (b.extraDefendant && b.extraDefendant.name) ? b.extraDefendant as {
     name: string; phone: string; street: string; city: string; state: string; zip: string; agentName?: string;
   } : null;
