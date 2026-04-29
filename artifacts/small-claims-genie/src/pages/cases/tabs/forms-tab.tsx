@@ -78,10 +78,11 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
       { key: "signDate", label: "Date Signed", type: "date" },
     ]},
   ]},
-  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Add up to 2 additional plaintiffs and 1 additional defendant.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
-    { title: "Additional Plaintiff #1", fields: [{ key: "p1_name", label: "Full Name", type: "text" }, { key: "p1_phone", label: "Phone Number", type: "text" }, { key: "p1_street", label: "Street Address", type: "text" }, { key: "p1_city", label: "City", type: "text" }, { key: "p1_state", label: "State", type: "text", placeholder: "CA" }, { key: "p1_zip", label: "ZIP", type: "text" }]},
-    { title: "Additional Plaintiff #2 (optional)", fields: [{ key: "p2_name", label: "Full Name", type: "text" }, { key: "p2_phone", label: "Phone Number", type: "text" }, { key: "p2_street", label: "Street Address", type: "text" }, { key: "p2_city", label: "City", type: "text" }, { key: "p2_state", label: "State", type: "text", placeholder: "CA" }, { key: "p2_zip", label: "ZIP", type: "text" }]},
+  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Your second plaintiff is pre-filled from intake. Add a third plaintiff or additional defendant below if needed.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
+    { title: "Additional Plaintiff #1 (pre-filled from intake)", fields: [{ key: "p1_name", label: "Full Name", type: "text" }, { key: "p1_phone", label: "Phone Number", type: "text" }, { key: "p1_street", label: "Street Address", type: "text" }, { key: "p1_city", label: "City", type: "text" }, { key: "p1_state", label: "State", type: "text", placeholder: "CA" }, { key: "p1_zip", label: "ZIP", type: "text" }]},
+    { title: "Additional Plaintiff #2 (optional — third plaintiff in the case)", fields: [{ key: "p2_name", label: "Full Name", type: "text" }, { key: "p2_phone", label: "Phone Number", type: "text" }, { key: "p2_street", label: "Street Address", type: "text" }, { key: "p2_city", label: "City", type: "text" }, { key: "p2_state", label: "State", type: "text", placeholder: "CA" }, { key: "p2_zip", label: "ZIP", type: "text" }]},
     { title: "Additional Defendant (optional)", fields: [{ key: "d1_name", label: "Full Name / Business Name", type: "text" }, { key: "d1_phone", label: "Phone Number", type: "text" }, { key: "d1_street", label: "Street Address", type: "text" }, { key: "d1_city", label: "City", type: "text" }, { key: "d1_state", label: "State", type: "text", placeholder: "CA" }, { key: "d1_zip", label: "ZIP", type: "text" }, { key: "d1_agentName", label: "Agent for Service Name (if corporation/LLC)", type: "text" }]},
+    { title: "Signature", fields: [{ key: "signDate", label: "Date Signed", type: "date" }]},
   ]},
   sc103: { title: "Fictitious Business Name (SC-103)", subtitle: "Provide your DBA registration details.", endpoint: "sc103", filename: (id) => `SC103-Case-${id}.pdf`, groups: [
     { title: "Filed With", fields: [{ key: "attachedTo", label: "Filed with", type: "select", required: true, options: [{ value: "sc100", label: "SC-100 (Plaintiff's Claim)" }, { value: "sc120", label: "SC-120 (Defendant's Claim)" }] }]},
@@ -258,12 +259,19 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
   function buildBody(): Record<string, any> {
     const d: Record<string, any> = { ...formData };
     if (formId === "sc100a") {
-      d.additionalPlaintiffs = [1, 2].map(n => ({
-        name: formData[`p${n}_name`] || "", phone: formData[`p${n}_phone`] || "",
-        street: formData[`p${n}_street`] || "", city: formData[`p${n}_city`] || "",
-        state: formData[`p${n}_state`] || "CA", zip: formData[`p${n}_zip`] || "",
-      })).filter(p => p.name);
-      d.additionalDefendants = [{ name: formData.d1_name || "", phone: formData.d1_phone || "", street: formData.d1_street || "", city: formData.d1_city || "", state: formData.d1_state || "CA", zip: formData.d1_zip || "", agentName: formData.d1_agentName || "" }].filter(p => p.name);
+      // p1 (second plaintiff) is read directly from the case DB on the server.
+      // Only pass extra parties that aren't in the DB.
+      d.extraPlaintiff = formData.p2_name ? {
+        name: formData.p2_name || "", phone: formData.p2_phone || "",
+        street: formData.p2_street || "", city: formData.p2_city || "",
+        state: formData.p2_state || "CA", zip: formData.p2_zip || "",
+      } : null;
+      d.extraDefendant = formData.d1_name ? {
+        name: formData.d1_name || "", phone: formData.d1_phone || "",
+        street: formData.d1_street || "", city: formData.d1_city || "",
+        state: formData.d1_state || "CA", zip: formData.d1_zip || "",
+        agentName: formData.d1_agentName || "",
+      } : null;
     }
     if (formId === "sc104") {
       const docsServed: string[] = [];
@@ -515,6 +523,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
   const [sc104FormBody, setSc104FormBody] = useState<Record<string, any> | null>(null);
+  const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
+  const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, any> | null>(null);
 
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
   const [viewingPdf, setViewingPdf] = useState(false);
@@ -659,6 +669,33 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
         body: JSON.stringify({ ...formBody, signatureDataUrl, token }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError(err.error || "Failed to generate SC-104 PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setModalFormId(null);
+    } catch { setDownloadError("Download failed — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
+  async function downloadSignedSC100A(signatureDataUrl?: string) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    setDownloadingForm("sc100a"); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const formBody = sc100aFormBody || {};
+      const endpoint = signatureDataUrl ? "sc100a/signed" : "sc100a";
+      const filename = signatureDataUrl ? `SC100A-Signed-Case-${caseId}.pdf` : `SC100A-Case-${caseId}.pdf`;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formBody, signature1DataUrl: signatureDataUrl, token }),
+      });
+      if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError(err.error || "Failed to generate SC-100A PDF — please try again."); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = filename;
@@ -890,6 +927,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     const countyName = String(cc.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const courthouseLabel = cc.courthouseName ? `${cc.courthouseName} — ${courthouseStreet}` : courthouseStreet;
     switch (formId) {
+      case "sc100a": return {
+        p1_name:   cc.secondPlaintiffName    || "",
+        p1_phone:  cc.secondPlaintiffPhone   || "",
+        p1_street: cc.secondPlaintiffAddress || "",
+        p1_city:   cc.secondPlaintiffCity    || "",
+        p1_state:  cc.secondPlaintiffState   || "CA",
+        p1_zip:    cc.secondPlaintiffZip     || "",
+      };
       case "sc112a": {
         const defMailingAddr = [
           cc.defendantMailingAddress || cc.defendantAddress,
@@ -1204,11 +1249,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                   <a href="https://www.courts.ca.gov/documents/sc100a.pdf" target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
                 </div>
                 <h4 className="font-semibold text-sm mb-1">Other Plaintiffs or Defendants</h4>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-3">If your case involves more than two parties total, file this form separately alongside your SC-100 — hand both to the clerk at the same time. It adds space for up to two additional plaintiffs and one additional defendant.</p>
-                <div className="flex gap-2">
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                  File alongside your SC-100 if your case has more than two parties.
+                  {(currentCase as any).secondPlaintiffName && <span className="font-semibold text-foreground"> {(currentCase as any).secondPlaintiffName}'s information is pre-filled from your intake.</span>}
+                  {!(currentCase as any).secondPlaintiffName && " Add up to two additional plaintiffs and one additional defendant."}
+                </p>
+                <div className="flex gap-2 flex-wrap">
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"
-                    onClick={() => downloadFormPost("sc100a", `SC100A-Case-${caseId}.pdf`, {})} disabled={downloadingForm === "sc100a"}>
-                    {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Download SC-100A
+                    onClick={() => { setModalInitialValues(getInitialValues("sc100a")); setModalFormId("sc100a"); }}
+                    disabled={downloadingForm === "sc100a"}>
+                    {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Fill Out &amp; Sign SC-100A
                   </Button>
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" onClick={() => setGuideDialogFormId("sc100a")}><Info className="h-3 w-3" />Guide</Button>
                 </div>
@@ -1513,6 +1563,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
               setSc104FormBody(body);
               setModalFormId(null);
               setSc104SigModalOpen(true);
+            } else if (endpoint === "sc100a") {
+              setSc100aFormBody(body);
+              setModalFormId(null);
+              setSc100aSigModalOpen(true);
             } else {
               downloadFormPost(endpoint, filename, body);
             }
@@ -1545,6 +1599,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
         disclaimer="By signing, the server declares under penalty of perjury under the laws of the State of California that they are at least 18 years old, not named in this case, and that the information above is true and correct."
         onSign={(dataUrl) => { setSc104SigModalOpen(false); downloadSignedSC104(dataUrl); }}
         onSkipSign={() => { setSc104SigModalOpen(false); downloadSignedSC104(); }}
+      />
+
+      <SignaturePadModal
+        open={sc100aSigModalOpen}
+        onClose={() => setSc100aSigModalOpen(false)}
+        formTitle="SC-100A"
+        disclaimer="By signing, the additional plaintiff declares under penalty of perjury under the laws of the State of California that they have read the foregoing and that the information is true and correct."
+        onSign={(dataUrl) => { setSc100aSigModalOpen(false); downloadSignedSC100A(dataUrl); }}
+        onSkipSign={() => { setSc100aSigModalOpen(false); downloadSignedSC100A(); }}
       />
 
       {/* Guide Dialog */}

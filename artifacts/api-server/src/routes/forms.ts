@@ -1834,9 +1834,13 @@ async function buildSC100APdf(
     mailingState: d.secondPlaintiffMailingState  || "CA",
     mailingZip:   d.secondPlaintiffMailingZip    || "",
   } : null;
-  // No third plaintiff or second defendant stored in DB — those sections left blank.
-  const p2: null  = null;
-  const def1: null = null;
+  // Optional extra parties passed in from the form body (if user entered them in the modal).
+  const p2 = (b.extraPlaintiff && b.extraPlaintiff.name) ? b.extraPlaintiff as {
+    name: string; phone: string; street: string; city: string; state: string; zip: string;
+  } : null;
+  const def1 = (b.extraDefendant && b.extraDefendant.name) ? b.extraDefendant as {
+    name: string; phone: string; street: string; city: string; state: string; zip: string; agentName?: string;
+  } : null;
 
   const pdfDoc   = await PDFDocument.create();
   const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -1879,7 +1883,12 @@ async function buildSC100APdf(
   //   mailing addr x=195, pdfY=522 → v=517
   //   mailing city x=74, pdfY=505 → v=500
   if (p2) {
-    // p2 is always null — placeholder block retained for future expansion
+    v(p2.name,             168, 564);
+    v(p2.street,           131, 548);
+    v(p2.phone,            440, 548);
+    v(p2.city,              74, 533);
+    v(p2.state || "CA",    299, 533);
+    v(p2.zip,              371, 533);
   }
 
   // ── Other Defendant (second defendant — not collected in intake, left blank) ─
@@ -1891,7 +1900,13 @@ async function buildSC100APdf(
   //   agent street x=106, pdfY=307 → v=302
   //   agent city x=74, pdfY=293 → v=288  |  state x=299  |  zip x=371
   if (def1) {
-    // def1 is always null — placeholder block retained for future expansion
+    v(def1.name,              176, 420);
+    v(def1.street,            131, 405);
+    v(def1.phone,             439, 405);
+    v(def1.city,               74, 390);
+    v(def1.state || "CA",     299, 390);
+    v(def1.zip,               371, 390);
+    if (def1.agentName) v(def1.agentName, 97, 319);
   }
 
   // ── Date + printed names ────────────────────────────────────────────────────
@@ -1901,7 +1916,7 @@ async function buildSC100APdf(
   v(signDate,                           63, 154);
   v(p1?.name || d.plaintiffName || "",  37, 139);
   v(signDate,                           63, 111);
-  v("",                                 37,  96);   // third plaintiff name (none)
+  v(p2?.name || "",                     37,  96);   // third plaintiff printed name (if any)
 
   // ── Signature images ────────────────────────────────────────────────────────
   // Sig 1 sits just above the "Plaintiff signature" label at measured y=640.8
