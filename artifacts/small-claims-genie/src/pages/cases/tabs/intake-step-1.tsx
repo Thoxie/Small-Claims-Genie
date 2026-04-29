@@ -483,14 +483,14 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
               </button>
             </div>
             <a
-              href="https://www.youtube.com/watch?v=IZ4vKOn2o2I"
+              href="https://www.youtube.com/watch?v=1Lh7pyzod54"
               target="_blank"
               rel="noopener noreferrer"
               className="relative block bg-black overflow-hidden"
               style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}
             >
               <img
-                src="https://img.youtube.com/vi/IZ4vKOn2o2I/hqdefault.jpg"
+                src="https://img.youtube.com/vi/1Lh7pyzod54/hqdefault.jpg"
                 alt="Small Claims Genie Step 1 Tutorial"
                 className="w-full h-full object-cover opacity-80"
               />
