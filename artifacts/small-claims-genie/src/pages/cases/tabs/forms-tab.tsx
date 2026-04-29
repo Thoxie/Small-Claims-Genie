@@ -461,11 +461,9 @@ function getRecommendedForms(c: any): Array<{ id: string; number: string; requir
   forms.push({ id: "sc100", number: "SC-100", required: true,
     reason: "Required to open every small claims case — file this first." });
 
-  if (c.plaintiffIsBusiness || c.defendantIsBusinessOrEntity) {
+  if (c.plaintiffIsBusiness) {
     forms.push({ id: "sc103", number: "SC-103", required: true,
-      reason: c.plaintiffIsBusiness
-        ? "You are filing as a business — DBA registration form required."
-        : "You are suing a business — DBA registration form required." });
+      reason: "You are filing as a business — DBA registration form required." });
   }
 
   if (c.secondPlaintiffName) {
@@ -589,7 +587,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const score = readiness?.score ?? currentCase.readinessScore ?? 0;
   const isReady = score >= 80;
   const descriptionNeedsMC030 = (currentCase.claimDescription?.length ?? 0) > 650;
-  const isBusinessCase: boolean | null = currentCase.defendantIsBusinessOrEntity ?? null;
+  const isBusinessCase: boolean | null = currentCase.plaintiffIsBusiness ?? null;
   const intakeStarted = currentCase.intakeStep != null && currentCase.intakeStep > 1;
   const isSuingPublicEntity = currentCase.isSuingPublicEntity === true;
   const claimAmount = Number(currentCase.claimAmount || 0);
@@ -1178,7 +1176,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                   <a href="https://www.courts.ca.gov/documents/sc103.pdf" target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
                 </div>
                 <h4 className="font-semibold text-sm mb-1">Fictitious Business Name</h4>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-3">The defendant appears to operate under a business name. SC-103 connects the DBA name to the legal owner and must be filed as a separate form alongside your SC-100 — hand both to the clerk at the same time.</p>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">You are filing as a business. SC-103 connects your DBA name to the legal owner and must be filed as a separate form alongside your SC-100 — hand both to the clerk at the same time.</p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2 border-orange-400 text-orange-800 hover:bg-orange-100"
                     onClick={() => { setModalInitialValues(getInitialValues("sc103")); setModalFormId("sc103"); }} disabled={downloadingForm === "sc103"}>
