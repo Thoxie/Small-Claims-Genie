@@ -115,16 +115,15 @@ export const intakeStep2Schema = z.object({
   howAmountCalculated: z.string().min(5, "Please explain how you calculated the amount"),
 });
 
-export const intakeStep3Schema = z.object({
+// Step 3 is now the Demand Letter tool — no form fields to validate.
+export const intakeStep3Schema = z.object({});
+
+export const intakeStep4Schema = z.object({
   priorDemandMade: z.boolean(),
   priorDemandDescription: z.string().optional(),
   priorDemandWhyNot: z.string().optional().or(z.literal("")),
-  courthouseId: z.string().optional(),
   venueBasis: z.string().min(1, "Please select a reason"),
   venueReason: z.string().optional(),
-});
-
-export const intakeStep4Schema = z.object({
   isSuingPublicEntity: z.boolean(),
   publicEntityClaimFiledDate: z.string().optional(),
   isAttyFeeDispute: z.boolean(),

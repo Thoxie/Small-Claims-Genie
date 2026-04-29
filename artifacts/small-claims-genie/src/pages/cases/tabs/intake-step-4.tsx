@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogOut, Sparkles, MapPin, Phone, Mail, Globe, ExternalLink, CheckCircle } from "lucide-react";
+import { LogOut, Sparkles, MapPin, Phone, Mail, Globe, ExternalLink } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -21,6 +23,11 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
   const form = useForm({
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
+      priorDemandMade: initialData.priorDemandMade ?? false,
+      priorDemandDescription: initialData.priorDemandDescription || "",
+      priorDemandWhyNot: initialData.priorDemandWhyNot || "",
+      venueBasis: initialData.venueBasis || "",
+      venueReason: initialData.venueReason || "",
       isSuingPublicEntity: initialData.isSuingPublicEntity || false,
       publicEntityClaimFiledDate: initialData.publicEntityClaimFiledDate || "",
       isAttyFeeDispute: initialData.isAttyFeeDispute || false,
@@ -30,6 +37,8 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
     }
   });
 
+  const madeDemand = form.watch("priorDemandMade");
+  const basis = form.watch("venueBasis");
   const suingPublic = form.watch("isSuingPublicEntity");
   const attyFeeDispute = form.watch("isAttyFeeDispute");
 
@@ -38,42 +47,135 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onComplete)} className="space-y-5">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="rounded-xl border p-5 space-y-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Eligibility Questions</h3>
-              {[
-                { name: "isSuingPublicEntity" as const, label: "Suing a public entity? (e.g. City, County, State)" },
-                { name: "isAttyFeeDispute" as const, label: "Is this a dispute with a lawyer about attorney fees?" },
-                { name: "filedMoreThan12Claims" as const, label: "Filed more than 12 small claims in California in the past 12 months?" },
-                { name: "claimOver2500" as const, label: "Claim over $2,500: Have you filed 2+ other small claims over $2,500 in CA this calendar year?" },
-              ].map(({ name, label }) => (
-                <FormField key={name} control={form.control} name={name} render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
-                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    <div className="space-y-1 leading-none"><FormLabel className="cursor-pointer">{label}</FormLabel></div>
-                  </FormItem>
-                )} />
-              ))}
-              {suingPublic && (
-                <FormField control={form.control} name="publicEntityClaimFiledDate" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>When did you file a government claim with them?</FormLabel>
-                    <FormControl><Input type="date" {...field} /></FormControl>
+
+            {/* ── Left column ── */}
+            <div className="space-y-4">
+
+              {/* Prior Demand */}
+              <div className="rounded-xl border p-5 space-y-4">
+                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Prior Demand</h3>
+                <FormField control={form.control} name="priorDemandMade" render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel className="font-medium">Have you already asked the defendant to pay you?</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={(val) => field.onChange(val === "true")}
+                        defaultValue={field.value ? "true" : "false"}
+                        className="flex flex-col space-y-2"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                          <FormControl><RadioGroupItem value="true" /></FormControl>
+                          <FormLabel className="font-normal cursor-pointer">Yes, I have already asked them.</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                          <FormControl><RadioGroupItem value="false" /></FormControl>
+                          <FormLabel className="font-normal cursor-pointer">No, I have not asked them yet.</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
-              )}
-              {attyFeeDispute && (
-                <FormField control={form.control} name="hadArbitration" render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="cursor-pointer">Have you already gone through arbitration about these fees?</FormLabel>
-                      <p className="text-xs text-muted-foreground">If yes, you must fill out and attach form SC-101.</p>
-                    </div>
+                {madeDemand && (
+                  <FormField control={form.control} name="priorDemandDescription" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>How and when did you ask them?</FormLabel>
+                      <FormControl>
+                        <Textarea className="min-h-[90px]" placeholder="e.g. Sent a text on Oct 1st and an email on Oct 5th demanding payment." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
+                {!madeDemand && (
+                  <FormField control={form.control} name="priorDemandWhyNot" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Why not? <span className="text-muted-foreground font-normal">(optional — goes on the form)</span></FormLabel>
+                      <FormControl>
+                        <Textarea className="min-h-[72px]" placeholder="e.g. Defendant refuses to communicate, or it would be unsafe to contact them." {...field} />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">The form asks you to explain if you have not yet made a demand. Leave blank if you prefer not to answer.</p>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
+              </div>
+
+              {/* Why This County */}
+              <div className="rounded-xl border p-5 space-y-4">
+                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Why This County?</h3>
+                <FormField control={form.control} name="venueBasis" render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel className="font-medium">Select the reason you're filing here <span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
+                        {[
+                          { value: "where_defendant_lives",      label: "Where the defendant lives or does business" },
+                          { value: "where_damage_happened",      label: "Where the damage or injury happened" },
+                          { value: "where_contract_made_broken", label: "Where the contract was made or broken" },
+                          { value: "other",                      label: "Other reason" },
+                        ].map(({ value, label }) => (
+                          <FormItem key={value} className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                            <FormControl><RadioGroupItem value={value} /></FormControl>
+                            <FormLabel className="font-normal cursor-pointer">{label}</FormLabel>
+                          </FormItem>
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )} />
-              )}
+                {basis === "other" && (
+                  <FormField control={form.control} name="venueReason" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Please explain</FormLabel>
+                      <FormControl><Input {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
+              </div>
+
+              {/* Eligibility Questions */}
+              <div className="rounded-xl border p-5 space-y-4">
+                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Eligibility Questions</h3>
+                {[
+                  { name: "isSuingPublicEntity"    as const, label: "Suing a public entity? (e.g. City, County, State)" },
+                  { name: "isAttyFeeDispute"       as const, label: "Is this a dispute with a lawyer about attorney fees?" },
+                  { name: "filedMoreThan12Claims"  as const, label: "Filed more than 12 small claims in California in the past 12 months?" },
+                  { name: "claimOver2500"          as const, label: "Claim over $2,500: Have you filed 2+ other small claims over $2,500 in CA this calendar year?" },
+                ].map(({ name, label }) => (
+                  <FormField key={name} control={form.control} name={name} render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
+                      <FormControl><Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} /></FormControl>
+                      <div className="space-y-1 leading-none"><FormLabel className="cursor-pointer">{label}</FormLabel></div>
+                    </FormItem>
+                  )} />
+                ))}
+                {suingPublic && (
+                  <FormField control={form.control} name="publicEntityClaimFiledDate" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>When did you file a government claim with them?</FormLabel>
+                      <FormControl><Input type="date" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
+                {attyFeeDispute && (
+                  <FormField control={form.control} name="hadArbitration" render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                      <FormControl><Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} /></FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">Have you already gone through arbitration about these fees?</FormLabel>
+                        <p className="text-xs text-muted-foreground">If yes, you must fill out and attach form SC-101.</p>
+                      </div>
+                    </FormItem>
+                  )} />
+                )}
+              </div>
             </div>
+
+            {/* ── Right column — Review Your Case ── */}
             <div className="rounded-xl border p-5 space-y-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Review Your Case</h3>
               <div className="space-y-4 text-sm">
@@ -162,7 +264,7 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
               <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
               <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
                 <LogOut className="mr-2 h-4 w-4" />
-                Save & Exit
+                Save &amp; Exit
               </Button>
             </div>
             {onCheckCase && (

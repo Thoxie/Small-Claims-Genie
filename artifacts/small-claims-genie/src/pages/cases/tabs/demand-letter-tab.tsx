@@ -8,9 +8,9 @@ import { Mail, Handshake, PenLine, Loader2, Download, AlertCircle, CheckSquare2,
 type DemandLetterTone = "formal" | "firm" | "friendly";
 
 const TONE_META: { value: DemandLetterTone; label: string; description: string; icon: ReactNode }[] = [
-  { value: "formal",   label: "Formal",   description: "Neutral, professional — facts stated plainly",         icon: <FileText className="h-5 w-5" /> },
-  { value: "firm",     label: "Firm",     description: "Assertive & deadline-focused — legal basis emphasized", icon: <Scale className="h-5 w-5" /> },
-  { value: "friendly", label: "Friendly", description: "Cooperative — prefers settlement over court",           icon: <MessageCircle className="h-5 w-5" /> },
+  { value: "formal",   label: "Formal",   description: "Neutral, professional — facts stated plainly",         icon: <FileText className="h-3.5 w-3.5" /> },
+  { value: "firm",     label: "Firm",     description: "Assertive & deadline-focused — legal basis emphasized", icon: <Scale className="h-3.5 w-3.5" /> },
+  { value: "friendly", label: "Friendly", description: "Cooperative — prefers settlement over court",           icon: <MessageCircle className="h-3.5 w-3.5" /> },
 ];
 
 const SETTLE_CHECKLIST = [
@@ -323,7 +323,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
                     )}
                     <button type="button" onClick={() => handleToneChange(value)}
                       className={[
-                        "flex-1 flex flex-col items-center text-center gap-2 px-3 py-4 rounded-lg transition-all relative",
+                        "flex-1 flex flex-col items-center text-center gap-1.5 px-2 py-2.5 rounded-lg transition-all relative",
                         active
                           ? "bg-[#14b8a6] text-white border-2 border-black shadow-md"
                           : generated
@@ -331,17 +331,17 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
                           : "bg-background/60 border-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-background",
                       ].join(" ")}>
                       <span className={[
-                        "inline-flex items-center justify-center w-9 h-9 rounded-full shrink-0 transition-all",
+                        "inline-flex items-center justify-center w-5 h-5 rounded-full shrink-0 transition-all",
                         active    ? "bg-white text-[#14b8a6]" :
                         generated ? "bg-[#14b8a6] text-white" :
                                     "bg-gray-200 text-gray-500",
                       ].join(" ")}>
-                        {generated && !active ? <CheckCircle2 className="h-5 w-5" /> : icon}
+                        {generated && !active ? <CheckCircle2 className="h-3 w-3" /> : icon}
                       </span>
-                      <span className={["text-sm leading-snug", active ? "font-bold" : "font-semibold"].join(" ")}>{label}</span>
-                      <span className={["text-xs leading-snug hidden sm:block", active ? "text-white/90" : "text-muted-foreground"].join(" ")}>{description}</span>
+                      <span className={["text-xs leading-snug", active ? "font-bold" : "font-semibold"].join(" ")}>{label}</span>
+                      <span className={["text-[10px] leading-snug hidden sm:block", active ? "text-white/90" : "text-muted-foreground"].join(" ")}>{description}</span>
                       {generated && active && (
-                        <span className="text-[10px] bg-white/20 rounded-full px-2 py-0.5 font-medium">Generated</span>
+                        <span className="text-[10px] bg-white/20 rounded-full px-1.5 py-0.5 font-medium">Generated</span>
                       )}
                     </button>
                   </div>

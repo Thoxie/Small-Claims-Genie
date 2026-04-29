@@ -114,7 +114,7 @@ const REQUIRED: { tab: number; key: string; label: string }[] = [
   { tab: 2, key: "claimDescription", label: "Claim description" },
   { tab: 2, key: "incidentDate",     label: "Incident date" },
   { tab: 2, key: "howAmountCalculated", label: "Amount calculation" },
-  { tab: 3, key: "venueBasis",       label: "Venue basis" },
+  { tab: 4, key: "venueBasis",       label: "Venue basis" },
 ];
 
 // ─── Intake Tab ───────────────────────────────────────────────────────────────
@@ -298,6 +298,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
       )}
       {activeTab === 3 && (
         <IntakeStep3
+          caseId={caseId}
           initialData={initialData}
           onNext={handleNext}
           onBack={() => setActiveTab(2)}
