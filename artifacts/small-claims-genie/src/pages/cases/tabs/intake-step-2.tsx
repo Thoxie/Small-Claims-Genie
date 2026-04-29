@@ -415,8 +415,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
           onClick={() => setTutorialOpen(false)}
         >
           <div
-            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-            style={{ width: "min(95vw, 1100px)", maxHeight: "95vh" }}
+            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-[95vw] max-h-[95vh] flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
