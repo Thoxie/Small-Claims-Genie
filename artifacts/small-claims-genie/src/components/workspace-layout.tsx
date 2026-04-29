@@ -20,7 +20,7 @@ import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 
 export const WORKSPACE_TABS = [
   { value: "intake",        label: "Tell Your\nStory",      icon: BookOpen  },
-  { value: "documents",     label: "My\nEvidence",          icon: FolderOpen },
+  { value: "documents",     label: "Upload My\nEvidence",   icon: FolderOpen },
   { value: "chat",          label: "Ask\nGenie AI",         icon: MessageSquare },
   { value: "demand-letter", label: "Send a\nDemand",        icon: Mail },
   { value: "forms",         label: "Create Court\nForms",   icon: FilePlus2 },
