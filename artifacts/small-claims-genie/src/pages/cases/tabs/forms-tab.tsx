@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { useGetCaseReadiness } from "@workspace/api-client-react";
+import { useGetCaseReadiness, getGetCaseReadinessQueryKey } from "@workspace/api-client-react";
 import type { ExtendedCase, DocumentWithMeta } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -509,7 +509,7 @@ function PhaseHeader({ number, title, subtitle }: { number: number; title: strin
 export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToIntake, onSwitchToPrep: _onSwitchToPrep, isDraftMode = false }: { caseId: number, currentCase: ExtendedCase, onSwitchToIntake: () => void, onSwitchToPrep: () => void, isDraftMode?: boolean }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
-  const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
+  const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId, queryKey: getGetCaseReadinessQueryKey(caseId) } });
 
   // ── Core download state ────────────────────────────────────────────────────
   const [downloadingPdf, setDownloadingPdf] = useState(false);

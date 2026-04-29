@@ -104,7 +104,7 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
 
 // ─── Main Tab ────────────────────────────────────────────────────────────────
 export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[] }) {
-  const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
+  const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId, queryKey: getListDocumentsQueryKey(caseId) } });
   const uploadDoc = useUploadDocument();
   const deleteDoc = useDeleteDocument();
   const queryClient = useQueryClient();
