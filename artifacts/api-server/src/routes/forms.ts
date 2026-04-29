@@ -32,8 +32,8 @@ const objectStorage = new ObjectStorageService();
 async function getDocumentBuffer(doc: { storageObjectPath: string | null; fileData?: string | null }): Promise<Buffer> {
   if (doc.storageObjectPath) {
     const gcsFile = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
-    const response = await objectStorage.downloadObject(gcsFile);
-    return Buffer.from(await response.arrayBuffer());
+    const [buffer] = await gcsFile.download();
+    return buffer;
   }
   if (doc.fileData) {
     return Buffer.from(doc.fileData, "base64");

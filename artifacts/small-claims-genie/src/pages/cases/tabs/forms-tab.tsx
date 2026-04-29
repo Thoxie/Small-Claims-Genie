@@ -545,16 +545,25 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       try {
         const token = await getToken();
         const res = await fetch(`/api/cases/${caseId}/documents`, { headers: { Authorization: `Bearer ${token}` } });
-        if (res.ok) {
-          const docs = await res.json();
-          setDocuments(docs);
-          setSelectedExhibits(docs.map((d: any) => d.id));
-        }
+        if (res.ok) setDocuments(await res.json());
       } catch { /* silent */ }
       finally { setDocsLoading(false); }
     }
     fetchDocs();
   }, [caseId]);
+
+  // Whenever the documents list changes, auto-select any document not yet in the
+  // selection (preserves manual deselections the user has made).
+  useEffect(() => {
+    setSelectedExhibits(prev => {
+      const prevSet = new Set(prev);
+      const merged = [...prev];
+      for (const doc of documents) {
+        if (!prevSet.has(doc.id)) merged.push(doc.id);
+      }
+      return merged.length === prev.length ? prev : merged;
+    });
+  }, [documents]);
 
   // ── Auto-save mc030Title to DB whenever it changes (debounced 1s) ──────────
   const mc030TitleInitial = useRef(mc030Title);
