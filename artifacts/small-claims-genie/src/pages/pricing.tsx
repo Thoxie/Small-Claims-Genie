@@ -103,7 +103,7 @@ export default function Pricing() {
           <PricingCard
             plan="Personal Case"
             tagline="For person-versus-person disputes only, such as conflicts with a neighbor, roommate, acquaintance, friend, or other individual."
-            price="$79"
+            price="$59"
             addonText="Add an additional case anytime for +$49"
             addonCopy="Separate workspace, separate documents, separate timeline, and separate prep flow."
             valueBold="Best for a straightforward consumer dispute."
@@ -122,7 +122,7 @@ export default function Pricing() {
           <PricingCard
             plan="Business Case"
             tagline="For any case involving a business on either side, including a business suing an individual or an individual suing a business."
-            price="$99"
+            price="$79"
             addonText="Add an additional case anytime for +$59"
             addonCopy="Useful for a second defendant, another dispute, or a separate claim track under the same account."
             valueBold="Best for more document-heavy disputes."
