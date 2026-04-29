@@ -6,16 +6,23 @@ import { Mic, Send, CheckCircle, Loader2, Download, Sparkles } from "lucide-reac
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
 import { DraftLockedButton } from "@/components/draft-overlay";
+import type { ExtendedCase, SpeechRecognitionWindow, SpeechRecognitionInstance, SpeechRecognitionEvent as SpeechRecognitionEvt } from "@/lib/types";
 
-export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: number; isDraftMode?: boolean; currentCase?: any }) {
-  const [messages, setMessages] = useState<any[]>([]);
+interface ChatMessage {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+}
+
+export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: number; isDraftMode?: boolean; currentCase?: ExtendedCase }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingWord, setDownloadingWord] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const { getToken } = useAuth();
 
   const downloadChat = async (format: "pdf" | "word", scope: "last" | "all" = "all") => {
@@ -39,9 +46,9 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
       a.download = `${label}.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[Chat export]", e);
-      alert(e?.message || "Could not download. Please try again.");
+      alert(e instanceof Error ? e.message : "Could not download. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -82,13 +89,13 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
       setInput("");
       const formatLabel = format === "pdf" ? "PDF" : "Word (.docx)";
       const scopeLabel = scope === "last" ? "that content" : "the full chat transcript";
-      const botMsg = { id: Date.now() + 1, role: 'assistant', content: `Of course! Downloading ${scopeLabel} as a **${formatLabel}** file — your download will start in a moment.` };
-      setMessages(prev => [...prev, { id: Date.now(), role: 'user', content }, botMsg]);
+      const botMsg: ChatMessage = { id: Date.now() + 1, role: 'assistant', content: `Of course! Downloading ${scopeLabel} as a **${formatLabel}** file — your download will start in a moment.` };
+      setMessages(prev => [...prev, { id: Date.now(), role: 'user' as const, content }, botMsg]);
       await downloadChat(format, scope);
       return;
     }
 
-    const newMsg = { id: Date.now(), role: 'user', content };
+    const newMsg: ChatMessage = { id: Date.now(), role: 'user', content };
     setMessages(prev => [...prev, newMsg]);
     setInput("");
     setIsTyping(true);
@@ -112,7 +119,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
       let sseBuffer = "";
 
       if (reader) {
-        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: "" }]);
+        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant' as const, content: "" }]);
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -134,16 +141,17 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
           }
         }
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setMessages(prev => [...prev, { id: Date.now() + 2, role: 'assistant', content: `Sorry, I ran into an error: ${e?.message || "Please try again."}` }]);
+      setMessages(prev => [...prev, { id: Date.now() + 2, role: 'assistant' as const, content: `Sorry, I ran into an error: ${e instanceof Error ? e.message : "Please try again."}` }]);
     } finally {
       setIsTyping(false);
     }
   };
 
   const handleVoiceStart = () => {
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const w = window as Window & SpeechRecognitionWindow;
+    const SpeechRecognitionAPI = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) { console.warn("[Voice] Web Speech API not supported"); return; }
     const textBeforeRecording = input.trim();
     const recognition = new SpeechRecognitionAPI();
@@ -151,7 +159,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
     recognition.continuous = true;
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvt) => {
       let sessionTranscript = "";
       for (let i = 0; i < event.results.length; i++) sessionTranscript += event.results[i][0].transcript;
       const combined = textBeforeRecording ? textBeforeRecording + " " + sessionTranscript.trim() : sessionTranscript.trim();

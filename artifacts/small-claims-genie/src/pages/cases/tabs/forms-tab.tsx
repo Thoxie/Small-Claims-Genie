@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetCaseReadiness } from "@workspace/api-client-react";
+import type { ExtendedCase, DocumentWithMeta } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -205,7 +206,7 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
 function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload, onAiGenerate, onAiDraftSC105 }: {
   formId: string; caseId: number; initialValues?: Record<string, string>;
   onClose: () => void;
-  onDownload: (endpoint: string, filename: string, body: Record<string, any>) => void;
+  onDownload: (endpoint: string, filename: string, body: Record<string, unknown>) => void;
   onAiGenerate?: () => Promise<string | null>;
   onAiDraftSC105?: () => Promise<{ orderRequested: string; orderReason: string }>;
 }) {
@@ -254,8 +255,8 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
     finally { setSc105AiGenerating(false); }
   }
 
-  function buildBody(): Record<string, any> {
-    const d: Record<string, any> = { ...formData };
+  function buildBody(): Record<string, unknown> {
+    const d: Record<string, unknown> = { ...formData };
     if (formId === "sc100a") {
       // p1 (second plaintiff) is read directly from the case DB on the server.
       // Only pass extra parties that aren't in the DB.
@@ -459,7 +460,7 @@ export function SignaturePadModal({ open, onClose, onSign, onSkipSign, formTitle
 }
 
 // ─── Packet Rules Engine ──────────────────────────────────────────────────────
-function getRecommendedForms(c: any): Array<{ id: string; number: string; required: boolean; reason: string }> {
+function getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: string; required: boolean; reason: string }> {
   if (!c?.plaintiffName) return [];
 
   const forms: Array<{ id: string; number: string; required: boolean; reason: string }> = [];
@@ -505,7 +506,7 @@ function PhaseHeader({ number, title, subtitle }: { number: number; title: strin
 }
 
 // ─── Forms Tab ────────────────────────────────────────────────────────────────
-export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToIntake, onSwitchToPrep: _onSwitchToPrep, isDraftMode = false }: { caseId: number, currentCase: any, onSwitchToIntake: () => void, onSwitchToPrep: () => void, isDraftMode?: boolean }) {
+export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToIntake, onSwitchToPrep: _onSwitchToPrep, isDraftMode = false }: { caseId: number, currentCase: ExtendedCase, onSwitchToIntake: () => void, onSwitchToPrep: () => void, isDraftMode?: boolean }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
@@ -520,9 +521,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
-  const [sc104FormBody, setSc104FormBody] = useState<Record<string, any> | null>(null);
+  const [sc104FormBody, setSc104FormBody] = useState<Record<string, unknown> | null>(null);
   const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
-  const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, any> | null>(null);
+  const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
 
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
   const [viewingPdf, setViewingPdf] = useState(false);
@@ -532,7 +533,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   // ── MC-030 inline editor state ─────────────────────────────────────────────
   const [mc030Title, setMc030Title] = useState<string>(
-    (currentCase as any)?.mc030DeclarationTitle ||
+    currentCase?.mc030DeclarationTitle ||
     (currentCase?.plaintiffName ? `DECLARATION OF ${currentCase.plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM` : "")
   );
   const [mc030Text, setMc030Text] = useState("");
@@ -542,7 +543,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [buildingPacket, setBuildingPacket] = useState(false);
 
   // ── Documents for exhibit selector ────────────────────────────────────────
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<DocumentWithMeta[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
 
   useEffect(() => {
@@ -616,7 +617,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 
   // ── Download utilities ─────────────────────────────────────────────────────
-  async function downloadFormPost(endpoint: string, filename: string, body: Record<string, any>) {
+  async function downloadFormPost(endpoint: string, filename: string, body: Record<string, unknown>) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download and save court forms." }); return; }
     setDownloadingForm(endpoint); setDownloadError(null);
     try {
@@ -634,7 +635,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     finally { setDownloadingForm(null); }
   }
 
-  async function downloadSignedSC104(signatureDataUrl?: string, body?: Record<string, any> | null) {
+  async function downloadSignedSC104(signatureDataUrl?: string, body?: Record<string, unknown> | null) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
     setDownloadingForm("sc104"); setDownloadError(null);
     try {
@@ -708,7 +709,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       } else {
         res = await fetch(`/api/cases/${caseId}/forms/${endpoint}?token=${encodeURIComponent(token)}`, { method: "GET" });
       }
-      if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError((err as any).error || "Failed to generate PDF — please try again."); return; }
+      if (!res.ok) { const err = await res.json().catch(() => ({})) as { error?: string }; setDownloadError(err.error || "Failed to generate PDF — please try again."); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = filename;
@@ -729,7 +730,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const res = await fetch(`/api/cases/${caseId}/forms/sc100?token=${encodeURIComponent(token)}`);
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        toast({ title: "Could not load SC-100", description: (err as any).error || "Please try again.", variant: "destructive" });
+        toast({ title: "Could not load SC-100", description: (err as { error?: string }).error || "Please try again.", variant: "destructive" });
         return;
       }
       const blob = await res.blob();
@@ -745,7 +746,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   }
 
   function openSC100EditDialog() {
-    const cc = currentCase as Record<string, any>;
+    const cc = currentCase;
     setSc100Fields({
       plaintiffName: cc.plaintiffName ?? "",
       plaintiffAddress: cc.plaintiffAddress ?? "",
@@ -780,7 +781,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
       if (!tokenRes.ok) throw new Error("Token failed");
       const { token } = await tokenRes.json();
-      const overrides: Record<string, any> = { token };
+      const overrides: Record<string, unknown> = { token };
       // Map yes/no strings back to booleans for the fields that need it
       for (const [k, v] of Object.entries(sc100Fields)) {
         if (["priorDemandMade", "isSuingPublicEntity", "isAttyFeeDispute", "filedMoreThan12Claims"].includes(k)) {
@@ -804,8 +805,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       URL.revokeObjectURL(url);
       setSc100EditOpen(false);
       toast({ title: "SC-100 downloaded", description: "Your customized SC-100 has been saved." });
-    } catch (e: any) {
-      toast({ title: "Download failed", description: e?.message || "Please try again.", variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Download failed", description: e instanceof Error ? e.message : "Please try again.", variant: "destructive" });
     } finally {
       setDownloadingWithOverrides(false);
     }
@@ -816,7 +817,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     const res = await fetch(`/api/cases/${caseId}/forms/sc105/ai-draft`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${clerkToken}` }, body: JSON.stringify({}) });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error((err as any).error || "AI draft failed — please try again.");
+      throw new Error((err as { error?: string }).error || "AI draft failed — please try again.");
     }
     const data = await res.json();
     return { orderRequested: data.orderRequested || "", orderReason: data.orderReason || "" };
@@ -880,7 +881,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl, exhibitDocIds: selectedExhibits }),
       });
-      if (!res.ok) { const err = await res.json().catch(() => ({})); toast({ title: "Build failed", description: (err as any).error || "Failed to build signed MC-030.", variant: "destructive" }); return; }
+      if (!res.ok) { const err = await res.json().catch(() => ({})) as { error?: string }; toast({ title: "Build failed", description: err.error || "Failed to build signed MC-030.", variant: "destructive" }); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -902,7 +903,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   }
 
   function getInitialValues(formId: string): Record<string, string> {
-    const cc = currentCase as Record<string, any>;
+    const cc = currentCase;
     const courthouseStreet = cc.courthouseAddress || "";
     const plaintiffAddr = [cc.plaintiffAddress, cc.plaintiffCity, cc.plaintiffState || "CA", cc.plaintiffZip].filter(Boolean).join(", ");
     const defAddr = [cc.defendantAddress, cc.defendantCity, cc.defendantState || "CA", cc.defendantZip].filter(Boolean).join(", ");
@@ -1120,7 +1121,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </p>
               ) : (
                 <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-lg border border-border p-2">
-                  {documents.map((doc: any, _idx: number) => {
+                  {documents.map((doc: DocumentWithMeta, _idx: number) => {
                     const selectedIdx = selectedExhibits.indexOf(doc.id);
                     const isSelected = selectedIdx !== -1;
                     const exhibitLetter = isSelected ? EXHIBIT_LETTERS[selectedIdx] ?? String(selectedIdx + 1) : null;
@@ -1226,8 +1227,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <h4 className="font-semibold text-sm mb-1">Other Plaintiffs or Defendants</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">
                   File alongside your SC-100 if your case has more than two parties.
-                  {(currentCase as any).secondPlaintiffName && <span className="font-semibold text-foreground"> {(currentCase as any).secondPlaintiffName}'s information is pre-filled from your intake.</span>}
-                  {!(currentCase as any).secondPlaintiffName && " Add up to two additional plaintiffs and one additional defendant."}
+                  {currentCase.secondPlaintiffName && <span className="font-semibold text-foreground"> {currentCase.secondPlaintiffName}'s information is pre-filled from your intake.</span>}
+                  {!currentCase.secondPlaintiffName && " Add up to two additional plaintiffs and one additional defendant."}
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"
@@ -1502,7 +1503,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         {["yes", "no"].map(opt => (
                           <button key={opt} type="button"
                             onClick={() => setSc100Fields(p => ({ ...p, [key]: p[key] === opt ? "" : opt }))}
-                            className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${(sc100Fields as any)[key] === opt ? "bg-[#0d6b5e] text-white border-[#0d6b5e]" : "bg-background text-foreground border-input hover:border-[#14b8a6]"}`}>
+                            className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${sc100Fields[key] === opt ? "bg-[#0d6b5e] text-white border-[#0d6b5e]" : "bg-background text-foreground border-input hover:border-[#14b8a6]"}`}>
                             {opt === "yes" ? "Yes" : "No"}
                           </button>
                         ))}

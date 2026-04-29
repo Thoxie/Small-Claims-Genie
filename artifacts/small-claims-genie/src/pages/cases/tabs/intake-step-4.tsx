@@ -11,13 +11,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
 import { intakeStep4Schema } from "./shared";
 
+import type { ExtendedCase } from "@/lib/types";
+
 interface Props {
-  initialData: any;
-  onComplete: (d: any) => void;
+  initialData: Partial<ExtendedCase>;
+  onComplete: (d: Record<string, unknown>) => void;
   onBack: () => void;
   saving?: boolean;
   onCheckCase?: () => void;
-  onSaveExit: (d: any) => void;
+  onSaveExit: (d: Record<string, unknown>) => void;
 }
 
 export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCase, onSaveExit }: Props) {

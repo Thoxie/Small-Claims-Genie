@@ -11,12 +11,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
 import { formatPhone, intakeStep1Schema } from "./shared";
 
+import type { ExtendedCase, ExtendedCounty, Courthouse } from "@/lib/types";
+
 interface Props {
-  initialData: any;
-  onNext: (d: any) => void;
+  initialData: Partial<ExtendedCase>;
+  onNext: (d: Record<string, unknown>) => void;
   onBack: () => void;
   saving?: boolean;
-  onSaveExit: (d: any) => void;
+  onSaveExit: (d: Record<string, unknown>) => void;
 }
 
 export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) {
@@ -83,10 +85,10 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
   const selectedCountyId = form.watch("countyId");
   const selectedCourthouseId = form.watch("courthouseId");
 
-  const selectedCounty = counties?.find((c: any) => c.id === selectedCountyId);
+  const selectedCounty = (counties as ExtendedCounty[] | undefined)?.find((c) => c.id === selectedCountyId);
   const hasMultipleCourthouses = selectedCounty?.courthouses && selectedCounty.courthouses.length > 0;
   const selectedCourthouse = hasMultipleCourthouses
-    ? selectedCounty.courthouses.find((ch: any) => ch.id === selectedCourthouseId)
+    ? selectedCounty?.courthouses?.find((ch: Courthouse) => ch.id === selectedCourthouseId)
     : null;
 
   const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
@@ -95,7 +97,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
     : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, CA ${selectedCounty.courthouseZip}` : "";
   const courtPhone = selectedCourthouse?.phone ?? selectedCounty?.phone;
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: Record<string, unknown>) => {
     if (!plaintiffMailingDiffers) {
       data.plaintiffMailingAddress = "";
       data.plaintiffMailingCity = "";
@@ -158,7 +160,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                         <SelectTrigger className="h-10 w-[280px]"><SelectValue placeholder="Select your county" /></SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-72 overflow-y-auto">
-                        {counties?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
+                        {counties?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -173,7 +175,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                         <SelectTrigger className="h-10"><SelectValue placeholder="Select courthouse" /></SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-72 overflow-y-auto">
-                        {selectedCounty.courthouses.map((ch: any) => (
+                        {selectedCounty?.courthouses?.map((ch: Courthouse) => (
                           <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
                         ))}
                       </SelectContent>

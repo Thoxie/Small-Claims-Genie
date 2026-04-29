@@ -8,6 +8,7 @@ import {
   getListCasesQueryKey,
   getGetCaseStatsQueryKey,
 } from "@workspace/api-client-react";
+import type { ExtendedCase } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CalendarIcon, Loader2, CheckCircle, AlertCircle } from "lucide-react";
@@ -19,7 +20,7 @@ import { IntakeStep3 } from "./intake-step-3";
 import { IntakeStep4 } from "./intake-step-4";
 
 // ─── Hearing Info Card ────────────────────────────────────────────────────────
-export function HearingInfoCard({ caseId, initialData }: { caseId: number; initialData: any }) {
+export function HearingInfoCard({ caseId, initialData }: { caseId: number; initialData: ExtendedCase }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -118,7 +119,7 @@ const REQUIRED: { tab: number; key: string; label: string }[] = [
 ];
 
 // ─── Intake Tab ───────────────────────────────────────────────────────────────
-export function IntakeTab({ caseId, initialData }: { caseId: number; initialData: any }) {
+export function IntakeTab({ caseId, initialData }: { caseId: number; initialData: ExtendedCase }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [, navigate] = useLocation();
 
@@ -154,7 +155,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
     queryClient.invalidateQueries({ queryKey: getGetCaseStatsQueryKey() });
   };
 
-  const handleNext = (data: any) => {
+  const handleNext = (data: Record<string, unknown>) => {
     const next = Math.min(activeTab + 1, 4) as 1 | 2 | 3 | 4;
     saveIntake.mutate({ id: caseId, data: { step: next, data } }, {
       onSuccess: () => {
@@ -162,15 +163,15 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
         invalidateAll();
         window.scrollTo({ top: 0, behavior: "smooth" });
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         toast({ title: "Could not save progress", description: err?.message || "Please check your connection and try again.", variant: "destructive" });
       },
     });
   };
 
-  const handleComplete = (formData: any) => {
+  const handleComplete = (formData: Record<string, unknown>) => {
     // Check required fields across all tabs
-    const merged = { ...initialData, ...formData };
+    const merged: Record<string, unknown> = { ...initialData, ...formData };
     const missing = REQUIRED.filter(r => !merged[r.key]);
     if (missing.length > 0) {
       setMissingWarnings(missing);
@@ -186,7 +187,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
     });
   };
 
-  const handleSaveExit = (formData: any) => {
+  const handleSaveExit = (formData: Record<string, unknown>) => {
     saveIntake.mutate({ id: caseId, data: { step: activeTab, data: formData } }, {
       onSuccess: () => { invalidateAll(); navigate("/dashboard"); },
       onError: () => { navigate("/dashboard"); },

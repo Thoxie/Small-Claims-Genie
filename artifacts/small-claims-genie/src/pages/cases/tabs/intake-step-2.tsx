@@ -14,15 +14,17 @@ import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { DateRangePicker, intakeStep2Schema } from "./shared";
 
+import type { ExtendedCase } from "@/lib/types";
+
 interface Props {
   caseId: number;
-  initialData: any;
-  onNext: (d: any) => void;
+  initialData: Partial<ExtendedCase>;
+  onNext: (d: Record<string, unknown>) => void;
   onBack: () => void;
   saving?: boolean;
   autoOpenAdvisor?: boolean;
   onAdvisorOpened?: () => void;
-  onSaveExit: (d: any) => void;
+  onSaveExit: (d: Record<string, unknown>) => void;
 }
 
 export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, onAdvisorOpened, onSaveExit }: Props) {

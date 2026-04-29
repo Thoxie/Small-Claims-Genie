@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
+import type { ExtendedCase } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Mail, Handshake, PenLine, Loader2, Download, AlertCircle, CheckSquare2, Square, FileText, Scale, MessageCircle, CheckCircle2, Play, X, ChevronRight, BookOpen } from "lucide-react";
@@ -21,7 +22,7 @@ const SETTLE_CHECKLIST = [
   { id: "reminder", label: "Set a calendar reminder for your response deadline", detail: "If no response by the deadline, proceed with your court case." },
 ];
 
-export function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase: any }) {
+export function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase: ExtendedCase }) {
   const { getToken } = useAuth();
   const [mode, setMode] = useState<"demand" | "settlement" | "agreement">("demand");
 
@@ -150,7 +151,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
         }
       }
       if (fullText) setLetters(prev => ({ ...prev, [currentTone]: fullText }));
-    } catch (e: any) { setError(e.message ?? "Unexpected error"); }
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : "Unexpected error"); }
     finally { setIsGenerating(false); }
   }
 
@@ -168,7 +169,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = `demand-letter.pdf`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    } catch (e: any) { setError(e.message ?? "Download failed"); }
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : "Download failed"); }
     finally { setIsDownloading(false); }
   }
 
@@ -196,7 +197,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
           try { const p = JSON.parse(line.slice(6)); if (p.content) setSettlementText(prev => prev + p.content); } catch { /* ignore */ }
         }
       }
-    } catch (e: any) { setSettleError(e.message ?? "Unexpected error"); }
+    } catch (e: unknown) { setSettleError(e instanceof Error ? e.message : "Unexpected error"); }
     finally { setIsGeneratingSettle(false); }
   }
 
@@ -216,7 +217,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
       const dateStr = new Date().toISOString().slice(0, 10);
       const a = document.createElement("a"); a.href = url; a.download = `Settlement_Offer_${defName}_${dateStr}.pdf`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    } catch (e: any) { setSettleError(e.message ?? "Download failed"); }
+    } catch (e: unknown) { setSettleError(e instanceof Error ? e.message : "Download failed"); }
     finally { setIsDownloadingSettle(false); }
   }
 
@@ -244,7 +245,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
           try { const p = JSON.parse(line.slice(6)); if (p.content) setAgreementText(prev => prev + p.content); } catch { /* ignore */ }
         }
       }
-    } catch (e: any) { setAgreementError(e.message ?? "Unexpected error"); }
+    } catch (e: unknown) { setAgreementError(e instanceof Error ? e.message : "Unexpected error"); }
     finally { setIsGeneratingAgreement(false); }
   }
 
@@ -264,7 +265,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
       const dateStr = new Date().toISOString().slice(0, 10);
       const a = document.createElement("a"); a.href = url; a.download = `Settlement_Agreement_${defName}_${dateStr}.pdf`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    } catch (e: any) { setAgreementError(e.message ?? "Download failed"); }
+    } catch (e: unknown) { setAgreementError(e instanceof Error ? e.message : "Download failed"); }
     finally { setIsDownloadingAgreement(false); }
   }
 

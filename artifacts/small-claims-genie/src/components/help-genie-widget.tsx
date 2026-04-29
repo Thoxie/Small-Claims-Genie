@@ -3,6 +3,7 @@ import { Sparkles, X, Send, ChevronDown, Loader2, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import { Link } from "wouter";
+import type { SpeechRecognitionWindow, SpeechRecognitionInstance, SpeechRecognitionEvent as SpeechRecognitionEvt } from "@/lib/types";
 
 interface Message {
   role: "user" | "assistant";
@@ -26,7 +27,7 @@ export function HelpGenieWidget() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -54,7 +55,8 @@ export function HelpGenieWidget() {
   }
 
   const handleVoiceStart = () => {
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const w = window as Window & SpeechRecognitionWindow;
+    const SpeechRecognitionAPI = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) { console.warn("[Voice] Web Speech API not supported"); return; }
     const textBeforeRecording = input.trim();
     const recognition = new SpeechRecognitionAPI();
@@ -62,7 +64,7 @@ export function HelpGenieWidget() {
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
     recognition.continuous = true;
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvt) => {
       let sessionTranscript = "";
       for (let i = 0; i < event.results.length; i++) sessionTranscript += event.results[i][0].transcript;
       const combined = textBeforeRecording ? textBeforeRecording + " " + sessionTranscript.trim() : sessionTranscript.trim();
@@ -137,8 +139,8 @@ export function HelpGenieWidget() {
           } catch {}
         }
       }
-    } catch (err: any) {
-      if (err?.name !== "AbortError") {
+    } catch (err: unknown) {
+      if (!(err instanceof Error) || err.name !== "AbortError") {
         setError("Something went wrong. Please try again.");
         setMessages(prev => prev.slice(0, -1));
       }

@@ -4,9 +4,11 @@ import { AlertCircle, CheckCircle, Clock, CalendarDays, AlertTriangle, Info, Sca
 import { Button } from "@/components/ui/button";
 import { HearingInfoCard } from "./intake-tab";
 
+import type { ExtendedCase } from "@/lib/types";
+
 interface Props {
   caseId: number;
-  currentCase: any;
+  currentCase: ExtendedCase;
 }
 
 interface Deadline {

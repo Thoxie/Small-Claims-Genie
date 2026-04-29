@@ -3,6 +3,7 @@ import {
   useGetCase,
   useGetCaseReadiness,
 } from "@workspace/api-client-react";
+import type { ExtendedCase } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -85,7 +86,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     );
   }
 
-  const score = readiness?.score ?? (currentCase as any).readinessScore ?? 0;
+  const extCase = currentCase as ExtendedCase;
+  const score = readiness?.score ?? extCase.readinessScore ?? 0;
   const borderColor = score >= 80 ? "border-green-400" : score >= 50 ? "border-yellow-400" : "border-red-400";
   const scoreColor = score >= 80 ? "text-green-600" : score >= 50 ? "text-yellow-600" : "text-red-500";
   const scoreLabel = score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info";
@@ -119,12 +121,12 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <span className={`text-[10px] font-semibold ${scoreColor}`}>· {scoreLabel}</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{(currentCase as any).claimAmount ? `$${Number((currentCase as any).claimAmount).toLocaleString()}` : "—"}</span></span>
-                {(currentCase as any).countyId && (
-                  <span className="text-xs text-muted-foreground">· {(currentCase as any).countyId} County</span>
+                <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{extCase.claimAmount ? `$${Number(extCase.claimAmount).toLocaleString()}` : "—"}</span></span>
+                {extCase.countyId && (
+                  <span className="text-xs text-muted-foreground">· {extCase.countyId} County</span>
                 )}
-                {currentCase.caseNumber && (
-                  <span className="text-xs text-muted-foreground">· No. <span className="font-semibold text-foreground">{currentCase.caseNumber}</span></span>
+                {extCase.caseNumber && (
+                  <span className="text-xs text-muted-foreground">· No. <span className="font-semibold text-foreground">{extCase.caseNumber}</span></span>
                 )}
               </div>
             </div>
@@ -156,25 +158,25 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
         {/* ── Tab content — plain conditional rendering, no Radix dependency ── */}
         <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
           {activeTab === "intake" && (
-            <IntakeTab caseId={caseId} initialData={currentCase} />
+            <IntakeTab caseId={caseId} initialData={extCase} />
           )}
           {activeTab === "documents" && (
-            <DocumentsTab caseId={caseId} evidenceChecklist={(currentCase as any)?.evidenceChecklist || []} />
+            <DocumentsTab caseId={caseId} evidenceChecklist={extCase?.evidenceChecklist || []} />
           )}
           {activeTab === "chat" && (
-            <ChatTab caseId={caseId} isDraftMode={false} currentCase={currentCase} />
+            <ChatTab caseId={caseId} isDraftMode={false} currentCase={extCase} />
           )}
           {activeTab === "demand-letter" && (
-            <DemandLetterTab caseId={caseId} currentCase={currentCase} />
+            <DemandLetterTab caseId={caseId} currentCase={extCase} />
           )}
           {activeTab === "forms" && (
-            <FormsTab caseId={caseId} currentCase={currentCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
+            <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
           )}
           {activeTab === "prep" && (
-            <HearingPrepTab caseId={caseId} currentCase={currentCase} isDraftMode={false} />
+            <HearingPrepTab caseId={caseId} currentCase={extCase} isDraftMode={false} />
           )}
           {activeTab === "deadlines" && (
-            <DeadlineCalculatorTab caseId={caseId} currentCase={currentCase} />
+            <DeadlineCalculatorTab caseId={caseId} currentCase={extCase} />
           )}
         </div>
 

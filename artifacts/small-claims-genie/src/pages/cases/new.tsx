@@ -46,7 +46,7 @@ export default function NewCase() {
         onSuccess: (newCase) => {
           setLocation(`/cases/${newCase.id}`);
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           toast({
             title: "Could not create your case",
             description: err?.message || "Please try again.",

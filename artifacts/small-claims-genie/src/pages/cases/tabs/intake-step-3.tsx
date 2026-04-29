@@ -2,14 +2,15 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import { DemandLetterTab } from "./demand-letter-tab";
+import type { ExtendedCase } from "@/lib/types";
 
 interface Props {
   caseId: number;
-  initialData: any;
-  onNext: (d: any) => void;
+  initialData: ExtendedCase;
+  onNext: (d: Record<string, unknown>) => void;
   onBack: () => void;
   saving?: boolean;
-  onSaveExit: (d: any) => void;
+  onSaveExit: (d: Record<string, unknown>) => void;
 }
 
 export function IntakeStep3({ caseId, initialData, onNext, onBack, saving, onSaveExit }: Props) {

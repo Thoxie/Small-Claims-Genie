@@ -5,8 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Gavel, FileText, Star, Mic, Send, RotateCcw, CheckCircle, ChevronLeft, Printer, RefreshCw, Clock, AlertCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { DraftOverlay, DraftLockedButton } from "@/components/draft-overlay";
+import type { ExtendedCase, SpeechRecognitionWindow, SpeechRecognitionInstance, SpeechRecognitionEvent as SpeechRecognitionEvt } from "@/lib/types";
 
-function buildOpeningStatement(c: any): string {
+function buildOpeningStatement(c: ExtendedCase): string {
   const name = c.plaintiffName?.trim() || "[Your Name]";
   const defendant = c.defendantName?.trim() || "the defendant";
   const isBusiness = !!c.defendantIsBusinessOrEntity;
@@ -80,7 +81,7 @@ function wordsToTime(text: string): string {
 
 type PrepMessage = { role: "user" | "assistant"; content: string };
 
-export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { caseId: number; currentCase: any; isDraftMode?: boolean }) {
+export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { caseId: number; currentCase: ExtendedCase; isDraftMode?: boolean }) {
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<PrepMessage[]>([]);
   const [input, setInput] = useState("");
@@ -89,7 +90,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
   const [isRecording, setIsRecording] = useState(false);
   const [prepMode, setPrepMode] = useState<null | "statement" | "mock-trial">(null);
   const [statementText, setStatementText] = useState(() => buildOpeningStatement(currentCase));
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -168,14 +169,15 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
   };
 
   const handleVoiceStart = () => {
-    const API = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const w = window as Window & SpeechRecognitionWindow;
+    const API = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!API) return;
     const before = input.trim();
     const rec = new API();
     rec.lang = "en-US";
     rec.interimResults = true;
     rec.continuous = true;
-    rec.onresult = (e: any) => {
+    rec.onresult = (e: SpeechRecognitionEvt) => {
       let transcript = "";
       for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
       setInput(before ? `${before} ${transcript.trim()}` : transcript.trim());

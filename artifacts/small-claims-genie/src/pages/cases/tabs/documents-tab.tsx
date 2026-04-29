@@ -15,10 +15,11 @@ import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, 
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import type { DocumentWithMeta } from "@/lib/types";
 
 // ─── DocTile ─────────────────────────────────────────────────────────────────
 function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
-  doc: any;
+  doc: DocumentWithMeta;
   caseId: number;
   onDelete: () => void;
   deleting: boolean;
@@ -169,8 +170,8 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
       invalidateDocAndScore();
       toast({ title: "Document uploaded", description: "OCR text extraction is running in the background." });
       setActiveTab("uploads");
-    } catch (err: any) {
-      const msg = err?.data?.error ?? err?.message ?? "Upload failed — please try again.";
+    } catch (err: unknown) {
+      const msg = (err instanceof Error ? err.message : null) ?? "Upload failed — please try again.";
       toast({ title: "Upload failed", description: msg, variant: "destructive" });
     }
   };
@@ -302,7 +303,7 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
           </div>
 
           <div className="space-y-3">
-            {documents?.map((doc: any) => (
+            {documents?.map((doc: DocumentWithMeta) => (
               <DocTile
                 key={doc.id}
                 doc={doc}
