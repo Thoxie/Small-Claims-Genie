@@ -53,10 +53,9 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
 
               {/* Prior Demand */}
               <div className="rounded-xl border p-5 space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Prior Demand</h3>
                 <FormField control={form.control} name="priorDemandMade" render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel className="font-medium">Have you already asked the defendant to pay you?</FormLabel>
+                    <FormLabel className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Have you already asked the defendant to pay you?</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={(val) => field.onChange(val === "true")}
