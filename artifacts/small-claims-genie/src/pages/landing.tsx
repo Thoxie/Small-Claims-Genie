@@ -1,8 +1,7 @@
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
-import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
+import { FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
 
 const TEAL = "#ddf6f3";
 

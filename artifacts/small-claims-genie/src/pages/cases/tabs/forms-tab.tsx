@@ -2,13 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetCaseReadiness } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil, X } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { DraftModeBanner, DraftLockedButton } from "@/components/draft-overlay";
+import { DraftModeBanner } from "@/components/draft-overlay";
 
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
 const FORMS_CATALOG = [
@@ -506,7 +505,7 @@ function PhaseHeader({ number, title, subtitle }: { number: number; title: strin
 }
 
 // ─── Forms Tab ────────────────────────────────────────────────────────────────
-export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep, isDraftMode = false }: { caseId: number, currentCase: any, onSwitchToIntake: () => void, onSwitchToPrep: () => void, isDraftMode?: boolean }) {
+export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToIntake, onSwitchToPrep: _onSwitchToPrep, isDraftMode = false }: { caseId: number, currentCase: any, onSwitchToIntake: () => void, onSwitchToPrep: () => void, isDraftMode?: boolean }) {
   const { getToken } = useAuth();
   const { toast } = useToast();
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
@@ -597,7 +596,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const isReady = score >= 80;
   const descriptionNeedsMC030 = (currentCase.claimDescription?.length ?? 0) > 650;
   const isBusinessCase: boolean | null = currentCase.plaintiffIsBusiness ?? null;
-  const intakeStarted = currentCase.intakeStep != null && currentCase.intakeStep > 1;
+  const _intakeStarted = currentCase.intakeStep != null && currentCase.intakeStep > 1;
   const isSuingPublicEntity = currentCase.isSuingPublicEntity === true;
   const claimAmount = Number(currentCase.claimAmount || 0);
 
@@ -609,30 +608,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
   const showPhase2 = showSC100A || showSC103 || showPublicEntityBlock || showLimitWarning;
 
   // Library forms (all except sc100, mc030, sc112a which have their own sections)
-  const PHASE1_IDS = ["sc100", "mc030"];
-  const PHASE3_IDS = ["sc112a"];
+  const _PHASE1_IDS = ["sc100", "mc030"];
+  const _PHASE3_IDS = ["sc112a"];
   const LIBRARY_IDS = ["fw001", "sc100a", "sc103", "sc104", "sc105", "sc120", "sc140", "sc150"];
   const libraryForms = FORMS_CATALOG.filter(f => LIBRARY_IDS.includes(f.id));
 
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 
   // ── Download utilities ─────────────────────────────────────────────────────
-  async function downloadForm(endpoint: string, filename: string, setLoading: (v: boolean) => void) {
-    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download and save court forms." }); return; }
-    setLoading(true); setDownloadError(null);
-    try {
-      const clerkToken = await getToken();
-      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
-      if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
-      const { token } = await tokenRes.json();
-      const a = document.createElement("a");
-      a.href = `/api/cases/${caseId}/forms/${endpoint}?token=${encodeURIComponent(token)}`;
-      a.download = filename;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    } catch { setDownloadError("Download failed — please try again."); }
-    finally { setLoading(false); }
-  }
-
   async function downloadFormPost(endpoint: string, filename: string, body: Record<string, any>) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download and save court forms." }); return; }
     setDownloadingForm(endpoint); setDownloadError(null);
@@ -1137,7 +1120,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
                 </p>
               ) : (
                 <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-lg border border-border p-2">
-                  {documents.map((doc: any, idx: number) => {
+                  {documents.map((doc: any, _idx: number) => {
                     const selectedIdx = selectedExhibits.indexOf(doc.id);
                     const isSelected = selectedIdx !== -1;
                     const exhibitLetter = isSelected ? EXHIBIT_LETTERS[selectedIdx] ?? String(selectedIdx + 1) : null;

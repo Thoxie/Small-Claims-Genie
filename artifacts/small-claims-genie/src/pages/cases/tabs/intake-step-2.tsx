@@ -50,7 +50,6 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
       openAdvisor();
       onAdvisorOpened?.();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
@@ -137,7 +136,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const toggleEvidence = (id: string) => {
     setCheckedEvidence(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   };

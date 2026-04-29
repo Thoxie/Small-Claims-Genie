@@ -33,7 +33,7 @@ function parseHearingDate(raw: string): Date | null {
   return isValid(d) ? d : null;
 }
 
-function getStatuteYears(claimType: string, isBusiness: boolean): { years: number; note: string } {
+function getStatuteYears(claimType: string, _isBusiness: boolean): { years: number; note: string } {
   switch (claimType) {
     case "Property Damage":
       return { years: 3, note: "CCP § 338 — 3-year limit for property damage claims" };
@@ -176,7 +176,7 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
     });
 
     if (hearingDate) {
-      const minDaysAfterFiling = isBusiness ? 70 : 30;
+      const _minDaysAfterFiling = isBusiness ? 70 : 30;
       list.push({
         id: "hearing-rule",
         category: "Hearing Scheduling",

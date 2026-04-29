@@ -136,7 +136,7 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
   const toggleItem = (id: string) => {
     setCheckedItems(prev => {
       const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) { n.delete(id); } else { n.add(id); }
       saveChecked(n);
       return n;
     });
