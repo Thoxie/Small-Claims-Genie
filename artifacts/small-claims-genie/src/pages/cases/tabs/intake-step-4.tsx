@@ -65,11 +65,11 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
                           <FormControl><RadioGroupItem value="true" /></FormControl>
-                          <FormLabel className="font-normal cursor-pointer">Yes, I have already asked them.</FormLabel>
+                          <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
                           <FormControl><RadioGroupItem value="false" /></FormControl>
-                          <FormLabel className="font-normal cursor-pointer">No, I have not asked them yet.</FormLabel>
+                          <FormLabel className="font-normal cursor-pointer">No</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
