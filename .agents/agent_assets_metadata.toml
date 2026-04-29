@@ -108,3 +108,9 @@ id = "ZfOKgAcML_Sdzl8PpUQFb"
 uri = "file://attached_assets/sig-probe-y295.png"
 type = "image"
 title = "Probe: signature at y=295pt sits on the 'Plaintiff signs here' line"
+
+[[outputs]]
+id = "L2DBGhjt4hy80o97G4ZDw"
+uri = "file://backups/scgenie_source_2026-04-29_1539.tar.gz"
+type = "unspecified"
+title = "Small Claims Genie — Full Source Backup (Apr 29, 2026)"
