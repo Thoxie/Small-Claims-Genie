@@ -141,7 +141,6 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
     const gcsUploadRes = await fetch(uploadURL, {
       method: "PUT",
       headers: { "Content-Type": req.file.mimetype },
-      // @ts-ignore — Node 18+ fetch accepts Buffer
       body: req.file.buffer,
       duplex: "half",
       signal: AbortSignal.timeout(60_000),

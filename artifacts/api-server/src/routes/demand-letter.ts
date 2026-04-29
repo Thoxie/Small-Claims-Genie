@@ -348,7 +348,7 @@ router.post("/cases/:id/demand-letter/pdf", async (req, res): Promise<void> => {
 
 // ── MC-030 Declaration AI generation ─────────────────────────────────────────
 // Statute map by claim type — California-specific
-const STATUTE_MAP: Record<string, string[]> = {
+const _STATUTE_MAP: Record<string, string[]> = {
   "Security Deposit": [
     "Civil Code § 1950.5 — landlord must return the security deposit within 21 days of move-out with an itemized statement of deductions",
     "Civil Code § 1950.5(l) — if deposit is withheld in bad faith, landlord is liable for up to twice the amount wrongfully withheld",
@@ -991,7 +991,7 @@ router.post("/cases/:id/settlement-agreement/pdf", async (req, res): Promise<voi
   page.drawLine({ start: { x: ML, y: H - 58 }, end: { x: W - MR, y: H - 58 }, thickness: 0.5, color: GRAY });
   y = H - 80;
 
-  const SIZE = 10.5, LINE_H = SIZE * 1.55, MAX_Y = 72;
+  const SIZE = 10.5, _LINE_H = SIZE * 1.55, MAX_Y = 72;
   function wrapLine(text: string, maxW: number): string[] {
     if (!text.trim()) return [""];
     const words = text.split(" ");

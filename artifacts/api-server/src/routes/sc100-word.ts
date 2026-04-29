@@ -1,13 +1,10 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db } from "@workspace/db";
-import { casesTable } from "@workspace/db";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import type { Request, Response } from "express";
 import {
   Document, Packer, Paragraph, Table, TableRow, TableCell,
-  TextRun, WidthType, BorderStyle, AlignmentType, HeadingLevel,
+  TextRun, WidthType, BorderStyle, AlignmentType,
   VerticalAlign, ShadingType, TableLayoutType,
 } from "docx";
 

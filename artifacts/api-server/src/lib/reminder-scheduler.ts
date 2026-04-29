@@ -1,4 +1,4 @@
-import { eq, and, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
+import { eq, and, isNotNull, isNull, lte, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable } from "@workspace/db";
 import { getUncachableResendClient } from "./resend";

@@ -5,7 +5,7 @@ import { casesTable, documentsTable } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
 import { checkAiRateLimit } from "../lib/rate-limiter";
-import { isOnTopic, OFF_TOPIC_REPLY } from "../lib/topic-guard";
+import { isOnTopic } from "../lib/topic-guard";
 
 const router: IRouter = Router();
 
