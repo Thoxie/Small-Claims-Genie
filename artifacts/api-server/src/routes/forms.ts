@@ -1344,6 +1344,9 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
   const d = c as unknown as Record<string, any>;
   const b = req.body as Record<string, any>;
   const { signatureDataUrl } = b as { signatureDataUrl?: string };
+  const exhibitIds: number[] = Array.isArray(b.exhibitDocIds)
+    ? b.exhibitDocIds.map(Number).filter((n: number) => !isNaN(n))
+    : [];
   let sigBytes: Buffer | undefined;
   if (signatureDataUrl) {
     const base64 = signatureDataUrl.replace(/^data:image\/\w+;base64,/, "");
@@ -1367,11 +1370,11 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
         .catch((e: any) => console.error("MC-030 title save error:", e));
     }
 
-    const pdfDoc   = await PDFDocument.create();
-    const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const bg       = await pdfDoc.embedPng(loadAsset("mc030_hq-1.png"));
-    const page     = pdfDoc.addPage([PW, PH]);
+    const masterDoc = await PDFDocument.create();
+    const font      = await masterDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold  = await masterDoc.embedFont(StandardFonts.HelveticaBold);
+    const bg        = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
+    const page      = masterDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
 
     drawMC030Page(page, font, fontBold, d, b, declarationTitle, declarationText);
@@ -1380,14 +1383,65 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
     // Measured: label "(SIGNATURE OF DECLARANT)" at y=682 x=392.9
     // Signature image sits just above this label: pdf-lib y≈112, x=370, max 190×42
     if (sigBytes) {
-      const sigImg = await pdfDoc.embedPng(sigBytes);
+      const sigImg = await masterDoc.embedPng(sigBytes);
       const { width: sw, height: sh } = sigImg.scale(1);
       const maxW = 190, maxH = 42;
       const scale = Math.min(maxW / sw, maxH / sh, 1);
       page.drawImage(sigImg, { x: 370, y: 112, width: sw * scale, height: sh * scale });
     }
 
-    const pdfBytes = await pdfDoc.save();
+    // ── Append exhibit pages (same logic as /mc030-with-exhibits) ────────────
+    if (exhibitIds.length > 0) {
+      const docs = await db.select().from(documentsTable).where(
+        and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
+      );
+      const docMap = new Map(docs.map((doc) => [doc.id, doc]));
+      const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+      for (let i = 0; i < exhibitIds.length; i++) {
+        const doc = docMap.get(exhibitIds[i]);
+        if (!doc || !doc.storageObjectPath) continue;
+        const letter = LETTERS[i] ?? String(i + 1);
+        const label = `EXHIBIT ${letter}`;
+
+        function stampExhibit(pg: any) {
+          const lw = fontBold.widthOfTextAtSize(label, 10);
+          pg.drawRectangle({ x: PW - lw - 22, y: 28, width: lw + 16, height: 18, color: rgb(1, 1, 1), borderColor: BLACK, borderWidth: 0.7 });
+          pg.drawText(label, { x: PW - lw - 14, y: 33, size: 10, font: fontBold, color: BLACK });
+        }
+
+        try {
+          const file = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
+          const [fileBuffer] = await file.download() as [Buffer, unknown];
+          const mime = doc.mimeType;
+
+          if (mime === "application/pdf") {
+            const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
+            const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
+            copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
+          } else if (mime === "image/png" || mime === "image/jpeg" || mime === "image/jpg") {
+            const exPage = masterDoc.addPage([PW, PH]);
+            const img = mime === "image/png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
+            const { width: iw, height: ih } = img.scale(1);
+            const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
+            const dw = iw * scale; const dh = ih * scale;
+            exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
+            exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
+            stampExhibit(exPage);
+          } else {
+            const ph = masterDoc.addPage([PW, PH]);
+            ph.drawText(`${label}`, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
+            ph.drawText(`Document: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
+            ph.drawText(`(Word document — print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
+            stampExhibit(ph);
+          }
+        } catch (docErr) {
+          console.error(`[MC-030 Signed] Failed to embed exhibit ${letter}:`, docErr);
+        }
+      }
+    }
+
+    const pdfBytes = await masterDoc.save();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Disposition", `attachment; filename="MC030-Signed-Case-${id}.pdf"`);

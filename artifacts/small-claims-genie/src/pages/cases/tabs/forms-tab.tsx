@@ -848,7 +848,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       const res = await fetch(`/api/cases/${caseId}/forms/mc030/signed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl }),
+        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl, exhibitDocIds: selectedExhibits }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); toast({ title: "Build failed", description: (err as any).error || "Failed to build signed MC-030.", variant: "destructive" }); return; }
       const blob = await res.blob();
@@ -857,7 +857,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
       a.href = url; a.download = `MC030-Signed-Case-${caseId}.pdf`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast({ title: "Signed MC-030 downloaded", description: "Your signed declaration is ready to file." });
+      toast({ title: "Signed MC-030 downloaded", description: selectedExhibits.length > 0 ? `Signed MC-030 + ${selectedExhibits.length} exhibit${selectedExhibits.length > 1 ? "s" : ""} bundled.` : "Your signed declaration is ready to file." });
     } catch { toast({ title: "Download failed", description: "Please try again.", variant: "destructive" }); }
     finally { setBuildingPacket(false); }
   }
