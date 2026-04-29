@@ -78,9 +78,8 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
       { key: "signDate", label: "Date Signed", type: "date" },
     ]},
   ]},
-  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Your second plaintiff is pre-filled from intake. Add a third plaintiff or additional defendant below if needed.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
-    { title: "Additional Plaintiff #1 (pre-filled from intake)", fields: [{ key: "p1_name", label: "Full Name", type: "text" }, { key: "p1_phone", label: "Phone Number", type: "text" }, { key: "p1_street", label: "Street Address", type: "text" }, { key: "p1_city", label: "City", type: "text" }, { key: "p1_state", label: "State", type: "text", placeholder: "CA" }, { key: "p1_zip", label: "ZIP", type: "text" }]},
-    { title: "Additional Plaintiff #2 (optional — third plaintiff in the case)", fields: [{ key: "p2_name", label: "Full Name", type: "text" }, { key: "p2_phone", label: "Phone Number", type: "text" }, { key: "p2_street", label: "Street Address", type: "text" }, { key: "p2_city", label: "City", type: "text" }, { key: "p2_state", label: "State", type: "text", placeholder: "CA" }, { key: "p2_zip", label: "ZIP", type: "text" }]},
+  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Add any additional plaintiffs or defendants not already listed on your SC-100.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
+    { title: "Additional Plaintiff (optional)", fields: [{ key: "p2_name", label: "Full Name", type: "text" }, { key: "p2_phone", label: "Phone Number", type: "text" }, { key: "p2_street", label: "Street Address", type: "text" }, { key: "p2_city", label: "City", type: "text" }, { key: "p2_state", label: "State", type: "text", placeholder: "CA" }, { key: "p2_zip", label: "ZIP", type: "text" }]},
     { title: "Additional Defendant (optional)", fields: [{ key: "d1_name", label: "Full Name / Business Name", type: "text" }, { key: "d1_phone", label: "Phone Number", type: "text" }, { key: "d1_street", label: "Street Address", type: "text" }, { key: "d1_city", label: "City", type: "text" }, { key: "d1_state", label: "State", type: "text", placeholder: "CA" }, { key: "d1_zip", label: "ZIP", type: "text" }, { key: "d1_agentName", label: "Agent for Service Name (if corporation/LLC)", type: "text" }]},
     { title: "Signature", fields: [{ key: "signDate", label: "Date Signed", type: "date" }]},
   ]},
@@ -927,14 +926,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake, onSwitchToPrep
     const countyName = String(cc.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const courthouseLabel = cc.courthouseName ? `${cc.courthouseName} — ${courthouseStreet}` : courthouseStreet;
     switch (formId) {
-      case "sc100a": return {
-        p1_name:   cc.secondPlaintiffName    || "",
-        p1_phone:  cc.secondPlaintiffPhone   || "",
-        p1_street: cc.secondPlaintiffAddress || "",
-        p1_city:   cc.secondPlaintiffCity    || "",
-        p1_state:  cc.secondPlaintiffState   || "CA",
-        p1_zip:    cc.secondPlaintiffZip     || "",
-      };
+      case "sc100a": return {};
       case "sc112a": {
         const defMailingAddr = [
           cc.defendantMailingAddress || cc.defendantAddress,
