@@ -440,7 +440,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
             <div className="bg-black flex items-center justify-center" style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}>
               <iframe
                 style={{ width: "100%", height: "100%", border: 0 }}
-                src="https://app.heygen.com/share/small-claims-genie-step-2-claim-details-738523026c8a4781a46f94415f70683c?embed=true&autoplay=1"
+                src="https://www.youtube.com/embed/1Lh7pyzod54?autoplay=1&rel=0&modestbranding=1"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
                 title="Small Claims Genie — Intake Step 2 Tutorial"
@@ -450,12 +450,12 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
               <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
                 Trouble seeing the video?{" "}
                 <a
-                  href="https://app.heygen.com/share/small-claims-genie-step-2-claim-details-738523026c8a4781a46f94415f70683c"
+                  href="https://youtu.be/1Lh7pyzod54"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold text-[#14b8a6] hover:text-[#0d9488] underline"
                 >
-                  Open it directly ↗
+                  Open it on YouTube ↗
                 </a>
               </p>
               <button
