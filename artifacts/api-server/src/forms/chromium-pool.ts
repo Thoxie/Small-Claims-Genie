@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import { chromium, type Browser, type Page } from "playwright-core";
+import { logger } from "../lib/logger";
 
 let cachedBrowser: Browser | null = null;
 let launchPromise: Promise<Browser> | null = null;
@@ -134,6 +135,6 @@ export async function warmupBrowser(): Promise<void> {
   try {
     await getBrowser();
   } catch (err) {
-    console.warn("[chromium-pool] warmup failed:", err);
+    logger.warn({ err }, "[chromium-pool] warmup failed");
   }
 }

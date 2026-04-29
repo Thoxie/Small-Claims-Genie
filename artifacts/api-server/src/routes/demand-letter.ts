@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
+import { logger } from "../lib/logger";
 import { checkAiRateLimit } from "../lib/rate-limiter";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { stripMC030Wrappers, measureMC030BodyLines, MC030_MAX_LINES } from "./forms";
@@ -589,11 +590,11 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
     db.update(casesTable)
       .set({ mc030DeclarationTitle: declarationTitle })
       .where(eq(casesTable.id, id))
-      .catch((e: any) => console.error("MC-030 title save error:", e));
+      .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
 
     res.json({ declarationText, declarationTitle });
   } catch (err: any) {
-    console.error("MC-030 AI error:", err?.message);
+    req.log.error({ err }, "MC-030 AI error");
     res.status(500).json({ error: "Failed to generate declaration. Please try again." });
   }
 });

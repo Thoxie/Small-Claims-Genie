@@ -149,7 +149,7 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
       throw new Error(`GCS PUT returned ${gcsUploadRes.status}`);
     }
   } catch (storageErr) {
-    console.error("[Storage] GCS upload failed:", storageErr);
+    req.log.error({ err: storageErr }, "[Storage] GCS upload failed");
     res.status(503).json({ error: "File storage is temporarily unavailable. Please try again in a moment." });
     return;
   }
@@ -184,7 +184,7 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
 
       // ── IMAGES → Vision API ──────────────────────────────────────────────────
       if (mime.startsWith("image/")) {
-        console.log(`[OCR] Processing image via Vision: ${originalName}`);
+        req.log.info({ originalName }, "[OCR] Processing image via Vision");
         const response = await openai.chat.completions.create({
           model: "gpt-5.2",
           max_completion_tokens: 4096,
@@ -206,40 +206,40 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
           }],
         });
         ocrText = response.choices[0]?.message?.content ?? null;
-        console.log(`[OCR] Image Vision done — chars extracted: ${ocrText?.length ?? 0}`);
+        req.log.info({ chars: ocrText?.length ?? 0 }, "[OCR] Image Vision done");
 
       // ── DOCX → mammoth (direct XML text extraction, no AI needed) ───────────
       } else if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-        console.log(`[OCR] Processing DOCX via mammoth: ${originalName}`);
+        req.log.info({ originalName }, "[OCR] Processing DOCX via mammoth");
         const result = await mammoth.extractRawText({ buffer });
         const extractedText = result.value?.trim() ?? "";
         if (result.messages?.length > 0) {
-          console.log(`[OCR] mammoth warnings:`, result.messages.map((m: any) => m.message).join("; "));
+          req.log.warn({ warnings: result.messages.map((m: any) => m.message).join("; ") }, "[OCR] mammoth warnings");
         }
         ocrText = extractedText.length > 10 ? extractedText : null;
-        console.log(`[OCR] DOCX mammoth done — chars extracted: ${ocrText?.length ?? 0}`);
+        req.log.info({ chars: ocrText?.length ?? 0 }, "[OCR] DOCX mammoth done");
 
       // ── PDF → pdf-parse (native text), fallback to Vision if scanned ────────
       } else if (mime === "application/pdf") {
-        console.log(`[OCR] Processing PDF via pdf-parse: ${originalName}`);
+        req.log.info({ originalName }, "[OCR] Processing PDF via pdf-parse");
         let nativeText = "";
         try {
           const parsed = await pdfParse(buffer);
           nativeText = parsed.text?.trim() ?? "";
-          console.log(`[OCR] pdf-parse result — chars: ${nativeText.length}, pages: ${parsed.numpages}`);
+          req.log.info({ chars: nativeText.length, pages: parsed.numpages }, "[OCR] pdf-parse result");
         } catch (parseErr) {
-          console.warn(`[OCR] pdf-parse failed, will try Vision fallback:`, parseErr);
+          req.log.warn({ err: parseErr }, "[OCR] pdf-parse failed, will try Vision fallback");
         }
 
         if (nativeText.length > 50) {
           // Good native text — use it directly
           ocrText = nativeText;
-          console.log(`[OCR] PDF native text extracted — ${ocrText.length} chars`);
+          req.log.info({ chars: ocrText.length }, "[OCR] PDF native text extracted");
         } else {
           // Scanned/image-only PDF — render each page to PNG via pdfjs-dist + @napi-rs/canvas
           // (pure Node.js, no system tools needed — works in both dev and production)
           // (OpenAI Files API and inline file_data are not supported by this proxy.)
-          console.log(`[OCR] PDF appears scanned (${nativeText.length} chars native), converting pages via pdfjs-dist`);
+          req.log.info({ nativeChars: nativeText.length }, "[OCR] PDF appears scanned, converting pages via pdfjs-dist");
 
           const pdfData = new Uint8Array(buffer);
           const pdfDoc = await (pdfjsLib as any).getDocument({
@@ -252,7 +252,7 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
           }).promise;
 
           const numPages = Math.min(pdfDoc.numPages, 20);
-          console.log(`[OCR] pdfjs loaded — ${pdfDoc.numPages} total pages, processing ${numPages}`);
+          req.log.info({ totalPages: pdfDoc.numPages, processing: numPages }, "[OCR] pdfjs loaded");
 
           const pageTexts: string[] = [];
           for (let pageNum = 1; pageNum <= numPages; pageNum++) {
@@ -292,11 +292,11 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
             });
             const pageText = pageResp.choices[0]?.message?.content ?? "";
             pageTexts.push(pageText);
-            console.log(`[OCR] Page ${pageNum}/${numPages} — chars: ${pageText.length}`);
+            req.log.info({ pageNum, numPages, chars: pageText.length }, "[OCR] Page done");
           }
 
           ocrText = pageTexts.join("\n\n--- Page Break ---\n\n");
-          console.log(`[OCR] pdfjs+Vision done — total chars: ${ocrText.length}`);
+          req.log.info({ totalChars: ocrText.length }, "[OCR] pdfjs+Vision done");
         }
       }
 
@@ -309,10 +309,10 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
         })
         .where(eq(documentsTable.id, doc.id));
 
-      console.log(`[OCR] DB updated — status: ${finalText ? "complete" : "failed"}, doc id: ${doc.id}`);
+      req.log.info({ status: finalText ? "complete" : "failed", docId: doc.id }, "[OCR] DB updated");
 
     } catch (err) {
-      console.error("[OCR] Extraction error for", req.file!.originalname, ":", err);
+      req.log.error({ err, originalName: req.file!.originalname }, "[OCR] Extraction error");
       await db.update(documentsTable)
         .set({ ocrText: null, ocrStatus: "failed" })
         .where(eq(documentsTable.id, doc.id));

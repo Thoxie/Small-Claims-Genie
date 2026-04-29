@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { PDFDocument, StandardFonts, rgb, PDFName, PDFString } from "pdf-lib";
 import { getOwnedCase, getUserId } from "../lib/owned-case";
+import { logger } from "../lib/logger";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import type { Request, Response } from "express";
 import * as fs from "fs";
@@ -628,7 +629,7 @@ Only include a field if it is currently null/empty. Skip fields that already hav
         });
         return JSON.parse(resp.choices[0]?.message?.content || "{}") as Record<string, any>;
       } catch (err) {
-        console.error("SC-100 AI field enrichment error:", err);
+        logger.error({ err }, "SC-100 AI field enrichment error");
         return {} as Record<string, any>;
       }
     })() : Promise.resolve({} as Record<string, any>),
@@ -671,7 +672,7 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-100 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-100 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-100 PDF." });
   }
 });
@@ -699,7 +700,7 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-100 signed PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-100 signed PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed SC-100 PDF." });
   }
 });
@@ -831,7 +832,7 @@ router.post("/forms/sc100/debug-preview-custom", async (req, res): Promise<void>
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("Custom debug preview error:", err?.message);
+    req.log.error({ err }, "Custom debug preview error");
     res.status(500).json({ error: err?.message });
   }
 });
@@ -922,7 +923,7 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-100 preview error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-100 preview error");
     res.status(500).json({ error: err?.message ?? "Preview failed" });
   }
 });
@@ -934,10 +935,10 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
 // Run once after any form background image change. ~30 seconds to complete.
 router.post("/forms/sc100/calibrate", async (_req, res): Promise<void> => {
   try {
-    console.log("[calibrate] Starting SC-100 field map calibration...");
+    logger.info("[calibrate] Starting SC-100 field map calibration...");
     const fieldMap = await calibrateSC100(ASSET_DIR);
     refreshFieldMap(ASSET_DIR);
-    console.log("[calibrate] Calibration complete. Field map hot-reloaded.");
+    logger.info("[calibrate] Calibration complete. Field map hot-reloaded.");
     res.json({
       ok: true,
       message: "Calibration complete. Field map saved and hot-reloaded.",
@@ -950,7 +951,7 @@ router.post("/forms/sc100/calibrate", async (_req, res): Promise<void> => {
       fieldMap,
     });
   } catch (err: any) {
-    console.error("[calibrate] Calibration error:", err?.message, err?.stack);
+    logger.error({ err }, "[calibrate] Calibration error");
     res.status(500).json({ error: err?.message ?? "Calibration failed" });
   }
 });
@@ -1053,7 +1054,7 @@ If no issues, say "ALL HORIZONTAL POSITIONS CORRECT".`;
 
     res.json({ ok: true, analysis: response.choices[0].message.content });
   } catch (err: any) {
-    console.error("[horiz-check]", err?.message, err?.stack);
+    logger.error({ err }, "[horiz-check]");
     res.status(500).json({ error: err?.message });
   } finally {
     try { execSync(`rm -rf "${tmpDir}"`); } catch {}
@@ -1069,7 +1070,7 @@ router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
 
   try {
     // 1. Generate sample PDF with current calibrated coordinates
-    console.log("[verify] Generating sample PDF...");
+    logger.info("[verify] Generating sample PDF...");
     const VERIFY_SAMPLE: Record<string, any> = {
       plaintiffName: "Jane A. Doe", plaintiffPhone: "(619) 555-0101",
       plaintiffAddress: "123 Main Street", plaintiffCity: "San Diego",
@@ -1101,7 +1102,7 @@ router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
     fs.writeFileSync(pdfPath, pdfBytes);
 
     // 2. Convert filled PDF → PNG pages at 200 dpi
-    console.log("[verify] Converting PDF to PNGs...");
+    logger.info("[verify] Converting PDF to PNGs...");
     execSync(`pdftoppm -r 200 -png "${pdfPath}" "${path.join(tmpDir, "page")}"`, { timeout: 30000 });
 
     const filledPngPaths = [1, 2, 3, 4].map((n) => {
@@ -1110,10 +1111,10 @@ router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
     });
 
     // 3. Run verification pass
-    console.log("[verify] Running GPT-4o verification pass...");
+    logger.info("[verify] Running GPT-4o verification pass...");
     const updatedMap = await verifySC100(ASSET_DIR, filledPngPaths);
     refreshFieldMap(ASSET_DIR);
-    console.log("[verify] Verification complete. Field map updated and hot-reloaded.");
+    logger.info("[verify] Verification complete. Field map updated and hot-reloaded.");
 
     res.json({
       ok: true,
@@ -1126,7 +1127,7 @@ router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
       ),
     });
   } catch (err: any) {
-    console.error("[verify] Error:", err?.message, err?.stack);
+    logger.error({ err }, "[verify] Error");
     res.status(500).json({ error: err?.message ?? "Verification failed" });
   } finally {
     try { execSync(`rm -rf "${tmpDir}"`); } catch {}
@@ -1198,7 +1199,7 @@ CRITICAL ISSUES: List anything a court clerk would flag, reject, or question.`;
 
     res.json({ ok: true, evaluation: response.choices[0].message.content });
   } catch (err: any) {
-    console.error("[evaluate]", err?.message);
+    logger.error({ err }, "[evaluate]");
     res.status(500).json({ error: err?.message });
   }
 });
@@ -1230,7 +1231,7 @@ router.post("/cases/:id/forms/sc100/with-overrides", async (req, res): Promise<v
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-100 override PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-100 override PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-100 PDF." });
   }
 });
@@ -1560,7 +1561,7 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
       db.update(casesTable)
         .set({ mc030DeclarationTitle: declarationTitle })
         .where(eq(casesTable.id, id))
-        .catch((e: any) => console.error("MC-030 title save error:", e));
+        .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
     }
 
     const pdfDoc   = await PDFDocument.create();
@@ -1596,7 +1597,7 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("MC-030 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "MC-030 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate MC-030 PDF." });
   }
 });
@@ -1637,7 +1638,7 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       db.update(casesTable)
         .set({ mc030DeclarationTitle: declarationTitle })
         .where(eq(casesTable.id, id))
-        .catch((e: any) => console.error("MC-030 title save error:", e));
+        .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
     }
 
     const masterDoc = await PDFDocument.create();
@@ -1696,7 +1697,7 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
           const fileBuffer = await getDocumentBuffer(doc);
           await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.originalName, label, font, fontBold);
         } catch (docErr) {
-          console.error(`[MC-030 Signed] Failed to embed exhibit ${letter}:`, docErr);
+          req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Signed] Failed to embed exhibit");
         }
       }
     }
@@ -1708,7 +1709,7 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("MC-030 signed PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "MC-030 signed PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed MC-030 PDF." });
   }
 });
@@ -1749,7 +1750,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
       db.update(casesTable)
         .set({ mc030DeclarationTitle: declarationTitle })
         .where(eq(casesTable.id, id))
-        .catch((e: any) => console.error("MC-030 title save error:", e));
+        .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
     }
 
     // ── MC-030 page ──────────────────────────────────────────────────────────
@@ -1793,7 +1794,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
           const fileBuffer = await getDocumentBuffer(doc);
           await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.originalName, label, font, fontBold);
         } catch (docErr) {
-          console.error(`[MC-030 Exhibits] Failed to embed exhibit ${letter}:`, docErr);
+          req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Exhibits] Failed to embed exhibit");
         }
       }
     }
@@ -1804,7 +1805,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("MC-030 with-exhibits PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "MC-030 with-exhibits PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate filing packet." });
   }
 });
@@ -1956,7 +1957,7 @@ router.post("/cases/:id/forms/sc100a", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-100A PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-100A PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-100A PDF." });
   }
 });
@@ -1987,7 +1988,7 @@ router.post("/cases/:id/forms/sc100a/signed", async (req, res): Promise<void> =>
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-100A signed PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-100A signed PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed SC-100A PDF." });
   }
 });
@@ -2075,7 +2076,7 @@ router.post("/cases/:id/forms/sc103", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-103 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-103 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-103 PDF." });
   }
 });
@@ -2232,7 +2233,7 @@ router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-104 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-104 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-104 PDF." });
   }
 });
@@ -2259,7 +2260,7 @@ router.post("/cases/:id/forms/sc104/signed", async (req, res): Promise<void> => 
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-104 signed PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-104 signed PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed SC-104 PDF." });
   }
 });
@@ -2314,7 +2315,7 @@ router.post("/cases/:id/forms/sc105/ai-draft", async (req, res): Promise<void> =
       orderReason:    (parsed.orderReason    || "").trim().replace(/^["']|["']$/g, ""),
     });
   } catch (err: any) {
-    console.error("SC-105 AI draft error:", err?.message);
+    req.log.error({ err }, "SC-105 AI draft error");
     res.status(500).json({ error: "AI draft failed — please try again." });
   }
 });
@@ -2415,7 +2416,7 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-105 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-105 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-105 PDF." });
   }
 });
@@ -2488,7 +2489,7 @@ router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-112A PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-112A PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-112A PDF." });
   }
 });
@@ -2581,7 +2582,7 @@ router.post("/cases/:id/forms/sc120", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-120 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-120 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-120 PDF." });
   }
 });
@@ -2641,7 +2642,7 @@ router.post("/cases/:id/forms/sc140", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-140 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-140 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-140 PDF." });
   }
 });
@@ -2703,7 +2704,7 @@ router.post("/cases/:id/forms/sc150", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("SC-150 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "SC-150 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate SC-150 PDF." });
   }
 });
@@ -2877,7 +2878,7 @@ router.post("/cases/:id/forms/fw001", async (req, res): Promise<void> => {
     res.setHeader("Content-Length", pdfBytes.length);
     res.send(Buffer.from(pdfBytes));
   } catch (err: any) {
-    console.error("FW-001 PDF error:", err?.message, err?.stack);
+    req.log.error({ err }, "FW-001 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate FW-001 PDF." });
   }
 });

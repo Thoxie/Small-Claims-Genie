@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { logger } from "../lib/logger";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 // PNG backgrounds are 2550×3300 px (300 dpi). PDF page is 612×792 pt (72 dpi).
@@ -655,7 +656,7 @@ ${fieldList}`;
         size: spec.size,
       };
     } else {
-      console.warn(`[sc100-calibrate] Page ${pageNum}: GPT-4o did not return coords for "${spec.id}"`);
+      logger.warn({ pageNum, fieldId: spec.id }, "[sc100-calibrate] GPT-4o did not return coords for field");
     }
   }
 
@@ -675,14 +676,14 @@ export async function verifySC100(
   }
 
   const fieldMap: SC100FieldMap = JSON.parse(fs.readFileSync(mapPath, "utf8"));
-  console.log("[sc100-verify] Starting verification pass...");
+  logger.info("[sc100-verify] Starting verification pass...");
 
   await Promise.all(
     [1, 2, 3, 4].map(async (pageNum) => {
       const blankPngPath = path.join(assetDir, `sc100_hq-${pageNum}.png`);
       const filledPngPath = filledPngPaths[pageNum - 1];
       if (!fs.existsSync(blankPngPath) || !fs.existsSync(filledPngPath)) {
-        console.warn(`[sc100-verify] Skipping page ${pageNum} — PNG missing`);
+        logger.warn({ pageNum }, "[sc100-verify] Skipping page — PNG missing");
         return;
       }
 
@@ -720,7 +721,7 @@ Only include fields that need correction (skip correctly placed fields or set dx
 Current field positions:
 ${fieldList}`;
 
-      console.log(`[sc100-verify] Verifying page ${pageNum} (${Object.keys(currentCoords).length} fields)...`);
+      logger.info({ pageNum, fields: Object.keys(currentCoords).length }, "[sc100-verify] Verifying page");
 
       const response = await openai.chat.completions.create({
         model: "gpt-5.4",
@@ -756,20 +757,20 @@ ${fieldList}`;
         fieldMap.pages[pageKey][fieldId].y = Math.round((fieldMap.pages[pageKey][fieldId].y + delta.dy) * 10) / 10;
         corrected++;
       }
-      console.log(`[sc100-verify] Page ${pageNum} done — ${corrected} fields corrected.`);
+      logger.info({ pageNum, corrected }, "[sc100-verify] Page done");
     })
   );
 
   fieldMap.generated = new Date().toISOString();
   const outputPath = path.join(assetDir, "forms", "sc100-field-map.json");
   fs.writeFileSync(outputPath, JSON.stringify(fieldMap, null, 2));
-  console.log(`[sc100-verify] Verified field map saved to ${outputPath}`);
+  logger.info({ outputPath }, "[sc100-verify] Verified field map saved");
   return fieldMap;
 }
 
 // ── Main export: calibrate all 4 pages and save to JSON ──────────────────────
 export async function calibrateSC100(assetDir: string): Promise<SC100FieldMap> {
-  console.log("[sc100-calibrate] Starting calibration of all 4 pages...");
+  logger.info("[sc100-calibrate] Starting calibration of all 4 pages...");
 
   const pages: Record<string, Record<string, FieldCoord>> = {};
 
@@ -778,15 +779,13 @@ export async function calibrateSC100(assetDir: string): Promise<SC100FieldMap> {
     [1, 2, 3, 4].map(async (pageNum) => {
       const pngPath = path.join(assetDir, `sc100_hq-${pageNum}.png`);
       if (!fs.existsSync(pngPath)) {
-        console.error(`[sc100-calibrate] PNG not found: ${pngPath}`);
+        logger.error({ pngPath }, "[sc100-calibrate] PNG not found");
         return;
       }
-      console.log(`[sc100-calibrate] Processing page ${pageNum}...`);
+      logger.info({ pageNum }, "[sc100-calibrate] Processing page");
       const coords = await calibratePage(pageNum, pngPath);
       pages[String(pageNum)] = coords;
-      console.log(
-        `[sc100-calibrate] Page ${pageNum} done — ${Object.keys(coords).length} fields located.`
-      );
+      logger.info({ pageNum, fields: Object.keys(coords).length }, "[sc100-calibrate] Page done");
     })
   );
 
@@ -801,7 +800,7 @@ export async function calibrateSC100(assetDir: string): Promise<SC100FieldMap> {
   const outputPath = path.join(assetDir, "forms", "sc100-field-map.json");
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, JSON.stringify(fieldMap, null, 2));
-  console.log(`[sc100-calibrate] Field map saved to ${outputPath}`);
+  logger.info({ outputPath }, "[sc100-calibrate] Field map saved");
 
   return fieldMap;
 }

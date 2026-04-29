@@ -273,7 +273,7 @@ router.get("/cases/:id/forms/sc100-word", async (req, res): Promise<void> => {
   res.setHeader("Content-Length", buffer.length);
   res.send(buffer);
   } catch (err: any) {
-    console.error("SC-100 Word generation error:", err?.message ?? err);
+    req.log.error({ err }, "SC-100 Word generation error");
     if (!res.headersSent) {
       res.status(500).json({ error: "Failed to generate SC-100 Word doc. Please try again." });
     }

@@ -327,7 +327,7 @@ router.post("/help", async (req, res): Promise<void> => {
     res.write("data: [DONE]\n\n");
     res.end();
   } catch (err) {
-    console.error("[help-chat] error:", err);
+    req.log.error({ err }, "[help-chat] error");
     res.write(`data: ${JSON.stringify({ error: "Something went wrong. Please try again." })}\n\n`);
     res.end();
   }
