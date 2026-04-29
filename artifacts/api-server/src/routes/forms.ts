@@ -35,7 +35,123 @@ const SC100_CONFIG = loadFormConfig("sc100.json");
 
 const objectStorage = new ObjectStorageService();
 
-// ─── Exhibit helpers ──────────────────────────────────────────────────────────
+// ─── Exhibit & declaration helpers ───────────────────────────────────────────
+
+// Generate a professional court exhibit cover page inserted before the exhibit content.
+function generateExhibitCoverPage(
+  masterDoc: PDFDocument,
+  label: string,
+  originalName: string,
+  font: any,
+  fontBold: any
+): void {
+  const page = masterDoc.addPage([PW, PH]);
+  const midY = PH / 2;
+  // Decorative top rule
+  page.drawLine({ start: { x: 72, y: midY + 70 }, end: { x: PW - 72, y: midY + 70 }, thickness: 1.5, color: BLACK });
+  // Exhibit label — centered
+  const labelW = fontBold.widthOfTextAtSize(label, 36);
+  page.drawText(label, { x: (PW - labelW) / 2, y: midY + 26, size: 36, font: fontBold, color: BLACK });
+  // Decorative bottom rule
+  page.drawLine({ start: { x: 72, y: midY + 10 }, end: { x: PW - 72, y: midY + 10 }, thickness: 1.5, color: BLACK });
+  // Document filename below
+  const nameToShow = originalName.length > 60 ? originalName.slice(0, 57) + "…" : originalName;
+  const nameW = font.widthOfTextAtSize(nameToShow, 11);
+  page.drawText(nameToShow, { x: (PW - nameW) / 2, y: midY - 22, size: 11, font, color: rgb(0.3, 0.3, 0.3) });
+}
+
+// Render the full declaration text across one or more plain letter-size continuation
+// pages. Used when the text is too long for the MC-030 form body.
+function addDeclarationContinuationPages(
+  masterDoc: PDFDocument,
+  font: any,
+  fontBold: any,
+  fullText: string,
+  d: Record<string, any>,
+  b: Record<string, any>
+): void {
+  const MARGIN   = 72;
+  const CONTENTW = PW - MARGIN * 2;
+  const BSIZE    = 11;
+  const LINEH    = 14.5;
+
+  // Word-wrap the full text into display lines, preserving paragraph breaks
+  const allLines: string[] = [];
+  for (const para of fullText.split(/\n/).map(p => p.trim()).filter(Boolean)) {
+    const words = para.split(/\s+/);
+    let line = "";
+    for (const w of words) {
+      const cand = line ? line + " " + w : w;
+      if (font.widthOfTextAtSize(cand, BSIZE) > CONTENTW && line) { allLines.push(line); line = w; }
+      else { line = cand; }
+    }
+    if (line) allLines.push(line);
+    allLines.push(""); // blank line between paragraphs
+  }
+  while (allLines.length && !allLines[allLines.length - 1]) allLines.pop();
+
+  const HEADER_H   = 88;  // reserved at top of first page for heading
+  const FOOTER_H   = 72;  // reserved at bottom of last page for perjury close + sig
+  const firstLines = Math.floor((PH - MARGIN - HEADER_H - FOOTER_H) / LINEH);
+  const fullLines  = Math.floor((PH - MARGIN * 2) / LINEH);
+
+  let lineIdx = 0;
+  let pageNum  = 0;
+
+  while (lineIdx < allLines.length) {
+    const page = masterDoc.addPage([PW, PH]);
+    pageNum++;
+    const isFirst = pageNum === 1;
+
+    if (isFirst) {
+      const headerTitle = "ATTACHMENT TO MC-030 DECLARATION";
+      const hw = fontBold.widthOfTextAtSize(headerTitle, 13);
+      page.drawText(headerTitle, { x: (PW - hw) / 2, y: PH - MARGIN, size: 13, font: fontBold, color: BLACK });
+      page.drawLine({ start: { x: MARGIN, y: PH - MARGIN - 14 }, end: { x: PW - MARGIN, y: PH - MARGIN - 14 }, thickness: 0.5, color: BLACK });
+      const plaintiff = String(d.plaintiffName || b?.plaintiffName || "");
+      const defendant = String(d.defendantName || b?.defendantName || "");
+      const caseNo    = String(d.caseNumber    || b?.caseNumber    || "");
+      page.drawText(`${plaintiff} vs. ${defendant}`, { x: MARGIN, y: PH - MARGIN - 30, size: 10, font, color: BLACK });
+      if (caseNo) {
+        const cnText = `Case No.: ${caseNo}`;
+        const cnW = font.widthOfTextAtSize(cnText, 10);
+        page.drawText(cnText, { x: PW - MARGIN - cnW, y: PH - MARGIN - 30, size: 10, font, color: BLACK });
+      }
+      page.drawLine({ start: { x: MARGIN, y: PH - MARGIN - 42 }, end: { x: PW - MARGIN, y: PH - MARGIN - 42 }, thickness: 0.5, color: BLACK });
+    }
+
+    const startY       = isFirst ? PH - MARGIN - HEADER_H : PH - MARGIN;
+    const linesOnPage  = isFirst ? firstLines : fullLines;
+    let y = startY;
+
+    for (let i = 0; i < linesOnPage && lineIdx < allLines.length; i++, lineIdx++) {
+      if (allLines[lineIdx]) page.drawText(allLines[lineIdx], { x: MARGIN, y, size: BSIZE, font, color: BLACK });
+      y -= LINEH;
+    }
+
+    // Last page — add perjury closer + signature lines
+    if (lineIdx >= allLines.length) {
+      y -= LINEH;
+      const perjury = "I declare under penalty of perjury under the laws of the State of California that the foregoing is true and correct.";
+      const pwords = perjury.split(" ");
+      let pline = "";
+      for (const pw of pwords) {
+        const cand = pline ? pline + " " + pw : pw;
+        if (font.widthOfTextAtSize(cand, BSIZE) > CONTENTW && pline) {
+          page.drawText(pline, { x: MARGIN, y, size: BSIZE, font, color: BLACK }); y -= LINEH; pline = pw;
+        } else { pline = cand; }
+      }
+      if (pline) { page.drawText(pline, { x: MARGIN, y, size: BSIZE, font, color: BLACK }); y -= LINEH; }
+      y -= LINEH * 2;
+      const dateStr = String(b?.declarationDate || "");
+      const declarant = String(b?.declarantName || d.plaintiffName || "");
+      page.drawText(`Date: ${dateStr || "_________________________"}`, { x: MARGIN, y, size: BSIZE, font, color: BLACK });
+      page.drawText(`Signature: _________________________`, { x: MARGIN + 230, y, size: BSIZE, font, color: BLACK });
+      y -= LINEH * 2;
+      page.drawText(`Printed Name: ${declarant}`, { x: MARGIN, y, size: BSIZE, font, color: BLACK });
+    }
+  }
+}
 
 // Detect actual file format from magic bytes — more reliable than stored MIME type.
 function sniffFormat(buf: Buffer): "pdf" | "jpeg" | "png" | "docx" | "webp" | "unknown" {
@@ -83,7 +199,8 @@ async function docxToPdf(buf: Buffer): Promise<Buffer> {
   });
 }
 
-// Embed one document as exhibit pages into masterDoc, stamping the first page with the label.
+// Embed one document as exhibit pages into masterDoc.
+// Adds a dedicated cover page first, then the actual document pages stamped with the exhibit label.
 async function embedExhibitPages(
   masterDoc: PDFDocument,
   fileBuffer: Buffer,
@@ -93,6 +210,9 @@ async function embedExhibitPages(
   font: any,
   fontBold: any
 ): Promise<void> {
+  // Always add a professional cover page before the actual exhibit content
+  generateExhibitCoverPage(masterDoc, label, originalName, font, fontBold);
+
   const fmt = sniffFormat(fileBuffer);
 
   // Helper: draw the exhibit stamp box bottom-right of a page
@@ -1450,7 +1570,25 @@ router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
     const page     = pdfDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
 
-    drawMC030Page(page, font, fontBold, d, b, declarationTitle, declarationText);
+    // If declaration text overflows the MC-030 body, use a short notice on the form
+    // and generate continuation pages after it.
+    let formDeclText = declarationText;
+    let declOverflows = false;
+    if (declarationText) {
+      let lines = 0;
+      for (const para of declarationText.split(/\n/).map(p => p.trim()).filter(Boolean)) {
+        let line = "";
+        for (const w of para.split(/\s+/)) {
+          const cand = line ? line + " " + w : w;
+          if (font.widthOfTextAtSize(cand, MC030_BODY_SIZE) > MC030_BODY_MAX_W && line) { lines++; line = w; } else { line = cand; }
+        }
+        if (line) lines++;
+        if (lines > MC030_MAX_LINES) { declOverflows = true; break; }
+      }
+    }
+    if (declOverflows) formDeclText = "SEE ATTACHED DECLARATION PAGES.";
+    drawMC030Page(page, font, fontBold, d, b, declarationTitle, formDeclText);
+    if (declOverflows) addDeclarationContinuationPages(pdfDoc, font, fontBold, declarationText, d, b);
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
@@ -1509,7 +1647,23 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
     const page      = masterDoc.addPage([PW, PH]);
     page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
 
-    drawMC030Page(page, font, fontBold, d, b, declarationTitle, declarationText);
+    // Overflow check — if declaration won't fit, use a short notice and add continuation pages
+    let formDeclText = declarationText;
+    let declOverflows = false;
+    if (declarationText) {
+      let lines = 0;
+      for (const para of declarationText.split(/\n/).map(p => p.trim()).filter(Boolean)) {
+        let line = "";
+        for (const w of para.split(/\s+/)) {
+          const cand = line ? line + " " + w : w;
+          if (font.widthOfTextAtSize(cand, MC030_BODY_SIZE) > MC030_BODY_MAX_W && line) { lines++; line = w; } else { line = cand; }
+        }
+        if (line) lines++;
+        if (lines > MC030_MAX_LINES) { declOverflows = true; break; }
+      }
+    }
+    if (declOverflows) formDeclText = "SEE ATTACHED DECLARATION PAGES.";
+    drawMC030Page(page, font, fontBold, d, b, declarationTitle, formDeclText);
 
     // Embed signature image at the SIGNATURE OF DECLARANT position
     // Measured: label "(SIGNATURE OF DECLARANT)" at y=682 x=392.9
@@ -1521,6 +1675,9 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       const scale = Math.min(maxW / sw, maxH / sh, 1);
       page.drawImage(sigImg, { x: 370, y: 112, width: sw * scale, height: sh * scale });
     }
+
+    // Continuation pages go after the signed MC-030 form but before any exhibits
+    if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
 
     // ── Append exhibit pages (same logic as /mc030-with-exhibits) ────────────
     if (exhibitIds.length > 0) {
@@ -1599,7 +1756,25 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     const bg = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
     const mc030Page = masterDoc.addPage([PW, PH]);
     mc030Page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    drawMC030Page(mc030Page, font, fontBold, d, b, declarationTitle, declarationText);
+
+    // Overflow check — if declaration won't fit, use a short notice and add continuation pages
+    let formDeclText = declarationText;
+    let declOverflows = false;
+    if (declarationText) {
+      let lines = 0;
+      for (const para of declarationText.split(/\n/).map(p => p.trim()).filter(Boolean)) {
+        let line = "";
+        for (const w of para.split(/\s+/)) {
+          const cand = line ? line + " " + w : w;
+          if (font.widthOfTextAtSize(cand, MC030_BODY_SIZE) > MC030_BODY_MAX_W && line) { lines++; line = w; } else { line = cand; }
+        }
+        if (line) lines++;
+        if (lines > MC030_MAX_LINES) { declOverflows = true; break; }
+      }
+    }
+    if (declOverflows) formDeclText = "SEE ATTACHED DECLARATION PAGES.";
+    drawMC030Page(mc030Page, font, fontBold, d, b, declarationTitle, formDeclText);
+    if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
 
     // ── Exhibit pages ────────────────────────────────────────────────────────
     if (exhibitIds.length > 0) {
