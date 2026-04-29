@@ -61,13 +61,13 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
                       <RadioGroup
                         onValueChange={(val) => field.onChange(val === "true")}
                         defaultValue={field.value ? "true" : "false"}
-                        className="flex flex-col space-y-2"
+                        className="flex flex-row gap-0 rounded-lg border overflow-hidden"
                       >
-                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                        <FormItem className="flex-1 flex items-center justify-center space-x-2 space-y-0 p-3 cursor-pointer border-r last:border-r-0">
                           <FormControl><RadioGroupItem value="true" /></FormControl>
                           <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
                         </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
+                        <FormItem className="flex-1 flex items-center justify-center space-x-2 space-y-0 p-3 cursor-pointer">
                           <FormControl><RadioGroupItem value="false" /></FormControl>
                           <FormLabel className="font-normal cursor-pointer">No</FormLabel>
                         </FormItem>
