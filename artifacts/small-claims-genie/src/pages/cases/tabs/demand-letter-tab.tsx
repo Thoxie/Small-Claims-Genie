@@ -3,7 +3,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Mail, Handshake, PenLine, Loader2, Download, AlertCircle, CheckSquare2, Square, FileText, Scale, MessageCircle, CheckCircle2 } from "lucide-react";
+import { Mail, Handshake, PenLine, Loader2, Download, AlertCircle, CheckSquare2, Square, FileText, Scale, MessageCircle, CheckCircle2, Play, X, ChevronRight, BookOpen } from "lucide-react";
 
 type DemandLetterTone = "formal" | "firm" | "friendly";
 
@@ -32,6 +32,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
   const [isDownloading, setIsDownloading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const claimAmt = Number(currentCase?.claimAmount ?? 0);
   const defaultSettle = Math.round(claimAmt * 0.75 * 100) / 100;
@@ -273,22 +274,60 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center gap-1 p-1 bg-muted rounded-xl w-fit flex-wrap">
-        {[
-          { value: "demand",     icon: <Mail className="h-4 w-4" />,      label: "Demand Letter" },
-          { value: "settlement", icon: <Handshake className="h-4 w-4" />, label: "Settlement Offer" },
-          { value: "agreement",  icon: <PenLine className="h-4 w-4" />,   label: "Settlement Agreement" },
-        ].map(({ value, icon, label }) => (
-          <button key={value} type="button" onClick={() => setMode(value as typeof mode)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              mode === value
-                ? "bg-[#14b8a6] text-white border-2 border-black shadow-md"
-                : "text-muted-foreground hover:bg-background hover:text-foreground"
-            }`}>
-            {icon} {label}
-          </button>
-        ))}
-      </div>
+
+      {/* ── Mode tabs + video card side by side (mirrors Step 1 / Step 2 pattern) ── */}
+      <div className="flex gap-4 items-start">
+
+        {/* Left: mode tab switcher */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 p-1 bg-muted rounded-xl w-fit flex-wrap">
+            {[
+              { value: "demand",     icon: <Mail className="h-4 w-4" />,      label: "Demand Letter" },
+              { value: "settlement", icon: <Handshake className="h-4 w-4" />, label: "Settlement Offer" },
+              { value: "agreement",  icon: <PenLine className="h-4 w-4" />,   label: "Settlement Agreement" },
+            ].map(({ value, icon, label }) => (
+              <button key={value} type="button" onClick={() => setMode(value as typeof mode)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  mode === value
+                    ? "bg-[#14b8a6] text-white border-2 border-black shadow-md"
+                    : "text-muted-foreground hover:bg-background hover:text-foreground"
+                }`}>
+                {icon} {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Right: video tutorial card */}
+        <div
+          onClick={() => setTutorialOpen(true)}
+          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          title="Watch the tutorial for this step"
+        >
+          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+              <BookOpen className="w-16 h-16 text-white" />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                <Play className="w-5 h-5 text-white ml-1" fill="white" />
+              </div>
+              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+            </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 3</div>
+          </div>
+          <div className="bg-background px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold">Demand Letter</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Generate your pre-litigation letter</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+          </div>
+        </div>
+
+      </div>{/* end mode tabs + video row */}
 
       {mode === "demand" && (
         <>
@@ -615,6 +654,70 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
             </div>
           )}
         </>
+      )}
+      {/* ── Tutorial modal ── */}
+      {tutorialOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setTutorialOpen(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-[95vw] max-h-[95vh] flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Step 3 Tutorial — Demand Letter Generator</p>
+                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <a
+              href="https://youtu.be/VDbkctbNH4Y"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative block bg-black overflow-hidden"
+              style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}
+            >
+              <img
+                src="https://img.youtube.com/vi/VDbkctbNH4Y/hqdefault.jpg"
+                alt="Small Claims Genie Step 3 Tutorial"
+                className="w-full h-full object-cover opacity-80"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-xl hover:bg-red-500 transition-colors">
+                  <svg className="w-9 h-9 text-white ml-1.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+                <span className="text-white text-sm font-semibold drop-shadow-lg bg-black/40 px-3 py-1 rounded-full">
+                  Watch tutorial on YouTube ↗
+                </span>
+              </div>
+            </a>
+            <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
+                Click the thumbnail above to watch the tutorial on YouTube.
+              </p>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
+              >
+                Close &amp; Start Filling
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
