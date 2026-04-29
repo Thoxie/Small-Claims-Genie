@@ -249,12 +249,6 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
                     )}
                   </div>
                 )}
-                {initialData.venueBasis && (
-                  <div className="border-t pt-3">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Venue Basis</p>
-                    <p>{initialData.venueBasis.replace(/_/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
