@@ -27,11 +27,20 @@ const SC100_CONFIG = loadFormConfig("sc100.json");
 
 const objectStorage = new ObjectStorageService();
 
+// Detect actual image format from buffer magic bytes (not MIME type, which can be wrong).
+function detectImageFormat(buf: Buffer): "png" | "jpeg" | null {
+  if (buf.length < 4) return null;
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "png";  // PNG
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpeg";                    // JPEG
+  return null; // WebP, HEIC, BMP, etc. — not embeddable in PDF directly
+}
+
 // Fetches the raw bytes of a stored document.
-// Supports both object-storage (storageObjectPath) and legacy base64-in-DB (fileData).
+// Normalizes the path before lookup so GCS full URLs and /objects/ paths both work.
 async function getDocumentBuffer(doc: { storageObjectPath: string | null; fileData?: string | null }): Promise<Buffer> {
   if (doc.storageObjectPath) {
-    const gcsFile = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
+    const normalizedPath = objectStorage.normalizeObjectEntityPath(doc.storageObjectPath);
+    const gcsFile = await objectStorage.getObjectEntityFile(normalizedPath);
     const [buffer] = await gcsFile.download();
     return buffer;
   }
@@ -1432,20 +1441,29 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
             const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
             const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
             copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
-          } else if (mime?.startsWith("image/")) {
-            const exPage = masterDoc.addPage([PW, PH]);
-            const img = mime === "image/png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
-            const { width: iw, height: ih } = img.scale(1);
-            const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
-            const dw = iw * scale; const dh = ih * scale;
-            exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
-            exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
-            stampExhibit(exPage);
+          } else if (mime?.startsWith("image/") || detectImageFormat(fileBuffer) !== null) {
+            const fmt = detectImageFormat(fileBuffer);
+            if (fmt !== null) {
+              const exPage = masterDoc.addPage([PW, PH]);
+              const img = fmt === "png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
+              const { width: iw, height: ih } = img.scale(1);
+              const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
+              const dw = iw * scale; const dh = ih * scale;
+              exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
+              exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
+              stampExhibit(exPage);
+            } else {
+              const ph = masterDoc.addPage([PW, PH]);
+              ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
+              ph.drawText(`Image: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
+              ph.drawText(`(Format not supported for direct embedding — print and attach separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
+              stampExhibit(ph);
+            }
           } else {
             const ph = masterDoc.addPage([PW, PH]);
-            ph.drawText(`${label}`, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
+            ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
             ph.drawText(`Document: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
-            ph.drawText(`(Word document — print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
+            ph.drawText(`(Print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
             stampExhibit(ph);
           }
         } catch (docErr) {
@@ -1539,21 +1557,33 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
             const extDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
             const copied = await masterDoc.copyPages(extDoc, extDoc.getPageIndices());
             copied.forEach((p, pi) => { masterDoc.addPage(p); if (pi === 0) stampExhibit(p); });
-          } else if (mime?.startsWith("image/")) {
-            const exPage = masterDoc.addPage([PW, PH]);
-            const img = mime === "image/png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
-            const { width: iw, height: ih } = img.scale(1);
-            const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
-            const dw = iw * scale; const dh = ih * scale;
-            exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
-            exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
-            stampExhibit(exPage);
+          } else if (mime?.startsWith("image/") || detectImageFormat(fileBuffer) !== null) {
+            // Use buffer magic bytes to determine format — MIME type stored in DB can be wrong
+            // and common phone formats (WebP, HEIC) won't embed directly in PDF.
+            const fmt = detectImageFormat(fileBuffer);
+            if (fmt !== null) {
+              const exPage = masterDoc.addPage([PW, PH]);
+              const img = fmt === "png" ? await masterDoc.embedPng(fileBuffer) : await masterDoc.embedJpg(fileBuffer);
+              const { width: iw, height: ih } = img.scale(1);
+              const scale = Math.min((PW - 72) / iw, (PH - 120) / ih, 1);
+              const dw = iw * scale; const dh = ih * scale;
+              exPage.drawImage(img, { x: (PW - dw) / 2, y: (PH - dh) / 2 + 20, width: dw, height: dh });
+              exPage.drawText(`${doc.originalName} — ${label}`, { x: 54, y: PH - 36, size: 8, font, color: rgb(0.45, 0.45, 0.45) });
+              stampExhibit(exPage);
+            } else {
+              // WebP, HEIC, or other non-embeddable image format — placeholder
+              const ph = masterDoc.addPage([PW, PH]);
+              ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
+              ph.drawText(`Image: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
+              ph.drawText(`(Format not supported for direct embedding — print and attach separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
+              stampExhibit(ph);
+            }
           } else {
-            // DOCX or other: placeholder page
+            // DOCX, XLSX, or other non-PDF/image: placeholder page
             const ph = masterDoc.addPage([PW, PH]);
-            ph.drawText(`${label}`, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
+            ph.drawText(label, { x: 54, y: PH - 80, size: 16, font: fontBold, color: BLACK });
             ph.drawText(`Document: ${doc.originalName}`, { x: 54, y: PH - 110, size: 10, font, color: BLACK });
-            ph.drawText(`(Word document — print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
+            ph.drawText(`(Print and attach this file separately)`, { x: 54, y: PH - 130, size: 9, font, color: rgb(0.45, 0.45, 0.45) });
             stampExhibit(ph);
           }
         } catch (docErr) {
