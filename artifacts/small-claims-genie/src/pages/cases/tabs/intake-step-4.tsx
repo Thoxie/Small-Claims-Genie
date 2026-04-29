@@ -177,7 +177,14 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
 
             {/* ── Right column — Review Your Case ── */}
             <div className="rounded-xl border p-5 space-y-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Review Your Case</h3>
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Review Your Case</h3>
+                {onCheckCase && (
+                  <Button type="button" onClick={onCheckCase} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white gap-1.5 whitespace-nowrap shrink-0">
+                    <Sparkles className="h-3.5 w-3.5" /> Check My Case
+                  </Button>
+                )}
+              </div>
               <div className="space-y-4 text-sm">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
