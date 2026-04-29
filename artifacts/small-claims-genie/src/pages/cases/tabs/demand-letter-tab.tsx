@@ -273,7 +273,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
     : `${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(settleAmount)}`;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-3">
 
       {/* ── Mode tabs + video card side by side (mirrors Step 1 / Step 2 pattern) ── */}
       <div className="flex gap-4 items-start">
@@ -331,8 +331,8 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
 
       {mode === "demand" && (
         <>
-          {/* Title row — sits clearly below the video card */}
-          <div className="space-y-3 pt-2">
+          {/* Title row */}
+          <div className="space-y-2">
             <h2 className="text-sm flex flex-wrap items-center gap-2">
               <Mail className="h-4 w-4 text-primary shrink-0" />
               <span className="font-bold">Demand Letter Generator</span>
