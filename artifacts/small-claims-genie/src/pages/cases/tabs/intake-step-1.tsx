@@ -482,12 +482,11 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="bg-black flex-1 flex items-center justify-center min-h-0" style={{ minHeight: "min(82vh, 900px)" }}>
+            <div className="bg-black flex items-center justify-center" style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}>
               <iframe
-                className="h-full"
-                style={{ aspectRatio: "9 / 16", maxWidth: "100%", border: 0 }}
-                src="https://www.tiktok.com/player/v1/7633866903466839317?controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1&loop=0&music_info=0&description=0&rel=0&native_context_menu=0&closed_caption=1"
-                allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
+                style={{ width: "100%", height: "100%", border: 0 }}
+                src="https://www.youtube.com/embed/1Lh7pyzod54?autoplay=1&rel=0&modestbranding=1"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
                 title="Small Claims Genie — Intake Step 1 Tutorial"
               />
@@ -496,12 +495,12 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
               <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
                 Trouble seeing the video?{" "}
                 <a
-                  href="https://www.tiktok.com/@smallclaimsgenie/video/7633866903466839317"
+                  href="https://youtu.be/1Lh7pyzod54"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold text-[#14b8a6] hover:text-[#0d9488] underline"
                 >
-                  Open it on TikTok ↗
+                  Open it on YouTube ↗
                 </a>
               </p>
               <button
