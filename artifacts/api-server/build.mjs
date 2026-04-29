@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, stat } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -183,6 +183,46 @@ async function buildAll() {
       js: esmCjsShim,
     },
   });
+
+  // ── Pino worker size guard ───────────────────────────────────────────────────
+  // Task #13 fixed these workers bloating from ~56 KB to ~150 KB each when
+  // packages were erroneously externalized (causing each worker to re-bundle
+  // pino's transitive deps). The threshold below is set generously above the
+  // healthy baseline (pino-pretty ~90 KB, others <10 KB) so that innocent
+  // growth doesn't trigger a false alarm, while still catching a regression
+  // back to ~150 KB territory.
+  const WORKER_SIZE_LIMIT_BYTES = 100 * 1024; // 100 KB
+  const workerFiles = ["pino-worker.mjs", "pino-file.mjs", "pino-pretty.mjs"];
+  const oversized = [];
+  for (const filename of workerFiles) {
+    const filePath = path.resolve(distDir, filename);
+    try {
+      const { size } = await stat(filePath);
+      const kb = (size / 1024).toFixed(1);
+      console.log(`  ${filename}: ${kb} KB`);
+      if (size > WORKER_SIZE_LIMIT_BYTES) {
+        oversized.push({ filename, size });
+      }
+    } catch (err) {
+      // File not emitted (e.g. pino-pretty not used) — skip silently.
+      if (err.code !== "ENOENT") throw err;
+    }
+  }
+  if (oversized.length > 0) {
+    const lines = oversized.map(
+      ({ filename, size }) =>
+        `  ${filename}: ${(size / 1024).toFixed(1)} KB (limit: ${WORKER_SIZE_LIMIT_BYTES / 1024} KB)`
+    );
+    console.error(
+      "\nBuild failed: pino worker bundle(s) exceed the size limit.\n" +
+        "This usually means packages were externalized that the workers need bundled.\n" +
+        "Check the 'external' list in build.mjs and ensure pino's transitive deps\n" +
+        "are NOT externalized (they should be inlined via code-splitting).\n\n" +
+        lines.join("\n")
+    );
+    process.exit(1);
+  }
+  console.log("Pino worker size check passed.");
 }
 
 buildAll().catch((err) => {
