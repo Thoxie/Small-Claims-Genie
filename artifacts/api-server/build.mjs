@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
 import { rm, copyFile } from "node:fs/promises";
@@ -9,8 +10,16 @@ import { rm, copyFile } from "node:fs/promises";
 globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.resolve(artifactDir, "../..");
 
 async function buildAll() {
+  const tscBin = path.resolve(rootDir, "node_modules/.bin/tsc");
+  console.log("Building workspace libs with tsc --build...");
+  execFileSync(tscBin, ["--build", path.resolve(rootDir, "tsconfig.libs-server.json")], {
+    stdio: "inherit",
+    cwd: rootDir,
+  });
+  console.log("Workspace libs built successfully.");
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
