@@ -69,8 +69,8 @@ function twoCol(
       bottom: { style: BorderStyle.NONE },
       left: { style: BorderStyle.NONE },
       right: { style: BorderStyle.NONE },
-      insideH: { style: BorderStyle.NONE },
-      insideV: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE },
+      insideVertical: { style: BorderStyle.NONE },
     },
     rows: [
       new TableRow({

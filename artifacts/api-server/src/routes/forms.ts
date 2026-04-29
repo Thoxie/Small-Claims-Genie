@@ -1874,7 +1874,7 @@ async function buildSC100APdf(
     v(p1.city,                74, 631);
     v(p1.state  || "CA",     299, 631);
     v(p1.zip,                372, 631);
-    if (p1.mailingStreet) {
+    if ("mailingStreet" in p1 && p1.mailingStreet) {
       v(p1.mailingStreet,    195, 614);
       v(p1.mailingCity,       74, 597);
       v(p1.mailingState || "CA", 299, 597);

@@ -202,7 +202,7 @@ router.patch("/cases/:id/intake", async (req, res): Promise<void> => {
 
   const [updated] = await db
     .update(casesTable)
-    .set(updatePayload as Parameters<typeof casesTable.$inferSelect>[0])
+    .set(updatePayload as Partial<typeof casesTable.$inferInsert>)
     .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)))
     .returning();
 

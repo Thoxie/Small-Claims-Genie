@@ -37,7 +37,7 @@ export function useVoiceRecorder() {
 
   const stopAllTracks = useCallback(() => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current.getTracks().forEach((t: MediaStreamTrack) => t.stop());
       streamRef.current = null;
     }
   }, []);

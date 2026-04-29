@@ -18,7 +18,7 @@ router.post("/transcribe", audioUpload.single("audio"), async (req, res): Promis
   const mimeType = req.file.mimetype || "audio/webm";
   const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("aac") ? "aac" : "webm";
 
-  const audioFile = new File([req.file.buffer], `recording.${ext}`, { type: mimeType });
+  const audioFile = new File([new Uint8Array(req.file.buffer)], `recording.${ext}`, { type: mimeType });
 
   const transcription = await openai.audio.transcriptions.create({
     file: audioFile,

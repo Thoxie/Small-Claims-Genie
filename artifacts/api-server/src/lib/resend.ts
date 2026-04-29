@@ -22,7 +22,8 @@ async function getResendCredentials(): Promise<{ apiKey: string; fromEmail: stri
     throw new Error("Resend not configured — set RESEND_API_KEY secret");
   }
 
-  const data = await fetch(
+  type ConnectorItem = { settings?: { api_key?: string; from_email?: string } };
+  const data: ConnectorItem | undefined = await fetch(
     "https://" + hostname + "/api/v2/connection?include_secrets=true&connector_names=resend",
     {
       headers: {
@@ -31,7 +32,7 @@ async function getResendCredentials(): Promise<{ apiKey: string; fromEmail: stri
       },
     }
   )
-    .then((res) => res.json())
+    .then((res) => res.json() as Promise<{ items?: ConnectorItem[] }>)
     .then((d) => d.items?.[0]);
 
   if (!data?.settings?.api_key) {

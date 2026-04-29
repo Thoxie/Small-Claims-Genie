@@ -70,7 +70,7 @@ function buildHearingPrepContext(caseRecord: typeof casesTable.$inferSelect, doc
   if (docs.length > 0) {
     parts.push(`\nEvidence uploaded (${docs.length} document${docs.length > 1 ? "s" : ""}):`);
     for (const doc of docs) {
-      parts.push(`- ${doc.fileName}${doc.ocrText ? ` [contains: ${doc.ocrText.slice(0, 200)}...]` : ""}`);
+      parts.push(`- ${doc.filename}${doc.ocrText ? ` [contains: ${doc.ocrText.slice(0, 200)}...]` : ""}`);
     }
   }
 
