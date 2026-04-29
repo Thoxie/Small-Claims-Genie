@@ -11,8 +11,6 @@ function PricingCard({
   plan,
   tagline,
   price,
-  addonText,
-  addonCopy,
   valueBold,
   valueSub,
   features,
@@ -21,8 +19,6 @@ function PricingCard({
   plan: string;
   tagline: string;
   price: string;
-  addonText: string;
-  addonCopy: string;
   valueBold: string;
   valueSub: string;
   features: string[];
@@ -37,21 +33,10 @@ function PricingCard({
         <p className="text-[13px] text-[#5a6478] leading-[1.4]">{tagline}</p>
       </div>
 
-      {/* Price — no subline */}
+      {/* Price */}
       <div className="pb-4 flex items-end gap-2">
         <span className="text-[32px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
         <span className="text-[14px] font-extrabold pb-[3px] text-[#33405c]">/ month</span>
-      </div>
-
-      {/* Add-on box */}
-      <div className="flex items-start gap-3 p-[10px_12px] rounded-[14px] bg-[#f0faf8] border border-[#14b8a6]/40 mb-4">
-        <div className="flex-shrink-0 w-4 h-4 mt-[3px] rounded-full border-2 border-[#0d6b5e]/50 bg-white relative">
-          <div className="absolute inset-[3px] rounded-full bg-[#14b8a6] opacity-25" />
-        </div>
-        <div>
-          <p className="text-[13px] font-black text-[#0d6b5e] leading-[1.2] m-0">{addonText}</p>
-          <p className="text-[12px] text-[#5a6478] mt-[2px] leading-[1.35]">{addonCopy}</p>
-        </div>
       </div>
 
       {/* Value box */}
@@ -104,8 +89,6 @@ export default function Pricing() {
             plan="Personal Case"
             tagline="For person-versus-person disputes only, such as conflicts with a neighbor, roommate, acquaintance, friend, or other individual."
             price="$59"
-            addonText="Add an additional case anytime for +$49"
-            addonCopy="Separate workspace, separate documents, separate timeline, and separate prep flow."
             valueBold="Best for a straightforward consumer dispute."
             valueSub="Built to move a user from confusion to a cleaner, more organized filing package."
             features={[
@@ -123,8 +106,6 @@ export default function Pricing() {
             plan="Business Case"
             tagline="For any case involving a business on either side, including a business suing an individual or an individual suing a business."
             price="$79"
-            addonText="Add an additional case anytime for +$59"
-            addonCopy="Useful for a second defendant, another dispute, or a separate claim track under the same account."
             valueBold="Best for more document-heavy disputes."
             valueSub="Designed for cases where the facts are commercial, the records matter more, and the user needs tighter structure."
             features={[
