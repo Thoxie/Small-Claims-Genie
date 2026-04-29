@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { LogOut, Sparkles, Maximize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2 } from "lucide-react";
+import { LogOut, Sparkles, Maximize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -43,6 +43,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const [descModalOpen, setDescModalOpen] = useState(false);
   const [descModalValue, setDescModalValue] = useState("");
   const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   useEffect(() => {
     if (autoOpenAdvisor) {
@@ -145,28 +146,57 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
     <div className="space-y-5">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onNext)} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FormField control={form.control} name="claimType" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Claim Type <span className="text-destructive">*</span></FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
-                  <SelectContent>
-                    {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="claimAmount" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Amount Requested ($) <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input type="number" step="0.01" className="h-11" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+          {/* ── Claim fields + Video card side by side ── */}
+          <div className="flex gap-4 items-start">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <FormField control={form.control} name="claimType" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Claim Type <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="claimAmount" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount Requested ($) <span className="text-destructive">*</span></FormLabel>
+                  <FormControl><Input type="number" step="0.01" className="h-11" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+
+            {/* Right: video tutorial card */}
+            <div
+              onClick={() => setTutorialOpen(true)}
+              className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+              title="Watch the tutorial for this step"
+            >
+              <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                    <Play className="w-5 h-5 text-white ml-1" fill="white" />
+                  </div>
+                  <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+                </div>
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+                <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 2</div>
+              </div>
+              <div className="bg-background px-3 py-2 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold">Claim Details</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">What happened &amp; how much?</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+              </div>
+            </div>
           </div>
 
           <FormField control={form.control} name="incidentDate" render={({ field }) => (
@@ -378,6 +408,66 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* ── Video modal ── */}
+      {tutorialOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setTutorialOpen(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            style={{ width: "min(95vw, 1100px)", maxHeight: "95vh" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Step 2 Tutorial — Claim Details</p>
+                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="bg-black flex items-center justify-center" style={{ aspectRatio: "16 / 9", maxHeight: "calc(95vh - 110px)" }}>
+              <iframe
+                style={{ width: "100%", height: "100%", border: 0 }}
+                src="https://app.heygen.com/share/small-claims-genie-step-2-claim-details-738523026c8a4781a46f94415f70683c?embed=true&autoplay=1"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+                title="Small Claims Genie — Intake Step 2 Tutorial"
+              />
+            </div>
+            <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
+                Trouble seeing the video?{" "}
+                <a
+                  href="https://app.heygen.com/share/small-claims-genie-step-2-claim-details-738523026c8a4781a46f94415f70683c"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#14b8a6] hover:text-[#0d9488] underline"
+                >
+                  Open it directly ↗
+                </a>
+              </p>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
+              >
+                Close &amp; Start Filling
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
