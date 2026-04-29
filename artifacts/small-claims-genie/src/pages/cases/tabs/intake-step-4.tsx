@@ -103,10 +103,9 @@ export function IntakeStep4({ initialData, onComplete, onBack, saving, onCheckCa
 
               {/* Why This County */}
               <div className="rounded-xl border p-5 space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Why This County?</h3>
                 <FormField control={form.control} name="venueBasis" render={({ field }) => (
                   <FormItem className="space-y-2">
-                    <FormLabel className="font-medium">Select the reason you're filing here <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Why This County? <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
                       <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
                         {[
