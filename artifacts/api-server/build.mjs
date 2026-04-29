@@ -28,6 +28,42 @@ async function buildAll() {
     // - uses native modules and loads them dynamically (e.g. sharp)
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
+      // ── Heavy direct dependencies of @workspace/api-server ───────────────────
+      // Externalizing these cuts the bundle from ~17 MB to a few hundred KB.
+      // They are declared in package.json so pnpm guarantees they are accessible
+      // from node_modules at runtime.
+      "@clerk/express",
+      "@clerk/*",
+      "@react-pdf/renderer",
+      "@react-pdf/*",
+      "react",
+      "react/*",
+      "react-dom",
+      "react-dom/*",
+      "drizzle-orm",
+      "drizzle-orm/*",
+      "express",
+      "express/*",
+      "cors",
+      "cookie-parser",
+      "multer",
+      "multer/*",
+      "docx",
+      "mammoth",
+      "mammoth/*",
+      "pdf-lib",
+      "pdf-lib/*",
+      "pdf-parse",
+      "resend",
+      "resend/*",
+      "google-auth-library",
+      "google-auth-library/*",
+      "pino-http",
+      "openai",
+      "openai/*",
+      "zod",
+      "zod/*",
+      // ── Native / unbundleable packages ──────────────────────────────────────
       "*.node",
       "@napi-rs/canvas",
       "pdfjs-dist",
