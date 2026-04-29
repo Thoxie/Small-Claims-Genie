@@ -18,6 +18,9 @@ import { IntakeStep1 } from "./intake-step-1";
 import { IntakeStep2 } from "./intake-step-2";
 import { IntakeStep3 } from "./intake-step-3";
 import { IntakeStep4 } from "./intake-step-4";
+import { IntakeStep5 } from "./intake-step-5";
+import { IntakeStep6 } from "./intake-step-6";
+import { IntakeStep7 } from "./intake-step-7";
 
 // ─── Hearing Info Card ────────────────────────────────────────────────────────
 export function HearingInfoCard({ caseId, initialData }: { caseId: number; initialData: ExtendedCase }) {
@@ -81,12 +84,12 @@ export function HearingInfoCard({ caseId, initialData }: { caseId: number; initi
           </div>
           <div>
             <label className="block text-[10px] font-medium text-teal-700 mb-0.5">Judge</label>
-            <Input placeholder="Hon. Rodriguez" value={form.hearingJudge} onChange={e => setForm(f => ({ ...f, hearingJudge: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
+            <Input placeholder="Hon. Smith" value={form.hearingJudge} onChange={e => setForm(f => ({ ...f, hearingJudge: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
           </div>
           <div className="flex items-end">
-            <Button type="submit" disabled={saving} size="sm" className="h-7 w-full text-xs bg-teal-600 hover:bg-teal-700 text-white px-2 gap-1">
-              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
-              {saving ? "Saving…" : "Save"}
+            <Button type="submit" size="sm" disabled={saving} className="h-7 text-xs bg-teal-600 hover:bg-teal-700 text-white px-3 w-full">
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3 mr-1" />}
+              Save
             </Button>
           </div>
         </div>
@@ -99,23 +102,28 @@ export function HearingInfoCard({ caseId, initialData }: { caseId: number; initi
 const INTAKE_TABS = [
   { num: 1, label: "Enter The Parties" },
   { num: 2, label: "Make Your Claim" },
-  { num: 3, label: "Send Demand Letter" },
-  { num: 4, label: "Review Your Case" },
+  { num: 3, label: "Upload My Evidence" },
+  { num: 4, label: "Send Demand Letter" },
+  { num: 5, label: "Review Your Case" },
+  { num: 6, label: "Create Court Forms" },
+  { num: 7, label: "Prep for Hearing" },
 ] as const;
 
-// Required fields per tab — checked on Complete Intake
+type StepNum = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+// Required fields per step — checked on Complete Intake
 const REQUIRED: { tab: number; key: string; label: string }[] = [
-  { tab: 1, key: "plaintiffName",    label: "Your name" },
-  { tab: 1, key: "plaintiffAddress", label: "Your address" },
-  { tab: 1, key: "defendantName",    label: "Defendant name" },
-  { tab: 1, key: "defendantAddress", label: "Defendant address" },
-  { tab: 1, key: "countyId",         label: "Filing county" },
-  { tab: 2, key: "claimType",        label: "Claim type" },
-  { tab: 2, key: "claimAmount",      label: "Claim amount" },
-  { tab: 2, key: "claimDescription", label: "Claim description" },
-  { tab: 2, key: "incidentDate",     label: "Incident date" },
+  { tab: 1, key: "plaintiffName",       label: "Your name" },
+  { tab: 1, key: "plaintiffAddress",    label: "Your address" },
+  { tab: 1, key: "defendantName",       label: "Defendant name" },
+  { tab: 1, key: "defendantAddress",    label: "Defendant address" },
+  { tab: 1, key: "countyId",            label: "Filing county" },
+  { tab: 2, key: "claimType",           label: "Claim type" },
+  { tab: 2, key: "claimAmount",         label: "Claim amount" },
+  { tab: 2, key: "claimDescription",    label: "Claim description" },
+  { tab: 2, key: "incidentDate",        label: "Incident date" },
   { tab: 2, key: "howAmountCalculated", label: "Amount calculation" },
-  { tab: 4, key: "venueBasis",       label: "Venue basis" },
+  { tab: 5, key: "venueBasis",          label: "Venue basis" },
 ];
 
 // ─── Intake Tab ───────────────────────────────────────────────────────────────
@@ -123,23 +131,19 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [, navigate] = useLocation();
 
-  // Derive initial step: sessionStorage → DB value → 1
-  // sessionStorage survives refresh but not a new tab/session, so the user always
-  // lands back on exactly the step they were on before hitting refresh.
-  const getInitialStep = (): 1 | 2 | 3 | 4 => {
+  const getInitialStep = (): StepNum => {
     const stored = sessionStorage.getItem(`intake-step-${caseId}`);
     const fromSession = stored ? parseInt(stored) : NaN;
-    if (fromSession >= 1 && fromSession <= 4) return fromSession as 1 | 2 | 3 | 4;
+    if (fromSession >= 1 && fromSession <= 7) return fromSession as StepNum;
     if (isFreshCase) return 1;
-    return Math.min(initialData.intakeStep || 1, 4) as 1 | 2 | 3 | 4;
+    return Math.min(initialData.intakeStep || 1, 7) as StepNum;
   };
 
-  const [activeTab, setActiveTabState] = useState<1 | 2 | 3 | 4>(getInitialStep);
+  const [activeTab, setActiveTabState] = useState<StepNum>(getInitialStep);
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
 
-  // Wrap setActiveTab to keep sessionStorage in sync
-  const setActiveTab = (step: 1 | 2 | 3 | 4) => {
+  const setActiveTab = (step: StepNum) => {
     sessionStorage.setItem(`intake-step-${caseId}`, String(step));
     setActiveTabState(step);
   };
@@ -156,7 +160,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
   };
 
   const handleNext = (data: Record<string, unknown>) => {
-    const next = Math.min(activeTab + 1, 4) as 1 | 2 | 3 | 4;
+    const next = Math.min(activeTab + 1, 7) as StepNum;
     saveIntake.mutate({ id: caseId, data: { step: next, data } }, {
       onSuccess: () => {
         setActiveTab(next);
@@ -170,7 +174,6 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
   };
 
   const handleComplete = (formData: Record<string, unknown>) => {
-    // Check required fields across all tabs
     const merged: Record<string, unknown> = { ...initialData, ...formData };
     const missing = REQUIRED.filter(r => !merged[r.key]);
     if (missing.length > 0) {
@@ -179,7 +182,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
       return;
     }
     setMissingWarnings([]);
-    saveIntake.mutate({ id: caseId, data: { step: 4, ...formData, intakeComplete: true } }, {
+    saveIntake.mutate({ id: caseId, data: { step: 7, intakeComplete: true } }, {
       onSuccess: () => {
         toast({ title: "Intake Complete", description: "Your information has been saved." });
         invalidateAll();
@@ -200,7 +203,6 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Group missing warnings by tab for display
   const warningsByTab = INTAKE_TABS.map(t => ({
     ...t,
     items: missingWarnings.filter(w => w.tab === t.num),
@@ -222,7 +224,7 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
                 ].join(" ")} />
               )}
               <button
-                onClick={() => setActiveTab(num as 1 | 2 | 3 | 4)}
+                onClick={() => setActiveTab(num as StepNum)}
                 className={[
                   "flex items-center gap-2.5 flex-1 min-w-0 px-3 rounded-lg transition-all text-left",
                   active
@@ -252,8 +254,8 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
         })}
       </div>
 
-      {/* ── Missing field warnings (tab 4 only) ── */}
-      {activeTab === 4 && warningsByTab.length > 0 && (
+      {/* ── Missing field warnings (shown on step 7 before completing) ── */}
+      {activeTab === 7 && warningsByTab.length > 0 && (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 space-y-2">
           <div className="flex items-center gap-2 text-red-700 font-semibold text-sm">
             <AlertCircle className="h-4 w-4 shrink-0" />
@@ -263,10 +265,10 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
             {warningsByTab.map(({ num, label: tabLabel, items }) => (
               <div key={num} className="flex items-start gap-2 text-xs">
                 <button
-                  onClick={() => setActiveTab(num as 1 | 2 | 3 | 4)}
+                  onClick={() => setActiveTab(num as StepNum)}
                   className="font-bold text-red-600 underline underline-offset-2 shrink-0 hover:text-red-800"
                 >
-                  Tab {num} — {tabLabel}:
+                  Step {num} — {tabLabel}:
                 </button>
                 <span className="text-red-700">{items.map(i => i.label).join(", ")}</span>
               </div>
@@ -309,11 +311,41 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
       )}
       {activeTab === 4 && (
         <IntakeStep4
+          caseId={caseId}
           initialData={initialData}
-          onComplete={handleComplete}
+          onNext={handleNext}
           onBack={() => setActiveTab(3)}
           saving={saveIntake.isPending}
+          onSaveExit={handleSaveExit}
+        />
+      )}
+      {activeTab === 5 && (
+        <IntakeStep5
+          initialData={initialData}
+          onNext={handleNext}
+          onBack={() => setActiveTab(4)}
+          saving={saveIntake.isPending}
           onCheckCase={goToAdvisor}
+          onSaveExit={handleSaveExit}
+        />
+      )}
+      {activeTab === 6 && (
+        <IntakeStep6
+          caseId={caseId}
+          initialData={initialData}
+          onNext={handleNext}
+          onBack={() => setActiveTab(5)}
+          saving={saveIntake.isPending}
+          onSaveExit={handleSaveExit}
+        />
+      )}
+      {activeTab === 7 && (
+        <IntakeStep7
+          caseId={caseId}
+          initialData={initialData}
+          onComplete={handleComplete}
+          onBack={() => setActiveTab(6)}
+          saving={saveIntake.isPending}
           onSaveExit={handleSaveExit}
         />
       )}

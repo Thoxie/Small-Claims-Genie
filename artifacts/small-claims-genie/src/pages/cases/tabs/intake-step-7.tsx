@@ -1,22 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { i18n } from "@/lib/i18n";
-import { DemandLetterTab } from "./demand-letter-tab";
+import { HearingPrepTab } from "./hearing-prep-tab";
 import type { ExtendedCase } from "@/lib/types";
 
 interface Props {
   caseId: number;
   initialData: ExtendedCase;
-  onNext: (d: Record<string, unknown>) => void;
+  onComplete: (d: Record<string, unknown>) => void;
   onBack: () => void;
   saving?: boolean;
   onSaveExit: (d: Record<string, unknown>) => void;
 }
 
-export function IntakeStep4({ caseId, initialData, onNext, onBack, saving, onSaveExit }: Props) {
+export function IntakeStep7({ caseId, initialData, onComplete, onBack, saving, onSaveExit }: Props) {
   return (
     <div className="space-y-4">
-      <DemandLetterTab caseId={caseId} currentCase={initialData} />
+      <HearingPrepTab caseId={caseId} currentCase={initialData} isDraftMode={false} />
       <div className="flex justify-between items-center pt-2">
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
@@ -25,8 +25,14 @@ export function IntakeStep4({ caseId, initialData, onNext, onBack, saving, onSav
             Save &amp; Exit
           </Button>
         </div>
-        <Button size="lg" onClick={() => onNext({})} disabled={saving}>
-          {saving ? "Saving…" : i18n.intake.saveAndContinue}
+        <Button
+          size="lg"
+          onClick={() => onComplete({})}
+          disabled={saving}
+          data-testid="button-complete-intake"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
+        >
+          {saving ? "Saving…" : "Complete Intake ✓"}
         </Button>
       </div>
     </div>

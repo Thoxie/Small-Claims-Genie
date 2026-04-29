@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { i18n } from "@/lib/i18n";
-import { DemandLetterTab } from "./demand-letter-tab";
+import { FormsTab } from "./forms-tab";
 import type { ExtendedCase } from "@/lib/types";
 
 interface Props {
@@ -13,10 +13,16 @@ interface Props {
   onSaveExit: (d: Record<string, unknown>) => void;
 }
 
-export function IntakeStep4({ caseId, initialData, onNext, onBack, saving, onSaveExit }: Props) {
+export function IntakeStep6({ caseId, initialData, onNext, onBack, saving, onSaveExit }: Props) {
   return (
     <div className="space-y-4">
-      <DemandLetterTab caseId={caseId} currentCase={initialData} />
+      <FormsTab
+        caseId={caseId}
+        currentCase={initialData}
+        onSwitchToIntake={() => {}}
+        onSwitchToPrep={() => onNext({})}
+        isDraftMode={false}
+      />
       <div className="flex justify-between items-center pt-2">
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
