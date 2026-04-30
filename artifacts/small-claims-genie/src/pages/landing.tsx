@@ -11,25 +11,41 @@ export default function Landing() {
 
       {/* ── Hero ── */}
       <section style={{ backgroundColor: TEAL }} className="px-4 pt-8 pb-7">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-black leading-snug mb-4 text-primary tracking-tight">
-            Win in Small Claims Court.<br />
-            Don't lose because you're unprepared.<br />
-            Get your money back!
-          </h1>
-          <p className="text-base text-primary/65 mb-5 max-w-xl leading-relaxed">
-            Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button asChild size="lg" className="h-11 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-md shadow-amber-200">
-              <Link href="/cases/new">
-                <Wand2 className="mr-2 h-4 w-4" />
-                Start Your Case Free
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="h-11 px-8 text-base rounded-full font-semibold border-primary/20 text-primary hover:bg-white/60 bg-white/40">
-              <Link href="/resume">Resume Your Case</Link>
-            </Button>
+        <div className="max-w-5xl mx-auto flex flex-col lg:flex-row items-center gap-8">
+          {/* Left: copy + CTAs */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl sm:text-4xl font-black leading-snug mb-4 text-primary tracking-tight">
+              Win in Small Claims Court.<br />
+              Don't lose because you're unprepared.<br />
+              Get your money back!
+            </h1>
+            <p className="text-base text-primary/65 mb-5 max-w-xl leading-relaxed">
+              Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild size="lg" className="h-11 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-md shadow-amber-200">
+                <Link href="/cases/new">
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  Start Your Case Free
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-11 px-8 text-base rounded-full font-semibold border-primary/20 text-primary hover:bg-white/60 bg-white/40">
+                <Link href="/resume">Resume Your Case</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Right: intro video */}
+          <div className="w-full lg:w-[420px] shrink-0">
+            <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                src="https://www.youtube.com/embed/8l51KDfSwEs"
+                title="Small Claims Genie Introduction"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
           </div>
         </div>
       </section>
