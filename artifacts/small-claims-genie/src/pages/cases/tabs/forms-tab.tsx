@@ -78,8 +78,7 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
       { key: "signDate", label: "Date Signed", type: "date" },
     ]},
   ]},
-  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Add any additional plaintiffs or defendants not already listed on your SC-100.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
-    { title: "Additional Plaintiff (optional)", fields: [{ key: "p2_name", label: "Full Name", type: "text" }, { key: "p2_phone", label: "Phone Number", type: "text" }, { key: "p2_street", label: "Street Address", type: "text" }, { key: "p2_city", label: "City", type: "text" }, { key: "p2_state", label: "State", type: "text", placeholder: "CA" }, { key: "p2_zip", label: "ZIP", type: "text" }]},
+  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Your additional plaintiff's information is pre-filled from intake. Use this form to add an additional defendant if needed.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
     { title: "Additional Defendant (optional)", fields: [{ key: "d1_name", label: "Full Name / Business Name", type: "text" }, { key: "d1_phone", label: "Phone Number", type: "text" }, { key: "d1_street", label: "Street Address", type: "text" }, { key: "d1_city", label: "City", type: "text" }, { key: "d1_state", label: "State", type: "text", placeholder: "CA" }, { key: "d1_zip", label: "ZIP", type: "text" }, { key: "d1_agentName", label: "Agent for Service Name (if corporation/LLC)", type: "text" }]},
     { title: "Signature", fields: [{ key: "signDate", label: "Date Signed", type: "date" }]},
   ]},
