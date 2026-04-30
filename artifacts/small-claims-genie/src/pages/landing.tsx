@@ -1,15 +1,11 @@
-import { useState } from "react";
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { FileText, Scale, BookOpen, ClipboardList, Mic, Wand2, Play } from "lucide-react";
+import { FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
 
 const TEAL = "#ddf6f3";
-const VIDEO_ID = "8l51KDfSwEs";
 
 export default function Landing() {
-  const [playing, setPlaying] = useState(false);
-
   return (
     <div className="flex flex-col w-full bg-white">
 
@@ -43,37 +39,14 @@ export default function Landing() {
           {/* Right: intro video — 2/3 size, raised towards nav */}
           <div className="w-full lg:w-[280px] shrink-0 lg:self-start lg:-mt-4">
             <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ paddingBottom: "56.25%" }}>
-              {playing ? (
-                <iframe
-                  src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1`}
-                  title="Small Claims Genie Introduction"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full"
-                />
-              ) : (
-                <button
-                  onClick={() => setPlaying(true)}
-                  className="absolute inset-0 w-full h-full group focus:outline-none"
-                  aria-label="Play video"
-                >
-                  <img
-                    src={`https://img.youtube.com/vi/${VIDEO_ID}/maxresdefault.jpg`}
-                    alt="Small Claims Genie Introduction"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        `https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg`;
-                    }}
-                  />
-                  {/* Play button overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-red-600 hover:bg-red-700 transition-colors rounded-full w-14 h-14 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <Play className="h-6 w-6 text-white ml-1" fill="white" />
-                    </div>
-                  </div>
-                </button>
-              )}
+              <iframe
+                src="https://app.heygen.com/embeds/a8425ff57077476a9b22ba37461a6ce2"
+                title="HeyGen video player"
+                frameBorder="0"
+                allow="encrypted-media; fullscreen;"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
             </div>
           </div>
 
