@@ -53,8 +53,8 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
 
           {/* Exit Case — outside the scrollable container so touch events reach it */}
           <a
-            href="/dashboard"
-            onClick={(e) => { e.stopPropagation(); window.location.href = '/dashboard'; }}
+            href="https://smallclaimsgenie.com/"
+            onClick={(e) => { e.stopPropagation(); window.location.href = 'https://smallclaimsgenie.com/'; }}
             title="Exit case and return to dashboard"
             className="flex flex-col items-center justify-center gap-1 px-2 md:px-3 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold leading-tight shrink-0 transition-all text-gray-500 hover:bg-red-50 hover:text-red-600 cursor-pointer relative z-50"
           >
