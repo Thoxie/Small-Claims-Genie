@@ -693,6 +693,10 @@ components:
           type: string
         additionalPlaintiffIsFictitious:
           type: boolean
+        moreThanFourPlaintiffs:
+          type: boolean
+        moreThanTwoDefendants:
+          type: boolean
         defendantName:
           type: string
         defendantPhone:
@@ -884,6 +888,10 @@ components:
         additionalPlaintiffName:
           type: string
         additionalPlaintiffIsFictitious:
+          type: boolean
+        moreThanFourPlaintiffs:
+          type: boolean
+        moreThanTwoDefendants:
           type: boolean
         defendantName:
           type: string

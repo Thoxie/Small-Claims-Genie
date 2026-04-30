@@ -41,6 +41,8 @@ export interface Case {
   hasAdditionalPlaintiff?: boolean;
   additionalPlaintiffName?: string;
   additionalPlaintiffIsFictitious?: boolean;
+  moreThanFourPlaintiffs?: boolean;
+  moreThanTwoDefendants?: boolean;
   defendantName?: string;
   defendantPhone?: string;
   defendantAddress?: string;

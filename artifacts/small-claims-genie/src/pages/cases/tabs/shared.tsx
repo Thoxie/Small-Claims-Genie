@@ -95,6 +95,8 @@ export const intakeStep1Schema = z.object({
   hasAdditionalPlaintiff: z.boolean().default(false),
   additionalPlaintiffName: z.string().optional().or(z.literal("")),
   additionalPlaintiffIsFictitious: z.boolean().default(false),
+  moreThanFourPlaintiffs: z.boolean().default(false),
+  moreThanTwoDefendants: z.boolean().default(false),
   defendantIsBusinessOrEntity: z.boolean().default(false),
   defendantName: z.string().min(2, "Defendant name is required"),
   defendantAgentName: z.string().optional(),

@@ -1907,6 +1907,10 @@ async function buildSC100APdf(
     v(p2.zip,              371, 533);
   }
 
+  // ── "Check here if more than 4 plaintiffs" (end of section 1) ─────────────
+  // Single checkbox at x=66, pdfY=473
+  if (d.moreThanFourPlaintiffs) xm(66, 473);
+
   // ── Other Defendant (second defendant — not collected in intake, left blank) ─
   // Placeholder: name x=176, pdfY=425 → v=420  |  street x=131, pdfY=410 → v=405
   //   phone x=439  |  city x=96, pdfY=395 → v=390  |  state x=299  |  zip x=371
@@ -1924,6 +1928,10 @@ async function buildSC100APdf(
     v(def1.zip,               371, 390);
     if (def1.agentName) v(def1.agentName, 97, 319);
   }
+
+  // ── "Check here if more than 2 defendants" (end of section 2) ───────────────
+  // Single checkbox at x=66, pdfY=278
+  if (d.moreThanTwoDefendants) xm(66, 278);
 
   // ── Section 3: "Is your claim for more than $2,500?" ─────────────────────────
   // Yes x=248, No x=278, pdfY=260

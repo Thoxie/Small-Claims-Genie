@@ -37,6 +37,8 @@ export const casesTable = pgTable("cases", {
   hasAdditionalPlaintiff: boolean("has_additional_plaintiff").default(false),
   additionalPlaintiffName: text("additional_plaintiff_name"),
   additionalPlaintiffIsFictitious: boolean("additional_plaintiff_is_fictitious").default(false),
+  moreThanFourPlaintiffs: boolean("more_than_four_plaintiffs").default(false),
+  moreThanTwoDefendants: boolean("more_than_two_defendants").default(false),
   defendantName: text("defendant_name"),
   defendantPhone: text("defendant_phone"),
   defendantAddress: text("defendant_address"),

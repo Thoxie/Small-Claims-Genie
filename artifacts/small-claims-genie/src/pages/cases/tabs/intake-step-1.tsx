@@ -70,6 +70,8 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
       hasAdditionalPlaintiff: initialData.hasAdditionalPlaintiff || false,
       additionalPlaintiffName: initialData.additionalPlaintiffName || "",
       additionalPlaintiffIsFictitious: initialData.additionalPlaintiffIsFictitious || false,
+      moreThanFourPlaintiffs: initialData.moreThanFourPlaintiffs || false,
+      moreThanTwoDefendants: initialData.moreThanTwoDefendants || false,
       defendantIsBusinessOrEntity: initialData.defendantIsBusinessOrEntity || false,
       defendantName: initialData.defendantName || "",
       defendantAgentName: initialData.defendantAgentName || "",
@@ -453,6 +455,17 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                   )} />
                 </div>
               )}
+
+              {/* More than 4 plaintiffs total */}
+              <FormField control={form.control} name="moreThanFourPlaintiffs" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
+                  <FormControl><Checkbox checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div>
+                    <FormLabel className="font-normal cursor-pointer">There are more than 4 plaintiffs total</FormLabel>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">If yes, fill out and attach another SC-100A</p>
+                  </div>
+                </FormItem>
+              )} />
             </div>
 
             {/* ── Defendant ── */}
@@ -571,6 +584,17 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                   </div>
                 </div>
               )}
+
+              {/* More than 2 defendants total */}
+              <FormField control={form.control} name="moreThanTwoDefendants" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
+                  <FormControl><Checkbox checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div>
+                    <FormLabel className="font-normal cursor-pointer">There are more than 2 defendants total</FormLabel>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">If yes, fill out and attach another SC-100A</p>
+                  </div>
+                </FormItem>
+              )} />
             </div>
           </div>
 
