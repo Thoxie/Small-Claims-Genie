@@ -45,7 +45,7 @@ export default function Landing() {
             <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ paddingBottom: "56.25%" }}>
               {playing ? (
                 <iframe
-                  src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0`}
+                  src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1`}
                   title="Small Claims Genie Introduction"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
