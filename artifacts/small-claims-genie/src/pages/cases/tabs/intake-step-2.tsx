@@ -440,10 +440,10 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
             <iframe
               width="800"
               height="450"
-              src="https://www.youtube.com/embed/IZ4vKOn2o2I?autoplay=1"
-              title="Step 2 Tutorial — Upload My Evidence"
+              src="https://app.heygen.com/embeds/738523026c8a4781a46f94415f70683c"
+              title="HeyGen video player"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="encrypted-media; fullscreen;"
               allowFullScreen
               className="block"
             />
