@@ -41,7 +41,7 @@ export default function Landing() {
             <p className="text-base font-black text-primary mb-2 text-center tracking-wide uppercase">Small Claims Genie Introduction.</p>
             <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ paddingBottom: "56.25%" }}>
               <iframe
-                src="https://app.heygen.com/embeds/a8425ff57077476a9b22ba37461a6ce2"
+                src="https://app.heygen.com/embeds/31d4311634d7414a8cf6e4f185759714"
                 title="HeyGen video player"
                 frameBorder="0"
                 allow="encrypted-media; fullscreen;"
