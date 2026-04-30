@@ -610,7 +610,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   // Library forms (all except sc100, mc030, sc112a which have their own sections)
   const _PHASE1_IDS = ["sc100", "mc030"];
   const _PHASE3_IDS = ["sc112a"];
-  const LIBRARY_IDS = ["fw001", "sc100a", "sc103", "sc104", "sc105", "sc120", "sc140", "sc150"];
+  const LIBRARY_IDS = ["fw001", "sc103", "sc104", "sc105", "sc120", "sc140", "sc150"];
   const libraryForms = FORMS_CATALOG.filter(f => LIBRARY_IDS.includes(f.id));
 
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
@@ -1235,9 +1235,12 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"
-                    onClick={() => { setModalInitialValues(getInitialValues("sc100a")); setModalFormId("sc100a"); }}
+                    onClick={() => {
+                      setSc100aFormBody({ signDate: new Date().toISOString().split("T")[0], extraDefendant: null, extraPlaintiff: null });
+                      setSc100aSigModalOpen(true);
+                    }}
                     disabled={downloadingForm === "sc100a"}>
-                    {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Fill Out &amp; Sign SC-100A
+                    {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Sign &amp; Download SC-100A
                   </Button>
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" onClick={() => setGuideDialogFormId("sc100a")}><Info className="h-3 w-3" />Guide</Button>
                 </div>
