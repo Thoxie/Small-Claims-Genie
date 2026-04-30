@@ -38,7 +38,7 @@ export default function Landing() {
 
           {/* Right: intro video — 2/3 size, raised towards nav */}
           <div className="w-full lg:w-[420px] shrink-0 lg:self-start lg:-mt-4">
-            <p className="text-sm font-semibold text-primary/70 mb-2 text-center">Small Claims Genie Introduction.</p>
+            <p className="text-base font-black text-primary mb-2 text-center tracking-wide uppercase">Small Claims Genie Introduction.</p>
             <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ paddingBottom: "56.25%" }}>
               <iframe
                 src="https://app.heygen.com/embeds/a8425ff57077476a9b22ba37461a6ce2"
