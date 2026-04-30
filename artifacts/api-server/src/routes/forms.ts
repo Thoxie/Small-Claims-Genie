@@ -1821,10 +1821,11 @@ async function buildSC100APdf(
   sig2Bytes?: Buffer
 ): Promise<Uint8Array> {
   // Party data is read directly from the case record (intake data) — no extra prompts needed.
-  // SC-100A: "Other Plaintiff 1" = second plaintiff, "Other Plaintiff 2" = third plaintiff (none in DB),
+  // SC-100A: "Other Plaintiff 1" = additional plaintiff (intake step 1), "Other Plaintiff 2" = third plaintiff (none in DB),
   //          "Other Defendant" = second defendant (none in DB — primary is on SC-100).
-  const dbP1 = d.secondPlaintiffName ? {
-    name:         d.secondPlaintiffName,
+  // additionalPlaintiffName is the intake-collected name field; secondPlaintiff* fields hold contact/address.
+  const dbP1 = d.additionalPlaintiffName ? {
+    name:         d.additionalPlaintiffName,
     phone:        d.secondPlaintiffPhone        || "",
     street:       d.secondPlaintiffAddress      || "",
     city:         d.secondPlaintiffCity         || "",
@@ -1835,13 +1836,13 @@ async function buildSC100APdf(
     mailingState: d.secondPlaintiffMailingState  || "CA",
     mailingZip:   d.secondPlaintiffMailingZip    || "",
   } : null;
-  // Optional extra plaintiff entered in the SC-100A modal.
+  // Optional extra plaintiff entered in the SC-100A modal (overrides or supplements intake data).
   const extraPlaintiff = (b.extraPlaintiff && b.extraPlaintiff.name) ? b.extraPlaintiff as {
     name: string; phone: string; street: string; city: string; state: string; zip: string;
   } : null;
   // Fill slots in order: p1 = first available "Other Plaintiff", p2 = second.
-  // If the DB already has a second plaintiff, it occupies slot 1 and the modal entry goes to slot 2.
-  // If the DB has no second plaintiff, promote the modal entry to slot 1 so the form isn't left blank.
+  // If intake has an additional plaintiff (dbP1), it occupies slot 1 and the modal entry goes to slot 2.
+  // If no intake data, promote the modal entry to slot 1 so the form isn't left blank.
   const p1 = dbP1 ?? extraPlaintiff;
   const p2 = dbP1 ? extraPlaintiff : null;
   const def1 = (b.extraDefendant && b.extraDefendant.name) ? b.extraDefendant as {

@@ -910,14 +910,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     const countyName = String(cc.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const courthouseLabel = cc.courthouseName ? `${cc.courthouseName} — ${courthouseStreet}` : courthouseStreet;
     switch (formId) {
-      case "sc100a": return {
-        p2_name: cc.additionalPlaintiffName || "",
-        p2_phone: cc.secondPlaintiffPhone || "",
-        p2_street: cc.secondPlaintiffAddress || "",
-        p2_city: cc.secondPlaintiffCity || "",
-        p2_state: cc.secondPlaintiffState || "CA",
-        p2_zip: cc.secondPlaintiffZip || "",
-      };
+      case "sc100a": return {};
+      // Slot 1 (additional plaintiff) is now sourced from intake data (additionalPlaintiffName +
+      // secondPlaintiff* fields) directly by the PDF route — no need to pre-fill the modal.
+      // The "Additional Plaintiff" group in the modal is for a *third* plaintiff only.
       case "sc112a": {
         const defMailingAddr = [
           cc.defendantMailingAddress || cc.defendantAddress,
