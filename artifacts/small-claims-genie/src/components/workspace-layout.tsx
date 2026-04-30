@@ -40,13 +40,14 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
           {/* Logo */}
           <a
             href="/"
-            className="flex items-center shrink-0 ml-6 md:ml-10 mr-2 md:mr-3"
+            onClick={(e) => { e.stopPropagation(); window.location.href = '/'; }}
+            className="flex items-center shrink-0 ml-6 md:ml-10 mr-2 md:mr-3 relative z-50 cursor-pointer"
             title="Small Claims Genie"
           >
             <img
               src={logoPath}
               alt="Small Claims Genie"
-              className="h-[54px] md:h-[68px] w-auto"
+              className="h-[54px] md:h-[68px] w-auto pointer-events-none"
             />
           </a>
 
