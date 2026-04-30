@@ -51,20 +51,20 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
             />
           </a>
 
-          {/* Exit Case — outside the scrollable container so touch events reach it */}
-          <a
-            href="https://smallclaimsgenie.com/"
-            onClick={(e) => { e.stopPropagation(); window.location.href = 'https://smallclaimsgenie.com/'; }}
-            title="Exit case and return to dashboard"
-            className="flex flex-col items-center justify-center gap-1 px-2 md:px-3 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold leading-tight shrink-0 transition-all text-gray-500 hover:bg-red-50 hover:text-red-600 cursor-pointer relative z-50"
-          >
-            <LogOut className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0 pointer-events-none" />
-            <span className="whitespace-nowrap pointer-events-none">Exit Case</span>
-          </a>
-
           {/* Nav buttons */}
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
             <div className="flex items-center justify-center gap-1 md:gap-2 min-w-max md:min-w-0 py-1 px-2">
+
+              {/* Exit Case */}
+              <a
+                href="https://smallclaimsgenie.com/"
+                onClick={(e) => { e.stopPropagation(); window.location.href = 'https://smallclaimsgenie.com/'; }}
+                title="Exit case and return to home"
+                className="flex flex-col items-center justify-center gap-1 px-2 md:px-4 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold leading-tight min-w-[60px] md:min-w-[80px] transition-all text-gray-500 hover:bg-red-50 hover:text-red-600 cursor-pointer"
+              >
+                <LogOut className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0 pointer-events-none" />
+                <span className="whitespace-nowrap pointer-events-none">Exit Case</span>
+              </a>
 
               {/* 7 workspace tabs */}
               {WORKSPACE_TABS.map((tab) => (
