@@ -640,10 +640,10 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
             <iframe
               width="800"
               height="450"
-              src="https://www.youtube.com/embed/1Lh7pyzod54?autoplay=1"
-              title="Step 1 Tutorial — Entering the Parties"
+              src="https://app.heygen.com/embeds/e9f3fffbcfc74879a6a8f9e06fad75d6"
+              title="HeyGen video player"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="encrypted-media; fullscreen;"
               allowFullScreen
               className="block"
             />
