@@ -1856,65 +1856,79 @@ async function buildSC100APdf(
   page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
 
   const LIFT = 4.5;
-  const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+  const v  = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
+  const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
   // ── Header — case number (top-right box) ────────────────────────────────────
   // Placeholder: "Case number" at x=403, pdfY=743 → v_param=738.5≈739
   if (d.caseNumber) v(d.caseNumber, 403, 739);
 
+  // ── "This form is attached to form SC-100" checkbox (always true) ────────────
+  // Checkbox at x=66, pdfY=722
+  xm(66, 722);
+
   // ── Other Plaintiff 1 (= second plaintiff from intake) ──────────────────────
   // Coordinates calibrated from placeholder PDF (pdftotext bbox, 612×792pt):
   //   name  x=176, pdfY=668 → v=663  |  street x=131, pdfY=652 → v=647
-  //   phone x=440, pdfY=652 → v=647  |  city x=74, pdfY=636 → v=631
+  //   phone x=440, pdfY=652 → v=647  |  city x=96, pdfY=636 → v=631
   //   state x=299, pdfY=636 → v=631  |  zip x=372, pdfY=636 → v=631
   //   mailing addr x=195, pdfY=619 → v=614
-  //   mailing city x=74, pdfY=602 → v=597  |  state x=299  |  zip x=371
+  //   mailing city x=96, pdfY=602 → v=597  |  state x=299  |  zip x=371
+  //   fictitious name: Yes x=371, No x=400, pdfY=586
   if (p1) {
     v(p1.name,               176, 663);
     v(p1.street,             131, 647);
     v(p1.phone,              440, 647);
-    v(p1.city,                74, 631);
+    v(p1.city,                96, 631);
     v(p1.state  || "CA",     299, 631);
     v(p1.zip,                372, 631);
     if ("mailingStreet" in p1 && p1.mailingStreet) {
       v(p1.mailingStreet,    195, 614);
-      v(p1.mailingCity,       74, 597);
+      v(p1.mailingCity,       96, 597);
       v(p1.mailingState || "CA", 299, 597);
       v(p1.mailingZip,       371, 597);
     }
+    if (d.additionalPlaintiffIsFictitious) xm(371, 586);
+    else xm(400, 586);
   }
 
   // ── Other Plaintiff 2 (third plaintiff — not collected in intake, left blank) ─
   // Placeholder: name x=168, pdfY=569 → v=564  |  street x=131, pdfY=553 → v=548
-  //   phone x=440  |  city x=74, pdfY=538 → v=533  |  state x=299  |  zip x=371
+  //   phone x=440  |  city x=96, pdfY=538 → v=533  |  state x=299  |  zip x=371
   //   mailing addr x=195, pdfY=522 → v=517
-  //   mailing city x=74, pdfY=505 → v=500
+  //   mailing city x=96, pdfY=505 → v=500
+  //   fictitious name: Yes x=371, No x=400, pdfY=489
   if (p2) {
     v(p2.name,             168, 564);
     v(p2.street,           131, 548);
     v(p2.phone,            440, 548);
-    v(p2.city,              74, 533);
+    v(p2.city,              96, 533);
     v(p2.state || "CA",    299, 533);
     v(p2.zip,              371, 533);
   }
 
   // ── Other Defendant (second defendant — not collected in intake, left blank) ─
   // Placeholder: name x=176, pdfY=425 → v=420  |  street x=131, pdfY=410 → v=405
-  //   phone x=439  |  city x=74, pdfY=395 → v=390  |  state x=299  |  zip x=371
+  //   phone x=439  |  city x=96, pdfY=395 → v=390  |  state x=299  |  zip x=371
   //   mailing addr x=195, pdfY=380 → v=375
-  //   mailing city x=74, pdfY=364 → v=359
+  //   mailing city x=96, pdfY=364 → v=359
   //   agent name x=97, pdfY=324 → v=319  |  agent title x=397
   //   agent street x=106, pdfY=307 → v=302
-  //   agent city x=74, pdfY=293 → v=288  |  state x=299  |  zip x=371
+  //   agent city x=96, pdfY=293 → v=288  |  state x=299  |  zip x=371
   if (def1) {
     v(def1.name,              176, 420);
     v(def1.street,            131, 405);
     v(def1.phone,             439, 405);
-    v(def1.city,               74, 390);
+    v(def1.city,               96, 390);
     v(def1.state || "CA",     299, 390);
     v(def1.zip,               371, 390);
     if (def1.agentName) v(def1.agentName, 97, 319);
   }
+
+  // ── Section 3: "Is your claim for more than $2,500?" ─────────────────────────
+  // Yes x=248, No x=278, pdfY=260
+  if ((Number(d.claimAmount) || 0) > 2500) xm(248, 260);
+  else xm(278, 260);
 
   // ── Date + printed names ────────────────────────────────────────────────────
   // Placeholder: date1 x=63, pdfY=159 → v=154  |  name1 x=37, pdfY=144 → v=139
