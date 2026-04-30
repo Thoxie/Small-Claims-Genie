@@ -47,6 +47,9 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
 **System Design Choices:**
 -   Node.js 24, TypeScript 5.9.
 -   OpenAPI spec (`openapi.yaml`) is the source of truth for all endpoints, generating React Query hooks and Zod schemas via Orval.
+    -   **Codegen command:** `pnpm --filter @workspace/api-spec run codegen` (run from the workspace root).
+    -   **Post-processing:** After Orval runs, `lib/api-spec/postprocess-react-query.cjs` applies two fixes automatically: (1) replaces `query?: UseQueryOptions<…>` with `query?: OptionalQueryKey<…>` in the React Query client so `queryKey` is optional at call sites, and (2) resets `lib/api-zod/src/index.ts` to export only `./generated/api` (avoiding TS2308 duplicate-export errors from Orval overwriting the barrel).
+    -   **Call sites** pass `{ query: { enabled: !!id } }` without needing to supply `queryKey` — the generated helpers already provide a default.
 -   The API build uses esbuild, while the frontend uses Vite.
 -   Monorepo structure is enforced by pnpm workspaces and TypeScript composite projects.
 

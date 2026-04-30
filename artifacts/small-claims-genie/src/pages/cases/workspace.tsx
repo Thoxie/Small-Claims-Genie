@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import {
   useGetCase,
   useGetCaseReadiness,
-  getGetCaseQueryKey,
-  getGetCaseReadinessQueryKey,
 } from "@workspace/api-client-react";
 import type { ExtendedCase } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -49,8 +47,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useHashTab();
 
-  const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId, queryKey: getGetCaseQueryKey(caseId) } });
-  const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId, queryKey: getGetCaseReadinessQueryKey(caseId) } });
+  const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
+  const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
 
   if (caseLoading) {
     return (

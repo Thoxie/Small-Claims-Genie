@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { useGetChatHistory, getGetChatHistoryQueryKey } from "@workspace/api-client-react";
+import { useGetChatHistory } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mic, Send, CheckCircle, Loader2, Download, Sparkles } from "lucide-react";
 import { i18n } from "@/lib/i18n";
@@ -54,7 +54,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
     }
   };
 
-  const { data: history } = useGetChatHistory(caseId, { query: { enabled: !!caseId, queryKey: getGetChatHistoryQueryKey(caseId) } });
+  const { data: history } = useGetChatHistory(caseId, { query: { enabled: !!caseId } });
 
   useEffect(() => {
     if (history) setMessages(history);
