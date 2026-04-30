@@ -1864,8 +1864,8 @@ async function buildSC100APdf(
   if (d.caseNumber) v(d.caseNumber, 403, 739);
 
   // ── "This form is attached to form SC-100" checkbox (always true) ────────────
-  // Checkbox at x=66, pdfY=722
-  xm(66, 722);
+  // Checkbox at x=66, pdfY=708 (calibrated: pixel-scan + cal PDF; 722 was in header bar)
+  xm(66, 708);
 
   // ── Other Plaintiff 1 (= second plaintiff from intake) ──────────────────────
   // Coordinates calibrated from placeholder PDF (pdftotext bbox, 612×792pt):
@@ -1874,7 +1874,8 @@ async function buildSC100APdf(
   //   state x=299, pdfY=636 → v=631  |  zip x=372, pdfY=636 → v=631
   //   mailing addr x=195, pdfY=619 → v=614
   //   mailing city x=96, pdfY=602 → v=597  |  state x=299  |  zip x=371
-  //   fictitious name: Yes x=371, No x=400, pdfY=586
+  //   fictitious name: Yes x=313, No x=352, pdfY=586
+  //   (calibrated: pixel-scan of sc100a_hq-1.png → Yes box center 313, No box center 352)
   if (p1) {
     v(p1.name,               176, 663);
     v(p1.street,             131, 647);
@@ -1888,8 +1889,8 @@ async function buildSC100APdf(
       v(p1.mailingState || "CA", 299, 597);
       v(p1.mailingZip,       371, 597);
     }
-    if (d.additionalPlaintiffIsFictitious) xm(371, 586);
-    else xm(400, 586);
+    if (d.additionalPlaintiffIsFictitious) xm(313, 586);
+    else xm(352, 586);
   }
 
   // ── Other Plaintiff 2 (third plaintiff — not collected in intake, left blank) ─
@@ -1934,9 +1935,9 @@ async function buildSC100APdf(
   if (d.moreThanTwoDefendants) xm(66, 278);
 
   // ── Section 3: "Is your claim for more than $2,500?" ─────────────────────────
-  // Yes x=248, No x=278, pdfY=260
-  if ((Number(d.claimAmount) || 0) > 2500) xm(248, 260);
-  else xm(278, 260);
+  // Yes x=285, No x=337, pdfY=260 (calibrated: pixel-scan → Yes center 285, No center 337)
+  if ((Number(d.claimAmount) || 0) > 2500) xm(285, 260);
+  else xm(337, 260);
 
   // ── Date + printed names ────────────────────────────────────────────────────
   // Placeholder: date1 x=63, pdfY=159 → v=154  |  name1 x=37, pdfY=144 → v=139
