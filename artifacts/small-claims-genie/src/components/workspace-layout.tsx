@@ -1,4 +1,3 @@
-import { Link } from "wouter";
 import {
   LogOut,
   BookOpen,
@@ -39,8 +38,8 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
         <div className="flex items-center h-[70px] md:h-[84px]">
 
           {/* Logo */}
-          <Link
-            href="/dashboard"
+          <a
+            href="/"
             className="flex items-center shrink-0 ml-6 md:ml-10 mr-2 md:mr-3"
             title="Small Claims Genie"
           >
@@ -49,21 +48,21 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
               alt="Small Claims Genie"
               className="h-[54px] md:h-[68px] w-auto"
             />
-          </Link>
+          </a>
 
           {/* Nav buttons */}
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
             <div className="flex items-center justify-center gap-1 md:gap-2 min-w-max md:min-w-0 py-1 px-2">
 
               {/* Exit Case */}
-              <Link
+              <a
                 href="/dashboard"
                 title="Exit case and return to dashboard"
                 className="flex flex-col items-center justify-center gap-1 px-2 md:px-4 py-2 rounded-lg text-[10px] md:text-[11px] font-semibold leading-tight min-w-[60px] md:min-w-[80px] transition-all text-gray-500 hover:bg-red-50 hover:text-red-600"
               >
                 <LogOut className="h-[17px] w-[17px] md:h-5 md:w-5 shrink-0" />
                 <span className="whitespace-nowrap">Exit Case</span>
-              </Link>
+              </a>
 
               {/* 7 workspace tabs */}
               {WORKSPACE_TABS.map((tab) => (
