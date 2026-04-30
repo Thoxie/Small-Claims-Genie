@@ -78,7 +78,7 @@ const FORM_FIELD_CONFIG: Record<string, { title: string; subtitle: string; endpo
       { key: "signDate", label: "Date Signed", type: "date" },
     ]},
   ]},
-  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Your additional plaintiff's information is pre-filled from intake. Use this form to add an additional defendant if needed.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
+  sc100a: { title: "Other Plaintiffs or Defendants (SC-100A)", subtitle: "Any additional plaintiff from intake is pre-filled automatically. Use this form to add an additional defendant if needed — leave blank to skip.", endpoint: "sc100a", filename: (id) => `SC100A-Case-${id}.pdf`, groups: [
     { title: "Additional Defendant (optional)", fields: [{ key: "d1_name", label: "Full Name / Business Name", type: "text" }, { key: "d1_phone", label: "Phone Number", type: "text" }, { key: "d1_street", label: "Street Address", type: "text" }, { key: "d1_city", label: "City", type: "text" }, { key: "d1_state", label: "State", type: "text", placeholder: "CA" }, { key: "d1_zip", label: "ZIP", type: "text" }, { key: "d1_agentName", label: "Agent for Service Name (if corporation/LLC)", type: "text" }]},
     { title: "Signature", fields: [{ key: "signDate", label: "Date Signed", type: "date" }]},
   ]},
@@ -909,10 +909,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     const countyName = String(cc.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const courthouseLabel = cc.courthouseName ? `${cc.courthouseName} — ${courthouseStreet}` : courthouseStreet;
     switch (formId) {
-      case "sc100a": return {};
-      // Slot 1 (additional plaintiff) is now sourced from intake data (additionalPlaintiffName +
-      // secondPlaintiff* fields) directly by the PDF route — no need to pre-fill the modal.
-      // The "Additional Plaintiff" group in the modal is for a *third* plaintiff only.
+      case "sc100a": return {
+        // Pre-fill today's date so the Signature group is hidden (all plaintiff data
+        // already comes from intake; the user only needs to optionally add a defendant).
+        signDate: new Date().toISOString().split("T")[0],
+      };
       case "sc112a": {
         const defMailingAddr = [
           cc.defendantMailingAddress || cc.defendantAddress,
