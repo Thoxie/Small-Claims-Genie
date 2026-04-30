@@ -37,7 +37,7 @@ export default function Landing() {
           </div>
 
           {/* Right: intro video — 2/3 size, raised towards nav */}
-          <div className="w-full lg:w-[308px] shrink-0 lg:self-start lg:-mt-4">
+          <div className="w-full lg:w-[420px] shrink-0 lg:self-start lg:-mt-4">
             <p className="text-sm font-semibold text-primary/70 mb-2 text-center">Small Claims Genie Introduction.</p>
             <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ paddingBottom: "56.25%" }}>
               <iframe
