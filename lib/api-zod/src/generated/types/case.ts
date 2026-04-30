@@ -34,6 +34,13 @@ export interface Case {
   secondPlaintiffState?: string;
   secondPlaintiffZip?: string;
   secondPlaintiffEmail?: string;
+  secondPlaintiffMailingAddress?: string;
+  secondPlaintiffMailingCity?: string;
+  secondPlaintiffMailingState?: string;
+  secondPlaintiffMailingZip?: string;
+  hasAdditionalPlaintiff?: boolean;
+  additionalPlaintiffName?: string;
+  additionalPlaintiffIsFictitious?: boolean;
   defendantName?: string;
   defendantPhone?: string;
   defendantAddress?: string;

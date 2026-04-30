@@ -32,6 +32,13 @@ export interface UpdateCaseBody {
   secondPlaintiffState?: string;
   secondPlaintiffZip?: string;
   secondPlaintiffEmail?: string;
+  secondPlaintiffMailingAddress?: string;
+  secondPlaintiffMailingCity?: string;
+  secondPlaintiffMailingState?: string;
+  secondPlaintiffMailingZip?: string;
+  hasAdditionalPlaintiff?: boolean;
+  additionalPlaintiffName?: string;
+  additionalPlaintiffIsFictitious?: boolean;
   defendantName?: string;
   defendantPhone?: string;
   defendantAddress?: string;
@@ -74,5 +81,4 @@ export interface UpdateCaseBody {
   intakeStep?: number;
   intakeComplete?: boolean;
   readinessScore?: number;
-  mc030DeclarationTitle?: string;
 }

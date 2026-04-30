@@ -473,9 +473,9 @@ function getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: strin
       reason: "You are filing as a business — DBA registration form required." });
   }
 
-  if (c.secondPlaintiffName) {
+  if (c.hasAdditionalPlaintiff && c.additionalPlaintiffName) {
     forms.push({ id: "sc100a", number: "SC-100A", required: true,
-      reason: "You have more than one plaintiff — file this alongside SC-100." });
+      reason: "You have an additional plaintiff — file this alongside SC-100." });
   }
 
   forms.push({ id: "mc030", number: "MC-030", required: true,
@@ -910,7 +910,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     const countyName = String(cc.countyId || "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const courthouseLabel = cc.courthouseName ? `${cc.courthouseName} — ${courthouseStreet}` : courthouseStreet;
     switch (formId) {
-      case "sc100a": return {};
+      case "sc100a": return {
+        p2_name: cc.additionalPlaintiffName || "",
+        p2_phone: cc.secondPlaintiffPhone || "",
+        p2_street: cc.secondPlaintiffAddress || "",
+        p2_city: cc.secondPlaintiffCity || "",
+        p2_state: cc.secondPlaintiffState || "CA",
+        p2_zip: cc.secondPlaintiffZip || "",
+      };
       case "sc112a": {
         const defMailingAddr = [
           cc.defendantMailingAddress || cc.defendantAddress,
@@ -1227,8 +1234,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <h4 className="font-semibold text-sm mb-1">Other Plaintiffs or Defendants</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">
                   File alongside your SC-100 if your case has more than two parties.
-                  {currentCase.secondPlaintiffName && <span className="font-semibold text-foreground"> {currentCase.secondPlaintiffName}'s information is pre-filled from your intake.</span>}
-                  {!currentCase.secondPlaintiffName && " Add up to two additional plaintiffs and one additional defendant."}
+                  {currentCase.hasAdditionalPlaintiff && currentCase.additionalPlaintiffName && <span className="font-semibold text-foreground"> {currentCase.additionalPlaintiffName}'s information is pre-filled from your intake.</span>}
+                  {(!currentCase.hasAdditionalPlaintiff || !currentCase.additionalPlaintiffName) && " Add additional plaintiffs or defendants not listed on your SC-100."}
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"

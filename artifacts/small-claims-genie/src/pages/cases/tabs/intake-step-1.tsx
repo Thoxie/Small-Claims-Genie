@@ -30,6 +30,9 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
   const [defendantMailingDiffers, setDefendantMailingDiffers] = useState(
     !!(initialData.defendantMailingAddress)
   );
+  const [additionalPlaintiffMailingDiffers, setAdditionalPlaintiffMailingDiffers] = useState(
+    !!(initialData.secondPlaintiffMailingAddress)
+  );
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [agentAddressExpanded, setAgentAddressExpanded] = useState(
     !!(initialData.defendantAgentStreet)
@@ -60,6 +63,13 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
       secondPlaintiffState: initialData.secondPlaintiffState || "CA",
       secondPlaintiffZip: initialData.secondPlaintiffZip || "",
       secondPlaintiffEmail: initialData.secondPlaintiffEmail || "",
+      secondPlaintiffMailingAddress: initialData.secondPlaintiffMailingAddress || "",
+      secondPlaintiffMailingCity: initialData.secondPlaintiffMailingCity || "",
+      secondPlaintiffMailingState: initialData.secondPlaintiffMailingState || "CA",
+      secondPlaintiffMailingZip: initialData.secondPlaintiffMailingZip || "",
+      hasAdditionalPlaintiff: initialData.hasAdditionalPlaintiff || false,
+      additionalPlaintiffName: initialData.additionalPlaintiffName || "",
+      additionalPlaintiffIsFictitious: initialData.additionalPlaintiffIsFictitious || false,
       defendantIsBusinessOrEntity: initialData.defendantIsBusinessOrEntity || false,
       defendantName: initialData.defendantName || "",
       defendantAgentName: initialData.defendantAgentName || "",
@@ -82,6 +92,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
 
   const isBusiness = form.watch("defendantIsBusinessOrEntity");
   const plaintiffIsBusiness = form.watch("plaintiffIsBusiness");
+  const hasAdditionalPlaintiff = form.watch("hasAdditionalPlaintiff");
   const selectedCountyId = form.watch("countyId");
   const selectedCourthouseId = form.watch("courthouseId");
 
@@ -115,6 +126,26 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
       data.defendantAgentCity = "";
       data.defendantAgentState = "";
       data.defendantAgentZip = "";
+    }
+    if (!hasAdditionalPlaintiff) {
+      data.additionalPlaintiffName = "";
+      data.additionalPlaintiffIsFictitious = false;
+      data.secondPlaintiffPhone = "";
+      data.secondPlaintiffAddress = "";
+      data.secondPlaintiffCity = "";
+      data.secondPlaintiffState = "";
+      data.secondPlaintiffZip = "";
+      data.secondPlaintiffEmail = "";
+      data.secondPlaintiffMailingAddress = "";
+      data.secondPlaintiffMailingCity = "";
+      data.secondPlaintiffMailingState = "";
+      data.secondPlaintiffMailingZip = "";
+    }
+    if (!additionalPlaintiffMailingDiffers) {
+      data.secondPlaintiffMailingAddress = "";
+      data.secondPlaintiffMailingCity = "";
+      data.secondPlaintiffMailingState = "";
+      data.secondPlaintiffMailingZip = "";
     }
     onNext({
       ...data,
@@ -322,6 +353,104 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
                       <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </div>
+                </div>
+              )}
+
+              {/* Additional plaintiff toggle */}
+              <FormField control={form.control} name="hasAdditionalPlaintiff" render={({ field }) => (
+                <div className="flex items-center space-x-2 pt-1">
+                  <Checkbox
+                    id="additional-plaintiff-toggle"
+                    checked={!!field.value}
+                    onCheckedChange={(v) => {
+                      field.onChange(!!v);
+                      if (!v) setAdditionalPlaintiffMailingDiffers(false);
+                    }}
+                  />
+                  <label htmlFor="additional-plaintiff-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                    There is an additional plaintiff (requires SC-100A)
+                  </label>
+                </div>
+              )} />
+
+              {hasAdditionalPlaintiff && (
+                <div className="rounded-lg border border-dashed border-[#14b8a6]/40 p-4 space-y-3 bg-[#f0fffe]/50">
+                  <p className="text-xs font-semibold text-[#0d6b5e] uppercase tracking-wide">Additional Plaintiff — SC-100A</p>
+                  <FormField control={form.control} name="additionalPlaintiffName" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name <span className="text-destructive">*</span></FormLabel>
+                      <FormControl><Input {...field} placeholder="Full legal name" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField control={form.control} name="secondPlaintiffPhone" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl><Input {...field} placeholder="(555) 555-5555" value={field.value} onChange={(e) => field.onChange(formatPhone(e.target.value))} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="secondPlaintiffEmail" render={({ field }) => (
+                      <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                  <FormField control={form.control} name="secondPlaintiffAddress" render={({ field }) => (
+                    <FormItem><FormLabel>Street Address <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-5 gap-2">
+                    <FormField control={form.control} name="secondPlaintiffCity" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="secondPlaintiffState" render={({ field }) => (
+                      <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="secondPlaintiffZip" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+
+                  {/* Additional plaintiff mailing address toggle */}
+                  <div className="flex items-center space-x-2 pt-1">
+                    <Checkbox
+                      id="additional-plaintiff-mailing-toggle"
+                      checked={additionalPlaintiffMailingDiffers}
+                      onCheckedChange={(v) => setAdditionalPlaintiffMailingDiffers(!!v)}
+                    />
+                    <label htmlFor="additional-plaintiff-mailing-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                      Their mailing address is different from their street address
+                    </label>
+                  </div>
+                  {additionalPlaintiffMailingDiffers && (
+                    <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mailing Address</p>
+                      <FormField control={form.control} name="secondPlaintiffMailingAddress" render={({ field }) => (
+                        <FormItem><FormLabel>Street</FormLabel><FormControl><Input {...field} placeholder="P.O. Box or different street" /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <div className="grid grid-cols-5 gap-2">
+                        <FormField control={form.control} name="secondPlaintiffMailingCity" render={({ field }) => (
+                          <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="secondPlaintiffMailingState" render={({ field }) => (
+                          <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="secondPlaintiffMailingZip" render={({ field }) => (
+                          <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fictitious business name */}
+                  <FormField control={form.control} name="additionalPlaintiffIsFictitious" render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
+                      <FormControl><Checkbox checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
+                      <div>
+                        <FormLabel className="font-normal cursor-pointer">This plaintiff does business under a fictitious name (DBA)</FormLabel>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">If yes, also file form SC-103</p>
+                      </div>
+                    </FormItem>
+                  )} />
                 </div>
               )}
             </div>

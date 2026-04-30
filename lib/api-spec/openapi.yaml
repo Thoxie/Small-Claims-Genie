@@ -679,6 +679,20 @@ components:
           type: string
         secondPlaintiffEmail:
           type: string
+        secondPlaintiffMailingAddress:
+          type: string
+        secondPlaintiffMailingCity:
+          type: string
+        secondPlaintiffMailingState:
+          type: string
+        secondPlaintiffMailingZip:
+          type: string
+        hasAdditionalPlaintiff:
+          type: boolean
+        additionalPlaintiffName:
+          type: string
+        additionalPlaintiffIsFictitious:
+          type: boolean
         defendantName:
           type: string
         defendantPhone:
@@ -857,6 +871,20 @@ components:
           type: string
         secondPlaintiffEmail:
           type: string
+        secondPlaintiffMailingAddress:
+          type: string
+        secondPlaintiffMailingCity:
+          type: string
+        secondPlaintiffMailingState:
+          type: string
+        secondPlaintiffMailingZip:
+          type: string
+        hasAdditionalPlaintiff:
+          type: boolean
+        additionalPlaintiffName:
+          type: string
+        additionalPlaintiffIsFictitious:
+          type: boolean
         defendantName:
           type: string
         defendantPhone:
