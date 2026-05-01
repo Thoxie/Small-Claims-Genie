@@ -62,7 +62,7 @@ export default function Landing() {
               {
                 icon: ClipboardList,
                 title: "Court-Ready Intake Forms",
-                desc: "Guided 7-step intake collects every field required for your SC-100 — legally complete, nothing missed.",
+                desc: "Guided 7-step intake collects every field required for your all court forms— legally complete, nothing missed.",
               },
               {
                 icon: FileText,
