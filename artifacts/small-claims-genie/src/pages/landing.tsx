@@ -67,7 +67,7 @@ export default function Landing() {
               {
                 icon: FileText,
                 title: "Evidence That Speaks for You",
-                desc: "Upload receipts, contracts, texts, and photos. Our AI reads every document and builds your case argument.",
+                desc: "Upload receipts, contracts, texts, and photos. Our AI Genie reads every document and builds your case argument.",
               },
               {
                 icon: BookOpen,
