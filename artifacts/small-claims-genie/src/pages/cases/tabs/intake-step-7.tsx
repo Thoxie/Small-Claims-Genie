@@ -20,7 +20,7 @@ export function IntakeStep7({ caseId, initialData, onComplete, onBack, saving, o
       <div className="rounded-xl overflow-hidden border border-border shadow-sm">
         <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
           <iframe
-            src="https://app.heygen.com/embeds/fa72d99ef1f24cf1a4c6138f6d8aae6d"
+            src="https://app.heygen.com/embeds/1ac88511fa1c4a5a9dd5b4d517cc46c5"
             title="HeyGen video player"
             frameBorder="0"
             allow="encrypted-media; fullscreen;"
