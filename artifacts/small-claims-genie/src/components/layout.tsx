@@ -131,7 +131,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-1">
             <p className="text-xs text-primary/50">
-              © {new Date().getFullYear()} {i18n.brand.name}. Not a law firm. Legal advice only.
+              © {new Date().getFullYear()} {i18n.brand.name}. AI-powered legal guidance.
             </p>
             <div className="flex items-center gap-3">
               <Link

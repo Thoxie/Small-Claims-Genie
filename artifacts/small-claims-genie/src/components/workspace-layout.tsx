@@ -104,7 +104,7 @@ export function WorkspaceLayout({ children, activeTab, setActiveTab }: Workspace
       {/* Sitewide disclaimer */}
       <footer className="border-t border-gray-100 py-2.5 bg-white">
         <p className="text-center text-[11px] text-gray-400">
-          © {new Date().getFullYear()} Small Claims Genie. Not a law firm. Not legal advice.
+          © {new Date().getFullYear()} Small Claims Genie. AI-powered legal guidance.
         </p>
       </footer>
 
