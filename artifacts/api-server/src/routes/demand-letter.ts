@@ -962,18 +962,48 @@ router.post("/cases/:id/settlement-agreement", async (req, res): Promise<void> =
 
   const contextParts = [
     `=== PARTIES ===`,
-    `Plaintiff (Claimant): ${caseRecord.plaintiffName ?? "[PLAINTIFF NAME]"}`,
-    caseRecord.plaintiffAddress ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity ?? ""}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`.trim() : "",
-    `Defendant (Respondent): ${caseRecord.defendantName ?? "[DEFENDANT NAME]"}`,
-    caseRecord.defendantAddress ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity ?? ""}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`.trim() : "",
+    // Plaintiff
+    `Plaintiff (Claimant): ${caseRecord.plaintiffName ?? "[PLAINTIFF NAME]"}${caseRecord.plaintiffIsBusiness ? " (Business/Organization)" : ""}`,
+    caseRecord.plaintiffIsBusiness && caseRecord.secondPlaintiffName
+      ? `Plaintiff Representative: ${caseRecord.secondPlaintiffName}${caseRecord.plaintiffTitle ? `, ${caseRecord.plaintiffTitle}` : ""}`
+      : "",
+    caseRecord.plaintiffAddress
+      ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity ?? ""}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`.trim()
+      : "",
+    caseRecord.plaintiffEmail ? `Plaintiff Email: ${caseRecord.plaintiffEmail}` : "",
+    caseRecord.plaintiffPhone ? `Plaintiff Phone: ${caseRecord.plaintiffPhone}` : "",
+    // Defendant
+    `Defendant (Respondent): ${caseRecord.defendantName ?? "[DEFENDANT NAME]"}${caseRecord.defendantIsBusinessOrEntity ? " (Business/Entity)" : ""}`,
+    caseRecord.defendantIsBusinessOrEntity && caseRecord.defendantAgentName
+      ? `Defendant Registered Agent: ${caseRecord.defendantAgentName}${caseRecord.defendantAgentTitle ? `, ${caseRecord.defendantAgentTitle}` : ""}`
+      : "",
+    caseRecord.defendantIsBusinessOrEntity && caseRecord.defendantAgentStreet && caseRecord.defendantAgentCity
+      ? `Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? "CA"} ${caseRecord.defendantAgentZip ?? ""}`
+      : "",
+    caseRecord.defendantAddress
+      ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity ?? ""}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`.trim()
+      : "",
+    caseRecord.defendantPhone ? `Defendant Phone: ${caseRecord.defendantPhone}` : "",
     `\n=== CASE DETAILS ===`,
-    caseRecord.caseNumber ? `Case Number: ${caseRecord.caseNumber}` : "Case: Filed in California Small Claims Court (case number to be inserted if applicable)",
-    caseRecord.countyId ? `Court: ${caseRecord.countyId} County Small Claims Court` : "",
+    caseRecord.caseNumber
+      ? `Case Number: ${caseRecord.caseNumber}`
+      : "Case: Filed in California Small Claims Court (case number to be inserted if applicable)",
+    caseRecord.courthouseName
+      ? `Court: ${caseRecord.courthouseName}`
+      : caseRecord.countyId ? `Court: ${caseRecord.countyId} County Small Claims Court` : "",
+    caseRecord.courthouseAddress && caseRecord.courthouseCity
+      ? `Court Address: ${caseRecord.courthouseAddress}, ${caseRecord.courthouseCity}, CA ${caseRecord.courthouseZip ?? ""}`
+      : "",
     caseRecord.claimType ? `Claim Type: ${caseRecord.claimType}` : "",
     caseRecord.incidentDate ? `Incident Date: ${caseRecord.incidentDate}` : "",
-    hearingDateStr ? `Scheduled Hearing Date: ${hearingDateStr}` : "",
+    caseRecord.venueBasis ? `Venue Basis: ${caseRecord.venueBasis}` : "",
+    hearingDateStr ? `Scheduled Hearing Date: ${hearingDateStr}${caseRecord.hearingTime ? ` at ${caseRecord.hearingTime}` : ""}` : "",
     `Original Claim Amount: ${origAmt}`,
     caseRecord.claimDescription ? `\nDispute Background:\n${caseRecord.claimDescription}` : "",
+    caseRecord.howAmountCalculated ? `\nHow Amount Was Calculated:\n${caseRecord.howAmountCalculated}` : "",
+    caseRecord.priorDemandMade != null
+      ? `Prior Demand Made: ${caseRecord.priorDemandMade ? `Yes${caseRecord.priorDemandDescription ? ` — ${caseRecord.priorDemandDescription}` : ""}` : `No${caseRecord.priorDemandWhyNot ? ` — ${caseRecord.priorDemandWhyNot}` : ""}`}`
+      : "",
     `\n=== SETTLEMENT TERMS ===`,
     `Agreed Settlement Amount: ${settleAmt}`,
     `Payment Terms: ${paymentTerms}`,
