@@ -60,20 +60,20 @@ export function WorkspaceLayout({
             />
           </a>
 
-          {/* Exit button — visible with icon + label */}
+          {/* Exit button — darker text so it's legible */}
           <a
             href="https://smallclaimsgenie.com/"
             onClick={(e) => { e.stopPropagation(); window.location.href = 'https://smallclaimsgenie.com/'; }}
             title="Exit case and return to home"
-            className="shrink-0 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all"
+            className="shrink-0 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all"
           >
-            <LogOut className="h-4 w-4 md:h-[18px] md:w-[18px]" />
-            <span className="text-[10px] md:text-[11px] font-semibold leading-none">Exit</span>
+            <LogOut className="h-5 w-5 md:h-[22px] md:w-[22px]" />
+            <span className="text-[11px] md:text-xs font-bold leading-none">Exit</span>
           </a>
 
           {/* ── Numbered stepper ── */}
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
-            <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-1.5 min-w-max md:min-w-0">
+            <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-2 min-w-max md:min-w-0">
               {WORKSPACE_STEPS.map((step, idx) => {
                 const isActive = step.n === currentOuterStep;
                 const isDone = completedSteps
@@ -85,7 +85,7 @@ export function WorkspaceLayout({
                   <Fragment key={step.n}>
                     {/* Dash separator */}
                     {idx > 0 && (
-                      <span className={`text-xs font-bold mx-0.5 md:mx-1 shrink-0 select-none ${isDone ? "text-[#14b8a6]" : "text-gray-300"}`}>
+                      <span className={`text-sm font-bold mx-0.5 md:mx-1 shrink-0 select-none ${isDone ? "text-[#14b8a6]" : "text-gray-300"}`}>
                         —
                       </span>
                     )}
@@ -94,23 +94,23 @@ export function WorkspaceLayout({
                     <button
                       onClick={() => onStepClick(step.n)}
                       className={[
-                        "flex items-center gap-1.5 flex-1 min-w-0 px-1.5 md:px-2 py-2 rounded-lg transition-all text-left border-2",
+                        "flex items-center gap-2 flex-1 min-w-0 px-2 md:px-2.5 py-2.5 rounded-lg transition-all text-left border-2",
                         isActive
                           ? "bg-[#14b8a6] text-white border-black shadow-md"
                           : isDone
                           ? "border-transparent text-[#0d6b5e] hover:bg-white/60"
-                          : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60",
+                          : "border-transparent text-gray-600 hover:text-gray-800 hover:bg-white/60",
                       ].join(" ")}
                     >
-                      {/* Circle — uniform w-7 h-7 across all states */}
+                      {/* Circle — uniform w-8 h-8 across all states */}
                       <span
                         className={[
-                          "inline-flex items-center justify-center rounded-full text-[11px] font-bold shrink-0",
+                          "inline-flex items-center justify-center rounded-full text-xs font-bold shrink-0",
                           isActive
-                            ? "w-7 h-7 bg-white text-[#14b8a6]"
+                            ? "w-8 h-8 bg-white text-[#14b8a6]"
                             : isDone
-                            ? "w-7 h-7 bg-[#14b8a6] text-white"
-                            : "w-7 h-7 bg-gray-200 text-gray-500",
+                            ? "w-8 h-8 bg-[#14b8a6] text-white"
+                            : "w-8 h-8 bg-gray-200 text-gray-600",
                         ].join(" ")}
                       >
                         {step.n}
@@ -118,8 +118,8 @@ export function WorkspaceLayout({
 
                       {/* Label — overflow-hidden prevents text spilling past border */}
                       <div className="hidden sm:flex flex-col items-start min-w-0 overflow-hidden">
-                        {Icon && <Icon className={`h-2.5 w-2.5 mb-0.5 shrink-0 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
-                        <span className="text-[10px] font-semibold leading-tight whitespace-pre-line break-words w-full">
+                        {Icon && <Icon className={`h-3 w-3 mb-0.5 shrink-0 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
+                        <span className="text-[11px] md:text-xs font-semibold leading-tight whitespace-pre-line break-words w-full">
                           {step.label}
                         </span>
                       </div>
