@@ -1,0 +1,16 @@
+{
+  "SC-112A[0].Page1[0].Header[0].CaseNumber_ft[0]": "23-SC-000000",
+  "SC-112A[0].Page1[0].List1[0].Item1[0].FillText01[0]": "Alex Server",
+  "SC-112A[0].Page1[0].List1[0].Item1[0].FillText02[0]": "(555) 555-5555",
+  "SC-112A[0].Page1[0].List1[0].Item1[0].FillText03[0]": "123 Mailing Street",
+  "SC-112A[0].Page1[0].List1[0].Item1[0].FillText04[0]": "Los Angeles",
+  "SC-112A[0].Page1[0].List1[0].Item1[0].FillText05[0]": "CA",
+  "SC-112A[0].Page1[0].List1[0].Item1[0].FillText06[0]": "90012",
+  "SC-112A[0].Page1[0].List2[0].Lie[0].CheckBox6[0]": "/1",
+  "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.11[0]": "Jordan Defendant",
+  "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.11[0]": "456 Service Ave, Los Angeles, CA 90013",
+  "SC-112A[0].Page1[0].List3[0].Lic[0].FillText12[0]": "01/15/2026",
+  "SC-112A[0].Page1[0].List3[0].Lic[0].FillText13[0]": "Los Angeles, CA",
+  "SC-112A[0].Page1[0].Sign[0].FillText14[0]": "01/15/2026",
+  "SC-112A[0].Page1[0].Sign[0].FillText16[0]": "Alex Server"
+}

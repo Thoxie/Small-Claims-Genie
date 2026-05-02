@@ -1,0 +1,173 @@
+{
+  "form": "SC-112A",
+  "title": "Proof of Service by Mail (Small Claims)",
+  "source": "Judicial Council of California SC-112A, New July 1, 2010",
+  "templatePdf": "SC-112A_AcroForm_Blank_Unlocked.pdf",
+  "notes": [
+    "Page 1 is the proof of service form; page 2 is the instruction page and states it is not part of the Proof of Service and does not need to be copied, served, or filed.",
+    "SC-112A cannot be used to prove service of SC-100 or SC-120. Route those to SC-104/SC-104B.",
+    "The server must be 18 or older, not a party, and must live or work in the county where mailing occurs.",
+    "The visible server signature line is not a separate AcroForm field in this template; collect a typed/ink/e-signature separately or leave that line for signing."
+  ],
+  "checkboxOnValue": "/1",
+  "logicalFields": {
+    "caseNumber": {
+      "field": "SC-112A[0].Page1[0].Header[0].CaseNumber_ft[0]",
+      "type": "text"
+    },
+    "server.name": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText01[0]",
+      "type": "text"
+    },
+    "server.phone": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText02[0]",
+      "type": "text"
+    },
+    "server.streetAddress": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText03[0]",
+      "type": "text"
+    },
+    "server.city": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText04[0]",
+      "type": "text"
+    },
+    "server.state": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText05[0]",
+      "type": "text"
+    },
+    "server.zip": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText06[0]",
+      "type": "text"
+    },
+    "server.isRegisteredProcessServer": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].CheckBox1[0]",
+      "type": "checkbox",
+      "onValue": "/1"
+    },
+    "server.registrationCounty": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText07[0]",
+      "type": "text"
+    },
+    "server.registrationNumber": {
+      "field": "SC-112A[0].Page1[0].List1[0].Item1[0].FillText08[0]",
+      "type": "text"
+    },
+    "documentServed.sc105": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lia[0].CheckBox2[0]",
+      "type": "checkbox",
+      "onValue": "/1",
+      "label": "Form SC-105, Request for Court Order and Answer"
+    },
+    "documentServed.sc109": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lib[0].CheckBox3[0]",
+      "type": "checkbox",
+      "onValue": "/1",
+      "label": "Form SC-109, Authorization to Appear"
+    },
+    "documentServed.sc114": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lic[0].CheckBox4[0]",
+      "type": "checkbox",
+      "onValue": "/1",
+      "label": "Form SC-114, Request to Amend Claim Before Hearing"
+    },
+    "documentServed.sc133": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lid[0].CheckBox5[0]",
+      "type": "checkbox",
+      "onValue": "/1",
+      "label": "Form SC-133, Judgment Debtor's Statement of Assets"
+    },
+    "documentServed.sc150": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lie[0].CheckBox6[0]",
+      "type": "checkbox",
+      "onValue": "/1",
+      "label": "Form SC-150, Request to Postpone Trial"
+    },
+    "documentServed.sc221": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lif[0].CheckBox7[0]",
+      "type": "checkbox",
+      "onValue": "/1",
+      "label": "Form SC-221, Response to Request to Make Payments"
+    },
+    "documentServed.other": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lig[0].CheckBox8[0]",
+      "type": "checkbox",
+      "onValue": "/1",
+      "label": "Other document allowed to be served by mail"
+    },
+    "documentServed.item2Attachment": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lig[0].CheckBox9[0]",
+      "type": "checkbox",
+      "onValue": "/1"
+    },
+    "documentServed.otherDescription": {
+      "field": "SC-112A[0].Page1[0].List2[0].Lig[0].FillText09[0]",
+      "type": "text"
+    },
+    "partiesServed[0].name": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.11[0]",
+      "type": "text"
+    },
+    "partiesServed[0].mailingAddress": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.11[0]",
+      "type": "text"
+    },
+    "partiesServed[1].name": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.12[0]",
+      "type": "text"
+    },
+    "partiesServed[1].mailingAddress": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.12[0]",
+      "type": "text"
+    },
+    "partiesServed[2].name": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.13[0]",
+      "type": "text"
+    },
+    "partiesServed[2].mailingAddress": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.13[0]",
+      "type": "text"
+    },
+    "partiesServed[3].name": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.14[0]",
+      "type": "text"
+    },
+    "partiesServed[3].mailingAddress": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.14[0]",
+      "type": "text"
+    },
+    "partiesServed[4].name": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.1[0]",
+      "type": "text"
+    },
+    "partiesServed[4].mailingAddress": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.1[0]",
+      "type": "text"
+    },
+    "partiesServed.item3Attachment": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lib[0].CheckBox10[0]",
+      "type": "checkbox",
+      "onValue": "/1"
+    },
+    "mailing.dateOfMailing": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lic[0].FillText12[0]",
+      "type": "text"
+    },
+    "mailing.cityStateOfMailing": {
+      "field": "SC-112A[0].Page1[0].List3[0].Lic[0].FillText13[0]",
+      "type": "text"
+    },
+    "signature.dateSigned": {
+      "field": "SC-112A[0].Page1[0].Sign[0].FillText14[0]",
+      "type": "text"
+    },
+    "signature.printedServerName": {
+      "field": "SC-112A[0].Page1[0].Sign[0].FillText16[0]",
+      "type": "text"
+    },
+    "page2.localSmallClaimsAdvisorInfo": {
+      "field": "SC-112A[0].Page2[0].NeedHelp[0].T167[0]",
+      "type": "text",
+      "note": "Instruction page only; usually not filed."
+    }
+  }
+}

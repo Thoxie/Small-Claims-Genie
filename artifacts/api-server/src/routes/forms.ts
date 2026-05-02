@@ -2445,7 +2445,14 @@ router.post("/cases/:id/forms/sc105", async (req, res): Promise<void> => {
   }
 });
 
-// ─── SC-112A Proof of Service by Mail (page 1 only; page 2 is instructions) ──
+// ─── SC-112A Proof of Service by Mail (AcroForm fill — page 1 only; page 2 is instructions) ──
+// Body params:
+//   b.serverName, b.serverPhone, b.serverAddress, b.serverCity, b.serverState, b.serverZip
+//   b.documentServed: "sc105"|"sc109"|"sc114"|"sc133"|"sc150"|"sc221"|"other"
+//   b.documentServedOther: string (when documentServed === "other")
+//   b.partiesServed: [{name, address}] (up to 5)
+//   b.mailingDate, b.mailingCity (city and state of mailing)
+//   b.signDate (defaults to today)
 router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
@@ -2455,73 +2462,79 @@ router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
   const d = c as unknown as Record<string, any>;
   const b = req.body as Record<string, any>;
-  // b.serverName, b.serverPhone, b.serverAddress, b.serverCity, b.serverState, b.serverZip
-  // b.documentServed: "sc105"|"sc109"|"sc114"|"sc133"|"sc150"|"sc221"|"other"
-  // b.documentServedOther: string
-  // b.partiesServed: [{name, address}]  (up to 5)
-  // b.mailingDate, b.mailingCity
-  const parties: any[] = b.partiesServed || [];
+  const parties: { name: string; address: string }[] = b.partiesServed || [];
+
+  function sf(form: any, name: string, value: string) {
+    try {
+      const f = form.getTextField(name);
+      f.acroField.dict.set(PDFName.of("DA"), PDFString.of("/Helv 9 Tf 0 g"));
+      f.setText(value || "");
+    } catch { /* field absent — skip */ }
+  }
+  function cb(form: any, name: string, checked: boolean) {
+    try { if (checked) form.getCheckBox(name).check(); else form.getCheckBox(name).uncheck(); } catch { /* skip */ }
+  }
+
   try {
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const bg = await pdfDoc.embedPng(loadAsset("sc112a_hq-1.png"));
-    const page = pdfDoc.addPage([PW, PH]);
-    page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-    const LIFT = 4.5;
-    const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
-    const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
+    const acroBytes = loadAsset("forms/sc112a_acroform.pdf");
+    const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
+    const form = pdfDoc.getForm();
 
-    // SC-112A has NO plaintiff/defendant header — only a Case Number box top-right.
-    // Case name goes in the open left area of the header; case number inside the box.
-    const sc112aCaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-    v(sc112aCaseName, 72, 762, 8);   // left of Case Number box (title-bar level)
-    v(d.caseNumber,  432, 752);       // inside the Case Number box writing area
+    // Header
+    sf(form, "SC-112A[0].Page1[0].Header[0].CaseNumber_ft[0]", d.caseNumber || "");
 
-    // Item 1 — Server info
-    // x values: text starts AFTER each printed label.
-    // y values: calibrated from pixel scan of 2550×3300 PNG (code_y = underline_y_pdf − 4.5).
-    //   Name underline ≈ y_pdf 699  → code_y 695 (estimated; underline too narrow to scan directly)
-    //   Street underline ≈ y_pdf 678 → code_y 674
-    //   City/State/Zip underline = y_pdf 657.1 (scanned) → code_y 653
-    v(b.serverName,          103, 695);  // Name: underline ≈ 699
-    v(b.serverPhone,         422, 695);  // Phone: same row
-    v(b.serverAddress,       218, 674);  // Street or mailing address: underline ≈ 678
-    v(b.serverCity,          106, 653);  // City: underline = 657.1
-    v(b.serverState || "CA", 390, 653);  // State: same row
-    v(b.serverZip,           454, 653);  // Zip Code: same row
+    // Item 1 — Server information
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText01[0]", b.serverName || "");
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText02[0]", b.serverPhone || "");
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText03[0]", b.serverAddress || "");
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText04[0]", b.serverCity || "");
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText05[0]", b.serverState || "CA");
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText06[0]", b.serverZip || "");
+    cb(form, "SC-112A[0].Page1[0].List1[0].Item1[0].CheckBox1[0]", !!b.isRegisteredProcessServer);
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText07[0]", b.registrationCounty || "");
+    sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText08[0]", b.registrationNumber || "");
 
-    // Item 2 — document served checkboxes
-    // Positioned below County/Registration (y_pdf≈626) + Item 2 header (~26 units).
-    // Spacing ~17 PDF units per item (a–g).
-    const docMap: Record<string, [number, number]> = {
-      sc105: [52, 587], sc109: [52, 570], sc114: [52, 553],
-      sc133: [52, 536], sc150: [52, 519], sc221: [52, 502], other: [52, 485],
+    // Item 2 — Document served (one checkbox)
+    const docChecks: Record<string, string> = {
+      sc105: "SC-112A[0].Page1[0].List2[0].Lia[0].CheckBox2[0]",
+      sc109: "SC-112A[0].Page1[0].List2[0].Lib[0].CheckBox3[0]",
+      sc114: "SC-112A[0].Page1[0].List2[0].Lic[0].CheckBox4[0]",
+      sc133: "SC-112A[0].Page1[0].List2[0].Lid[0].CheckBox5[0]",
+      sc150: "SC-112A[0].Page1[0].List2[0].Lie[0].CheckBox6[0]",
+      sc221: "SC-112A[0].Page1[0].List2[0].Lif[0].CheckBox7[0]",
+      other: "SC-112A[0].Page1[0].List2[0].Lig[0].CheckBox8[0]",
     };
-    const docSel = docMap[b.documentServed ?? ""];
-    if (docSel) xm(docSel[0], docSel[1]);
-    if (b.documentServed === "other" && b.documentServedOther) v(b.documentServedOther, 122, 485);
+    const docSel = b.documentServed as string | undefined;
+    Object.entries(docChecks).forEach(([key, field]) => cb(form, field, key === docSel));
+    if (docSel === "other") sf(form, "SC-112A[0].Page1[0].List2[0].Lig[0].FillText09[0]", b.documentServedOther || "");
 
-    // Item 3 — parties served table (Name of party served | Mailing address on envelope)
-    // Table top border scanned at y_pdf=423.4; row bottom borders at 409.2, 395.3 (spacing 14.1).
-    // Text sits just above each row's bottom border: code_y = bottom_border_y_pdf − 4.5.
-    // Rows 4-5 extrapolated at same 14.1-unit spacing.
-    const rowYs = [405, 391, 377, 363, 349];
+    // Item 3b — Parties served table (up to 5 rows)
+    const partyNameFields = [
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.11[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.12[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.13[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.14[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.1[0]",
+    ];
+    const partyAddrFields = [
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.11[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.12[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.13[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.14[0]",
+      "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.1[0]",
+    ];
     parties.slice(0, 5).forEach((party, i) => {
-      v(party.name,    75, rowYs[i]);
-      v(party.address, 262, rowYs[i]);
+      sf(form, partyNameFields[i], party.name || "");
+      sf(form, partyAddrFields[i], party.address || "");
     });
 
-    // Item c — two separate underlines scanned directly:
-    //   "On (date of mailing):" underline   y_pdf=242.9 → code_y=238
-    //   "(city and state of mailing):" underline y_pdf=228.0 → code_y=224
-    v(b.mailingDate, 187, 238);   // after "On (date of mailing):"
-    v(b.mailingCity, 229, 224);   // after "(city and state of mailing):" — next line down
+    // Item 3c — Mailing date and location
+    sf(form, "SC-112A[0].Page1[0].List3[0].Lic[0].FillText12[0]", b.mailingDate || "");
+    sf(form, "SC-112A[0].Page1[0].List3[0].Lic[0].FillText13[0]", b.mailingCity || "");
 
-    // Signature section — underlines scanned directly:
-    //   "Date:" underline              y_pdf=213.4 → code_y=209
-    //   "Type or print server's name"  y_pdf=198.5 → code_y=194
-    v(b.signDate || today(), 100, 209);
-    v(b.serverName, 45, 194);
+    // Signature
+    sf(form, "SC-112A[0].Page1[0].Sign[0].FillText14[0]", b.signDate || today());
+    sf(form, "SC-112A[0].Page1[0].Sign[0].FillText16[0]", b.serverName || "");
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
