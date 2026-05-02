@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogOut, Play, X, ChevronRight, BookOpen } from "lucide-react";
+import { LogOut, Play, X, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -163,6 +163,8 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
 
   return (
     <div className="space-y-4">
+      <div className="flex gap-4 items-start">
+        <div className="flex-1 min-w-0 space-y-4">
 
       {/* ── Step title ── */}
       <div>
@@ -178,11 +180,8 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
 
-          {/* ── County + Video card side by side ── */}
-          <div className="flex gap-4 items-start">
-
-            {/* Left: county selection */}
-            <div className="flex-1 rounded-xl border bg-muted/20 p-4">
+          {/* ── Filing County & Court ── */}
+          <div className="rounded-xl border bg-muted/20 p-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County &amp; Court</h3>
               <div className="flex flex-wrap gap-3 items-end mb-3">
                 <FormField control={form.control} name="countyId" render={({ field }) => (
@@ -234,36 +233,6 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
               {!selectedCountyId && <p className="text-xs text-muted-foreground">Select a county to see the court location.</p>}
             </div>
 
-            {/* Right: video tutorial card */}
-            <div
-              onClick={() => setTutorialOpen(true)}
-              className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
-              title="Watch the tutorial for this step"
-            >
-              <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center justify-center opacity-10">
-                  <BookOpen className="w-16 h-16 text-white" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
-                <div className="relative z-10 flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
-                    <Play className="w-5 h-5 text-white ml-1" fill="white" />
-                  </div>
-                  <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
-                </div>
-                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
-                <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 1</div>
-              </div>
-              <div className="bg-background px-3 py-2 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold">Entering the Parties</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Who is suing whom?</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
-              </div>
-            </div>
-
-          </div>{/* end county + video row */}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* ── Plaintiff ── */}
@@ -609,6 +578,34 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
           </div>
         </form>
       </Form>
+        </div>
+
+        {/* Right: video tutorial card */}
+        <div
+          onClick={() => setTutorialOpen(true)}
+          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          title="Watch the tutorial for this step"
+        >
+          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                <Play className="w-5 h-5 text-white ml-1" fill="white" />
+              </div>
+              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+            </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 1</div>
+          </div>
+          <div className="bg-background px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold">Entering the Parties</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Who is suing whom?</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+          </div>
+        </div>
+      </div>
 
       {/* ── Video modal ── */}
       {tutorialOpen && (

@@ -145,60 +145,34 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
 
   return (
     <div className="space-y-5">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-5">
-          {/* ── Claim fields + Video card side by side ── */}
-          <div className="flex gap-4 items-start">
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5">
-              <FormField control={form.control} name="claimType" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Claim Type <span className="text-destructive">*</span></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="claimAmount" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount Requested ($) <span className="text-destructive">*</span></FormLabel>
-                  <FormControl><Input type="number" step="0.01" className="h-11" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-
-            {/* Right: video tutorial card */}
-            <div
-              onClick={() => setTutorialOpen(true)}
-              className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
-              title="Watch the tutorial for this step"
-            >
-              <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
-                <div className="relative z-10 flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
-                    <Play className="w-5 h-5 text-white ml-1" fill="white" />
-                  </div>
-                  <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
-                </div>
-                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
-                <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 2</div>
+      <div className="flex gap-4 items-start">
+        <div className="flex-1 min-w-0">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onNext)} className="space-y-5">
+              {/* ── Claim fields ── */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <FormField control={form.control} name="claimType" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Claim Type <span className="text-destructive">*</span></FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="claimAmount" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amount Requested ($) <span className="text-destructive">*</span></FormLabel>
+                    <FormControl><Input type="number" step="0.01" className="h-11" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
-              <div className="bg-background px-3 py-2 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold">Claim Details</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">What happened &amp; how much?</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
-              </div>
-            </div>
-          </div>
 
           <FormField control={form.control} name="incidentDate" render={({ field }) => (
             <FormItem>
@@ -256,8 +230,36 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
               <Sparkles className="h-4 w-4" /> AI Check My Case
             </Button>
           </div>
-        </form>
-      </Form>
+            </form>
+          </Form>
+        </div>
+
+        {/* Right: video tutorial card */}
+        <div
+          onClick={() => setTutorialOpen(true)}
+          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          title="Watch the tutorial for this step"
+        >
+          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                <Play className="w-5 h-5 text-white ml-1" fill="white" />
+              </div>
+              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+            </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 2</div>
+          </div>
+          <div className="bg-background px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold">Claim Details</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">What happened &amp; how much?</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+          </div>
+        </div>
+      </div>
 
       <Dialog open={descModalOpen} onOpenChange={setDescModalOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90dvh] flex flex-col">
