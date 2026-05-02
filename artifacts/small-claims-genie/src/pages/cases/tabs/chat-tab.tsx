@@ -270,7 +270,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
               Recording… release mic to stop
             </span>
           ) : (
-            <span className="text-xs font-extrabold text-muted-foreground">
+            <span className="text-xs font-extrabold text-white bg-black px-2 py-0.5 rounded-md">
               Hold mic to record voice
             </span>
           )}
