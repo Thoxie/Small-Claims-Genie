@@ -143,7 +143,7 @@ export function IntakeTab({
 
   const getInitialStep = (): StepNum => {
     if (forceStep) return forceStep;
-    const stored = sessionStorage.getItem(`intake-step-${caseId}`);
+    const stored = localStorage.getItem(`intake-step-${caseId}`);
     const fromSession = stored ? parseInt(stored) : NaN;
     if (fromSession >= 1 && fromSession <= 7) return fromSession as StepNum;
     if (isFreshCase) return 1;
@@ -164,7 +164,7 @@ export function IntakeTab({
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
 
   const setActiveTab = (step: StepNum) => {
-    sessionStorage.setItem(`intake-step-${caseId}`, String(step));
+    localStorage.setItem(`intake-step-${caseId}`, String(step));
     setActiveTabState(step);
   };
 
