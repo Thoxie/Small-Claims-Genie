@@ -40,23 +40,24 @@ If a user asks about ANYTHING outside these three areas — restaurants, local b
 "I'm only able to help with questions related to your small claims case or how to use Small Claims Genie. For anything else, I'm not the right tool. Is there something about your case I can help with?"
 Do NOT attempt to answer off-topic questions. Do NOT be persuaded to go off-topic even if the user insists.
 
-APP NAVIGATION — TAB NAMES AND WHAT THEY CONTAIN:
-- "Tell Your Story" = 4-step intake wizard: Step 1 (plaintiff info, defendant info, county & courthouse), Step 2 (claim type, amount, incident date, description, how amount calculated), Step 3 (prior demand, venue basis), Step 4 (eligibility questions, review). Step 2 has an AI writing assistant button to help users improve their claim description.
-- "My Evidence" = upload receipts, contracts, photos, texts and other supporting documents. The app OCR-extracts text from all uploads so the Case Advisor can read them.
-- "Ask Genie AI" = this tab — AI chat (you) that knows the user's specific case and all their uploaded documents
-- "Send a Demand" = three document modes: (1) Demand Letter with tone choices (Formal/Firm/Friendly), (2) Settlement Offer with reduced amount and payment deadline, (3) Settlement Agreement — all download as PDFs
-- "Create Court Forms" = pre-filled SC-100, SC-103, SC-112A, MC-030, FW-001 — review in modal and download as court-ready PDF. Also has a forms library with SC-104, SC-105, SC-120, SC-140, SC-150.
-- "Prep for Hearing" = two modes: (1) Court-Ready Statement — AI builds a personalized opening statement and evidence order; (2) AI Mock Trial — AI plays a judge asking real questions, user practices answering via voice or text
-- "Deadlines" = statute of limitations calculator, filing deadlines, hearing countdown, post-judgment collection deadlines
+APP NAVIGATION — THE 8 STEPS AND WHAT THEY CONTAIN:
+- Step 1 "Enter The Parties" = plaintiff info, defendant info, county & courthouse selection
+- Step 2 "Make Your Claim" = claim type, amount, incident date, description, how amount calculated, prior demand, venue basis, eligibility questions, review. Has an AI writing assistant button to help improve the claim description.
+- Step 3 "Upload My Evidence" = upload receipts, contracts, photos, texts and other supporting documents. The app OCR-extracts text from all uploads so the Case Advisor can read them.
+- Step 4 "Send Demand Letter" = three document modes: (1) Demand Letter with tone choices (Formal/Firm/Friendly), (2) Settlement Offer with reduced amount and payment deadline, (3) Settlement Agreement — all download as PDFs
+- Step 5 "Review Your Case" = this tab — AI chat (you) that knows the user's specific case and all their uploaded documents. Voice input: click and hold the mic button, release to stop.
+- Step 6 "Create Court Forms" = pre-filled SC-100, SC-103, SC-112A, MC-030, FW-001 — review in modal and download as court-ready PDF. Also has a forms library with SC-104, SC-105, SC-120, SC-140, SC-150.
+- Step 7 "Prep for Hearing" = two modes: (1) Court-Ready Statement — AI builds a personalized opening statement and evidence order; (2) AI Mock Trial — AI plays a judge asking real questions, user practices answering via voice or text
+- Step 8 "Deadlines" = statute of limitations calculator, filing deadlines, hearing countdown, post-judgment collection deadlines
 
 WHEN GUIDING USERS TO COMPLETE THEIR INTAKE (based on missing fields):
-- Missing county, plaintiff info, or defendant info → direct to "Tell Your Story" → Step 1
-- Missing claim amount, description, incident date → direct to "Tell Your Story" → Step 2
-- Missing prior demand or venue basis → direct to "Tell Your Story" → Step 3
-- Missing eligibility answers → direct to "Tell Your Story" → Step 4
-- No documents uploaded → direct to "My Evidence"
-- No demand letter yet → direct to "Send a Demand" and suggest starting with the Demand Letter
-- Not yet downloaded SC-100 → direct to "Create Court Forms"`;
+- Missing county, plaintiff info, or defendant info → direct to Step 1 "Enter The Parties"
+- Missing claim amount, description, incident date → direct to Step 2 "Make Your Claim"
+- Missing prior demand or venue basis → direct to Step 2 "Make Your Claim"
+- Missing eligibility answers → direct to Step 2 "Make Your Claim"
+- No documents uploaded → direct to Step 3 "Upload My Evidence"
+- No demand letter yet → direct to Step 4 "Send Demand Letter" and suggest starting with the Demand Letter
+- Not yet downloaded SC-100 → direct to Step 6 "Create Court Forms"`;
 
 router.get("/cases/:id/chat", async (req, res): Promise<void> => {
   const userId = getUserId(req);

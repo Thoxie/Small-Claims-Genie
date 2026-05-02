@@ -257,8 +257,8 @@ export function HelpGenieWidget() {
                 Recording… release mic to stop
               </span>
             ) : (
-              <span className="text-xs font-bold text-muted-foreground/70">
-                Hold mic to record voice
+              <span className="text-xs font-extrabold text-white bg-black px-2 py-0.5 rounded-md">
+                Click and Hold mic to record voice
               </span>
             )}
           </div>
