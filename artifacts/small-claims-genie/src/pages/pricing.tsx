@@ -214,7 +214,7 @@ function CollectionCard() {
           <Trophy className="w-4 h-4 flex-shrink-0" />
           Add Collection Tools
         </Link>
-        <p className="text-[12px] text-[#8a96a8] text-center">Available after your judgment is entered. One-time flat fee.</p>
+        <p className="text-[12px] text-[#8a96a8] text-center whitespace-nowrap">When you win & judgment is entered. One-time flat fee.</p>
       </div>
 
     </section>
