@@ -172,7 +172,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
   };
 
   return (
-    <div className="flex gap-4 items-start px-4 pt-3 pb-4">
+    <div className="flex gap-4 items-start pr-4 pl-0 pt-3 pb-4">
 
       {/* ── Chat column ── */}
       <div className="flex-1 min-w-0 flex flex-col" style={{ height: "calc(100dvh - 165px)", minHeight: "420px" }}>
