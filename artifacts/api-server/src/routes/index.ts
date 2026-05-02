@@ -16,6 +16,7 @@ import hearingPrepRouter from "./hearing-prep";
 import storageRouter from "./storage";
 import backupDownloadRouter from "./backup-download";
 import sourceDownloadRouter from "./source-download";
+import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
 
@@ -26,6 +27,7 @@ router.use(storageRouter);
 router.use(helpChatRouter);
 router.use(backupDownloadRouter);
 router.use(sourceDownloadRouter);
+router.use(stripeRouter); // Stripe routes (checkout is public; internal auth via client_reference_id)
 
 // Form downloads — accept ?token query param (token issued by protected endpoint below)
 router.use(formsRouter);
