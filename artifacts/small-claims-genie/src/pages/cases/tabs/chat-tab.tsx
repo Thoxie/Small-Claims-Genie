@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetChatHistory } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Mic, Send, CheckCircle, Loader2, Download, Sparkles } from "lucide-react";
+import { Mic, Send, CheckCircle, Loader2, Download, Sparkles, Eraser } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
 import { DraftLockedButton } from "@/components/draft-overlay";
@@ -16,18 +16,17 @@ interface ChatMessage {
 
 export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: number; isDraftMode?: boolean; currentCase?: ExtendedCase }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [cleared, setCleared] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingWord, setDownloadingWord] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const { getToken } = useAuth();
 
-  const downloadChat = async (format: "pdf" | "word", scope: "last" | "all" = "all") => {
-    const setLoading = format === "pdf" ? setDownloadingPdf : setDownloadingWord;
-    setLoading(true);
+  const downloadChat = async (format: "word", scope: "last" | "all" = "all") => {
+    setDownloadingWord(true);
     try {
       const token = await getToken();
       const res = await fetch(`/api/cases/${caseId}/chat/export/${format}?scope=${scope}`, {
@@ -41,24 +40,23 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const ext = format === "pdf" ? "pdf" : "docx";
       const label = scope === "last" ? "ai-document" : "ai-chat-transcript";
-      a.download = `${label}.${ext}`;
+      a.download = `${label}.docx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e: unknown) {
       console.error("[Chat export]", e);
       alert(e instanceof Error ? e.message : "Could not download. Please try again.");
     } finally {
-      setLoading(false);
+      setDownloadingWord(false);
     }
   };
 
   const { data: history } = useGetChatHistory(caseId, { query: { enabled: !!caseId } });
 
   useEffect(() => {
-    if (history) setMessages(history);
-  }, [history]);
+    if (history && !cleared) setMessages(history);
+  }, [history, cleared]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -184,19 +182,22 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
           <CheckCircle className="h-4 w-4 shrink-0" /> <strong>Your AI Genie is trained on your uploaded documents and all your case info</strong>
         </div>
         {messages.length > 0 && (
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+              onClick={() => { setMessages([]); setCleared(true); }}
+            >
+              <Eraser className="h-3 w-3" /> Clear Chat
+            </Button>
             <span className="text-xs text-muted-foreground font-normal">Download transcript:</span>
             {isDraftMode ? (
               <DraftLockedButton label="Subscribe to Export" size="sm" />
             ) : (
-              <>
-                <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("pdf")} disabled={downloadingPdf || downloadingWord}>
-                  {downloadingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} PDF
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingPdf || downloadingWord}>
-                  {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
-                </Button>
-              </>
+              <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
+                {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
+              </Button>
             )}
           </div>
         )}
