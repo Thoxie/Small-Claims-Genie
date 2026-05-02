@@ -210,7 +210,16 @@ function FormAssistantModal({ formId, caseId, initialValues, onClose, onDownload
   onAiDraftSC105?: () => Promise<{ orderRequested: string; orderReason: string }>;
 }) {
   const cfg = FORM_FIELD_CONFIG[formId];
-  const [formData, setFormData] = useState<Record<string, string>>(() => initialValues ?? {});
+  const storageKey = `form-draft-${caseId}-${formId}`;
+  const [formData, setFormData] = useState<Record<string, string>>(() => {
+    let stored: Record<string, string> = {};
+    try { stored = JSON.parse(localStorage.getItem(`form-draft-${caseId}-${formId}`) ?? "null") ?? {}; } catch { /* */ }
+    // initialValues (pre-filled from case data) always win over stored values
+    return { ...stored, ...(initialValues ?? {}) };
+  });
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify(formData)); } catch { /* */ }
+  }, [formData, storageKey]);
   const [validationMsg, setValidationMsg] = useState<string | null>(null);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
