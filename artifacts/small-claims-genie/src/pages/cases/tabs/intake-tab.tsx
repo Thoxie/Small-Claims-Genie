@@ -235,6 +235,62 @@ export function IntakeTab({
 
   return (
     <div className="p-4 md:p-5">
+      {/* ── Step progress indicator ── */}
+      <div className="mb-5">
+        {/* Bar */}
+        <div className="flex gap-1 mb-2">
+          {INTAKE_TABS.map(({ num }) => {
+            const isCompleted = num < activeTab;
+            const isCurrent = num === activeTab;
+            return (
+              <div
+                key={num}
+                className={[
+                  "flex-1 h-1.5 rounded-full transition-all duration-200",
+                  isCurrent
+                    ? "bg-teal-500"
+                    : isCompleted
+                    ? "bg-teal-300"
+                    : "bg-slate-200",
+                ].join(" ")}
+              />
+            );
+          })}
+        </div>
+        {/* Step labels */}
+        <div className="flex gap-1">
+          {INTAKE_TABS.map(({ num, label }) => {
+            const isCompleted = num < activeTab;
+            const isCurrent = num === activeTab;
+            if (isCompleted) {
+              return (
+                <button
+                  key={num}
+                  onClick={() => setActiveTab(num as StepNum)}
+                  className="flex-1 text-center text-[10px] leading-tight text-teal-600 hover:text-teal-800 hover:underline underline-offset-2 truncate"
+                  aria-label={`Go back to step ${num}: ${label}`}
+                  title={label}
+                >
+                  {label}
+                </button>
+              );
+            }
+            return (
+              <span
+                key={num}
+                className={[
+                  "flex-1 text-center text-[10px] leading-tight truncate",
+                  isCurrent ? "font-semibold text-teal-700" : "text-slate-400",
+                ].join(" ")}
+                title={label}
+              >
+                {label}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ── Missing field warnings (shown on step 7 before completing) ── */}
       {activeTab === 7 && warningsByTab.length > 0 && (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 space-y-2">
