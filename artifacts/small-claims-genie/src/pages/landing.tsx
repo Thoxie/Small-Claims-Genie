@@ -23,17 +23,6 @@ export default function Landing() {
             <p className="text-base text-primary/65 mb-5 max-w-xl leading-relaxed">
               Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button asChild size="lg" className="h-11 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-md shadow-amber-200">
-                <Link href="/cases/new">
-                  <Wand2 className="mr-2 h-4 w-4" />
-                  Start Your Case Free
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-11 px-8 text-base rounded-full font-semibold border-primary/20 text-primary hover:bg-white/60 bg-white/40">
-                <Link href="/resume">Resume Your Case</Link>
-              </Button>
-            </div>
           </div>
 
           {/* Right: intro video — 2/3 size, raised towards nav */}
