@@ -432,18 +432,20 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
             <h2 className="text-xl font-bold flex items-center gap-2"><Handshake className="h-5 w-5 text-[#0d6b5e]" />Settlement Offer Generator</h2>
             <p className="text-sm text-muted-foreground mt-1">Create a strategic settlement offer letter — tailored to your case and claim amount.</p>
           </div>
-          <div className="rounded-2xl border border-[#a8e6df] bg-[#f0fffe] p-5 space-y-3">
-            <p className="text-sm font-bold text-[#0d6b5e]">When to use a Settlement Offer</p>
-            <p className="text-sm text-gray-700 leading-relaxed">Use this <strong>after you've filed</strong> — or after sending a demand letter that was ignored. A good offer is 70–85% of your claim.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] px-4 py-3 space-y-2">
+            <p className="text-sm text-gray-700 leading-snug">
+              <span className="font-bold text-[#0d6b5e]">When to use a Settlement Offer: </span>
+              Use this <strong>after you've filed</strong> — or after sending a demand letter that was ignored. A good offer is 70–85% of your claim.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {[
                 { icon: "📅", tip: "Best timing: 2–6 weeks before your hearing date" },
                 { icon: "✍️", tip: "If accepted, get the agreement in writing before withdrawing" },
                 { icon: "⚖️", tip: "If ignored, proceed to court — you've shown good faith" },
               ].map(({ icon, tip }) => (
-                <div key={tip} className="flex items-start gap-2">
-                  <span className="text-base shrink-0">{icon}</span>
-                  <p className="text-xs text-gray-600 leading-relaxed">{tip}</p>
+                <div key={tip} className="flex items-start gap-1.5">
+                  <span className="text-sm shrink-0">{icon}</span>
+                  <p className="text-xs text-gray-600 leading-snug">{tip}</p>
                 </div>
               ))}
             </div>
