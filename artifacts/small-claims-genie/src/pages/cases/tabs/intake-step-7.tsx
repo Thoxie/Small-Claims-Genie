@@ -17,14 +17,18 @@ export function IntakeStep7({ caseId, initialData, onComplete, onBack, saving, o
   return (
     <div className="space-y-4">
       {/* HeyGen hearing prep video */}
-      <iframe
-        src="https://app.heygen.com/embeds/1ac88511fa1c4a5a9dd5b4d517cc46c5"
-        title="HeyGen video player"
-        frameBorder="0"
-        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-        allowFullScreen
-        className="w-full aspect-video rounded-xl border border-border shadow-sm"
-      />
+      <div className="flex justify-center">
+        <iframe
+          width="560"
+          height="315"
+          src="https://app.heygen.com/embeds/1ac88511fa1c4a5a9dd5b4d517cc46c5"
+          title="HeyGen video player"
+          frameBorder="0"
+          allow="encrypted-media; fullscreen;"
+          allowFullScreen
+          className="block rounded-xl"
+        />
+      </div>
 
       <HearingPrepTab caseId={caseId} currentCase={initialData} isDraftMode={false} />
       <div className="flex justify-between items-center pt-2">
