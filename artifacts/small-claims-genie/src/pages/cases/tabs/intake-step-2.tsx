@@ -249,11 +249,11 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
               <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
               <p className="text-xs text-[#4a9990] mt-0.5 leading-relaxed">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement.</p>
             </div>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="shrink-0">
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="shrink-0 px-8">
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
             </Button>
-            <Button type="button" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2">
-              <Sparkles className="h-4 w-4" /> Check My Case
+            <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2 px-8">
+              <Sparkles className="h-4 w-4" /> AI Check My Case
             </Button>
           </div>
         </form>
