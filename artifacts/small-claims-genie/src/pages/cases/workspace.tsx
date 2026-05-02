@@ -134,6 +134,24 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
 
   const extCase = currentCase as ExtendedCase;
   const score = readiness?.score ?? extCase.readinessScore ?? 0;
+
+  // Compute which steps are truly completed based on actual case data
+  const completedSteps = new Set<number>();
+  // Step 1: parties entered — use intakeStep as canonical signal (moved past step 1 in intake)
+  if ((extCase.intakeStep ?? 1) >= 2 || (extCase.plaintiffName && extCase.defendantName)) completedSteps.add(1);
+  // Step 2: intake fully complete
+  if (extCase.intakeComplete) completedSteps.add(2);
+  // Step 3: at least one document uploaded
+  if ((extCase.documentCount ?? 0) > 0) completedSteps.add(3);
+  // Step 4: demand letter was generated
+  if (extCase.demandLetterText) completedSteps.add(4);
+  // Step 5: case reviewed meaningfully (readiness score reflects substantial data entry)
+  if (score >= 50) completedSteps.add(5);
+  // Step 6: forms were created (mc030 title set, or case is filed)
+  if (extCase.mc030DeclarationTitle || extCase.status === "filed") completedSteps.add(6);
+  // Step 7: hearing is scheduled
+  if (extCase.hearingDate) completedSteps.add(7);
+
   const borderColor = score >= 80 ? "border-green-400" : score >= 50 ? "border-yellow-400" : "border-red-400";
   const scoreColor = score >= 80 ? "text-green-600" : score >= 50 ? "text-yellow-600" : "text-red-500";
   const scoreLabel = score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info";
@@ -146,6 +164,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     <WorkspaceLayout
       activeTab={activeTab}
       currentOuterStep={currentOuterStep}
+      completedSteps={completedSteps}
       setActiveTab={setActiveTab}
       onStepClick={handleStepClick}
     >

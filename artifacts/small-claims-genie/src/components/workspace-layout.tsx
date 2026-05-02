@@ -26,6 +26,7 @@ interface WorkspaceLayoutProps {
   children: React.ReactNode;
   activeTab: string;
   currentOuterStep: number;   // 1–8
+  completedSteps?: Set<number>;
   setActiveTab: (t: string) => void;
   onStepClick: (stepN: number) => void;
 }
@@ -34,6 +35,7 @@ export function WorkspaceLayout({
   children,
   activeTab: _activeTab,
   currentOuterStep,
+  completedSteps,
   setActiveTab: _setActiveTab,
   onStepClick,
 }: WorkspaceLayoutProps) {
@@ -75,7 +77,9 @@ export function WorkspaceLayout({
             <div className="flex items-center">
               {WORKSPACE_STEPS.map((step, idx) => {
                 const isActive = step.n === currentOuterStep;
-                const isDone = step.n < currentOuterStep;
+                const isDone = completedSteps
+                  ? completedSteps.has(step.n)
+                  : step.n < currentOuterStep;
                 const Icon = step.icon;
 
                 return (

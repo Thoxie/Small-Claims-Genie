@@ -25,6 +25,8 @@ export interface ExtendedCase extends Case {
   hearingNotes?: string;
   filingFee?: number;
   evidenceChecklist?: { id: string; item: string; description: string; checked?: boolean }[];
+  demandLetterText?: string;
+  mc030DeclarationTitle?: string;
 }
 
 export interface DocumentWithMeta extends Document {
