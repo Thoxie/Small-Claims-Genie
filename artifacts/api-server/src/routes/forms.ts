@@ -2478,40 +2478,50 @@ router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
     v(d.caseNumber,  432, 752);       // inside the Case Number box writing area
 
     // Item 1 — Server info
-    // Text must start AFTER each printed label, not at the label itself.
-    v(b.serverName,          103, 696);  // after "Name:"
-    v(b.serverPhone,         422, 696);  // after "Phone:"
-    v(b.serverAddress,       218, 681);  // after "Street or mailing address:"
-    v(b.serverCity,          106, 664);  // after "City:"
-    v(b.serverState || "CA", 390, 664);  // after "State:"
-    v(b.serverZip,           454, 664);  // after "Zip Code:"
+    // x values: text starts AFTER each printed label.
+    // y values: calibrated from pixel scan of 2550×3300 PNG (code_y = underline_y_pdf − 4.5).
+    //   Name underline ≈ y_pdf 699  → code_y 695 (estimated; underline too narrow to scan directly)
+    //   Street underline ≈ y_pdf 678 → code_y 674
+    //   City/State/Zip underline = y_pdf 657.1 (scanned) → code_y 653
+    v(b.serverName,          103, 695);  // Name: underline ≈ 699
+    v(b.serverPhone,         422, 695);  // Phone: same row
+    v(b.serverAddress,       218, 674);  // Street or mailing address: underline ≈ 678
+    v(b.serverCity,          106, 653);  // City: underline = 657.1
+    v(b.serverState || "CA", 390, 653);  // State: same row
+    v(b.serverZip,           454, 653);  // Zip Code: same row
 
     // Item 2 — document served checkboxes
-    // y values re-calibrated from 2550×3300 PNG: y_pdf=(3300−y_png)×0.24
+    // Positioned below County/Registration (y_pdf≈626) + Item 2 header (~26 units).
+    // Spacing ~17 PDF units per item (a–g).
     const docMap: Record<string, [number, number]> = {
-      sc105: [52, 624], sc109: [52, 608], sc114: [52, 592],
-      sc133: [52, 576], sc150: [52, 560], sc221: [52, 544], other: [52, 528],
+      sc105: [52, 587], sc109: [52, 570], sc114: [52, 553],
+      sc133: [52, 536], sc150: [52, 519], sc221: [52, 502], other: [52, 485],
     };
     const docSel = docMap[b.documentServed ?? ""];
     if (docSel) xm(docSel[0], docSel[1]);
-    if (b.documentServed === "other" && b.documentServedOther) v(b.documentServedOther, 122, 528);
+    if (b.documentServed === "other" && b.documentServedOther) v(b.documentServedOther, 122, 485);
 
     // Item 3 — parties served table (Name of party served | Mailing address on envelope)
-    // Row y values re-calibrated; name column x≈75, address column x≈262
-    const rowYs = [381, 360, 338, 317, 295];
+    // Table top border scanned at y_pdf=423.4; row bottom borders at 409.2, 395.3 (spacing 14.1).
+    // Text sits just above each row's bottom border: code_y = bottom_border_y_pdf − 4.5.
+    // Rows 4-5 extrapolated at same 14.1-unit spacing.
+    const rowYs = [405, 391, 377, 363, 349];
     parties.slice(0, 5).forEach((party, i) => {
       v(party.name,    75, rowYs[i]);
       v(party.address, 262, rowYs[i]);
     });
 
-    // Item c — "On (date of mailing): [DATE], … at" is LINE 1
-    //           "(city and state of mailing): [CITY]" is LINE 2 (separate underline)
-    v(b.mailingDate, 187, 237);   // line 1 — after "On (date of mailing):"
-    v(b.mailingCity, 229, 222);   // line 2 — after "(city and state of mailing):"
+    // Item c — two separate underlines scanned directly:
+    //   "On (date of mailing):" underline   y_pdf=242.9 → code_y=238
+    //   "(city and state of mailing):" underline y_pdf=228.0 → code_y=224
+    v(b.mailingDate, 187, 238);   // after "On (date of mailing):"
+    v(b.mailingCity, 229, 224);   // after "(city and state of mailing):" — next line down
 
-    // Date + server's printed name (signature section)
-    v(b.signDate || today(), 100, 174);
-    v(b.serverName, 45, 150);
+    // Signature section — underlines scanned directly:
+    //   "Date:" underline              y_pdf=213.4 → code_y=209
+    //   "Type or print server's name"  y_pdf=198.5 → code_y=194
+    v(b.signDate || today(), 100, 209);
+    v(b.serverName, 45, 194);
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
