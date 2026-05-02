@@ -6,5 +6,6 @@ export const modules: ModuleMap = {
   "./components/mockups/case-header/CaseHeader.tsx": () => import("../components/mockups/case-header/CaseHeader.tsx"),
   "./components/mockups/step-nav/VariantA.tsx": () => import("../components/mockups/step-nav/VariantA.tsx"),
   "./components/mockups/step-nav/VariantB.tsx": () => import("../components/mockups/step-nav/VariantB.tsx"),
+  "./components/mockups/step-nav/VariantC.tsx": () => import("../components/mockups/step-nav/VariantC.tsx"),
   "./components/mockups/video-card/IntakeVideoCard.tsx": () => import("../components/mockups/video-card/IntakeVideoCard.tsx")
 };
