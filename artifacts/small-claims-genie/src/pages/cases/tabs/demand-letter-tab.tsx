@@ -276,11 +276,13 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
   return (
     <div className="p-4 space-y-3">
 
-      {/* ── Mode tabs + video card side by side (mirrors Step 1 / Step 2 pattern) ── */}
+      {/* ── Mode tabs + title + tone selector (left) | video card (right, stays fixed) ── */}
       <div className="flex gap-4 items-start">
 
-        {/* Left: mode tab switcher */}
-        <div className="flex-1 min-w-0">
+        {/* Left: everything stacks here so content fills the space beside the video */}
+        <div className="flex-1 min-w-0 space-y-3">
+
+          {/* Mode tab switcher */}
           <div className="flex items-center gap-1 p-1 bg-muted rounded-xl w-fit flex-wrap">
             {[
               { value: "demand",     icon: <Mail className="h-4 w-4" />,      label: "Demand Letter" },
@@ -297,9 +299,73 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Right: video tutorial card */}
+          {mode === "demand" && (
+            <>
+              {/* Title row */}
+              <div className="space-y-2">
+                <h2 className="text-sm flex flex-wrap items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-bold">Demand Letter Generator</span>
+                  <span className="font-normal text-muted-foreground">— Generate a professional pre-litigation demand letter using your case details.</span>
+                </h2>
+                {text.trim() && (
+                  <Button onClick={downloadPdf} disabled={isDownloading} className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
+                    {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PDF
+                  </Button>
+                )}
+              </div>
+              {!hasRequiredInfo && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div><p className="font-semibold text-amber-800 text-sm">Complete Intake First</p><p className="text-amber-700 text-sm mt-0.5">Fill in your name, the defendant's name, and claim amount in the Intake tab.</p></div>
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-semibold mb-3">Choose a tone — you can generate all three versions</p>
+                <div className="flex items-stretch gap-0 p-1.5 bg-muted rounded-xl">
+                  {TONE_META.map(({ value, label, description, icon }, idx) => {
+                    const active = tone === value;
+                    const generated = !!letters[value];
+                    return (
+                      <div key={value} className="flex items-stretch flex-1 min-w-0">
+                        {idx > 0 && (
+                          <div className={["h-auto w-0.5 shrink-0 rounded-full mx-1 self-stretch", generated || active ? "bg-[#14b8a6]" : "bg-gray-300"].join(" ")} />
+                        )}
+                        <button type="button" onClick={() => handleToneChange(value)}
+                          className={[
+                            "flex-1 flex flex-col items-center text-center gap-1.5 px-2 py-2.5 rounded-lg transition-all relative",
+                            active
+                              ? "bg-[#14b8a6] text-white border-2 border-black shadow-md"
+                              : generated
+                              ? "bg-background border-2 border-[#14b8a6] text-[#0d6b5e] hover:bg-white"
+                              : "bg-background/60 border-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-background",
+                          ].join(" ")}>
+                          <span className={[
+                            "inline-flex items-center justify-center w-5 h-5 rounded-full shrink-0 transition-all",
+                            active    ? "bg-white text-[#14b8a6]" :
+                            generated ? "bg-[#14b8a6] text-white" :
+                                        "bg-gray-200 text-gray-500",
+                          ].join(" ")}>
+                            {generated && !active ? <CheckCircle2 className="h-3 w-3" /> : icon}
+                          </span>
+                          <span className={["text-xs leading-snug", active ? "font-bold" : "font-semibold"].join(" ")}>{label}</span>
+                          <span className={["text-[10px] leading-snug hidden sm:block", active ? "text-white/90" : "text-muted-foreground"].join(" ")}>{description}</span>
+                          {generated && active && (
+                            <span className="text-[10px] bg-white/20 rounded-full px-1.5 py-0.5 font-medium">Generated</span>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+        </div>{/* end left column */}
+
+        {/* Right: video tutorial card — stays in place */}
         <div
           onClick={() => setTutorialOpen(true)}
           className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
@@ -317,7 +383,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
               <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
             </div>
             <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
-            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 3</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 4</div>
           </div>
           <div className="bg-background px-3 py-2 flex items-center justify-between">
             <div>
@@ -328,68 +394,10 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
           </div>
         </div>
 
-      </div>{/* end mode tabs + video row */}
+      </div>{/* end two-column row */}
 
       {mode === "demand" && (
         <>
-          {/* Title row */}
-          <div className="space-y-2">
-            <h2 className="text-sm flex flex-wrap items-center gap-2">
-              <Mail className="h-4 w-4 text-primary shrink-0" />
-              <span className="font-bold">Demand Letter Generator</span>
-              <span className="font-normal text-muted-foreground">— Generate a professional pre-litigation demand letter using your case details.</span>
-            </h2>
-            {text.trim() && (
-              <Button onClick={downloadPdf} disabled={isDownloading} className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
-                {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PDF
-              </Button>
-            )}
-          </div>
-          {!hasRequiredInfo && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-              <div><p className="font-semibold text-amber-800 text-sm">Complete Intake First</p><p className="text-amber-700 text-sm mt-0.5">Fill in your name, the defendant's name, and claim amount in the Intake tab.</p></div>
-            </div>
-          )}
-          <div>
-            <p className="text-sm font-semibold mb-3">Choose a tone — you can generate all three versions</p>
-            <div className="flex items-stretch gap-0 p-1.5 bg-muted rounded-xl">
-              {TONE_META.map(({ value, label, description, icon }, idx) => {
-                const active = tone === value;
-                const generated = !!letters[value];
-                return (
-                  <div key={value} className="flex items-stretch flex-1 min-w-0">
-                    {idx > 0 && (
-                      <div className={["h-auto w-0.5 shrink-0 rounded-full mx-1 self-stretch", generated || active ? "bg-[#14b8a6]" : "bg-gray-300"].join(" ")} />
-                    )}
-                    <button type="button" onClick={() => handleToneChange(value)}
-                      className={[
-                        "flex-1 flex flex-col items-center text-center gap-1.5 px-2 py-2.5 rounded-lg transition-all relative",
-                        active
-                          ? "bg-[#14b8a6] text-white border-2 border-black shadow-md"
-                          : generated
-                          ? "bg-background border-2 border-[#14b8a6] text-[#0d6b5e] hover:bg-white"
-                          : "bg-background/60 border-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-background",
-                      ].join(" ")}>
-                      <span className={[
-                        "inline-flex items-center justify-center w-5 h-5 rounded-full shrink-0 transition-all",
-                        active    ? "bg-white text-[#14b8a6]" :
-                        generated ? "bg-[#14b8a6] text-white" :
-                                    "bg-gray-200 text-gray-500",
-                      ].join(" ")}>
-                        {generated && !active ? <CheckCircle2 className="h-3 w-3" /> : icon}
-                      </span>
-                      <span className={["text-xs leading-snug", active ? "font-bold" : "font-semibold"].join(" ")}>{label}</span>
-                      <span className={["text-[10px] leading-snug hidden sm:block", active ? "text-white/90" : "text-muted-foreground"].join(" ")}>{description}</span>
-                      {generated && active && (
-                        <span className="text-[10px] bg-white/20 rounded-full px-1.5 py-0.5 font-medium">Generated</span>
-                      )}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
           <Button onClick={generate} disabled={isGenerating || !hasRequiredInfo} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-5" size="lg">
             {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin" />Generating letter…</> : <><Mail className="h-4 w-4" />{letters[tone] ? "Regenerate Letter" : "Generate Letter"} — {TONE_META.find(t => t.value === tone)?.label}</>}
           </Button>
