@@ -90,41 +90,36 @@ export function WorkspaceLayout({
                       </span>
                     )}
 
-                    {/* Step button */}
+                    {/* Step button — border-2 on all states keeps sizing identical */}
                     <button
                       onClick={() => onStepClick(step.n)}
                       className={[
-                        "flex items-center gap-2 flex-1 min-w-0 px-2 md:px-3 rounded-lg transition-all text-left",
+                        "flex items-center gap-1.5 flex-1 min-w-0 px-1.5 md:px-2 py-2 rounded-lg transition-all text-left border-2",
                         isActive
-                          ? "bg-[#14b8a6] text-white border-2 border-black shadow-md py-2.5"
+                          ? "bg-[#14b8a6] text-white border-black shadow-md"
                           : isDone
-                          ? "text-[#0d6b5e] hover:bg-white/60 py-2"
-                          : "text-gray-500 hover:text-gray-700 hover:bg-white/60 py-2",
+                          ? "border-transparent text-[#0d6b5e] hover:bg-white/60"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60",
                       ].join(" ")}
                     >
-                      {/* Circle */}
+                      {/* Circle — uniform w-7 h-7 across all states */}
                       <span
                         className={[
-                          "inline-flex items-center justify-center rounded-full font-bold shrink-0 transition-all",
+                          "inline-flex items-center justify-center rounded-full text-[11px] font-bold shrink-0",
                           isActive
-                            ? "w-8 h-8 md:w-9 md:h-9 bg-white text-[#14b8a6] text-sm md:text-base"
+                            ? "w-7 h-7 bg-white text-[#14b8a6]"
                             : isDone
-                            ? "w-7 h-7 md:w-8 md:h-8 bg-[#14b8a6] text-white text-xs md:text-sm"
-                            : "w-7 h-7 md:w-8 md:h-8 bg-gray-200 text-gray-500 text-xs md:text-sm",
+                            ? "w-7 h-7 bg-[#14b8a6] text-white"
+                            : "w-7 h-7 bg-gray-200 text-gray-500",
                         ].join(" ")}
                       >
                         {step.n}
                       </span>
 
-                      {/* Label */}
-                      <div className="hidden sm:flex flex-col items-start min-w-0">
-                        {Icon && <Icon className={`h-3 w-3 mb-0.5 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
-                        <span
-                          className={[
-                            "text-[11px] md:text-xs leading-snug whitespace-pre-line font-semibold",
-                            isActive ? "font-bold" : "",
-                          ].join(" ")}
-                        >
+                      {/* Label — overflow-hidden prevents text spilling past border */}
+                      <div className="hidden sm:flex flex-col items-start min-w-0 overflow-hidden">
+                        {Icon && <Icon className={`h-2.5 w-2.5 mb-0.5 shrink-0 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
+                        <span className="text-[10px] font-semibold leading-tight whitespace-pre-line break-words w-full">
                           {step.label}
                         </span>
                       </div>
