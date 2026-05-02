@@ -11,7 +11,7 @@ import {
   getGetCaseQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle } from "lucide-react";
+import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle, Play, BookOpen, X } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -113,6 +113,7 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
   const { getToken } = useAuth();
 
   const [activeTab, setActiveTab] = useState<"checklist" | "uploads">("checklist");
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const [checkedItems, setCheckedItems] = useState<Set<string>>(
     () => new Set(evidenceChecklist.filter(i => i.checked).map(i => i.id))
@@ -184,9 +185,14 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
   const checklistCount = evidenceChecklist.length;
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-4 md:p-6">
+      <div className="flex gap-4 items-start">
+
+        {/* Left: all tab content */}
+        <div className="flex-1 min-w-0 space-y-4">
+
       {/* Sub-tabs + Upload button — same row */}
-      <div className="flex items-center gap-6 mb-6">
+      <div className="flex items-center gap-6">
         <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.docx" onChange={handleUpload} />
         <button
           type="button"
@@ -355,6 +361,70 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
           </div>
         </div>
       )}
+
+        </div>{/* end left column */}
+
+        {/* Right: video tutorial card */}
+        <div
+          onClick={() => setTutorialOpen(true)}
+          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          title="Watch the tutorial for this step"
+        >
+          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+              <BookOpen className="w-16 h-16 text-white" />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+              </div>
+              <span className="text-white/80 text-[11px] font-medium">Watch Tutorial</span>
+            </div>
+          </div>
+          <div className="bg-[#14b8a6] px-3 py-2">
+            <p className="text-white text-[11px] font-bold leading-tight">Step 3 — Upload Evidence</p>
+            <p className="text-white/70 text-[10px] mt-0.5">Small Claims Genie</p>
+          </div>
+        </div>
+
+      </div>{/* end flex row */}
+
+      {/* ── Tutorial modal ── */}
+      {tutorialOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setTutorialOpen(false)}>
+          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl w-full max-w-[840px] mx-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Step 3 Tutorial — Upload My Evidence</p>
+                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <iframe
+              width="840"
+              height="472"
+              src="https://app.heygen.com/embeds/f8abfad324e84757af33eadebc3f85dd"
+              title="Step 3 Tutorial — Upload My Evidence"
+              frameBorder="0"
+              allow="encrypted-media; fullscreen;"
+              allowFullScreen
+              className="block w-full"
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
