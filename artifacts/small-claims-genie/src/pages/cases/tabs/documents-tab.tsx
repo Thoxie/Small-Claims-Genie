@@ -185,7 +185,7 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
   const checklistCount = evidenceChecklist.length;
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="px-4 pt-3 pb-4 md:px-6 md:pb-6">
       <div className="flex gap-4 items-start">
 
         {/* Left: all tab content */}

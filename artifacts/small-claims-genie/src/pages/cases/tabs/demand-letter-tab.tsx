@@ -274,7 +274,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
     : `${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(settleAmount)}`;
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="px-4 pt-3 pb-4 space-y-3">
 
       {/* ── Mode tabs + title + tone selector (left) | video card (right, stays fixed) ── */}
       <div className="flex gap-4 items-start">

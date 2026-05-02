@@ -168,7 +168,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
       setActiveTab={setActiveTab}
       onStepClick={handleStepClick}
     >
-      <div className="container mx-auto px-4 pt-1 pb-6 max-w-6xl flex flex-col gap-3">
+      <div className="container mx-auto px-4 pt-0 pb-6 max-w-6xl flex flex-col gap-3">
 
         {/* ── Readiness card — only shown on the Prep tab ── */}
         {activeTab === "prep" && <div className={`bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>

@@ -162,7 +162,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="px-4 pt-3 pb-4 space-y-4">
       <div className="flex gap-4 items-start">
         <div className="flex-1 min-w-0 space-y-4">
 

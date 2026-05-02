@@ -976,7 +976,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="p-4 md:p-6 space-y-8">
+    <div className="px-4 pt-3 pb-4 md:px-6 md:pb-6 space-y-8">
 
       {isDraftMode && <DraftModeBanner />}
 

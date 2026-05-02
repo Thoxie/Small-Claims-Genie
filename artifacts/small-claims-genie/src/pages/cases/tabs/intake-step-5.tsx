@@ -47,7 +47,7 @@ export function IntakeStep5({ initialData, onNext, onBack, saving, onCheckCase, 
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
   return (
-    <div className="space-y-5 text-sm">
+    <div className="px-4 pt-3 pb-4 space-y-5 text-sm">
       <div className="flex gap-4 items-start">
         <div className="flex-1 min-w-0">
           <Form {...form}>

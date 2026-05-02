@@ -233,7 +233,7 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const missingCount = deadlines.filter(d => d.status === "missing").length;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-6 pt-3 pb-6 space-y-6">
       <HearingInfoCard caseId={caseId} initialData={currentCase} />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>

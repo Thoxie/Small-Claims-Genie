@@ -144,7 +144,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   };
 
   return (
-    <div className="space-y-5">
+    <div className="px-4 pt-3 pb-4 space-y-5">
       <div className="flex gap-4 items-start">
         <div className="flex-1 min-w-0">
           <Form {...form}>
