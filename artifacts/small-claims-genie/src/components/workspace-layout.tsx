@@ -44,37 +44,36 @@ export function WorkspaceLayout({
 
       {/* ── Workspace nav header ── */}
       <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center h-[82px] px-3 md:px-5 gap-2">
+        <div className="flex items-center h-[92px] px-3 md:px-4 gap-2 md:gap-3">
 
-          {/* Logo + Exit */}
-          <div className="flex items-center gap-1 shrink-0">
-            <a
-              href="/"
-              onClick={(e) => { e.stopPropagation(); window.location.href = '/'; }}
-              className="flex items-center cursor-pointer"
-              title="Exit to home"
-            >
-              <img
-                src={logoPath}
-                alt="Small Claims Genie"
-                className="h-[56px] md:h-[66px] w-auto pointer-events-none"
-              />
-            </a>
-            {/* Small exit button */}
-            <a
-              href="https://smallclaimsgenie.com/"
-              onClick={(e) => { e.stopPropagation(); window.location.href = 'https://smallclaimsgenie.com/'; }}
-              title="Exit case"
-              className="hidden md:flex flex-col items-center text-[9px] font-semibold text-gray-400 hover:text-red-500 transition-colors ml-1 gap-0.5"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Exit</span>
-            </a>
-          </div>
+          {/* Logo */}
+          <a
+            href="/"
+            onClick={(e) => { e.stopPropagation(); window.location.href = '/'; }}
+            className="flex items-center shrink-0 cursor-pointer"
+            title="Exit to home"
+          >
+            <img
+              src={logoPath}
+              alt="Small Claims Genie"
+              className="h-[58px] md:h-[68px] w-auto pointer-events-none"
+            />
+          </a>
+
+          {/* Exit button — visible with icon + label */}
+          <a
+            href="https://smallclaimsgenie.com/"
+            onClick={(e) => { e.stopPropagation(); window.location.href = 'https://smallclaimsgenie.com/'; }}
+            title="Exit case and return to home"
+            className="shrink-0 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all"
+          >
+            <LogOut className="h-4 w-4 md:h-[18px] md:w-[18px]" />
+            <span className="text-[10px] md:text-[11px] font-semibold leading-none">Exit</span>
+          </a>
 
           {/* ── Numbered stepper ── */}
-          <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar flex items-center justify-center">
-            <div className="flex items-center">
+          <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
+            <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-1.5 min-w-max md:min-w-0">
               {WORKSPACE_STEPS.map((step, idx) => {
                 const isActive = step.n === currentOuterStep;
                 const isDone = completedSteps
@@ -86,7 +85,7 @@ export function WorkspaceLayout({
                   <Fragment key={step.n}>
                     {/* Dash separator */}
                     {idx > 0 && (
-                      <span className={`text-sm font-bold mx-1 md:mx-1.5 shrink-0 ${isDone ? "text-[#14b8a6]" : "text-gray-300"}`}>
+                      <span className={`text-xs font-bold mx-0.5 md:mx-1 shrink-0 select-none ${isDone ? "text-[#14b8a6]" : "text-gray-300"}`}>
                         —
                       </span>
                     )}
@@ -95,37 +94,35 @@ export function WorkspaceLayout({
                     <button
                       onClick={() => onStepClick(step.n)}
                       className={[
-                        "flex items-center gap-1.5 px-1.5 md:px-2.5 py-1.5 rounded-xl transition-all shrink-0",
+                        "flex items-center gap-2 flex-1 min-w-0 px-2 md:px-3 rounded-lg transition-all text-left",
                         isActive
-                          ? "border-2 border-[#0d4f3c] bg-white shadow-sm"
-                          : "border-2 border-transparent hover:bg-gray-50",
+                          ? "bg-[#14b8a6] text-white border-2 border-black shadow-md py-2.5"
+                          : isDone
+                          ? "text-[#0d6b5e] hover:bg-white/60 py-2"
+                          : "text-gray-500 hover:text-gray-700 hover:bg-white/60 py-2",
                       ].join(" ")}
                     >
                       {/* Circle */}
-                      <div
+                      <span
                         className={[
-                          "flex items-center justify-center rounded-full font-black text-[11px] shrink-0",
+                          "inline-flex items-center justify-center rounded-full font-bold shrink-0 transition-all",
                           isActive
-                            ? "w-7 h-7 bg-[#0d9488] text-white"
+                            ? "w-8 h-8 md:w-9 md:h-9 bg-white text-[#14b8a6] text-sm md:text-base"
                             : isDone
-                            ? "w-6 h-6 bg-[#14b8a6] text-white"
-                            : "w-6 h-6 border-2 border-gray-300 text-gray-400 bg-white",
+                            ? "w-7 h-7 md:w-8 md:h-8 bg-[#14b8a6] text-white text-xs md:text-sm"
+                            : "w-7 h-7 md:w-8 md:h-8 bg-gray-200 text-gray-500 text-xs md:text-sm",
                         ].join(" ")}
                       >
-                        {isDone ? "✓" : step.n}
-                      </div>
+                        {step.n}
+                      </span>
 
                       {/* Label */}
-                      <div className="hidden sm:flex flex-col items-start">
-                        {Icon && <Icon className="h-2.5 w-2.5 text-gray-400 mb-0.5" />}
+                      <div className="hidden sm:flex flex-col items-start min-w-0">
+                        {Icon && <Icon className={`h-3 w-3 mb-0.5 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
                         <span
                           className={[
-                            "text-[10px] font-semibold leading-tight whitespace-pre-line text-left",
-                            isActive
-                              ? "text-[#0d4f3c]"
-                              : isDone
-                              ? "text-[#0d9488]"
-                              : "text-gray-400",
+                            "text-[11px] md:text-xs leading-snug whitespace-pre-line font-semibold",
+                            isActive ? "font-bold" : "",
                           ].join(" ")}
                         >
                           {step.label}
@@ -139,7 +136,7 @@ export function WorkspaceLayout({
           </div>
 
           {/* User avatar */}
-          <div className="flex items-center shrink-0 pl-1 md:pl-2">
+          <div className="flex items-center shrink-0">
             <UserButton afterSignOutUrl="/sign-in" />
           </div>
 
