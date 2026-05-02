@@ -2471,41 +2471,47 @@ router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
     const v = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
     const xm = (cx: number, cy: number) => xmark(page, cx, cy + LIFT, 5);
 
+    // SC-112A has NO plaintiff/defendant header — only a Case Number box top-right.
+    // Case name goes in the open left area of the header; case number inside the box.
     const sc112aCaseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-    v(sc112aCaseName, 72, 756);
-    v(d.caseNumber, 425, 756);
-    if (d.courthouseName) v(d.courthouseName, 72, 742);
-    if (d.courthouseAddress) v(d.courthouseAddress, 72, 730);
+    v(sc112aCaseName, 72, 762, 8);   // left of Case Number box (title-bar level)
+    v(d.caseNumber,  432, 752);       // inside the Case Number box writing area
 
     // Item 1 — Server info
-    v(b.serverName, 72, 696);
-    v(b.serverPhone, 448, 696);
-    v(b.serverAddress, 180, 679);
-    v(b.serverCity, 72, 663); v(b.serverState || "CA", 390, 663); v(b.serverZip, 445, 663);
+    // Text must start AFTER each printed label, not at the label itself.
+    v(b.serverName,          103, 696);  // after "Name:"
+    v(b.serverPhone,         422, 696);  // after "Phone:"
+    v(b.serverAddress,       218, 681);  // after "Street or mailing address:"
+    v(b.serverCity,          106, 664);  // after "City:"
+    v(b.serverState || "CA", 390, 664);  // after "State:"
+    v(b.serverZip,           454, 664);  // after "Zip Code:"
 
     // Item 2 — document served checkboxes
+    // y values re-calibrated from 2550×3300 PNG: y_pdf=(3300−y_png)×0.24
     const docMap: Record<string, [number, number]> = {
-      sc105: [53, 627], sc109: [53, 612], sc114: [53, 596],
-      sc133: [53, 581], sc150: [53, 565], sc221: [53, 549], other: [53, 534],
+      sc105: [52, 624], sc109: [52, 608], sc114: [52, 592],
+      sc133: [52, 576], sc150: [52, 560], sc221: [52, 544], other: [52, 528],
     };
     const docSel = docMap[b.documentServed ?? ""];
     if (docSel) xm(docSel[0], docSel[1]);
-    if (b.documentServed === "other" && b.documentServedOther) v(b.documentServedOther, 120, 534);
+    if (b.documentServed === "other" && b.documentServedOther) v(b.documentServedOther, 122, 528);
 
-    // Item 3 — parties served table
-    const rowYs = [399, 376, 354, 331, 309];
+    // Item 3 — parties served table (Name of party served | Mailing address on envelope)
+    // Row y values re-calibrated; name column x≈75, address column x≈262
+    const rowYs = [381, 360, 338, 317, 295];
     parties.slice(0, 5).forEach((party, i) => {
-      v(party.name, 72, rowYs[i]);
-      v(party.address, 265, rowYs[i]);
+      v(party.name,    75, rowYs[i]);
+      v(party.address, 262, rowYs[i]);
     });
 
-    // Mailing date / city
-    v(b.mailingDate, 187, 240);
-    v(b.mailingCity, 453, 240);
+    // Item c — "On (date of mailing): [DATE], … at" is LINE 1
+    //           "(city and state of mailing): [CITY]" is LINE 2 (separate underline)
+    v(b.mailingDate, 187, 237);   // line 1 — after "On (date of mailing):"
+    v(b.mailingCity, 229, 222);   // line 2 — after "(city and state of mailing):"
 
-    // Date + name
-    v(b.signDate || today(), 72, 179);
-    v(b.serverName, 45, 155);
+    // Date + server's printed name (signature section)
+    v(b.signDate || today(), 100, 174);
+    v(b.serverName, 45, 150);
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
