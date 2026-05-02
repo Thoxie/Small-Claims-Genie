@@ -683,7 +683,7 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
                   <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-800">Step 3 Tutorial — Demand Letter Generator</p>
+                  <p className="text-sm font-bold text-gray-800">Step 4 Tutorial — Demand Letter Generator</p>
                   <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
                 </div>
               </div>
@@ -697,10 +697,10 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
             <iframe
               width="800"
               height="450"
-              src="https://www.youtube.com/embed/VDbkctbNH4Y?autoplay=1"
-              title="Step 3 Tutorial — Demand Letter"
+              src="https://app.heygen.com/embeds/1c740fd241094b05a8a42168e14df5f5"
+              title="HeyGen video player"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="encrypted-media; fullscreen;"
               allowFullScreen
               className="block"
             />
