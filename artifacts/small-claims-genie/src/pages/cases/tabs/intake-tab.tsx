@@ -131,12 +131,12 @@ export function IntakeTab({
   caseId,
   initialData,
   forceStep,
-  onStepChange,
+  onStepChange: _onStepChange,
 }: {
   caseId: number;
   initialData: ExtendedCase;
   forceStep?: 1 | 2;
-  onStepChange?: (step: number) => void;
+  onStepChange?: (step: number) => void; // reserved for future progress tracking
 }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [, navigate] = useLocation();

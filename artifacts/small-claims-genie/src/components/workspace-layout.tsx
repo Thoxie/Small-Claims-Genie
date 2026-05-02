@@ -32,7 +32,7 @@ interface WorkspaceLayoutProps {
 
 export function WorkspaceLayout({
   children,
-  activeTab,
+  activeTab: _activeTab,
   currentOuterStep,
   setActiveTab: _setActiveTab,
   onStepClick,
