@@ -64,23 +64,54 @@ function buildLetterContext(
   parts.push(`=== CASE FACTS ===`);
   parts.push(`Case Title: ${caseRecord.title}`);
   if (caseRecord.claimType)     parts.push(`Claim Type: ${caseRecord.claimType}`);
-  if (caseRecord.countyId)      parts.push(`Filing County: ${caseRecord.countyId} County`);
+
+  // Court / filing location — prefer human-readable courthouse name over raw county ID
+  if (caseRecord.courthouseName) {
+    parts.push(`Filing Court: ${caseRecord.courthouseName}`);
+  } else if (caseRecord.countyId) {
+    parts.push(`Filing County: ${caseRecord.countyId} County`);
+  }
+  if (caseRecord.courthouseAddress && caseRecord.courthouseCity) {
+    parts.push(`Court Address: ${caseRecord.courthouseAddress}, ${caseRecord.courthouseCity}, CA ${caseRecord.courthouseZip ?? ""}`);
+  }
+  if (caseRecord.caseNumber) parts.push(`Case Number: ${caseRecord.caseNumber}`);
+
   if (caseRecord.claimAmount) {
     const amt = `$${Number(caseRecord.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     parts.push(`Amount Sought (AUTHORITATIVE — use this exact figure as the demand amount everywhere it appears in the letter): ${amt}`);
   }
-  if (caseRecord.plaintiffName) parts.push(`Plaintiff (Sender): ${caseRecord.plaintiffName}`);
+
+  // ── Plaintiff ──
+  if (caseRecord.plaintiffName) {
+    const isBiz = caseRecord.plaintiffIsBusiness;
+    parts.push(`Plaintiff (Sender): ${caseRecord.plaintiffName}${isBiz ? " (Business/Organization)" : ""}`);
+    if (isBiz && caseRecord.secondPlaintiffName) parts.push(`Plaintiff Individual Representative: ${caseRecord.secondPlaintiffName}${caseRecord.plaintiffTitle ? `, ${caseRecord.plaintiffTitle}` : ""}`);
+  }
   if (caseRecord.plaintiffAddress && caseRecord.plaintiffCity) {
     parts.push(`Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`);
   }
   if (caseRecord.plaintiffEmail)  parts.push(`Plaintiff Email: ${caseRecord.plaintiffEmail}`);
   if (caseRecord.plaintiffPhone)  parts.push(`Plaintiff Phone: ${caseRecord.plaintiffPhone}`);
-  if (caseRecord.defendantName)   parts.push(`Defendant (Recipient): ${caseRecord.defendantName}`);
+
+  // ── Defendant ──
+  if (caseRecord.defendantName) {
+    const isBizDef = caseRecord.defendantIsBusinessOrEntity;
+    parts.push(`Defendant (Recipient): ${caseRecord.defendantName}${isBizDef ? " (Business/Entity)" : ""}`);
+    if (isBizDef && caseRecord.defendantAgentName) {
+      parts.push(`Defendant Registered Agent: ${caseRecord.defendantAgentName}${caseRecord.defendantAgentTitle ? `, ${caseRecord.defendantAgentTitle}` : ""}`);
+      if (caseRecord.defendantAgentStreet && caseRecord.defendantAgentCity) {
+        parts.push(`Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? "CA"} ${caseRecord.defendantAgentZip ?? ""}`);
+      }
+    }
+  }
   if (caseRecord.defendantAddress && caseRecord.defendantCity) {
     parts.push(`Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`);
   }
-  if (caseRecord.defendantIsBusinessOrEntity) parts.push(`Defendant is a business/entity`);
+  if (caseRecord.defendantPhone) parts.push(`Defendant Phone: ${caseRecord.defendantPhone}`);
+
+  // ── Claim details ──
   if (caseRecord.incidentDate)    parts.push(`Incident Date: ${caseRecord.incidentDate}`);
+  if (caseRecord.venueBasis)      parts.push(`Venue Basis: ${caseRecord.venueBasis}`);
   if (caseRecord.claimDescription) {
     const cleanedDesc = caseRecord.claimDescription
       .replace(/mock\s+small\s+claims\s+case\s+summary/gi, "")
@@ -91,9 +122,22 @@ function buildLetterContext(
     if (cleanedDesc) parts.push(`\nClaim Description:\n${cleanedDesc}`);
   }
   if (caseRecord.howAmountCalculated) parts.push(`How Amount Calculated: ${caseRecord.howAmountCalculated}`);
+
+  // ── Prior demand ──
   if (caseRecord.priorDemandMade !== null) {
     parts.push(`Prior Demand Made: ${caseRecord.priorDemandMade ? "Yes" : "No"}`);
-    if (caseRecord.priorDemandDescription) parts.push(`Prior Demand Details: ${caseRecord.priorDemandDescription}`);
+    if (caseRecord.priorDemandMade && caseRecord.priorDemandDescription) {
+      parts.push(`Prior Demand Details: ${caseRecord.priorDemandDescription}`);
+    }
+    if (!caseRecord.priorDemandMade && caseRecord.priorDemandWhyNot) {
+      parts.push(`Why No Prior Demand: ${caseRecord.priorDemandWhyNot}`);
+    }
+  }
+
+  // ── Hearing ──
+  if (caseRecord.hearingDate) {
+    const hDate = new Date(caseRecord.hearingDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    parts.push(`Hearing Date: ${hDate}${caseRecord.hearingTime ? ` at ${caseRecord.hearingTime}` : ""}${caseRecord.hearingCourtroom ? `, ${caseRecord.hearingCourtroom}` : ""}`);
   }
 
   if (docs.length > 0) {
@@ -693,27 +737,53 @@ router.post("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
 
   const parts: string[] = [
     `=== CASE FACTS ===`,
-    `Plaintiff (Sender): ${caseRecord.plaintiffName ?? "[Plaintiff]"}`,
+    // Plaintiff
+    `Plaintiff (Sender): ${caseRecord.plaintiffName ?? "[Plaintiff]"}${caseRecord.plaintiffIsBusiness ? " (Business/Organization)" : ""}`,
+    caseRecord.plaintiffIsBusiness && caseRecord.secondPlaintiffName
+      ? `Plaintiff Representative: ${caseRecord.secondPlaintiffName}${caseRecord.plaintiffTitle ? `, ${caseRecord.plaintiffTitle}` : ""}`
+      : "",
     caseRecord.plaintiffAddress && caseRecord.plaintiffCity
       ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`
       : "",
     caseRecord.plaintiffEmail ? `Plaintiff Email: ${caseRecord.plaintiffEmail}` : "",
     caseRecord.plaintiffPhone ? `Plaintiff Phone: ${caseRecord.plaintiffPhone}` : "",
-    `Defendant (Recipient): ${caseRecord.defendantName ?? "[Defendant]"}`,
+    // Defendant
+    `Defendant (Recipient): ${caseRecord.defendantName ?? "[Defendant]"}${caseRecord.defendantIsBusinessOrEntity ? " (Business/Entity)" : ""}`,
+    caseRecord.defendantIsBusinessOrEntity && caseRecord.defendantAgentName
+      ? `Defendant Registered Agent: ${caseRecord.defendantAgentName}${caseRecord.defendantAgentTitle ? `, ${caseRecord.defendantAgentTitle}` : ""}`
+      : "",
+    caseRecord.defendantIsBusinessOrEntity && caseRecord.defendantAgentStreet && caseRecord.defendantAgentCity
+      ? `Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? "CA"} ${caseRecord.defendantAgentZip ?? ""}`
+      : "",
     caseRecord.defendantAddress && caseRecord.defendantCity
       ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`
       : "",
+    caseRecord.defendantPhone ? `Defendant Phone: ${caseRecord.defendantPhone}` : "",
+    // Court
+    caseRecord.courthouseName
+      ? `Filing Court: ${caseRecord.courthouseName}`
+      : caseRecord.countyId ? `Filing County: ${caseRecord.countyId} County` : "",
+    caseRecord.caseNumber ? `Case Number: ${caseRecord.caseNumber}` : "",
+    // Claim
     caseRecord.claimType ? `Claim Type: ${caseRecord.claimType}` : "",
     caseRecord.incidentDate ? `Incident Date: ${caseRecord.incidentDate}` : "",
+    caseRecord.venueBasis ? `Venue Basis: ${caseRecord.venueBasis}` : "",
+    // Amounts
     `Original Claim Amount: ${origAmt}`,
     `Settlement Amount Being Offered: ${settleAmt}`,
     installmentText,
     `Response Deadline: ${deadlineStr}`,
+    // Hearing
     caseRecord.hearingDate
-      ? `Hearing Date (already scheduled): ${new Date(caseRecord.hearingDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`
+      ? `Hearing Date (already scheduled): ${new Date(caseRecord.hearingDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}${caseRecord.hearingTime ? ` at ${caseRecord.hearingTime}` : ""}`
       : "Hearing Date: Not yet scheduled",
-    caseRecord.priorDemandMade ? `Prior Demand: Yes — a written demand was previously sent and not resolved.` : "",
+    // Prior demand
+    caseRecord.priorDemandMade
+      ? `Prior Demand: Yes — a written demand was previously sent and not resolved.${caseRecord.priorDemandDescription ? ` Details: ${caseRecord.priorDemandDescription}` : ""}`
+      : "",
+    // Claim narrative
     caseRecord.claimDescription ? `\nCase Description:\n${caseRecord.claimDescription}` : "",
+    caseRecord.howAmountCalculated ? `\nHow Amount Was Calculated:\n${caseRecord.howAmountCalculated}` : "",
     `\nToday's Date: ${todayStr}`,
   ].filter(Boolean);
 
