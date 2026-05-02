@@ -119,13 +119,13 @@ function CollectionCard() {
       {/* Features */}
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
         {[
-          "Writ of Execution (EJ-130) — the master enforcement order to seize assets.",
-          "Wage garnishment forms (WG-001) — take directly from the debtor's paycheck.",
-          "Bank levy package (EJ-150, EJ-155) — freeze and collect from bank accounts.",
-          "Abstract of Judgment (EJ-001) — place a lien on any real property they own.",
-          "Judgment renewal (EJ-190) — extend your judgment before the 10-year limit.",
+          "Writ of Execution — the court order that authorizes the sheriff to seize the debtor's assets on your behalf.",
+          "Wage Garnishment — directs the debtor's employer to withhold a portion of each paycheck and pay it to you.",
+          "Bank Levy — freezes funds in the debtor's bank account and transfers the balance to satisfy your judgment.",
+          "Abstract of Judgment — creates a legal lien on any real property the debtor owns in California.",
+          "Judgment Renewal — extends the life of your judgment so you never lose your right to collect.",
           "AI enforcement strategy — tells you which method to use first based on what you know about the debtor.",
-          "Step-by-step collection workflow — no guesswork on what to file next.",
+          "Step-by-step collection workflow — no guesswork on what to file next or where to go.",
           "Debtor asset identification guide — know where to look before you levy.",
         ].map((f) => (
           <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
