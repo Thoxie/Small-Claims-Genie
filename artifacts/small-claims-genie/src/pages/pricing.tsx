@@ -116,12 +116,6 @@ function CollectionCard() {
         </div>
       </div>
 
-      {/* Value box */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-[8px_12px] mb-4">
-        <strong className="block text-[13px] text-amber-700 mb-[2px] leading-[1.25]">Collection attorneys charge 33–50% of what they recover.</strong>
-        <span className="block text-[11px] text-amber-600 leading-[1.3]">For a $5,000 judgment, that's $1,650–$2,500. You pay a flat fee and keep everything.</span>
-      </div>
-
       {/* Features */}
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
         {[
