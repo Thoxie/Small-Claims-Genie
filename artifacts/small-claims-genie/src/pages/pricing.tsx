@@ -90,7 +90,7 @@ function GeniePlusCard() {
     <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.12)] p-[18px_20px] flex flex-col relative border-[3px] border-[#6366f1]">
 
       <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#6366f1] text-white text-[11px] font-black px-3 py-1 rounded-full whitespace-nowrap tracking-wide shadow">
-        MOST SUPPORT
+        ADD-ON PARALEGAL SUPPORT
       </div>
 
       {/* Plan name + tagline — same min-height as PricingCard */}
