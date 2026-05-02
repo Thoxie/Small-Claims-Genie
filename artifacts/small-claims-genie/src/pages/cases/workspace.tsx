@@ -59,18 +59,26 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useHashTab();
 
-  // Track which intake sub-step (1 or 2) is requested from the outer nav.
-  // Seed from localStorage so the outer stepper matches the inner step on refresh.
-  const [intakeSubStep, setIntakeSubStep] = useState<1 | 2 | undefined>(() => {
-    if (!caseId) return undefined;
+  // forceStep: signal from the outer nav telling IntakeTab to jump to step 1 or 2.
+  // Never seeded from localStorage — only set by outer-nav clicks.
+  const [intakeSubStep, setIntakeSubStep] = useState<1 | 2 | undefined>(undefined);
+  // Nonce increments on every outer-nav click so IntakeTab always re-fires its
+  // effect even when forceStep value hasn't changed (e.g., clicking step 2 twice).
+  const [forceStepNonce, setForceStepNonce] = useState(0);
+
+  // Tracks the *actual* inner step reported by IntakeTab via onStepChange.
+  // Seeded from localStorage so the outer highlight is correct on refresh
+  // without forcing IntakeTab to a different step than what it naturally restores.
+  const [trackedInnerStep, setTrackedInnerStep] = useState<number>(() => {
+    if (!caseId) return 1;
     const stored = localStorage.getItem(`intake-step-${caseId}`);
     const step = stored ? parseInt(stored) : NaN;
-    return step === 2 ? 2 : undefined;
+    return step >= 1 && step <= 7 ? step : 1;
   });
 
   // Compute which outer step number is currently active
   const currentOuterStep = (() => {
-    if (activeTab === "intake") return intakeSubStep === 2 ? 2 : 1;
+    if (activeTab === "intake") return trackedInnerStep >= 2 ? 2 : 1;
     const entry = Object.entries(STEP_MAP).find(([, v]) => v.tab === activeTab && !v.intakeStep);
     return entry ? parseInt(entry[0]) : 1;
   })();
@@ -81,6 +89,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     if (!mapping) return;
     if (mapping.intakeStep) {
       setIntakeSubStep(mapping.intakeStep);
+      setTrackedInnerStep(mapping.intakeStep);
+      setForceStepNonce(n => n + 1);
       setActiveTab("intake");
     } else {
       setIntakeSubStep(undefined);
@@ -238,9 +248,9 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               caseId={caseId}
               initialData={extCase}
               forceStep={intakeSubStep}
+              forceStepNonce={forceStepNonce}
               onStepChange={(step) => {
-                if (step === 1 || step === 2) setIntakeSubStep(step as 1 | 2);
-                else setIntakeSubStep(undefined);
+                setTrackedInnerStep(step);
               }}
             />
           )}

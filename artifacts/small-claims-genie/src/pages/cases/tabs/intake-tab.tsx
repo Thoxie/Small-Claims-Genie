@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
 import {
@@ -131,11 +131,13 @@ export function IntakeTab({
   caseId,
   initialData,
   forceStep,
+  forceStepNonce,
   onStepChange,
 }: {
   caseId: number;
   initialData: ExtendedCase;
   forceStep?: 1 | 2;
+  forceStepNonce?: number;
   onStepChange?: (step: number) => void;
 }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
@@ -159,20 +161,14 @@ export function IntakeTab({
     onStepChange?.(step);
   };
 
-  // Jump to forced step when outer nav requests step 1 or 2
-  const prevForceStep = useRef<number | undefined>(undefined);
+  // Jump to forced step when outer nav requests step 1 or 2.
+  // forceStepNonce increments on every outer-nav click so this effect re-fires
+  // even when forceStep value is unchanged (e.g., clicking outer step 2 twice).
   useEffect(() => {
-    if (forceStep === undefined) {
-      // Outer nav released control — reset so next click always fires
-      prevForceStep.current = undefined;
-      return;
-    }
-    if (forceStep !== prevForceStep.current) {
-      prevForceStep.current = forceStep;
-      setActiveTab(forceStep); // writes localStorage + notifies workspace
-    }
-  // setActiveTab is stable (recreated each render but that's fine — forceStep drives this)
-  }, [forceStep]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (forceStep === undefined) return;
+    setActiveTab(forceStep); // writes localStorage + notifies workspace
+  // forceStepNonce is the real trigger; forceStep carries the destination.
+  }, [forceStep, forceStepNonce]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
