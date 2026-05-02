@@ -114,3 +114,9 @@ id = "L2DBGhjt4hy80o97G4ZDw"
 uri = "file://backups/scgenie_source_2026-04-29_1539.tar.gz"
 type = "unspecified"
 title = "Small Claims Genie — Full Source Backup (Apr 29, 2026)"
+
+[[outputs]]
+id = "-EazrlJq7pHTa9K1xVHRO"
+uri = "file://small-claims-genie-source.zip"
+type = "unspecified"
+title = "Small Claims Genie — Full Source Code"
