@@ -140,7 +140,7 @@ function GeniePlusCard() {
           className="flex items-center justify-center gap-2 w-full rounded-full bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[15px] font-black min-h-[56px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors no-underline"
         >
           <UserCheck className="w-4 h-4 flex-shrink-0" />
-          Get Paralegal Support
+          Add-On Paralegal Support
         </Link>
         <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
       </div>
