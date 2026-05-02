@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Wand2 } from "lucide-react";
+import { Wand2, Trophy } from "lucide-react";
 
 const CHECK = (
   <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 border-[#0d6b5e] text-[#0d6b5e] inline-flex items-center justify-center text-[11px] font-black mt-[2px]">
@@ -11,24 +11,38 @@ function PricingCard({
   plan,
   tagline,
   price,
+  priceSub,
   valueBold,
   valueSub,
   features,
   ctaLabel,
+  ctaHref,
+  badge,
+  highlight,
 }: {
   plan: string;
   tagline: string;
   price: string;
+  priceSub: string;
   valueBold: string;
   valueSub: string;
   features: string[];
   ctaLabel: string;
+  ctaHref: string;
+  badge?: string;
+  highlight?: boolean;
 }) {
   return (
-    <section className="bg-white border-[3px] border-[#14b8a6]/60 rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col">
+    <section className={`bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative ${highlight ? "border-[3px] border-[#14b8a6]" : "border-[3px] border-[#14b8a6]/60"}`}>
+
+      {badge && (
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#0d6b5e] text-white text-[11px] font-black px-3 py-1 rounded-full whitespace-nowrap tracking-wide shadow">
+          {badge}
+        </div>
+      )}
 
       {/* Plan name + tagline */}
-      <div className="pb-4">
+      <div className="pb-4 pt-1">
         <p className="text-xl font-black tracking-tight text-[#0d6b5e] mb-1.5 leading-tight">{plan}</p>
         <p className="text-[13px] text-[#5a6478] leading-[1.4]">{tagline}</p>
       </div>
@@ -36,7 +50,7 @@ function PricingCard({
       {/* Price */}
       <div className="pb-4 flex items-end gap-2">
         <span className="text-[32px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
-        <span className="text-[14px] font-extrabold pb-[3px] text-[#33405c]">/ month</span>
+        <span className="text-[14px] font-extrabold pb-[3px] text-[#33405c]">{priceSub}</span>
       </div>
 
       {/* Value box */}
@@ -55,16 +69,88 @@ function PricingCard({
         ))}
       </ul>
 
-      {/* CTA + cancel note */}
+      {/* CTA */}
       <div className="flex flex-col items-center gap-2">
         <Link
-          href="/cases/new"
+          href={ctaHref}
           className="flex items-center justify-center gap-2 w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4f] text-white text-[15px] font-black min-h-[56px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors no-underline"
         >
           <Wand2 className="w-4 h-4 flex-shrink-0" />
           {ctaLabel}
         </Link>
-        <p className="text-[12px] text-[#8a96a8] text-center">Cancel anytime. No contracts.</p>
+        <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
+      </div>
+
+    </section>
+  );
+}
+
+function CollectionCard() {
+  return (
+    <section className="bg-white border-[3px] border-amber-400 rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative">
+
+      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[11px] font-black px-3 py-1 rounded-full whitespace-nowrap tracking-wide shadow">
+        ADD-ON AFTER YOU WIN
+      </div>
+
+      {/* Plan name + tagline */}
+      <div className="pb-4 pt-1">
+        <div className="flex items-center gap-2 mb-1.5">
+          <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
+          <p className="text-xl font-black tracking-tight text-[#0d6b5e] leading-tight">Post-Judgment Collection</p>
+        </div>
+        <p className="text-[13px] text-[#5a6478] leading-[1.4]">
+          Won your case but the defendant still hasn't paid? This add-on gives you every tool California law provides to force collection.
+        </p>
+      </div>
+
+      {/* Tiered pricing */}
+      <div className="pb-4 grid grid-cols-2 gap-3">
+        <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[10px_12px] text-center">
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$89</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Judgments up to $5,000</span>
+        </div>
+        <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[10px_12px] text-center">
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Judgments $5,000 and above</span>
+        </div>
+      </div>
+
+      {/* Value box */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-[8px_12px] mb-4">
+        <strong className="block text-[13px] text-amber-700 mb-[2px] leading-[1.25]">Collection attorneys charge 33–50% of what they recover.</strong>
+        <span className="block text-[11px] text-amber-600 leading-[1.3]">For a $5,000 judgment, that's $1,650–$2,500. You pay a flat fee and keep everything.</span>
+      </div>
+
+      {/* Features */}
+      <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
+        {[
+          "Writ of Execution (EJ-130) — the master enforcement order to seize assets.",
+          "Wage garnishment forms (WG-001) — take directly from the debtor's paycheck.",
+          "Bank levy package (EJ-150, EJ-155) — freeze and collect from bank accounts.",
+          "Abstract of Judgment (EJ-001) — place a lien on any real property they own.",
+          "Judgment renewal (EJ-190) — extend your judgment before the 10-year limit.",
+          "AI enforcement strategy — tells you which method to use first based on what you know about the debtor.",
+          "Step-by-step collection workflow — no guesswork on what to file next.",
+          "Debtor asset identification guide — know where to look before you levy.",
+        ].map((f) => (
+          <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
+            <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 border-amber-500 text-amber-500 inline-flex items-center justify-center text-[11px] font-black mt-[2px]">✓</span>
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* CTA */}
+      <div className="flex flex-col items-center gap-2">
+        <Link
+          href="/cases/new"
+          className="flex items-center justify-center gap-2 w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white text-[15px] font-black min-h-[56px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors no-underline"
+        >
+          <Trophy className="w-4 h-4 flex-shrink-0" />
+          Add Collection Tools
+        </Link>
+        <p className="text-[12px] text-[#8a96a8] text-center">Available after your judgment is entered. One-time flat fee.</p>
       </div>
 
     </section>
@@ -84,11 +170,12 @@ export default function Pricing() {
         </div>
 
         {/* Grid */}
-        <div className="w-full max-w-[960px] grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+        <div className="w-full max-w-[1200px] grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           <PricingCard
             plan="Personal Case"
             tagline="For person-versus-person disputes only, such as conflicts with a neighbor, roommate, acquaintance, friend, or other individual."
-            price="$59"
+            price="$69"
+            priceSub="flat fee"
             valueBold="Best for a straightforward consumer dispute."
             valueSub="Built to move a user from confusion to a cleaner, more organized filing package."
             features={[
@@ -100,12 +187,14 @@ export default function Pricing() {
               "Hearing prep workflow so you know what to bring, what to say, and what matters.",
             ]}
             ctaLabel="Start Personal Case"
+            ctaHref="/cases/new"
           />
 
           <PricingCard
             plan="Business Case"
             tagline="For any case involving a business on either side, including a business suing an individual or an individual suing a business."
-            price="$79"
+            price="$89"
+            priceSub="flat fee"
             valueBold="Best for more document-heavy disputes."
             valueSub="Designed for cases where the facts are commercial, the records matter more, and the user needs tighter structure."
             features={[
@@ -117,7 +206,11 @@ export default function Pricing() {
               "Submission and hearing checklist so your exhibits, timeline, and records are easier to present.",
             ]}
             ctaLabel="Start Business Case"
+            ctaHref="/cases/new"
+            highlight
           />
+
+          <CollectionCard />
         </div>
 
         {/* Footer note */}
