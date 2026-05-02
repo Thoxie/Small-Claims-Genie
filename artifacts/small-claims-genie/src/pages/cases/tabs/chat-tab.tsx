@@ -181,7 +181,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
     <div className="flex flex-col" style={{ height: "calc(100dvh - 135px)", minHeight: "420px" }}>
       <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex items-center gap-2">
-          <CheckCircle className="h-4 w-4 shrink-0" /> Your AI Genie is trained on your uploaded documents.
+          <CheckCircle className="h-4 w-4 shrink-0" /> <strong>Your AI Genie is trained on your uploaded documents and all your case info</strong>
         </div>
         {messages.length > 0 && (
           <div className="flex items-center gap-1.5 shrink-0">
