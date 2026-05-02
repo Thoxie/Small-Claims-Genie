@@ -24,6 +24,7 @@ import TermsOfService from "@/pages/tos";
 import SC100Generator from "@/pages/sc100-generator";
 import Resume from "@/pages/resume";
 import Pricing from "@/pages/pricing";
+import Download from "@/pages/download";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 
@@ -203,6 +204,7 @@ function Router() {
               <Route path="/faq" component={FAQ} />
               <Route path="/types-of-cases" component={TypesOfCases} />
               <Route path="/pricing" component={Pricing} />
+              <Route path="/download" component={Download} />
               <Route path="/terms" component={Terms} />
               <Route path="/tos" component={TermsOfService} />
 
