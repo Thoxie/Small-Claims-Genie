@@ -176,7 +176,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
 
       {/* ── Chat column ── */}
       <div className="flex-1 min-w-0 flex flex-col" style={{ height: "calc(100dvh - 165px)", minHeight: "420px" }}>
-      <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
+      <div className="bg-primary/5 border border-black/80 rounded-lg p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <CheckCircle className="h-4 w-4 shrink-0" />
           <strong className="truncate">Your AI Genie is trained on all your case information.</strong>
@@ -271,7 +271,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
             </span>
           ) : (
             <span className="text-xs font-extrabold text-white bg-black px-2 py-0.5 rounded-md">
-              Hold mic to record voice
+              Click and Hold mic to record voice
             </span>
           )}
         </div>
