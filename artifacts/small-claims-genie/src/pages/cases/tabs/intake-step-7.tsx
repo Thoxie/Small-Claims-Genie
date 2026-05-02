@@ -16,6 +16,20 @@ interface Props {
 export function IntakeStep7({ caseId, initialData, onComplete, onBack, saving, onSaveExit }: Props) {
   return (
     <div className="space-y-4">
+      {/* HeyGen hearing prep video */}
+      <div className="rounded-xl overflow-hidden border border-border shadow-sm">
+        <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+          <iframe
+            src="https://app.heygen.com/embeds/fa72d99ef1f24cf1a4c6138f6d8aae6d"
+            title="HeyGen video player"
+            frameBorder="0"
+            allow="encrypted-media; fullscreen;"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        </div>
+      </div>
+
       <HearingPrepTab caseId={caseId} currentCase={initialData} isDraftMode={false} />
       <div className="flex justify-between items-center pt-2">
         <div className="flex gap-2">
