@@ -118,17 +118,17 @@ function GeniePlusCard() {
 
       {/* Features */}
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
-        {[
-          "Paralegal case review — a trained paralegal reviews your claim summary, uploaded documents, damages, and filing packet before you submit.",
-          "Document, evidence, and exhibit review — identifies missing information, organizes receipts, contracts, photos, messages, invoices, and estimates, and ensures your written explanation and selected evidence are clear for the court.",
-          "One-hour paralegal support session — talk by phone or Zoom to walk through your case, documents, filing steps, evidence, and hearing preparation.",
-          "Court-form review support — helps confirm that names, addresses, claim amount, parties, dates, and case details appear complete and consistent.",
-          "Paralegal support at your hearing by Zoom to provide non-attorney procedural and organizational support.",
-          "Filing and service guidance — helps you understand the basic filing sequence, court-stamped copies, service of the defendant, and proof of service requirements.",
-        ].map((f) => (
-          <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
+        {([
+          { text: "Paralegal case review — a trained paralegal reviews your claim summary, uploaded documents, damages, and filing packet before you submit." },
+          { text: "Document, evidence, and exhibit review — identifies missing information, organizes receipts, contracts, photos, messages, invoices, and estimates, and ensures your written explanation and selected evidence are clear for the court." },
+          { text: "One-hour paralegal support session — talk by phone or Zoom to walk through your case, documents, filing steps, evidence, and hearing preparation." },
+          { text: "Court-form review support — helps confirm that names, addresses, claim amount, parties, dates, and case details appear complete and consistent." },
+          { text: "Paralegal support at your hearing by Zoom to provide non-attorney procedural and organizational support.", bold: true },
+          { text: "Filing and service guidance — helps you understand the basic filing sequence, court-stamped copies, service of the defendant, and proof of service requirements." },
+        ] as { text: string; bold?: boolean }[]).map(({ text, bold }) => (
+          <li key={text} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
             <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 border-[#6366f1] text-[#6366f1] inline-flex items-center justify-center text-[11px] font-black mt-[2px]">✓</span>
-            <span>{f}</span>
+            <span className={bold ? "font-bold" : ""}>{text}</span>
           </li>
         ))}
       </ul>
