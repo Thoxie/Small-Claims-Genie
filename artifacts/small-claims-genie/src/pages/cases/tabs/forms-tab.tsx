@@ -620,7 +620,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   // Library forms (all except sc100, mc030, sc112a which have their own sections)
   const _PHASE1_IDS = ["sc100", "mc030"];
   const _PHASE3_IDS = ["sc112a"];
-  const LIBRARY_IDS = ["fw001", "sc103", "sc104", "sc105", "sc120", "sc140", "sc150"];
+  const LIBRARY_IDS = ["fw001", "sc103", "sc104", "sc105", "sc140", "sc150"];
   const libraryForms = FORMS_CATALOG.filter(f => LIBRARY_IDS.includes(f.id));
 
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
