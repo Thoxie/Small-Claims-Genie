@@ -120,13 +120,10 @@ function GeniePlusCard() {
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
         {[
           "Paralegal case review — a trained paralegal reviews your claim summary, uploaded documents, damages, and filing packet before you submit.",
-          "Document review before filing — helps identify missing information, unclear facts, incomplete evidence, or documents that may need correction.",
+          "Document, evidence, and exhibit review — identifies missing information, organizes receipts, contracts, photos, messages, invoices, and estimates, and ensures your written explanation and selected evidence are clear for the court.",
           "One-hour paralegal support session — talk by phone or Zoom to walk through your case, documents, filing steps, evidence, and hearing preparation.",
           "Court-form review support — helps confirm that names, addresses, claim amount, parties, dates, and case details appear complete and consistent.",
-          "Evidence organization review — helps organize receipts, contracts, photos, messages, emails, invoices, estimates, and proof of payment.",
-          "Declaration and exhibit review — helps make sure your written explanation and selected evidence are organized clearly for the court.",
-          "Hearing preparation checklist — shows what to print, what to bring, how many copies to prepare, and what issues to be ready to explain.",
-          "Zoom hearing support availability — a paralegal can be available during your court hearing to provide non-attorney procedural and organizational support.",
+          "Paralegal support at your hearing by Zoom to provide non-attorney procedural and organizational support.",
           "Filing and service guidance — helps you understand the basic filing sequence, court-stamped copies, service of the defendant, and proof of service requirements.",
         ].map((f) => (
           <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
