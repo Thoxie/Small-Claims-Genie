@@ -41,20 +41,20 @@ function PricingCard({
         </div>
       )}
 
-      {/* Plan name + tagline */}
-      <div className="pb-4 pt-1">
+      {/* Plan name + tagline — fixed height so price rows align */}
+      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
         <p className="text-xl font-black tracking-tight text-[#0d6b5e] mb-1.5 leading-tight">{plan}</p>
         <p className="text-[13px] text-[#5a6478] leading-[1.4]">{tagline}</p>
       </div>
 
-      {/* Price */}
-      <div className="pb-4 flex items-end gap-2">
+      {/* Price — fixed height so value boxes align */}
+      <div className="pb-4 flex items-end gap-2 min-h-[68px]">
         <span className="text-[32px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
         <span className="text-[14px] font-extrabold pb-[3px] text-[#33405c]">{priceSub}</span>
       </div>
 
-      {/* Value box */}
-      <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4">
+      {/* Value box — fixed height so features align */}
+      <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
         <strong className="block text-[13px] text-[#0d6b5e] mb-[2px] leading-[1.25]">{valueBold}</strong>
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">{valueSub}</span>
       </div>
@@ -93,8 +93,8 @@ function GeniePlusCard() {
         MOST SUPPORT
       </div>
 
-      {/* Plan name + tagline */}
-      <div className="pb-4 pt-1">
+      {/* Plan name + tagline — same min-height as PricingCard */}
+      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
         <div className="flex items-center gap-2 mb-1.5">
           <UserCheck className="w-5 h-5 text-[#6366f1] shrink-0" />
           <p className="text-xl font-black tracking-tight text-[#0d6b5e] leading-tight">Genie Plus: Paralegal Review</p>
@@ -104,14 +104,14 @@ function GeniePlusCard() {
         </p>
       </div>
 
-      {/* Price */}
-      <div className="pb-4 flex items-end gap-2">
+      {/* Price — same min-height */}
+      <div className="pb-4 flex items-end gap-2 min-h-[68px]">
         <span className="text-[32px] font-black tracking-[-0.05em] leading-none text-[#6366f1]">$159</span>
         <span className="text-[14px] font-extrabold pb-[3px] text-[#33405c]">flat fee</span>
       </div>
 
-      {/* Value box */}
-      <div className="bg-[#f5f3ff] border border-[#c7d2fe] rounded-xl p-[8px_12px] mb-4">
+      {/* Value box — same min-height */}
+      <div className="bg-[#f5f3ff] border border-[#c7d2fe] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
         <strong className="block text-[13px] text-[#4338ca] mb-[2px] leading-[1.25]">Best for document-heavy or higher-stress cases.</strong>
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">For users who want another set of eyes on the paperwork before they file or appear in court.</span>
       </div>
@@ -160,8 +160,8 @@ function CollectionCard() {
         ADD-ON AFTER YOU WIN
       </div>
 
-      {/* Plan name + tagline */}
-      <div className="pb-4 pt-1">
+      {/* Plan name + tagline — same min-height */}
+      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
         <div className="flex items-center gap-2 mb-1.5">
           <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
           <p className="text-xl font-black tracking-tight text-[#0d6b5e] leading-tight">Post-Judgment Collection</p>
@@ -171,8 +171,8 @@ function CollectionCard() {
         </p>
       </div>
 
-      {/* Tiered pricing */}
-      <div className="pb-4 grid grid-cols-2 gap-3">
+      {/* Tiered pricing — same min-height as price row */}
+      <div className="pb-4 grid grid-cols-2 gap-3 min-h-[68px] items-center">
         <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[10px_12px] text-center">
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$89</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">Judgments up to $5,000</span>
@@ -181,6 +181,12 @@ function CollectionCard() {
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">Judgments $5,000 and above</span>
         </div>
+      </div>
+
+      {/* Value box — same min-height */}
+      <div className="bg-[#fffbeb] border border-[#fde68a] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
+        <strong className="block text-[13px] text-[#92400e] mb-[2px] leading-[1.25]">Best for winners who still need to collect.</strong>
+        <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Every enforcement tool California law provides — writs, levies, garnishments, and liens — in one guided workflow.</span>
       </div>
 
       {/* Features */}
