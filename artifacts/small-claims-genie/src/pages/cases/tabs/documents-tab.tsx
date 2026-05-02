@@ -11,7 +11,7 @@ import {
   getGetCaseQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle, Play, BookOpen, X } from "lucide-react";
+import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle, Play, X, ChevronRight } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -364,27 +364,29 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
 
         </div>{/* end left column */}
 
-        {/* Right: video tutorial card */}
+        {/* Right: video tutorial card — matches Step 2 style exactly */}
         <div
           onClick={() => setTutorialOpen(true)}
           className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
           title="Watch the tutorial for this step"
         >
           <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
-            <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <BookOpen className="w-16 h-16 text-white" />
-            </div>
             <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
             <div className="relative z-10 flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                <Play className="w-5 h-5 text-white ml-1" fill="white" />
               </div>
-              <span className="text-white/80 text-[11px] font-medium">Watch Tutorial</span>
+              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
             </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 3</div>
           </div>
-          <div className="bg-[#14b8a6] px-3 py-2">
-            <p className="text-white text-[11px] font-bold leading-tight">Step 3 — Upload Evidence</p>
-            <p className="text-white/70 text-[10px] mt-0.5">Small Claims Genie</p>
+          <div className="bg-background px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold">Upload Evidence</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Docs, photos &amp; files</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
           </div>
         </div>
 
