@@ -177,8 +177,9 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
       {/* ── Chat column ── */}
       <div className="flex-1 min-w-0 flex flex-col" style={{ height: "calc(100dvh - 165px)", minHeight: "420px" }}>
       <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
-        <div className="flex items-center gap-2">
-          <CheckCircle className="h-4 w-4 shrink-0" /> <strong>Your AI Genie is trained on your uploaded documents and all your case info</strong>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <CheckCircle className="h-4 w-4 shrink-0" />
+          <strong className="truncate">Your AI Genie is trained on all your case information.</strong>
         </div>
         {messages.length > 0 && (
           <div className="flex items-center gap-2 shrink-0">
@@ -190,7 +191,6 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
             >
               <Eraser className="h-3 w-3" /> Clear Chat
             </Button>
-            <span className="text-xs text-muted-foreground font-normal">Download transcript:</span>
             {isDraftMode ? (
               <DraftLockedButton label="Subscribe to Export" size="sm" />
             ) : (
