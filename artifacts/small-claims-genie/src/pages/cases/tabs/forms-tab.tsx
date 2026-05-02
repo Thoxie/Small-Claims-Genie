@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 
@@ -540,6 +540,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [mc030AiError, setMc030AiError] = useState<string | null>(null);
   const [selectedExhibits, setSelectedExhibits] = useState<number[]>([]);
   const [buildingPacket, setBuildingPacket] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   // ── Documents for exhibit selector ────────────────────────────────────────
   const [documents, setDocuments] = useState<DocumentWithMeta[]>([]);
@@ -978,38 +979,72 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   return (
     <div className="px-4 pt-3 pb-4 md:px-6 md:pb-6 space-y-8">
 
-      {isDraftMode && <DraftModeBanner />}
+      {/* ── Header row: left content + right video card ── */}
+    <div className="flex gap-4 items-start">
+      <div className="flex-1 min-w-0 space-y-4">
 
-      {/* ── YOUR PACKET ────────────────────────────────────────────────────── */}
-      {(() => {
-        const packet = getRecommendedForms(currentCase);
-        if (packet.length === 0) return null;
-        return (
-          <section className="rounded-xl border-2 border-[#14b8a6] bg-[#f0fffe] p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Package className="h-5 w-5 text-[#0d6b5e] shrink-0" />
-              <h3 className="font-bold text-[#0d6b5e] text-base">Your Forms Packet</h3>
-              <span className="text-xs text-muted-foreground">— based on your case details</span>
+        {isDraftMode && <DraftModeBanner />}
+
+        {/* ── YOUR PACKET ────────────────────────────────────────────────────── */}
+        {(() => {
+          const packet = getRecommendedForms(currentCase);
+          if (packet.length === 0) return null;
+          return (
+            <section className="rounded-xl border-2 border-[#14b8a6] bg-[#f0fffe] p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Package className="h-5 w-5 text-[#0d6b5e] shrink-0" />
+                <h3 className="font-bold text-[#0d6b5e] text-base">Your Forms Packet</h3>
+                <span className="text-xs text-muted-foreground">— based on your case details</span>
+              </div>
+              <div className="space-y-2">
+                {packet.map(f => (
+                  <div key={f.id} className="flex items-center gap-3 bg-white rounded-lg px-4 py-2.5 border border-[#14b8a6]/20">
+                    <span className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ${f.required ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"}`}>
+                      {f.number}
+                    </span>
+                    <span className="text-sm text-foreground flex-1">{f.reason}</span>
+                    <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wide ${f.required ? "text-[#0d6b5e]" : "text-muted-foreground"}`}>
+                      {f.required ? "Required" : "Optional"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                All forms below are still available — this packet shows only what applies to your specific case.
+              </p>
+            </section>
+          );
+        })()}
+
+      </div>{/* end left column */}
+
+      {/* Right: video tutorial card */}
+      <div
+        onClick={() => setTutorialOpen(true)}
+        className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+        title="Watch the tutorial for this step"
+      >
+        <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+              <Play className="w-5 h-5 text-white ml-1" fill="white" />
             </div>
-            <div className="space-y-2">
-              {packet.map(f => (
-                <div key={f.id} className="flex items-center gap-3 bg-white rounded-lg px-4 py-2.5 border border-[#14b8a6]/20">
-                  <span className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ${f.required ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"}`}>
-                    {f.number}
-                  </span>
-                  <span className="text-sm text-foreground flex-1">{f.reason}</span>
-                  <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wide ${f.required ? "text-[#0d6b5e]" : "text-muted-foreground"}`}>
-                    {f.required ? "Required" : "Optional"}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-              All forms below are still available — this packet shows only what applies to your specific case.
-            </p>
-          </section>
-        );
-      })()}
+            <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+          </div>
+          <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+          <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 6</div>
+        </div>
+        <div className="bg-background px-3 py-2 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold">Create Court Forms</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Download &amp; fill your forms</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+        </div>
+      </div>
+
+    </div>{/* end header flex row */}
 
       {/* ── PHASE 1: Filing Package ────────────────────────────────────────── */}
       <section>
@@ -1714,6 +1749,38 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* ── Tutorial modal ── */}
+      {tutorialOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setTutorialOpen(false)}>
+          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl w-full max-w-[840px] mx-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Step 6 Tutorial — Create Court Forms</p>
+                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                </div>
+              </div>
+              <button onClick={() => setTutorialOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <iframe
+              width="840"
+              height="472"
+              src="https://app.heygen.com/embeds/ba905d1856fd4fb0a831140c14fe7e81"
+              title="HeyGen video player"
+              frameBorder="0"
+              allow="encrypted-media; fullscreen;"
+              allowFullScreen
+              className="block w-full"
+            />
+          </div>
+        </div>
+      )}
 
     </div>
   );
