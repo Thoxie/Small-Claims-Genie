@@ -1,0 +1,1929 @@
+MASTER REPLIT PROMPT — FIRSTMOVE IQ BETA BUILD, AI DOCUMENT REVIEW, ARCHITECTURE, UI, AND MARKETING
+
+Project: FirstMove IQ
+
+Overall goal:
+Upgrade the existing FirstMove IQ beta into a stronger, demo-ready AI decision-protection application for people making major adult decisions for the first time.
+
+This should be one integrated improvement pass, not four separate disconnected updates.
+
+The current app already has a basic beta shell with pages, dashboard, mock reports, LifeIQ scoring, risk badges, scripts, vault, timeline, and marketing copy. Improve it in place. Do not discard the existing app unless absolutely necessary. Preserve the product name: FirstMove IQ.
+
+ABSOLUTE SCOPE RULES
+
+This is a beta.
+
+Do NOT add:
+- payments
+- subscriptions
+- Stripe
+- pricing gates
+- premium locked features
+- paid tiers
+- billing logic
+- referral marketplace functionality
+- human expert marketplace functionality
+
+Do NOT position the app as:
+- a law firm
+- a lawyer
+- a financial advisor
+- a tax advisor
+- an insurance broker
+- a lender
+- a real estate broker
+- a fiduciary
+- a replacement for professional advice
+
+Do NOT make claims like:
+- “This is legal advice.”
+- “You should definitely sign.”
+- “This is enforceable.”
+- “This is unenforceable.”
+- “You are guaranteed to win.”
+- “Nothing can go wrong.”
+- “This is legally safe.”
+- “This is financially safe.”
+- “Guaranteed savings.”
+
+The beta should prove the core product:
+Users can create a decision file, upload paperwork, extract text, run AI/rule-based analysis, receive a structured Life Decision Report, see a LifeIQ Score, get risk warnings, generate pushback scripts, store documents in a vault, build a proof timeline, and understand what to ask before committing.
+
+CORE PRODUCT POSITIONING
+
+FirstMove IQ is an AI decision-protection app for people making important adult decisions for the first time.
+
+It helps users understand:
+- documents
+- contracts
+- costs
+- fees
+- recurring obligations
+- deadlines
+- risks
+- missing terms
+- pressure tactics
+- negotiation points
+- what to ask before committing
+
+Primary user:
+Younger adults, roughly 18–35, including:
+- first-time car buyers
+- apartment renters
+- recent graduates
+- young employees reviewing job offers
+- gig workers or freelancers reviewing agreements
+- people signing leases, loans, contracts, quotes, payment plans, or service agreements
+- people being pressured to sign quickly
+- people who are smart but inexperienced with paperwork, hidden costs, negotiation, or adult decision processes
+
+Important psychology:
+The user is not stupid. The user is inexperienced.
+
+The app should not make users feel embarrassed. It should make them feel protected, prepared, and less likely to be taken advantage of.
+
+The app should feel like:
+- someone who has done this before
+- someone who spots traps quickly
+- someone who tells you what to ask
+- someone who helps you slow down before signing
+- someone who helps you avoid expensive first-time mistakes
+
+The app should not feel like:
+- generic AI chatbot
+- legal website
+- budgeting app
+- motivational coach
+- corporate SaaS dashboard
+- therapy app
+- school assignment
+- bank product
+- insurance product
+- fake Gen-Z brand
+
+Primary promise:
+“Before you sign, buy, borrow, lease, hire, accept, move, or commit — know what you’re getting into.”
+
+Short value line:
+“Upload the paperwork. See the risks. Know what to ask before you commit.”
+
+Beta positioning:
+FirstMove IQ is currently in beta. The beta is focused on document upload, AI risk review, LifeIQ scoring, decision-protection workflows, and user feedback before paid plans are introduced.
+
+IMPLEMENTATION ORDER
+
+Implement in this order:
+
+1. Structural scaffolding and backend architecture.
+2. Document upload and text extraction.
+3. AI integration, guardrails, validation, fallback behavior.
+4. LifeIQ scoring and report generation.
+5. Frontend states for upload/extraction/AI review/report completion.
+6. Improved guided intake and beta dashboard.
+7. Marketing terminology and UI copy update.
+8. Add the two new marketing sections/pages: Real-Life Situations and What It Catches.
+9. Convert Pricing into Beta Access.
+10. Add beta feedback and documentation.
+
+PART 1 — STRUCTURAL SCAFFOLDING AND BETA ARCHITECTURE
+
+Refactor and strengthen the app architecture so the app can support real AI document review, file uploads, LifeIQ scoring, reports, vault storage, timeline entries, and guardrails without becoming fragile.
+
+Current likely app context:
+- Vite/React front end
+- Express-style API server
+- Drizzle/Postgres-style schema
+- Life Event / Decision File records
+- Documents table
+- Decision reports table
+- Tasks
+- Timeline entries
+- Negotiation scripts
+- Mock rule-based analysis in analysis.ts
+- Dashboard, new decision, file detail, quick review, pricing, settings pages
+
+Current major structural gaps to solve:
+- AI logic, rule-based scoring, quick analysis, and scripts are too concentrated.
+- Document upload is not true file upload yet.
+- Documents do not store enough file metadata.
+- Reports do not store enough AI provenance, uncertainty, model status, extraction status, or guardrail status.
+- The app lacks clear service boundaries.
+- The backend does not yet support a robust AI pipeline.
+- There is no status model for longer AI analysis.
+- There is no clear beta consent / AI analysis consent record.
+- There is no reusable prompt template system.
+- There is no schema versioning for AI output.
+- There is no structured error model for AI failures, extraction failures, or unsupported files.
+
+Create a cleaner architecture that separates:
+1. data model
+2. file upload/storage
+3. text extraction
+4. AI provider
+5. prompt templates
+6. guardrails
+7. scoring
+8. report generation
+9. negotiation script generation
+10. timeline/task generation
+11. UI state and analysis status
+
+Do not remove existing functionality. Improve and reorganize it.
+
+Create or refactor into these backend service files:
+
+src/services/ai/aiClient.ts
+- Handles provider setup.
+- Reads OPENAI_API_KEY, AI_MODEL, AI_TIMEOUT_MS.
+- Does not expose secrets.
+- Provides a single callAIJson() helper that returns parsed JSON.
+- Handles missing API key by returning controlled mock fallback when configured.
+- Adds timeout handling.
+- Adds user-friendly error handling.
+
+src/services/ai/promptTemplates.ts
+- Stores all system prompts and task-specific prompts.
+- Includes templates for:
+  - decision file analysis
+  - before you sign review
+  - document summary
+  - term extraction
+  - pressure tactic detection
+  - negotiation scripts
+  - missing documents checklist
+  - professional escalation warning
+
+src/services/ai/guardrails.ts
+- Centralizes banned language, disclaimers, escalation triggers, and output sanitization.
+- Removes or rewrites unsafe phrases.
+- Adds disclaimer fields to all reports.
+- Adds uncertainty notes when documents are missing or extraction failed.
+- Prevents guarantee language and professional-advice claims.
+
+src/services/documents/documentService.ts
+- Handles document CRUD logic.
+- Stores metadata.
+- Deletes file and DB record.
+- Supports re-analysis.
+
+src/services/documents/extractionService.ts
+- Extracts text from supported file types.
+- PDF extraction.
+- DOCX extraction.
+- TXT extraction.
+- Image upload storage with OCR placeholder.
+- Returns extraction status:
+  - extracted
+  - partial
+  - unsupported
+  - failed
+  - needs_manual_text
+
+src/services/scoring/scoringService.ts
+- Contains deterministic/rule-based LifeIQ score calculation.
+- Keep scoring separate from AI.
+- Uses categories:
+  - documentCompleteness: 20
+  - financialClarity: 20
+  - contractSafety: 20
+  - negotiationPosition: 15
+  - deadlineReadiness: 10
+  - counterpartyTransparency: 10
+  - userUnderstanding: 5
+- Returns:
+  - total score
+  - category breakdown
+  - point losses
+  - score explanation
+  - specific actions to improve the score
+
+src/services/reports/reportService.ts
+- Orchestrates full report generation.
+- Combines intake, documents, extracted text, deterministic scoring, AI analysis, guardrails, and final report persistence.
+- Updates life event status and recommendation.
+- Creates suggested tasks and timeline entries where appropriate.
+
+src/services/scripts/scriptService.ts
+- Generates negotiation / pushback scripts.
+- Supports tones:
+  - soft
+  - neutral
+  - firm
+  - professional_email
+  - text_message
+  - phone_script
+
+src/services/timeline/timelineService.ts
+- Creates manual timeline entries.
+- Creates AI-suggested timeline entries from documents and reports.
+- Marks AI-generated entries clearly.
+
+src/services/feedback/feedbackService.ts
+- Stores beta feedback on report usefulness and missed issues.
+- No need for advanced analytics.
+
+Add or update route structure:
+
+POST /documents/upload
+- Accept multipart file upload.
+- Store file.
+- Create document record.
+- Extract text if possible.
+- Return document metadata and extraction status.
+
+POST /documents/:id/reanalyze
+- Re-extract or re-run document summary.
+- Return updated document.
+
+DELETE /documents/:id
+- Delete file and DB row.
+
+POST /life-events/:id/analyze
+- Generate or regenerate the full Life Decision Report.
+- Use reportService.
+- Return report and updated life event.
+
+POST /quick-review
+- Before You Sign Review.
+- Accept pasted text and/or uploaded file reference.
+- Return fast structured result.
+
+POST /feedback
+- Save beta feedback.
+
+GET /health
+- Existing health route can remain.
+
+Add analysis status and job-style state.
+
+For beta, this can be simple and synchronous, but the data model should support status.
+
+Add to life_events or reports:
+- analysisStatus: not_started | queued | extracting | analyzing | complete | complete_with_fallback | failed
+- lastAnalyzedAt
+- analysisError
+- analysisVersion
+
+Add to documents:
+- originalFileName
+- storedFileName
+- filePath
+- mimeType
+- fileSize
+- uploadStatus
+- extractionStatus
+- extractionError
+- extractedCharCount
+- lastExtractedAt
+- analysisStatus
+- lastAnalyzedAt
+
+Add to decision_reports:
+- modelProvider
+- modelName
+- promptVersion
+- reportSchemaVersion
+- sourceDocumentIds
+- uncertaintyNotes
+- guardrailWarnings
+- createdFrom: mock | ai | hybrid
+- analysisVersion
+
+If database migrations are needed, implement them in the existing Drizzle style. If migrations are not configured, update schemas and document the required migration.
+
+Define stable TypeScript types if the project supports it:
+- AnalysisStatus
+- ExtractionStatus
+- RiskLevel
+- DecisionType
+- DocumentCategory
+- ReportSchemaV1
+- QuickReviewResult
+- LifeIqScoreBreakdown
+- GuardrailWarning
+- ProfessionalEscalationTrigger
+- BetaFeedback
+
+Use these types across API and frontend where possible.
+
+PART 2 — REAL DOCUMENT UPLOAD AND TEXT EXTRACTION
+
+The beta must support actual user uploads.
+
+Allowed file types:
+- PDF
+- DOC
+- DOCX
+- TXT
+- PNG
+- JPG
+- JPEG
+- screenshots/images
+
+Upload UI requirements:
+- Drag-and-drop zone
+- Mobile-friendly upload button
+- File category selector
+- Optional notes field
+- Display upload progress
+- Show uploaded documents in cards
+- Show file name, category, size, upload date, and analysis status
+- Allow delete/removal from the beta vault
+- Allow re-analysis
+
+Document categories:
+- Contract
+- Lease
+- Loan document
+- Offer letter
+- Car deal sheet
+- Dealer worksheet
+- Quote
+- Invoice
+- Receipt
+- Email
+- Text screenshot
+- Photo
+- ID or application
+- Other
+
+Backend document handling:
+- Store uploaded files locally for beta development or use a simple storage folder.
+- Store uploaded files outside public static directories if possible.
+- Never expose raw file paths directly.
+- Use document IDs to access files.
+- Validate file type and size.
+- Reject executable files.
+- Add max upload size.
+- Add file extension and MIME checks.
+- Add simple filename sanitization.
+- Add delete endpoint.
+
+Text extraction:
+- Extract text from PDF files.
+- Extract text from DOCX files.
+- Extract text from TXT files.
+- For .doc, accept upload if possible but mark extraction unsupported and ask the user to paste key terms.
+- For images/screenshots, if OCR is not feasible in Replit, store the file and ask the user to paste key text, while clearly marking OCR as a future enhancement.
+
+Suggested libraries:
+- multer or equivalent for uploads
+- pdf-parse or equivalent for PDF text extraction
+- mammoth or equivalent for DOCX extraction
+
+For uploaded PDFs or DOCX files:
+- Extract text.
+- Save extracted text with the document record.
+- Send extracted text plus the intake answers to the AI analysis service.
+- Show “Text extracted. Ready for review.”
+- If extraction fails, show “We could not read this file clearly. You can still save it, but paste the key terms for better analysis.”
+
+PART 3 — AI INTEGRATION, PROMPTS, VALIDATION, FALLBACKS, AND GUARDRAILS
+
+Add server-side AI integration so uploaded or pasted documents can be analyzed.
+
+Preferred implementation:
+- Use OpenAI-compatible API integration through environment variables.
+- Add an AI provider abstraction so another provider can be swapped later.
+- Do not expose API keys to the browser.
+- All AI calls must go through the backend.
+- Include timeout handling, error handling, fallback messages, and mock fallback if no API key is present.
+
+Environment variables:
+- OPENAI_API_KEY
+- AI_MODEL, default to a current efficient model if not set
+- AI_TIMEOUT_MS, default 30000
+- MAX_DOCUMENT_CHARS, default 60000
+
+Create or improve backend functions:
+- analyzeDecisionFile()
+- generateLifeIQScore()
+- generateNegotiationScripts()
+- extractDocumentTerms()
+- detectPressureTactics()
+- generateBeforeYouSignReport()
+- generateDocumentSummary()
+- generateMissingDocumentsChecklist()
+- generateProfessionalEscalationWarning()
+
+Each function should return structured JSON, not loose paragraphs.
+
+AI output must include:
+- summary
+- key terms
+- payment obligations
+- deadlines
+- missing information
+- red flags
+- yellow flags
+- questions to ask
+- negotiation opportunities
+- before-you-sign checklist
+- professional escalation triggers
+- source-based uncertainty notes
+- final red/yellow/green recommendation
+
+Use this system behavior for AI reports:
+
+“You are FirstMove IQ, a decision-support assistant. Your job is to help users slow down before major decisions involving money, contracts, documents, deadlines, obligations, negotiations, or pressure. You provide educational information, document organization, practical risk identification, and questions to ask. You are not a lawyer, financial advisor, tax advisor, insurance broker, lender, real estate broker, or fiduciary. Do not provide legal, tax, financial, insurance, or investment advice. Do not make guarantees. Do not state that a contract is enforceable or unenforceable. When documents are missing, clearly say what cannot be verified. When risk is high, recommend qualified professional review.”
+
+AI output style should be:
+- practical
+- direct
+- structured
+- conservative
+- clear about missing information
+
+Preferred AI language:
+- “This is what this means.”
+- “This is what could go wrong.”
+- “This is what is missing.”
+- “This is what to ask for.”
+- “This is what to get in writing.”
+- “This is what to do before signing.”
+- “Based on the documents provided…”
+- “I cannot verify this without the missing document.”
+- “Consider professional review before signing.”
+
+Guardrails must include:
+- No legal, tax, financial, insurance, investment, or professional advice claims.
+- No guarantee language.
+- No enforceability conclusions.
+- No instruction to ignore professionals.
+- No definitive claims where documents are missing.
+- Clear uncertainty when analysis is based on incomplete documents.
+- Strong escalation recommendation for high-risk issues.
+
+High-risk escalation triggers:
+- eviction risk
+- foreclosure risk
+- legal threats
+- domestic violence
+- immigration
+- criminal issues
+- tax consequences
+- personal guarantee
+- large nonrefundable payment
+- unclear ownership rights
+- user already signed and paid
+- deadline within 48 hours
+- lawsuit threat
+- complex employment restrictions
+- noncompete
+- relocation repayment
+- unclear loan terms
+- very high APR
+- missing written agreement
+- counterparty refuses to put terms in writing
+
+Every report should include this disclaimer in compact form:
+“FirstMove IQ provides educational information, document organization, decision support, risk identification, and practical guidance. It is not a law firm, lawyer, financial advisor, tax advisor, lender, insurance broker, real estate broker, or fiduciary. It does not provide legal, tax, financial, insurance, or investment advice.”
+
+Add schema validation for AI outputs.
+
+Use Zod if available. If not, write defensive validators.
+
+Never save unvalidated raw AI text as the final report.
+
+Required report output shape:
+{
+  situationSummary: string,
+  documentsReviewed: string[],
+  lifeIqScore: number,
+  scoreExplanation: string,
+  scoreBreakdown: object,
+  overallRisk: "green" | "yellow" | "red",
+  biggestRedFlags: string[],
+  riskAssessments: [
+    {
+      category: "financial" | "contract" | "deadline" | "counterparty" | "negotiation" | "dispute",
+      level: "green" | "yellow" | "red" | "unknown",
+      finding: string,
+      whyItMatters: string,
+      whatToAskFor: string,
+      status: "verified" | "uncertain" | "missing_document"
+    }
+  ],
+  financial: object,
+  missingDocuments: string[],
+  questionsToAsk: string[],
+  negotiationOpportunities: string[],
+  beforeYouSignChecklist: string[],
+  recommendedNextSteps: string[],
+  professionalEscalation: string | null,
+  pressureTactics: string[],
+  uncertaintyNotes: string[],
+  guardrailWarnings: string[],
+  finalRecommendation: "green" | "yellow" | "red",
+  finalRecommendationText: string,
+  disclaimer: string
+}
+
+AI fallback strategy:
+If OPENAI_API_KEY is missing:
+- Use existing rule-based mock analysis.
+- Clearly mark report as createdFrom: "mock".
+- Show UI message:
+  “AI provider is not configured. This beta report uses rule-based analysis only.”
+
+If AI call fails:
+- Fall back to hybrid/rule-based report.
+- Mark analysisStatus: complete_with_fallback or failed as appropriate.
+- Store analysisError internally.
+- Show user-friendly message:
+  “The AI review could not complete. A rule-based beta report was generated instead.”
+
+Add structured prompt/versioning.
+
+Every AI prompt should have:
+- promptVersion
+- reportSchemaVersion
+- modelName
+- createdAt
+- task type
+
+Example:
+const PROMPT_VERSION = "firstmove-report-v1.0";
+const REPORT_SCHEMA_VERSION = "report-v1";
+
+Store these with report output.
+
+PART 4 — PRIVACY, CONSENT, AND BETA SAFETY SCAFFOLDING
+
+Because users upload sensitive documents, add beta-level privacy structure even without full auth.
+
+Add settings / consent fields:
+- aiAnalysisConsentAccepted: boolean
+- betaDisclaimerAccepted: boolean
+- documentRetentionPreference: keep_until_deleted | delete_after_30_days | delete_after_90_days
+- allowFeedbackUse: boolean
+
+Before running AI analysis on uploaded documents, show a consent checkbox:
+
+“I understand FirstMove IQ provides educational decision support and may use the uploaded text to generate an AI risk review. It is not legal, financial, tax, insurance, or investment advice.”
+
+Do not run AI analysis unless consent is accepted.
+
+Settings beta scope:
+Do not build full auth if it would slow the build, but prepare structure.
+
+Settings should include:
+- display name
+- email placeholder
+- privacy preferences
+- delete uploaded documents button
+- delete decision file button
+- AI consent notice
+- beta disclaimer acceptance checkbox
+
+Do not claim the app is fully secure unless those protections are actually implemented. Use language like “beta privacy controls” rather than overclaiming.
+
+PART 5 — FRONTEND STATES AND UX FLOW
+
+Add UI states:
+- Uploading
+- Extracting text
+- Ready for AI review
+- AI reviewing
+- Report generated
+- AI unavailable / mock fallback
+- Extraction failed
+- Consent required
+
+Add user-facing status cards:
+- “Text extracted. Ready for review.”
+- “Image saved. OCR is not active yet. Paste key text for better analysis.”
+- “AI review complete.”
+- “Rule-based beta report generated.”
+- “Important paperwork appears to be missing.”
+- “Pressure signal detected. Slow down and get the terms in writing.”
+
+Improve UI:
+- Reduce oversized hero font.
+- Use tighter spacing.
+- Improve visual hierarchy.
+- Make the dashboard less empty.
+- Use stronger card labels.
+- Make active decision files easier to scan.
+- Add progress indicators.
+- Add sticky “Start Decision Check” or “Upload Document” CTA on mobile.
+- Make report pages easier to read.
+- Use clear section anchors or tabs in the report.
+- Use compact but visible risk badges.
+- Use more white space inside reports but avoid oversized typography.
+- Use a more polished navigation/header.
+- Add an “AI analysis status” indicator.
+- Add a “missing information” alert block.
+- Add a “do not proceed until…” block for red/yellow reports.
+
+Suggested design direction:
+- Clean and modern.
+- Trustworthy but not boring.
+- Dark navy/charcoal text.
+- White/light backgrounds.
+- Green/yellow/red risk accents.
+- Cards should feel like product components, not generic template blocks.
+- Use icons sparingly.
+- Use short punchy headings.
+- Avoid huge paragraph blocks.
+
+Typography:
+- Hero headline: max text-4xl on mobile, max text-5xl or text-6xl on desktop.
+- Section headings: text-2xl or text-3xl.
+- Body text: text-base or text-lg.
+- Report body should be readable, not oversized.
+
+PART 6 — PRODUCT TERMINOLOGY AND MARKETING LANGUAGE
+
+Use this terminology consistently:
+
+App name:
+FirstMove IQ
+
+Main workflow:
+Decision Check
+
+Saved workspace:
+Decision File
+
+Document storage:
+Decision Vault
+
+Fast upload/paste flow:
+Before You Sign Review
+
+Quick version:
+60-Second Sign Check
+
+Main score:
+LifeIQ Score
+
+Risk section:
+Risk Radar
+
+Financial section:
+Money Reality Check
+
+Contract section:
+Paperwork Risk Review
+
+Missing docs:
+Missing Paperwork Checklist
+
+Negotiation:
+Pushback Scripts
+
+Pressure detection:
+Pressure Tactic Detector
+
+Timeline:
+Proof Timeline
+
+Action plan:
+Next Best Moves
+
+Final recommendation:
+Commit Status
+
+Recommendation statuses:
+Green: “Looks Clear”
+Yellow: “Pause First”
+Red: “Do Not Commit Yet”
+
+Risk badges:
+Low Risk: “Looks Clear”
+Medium Risk: “Pause First”
+High Risk: “Do Not Commit Yet”
+
+Use red/yellow/green visually, but label them in plain language.
+
+Avoid phrases:
+- “adulting”
+- “AI bestie”
+- “boss up”
+- “level up”
+- “slay”
+- “vibes”
+- “empower your journey”
+- “financial empowerment journey”
+- “guaranteed”
+- “legally safe”
+- “financially safe”
+- “definitely sign”
+- “this contract is valid”
+- “this is enforceable”
+
+Good phrases:
+- “Pause before you commit.”
+- “Know the catch before it catches you.”
+- “The other side has a process. Now you do too.”
+- “Standard does not mean safe.”
+- “Ask before you sign.”
+- “Get it in writing.”
+- “The monthly payment is not the full story.”
+- “The moment before you sign is when you still have leverage.”
+- “Do not let monthly payment math hide the real cost.”
+- “If it is not in writing, treat it as unconfirmed.”
+- “Ask for the final terms in writing.”
+- “This is the part people miss.”
+- “This looks simple. It may not be.”
+- “Make them explain the number.”
+- “Before you pay, ask this.”
+- “The deal is not real until the terms are clear.”
+
+Replace or reduce “protective operating system.”
+Better alternatives:
+- “AI protection before you sign.”
+- “A document and money check before you commit.”
+- “A smarter way to pause before a big decision.”
+- “Risk review for real-life paperwork.”
+- “Your pre-signing safety check.”
+- “Know the catch before it catches you.”
+
+Replace primary use of “Quick gut-check” with:
+- “Before You Sign Review”
+- “60-Second Sign Check”
+- “Quick Risk Check”
+- “Pre-Sign Review”
+- “Upload Before You Sign”
+
+Suggested hierarchy:
+Primary feature name: “Before You Sign Review.”
+Secondary label: “60-second risk check.”
+Small casual helper copy may still say “quick gut-check.”
+
+PART 7 — NAVIGATION STRUCTURE
+
+Update top navigation to:
+
+- How It Works
+- Real-Life Situations
+- What It Catches
+- Before You Sign
+- Beta Access
+- Open App
+
+On mobile, if space is limited:
+- How It Works
+- Situations
+- What It Catches
+- Start Check
+
+CTA options:
+- Start a Decision Check
+- Upload Before You Sign
+- Run a Before You Sign Review
+- Open Beta
+
+PART 8 — LANDING PAGE / HOMEPAGE COPY AND SECTIONS
+
+Hero:
+Badge above headline:
+“AI protection before you sign”
+
+Headline:
+“Before you sign, buy, borrow, lease, or commit — know what you’re getting into.”
+
+Alternate headline for testing:
+“Make the decision like you’ve done it before.”
+
+Stronger younger-audience headline for a section:
+“Don’t let your first big decision become your most expensive mistake.”
+
+Subheadline:
+“FirstMove IQ reviews your paperwork, flags hidden risks, explains the real cost, and gives you the questions to ask before a first-time decision turns into an expensive mistake.”
+
+Shorter mobile subheadline:
+“AI document review for real-life decisions — leases, car deals, job offers, loans, contracts, and more.”
+
+Primary CTA:
+“Start a Decision Check”
+
+Secondary CTA:
+“Run a Before You Sign Review”
+
+Small trust line under CTA:
+“Built for leases, car deals, job offers, loans, quotes, contracts, and other real-life paperwork.”
+
+Hero supporting chips:
+- Leases
+- Car deals
+- Job offers
+- Loans
+- Contracts
+- Contractor quotes
+
+Core promise section:
+Title:
+“FirstMove IQ helps you answer five questions before you commit.”
+
+Questions:
+1. What am I agreeing to?
+2. What will this really cost?
+3. What could go wrong?
+4. What should I ask or negotiate?
+5. What should I get in writing?
+
+Section: What FirstMove IQ helps you catch
+
+Subtitle:
+“Most first-time mistakes are not about intelligence. They happen because the other side knows the process better than you do.”
+
+Cards:
+- Hidden fees
+  “Fees, add-ons, penalties, deposits, and charges that make the deal more expensive than it looks.”
+
+- Bad monthly-payment math
+  “A low monthly payment can hide a high total cost, long loan term, or expensive interest.”
+
+- Missing paperwork
+  “If it is not in writing, it may be hard to prove later.”
+
+- Pressure tactics
+  “‘This price is only good today’ is not analysis. It is pressure.”
+
+- Unclear cancellation terms
+  “Know how you get out before you get in.”
+
+- Risky clauses
+  “Spot terms that deserve more questions before you sign.”
+
+- Deadlines
+  “Find response dates, cancellation windows, renewal dates, and payment deadlines.”
+
+- Verbal promises
+  “Turn promises into written terms before relying on them.”
+
+Section: How It Works
+
+Title:
+“Three steps before you commit”
+
+Step 1:
+“Upload or paste the paperwork”
+Copy:
+“Lease, offer letter, car deal sheet, loan terms, quote, invoice, contract, screenshot, or document text.”
+
+Step 2:
+“Get your Risk Radar”
+Copy:
+“FirstMove IQ flags money issues, missing terms, pressure tactics, deadlines, and unclear obligations.”
+
+Step 3:
+“Know your next move”
+Copy:
+“Get questions to ask, pushback scripts, missing-document requests, and a before-you-sign checklist.”
+
+Section: LifeIQ Score
+
+Title:
+“Your LifeIQ Score shows how ready the decision is — not how smart you are.”
+
+Copy:
+“The score looks at document completeness, financial clarity, contract safety, deadlines, counterparty transparency, negotiation position, and your understanding of the deal.”
+
+Score labels:
+80–100: Looks Clear
+60–79: Pause First
+0–59: Do Not Commit Yet
+
+Important copy:
+“A low score does not mean you made a bad decision. It means the paperwork, numbers, or risk details are not clear enough yet.”
+
+Section: Before You Sign Review
+
+Title:
+“About to sign something? Run it through FirstMove IQ first.”
+
+Copy:
+“Upload a document, paste text, or describe the situation. FirstMove IQ gives you a fast red/yellow/green recommendation, top risks, missing information, and questions to ask before you commit.”
+
+CTA:
+“Run a Before You Sign Review”
+
+Bullets:
+- “What am I agreeing to?”
+- “What money is involved?”
+- “What is missing?”
+- “What should I ask for in writing?”
+- “Should I pause before signing?”
+
+Section:
+“Not advice. Not a lawyer. A better way to slow down before you commit.”
+
+Copy:
+“FirstMove IQ does not replace a lawyer, financial advisor, tax professional, or licensed expert. It helps you understand what to ask, what to verify, what is missing, and when to get professional help.”
+
+Optional additional homepage sections:
+Section:
+“Built for first-timers, not beginners.”
+
+Copy:
+“You may be smart, careful, and responsible — and still be at a disadvantage if the other side has done this hundreds of times. FirstMove IQ helps level the paperwork gap.”
+
+Section:
+“The other side has a process. Now you do too.”
+
+Copy:
+“Dealers, landlords, lenders, employers, and contractors usually know the paperwork better than you do. FirstMove IQ gives you a repeatable process before you sign.”
+
+Section:
+“The most expensive part is usually the part you did not ask about.”
+
+Cards:
+- APR
+- add-ons
+- cancellation terms
+- nonrefundable fees
+- renewal clauses
+- repair obligations
+- repayment clauses
+- personal guarantees
+
+Section:
+“FirstMove IQ is for the moment before the mistake.”
+
+Copy:
+“The moment before you sign is the cheapest time to catch the problem.”
+
+PART 9 — NEW MARKETING SECTION/PAGE: REAL-LIFE SITUATIONS
+
+Add either:
+- full page route: /situations
+or
+- homepage section anchor: #situations
+
+Preferred if routing supports it:
+Create /situations.
+
+Navigation label:
+“Real-Life Situations”
+
+Mobile label:
+“Situations”
+
+Purpose:
+Show concrete examples of when someone should use FirstMove IQ. This section should make the target demographic recognize themselves immediately.
+
+Section title:
+“Use FirstMove IQ before the decision gets expensive.”
+
+Subtitle:
+“Most bad deals do not look bad at first. They look normal, urgent, simple, or ‘standard.’ FirstMove IQ helps you slow down before you sign, pay, accept, or commit.”
+
+Use situation cards. Each card should include:
+- situation title
+- what the user is about to do
+- what can go wrong
+- why FirstMove IQ helps
+- CTA: “Check this first”
+
+Situation cards:
+
+1. “You’re buying your first car”
+What’s happening:
+“The dealer is focused on the monthly payment, not the total cost.”
+What can go wrong:
+“Long loan terms, high APR, add-ons, warranties, GAP, doc fees, and trade-in math can make the real price much higher than it looks.”
+Why FirstMove IQ helps:
+“It checks the deal sheet, flags missing numbers, explains total cost, and gives you scripts to ask for the out-the-door price.”
+
+2. “You’re signing an apartment lease”
+What’s happening:
+“The lease looks standard, and the landlord wants the deposit now.”
+What can go wrong:
+“Unclear deposit terms, early termination penalties, pet fees, parking promises, utility obligations, and move-in damage can cost you later.”
+Why FirstMove IQ helps:
+“It reviews the lease, identifies missing terms, tells you what to photograph, and gives you questions to ask before move-in.”
+
+3. “You got a job offer”
+What’s happening:
+“The salary sounds good, but the offer has bonus, equity, relocation, or restrictive terms.”
+What can go wrong:
+“Discretionary bonuses, missing equity documents, repayment clauses, noncompetes, and unclear remote-work terms can change the value of the offer.”
+Why FirstMove IQ helps:
+“It breaks down the offer, flags unclear compensation, and gives you negotiation scripts before you accept.”
+
+4. “You’re borrowing money or financing something”
+What’s happening:
+“The payment looks affordable.”
+What can go wrong:
+“APR, fees, loan term, penalties, late charges, and total repayment can make a small monthly payment expensive.”
+Why FirstMove IQ helps:
+“It shows the real cost, missing loan terms, and questions to ask before you borrow.”
+
+5. “You’re hiring a contractor or service provider”
+What’s happening:
+“They gave you a quote and want a deposit.”
+What can go wrong:
+“Vague scope, no timeline, unclear materials, weak cancellation terms, licensing issues, and large deposits can create disputes.”
+Why FirstMove IQ helps:
+“It checks the quote or contract for missing details and helps you ask for clearer terms in writing.”
+
+6. “Someone says, ‘Don’t worry, it’s standard’”
+What’s happening:
+“You are being asked to trust the process.”
+What can go wrong:
+“Standard does not mean safe, fair, complete, or affordable.”
+Why FirstMove IQ helps:
+“It explains what the paperwork actually says and what you should confirm before relying on someone else’s explanation.”
+
+CTA at end:
+“Not sure if it matters? Upload it before you sign.”
+
+Button:
+“Start a Decision Check”
+
+Design notes:
+- Use cards with strong headlines.
+- Keep copy short and punchy.
+- Add small risk labels like:
+  - Money Risk
+  - Contract Risk
+  - Deadline Risk
+  - Pressure Risk
+- Make this section feel practical and real, not theoretical.
+
+PART 10 — NEW MARKETING SECTION/PAGE: WHAT IT CATCHES
+
+Add either:
+- full page route: /what-it-catches
+or
+- homepage section anchor: #what-it-catches
+
+Preferred if routing supports it:
+Create /what-it-catches.
+
+Navigation label:
+“What It Catches”
+
+Alternative labels:
+- Risk Radar
+- Hidden Risks
+- What We Check
+
+Preferred label:
+“What It Catches”
+
+Purpose:
+Explain the product through specific features and benefits. This section should connect product features to real user incentives.
+
+Section title:
+“What FirstMove IQ looks for before you commit.”
+
+Subtitle:
+“FirstMove IQ is built to catch the things people usually notice too late: missing terms, bad math, pressure tactics, deadlines, unclear obligations, and paperwork gaps.”
+
+Create feature-benefit-risk cards.
+
+Each card should include:
+- Feature name
+- What it does
+- Why it matters
+- Without it, the risk is…
+
+Cards:
+
+1. Feature: “Money Reality Check”
+What it does:
+“Breaks down monthly payment, total cost, upfront costs, fees, deposits, interest, and recurring obligations.”
+Why it matters:
+“A deal can look affordable month-to-month while being expensive overall.”
+Without it:
+“You may agree to a payment you understand but a total cost you do not.”
+
+2. Feature: “Missing Paperwork Checklist”
+What it does:
+“Flags documents, terms, receipts, disclosures, or written confirmations that appear missing.”
+Why it matters:
+“Missing paperwork is where disputes start.”
+Without it:
+“You may rely on verbal promises or incomplete documents.”
+
+3. Feature: “Risk Radar”
+What it does:
+“Ranks financial, contract, deadline, counterparty, negotiation, and evidence risks.”
+Why it matters:
+“Not all risks are equal. Some can wait. Some should stop you from signing.”
+Without it:
+“You may treat a red flag like a small detail.”
+
+4. Feature: “Pressure Tactic Detector”
+What it does:
+“Looks for urgency, vague reassurance, refusal to put terms in writing, or ‘everyone signs this’ language.”
+Why it matters:
+“Pressure is often used when someone wants you to stop asking questions.”
+Without it:
+“You may mistake sales pressure for a real deadline.”
+
+5. Feature: “Pushback Scripts”
+What it does:
+“Gives you text, email, and phone scripts to ask for better terms or missing information.”
+Why it matters:
+“Most people do not know what to say when they feel rushed.”
+Without it:
+“You may stay quiet just to avoid feeling awkward.”
+
+6. Feature: “Before You Commit Checklist”
+What it does:
+“Turns the analysis into concrete next steps before you sign, pay, accept, or agree.”
+Why it matters:
+“Knowing the risk is not enough. You need the next move.”
+Without it:
+“You may understand the problem but still not know what to do.”
+
+7. Feature: “Decision Vault”
+What it does:
+“Saves documents, screenshots, receipts, notes, reports, and timeline entries in one place.”
+Why it matters:
+“If there is a dispute later, scattered screenshots and missing receipts hurt you.”
+Without it:
+“You may not be able to prove what happened.”
+
+8. Feature: “LifeIQ Score”
+What it does:
+“Scores how ready the decision is based on document completeness, financial clarity, contract safety, deadlines, transparency, negotiation position, and user understanding.”
+Why it matters:
+“The score tells you whether the file is clear enough to move forward.”
+Without it:
+“You may confuse confidence with readiness.”
+
+Conversion block after cards:
+
+Title:
+“The cheapest time to catch the problem is before you sign.”
+
+Copy:
+“After you sign, your options can shrink. Before you sign, you can still ask questions, request missing documents, compare alternatives, negotiate, or walk away.”
+
+CTA:
+“Run a Before You Sign Review”
+
+Secondary section:
+“What happens when you skip the check?”
+
+Bullets:
+- You focus on the monthly payment and miss the total cost.
+- You trust a verbal promise that never makes it into the agreement.
+- You miss a cancellation deadline.
+- You pay a deposit without knowing what is refundable.
+- You accept a job offer without understanding bonus or repayment terms.
+- You sign a lease without documenting move-in condition.
+- You agree to add-ons you did not actually want.
+- You do not know what to ask until after the deal is done.
+
+Close:
+“FirstMove IQ does not make the decision for you. It helps you see the decision clearly before it becomes harder to fix.”
+
+CTA:
+“Start a Decision Check”
+
+PART 11 — DASHBOARD IMPROVEMENTS
+
+Replace page title:
+From:
+“Dashboard”
+
+To:
+“Decision Dashboard”
+
+Subtitle:
+“Track the paperwork, risks, deadlines, and next steps for each decision.”
+
+Primary CTA:
+“Start New Decision Check”
+
+Secondary CTA:
+“Before You Sign Review”
+
+Dashboard should show:
+- Start a new Decision Check
+- Run Before You Sign Review
+- Upload a document
+- Active Life Event Files
+- Risk level
+- LifeIQ Score
+- Missing documents count
+- Open tasks
+- Upcoming deadlines
+- Last analysis status
+
+Dashboard stat labels:
+- Active Files → “Active Decision Files”
+- At Stake → “Money on the Line”
+- High Risk → “Needs Attention”
+- Deadlines → “Upcoming Deadlines”
+
+Empty state:
+Title:
+“No decision files yet.”
+
+Copy:
+“Start with a lease, car deal sheet, job offer, loan terms, contractor quote, or contract. FirstMove IQ will help you spot what is missing, what looks risky, and what to ask before you commit.”
+
+CTA:
+“Start Your First Decision Check”
+
+Decision file cards should show:
+- Title
+- Type
+- Risk status
+- LifeIQ score
+- Documents uploaded
+- Missing items
+- Open tasks
+- Upcoming deadline
+- Last analysis status
+- Last updated
+- Button: Open File
+- Button: Re-analyze
+
+PART 12 — NEW DECISION / LIFE EVENT FILE CREATION
+
+Replace:
+“Create Decision File”
+“Start tracking a new major life decision.”
+
+With:
+Title:
+“Start a Decision Check”
+
+Subtitle:
+“Tell FirstMove IQ what you are about to sign, buy, accept, borrow, lease, or hire.”
+
+Card title:
+“What are you trying to decide?”
+
+Card description:
+“Start simple. You can upload documents and add details in the next step.”
+
+Life event types:
+- Buy a Car
+- Rent an Apartment
+- Review a Job Offer
+- Sign a Contract
+- Borrow Money
+- Hire a Contractor
+- Buy a Home
+- Choose Insurance
+- Start a Business
+- Other
+
+Field labels:
+“What are you deciding on?”
+Helper text:
+“Choose the closest match. If you are not sure, pick Other.”
+
+“Name this decision”
+Placeholder:
+“Example: 2021 Honda Accord deal, Downtown apartment lease, Acme job offer”
+
+“Who is on the other side?”
+Placeholder:
+“Dealer, landlord, employer, lender, contractor, company, seller”
+
+“Money on the line”
+Placeholder:
+“Example: 24000”
+
+“When do they want an answer?”
+
+“What state or city is involved?”
+Helper:
+“Rules can vary by location.”
+
+Button:
+“Continue to Risk Intake”
+
+PART 13 — GUIDED INTAKE / RISK INTAKE
+
+The intake needs structured questions.
+
+MVP detailed workflows:
+- Buy a Car
+- Rent an Apartment
+- Review a Job Offer
+- Generic Contract/Other
+
+For all files, ask:
+- What are you trying to do?
+- How soon do you need to decide?
+- What state or location is involved?
+- How much money is involved?
+- Have you signed anything yet?
+- Have you paid anything yet?
+- Who are you dealing with?
+- What documents do you have?
+- Are you feeling pressured?
+- What are they asking you to do next?
+- What is your biggest concern?
+- Are there deadlines?
+- Are there recurring payments?
+- Is debt or financing involved?
+- Is this decision reversible?
+- Do you have another option to compare?
+
+Better user-facing labels:
+“What feels unclear, risky, rushed, or expensive?”
+“Is anyone pushing you to decide fast?”
+“Have you already signed, paid, deposited, or agreed to anything?”
+“What happens if you do not move forward?”
+
+Car buying workflow:
+- Vehicle year, make, model
+- New or used
+- Purchase price
+- Out-the-door price
+- Down payment
+- Monthly payment
+- Loan term
+- APR
+- Trade-in value
+- Dealer add-ons
+- Warranty offered
+- Gap insurance offered
+- Doc fee
+- Registration/title fees
+- Has insurance quote been obtained?
+- Has vehicle history report been reviewed?
+- Has pre-purchase inspection been completed?
+- Is dealer saying price is only valid today?
+
+Apartment workflow:
+- Monthly rent
+- Security deposit
+- Lease term
+- Move-in date
+- Application/admin fees
+- Pet fees
+- Parking terms
+- Utilities
+- Roommates
+- Early termination terms
+- Maintenance concerns
+- Guest restrictions
+- Renter’s insurance requirement
+- Renewal terms
+- Have move-in photos been taken?
+- Are any promises only verbal/texted but not in lease?
+
+Job offer workflow:
+- Base salary
+- Bonus
+- Commission
+- Equity
+- Benefits
+- Start date
+- Remote/hybrid/in-person
+- Relocation
+- Noncompete
+- Confidentiality agreement
+- Severance
+- Other offers
+- Negotiation goal
+- Is bonus guaranteed or discretionary?
+- Are equity plan documents attached?
+- Is there a repayment obligation?
+
+Page section names:
+Decision Details → “Decision Snapshot”
+Status → “Commit Status”
+Guided Intake → “Risk Intake”
+Decision Vault → “Decision Vault”
+Ready to analyze → “Ready for FirstMove IQ Review”
+Generate Decision Report → “Run AI Decision Review”
+
+Upload section copy:
+“Upload anything connected to this decision: contract, lease, quote, loan terms, offer letter, screenshot, receipt, invoice, email, or photo.”
+
+Empty vault:
+Title:
+“Your Decision Vault is empty.”
+
+Copy:
+“Add the documents, screenshots, receipts, notes, and promises connected to this decision. If something goes wrong later, this becomes your proof file.”
+
+PART 14 — LIFE DECISION REPORT
+
+Report sections:
+1. What’s Happening
+2. Documents Reviewed
+3. LifeIQ Score
+4. Overall Risk Rating
+5. Biggest Red Flags
+6. Money Reality Check
+7. Paperwork Risk Review
+8. Deadline Risk
+9. Counterparty Risk
+10. Pushback Opportunities
+11. Dispute / Evidence Risk
+12. What Is Missing
+13. Questions to Ask Before You Commit
+14. Get This in Writing
+15. Before You Commit Checklist
+16. Do Not Proceed Until…
+17. Next Best Moves
+18. Professional Review Triggers
+19. Final Commit Status
+
+Add a “What I would do next” section:
+- Step 1
+- Step 2
+- Step 3
+- Step 4
+- Step 5
+
+For every AI finding, show:
+- Finding
+- Why it matters
+- What to ask for
+- Status: verified / uncertain / missing document
+
+Final recommendation terminology:
+
+Green:
+Label:
+“Looks Clear”
+Copy:
+“The decision appears reasonably documented based on what you provided. Confirm all facts and keep copies before committing.”
+
+Yellow:
+Label:
+“Pause First”
+Copy:
+“There are unresolved issues. Ask the listed questions, request missing paperwork, and clarify terms before signing, paying, accepting, or committing.”
+
+Red:
+Label:
+“Do Not Commit Yet”
+Copy:
+“Major information appears missing or risky. Do not sign, pay, accept, or commit until the listed issues are resolved or reviewed by a qualified professional.”
+
+Add bold warning text where relevant:
+“Do not rely on verbal promises. Ask for the final terms in writing.”
+
+PART 15 — LIFEIQ SCORING
+
+Keep the 0–100 score, but make it explain itself.
+
+Categories:
+- Document completeness: 20
+- Financial clarity: 20
+- Contract safety: 20
+- Negotiation position: 15
+- Deadline readiness: 10
+- Counterparty transparency: 10
+- User understanding: 5
+
+Report should show:
+- total score
+- category breakdown
+- why points were lost
+- specific actions to improve the score
+
+Example:
+“Your score is 58 because the monthly payment is listed, but the total repayment cost, final out-the-door price, and cancellation terms are missing. Upload the loan agreement and ask for an itemized final price to improve this score.”
+
+PART 16 — BEFORE YOU SIGN REVIEW
+
+Make Before You Sign Review a flagship beta flow.
+
+Accessible from:
+- Landing page
+- Dashboard
+- Header
+- Mobile sticky CTA
+
+Current “Quick gut-check before you commit” should become:
+
+Title:
+“Run a Before You Sign Review”
+
+Subtitle:
+“Paste text, upload paperwork, or describe what you are being asked to sign. FirstMove IQ will flag immediate risks, missing terms, and questions to ask before you commit.”
+
+Card title:
+“What are you being asked to sign, pay, accept, or agree to?”
+
+Card description:
+“Use this when someone is pressuring you, the paperwork is confusing, or the deal looks simple but expensive.”
+
+Field labels:
+Event Type → “Decision type”
+Description → “What is happening?”
+Placeholder:
+“Example: I’m about to sign a 12-month apartment lease and the landlord wants two months of deposit today.”
+
+Paste Document Text → “Paste confusing text or terms”
+Placeholder:
+“Paste the clause, email, deal sheet, loan terms, or message here.”
+
+Button:
+“Run Risk Check”
+
+Loading:
+“Checking for risks…”
+
+Result section:
+Quick Analysis Results → “Before You Sign Result”
+Top Risks Detected → “Biggest Red Flags”
+What You May Be Agreeing To → “What This Could Mean”
+Financial Implications → “Money Reality Check”
+Questions to Ask → “Ask This Before You Commit”
+
+CTA after result:
+“Create a Full Decision File”
+
+Before You Sign Review output must include:
+- what the document appears to be
+- what the user may be agreeing to
+- money involved
+- top risks
+- missing information
+- top questions to ask
+- professional escalation warning
+- red/yellow/green recommendation
+- short script to send before signing
+
+PART 17 — NEGOTIATION / PUSHBACK SCRIPTS
+
+Scripts should be generated based on actual life event and risk findings.
+
+Rename or supplement “Negotiation Scripts” as:
+“Pushback Scripts”
+
+Tone options:
+- Soft
+- Neutral
+- Firm
+- Professional Email
+- Text Message
+- Phone Script
+
+Scripts should include:
+- “ask for it in writing” version
+- “remove optional add-ons” version
+- “clarify cancellation terms” version
+- “extend deadline” version
+- “counteroffer” version
+- “pause before signing” version
+
+Example scripts:
+“Can you send me the full out-the-door price in writing before I make a decision?”
+
+“I’m interested, but I’m not comfortable signing until the early termination terms are clarified.”
+
+“Before I pay the deposit, can you confirm in writing what is refundable and what is not?”
+
+“Thank you for the offer. Based on the role and responsibilities, I was hoping to discuss a base salary closer to $___.”
+
+PART 18 — PRESSURE TACTIC DETECTOR
+
+Add a page section or card that identifies pressure tactics from intake answers or document text.
+
+Examples:
+- “This price is only good today.”
+- “Everybody signs this.”
+- “You don’t need to read that.”
+- “The monthly payment is what matters.”
+- “We can fix that later.”
+- “Don’t worry, it’s standard.”
+- “You have to pay now.”
+- “There are other people waiting.”
+- “This is non-negotiable.”
+
+For each tactic, show:
+- tactic detected
+- why it matters
+- safer response script
+
+High pressure alert copy:
+“Pressure signal detected. Slow down and get the terms in writing.”
+
+PART 19 — DECISION VAULT
+
+Vault should show:
+- uploaded documents
+- extracted text status
+- AI summaries
+- generated reports
+- scripts
+- notes
+- timeline entries
+- checklist items
+
+Add:
+- manual note creation
+- delete document
+- re-analyze document
+- “export summary” placeholder button, but do not build PDF export unless easy
+
+Vault empty state:
+Title:
+“Your Decision Vault is empty.”
+
+Copy:
+“Add the documents, screenshots, receipts, notes, and promises connected to this decision. If something goes wrong later, this becomes your proof file.”
+
+PART 20 — PROOF TIMELINE
+
+Rename or subtitle Timeline as:
+“Proof Timeline”
+
+Timeline entries:
+- date
+- event description
+- source type
+- related document
+- user note
+- AI-generated flag
+
+Add suggested timeline events from uploaded document analysis:
+- document received
+- payment made
+- deadline found
+- promise made
+- signature requested
+- renewal/cancellation date
+
+PART 21 — BETA ACCESS PAGE
+
+Convert Pricing page into:
+“Beta Access”
+
+Do not show:
+- $0/mo
+- Plus
+- Premium
+- Upgrade buttons
+- monthly pricing
+- subscription language
+- paid-tier gating
+
+Title:
+“Beta Access”
+
+Subtitle:
+“FirstMove IQ is in beta. Right now, the goal is to test the core product: upload documents, understand risks, generate a LifeIQ Score, and know what to ask before you commit.”
+
+Cards:
+
+Card 1:
+“Free Beta”
+- Create Decision Files
+- Run Before You Sign Reviews
+- Upload documents
+- Generate LifeIQ Scores
+- Get Risk Radar reports
+- Create pushback scripts
+
+Card 2:
+“Help Shape the Product”
+- Tell us what the report missed
+- Flag confusing outputs
+- Suggest new decision types
+- Help improve car, apartment, and job-offer workflows
+
+Card 3:
+“Coming Later”
+- Exportable PDF reports
+- More decision types
+- Deal comparison
+- Referral directory
+- Human expert review options
+
+CTA:
+“Start Beta Decision Check”
+
+PART 22 — BETA FEEDBACK
+
+Add feedback CTA after reports and quick reviews:
+- “Was this report useful?”
+- thumbs up/down
+- optional feedback text
+- “What did this miss?”
+- “Was anything unclear?”
+
+Store feedback locally or in simple backend storage.
+
+Add beta events scaffolding without external analytics.
+
+Do not integrate external analytics yet.
+
+Track simple beta events:
+- decision_file_created
+- document_uploaded
+- extraction_succeeded
+- extraction_failed
+- ai_analysis_started
+- ai_analysis_completed
+- ai_analysis_failed
+- report_viewed
+- before_you_sign_review_started
+- feedback_submitted
+
+For now, this can log to server console or a simple beta_events table if easy.
+
+PART 23 — FOOTER AND DISCLAIMER
+
+Footer line:
+“AI protection before you sign, buy, borrow, lease, hire, accept, move, or commit.”
+
+Footer product links:
+- Start Decision Check
+- Before You Sign Review
+- Beta Access
+- Decision Dashboard
+
+Footer disclaimer:
+“FirstMove IQ provides educational information, document organization, decision support, risk identification, and practical guidance. It is not a law firm, lawyer, financial advisor, tax advisor, lender, insurance broker, real estate broker, or fiduciary. It does not provide legal, tax, financial, insurance, or investment advice. Consult a qualified professional before making high-risk decisions.”
+
+Legal links can remain placeholders, but do not remove disclaimers.
+
+PART 24 — REQUIRED BETA PAGES AFTER UPDATE
+
+Keep or add:
+- Landing Page
+- Real-Life Situations
+- What It Catches
+- Dashboard
+- New Decision / Life Event File
+- Guided Intake / Risk Intake
+- Document Upload
+- Before You Sign Review
+- Life Decision Report
+- Pushback Scripts / Negotiation Scripts
+- Decision Vault
+- Proof Timeline
+- Beta Access
+- Account Settings
+- Disclaimer / Privacy page or section
+
+PART 25 — CLEANUP AND QUALITY
+
+Clean up known issues:
+- Remove duplicate or inconsistent risk category logic.
+- Avoid having one giant analysis.ts file.
+- Avoid hardcoded copy scattered across many pages where a constants file would be better.
+- Avoid UI claiming “secure” unless security is actually implemented.
+- Avoid “pricing” language during beta.
+- Avoid saying the app analyzes uploaded files if the current route only accepts pasted text.
+- Rename user-facing “Pricing” to “Beta Access.”
+- Make components reusable.
+- Avoid hardcoded duplicated report logic.
+
+Create clear service files:
+- aiClient.ts
+- promptTemplates.ts
+- guardrails.ts
+- documentService.ts
+- extractionService.ts
+- scoringService.ts
+- reportService.ts
+- scriptService.ts
+- timelineService.ts
+- feedbackService.ts
+
+Add README / developer documentation:
+- Project structure
+- How to run locally in Replit
+- Required env vars
+- Optional env vars
+- How file upload works
+- How AI fallback works
+- Supported file types
+- Beta limitations
+- Database migration notes
+- Safety / guardrail notes
+- Future production checklist
+
+Add FUTURE_PRODUCTION_CHECKLIST.md or README section with:
+- Authentication
+- User-level authorization
+- Encrypted storage
+- Virus scanning
+- Full OCR
+- Background jobs for long AI reviews
+- Email/SMS reminders
+- Exportable PDF reports
+- Real privacy policy
+- Data deletion automation
+- Payment/subscription only after beta
+- Human expert referral only after trust/safety review
+
+PART 26 — REQUIRED IMPLEMENTATION FILES / AREAS
+
+Update existing React pages and components:
+- src/pages/home.tsx
+- src/pages/quick.tsx
+- src/pages/pricing.tsx
+- src/pages/app/dashboard.tsx
+- src/pages/app/new-decision.tsx
+- src/pages/app/file-detail.tsx
+- src/components/Layout.tsx
+- any reusable buttons, labels, empty states, cards, and report components
+
+Expected new or updated backend files:
+- src/services/ai/aiClient.ts
+- src/services/ai/promptTemplates.ts
+- src/services/ai/guardrails.ts
+- src/services/documents/documentService.ts
+- src/services/documents/extractionService.ts
+- src/services/scoring/scoringService.ts
+- src/services/reports/reportService.ts
+- src/services/scripts/scriptService.ts
+- src/services/timeline/timelineService.ts
+- src/services/feedback/feedbackService.ts
+- src/routes/documents.ts
+- src/routes/reports.ts
+- src/routes/quick.ts
+- src/routes/feedback.ts
+
+Expected frontend updates:
+- Upload status UI
+- Consent checkbox before AI review
+- Analysis status badges
+- AI fallback messaging
+- Beta Access terminology
+- Better report section labels
+- Clear “AI provider not configured” state
+- New nav items
+- Real-Life Situations section/page
+- What It Catches section/page
+- Stronger CTAs
+- Cleaner typography
+
+PART 27 — ACCEPTANCE CRITERIA
+
+The finished beta should allow a user to:
+
+1. Land on a clearer marketing page with stronger demographic targeting.
+2. Understand what the app does within 10 seconds.
+3. Navigate to How It Works, Real-Life Situations, What It Catches, Before You Sign, and Beta Access.
+4. Start a Decision Check.
+5. Create a Life Event / Decision File.
+6. Answer guided risk intake questions.
+7. Upload a PDF, DOCX, TXT, or image.
+8. Extract text from supported documents.
+9. See document extraction status.
+10. Accept AI analysis consent.
+11. Run AI analysis, or rule-based fallback if AI is unavailable.
+12. Receive a structured Life Decision Report.
+13. See a LifeIQ Score with category breakdown.
+14. See red/yellow/green Commit Status.
+15. See missing documents, red flags, pressure tactics, questions to ask, and next steps.
+16. Generate Pushback Scripts.
+17. Store documents and notes in the Decision Vault.
+18. Build or view a Proof Timeline.
+19. Run a quick Before You Sign Review.
+20. Submit beta feedback.
+21. Understand that the app is educational decision support, not legal, financial, tax, insurance, or investment advice.
+
+Final product feel:
+FirstMove IQ should feel like a practical, protective, AI-powered pre-signing tool for young adults and first-time decision makers.
+
+The target user should think:
+“I’m glad I checked this before I signed.”
+
+Final instruction:
+Focus on making FirstMove IQ feel real, protective, technically structured, and useful. Do not overbuild billing, enterprise features, or marketplace referrals. The beta should prove the core product: upload documents, analyze risk with guardrails, explain real-world consequences, and tell the user what to ask before they commit.
