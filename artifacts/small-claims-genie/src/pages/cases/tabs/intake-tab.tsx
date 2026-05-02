@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
 import {
@@ -127,11 +127,22 @@ const REQUIRED: { tab: number; key: string; label: string }[] = [
 ];
 
 // ─── Intake Tab ───────────────────────────────────────────────────────────────
-export function IntakeTab({ caseId, initialData }: { caseId: number; initialData: ExtendedCase }) {
+export function IntakeTab({
+  caseId,
+  initialData,
+  forceStep,
+  onStepChange,
+}: {
+  caseId: number;
+  initialData: ExtendedCase;
+  forceStep?: 1 | 2;
+  onStepChange?: (step: number) => void;
+}) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [, navigate] = useLocation();
 
   const getInitialStep = (): StepNum => {
+    if (forceStep) return forceStep;
     const stored = sessionStorage.getItem(`intake-step-${caseId}`);
     const fromSession = stored ? parseInt(stored) : NaN;
     if (fromSession >= 1 && fromSession <= 7) return fromSession as StepNum;
@@ -140,6 +151,15 @@ export function IntakeTab({ caseId, initialData }: { caseId: number; initialData
   };
 
   const [activeTab, setActiveTabState] = useState<StepNum>(getInitialStep);
+
+  // Jump to forced step when outer nav requests step 1 or 2
+  const prevForceStep = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (forceStep && forceStep !== prevForceStep.current) {
+      prevForceStep.current = forceStep;
+      setActiveTabState(forceStep);
+    }
+  }, [forceStep]);
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
 

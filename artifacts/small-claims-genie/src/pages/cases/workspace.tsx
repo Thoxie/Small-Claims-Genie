@@ -13,6 +13,18 @@ import { Link } from "wouter";
 
 const VALID_TABS = ["intake", "documents", "chat", "demand-letter", "forms", "prep", "deadlines"];
 
+// Map outer step number → { tab, intakeStep }
+const STEP_MAP: Record<number, { tab: string; intakeStep?: 1 | 2 }> = {
+  1: { tab: "intake", intakeStep: 1 },
+  2: { tab: "intake", intakeStep: 2 },
+  3: { tab: "documents" },
+  4: { tab: "demand-letter" },
+  5: { tab: "chat" },
+  6: { tab: "forms" },
+  7: { tab: "prep" },
+  8: { tab: "deadlines" },
+};
+
 function getTabFromHash(): string {
   const hash = window.location.hash.slice(1);
   return VALID_TABS.includes(hash) ? hash : "intake";
@@ -47,12 +59,41 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useHashTab();
 
+  // Track which intake sub-step (1 or 2) is requested from the outer nav
+  const [intakeSubStep, setIntakeSubStep] = useState<1 | 2 | undefined>(undefined);
+
+  // Compute which outer step number is currently active
+  const currentOuterStep = (() => {
+    if (activeTab === "intake") return intakeSubStep === 2 ? 2 : 1;
+    const entry = Object.entries(STEP_MAP).find(([, v]) => v.tab === activeTab && !v.intakeStep);
+    return entry ? parseInt(entry[0]) : 1;
+  })();
+
+  // Handle outer stepper click
+  const handleStepClick = (stepN: number) => {
+    const mapping = STEP_MAP[stepN];
+    if (!mapping) return;
+    if (mapping.intakeStep) {
+      setIntakeSubStep(mapping.intakeStep);
+      setActiveTab("intake");
+    } else {
+      setIntakeSubStep(undefined);
+      setActiveTab(mapping.tab);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
 
   if (caseLoading) {
     return (
-      <WorkspaceLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+      <WorkspaceLayout
+        activeTab={activeTab}
+        currentOuterStep={currentOuterStep}
+        setActiveTab={setActiveTab}
+        onStepClick={handleStepClick}
+      >
         <div className="container mx-auto p-8">
           <Skeleton className="h-12 w-1/3 mb-8" />
           <Skeleton className="h-96 w-full" />
@@ -63,7 +104,12 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
 
   if (!currentCase) {
     return (
-      <WorkspaceLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+      <WorkspaceLayout
+        activeTab={activeTab}
+        currentOuterStep={currentOuterStep}
+        setActiveTab={setActiveTab}
+        onStepClick={handleStepClick}
+      >
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-8 text-center">
           <div className="text-5xl">📋</div>
           <h2 className="text-xl font-bold text-foreground">No case found</h2>
@@ -97,7 +143,12 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   ];
 
   return (
-    <WorkspaceLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+    <WorkspaceLayout
+      activeTab={activeTab}
+      currentOuterStep={currentOuterStep}
+      setActiveTab={setActiveTab}
+      onStepClick={handleStepClick}
+    >
       <div className="container mx-auto px-4 pt-3 pb-6 max-w-6xl flex flex-col gap-3">
 
         {/* ── Readiness card — only shown on the Prep tab ── */}
@@ -155,10 +206,18 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           </div>
         </div>}
 
-        {/* ── Tab content — plain conditional rendering, no Radix dependency ── */}
+        {/* ── Tab content ── */}
         <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
           {activeTab === "intake" && (
-            <IntakeTab caseId={caseId} initialData={extCase} />
+            <IntakeTab
+              caseId={caseId}
+              initialData={extCase}
+              forceStep={intakeSubStep}
+              onStepChange={(step) => {
+                if (step === 1 || step === 2) setIntakeSubStep(step as 1 | 2);
+                else setIntakeSubStep(undefined);
+              }}
+            />
           )}
           {activeTab === "documents" && (
             <DocumentsTab caseId={caseId} evidenceChecklist={extCase?.evidenceChecklist || []} />
