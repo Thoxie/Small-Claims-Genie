@@ -59,8 +59,14 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useHashTab();
 
-  // Track which intake sub-step (1 or 2) is requested from the outer nav
-  const [intakeSubStep, setIntakeSubStep] = useState<1 | 2 | undefined>(undefined);
+  // Track which intake sub-step (1 or 2) is requested from the outer nav.
+  // Seed from localStorage so the outer stepper matches the inner step on refresh.
+  const [intakeSubStep, setIntakeSubStep] = useState<1 | 2 | undefined>(() => {
+    if (!caseId) return undefined;
+    const stored = localStorage.getItem(`intake-step-${caseId}`);
+    const step = stored ? parseInt(stored) : NaN;
+    return step === 2 ? 2 : undefined;
+  });
 
   // Compute which outer step number is currently active
   const currentOuterStep = (() => {
