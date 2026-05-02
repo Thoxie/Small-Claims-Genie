@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetChatHistory } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Mic, Send, CheckCircle, Loader2, Download, Sparkles, Eraser } from "lucide-react";
+import { Mic, Send, CheckCircle, Loader2, Download, Sparkles, Eraser, Play, ChevronRight, X } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
 import { DraftLockedButton } from "@/components/draft-overlay";
@@ -17,6 +17,7 @@ interface ChatMessage {
 export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: number; isDraftMode?: boolean; currentCase?: ExtendedCase }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [cleared, setCleared] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -62,20 +63,16 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isTyping]);
 
-  const detectDownloadCommand = (text: string): { format: "pdf" | "word"; scope: "last" | "all" } | null => {
+  const detectDownloadCommand = (text: string): { format: "word"; scope: "last" | "all" } | null => {
     const t = text.toLowerCase().trim();
-    const wordPatterns = [/word/, /\.docx/, /docx/, /ms word/, /microsoft word/];
-    const pdfPatterns = [/\bpdf\b/, /\.pdf/];
+    const wordPatterns = [/word/, /\.docx/, /docx/, /ms word/, /microsoft word/, /\bpdf\b/, /\.pdf/, /download/, /export/];
     const actionPatterns = [/download/, /export/, /save/, /give me/, /get me/, /generate/, /send/];
     const hasAction = actionPatterns.some(p => p.test(t));
     if (!hasAction) return null;
-    let format: "pdf" | "word" | null = null;
-    if (wordPatterns.some(p => p.test(t))) format = "word";
-    else if (pdfPatterns.some(p => p.test(t))) format = "pdf";
-    if (!format) return null;
+    if (!wordPatterns.some(p => p.test(t))) return null;
     const allPatterns = [/\bchat\b/, /conversation/, /transcript/, /\ball\b/, /everything/, /whole/];
     const scope: "last" | "all" = allPatterns.some(p => p.test(t)) ? "all" : "last";
-    return { format, scope };
+    return { format: "word" as const, scope };
   };
 
   const sendMessage = async (content: string) => {
@@ -83,13 +80,12 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
 
     const downloadCmd = detectDownloadCommand(content);
     if (downloadCmd) {
-      const { format, scope } = downloadCmd;
+      const { scope } = downloadCmd;
       setInput("");
-      const formatLabel = format === "pdf" ? "PDF" : "Word (.docx)";
       const scopeLabel = scope === "last" ? "that content" : "the full chat transcript";
-      const botMsg: ChatMessage = { id: Date.now() + 1, role: 'assistant', content: `Of course! Downloading ${scopeLabel} as a **${formatLabel}** file — your download will start in a moment.` };
+      const botMsg: ChatMessage = { id: Date.now() + 1, role: 'assistant', content: `Of course! Downloading ${scopeLabel} as a **Word (.docx)** file — your download will start in a moment.` };
       setMessages(prev => [...prev, { id: Date.now(), role: 'user' as const, content }, botMsg]);
-      await downloadChat(format, scope);
+      await downloadChat("word", scope);
       return;
     }
 
@@ -176,7 +172,10 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
   };
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100dvh - 135px)", minHeight: "420px" }}>
+    <div className="flex gap-4 items-start px-4 pt-3 pb-4">
+
+      {/* ── Chat column ── */}
+      <div className="flex-1 min-w-0 flex flex-col" style={{ height: "calc(100dvh - 165px)", minHeight: "420px" }}>
       <div className="bg-primary/5 border-b p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex items-center gap-2">
           <CheckCircle className="h-4 w-4 shrink-0" /> <strong>Your AI Genie is trained on your uploaded documents and all your case info</strong>
@@ -263,7 +262,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
         )}
       </div>
 
-      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 pt-1.5 pb-3">
+      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 pt-1.5 pb-3 rounded-b-lg">
         <div className={`flex items-center justify-end mb-1.5 transition-all duration-200`}>
           {isRecording ? (
             <span className="flex items-center gap-1 text-[10px] font-medium text-destructive animate-pulse">
@@ -324,6 +323,86 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
           </button>
         </div>
       </div>
+      </div>{/* end chat column */}
+
+      {/* ── Video tutorial card ── */}
+      <div
+        onClick={() => setTutorialOpen(true)}
+        className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+        title="Watch the tutorial for this step"
+      >
+        <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+              <Play className="w-5 h-5 text-white ml-1" fill="white" />
+            </div>
+            <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+          </div>
+          <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+          <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 5</div>
+        </div>
+        <div className="bg-background px-3 py-2 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold">Review Your Case</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Chat with your AI Genie</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+        </div>
+      </div>
+
+      {/* ── Tutorial modal ── */}
+      {tutorialOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setTutorialOpen(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-[95vw] max-h-[95vh] flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Step 5 Tutorial — Review Your Case</p>
+                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <iframe
+              width="800"
+              height="450"
+              src="https://app.heygen.com/embeds/c190d0b1142e43d9bc10ae1a7205dd8d"
+              title="HeyGen video player"
+              frameBorder="0"
+              allow="encrypted-media; fullscreen;"
+              allowFullScreen
+              className="block"
+            />
+            <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
+                Video plays above — click X or anywhere outside to return to your case.
+              </p>
+              <button
+                onClick={() => setTutorialOpen(false)}
+                className="shrink-0 text-xs font-semibold text-[#0d9488] hover:underline"
+              >
+                Close &amp; return to chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
