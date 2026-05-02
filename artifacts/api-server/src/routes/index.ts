@@ -15,6 +15,7 @@ import demandLetterRouter from "./demand-letter";
 import hearingPrepRouter from "./hearing-prep";
 import storageRouter from "./storage";
 import backupDownloadRouter from "./backup-download";
+import sourceDownloadRouter from "./source-download";
 
 const router: IRouter = Router();
 
@@ -24,6 +25,7 @@ router.use(countiesRouter);
 router.use(storageRouter);
 router.use(helpChatRouter);
 router.use(backupDownloadRouter);
+router.use(sourceDownloadRouter);
 
 // Form downloads — accept ?token query param (token issued by protected endpoint below)
 router.use(formsRouter);
