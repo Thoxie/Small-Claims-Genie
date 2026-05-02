@@ -131,12 +131,12 @@ export function IntakeTab({
   caseId,
   initialData,
   forceStep,
-  onStepChange: _onStepChange,
+  onStepChange,
 }: {
   caseId: number;
   initialData: ExtendedCase;
   forceStep?: 1 | 2;
-  onStepChange?: (step: number) => void; // reserved for future progress tracking
+  onStepChange?: (step: number) => void;
 }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [, navigate] = useLocation();
@@ -152,21 +152,30 @@ export function IntakeTab({
 
   const [activeTab, setActiveTabState] = useState<StepNum>(getInitialStep);
 
-  // Jump to forced step when outer nav requests step 1 or 2
-  const prevForceStep = useRef<number | undefined>(undefined);
-  useEffect(() => {
-    if (forceStep && forceStep !== prevForceStep.current) {
-      prevForceStep.current = forceStep;
-      setActiveTabState(forceStep);
-    }
-  }, [forceStep]);
-  const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
-  const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
-
+  // Central step setter — always updates localStorage and notifies workspace
   const setActiveTab = (step: StepNum) => {
     localStorage.setItem(`intake-step-${caseId}`, String(step));
     setActiveTabState(step);
+    onStepChange?.(step);
   };
+
+  // Jump to forced step when outer nav requests step 1 or 2
+  const prevForceStep = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (forceStep === undefined) {
+      // Outer nav released control — reset so next click always fires
+      prevForceStep.current = undefined;
+      return;
+    }
+    if (forceStep !== prevForceStep.current) {
+      prevForceStep.current = forceStep;
+      setActiveTab(forceStep); // writes localStorage + notifies workspace
+    }
+  // setActiveTab is stable (recreated each render but that's fine — forceStep drives this)
+  }, [forceStep]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
+  const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
 
   const saveIntake = useSaveIntakeProgress();
   const queryClient = useQueryClient();
