@@ -198,7 +198,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
 
   if (!sessionStarted && prepMode === null) {
     return (
-      <div className="p-6 md:p-8 max-w-4xl mx-auto">
+      <div className="px-4 pt-3 pb-4">
         <div className="flex gap-4 items-start">
 
           {/* Left: main content */}
