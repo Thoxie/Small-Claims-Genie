@@ -920,15 +920,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         signDate: new Date().toISOString().split("T")[0],
       };
       case "sc112a": {
-        const defMailingAddr = [
-          cc.defendantMailingAddress || cc.defendantAddress,
-          cc.defendantMailingCity || cc.defendantCity,
-          cc.defendantMailingState || cc.defendantState || "CA",
-          cc.defendantMailingZip || cc.defendantZip,
-        ].filter(Boolean).join(", ");
         return {
-          party1Name: cc.defendantName || "",
-          party1Address: defMailingAddr,
           mailingCity: cc.plaintiffCity || "",
         };
       }
@@ -1182,7 +1174,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              To be completed by the person who mailed the court papers — <strong className="text-foreground">not you</strong>. The defendant's name and address are pre-filled from your intake.
+              To be completed by the person who mailed the court papers — <strong className="text-foreground">not you</strong>. Fill in the name and address of whoever was served.
             </p>
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <div className="flex items-start gap-3">
