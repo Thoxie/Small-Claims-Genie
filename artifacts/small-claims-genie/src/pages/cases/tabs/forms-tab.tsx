@@ -1080,9 +1080,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 onClick={() => setSigModalOpen(true)} disabled={downloadingPdf || viewingPdf}>
                 {downloadingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Sign &amp; Download SC-100
               </Button>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId("sc100")}>
-                <Info className="h-3 w-3" />How to Fill This
-              </Button>
             </div>
           </div>
         );
@@ -1151,9 +1148,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 disabled={buildingPacket}>
                 <PenLine className="h-3 w-3" />Sign &amp; Download
               </Button>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId("mc030")}>
-                <Info className="h-3 w-3" />How to Fill This
-              </Button>
             </div>
           </div>
         );
@@ -1191,9 +1185,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 onClick={openSC112A} disabled={downloadingForm === "sc112a"}>
                 {downloadingForm === "sc112a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Fill Out &amp; Download SC-112A
               </Button>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId("sc112a")}>
-                <Info className="h-3 w-3" />How to Fill This
-              </Button>
             </div>
           </div>
         );
@@ -1217,9 +1208,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 }}
                 disabled={downloadingForm === "sc100a"}>
                 {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Sign &amp; Download SC-100A
-              </Button>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId("sc100a")}>
-                <Info className="h-3 w-3" />Guide
               </Button>
             </div>
           </div>
@@ -1246,9 +1234,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   </Button>
                 </a>
               ) : null}
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId(currentStep.id)}>
-                <Info className="h-3 w-3" />Guide
-              </Button>
             </div>
           </div>
         );
@@ -1366,6 +1351,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           {/* Navigation — right side of header */}
           <div className="shrink-0 flex flex-col items-end gap-2">
             <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGuideDialogFormId(currentStep.id)}
+                className="h-7 text-xs gap-1 px-2"
+                title="How to fill out this form"
+              >
+                <Info className="w-3.5 h-3.5" />How to Fill
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
