@@ -1295,7 +1295,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   step.status === "optional" ? "bg-amber-400" : "bg-muted-foreground/30"
                 } ${i === wizardIndex ? "ring-2 ring-offset-1 ring-primary/50 scale-125" : ""}`} />
                 <span className={`text-[9px] font-bold leading-none ${i === wizardIndex ? "text-foreground" : "text-muted-foreground/60"}`}>
-                  {step.number}
+                  {i + 1}. {step.number}
                 </span>
                 <span className={`text-[9px] leading-none truncate w-full text-center px-0.5 ${i === wizardIndex ? "text-foreground/70" : "text-muted-foreground/40"}`}>
                   {step.shortLabel}
