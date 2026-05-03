@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/types-of-cases", label: "Types of Cases" },
-  { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },
   { href: "/resources", label: "Resources" },
   { href: "/resume", label: "Resume a Case" },
