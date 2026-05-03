@@ -77,9 +77,11 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     return step >= 1 && step <= 7 ? step : 1;
   });
 
-  // Compute which outer step number is currently active
+  // Compute which outer step number is currently active.
+  // Inner intake steps 1-7 map 1:1 to outer steps 1-7 so the header
+  // tracks every page as the user advances through intake.
   const currentOuterStep = (() => {
-    if (activeTab === "intake") return trackedInnerStep >= 2 ? 2 : 1;
+    if (activeTab === "intake") return Math.min(trackedInnerStep, 7);
     const entry = Object.entries(STEP_MAP).find(([, v]) => v.tab === activeTab && !v.intakeStep);
     return entry ? parseInt(entry[0]) : 1;
   })();
