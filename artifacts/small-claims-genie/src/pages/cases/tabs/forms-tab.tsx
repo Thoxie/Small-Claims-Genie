@@ -982,11 +982,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "sc100a", number: "SC-100A", shortLabel: "Other Parties",      status: (additionalPartyRequired ? "required" : "optional") as StepStatus },
       { id: "sc112a", number: "SC-112A", shortLabel: "Mail Service",        status: "required" as StepStatus },
       { id: "sc104",  number: "SC-104",  shortLabel: "Proof of Service",   status: "required" as StepStatus },
-      { id: "fw001",  number: "FW-001",  shortLabel: "Fee Waiver",         status: "optional" as StepStatus },
       { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
       { id: "sc150",  number: "SC-150",  shortLabel: "Postpone Trial",     status: "optional" as StepStatus },
       { id: "sc120",  number: "SC-120",  shortLabel: "Defendant's Claim",  status: "optional" as StepStatus },
       { id: "sc140",  number: "SC-140",  shortLabel: "Notice of Appeal",   status: "optional" as StepStatus },
+      { id: "fw001",  number: "FW-001",  shortLabel: "Fee Waiver",         status: "optional" as StepStatus },
     ];
   }, [showSC103, currentCase.hasAdditionalPlaintiff, currentCase.additionalPlaintiffName]);
   // Primary wizard: only forms required for THIS specific case (skipped = not applicable, hidden)
