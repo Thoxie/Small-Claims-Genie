@@ -1363,16 +1363,41 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </p>
             )}
           </div>
-          {catalogCurrentForm?.blankFormUrl && (
-            <a
-              href={catalogCurrentForm.blankFormUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap"
-            >
-              Blank ↗
-            </a>
-          )}
+          {/* Navigation — right side of header */}
+          <div className="shrink-0 flex flex-col items-end gap-2">
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWizardIndex(prev => Math.max(prev - 1, 0))}
+                disabled={wizardIndex === 0}
+                className="h-7 w-7 p-0"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </Button>
+              <span className="text-xs text-muted-foreground font-medium px-1 tabular-nums">
+                {wizardIndex + 1} / {wizardSteps.length}
+              </span>
+              <Button
+                size="sm"
+                onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
+                disabled={wizardIndex === wizardSteps.length - 1}
+                className="h-7 w-7 p-0"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+            {catalogCurrentForm?.blankFormUrl && (
+              <a
+                href={catalogCurrentForm.blankFormUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap"
+              >
+                Blank ↗
+              </a>
+            )}
+          </div>
         </div>
 
         {/* Card body */}
@@ -1382,41 +1407,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
       </div>
 
-      {/* ── Navigation ─────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between pb-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setWizardIndex(prev => Math.max(prev - 1, 0))}
-          disabled={wizardIndex === 0}
-          className="gap-1.5 h-9"
-        >
-          <ChevronLeft className="w-4 h-4" />Previous
-        </Button>
-
-        <div className="flex gap-1.5 items-center">
-          {wizardSteps.map((s, i) => (
-            <div
-              key={s.id}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                s.status === "required" ? "bg-primary/60" :
-                s.status === "optional" ? "bg-amber-400/60" : "bg-muted-foreground/20"
-              }`}
-              style={{ width: i === wizardIndex ? 16 : 6 }}
-            />
-          ))}
-        </div>
-
-        <Button
-          size="sm"
-          onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
-          disabled={wizardIndex === wizardSteps.length - 1}
-          className="gap-1.5 h-9"
-        >
-          {wizardIndex === wizardSteps.length - 1 ? "Done" : "Next form"}
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
 
       {/* ── Additional Forms ────────────────────────────────────────────────── */}
       {additionalSteps.length > 0 && (
