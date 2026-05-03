@@ -7,7 +7,7 @@ import type { ExtendedCase } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertCircle, PlusCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, PlusCircle, Play, X, ChevronRight } from "lucide-react";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 import { Link } from "wouter";
 
@@ -65,6 +65,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   // Nonce increments on every outer-nav click so IntakeTab always re-fires its
   // effect even when forceStep value hasn't changed (e.g., clicking step 2 twice).
   const [forceStepNonce, setForceStepNonce] = useState(0);
+  const [prepTutorialOpen, setPrepTutorialOpen] = useState(false);
 
   // Tracks the *actual* inner step reported by IntakeTab via onStepChange.
   // Seeded from localStorage so the outer highlight is correct on refresh
@@ -186,60 +187,143 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     >
       <div className="container mx-auto px-4 pt-0 pb-6 max-w-6xl flex flex-col gap-3">
 
-        {/* ── Readiness card — only shown on the Prep tab ── */}
-        {activeTab === "prep" && <div className={`bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
-          <div className="grid grid-cols-2 gap-4 items-center">
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-end gap-2">
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
-                  <p className="text-sm font-bold text-foreground leading-tight">{currentCase.plaintiffName || "—"}</p>
+        {/* ── Readiness card + video card — only shown on the Prep tab ── */}
+        {activeTab === "prep" && (
+          <div className="flex gap-4 items-start">
+            {/* Readiness card */}
+            <div className={`flex-1 min-w-0 bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
+              <div className="grid grid-cols-2 gap-4 items-center">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-end gap-2">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
+                      <p className="text-sm font-bold text-foreground leading-tight">{currentCase.plaintiffName || "—"}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground pb-0.5 shrink-0">v.</span>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
+                      <p className="text-sm font-bold text-foreground leading-tight">{currentCase.defendantName || "—"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className={`text-2xl font-black leading-none ${scoreColor}`}>{score}%</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Readiness</span>
+                    <span className={`text-[10px] font-semibold ${scoreColor}`}>· {scoreLabel}</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{extCase.claimAmount ? `$${Number(extCase.claimAmount).toLocaleString()}` : "—"}</span></span>
+                    {extCase.countyId && (
+                      <span className="text-xs text-muted-foreground">· {extCase.countyId} County</span>
+                    )}
+                    {extCase.caseNumber && (
+                      <span className="text-xs text-muted-foreground">· No. <span className="font-semibold text-foreground">{extCase.caseNumber}</span></span>
+                    )}
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground pb-0.5 shrink-0">v.</span>
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
-                  <p className="text-sm font-bold text-foreground leading-tight">{currentCase.defendantName || "—"}</p>
+                <div className="flex flex-col gap-1 border-l border-border pl-4">
+                  {allItems.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                      {allItems.map((item, i) => (
+                        <div key={i} className={`flex items-start gap-1 text-[10px] leading-tight ${item.ok ? "text-green-700" : "text-destructive"}`}>
+                          {item.ok
+                            ? <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />
+                            : <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
+                          }
+                          <span>{item.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Complete your intake form to see your readiness score.</p>
+                  )}
+                  <div className="mt-1">
+                    <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs">
+                      {currentCase.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className={`text-2xl font-black leading-none ${scoreColor}`}>{score}%</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Readiness</span>
-                <span className={`text-[10px] font-semibold ${scoreColor}`}>· {scoreLabel}</span>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{extCase.claimAmount ? `$${Number(extCase.claimAmount).toLocaleString()}` : "—"}</span></span>
-                {extCase.countyId && (
-                  <span className="text-xs text-muted-foreground">· {extCase.countyId} County</span>
-                )}
-                {extCase.caseNumber && (
-                  <span className="text-xs text-muted-foreground">· No. <span className="font-semibold text-foreground">{extCase.caseNumber}</span></span>
-                )}
               </div>
             </div>
-            <div className="flex flex-col gap-1 border-l border-border pl-4">
-              {allItems.length > 0 ? (
-                <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                  {allItems.map((item, i) => (
-                    <div key={i} className={`flex items-start gap-1 text-[10px] leading-tight ${item.ok ? "text-green-700" : "text-destructive"}`}>
-                      {item.ok
-                        ? <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />
-                        : <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
-                      }
-                      <span>{item.text}</span>
-                    </div>
-                  ))}
+
+            {/* Video tutorial card — same style as other intake steps */}
+            <div
+              onClick={() => setPrepTutorialOpen(true)}
+              className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+              title="Watch the tutorial for this step"
+            >
+              <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                    <Play className="w-5 h-5 text-white ml-1" fill="white" />
+                  </div>
+                  <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground italic">Complete your intake form to see your readiness score.</p>
-              )}
-              <div className="mt-1">
-                <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs">
-                  {currentCase.status.replace('_', ' ')}
-                </Badge>
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~2 min</div>
+                <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 7</div>
+              </div>
+              <div className="bg-background px-3 py-2 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold">Prep for Your Hearing</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">What to expect in court</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
               </div>
             </div>
           </div>
-        </div>}
+        )}
+
+        {/* ── Video modal for prep tab ── */}
+        {prepTutorialOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setPrepTutorialOpen(false)}
+          >
+            <div
+              className="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-[95vw] max-h-[95vh] flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                    <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-800">Step 7 Tutorial — Prep for Your Hearing</p>
+                    <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPrepTutorialOpen(false)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <iframe
+                width="800"
+                height="450"
+                src="https://app.heygen.com/embeds/1ac88511fa1c4a5a9dd5b4d517cc46c5"
+                title="HeyGen video player"
+                frameBorder="0"
+                allow="encrypted-media; fullscreen;"
+                allowFullScreen
+                className="block"
+              />
+              <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
+                <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
+                  Video plays above — click X or press Escape to return to your case.
+                </p>
+                <button
+                  onClick={() => setPrepTutorialOpen(false)}
+                  className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
+                >
+                  Close &amp; Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Tab content ── */}
         <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
