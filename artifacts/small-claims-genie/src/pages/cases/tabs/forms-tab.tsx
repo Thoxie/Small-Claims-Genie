@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft, SkipForward } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft, SkipForward } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 
@@ -468,7 +468,7 @@ export function SignaturePadModal({ open, onClose, onSign, onSkipSign, formTitle
 }
 
 // ─── Packet Rules Engine ──────────────────────────────────────────────────────
-function getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: string; required: boolean; reason: string }> {
+function _getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: string; required: boolean; reason: string }> {
   if (!c?.plaintiffName) return [];
 
   const forms: Array<{ id: string; number: string; required: boolean; reason: string }> = [];
@@ -499,7 +499,7 @@ function getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: strin
 }
 
 // ─── Phase Header ─────────────────────────────────────────────────────────────
-function PhaseHeader({ number, title, subtitle }: { number: number; title: string; subtitle: string }) {
+function _PhaseHeader({ number, title, subtitle }: { number: number; title: string; subtitle: string }) {
   return (
     <div className="flex items-start gap-4 mb-5">
       <div className="shrink-0 h-10 w-10 rounded-full bg-[#0d6b5e] flex items-center justify-center shadow-sm">
@@ -616,13 +616,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const showSC103 = isBusinessCase === true;
   const showPublicEntityBlock = isSuingPublicEntity;
   const showLimitWarning = claimAmount > 10000;
-  const showPhase2 = showSC100A || showSC103 || showPublicEntityBlock || showLimitWarning;
-
-  // Library forms (all except sc100, mc030, sc112a which have their own sections)
-  const _PHASE1_IDS = ["sc100", "mc030"];
-  const _PHASE3_IDS = ["sc112a"];
-  const LIBRARY_IDS = ["fw001", "sc103", "sc104", "sc105", "sc140", "sc150"];
-  const libraryForms = FORMS_CATALOG.filter(f => LIBRARY_IDS.includes(f.id));
+  const _showPhase2 = showSC100A || showSC103 || showPublicEntityBlock || showLimitWarning;
 
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 

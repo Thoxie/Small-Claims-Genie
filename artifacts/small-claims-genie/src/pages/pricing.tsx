@@ -10,7 +10,7 @@ const CHECK = (
 );
 
 // Product metadata keys — must match what's seeded in Stripe
-const PLAN_KEYS = {
+const _PLAN_KEYS = {
   personal: "personal",
   business: "business",
   paralegal: "paralegal",
@@ -18,13 +18,13 @@ const PLAN_KEYS = {
   collection_high: "collection_high",
 } as const;
 
-type PlanKey = (typeof PLAN_KEYS)[keyof typeof PLAN_KEYS];
+type PlanKey = (typeof _PLAN_KEYS)[keyof typeof _PLAN_KEYS];
 
 async function startCheckout(
   getToken: () => Promise<string | null>,
   planKey: PlanKey,
   setLoading: (k: PlanKey | null) => void,
-  navigate: (path: string) => void
+  _navigate: (path: string) => void
 ) {
   setLoading(planKey);
   try {
