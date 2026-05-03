@@ -189,7 +189,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
 
         {/* ── Readiness card + video card — only shown on the Prep tab ── */}
         {activeTab === "prep" && (
-          <div className="flex gap-4 items-start">
+          <div className="flex gap-4 items-start mt-3">
             {/* Readiness card */}
             <div className={`flex-1 min-w-0 bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
               <div className="grid grid-cols-2 gap-4 items-center">
