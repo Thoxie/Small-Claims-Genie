@@ -992,7 +992,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "sc104",  number: "SC-104",  shortLabel: "Proof of Service",   status: "required" as StepStatus },
       { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
       { id: "sc150",  number: "SC-150",  shortLabel: "Postpone Trial",     status: "optional" as StepStatus },
-      { id: "sc120",  number: "SC-120",  shortLabel: "Defendant's Claim",  status: "optional" as StepStatus },
       { id: "sc140",  number: "SC-140",  shortLabel: "Notice of Appeal",   status: "optional" as StepStatus },
       { id: "fw001",  number: "FW-001",  shortLabel: "Fee Waiver",         status: "optional" as StepStatus },
     ];
