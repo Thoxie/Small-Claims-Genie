@@ -1373,20 +1373,21 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 size="sm"
                 onClick={() => setWizardIndex(prev => Math.max(prev - 1, 0))}
                 disabled={wizardIndex === 0}
-                className="h-7 w-7 p-0"
+                className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-4 h-4 text-foreground" />
               </Button>
-              <span className="text-xs text-muted-foreground font-medium px-1 tabular-nums">
+              <span className="text-sm text-foreground font-semibold px-1.5 tabular-nums">
                 {wizardIndex + 1} / {wizardSteps.length}
               </span>
               <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
                 disabled={wizardIndex === wizardSteps.length - 1}
-                className="h-7 w-7 p-0"
+                className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4 text-foreground" />
               </Button>
             </div>
             {catalogCurrentForm?.blankFormUrl && (
