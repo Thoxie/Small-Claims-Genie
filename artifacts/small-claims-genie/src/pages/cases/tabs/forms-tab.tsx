@@ -920,7 +920,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         signDate: new Date().toISOString().split("T")[0],
       };
       case "sc112a": {
+        const defMailingAddr = [
+          cc.defendantMailingAddress || cc.defendantAddress,
+          cc.defendantMailingCity || cc.defendantCity,
+          cc.defendantMailingState || cc.defendantState || "CA",
+          cc.defendantMailingZip || cc.defendantZip,
+        ].filter(Boolean).join(", ");
         return {
+          party1Name: cc.defendantName || "",
+          party1Address: defMailingAddr,
           mailingCity: cc.plaintiffCity || "",
         };
       }

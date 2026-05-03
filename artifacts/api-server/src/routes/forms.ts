@@ -2523,6 +2523,9 @@ router.post("/cases/:id/forms/sc112a", async (req, res): Promise<void> => {
       "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.14[0]",
       "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.1[0]",
     ];
+    // Always clear all 5 rows first so stale values baked into the PDF template never show through
+    partyNameFields.forEach(field => sf(form, field, ""));
+    partyAddrFields.forEach(field => sf(form, field, ""));
     parties.slice(0, 5).forEach((party, i) => {
       sf(form, partyNameFields[i], party.name || "");
       sf(form, partyAddrFields[i], party.address || "");
