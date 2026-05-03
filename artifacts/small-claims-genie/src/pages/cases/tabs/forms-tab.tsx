@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetCaseReadiness } from "@workspace/api-client-react";
 import type { ExtendedCase, DocumentWithMeta } from "@/lib/types";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, BookOpen, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft, SkipForward } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 
@@ -550,6 +550,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [selectedExhibits, setSelectedExhibits] = useState<number[]>([]);
   const [buildingPacket, setBuildingPacket] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [wizardIndex, setWizardIndex] = useState(0);
 
   // ── Documents for exhibit selector ────────────────────────────────────────
   const [documents, setDocuments] = useState<DocumentWithMeta[]>([]);
@@ -984,117 +985,116 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   const EXHIBIT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-  return (
-    <div className="px-4 pt-3 pb-4 md:px-6 md:pb-6 space-y-8">
+  // ── Wizard steps ──────────────────────────────────────────────────────────
+  type StepStatus = "required" | "optional" | "skipped";
+  const wizardSteps = useMemo(() => {
+    const additionalPartyRequired = !!(currentCase.hasAdditionalPlaintiff && currentCase.additionalPlaintiffName);
+    return [
+      { id: "sc100",  number: "SC-100",  shortLabel: "Plaintiff's Claim",  status: "required" as StepStatus },
+      { id: "mc030",  number: "MC-030",  shortLabel: "Declaration",         status: "required" as StepStatus },
+      { id: "sc103",  number: "SC-103",  shortLabel: "Fictitious Name",    status: (showSC103 ? "required" : "skipped") as StepStatus },
+      { id: "sc100a", number: "SC-100A", shortLabel: "Other Parties",      status: (additionalPartyRequired ? "required" : "optional") as StepStatus },
+      { id: "sc112a", number: "SC-112A", shortLabel: "Mail Service",        status: "required" as StepStatus },
+      { id: "sc104",  number: "SC-104",  shortLabel: "Proof of Service",   status: "required" as StepStatus },
+      { id: "fw001",  number: "FW-001",  shortLabel: "Fee Waiver",         status: "optional" as StepStatus },
+      { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
+      { id: "sc150",  number: "SC-150",  shortLabel: "Postpone Trial",     status: "optional" as StepStatus },
+      { id: "sc120",  number: "SC-120",  shortLabel: "Defendant's Claim",  status: "optional" as StepStatus },
+      { id: "sc140",  number: "SC-140",  shortLabel: "Notice of Appeal",   status: "optional" as StepStatus },
+    ];
+  }, [showSC103, currentCase.hasAdditionalPlaintiff, currentCase.additionalPlaintiffName]);
 
-      {/* ── Header row: left content + right video card ── */}
-    <div className="flex gap-4 items-start">
-      <div className="flex-1 min-w-0 space-y-4">
+  const currentStep = wizardSteps[Math.min(wizardIndex, wizardSteps.length - 1)];
+  const isStepSkipped = currentStep.status === "skipped";
+  const catalogCurrentForm = FORMS_CATALOG.find(f => f.id === currentStep.id);
+  const guideCurrentForm = FORM_GUIDE_CONTENT[currentStep.id];
+  const stepWarnings = guideCurrentForm?.warnings ?? [];
+  const stepRelatedForms = guideCurrentForm?.relatedForms ?? [];
 
-        {isDraftMode && <DraftModeBanner />}
-
-        {/* ── YOUR PACKET ────────────────────────────────────────────────────── */}
-        {(() => {
-          const packet = getRecommendedForms(currentCase);
-          if (packet.length === 0) return null;
-          return (
-            <section className="rounded-xl border-2 border-[#14b8a6] bg-[#f0fffe] p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Package className="h-5 w-5 text-[#0d6b5e] shrink-0" />
-                <h3 className="font-bold text-[#0d6b5e] text-base">Your Forms Packet</h3>
-                <span className="text-xs text-muted-foreground">— based on your case details</span>
-              </div>
-              <div className="space-y-2">
-                {packet.map(f => (
-                  <div key={f.id} className="flex items-center gap-3 bg-white rounded-lg px-4 py-2.5 border border-[#14b8a6]/20">
-                    <span className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ${f.required ? "bg-[#0d6b5e] text-white" : "bg-muted text-muted-foreground"}`}>
-                      {f.number}
-                    </span>
-                    <span className="text-sm text-foreground flex-1">{f.reason}</span>
-                    <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wide ${f.required ? "text-[#0d6b5e]" : "text-muted-foreground"}`}>
-                      {f.required ? "Required" : "Optional"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-                All forms below are still available — this packet shows only what applies to your specific case.
-              </p>
-            </section>
-          );
-        })()}
-
-      </div>{/* end left column */}
-
-      {/* Right: video tutorial card */}
-      <div
-        onClick={() => setTutorialOpen(true)}
-        className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
-        title="Watch the tutorial for this step"
-      >
-        <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
-          <div className="relative z-10 flex flex-col items-center gap-2">
-            <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
-              <Play className="w-5 h-5 text-white ml-1" fill="white" />
-            </div>
-            <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+  function renderStepBody(): React.ReactNode {
+    if (isStepSkipped) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-3 text-center py-8">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+            <SkipForward className="w-5 h-5 text-muted-foreground" />
           </div>
-          <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
-          <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 6</div>
-        </div>
-        <div className="bg-background px-3 py-2 flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold">Create Court Forms</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Download &amp; fill your forms</p>
+            <p className="text-sm font-semibold">This form doesn't apply to your case</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+              {currentStep.id === "sc103"
+                ? "SC-103 is only required when filing as a business with a fictitious (DBA) name. Your case is filed as an individual."
+                : "This form is not required based on your case details."}
+            </p>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+          <button
+            onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
+            className="text-xs text-primary underline underline-offset-2 font-medium"
+          >
+            Continue to next form →
+          </button>
+        </div>
+      );
+    }
+
+    const commonWarnings = stepWarnings.length > 0 ? (
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 flex gap-2">
+        <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
+        <ul className="text-xs text-amber-800 space-y-0.5">
+          {stepWarnings.map((w, i) => <li key={i}>{w}</li>)}
+        </ul>
+      </div>
+    ) : null;
+
+    const commonRelated = stepRelatedForms.length > 0 ? (
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Also file with</p>
+        <div className="flex flex-col gap-0.5">
+          {stepRelatedForms.map((rf, i) => (
+            <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
+              <span className="font-semibold text-foreground">{rf.number}</span>&nbsp;—&nbsp;{rf.reason}
+            </div>
+          ))}
         </div>
       </div>
+    ) : null;
 
-    </div>{/* end header flex row */}
-
-      {/* ── PHASE 1: Filing Package ────────────────────────────────────────── */}
-      <section>
-        <PhaseHeader
-          number={1}
-          title="Filing Package"
-          subtitle="Complete and download these two forms to file your small claims case with the court."
-        />
-
-        <div className="space-y-4 pl-0 sm:pl-14">
-
-          {/* Filing hierarchy notice */}
-          <div className="rounded-xl border border-[#0d6b5e]/30 bg-[#f0fffe]/60 px-4 py-3 flex items-start gap-3">
-            <BookOpen className="h-4 w-4 text-[#0d6b5e] shrink-0 mt-0.5" />
-            <div className="text-xs text-[#0d6b5e] leading-relaxed space-y-0.5">
-              <p><span className="font-bold">SC-100</span> is the primary form required for every small claims case — nothing gets filed without it.</p>
-              <p><span className="font-bold">MC-030</span> is the required companion — a separate sworn declaration filed at the same time as your SC-100.</p>
-              <p className="text-[#0d6b5e]/75">All other forms are supplemental — each one is a separate document handed to the clerk alongside your SC-100, never combined into one file.</p>
-            </div>
-          </div>
-
-          {/* SC-100 Card */}
-          <div className={`rounded-xl border-2 p-5 bg-card transition-all ${isReady ? "border-[#0d6b5e]/50 bg-[#f0fffe]/40" : "border-border"}`}>
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">SC-100</span>
-                <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">Step 1 — Start Here</span>
-                {isReady && <span className="flex items-center gap-1 text-[10px] font-bold text-[#0d6b5e]"><CheckCircle2 className="h-3 w-3" />Ready to file</span>}
-              </div>
-              <a href="https://www.courts.ca.gov/documents/sc100.pdf" target="_blank" rel="noopener noreferrer" className="shrink-0 text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
-            </div>
-            <h4 className="font-semibold text-sm leading-tight mb-1">Plaintiff's Claim and ORDER to Go to Small Claims Court</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed mb-4">This is your main filing form. Your name, the defendant's name and address, claim amount, and why you're owed money are all pre-filled from your intake.</p>
+    switch (currentStep.id) {
+      case "sc100":
+        return (
+          <div className="space-y-3">
             {descriptionNeedsMC030 && (
-              <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800 mb-3">
+              <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
                 <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-blue-500" />
-                Your description is long — the PDF will include a note directing the court to the separate MC-030 Declaration (Step 1B below). File both with the clerk at the same time.
+                Your description is long — the PDF will include a note directing the court to your MC-030 Declaration. File both with the clerk at the same time.
               </div>
             )}
-            <div className="flex gap-2 flex-wrap mb-3">
-              <Button className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
+            {showPublicEntityBlock && (
+              <div className="flex items-start gap-3 rounded-xl border-2 border-rose-300 bg-rose-50 p-4">
+                <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-sm text-rose-900 mb-1">Special Rules — Suing a Government Agency</h4>
+                  <p className="text-sm text-rose-800">You must file a government tort claim (Gov. Code § 910) and wait for rejection before filing in small claims court.</p>
+                </div>
+              </div>
+            )}
+            {showLimitWarning && (
+              <div className="flex items-start gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-sm text-amber-900 mb-1">Claim Near the Limit — ${claimAmount.toLocaleString()}</h4>
+                  <p className="text-sm text-amber-800">
+                    {claimAmount > 12500
+                      ? "Your claim exceeds $12,500. Individual plaintiffs are capped — you may need to reduce your claim or file in a higher court."
+                      : "Your claim is approaching the small claims limit. Businesses are capped at $6,250."}
+                  </p>
+                </div>
+              </div>
+            )}
+            {commonWarnings}
+            {commonRelated}
+            <div className="flex gap-2 flex-wrap pt-1">
+              <Button size="sm" className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
                 onClick={viewSC100} disabled={viewingPdf || downloadingPdf}>
                 {viewingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <Eye className="h-3 w-3" />}View My SC-100
               </Button>
@@ -1102,9 +1102,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 onClick={openSC100EditDialog} disabled={viewingPdf || downloadingPdf}>
                 <Pencil className="h-3 w-3" />Edit Fields
               </Button>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <Button className="gap-1.5 bg-[#14b8a6] hover:bg-[#0d9488] text-white h-8 text-xs px-3"
+              <Button size="sm" className="gap-1.5 bg-[#14b8a6] hover:bg-[#0d9488] text-white h-8 text-xs px-3"
                 onClick={() => setSigModalOpen(true)} disabled={downloadingPdf || viewingPdf}>
                 {downloadingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Sign &amp; Download SC-100
               </Button>
@@ -1113,36 +1111,22 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </Button>
             </div>
           </div>
+        );
 
-          {/* MC-030 + Exhibits inline card */}
-          <div className="rounded-xl border-2 border-border p-5 bg-card">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">MC-030</span>
-                <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-[#0d6b5e]/10 text-[#0d6b5e] border border-[#0d6b5e]/20">Step 1B — Declaration + Exhibits</span>
-                <Badge variant="destructive" className="text-[10px] py-0">Required</Badge>
-              </div>
-              <a href="https://www.courts.ca.gov/documents/mc030.pdf" target="_blank" rel="noopener noreferrer" className="shrink-0 text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
-            </div>
-            <h4 className="font-semibold text-sm leading-tight mb-1">Sworn Declaration + Attached Evidence</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-              This declaration is <strong className="text-foreground">required with every SC-100 filing</strong> — it strengthens your case by giving the court your sworn statement of facts. Your name is pre-filled to match the SC-100. Add your statement below, attach supporting documents as labeled exhibits (Exhibit A, B, C…), and download as one PDF.
-            </p>
-
-            {/* Declaration title */}
-            <div className="mb-3">
+      case "mc030":
+        return (
+          <div className="space-y-3">
+            <div>
               <label className="text-xs font-semibold text-foreground block mb-1">Declaration Title <span className="font-normal text-muted-foreground">(optional)</span></label>
               <input type="text" value={mc030Title} onChange={e => setMc030Title(e.target.value)}
                 placeholder="e.g. Declaration of Jane Doe in Support of Claim"
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent" />
             </div>
-
-            {/* Declaration text */}
-            <div className="mb-3">
+            <div>
               <label className="text-xs font-semibold text-foreground block mb-1">Sworn Statement <span className="text-rose-500">*</span></label>
               <textarea value={mc030Text} onChange={e => setMc030Text(e.target.value)}
                 placeholder="Write your declaration here. Use numbered paragraphs: '1. On January 15, 2025, I paid defendant $2,400 for…'"
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent resize-none" rows={6} />
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent resize-none" rows={5} />
               <div className="mt-1.5 flex items-center gap-2">
                 <button onClick={generateMC030Declaration} disabled={mc030AiGenerating}
                   className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#0d6b5e]/10 text-[#0d6b5e] hover:bg-[#0d6b5e]/20 transition-colors disabled:opacity-50">
@@ -1152,9 +1136,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 {mc030AiError && <p className="text-xs text-rose-600">{mc030AiError}</p>}
               </div>
             </div>
-
-            {/* Exhibit selector */}
-            <div className="mb-4">
+            <div>
               <div className="flex items-center gap-2 mb-2">
                 <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-xs font-semibold text-foreground">Attached Exhibits</span>
@@ -1167,7 +1149,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   No documents uploaded yet. Upload evidence in the Documents tab to include exhibits here.
                 </p>
               ) : (
-                <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-lg border border-border p-2">
+                <div className="space-y-1.5 max-h-36 overflow-y-auto rounded-lg border border-border p-2">
                   {documents.map((doc: DocumentWithMeta, _idx: number) => {
                     const selectedIdx = selectedExhibits.indexOf(doc.id);
                     const isSelected = selectedIdx !== -1;
@@ -1177,18 +1159,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         <input type="checkbox" checked={isSelected} onChange={() => toggleExhibit(doc.id)} className="rounded border-input h-4 w-4 accent-[#0d6b5e]" />
                         <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="text-xs text-foreground truncate flex-1">{doc.originalName || doc.filename}</span>
-                        {exhibitLetter && (
-                          <span className="shrink-0 text-[10px] font-black bg-[#0d6b5e] text-white px-1.5 py-0.5 rounded-full">EXHIBIT {exhibitLetter}</span>
-                        )}
+                        {exhibitLetter && <span className="shrink-0 text-[10px] font-black bg-[#0d6b5e] text-white px-1.5 py-0.5 rounded-full">EXHIBIT {exhibitLetter}</span>}
                       </label>
                     );
                   })}
                 </div>
               )}
             </div>
-
-            <div className="flex gap-2 flex-wrap">
-              <Button className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
+            <div className="flex gap-2 flex-wrap pt-1">
+              <Button size="sm" className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
                 onClick={downloadMC030Packet} disabled={buildingPacket || !mc030Text.trim()}>
                 {buildingPacket ? <Loader2 className="h-3 w-3 animate-spin" /> : <Package className="h-3 w-3" />}
                 {buildingPacket ? "Building packet…" : selectedExhibits.length > 0 ? `Build Filing Packet (MC-030 + ${selectedExhibits.length} Exhibit${selectedExhibits.length > 1 ? "s" : ""})` : "Download MC-030"}
@@ -1203,147 +1182,38 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </Button>
             </div>
           </div>
+        );
 
-        </div>
-      </section>
-
-      {/* ── PHASE 2: Additional Forms (conditional) ───────────────────────── */}
-      {showPhase2 && (
-        <section>
-          <PhaseHeader
-            number={2}
-            title="Additional Required Forms"
-            subtitle="Based on your case details, one or more of the following may apply to you."
-          />
-          <div className="space-y-3 pl-0 sm:pl-14">
-
-            {showPublicEntityBlock && (
-              <div className="flex items-start gap-3 rounded-xl border-2 border-rose-300 bg-rose-50 p-4">
-                <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-sm text-rose-900 mb-1">Special Rules — Suing a Government Agency</h4>
-                  <p className="text-sm text-rose-800 leading-relaxed">You must file a government tort claim form (Gov. Code § 910) and wait for rejection before filing in small claims court. This is a required first step and must be completed before submitting your SC-100.</p>
-                </div>
-              </div>
-            )}
-
-            {showLimitWarning && (
-              <div className="flex items-start gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
-                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-sm text-amber-900 mb-1">Claim Near the Limit — ${claimAmount.toLocaleString()}</h4>
-                  <p className="text-sm text-amber-800 leading-relaxed">
-                    {claimAmount > 12500
-                      ? "Your claim amount exceeds $12,500. Individual plaintiffs are capped at $12,500 in small claims court. You may need to reduce your claim or file in a higher court."
-                      : "Your claim is approaching the small claims limit. Businesses are capped at $6,250. Make sure your final claim amount fits within the limits for your situation."}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {showSC103 && (
-              <div className={`rounded-xl border-2 border-orange-300 bg-orange-50/40 p-4`}>
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">SC-103</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">Required — DBA</span>
-                  </div>
-                  <a href="https://www.courts.ca.gov/documents/sc103.pdf" target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
-                </div>
-                <h4 className="font-semibold text-sm mb-1">Fictitious Business Name</h4>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-3">You are filing as a business. SC-103 connects your DBA name to the legal owner and must be filed as a separate form alongside your SC-100 — hand both to the clerk at the same time.</p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2 border-orange-400 text-orange-800 hover:bg-orange-100"
-                    onClick={() => { setModalInitialValues(getInitialValues("sc103")); setModalFormId("sc103"); }} disabled={downloadingForm === "sc103"}>
-                    {downloadingForm === "sc103" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Download SC-103
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" onClick={() => setGuideDialogFormId("sc103")}><Info className="h-3 w-3" />Guide</Button>
-                </div>
-              </div>
-            )}
-
-            {showSC100A && (
-              <div className="rounded-xl border-2 border-border p-4 bg-card">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">SC-100A</span>
-                    <span className="text-[10px] font-medium text-muted-foreground">If you have more than 2 parties</span>
-                  </div>
-                  <a href="https://www.courts.ca.gov/documents/sc100a.pdf" target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
-                </div>
-                <h4 className="font-semibold text-sm mb-1">Other Plaintiffs or Defendants</h4>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                  File alongside your SC-100 if your case has more than two parties.
-                  {currentCase.hasAdditionalPlaintiff && currentCase.additionalPlaintiffName && <span className="font-semibold text-foreground"> {currentCase.additionalPlaintiffName}'s information is pre-filled from your intake.</span>}
-                  {(!currentCase.hasAdditionalPlaintiff || !currentCase.additionalPlaintiffName) && " Add additional plaintiffs or defendants not listed on your SC-100."}
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"
-                    onClick={() => {
-                      setSc100aFormBody({ signDate: new Date().toISOString().split("T")[0], extraDefendant: null, extraPlaintiff: null });
-                      setSc100aSigModalOpen(true);
-                    }}
-                    disabled={downloadingForm === "sc100a"}>
-                    {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Sign &amp; Download SC-100A
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" onClick={() => setGuideDialogFormId("sc100a")}><Info className="h-3 w-3" />Guide</Button>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </section>
-      )}
-
-      {/* ── PHASE 3: Service of Process ───────────────────────────────────── */}
-      <section>
-        <PhaseHeader
-          number={showPhase2 ? 3 : 2}
-          title="Service of Process"
-          subtitle="After filing, you must have the defendant served and prove it to the court. This step is mandatory."
-        />
-        <div className="space-y-4 pl-0 sm:pl-14">
-
-          {/* Service method guide */}
-          <div className="rounded-xl border border-border bg-muted/30 p-4">
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center mt-0.5">
-                <Mail className="h-4 w-4 text-[#0d6b5e]" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-sm mb-1.5">How to Serve Your Defendant in California</h4>
-                <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
-                  <p><span className="font-semibold text-foreground">Personal Service (required for SC-100):</span> A non-party adult (not you) must hand the court papers directly to the defendant, or leave them with a responsible person at their home or business. This is the only valid method for the initial SC-100.</p>
-                  <p><span className="font-semibold text-foreground">Service by Mail (for later documents):</span> After filing, some documents like SC-105 and SC-150 may be served by mailing. A non-party adult mails the papers and completes SC-112A.</p>
-                  <p><span className="font-semibold text-foreground">Timing:</span> The defendant must be served at least 15 days before the hearing (30 days if they live outside the county). Check with your courthouse for exact deadlines.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* SC-112A card — MANDATORY */}
-          <div className="rounded-xl border-2 border-[#0d6b5e]/40 bg-[#f0fffe]/40 p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-[#0d6b5e] text-white">SC-112A</span>
-                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-[#0d6b5e]/15 text-[#0d6b5e] border border-[#0d6b5e]/30">
-                  <CheckCircle2 className="h-2.5 w-2.5" />Mandatory — Proof of Mail Service
-                </span>
-              </div>
-              <a href="https://www.courts.ca.gov/documents/sc112a.pdf" target="_blank" rel="noopener noreferrer" className="shrink-0 text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
-            </div>
-            <h4 className="font-semibold text-sm leading-tight mb-1">Proof of Service by Mail</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-              This form must be completed by the person who mailed the court papers — <span className="font-semibold text-foreground">not you</span>. It proves to the court that the defendant received the documents. The defendant's name and address are pre-filled from your intake.
+      case "sc112a":
+        return (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              To be completed by the person who mailed the court papers — <strong className="text-foreground">not you</strong>. The defendant's name and address are pre-filled from your intake.
             </p>
+            <div className="rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 shrink-0 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center mt-0.5">
+                  <Mail className="h-4 w-4 text-[#0d6b5e]" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm mb-1.5">How Service by Mail Works</h4>
+                  <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
+                    <p><span className="font-semibold text-foreground">Who mails it:</span> A non-party adult (not you) mails the court papers to the defendant and then completes this form.</p>
+                    <p><span className="font-semibold text-foreground">Timing:</span> Serve the defendant at least 15 days before the hearing (30 days if outside the county).</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             {!currentCase.caseNumber && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 mb-3">
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
-                Your case number isn't in the system yet — it will be assigned when you file at the courthouse. Write it in on the form after you receive it.
+                Your case number isn't on file yet — it will be assigned when you file at the courthouse. Write it in on the form after you receive it.
               </div>
             )}
-            <div className="flex gap-2 flex-wrap">
-              <Button className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
+            {commonWarnings}
+            {commonRelated}
+            <div className="flex gap-2 flex-wrap pt-1">
+              <Button size="sm" className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
                 onClick={openSC112A} disabled={downloadingForm === "sc112a"}>
                 {downloadingForm === "sc112a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Fill Out &amp; Download SC-112A
               </Button>
@@ -1352,58 +1222,233 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </Button>
             </div>
           </div>
+        );
 
-          {/* SC-104 mention */}
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-sm">
-            <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+      case "sc100a":
+        return (
+          <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="font-semibold text-foreground">SC-104 Proof of Service</span> is used to prove personal service of the original SC-100 (not mail service). Find it in the Forms Library below, or ask the person who serves the defendant to complete it.
+              File alongside your SC-100 if your case has more than two parties.
+              {currentCase.hasAdditionalPlaintiff && currentCase.additionalPlaintiffName
+                ? ` ${currentCase.additionalPlaintiffName}'s information is pre-filled from your intake.`
+                : " Add additional plaintiffs or defendants not listed on your SC-100."}
             </p>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ── Forms Library (less-common forms) ─────────────────────────────── */}
-      <section>
-        <div className="flex items-center gap-3 mb-4">
-          <BookOpen className="h-5 w-5 text-muted-foreground" />
-          <h3 className="text-base font-bold text-foreground">Additional Forms Library</h3>
-          <span className="text-xs text-muted-foreground">Other California small claims forms you may need</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pl-0 sm:pl-8">
-          {libraryForms.map((form) => (
-            <div key={form.id} className={`relative flex flex-col rounded-xl border-2 p-4 transition-all duration-150 hover:shadow-md bg-card hover:border-[#0d6b5e]/40 ${form.id === "sc103" && isBusinessCase ? "border-orange-400 bg-orange-50/30" : "border-border"}`}>
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{form.number}</span>
-                  {form.id === "sc103" && isBusinessCase && <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">Required</span>}
-                </div>
-                <a href={form.blankFormUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap">Blank ↗</a>
-              </div>
-              <h3 className="font-semibold text-sm leading-tight mb-1">{form.name}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1 mb-3">{form.shortDesc}</p>
-              <div className="flex gap-2 flex-wrap">
-                {form.available && (
-                  FORM_FIELD_CONFIG[form.id] ? (
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2"
-                      onClick={() => { setModalInitialValues(getInitialValues(form.id)); setModalFormId(form.id); }} disabled={downloadingForm === form.id}>
-                      {downloadingForm === form.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Download PDF
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" disabled title="Coming soon">
-                      <Download className="h-3 w-3" />Download PDF
-                    </Button>
-                  )
-                )}
-                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" onClick={() => setGuideDialogFormId(form.id)}>
-                  <Info className="h-3 w-3" />How to Fill This
-                </Button>
-              </div>
+            {commonWarnings}
+            {commonRelated}
+            <div className="flex gap-2 flex-wrap pt-1">
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 px-3"
+                onClick={() => {
+                  setSc100aFormBody({ signDate: new Date().toISOString().split("T")[0], extraDefendant: null, extraPlaintiff: null });
+                  setSc100aSigModalOpen(true);
+                }}
+                disabled={downloadingForm === "sc100a"}>
+                {downloadingForm === "sc100a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}Sign &amp; Download SC-100A
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId("sc100a")}>
+                <Info className="h-3 w-3" />Guide
+              </Button>
             </div>
+          </div>
+        );
+
+      default: {
+        const hasFieldConfig = !!FORM_FIELD_CONFIG[currentStep.id];
+        return (
+          <div className="space-y-3">
+            {commonWarnings}
+            {commonRelated}
+            <div className="flex gap-2 flex-wrap pt-1">
+              {hasFieldConfig ? (
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3"
+                  onClick={() => { setModalInitialValues(getInitialValues(currentStep.id)); setModalFormId(currentStep.id); }}
+                  disabled={downloadingForm === currentStep.id}>
+                  {downloadingForm === currentStep.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                  Fill Out &amp; Download {currentStep.number}
+                </Button>
+              ) : catalogCurrentForm?.blankFormUrl ? (
+                <a href={catalogCurrentForm.blankFormUrl} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3">
+                    <Download className="h-3 w-3" />Download Blank PDF
+                  </Button>
+                </a>
+              ) : null}
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1 px-3" onClick={() => setGuideDialogFormId(currentStep.id)}>
+                <Info className="h-3 w-3" />Guide
+              </Button>
+            </div>
+          </div>
+        );
+      }
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <div className="px-4 pt-3 pb-4 md:px-6 md:pb-6 space-y-4">
+
+      {isDraftMode && <DraftModeBanner />}
+
+      {/* ── Top row: progress tracker + video card ─────────────────────────── */}
+      <div className="flex gap-4 items-start">
+
+        {/* Progress tracker */}
+        <div className="flex-1 bg-card rounded-xl border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-foreground">
+              Form {wizardIndex + 1} of {wizardSteps.length}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {wizardSteps.filter(s => s.status === "required").length} required ·{" "}
+              {wizardSteps.filter(s => s.status === "optional").length} optional ·{" "}
+              {wizardSteps.filter(s => s.status === "skipped").length} not applicable
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${((wizardIndex + 1) / wizardSteps.length) * 100}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-3">
+            {wizardSteps.map((step, i) => (
+              <button
+                key={step.id}
+                onClick={() => setWizardIndex(i)}
+                className="flex flex-col items-center gap-1 group flex-1 min-w-0"
+                title={step.number}
+              >
+                <div className={`w-2.5 h-2.5 rounded-full transition-all shrink-0 ${
+                  step.status === "required" ? "bg-primary" :
+                  step.status === "optional" ? "bg-amber-400" : "bg-muted-foreground/30"
+                } ${i === wizardIndex ? "ring-2 ring-offset-1 ring-primary/50 scale-125" : ""}`} />
+                <span className={`text-[9px] font-bold leading-none ${i === wizardIndex ? "text-foreground" : "text-muted-foreground/60"}`}>
+                  {step.number}
+                </span>
+                <span className={`text-[9px] leading-none truncate w-full text-center px-0.5 ${i === wizardIndex ? "text-foreground/70" : "text-muted-foreground/40"}`}>
+                  {step.shortLabel}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Video card */}
+        <div
+          onClick={() => setTutorialOpen(true)}
+          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          title="Watch the tutorial for this step"
+        >
+          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                <Play className="w-5 h-5 text-white ml-1" fill="white" />
+              </div>
+              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+            </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 6</div>
+          </div>
+          <div className="bg-background px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold">Create Court Forms</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Download &amp; fill your forms</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Form card ──────────────────────────────────────────────────────── */}
+      <div className={`bg-card rounded-xl border-2 transition-all ${isStepSkipped ? "border-border" : "border-border"}`}>
+
+        {/* Card header */}
+        <div className="p-5 border-b flex items-start gap-4">
+          <div className={`rounded-lg p-2.5 shrink-0 ${isStepSkipped ? "bg-muted" : "bg-primary/10"}`}>
+            <FileText className={`w-5 h-5 ${isStepSkipped ? "text-muted-foreground" : "text-primary"}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
+              <Badge
+                variant={currentStep.status === "required" ? "default" : currentStep.status === "optional" ? "outline" : "secondary"}
+                className="text-xs"
+              >
+                {currentStep.status === "required" ? "Required" : currentStep.status === "optional" ? "Optional" : "Not applicable"}
+              </Badge>
+              {currentStep.id === "sc103" && isBusinessCase && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-medium">Business cases only</span>
+              )}
+              {isReady && currentStep.id === "sc100" && (
+                <span className="flex items-center gap-1 text-[10px] font-bold text-[#0d6b5e]">
+                  <CheckCircle2 className="h-3 w-3" />Ready to file
+                </span>
+              )}
+            </div>
+            <h3 className="text-base font-bold mt-1.5 leading-snug text-foreground">
+              {catalogCurrentForm?.name ?? currentStep.shortLabel}
+            </h3>
+            {catalogCurrentForm?.shortDesc && (
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                {catalogCurrentForm.shortDesc}
+              </p>
+            )}
+          </div>
+          {catalogCurrentForm?.blankFormUrl && (
+            <a
+              href={catalogCurrentForm.blankFormUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 text-[10px] text-muted-foreground hover:text-primary underline whitespace-nowrap"
+            >
+              Blank ↗
+            </a>
+          )}
+        </div>
+
+        {/* Card body */}
+        <div className="p-5">
+          {renderStepBody()}
+        </div>
+
+      </div>
+
+      {/* ── Navigation ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between pb-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setWizardIndex(prev => Math.max(prev - 1, 0))}
+          disabled={wizardIndex === 0}
+          className="gap-1.5 h-9"
+        >
+          <ChevronLeft className="w-4 h-4" />Previous
+        </Button>
+
+        <div className="flex gap-1.5 items-center">
+          {wizardSteps.map((s, i) => (
+            <div
+              key={s.id}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                s.status === "required" ? "bg-primary/60" :
+                s.status === "optional" ? "bg-amber-400/60" : "bg-muted-foreground/20"
+              }`}
+              style={{ width: i === wizardIndex ? 16 : 6 }}
+            />
           ))}
         </div>
-      </section>
+
+        <Button
+          size="sm"
+          onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
+          disabled={wizardIndex === wizardSteps.length - 1}
+          className="gap-1.5 h-9"
+        >
+          {wizardIndex === wizardSteps.length - 1 ? "Done" : "Next form"}
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
 
       {/* ── SC-100 Edit Fields Dialog ──────────────────────────────────────── */}
       <Dialog open={sc100EditOpen} onOpenChange={(o) => { if (!o) setSc100EditOpen(false); }}>
