@@ -6,3 +6,4 @@ attached_assets/Small_Claims_Genie_-_Step_1__Entering_the_Parties_1080p_(5)_1777
 artifacts/small-claims-genie/public/intake-step1-tutorial.mp4 filter=lfs diff=lfs merge=lfs -text
 attached_assets/Small_Claims_Genie_-_Step_1__Entering_the_Parties_1080p_(5)_1777220621144.mp4 filter=lfs diff=lfs merge=lfs -text
 small-claims-genie-backup.tar.gz filter=lfs diff=lfs merge=lfs -text
+artifacts/api-server/small-claims-genie-source.tar.gz filter=lfs diff=lfs merge=lfs -text
