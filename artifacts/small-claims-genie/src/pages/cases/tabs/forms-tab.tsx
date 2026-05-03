@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft, SkipForward } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 
@@ -973,7 +973,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   // ── Wizard steps ──────────────────────────────────────────────────────────
   type StepStatus = "required" | "optional" | "skipped";
-  const wizardSteps = useMemo(() => {
+  const allWizardSteps = useMemo(() => {
     const additionalPartyRequired = !!(currentCase.hasAdditionalPlaintiff && currentCase.additionalPlaintiffName);
     return [
       { id: "sc100",  number: "SC-100",  shortLabel: "Plaintiff's Claim",  status: "required" as StepStatus },
@@ -989,38 +989,18 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "sc140",  number: "SC-140",  shortLabel: "Notice of Appeal",   status: "optional" as StepStatus },
     ];
   }, [showSC103, currentCase.hasAdditionalPlaintiff, currentCase.additionalPlaintiffName]);
+  // Primary wizard: only forms required for THIS specific case (skipped = not applicable, hidden)
+  const wizardSteps = useMemo(() => allWizardSteps.filter(s => s.status === "required"), [allWizardSteps]);
+  // Additional section: optional forms shown as cards below the wizard
+  const additionalSteps = useMemo(() => allWizardSteps.filter(s => s.status === "optional"), [allWizardSteps]);
 
   const currentStep = wizardSteps[Math.min(wizardIndex, wizardSteps.length - 1)];
-  const isStepSkipped = currentStep.status === "skipped";
   const catalogCurrentForm = FORMS_CATALOG.find(f => f.id === currentStep.id);
   const guideCurrentForm = FORM_GUIDE_CONTENT[currentStep.id];
   const stepWarnings = guideCurrentForm?.warnings ?? [];
   const stepRelatedForms = guideCurrentForm?.relatedForms ?? [];
 
   function renderStepBody(): React.ReactNode {
-    if (isStepSkipped) {
-      return (
-        <div className="flex flex-col items-center justify-center gap-3 text-center py-8">
-          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-            <SkipForward className="w-5 h-5 text-muted-foreground" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold">This form doesn't apply to your case</p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
-              {currentStep.id === "sc103"
-                ? "SC-103 is only required when filing as a business with a fictitious (DBA) name. Your case is filed as an individual."
-                : "This form is not required based on your case details."}
-            </p>
-          </div>
-          <button
-            onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
-            className="text-xs text-primary underline underline-offset-2 font-medium"
-          >
-            Continue to next form →
-          </button>
-        </div>
-      );
-    }
 
     const commonWarnings = stepWarnings.length > 0 ? (
       <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 flex gap-2">
@@ -1284,9 +1264,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               Form {wizardIndex + 1} of {wizardSteps.length}
             </span>
             <span className="text-xs text-muted-foreground">
-              {wizardSteps.filter(s => s.status === "required").length} required ·{" "}
-              {wizardSteps.filter(s => s.status === "optional").length} optional ·{" "}
-              {wizardSteps.filter(s => s.status === "skipped").length} not applicable
+              {wizardSteps.length} required for your case ·{" "}
+              {additionalSteps.length} additional
             </span>
           </div>
           <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
@@ -1347,22 +1326,17 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       </div>
 
       {/* ── Form card ──────────────────────────────────────────────────────── */}
-      <div className={`bg-card rounded-xl border-2 transition-all ${isStepSkipped ? "border-border" : "border-border"}`}>
+      <div className="bg-card rounded-xl border-2 border-border transition-all">
 
         {/* Card header */}
         <div className="p-5 border-b flex items-start gap-4">
-          <div className={`rounded-lg p-2.5 shrink-0 ${isStepSkipped ? "bg-muted" : "bg-primary/10"}`}>
-            <FileText className={`w-5 h-5 ${isStepSkipped ? "text-muted-foreground" : "text-primary"}`} />
+          <div className="rounded-lg p-2.5 shrink-0 bg-primary/10">
+            <FileText className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
-              <Badge
-                variant={currentStep.status === "required" ? "default" : currentStep.status === "optional" ? "outline" : "secondary"}
-                className="text-xs"
-              >
-                {currentStep.status === "required" ? "Required" : currentStep.status === "optional" ? "Optional" : "Not applicable"}
-              </Badge>
+              <Badge variant="default" className="text-xs">Required</Badge>
               {currentStep.id === "sc103" && isBusinessCase && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-medium">Business cases only</span>
               )}
@@ -1435,6 +1409,71 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
+
+      {/* ── Additional Forms ────────────────────────────────────────────────── */}
+      {additionalSteps.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Additional Forms</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            These forms are not required to file your case but may be useful depending on how your case develops.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {additionalSteps.map(step => {
+              const catalog = FORMS_CATALOG.find(f => f.id === step.id);
+              const hasFieldConfig = !!FORM_FIELD_CONFIG[step.id];
+              return (
+                <div key={step.id} className="bg-card rounded-xl border p-4 flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg p-2 shrink-0 bg-amber-50 border border-amber-200">
+                      <FileText className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{step.number}</span>
+                        <Badge variant="outline" className="text-xs border-amber-300 text-amber-700">Optional</Badge>
+                      </div>
+                      <p className="text-sm font-semibold leading-snug">{catalog?.name ?? step.shortLabel}</p>
+                      {catalog?.shortDesc && (
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{catalog.shortDesc}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {step.id === "sc100a" ? (
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3"
+                        onClick={() => {
+                          setSc100aFormBody({ signDate: new Date().toISOString().split("T")[0], extraDefendant: null, extraPlaintiff: null });
+                          setSc100aSigModalOpen(true);
+                        }}>
+                        <PenLine className="h-3 w-3" />Sign &amp; Download
+                      </Button>
+                    ) : hasFieldConfig ? (
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3"
+                        onClick={() => { setModalInitialValues(getInitialValues(step.id)); setModalFormId(step.id); }}>
+                        <Download className="h-3 w-3" />Fill Out &amp; Download
+                      </Button>
+                    ) : catalog?.blankFormUrl ? (
+                      <a href={catalog.blankFormUrl} target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3">
+                          <Download className="h-3 w-3" />Download Blank PDF
+                        </Button>
+                      </a>
+                    ) : null}
+                    <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 px-3"
+                      onClick={() => setGuideDialogFormId(step.id)}>
+                      <Info className="h-3 w-3" />Guide
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── SC-100 Edit Fields Dialog ──────────────────────────────────────── */}
       <Dialog open={sc100EditOpen} onOpenChange={(o) => { if (!o) setSc100EditOpen(false); }}>
