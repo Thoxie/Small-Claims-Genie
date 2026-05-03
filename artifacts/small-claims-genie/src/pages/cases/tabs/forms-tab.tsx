@@ -1267,7 +1267,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               {additionalSteps.length} additional
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
             <div
               className="h-full rounded-full bg-primary transition-all duration-300"
               style={{ width: `${((wizardIndex + 1) / wizardSteps.length) * 100}%` }}
@@ -1278,16 +1278,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <button
                 key={step.id}
                 onClick={() => setWizardIndex(i)}
-                className="flex flex-col items-center gap-1 group flex-1 min-w-0 max-w-[90px]"
+                className="flex flex-col items-center gap-1.5 group flex-1 min-w-0 max-w-[90px]"
                 title={step.number}
               >
-                <div className={`w-2.5 h-2.5 rounded-full transition-all shrink-0 ${
+                <div className={`w-4 h-4 rounded-full transition-all shrink-0 ${
                   step.status === "required" ? "bg-primary" : "bg-amber-400"
-                } ${i === wizardIndex ? "ring-2 ring-offset-1 ring-primary/50 scale-125" : ""}`} />
-                <span className={`text-[9px] font-bold leading-none ${i === wizardIndex ? "text-foreground" : "text-muted-foreground/60"}`}>
+                } ${i === wizardIndex ? "ring-2 ring-offset-2 ring-primary/50 scale-125" : ""}`} />
+                <span className={`text-[11px] font-bold leading-none ${i === wizardIndex ? "text-foreground" : "text-muted-foreground/60"}`}>
                   {i + 1}. {step.number}
                 </span>
-                <span className={`text-[9px] leading-none truncate w-full text-center px-0.5 ${i === wizardIndex ? "text-foreground/70" : "text-muted-foreground/40"}`}>
+                <span className={`text-[10px] leading-none truncate w-full text-center px-0.5 ${i === wizardIndex ? "text-foreground/70" : "text-muted-foreground/40"}`}>
                   {step.shortLabel}
                 </span>
               </button>
