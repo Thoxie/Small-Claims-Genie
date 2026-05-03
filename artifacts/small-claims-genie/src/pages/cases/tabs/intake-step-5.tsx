@@ -265,7 +265,7 @@ export function IntakeStep5({ initialData, onNext, onBack, saving, onCheckCase, 
             </div>
           </div>
 
-          <div className={`rounded-xl border p-4 flex items-center gap-3 ${onCheckCase ? "border-amber-200 bg-amber-50" : "border-border bg-muted/30"}`}>
+          <div className={`rounded-xl border px-4 py-3 flex items-center gap-3 flex-wrap ${onCheckCase ? "border-amber-200 bg-amber-50" : "border-border bg-muted/30"}`}>
             <div className="flex gap-2 shrink-0">
               <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
               <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
@@ -274,20 +274,22 @@ export function IntakeStep5({ initialData, onNext, onBack, saving, onCheckCase, 
               </Button>
             </div>
             {onCheckCase && (
-              <div className="flex-1 px-3 min-w-0">
-                <p className="text-sm font-semibold text-amber-900">Want to strengthen your case?</p>
-                <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">Use the Case Advisor to review your claim description and get specific guidance on evidence to gather.</p>
+              <div className="flex-1 px-2 min-w-[160px]">
+                <p className="text-sm font-semibold text-amber-900 leading-tight">Want to strengthen your case?</p>
+                <p className="text-xs text-amber-700 mt-0.5 leading-snug">Use the Case Advisor for evidence guidance.</p>
               </div>
             )}
             {!onCheckCase && <div className="flex-1" />}
-            <Button type="submit" size="lg" disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 shrink-0">
-              {saving ? "Saving…" : i18n.intake.saveAndContinue}
-            </Button>
-            {onCheckCase && (
-              <Button type="button" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2 whitespace-nowrap">
-                <Sparkles className="h-4 w-4" /> Check My Case
+            <div className="flex gap-2 shrink-0 ml-auto">
+              <Button type="submit" size="lg" disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8">
+                {saving ? "Saving…" : i18n.intake.saveAndContinue}
               </Button>
-            )}
+              {onCheckCase && (
+                <Button type="button" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 whitespace-nowrap">
+                  <Sparkles className="h-4 w-4" /> Check My Case
+                </Button>
+              )}
+            </div>
           </div>
             </form>
           </Form>
