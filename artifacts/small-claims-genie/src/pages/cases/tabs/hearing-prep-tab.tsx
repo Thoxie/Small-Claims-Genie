@@ -198,71 +198,80 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
 
   if (!sessionStarted && prepMode === null) {
     return (
-      <div className="p-6 md:p-8 flex flex-col gap-8 max-w-4xl mx-auto">
+      <div className="p-6 md:p-8 max-w-4xl mx-auto">
+        <div className="flex gap-4 items-start">
 
-        {/* ── Video tutorial card ── */}
-        <div
-          onClick={() => setTutorialOpen(true)}
-          className="cursor-pointer group flex items-center gap-4 rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.01] bg-white p-0"
-          title="Watch the tutorial for this step"
-        >
-          <div className="relative bg-[#0f2537] h-[100px] w-[160px] shrink-0 flex items-center justify-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
-            <div className="relative z-10 flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
-                <Play className="w-5 h-5 text-white ml-1" fill="white" />
+          {/* Left: main content */}
+          <div className="flex-1 min-w-0 flex flex-col gap-6">
+            <div className="flex items-center justify-between border-b border-amber-200 pb-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2.5">
+                  <Gavel className="h-5 w-5 text-amber-500 shrink-0" />
+                  Hearing Prep Coach
+                </h2>
+                <p className="text-sm text-gray-500 mt-1 ml-[30px] leading-relaxed">
+                  Get ready for court. Practice your statement or do a mock hearing with an AI judge.
+                </p>
+              </div>
+              <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 shrink-0 ml-4">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                AI-Powered
               </div>
             </div>
-            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~2 min</div>
-            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 7</div>
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button type="button" onClick={() => setPrepMode("statement")}
+                className="group text-left rounded-2xl border-2 border-[#a8e6df] bg-[#f0fffe] hover:border-[#0d6b5e] hover:bg-[#e6faf8] transition-all p-5 space-y-3 shadow-sm hover:shadow-md">
+                <div className="h-10 w-10 rounded-xl bg-[#0d6b5e] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">Court-Ready Statement</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Build what you'll say when the judge asks you to explain your case.</p>
+                </div>
+                <p className="text-xs font-semibold text-[#0d6b5e] flex items-center gap-1">Start here →</p>
+              </button>
+              <button type="button" onClick={() => setPrepMode("mock-trial")}
+                className="group text-left rounded-2xl border-2 border-amber-200 bg-amber-50 hover:border-amber-500 hover:bg-amber-100 transition-all p-5 space-y-3 shadow-sm hover:shadow-md">
+                <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <Gavel className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">Practice Hearing Session</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Answer real judge questions in a simulated courtroom.</p>
+                </div>
+                <p className="text-xs font-semibold text-amber-700 flex items-center gap-1">Practice session →</p>
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">Nothing you say here is sent to the court — this is 100% private practice.</p>
           </div>
-          <div className="flex-1 px-2">
-            <p className="text-sm font-bold text-gray-800">Watch: Prep for Your Hearing</p>
-            <p className="text-xs text-muted-foreground mt-0.5">A short video walkthrough of what to expect and how to prepare for court.</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-[#14b8a6] shrink-0 mr-4" />
-        </div>
 
-        <div className="flex items-center justify-between border-b border-amber-200 pb-5">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
-              <Gavel className="h-6 w-6 text-amber-500 shrink-0" />
-              Hearing Prep Coach
-            </h2>
-            <p className="text-sm text-gray-500 mt-1.5 ml-[34px] leading-relaxed">
-              Two ways to get ready for your court date. The Hearing Prep Coach acts as a real judge — asking you the same questions you'll face in court.
-            </p>
+          {/* Right: video tutorial card */}
+          <div
+            onClick={() => setTutorialOpen(true)}
+            className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+            title="Watch the tutorial for this step"
+          >
+            <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+              <div className="relative z-10 flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                  <Play className="w-5 h-5 text-white ml-1" fill="white" />
+                </div>
+                <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+              </div>
+              <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~2 min</div>
+              <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 7</div>
+            </div>
+            <div className="bg-background px-3 py-2 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold">Prep for Your Hearing</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">What to expect in court</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+            </div>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 shrink-0 ml-6">
-            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-            AI-Powered Practice
-          </div>
+
         </div>
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button type="button" onClick={() => setPrepMode("statement")}
-            className="group text-left rounded-2xl border-2 border-[#a8e6df] bg-[#f0fffe] hover:border-[#0d6b5e] hover:bg-[#e6faf8] transition-all p-6 space-y-3 shadow-sm hover:shadow-md">
-            <div className="h-12 w-12 rounded-xl bg-[#0d6b5e] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <FileText className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 text-base">Court-Ready Statement</p>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">Build and polish exactly what you'll say when the judge asks you to explain your case.</p>
-            </div>
-            <p className="text-xs font-semibold text-[#0d6b5e] flex items-center gap-1">Start here →</p>
-          </button>
-          <button type="button" onClick={() => setPrepMode("mock-trial")}
-            className="group text-left rounded-2xl border-2 border-amber-200 bg-amber-50 hover:border-amber-500 hover:bg-amber-100 transition-all p-6 space-y-3 shadow-sm hover:shadow-md">
-            <div className="h-12 w-12 rounded-xl bg-amber-500 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <Gavel className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 text-base">Practice Hearing Session</p>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">Practice answering real judge questions in a simulated courtroom.</p>
-            </div>
-            <p className="text-xs font-semibold text-amber-700 flex items-center gap-1">Practice session →</p>
-          </button>
-        </div>
-        <p className="text-xs text-muted-foreground">Nothing you say here is sent to the court — this is 100% private practice.</p>
 
         {/* ── Video modal ── */}
         {tutorialOpen && (
