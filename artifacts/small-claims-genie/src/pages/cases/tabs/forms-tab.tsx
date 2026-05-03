@@ -1366,7 +1366,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 className="h-7 text-xs gap-1 px-2"
                 title="How to fill out this form"
               >
-                <Info className="w-3.5 h-3.5" />How to Fill
+                <Info className="w-3.5 h-3.5" />How to Fill Video
               </Button>
               <Button
                 variant="outline"
@@ -1727,10 +1727,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       <iframe
                         width="100%"
                         height="400"
-                        src="https://www.youtube.com/embed/kdvESHfL9mg?autoplay=0"
-                        title="How to Fill the SC-100"
+                        src="https://app.heygen.com/embeds/8f1956314de543b38cc9349743daefbb"
+                        title="HeyGen video player"
                         frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allow="encrypted-media; fullscreen;"
                         allowFullScreen
                         className="block rounded-lg"
                       />
