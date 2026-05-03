@@ -997,10 +997,17 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "fw001",  number: "FW-001",  shortLabel: "Fee Waiver",         status: "optional" as StepStatus },
     ];
   }, [showSC103, currentCase.hasAdditionalPlaintiff, currentCase.additionalPlaintiffName]);
-  // Primary wizard: only forms required for THIS specific case (skipped = not applicable, hidden)
-  const wizardSteps = useMemo(() => allWizardSteps.filter(s => s.status === "required"), [allWizardSteps]);
-  // Additional section: optional forms shown as cards below the wizard
-  const additionalSteps = useMemo(() => allWizardSteps.filter(s => s.status === "optional"), [allWizardSteps]);
+  // Primary wizard: required forms for this case + FW-001 always pinned last
+  const wizardSteps = useMemo(() => {
+    const required = allWizardSteps.filter(s => s.status === "required");
+    const fw001 = allWizardSteps.find(s => s.id === "fw001");
+    return fw001 ? [...required, fw001] : required;
+  }, [allWizardSteps]);
+  // Additional section: optional forms below (FW-001 excluded — it lives in the tracker)
+  const additionalSteps = useMemo(
+    () => allWizardSteps.filter(s => s.status === "optional" && s.id !== "fw001"),
+    [allWizardSteps]
+  );
 
   const currentStep = wizardSteps[Math.min(wizardIndex, wizardSteps.length - 1)];
   const catalogCurrentForm = FORMS_CATALOG.find(f => f.id === currentStep.id);
@@ -1272,12 +1279,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <button
                 key={step.id}
                 onClick={() => setWizardIndex(i)}
-                className="flex flex-col items-center gap-1 group flex-1 min-w-0"
+                className="flex flex-col items-center gap-1 group flex-1 min-w-0 max-w-[90px]"
                 title={step.number}
               >
                 <div className={`w-2.5 h-2.5 rounded-full transition-all shrink-0 ${
-                  step.status === "required" ? "bg-primary" :
-                  step.status === "optional" ? "bg-amber-400" : "bg-muted-foreground/30"
+                  step.status === "required" ? "bg-primary" : "bg-amber-400"
                 } ${i === wizardIndex ? "ring-2 ring-offset-1 ring-primary/50 scale-125" : ""}`} />
                 <span className={`text-[9px] font-bold leading-none ${i === wizardIndex ? "text-foreground" : "text-muted-foreground/60"}`}>
                   {i + 1}. {step.number}
@@ -1329,7 +1335,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
-              <Badge variant="default" className="text-xs">Required</Badge>
+              <Badge variant={currentStep.status === "optional" ? "outline" : "default"} className="text-xs">
+                {currentStep.status === "optional" ? "Optional" : "Required"}
+              </Badge>
               {currentStep.id === "sc103" && isBusinessCase && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-medium">Business cases only</span>
               )}
