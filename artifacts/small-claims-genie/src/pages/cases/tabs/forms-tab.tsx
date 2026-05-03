@@ -1850,7 +1850,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             <iframe
               width="840"
               height="472"
-              src="https://app.heygen.com/embeds/ed96ec295b644f1dbf160ff88fa8b9d8"
+              src="https://app.heygen.com/embeds/ed2f05f6f5c643efa9d95d9b8de488c7"
               title="HeyGen video player"
               frameBorder="0"
               allow="encrypted-media; fullscreen;"
