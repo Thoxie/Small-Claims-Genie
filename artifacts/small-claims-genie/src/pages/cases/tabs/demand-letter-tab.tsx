@@ -22,7 +22,7 @@ const SETTLE_CHECKLIST = [
   { id: "reminder", label: "Set a calendar reminder for your response deadline", detail: "If no response by the deadline, proceed with your court case." },
 ];
 
-export function DemandLetterTab({ caseId, currentCase }: { caseId: number; currentCase: ExtendedCase }) {
+export function DemandLetterTab({ caseId, currentCase, onNext }: { caseId: number; currentCase: ExtendedCase; onNext?: () => void }) {
   const { getToken } = useAuth();
   const [mode, setMode] = useState<"demand" | "settlement" | "agreement">("demand");
 
@@ -667,6 +667,19 @@ export function DemandLetterTab({ caseId, currentCase }: { caseId: number; curre
           )}
         </>
       )}
+      {/* ── Save & Continue ── */}
+      {onNext && (
+        <div className="flex justify-end pt-4 border-t border-gray-100 mt-4">
+          <Button
+            onClick={onNext}
+            className="bg-[#0d6b5e] hover:bg-[#0a5449] text-white gap-2 px-6"
+          >
+            Save &amp; Continue
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       {/* ── Tutorial modal ── */}
       {tutorialOpen && (
         <div
