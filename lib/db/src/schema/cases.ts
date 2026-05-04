@@ -99,8 +99,9 @@ export const casesTable = pgTable("cases", {
   hearingJudge: text("hearing_judge"),
   hearingCourtroom: text("hearing_courtroom"),
   hearingNotes: text("hearing_notes"),
-  // ── MC-030 Declaration title (saved when user types or AI generates it) ──────
+  // ── MC-030 Declaration title and exhibit selections ──────────────────────────
   mc030DeclarationTitle: text("mc030_declaration_title"),
+  mc030ExhibitDocIds: jsonb("mc030_exhibit_doc_ids"),
   // ── Email reminder tracking ──────────────────────────────────────────────────
   reminder30DaySent: boolean("reminder_30_day_sent").default(false),
   reminder14DaySent: boolean("reminder_14_day_sent").default(false),

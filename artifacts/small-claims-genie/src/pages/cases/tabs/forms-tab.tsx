@@ -547,7 +547,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [mc030Text, setMc030Text] = useState("");
   const [mc030AiGenerating, setMc030AiGenerating] = useState(false);
   const [mc030AiError, setMc030AiError] = useState<string | null>(null);
-  const [selectedExhibits, setSelectedExhibits] = useState<number[]>([]);
+  // Initialise from DB-persisted value; null means "never saved" → auto-select all docs.
+  const savedExhibitIds = Array.isArray(currentCase?.mc030ExhibitDocIds)
+    ? (currentCase.mc030ExhibitDocIds as number[])
+    : null;
+  const [selectedExhibits, setSelectedExhibits] = useState<number[]>(savedExhibitIds ?? []);
   const [buildingPacket, setBuildingPacket] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [wizardIndex, setWizardIndex] = useState(0);
@@ -570,8 +574,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   }, [caseId, getToken]);
 
   // Whenever the documents list changes, auto-select any document not yet in the
-  // selection (preserves manual deselections the user has made).
+  // selection — but only when there is no prior saved selection in the DB.
+  // If the DB already has a selection (savedExhibitIds !== null) we honour it
+  // and do NOT silently add newly-uploaded docs.
   useEffect(() => {
+    if (savedExhibitIds !== null) return;
     setSelectedExhibits(prev => {
       const prevSet = new Set(prev);
       const merged = [...prev];
@@ -580,7 +587,25 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       }
       return merged.length === prev.length ? prev : merged;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documents]);
+
+  // ── Auto-save selectedExhibits to DB whenever they change (debounced 1s) ────
+  const exhibitSaveIsFirstRender = useRef(true);
+  useEffect(() => {
+    if (exhibitSaveIsFirstRender.current) { exhibitSaveIsFirstRender.current = false; return; }
+    const t = setTimeout(async () => {
+      try {
+        const token = await getToken();
+        await fetch(`/api/cases/${caseId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ mc030ExhibitDocIds: selectedExhibits }),
+        });
+      } catch { /* silent — best-effort */ }
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [selectedExhibits, caseId, getToken]);
 
   // ── Auto-save mc030Title to DB whenever it changes (debounced 1s) ──────────
   const mc030TitleInitial = useRef(mc030Title);

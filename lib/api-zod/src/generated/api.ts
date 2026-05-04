@@ -121,6 +121,8 @@ export const ListCasesResponseItem = zod.object({
   intakeComplete: zod.boolean().optional(),
   documentCount: zod.number().optional(),
   readinessScore: zod.number().optional(),
+  mc030DeclarationTitle: zod.string().optional(),
+  mc030ExhibitDocIds: zod.array(zod.number()).optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -229,6 +231,8 @@ export const GetCaseStatsResponse = zod.object({
       intakeComplete: zod.boolean().optional(),
       documentCount: zod.number().optional(),
       readinessScore: zod.number().optional(),
+      mc030DeclarationTitle: zod.string().optional(),
+      mc030ExhibitDocIds: zod.array(zod.number()).optional(),
       createdAt: zod.coerce.date(),
       updatedAt: zod.coerce.date(),
     }),
@@ -328,6 +332,8 @@ export const GetCaseResponse = zod
     intakeComplete: zod.boolean().optional(),
     documentCount: zod.number().optional(),
     readinessScore: zod.number().optional(),
+    mc030DeclarationTitle: zod.string().optional(),
+    mc030ExhibitDocIds: zod.array(zod.number()).optional(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   })
@@ -452,6 +458,8 @@ export const UpdateCaseBody = zod.object({
   intakeStep: zod.number().optional(),
   intakeComplete: zod.boolean().optional(),
   readinessScore: zod.number().optional(),
+  mc030DeclarationTitle: zod.string().optional(),
+  mc030ExhibitDocIds: zod.array(zod.number()).optional(),
 });
 
 export const UpdateCaseResponse = zod.object({
@@ -539,6 +547,8 @@ export const UpdateCaseResponse = zod.object({
   intakeComplete: zod.boolean().optional(),
   documentCount: zod.number().optional(),
   readinessScore: zod.number().optional(),
+  mc030DeclarationTitle: zod.string().optional(),
+  mc030ExhibitDocIds: zod.array(zod.number()).optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -558,7 +568,7 @@ export const SaveIntakeProgressParams = zod.object({
 });
 
 export const SaveIntakeProgressBody = zod.object({
-  step: zod.number().optional(),
+  step: zod.number(),
   data: zod.record(zod.string(), zod.unknown()).optional(),
   intakeComplete: zod.boolean().optional(),
 });
@@ -648,6 +658,8 @@ export const SaveIntakeProgressResponse = zod.object({
   intakeComplete: zod.boolean().optional(),
   documentCount: zod.number().optional(),
   readinessScore: zod.number().optional(),
+  mc030DeclarationTitle: zod.string().optional(),
+  mc030ExhibitDocIds: zod.array(zod.number()).optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });

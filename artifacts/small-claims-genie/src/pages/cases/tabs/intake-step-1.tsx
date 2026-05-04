@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogOut, Play, X, ChevronRight, Sparkles } from "lucide-react";
+import { LogOut, Play, X, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -22,7 +22,7 @@ interface Props {
   onAiCheck?: () => void;
 }
 
-export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {
+export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck: _onAiCheck }: Props) {
   const { data: counties } = useListCounties();
 
   const [plaintiffMailingDiffers, setPlaintiffMailingDiffers] = useState(

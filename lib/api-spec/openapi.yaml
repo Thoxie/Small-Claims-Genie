@@ -783,6 +783,12 @@ components:
           type: integer
         readinessScore:
           type: integer
+        mc030DeclarationTitle:
+          type: string
+        mc030ExhibitDocIds:
+          type: array
+          items:
+            type: integer
         createdAt:
           type: string
           format: date-time
@@ -977,6 +983,12 @@ components:
           type: boolean
         readinessScore:
           type: integer
+        mc030DeclarationTitle:
+          type: string
+        mc030ExhibitDocIds:
+          type: array
+          items:
+            type: integer
 
     SaveIntakeBody:
       type: object
