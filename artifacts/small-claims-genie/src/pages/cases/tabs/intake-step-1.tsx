@@ -573,9 +573,6 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
               <LogOut className="mr-2 h-4 w-4" />
               Save &amp; Exit
             </Button>
-            <Button type="button" size="lg" onClick={onAiCheck} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
-              <Sparkles className="h-4 w-4" /> AI Check My Case
-            </Button>
             <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2">
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
               <ChevronRight className="h-4 w-4" />
