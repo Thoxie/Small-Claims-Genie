@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogOut, Play, X, ChevronRight } from "lucide-react";
+import { LogOut, Play, X, ChevronRight, Sparkles } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -19,9 +19,10 @@ interface Props {
   onBack: () => void;
   saving?: boolean;
   onSaveExit: (d: Record<string, unknown>) => void;
+  onAiCheck?: () => void;
 }
 
-export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) {
+export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {
   const { data: counties } = useListCounties();
 
   const [plaintiffMailingDiffers, setPlaintiffMailingDiffers] = useState(
@@ -567,13 +568,17 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
             <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
               <LogOut className="mr-2 h-4 w-4" />
               Save &amp; Exit
             </Button>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
+            <Button type="button" size="lg" onClick={onAiCheck} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
+              <Sparkles className="h-4 w-4" /> AI Check My Case
+            </Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2">
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </form>

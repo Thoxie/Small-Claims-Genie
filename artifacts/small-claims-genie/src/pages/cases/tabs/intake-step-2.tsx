@@ -334,19 +334,18 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
             <p className="text-xs text-[#4a9990] mt-0.5 leading-relaxed">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement.</p>
           </div>
 
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
             <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
               <LogOut className="mr-2 h-4 w-4" />
               Save &amp; Exit
             </Button>
-            <div className="flex gap-2">
-              <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-8">
-                <Sparkles className="h-4 w-4" /> AI Check My Case
-              </Button>
-              <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="px-8">
-                {saving ? "Saving…" : i18n.intake.saveAndContinue}
-              </Button>
-            </div>
+            <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
+              <Sparkles className="h-4 w-4" /> AI Check My Case
+            </Button>
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2">
+              {saving ? "Saving…" : i18n.intake.saveAndContinue}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
             </form>
           </Form>

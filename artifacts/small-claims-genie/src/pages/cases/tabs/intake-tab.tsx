@@ -331,6 +331,7 @@ export function IntakeTab({
           onBack={() => {}}
           saving={saveIntake.isPending}
           onSaveExit={handleSaveExit}
+          onAiCheck={goToAdvisor}
         />
       )}
       {activeTab === 2 && (
@@ -353,6 +354,7 @@ export function IntakeTab({
           onBack={() => setActiveTab(2)}
           saving={saveIntake.isPending}
           onSaveExit={handleSaveExit}
+          onAiCheck={goToAdvisor}
         />
       )}
       {activeTab === 4 && (
@@ -363,6 +365,7 @@ export function IntakeTab({
           onBack={() => setActiveTab(3)}
           saving={saveIntake.isPending}
           onSaveExit={handleSaveExit}
+          onAiCheck={goToAdvisor}
         />
       )}
       {activeTab === 5 && (
@@ -383,6 +386,7 @@ export function IntakeTab({
           onBack={() => setActiveTab(5)}
           saving={saveIntake.isPending}
           onSaveExit={handleSaveExit}
+          onAiCheck={goToAdvisor}
         />
       )}
       {activeTab === 7 && (

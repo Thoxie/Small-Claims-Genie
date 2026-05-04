@@ -265,21 +265,18 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
             <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
               <LogOut className="mr-2 h-4 w-4" />
               Save &amp; Exit
             </Button>
-            <div className="flex gap-2">
-              {onCheckCase && (
-                <Button type="button" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 whitespace-nowrap">
-                  <Sparkles className="h-4 w-4" /> AI Check My Case
-                </Button>
-              )}
-              <Button type="submit" size="lg" disabled={saving} className="px-8">
-                {saving ? "Saving…" : i18n.intake.saveAndContinue}
-              </Button>
-            </div>
+            <Button type="button" size="lg" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
+              <Sparkles className="h-4 w-4" /> AI Check My Case
+            </Button>
+            <Button type="submit" size="lg" disabled={saving} className="gap-2">
+              {saving ? "Saving…" : i18n.intake.saveAndContinue}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
             </form>
           </Form>
