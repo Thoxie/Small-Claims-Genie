@@ -14,13 +14,15 @@ export default function Resume() {
     if (isLoading || !cases) return;
     if (cases.length === 0) {
       setLocation("/cases/new");
-    } else if (cases.length === 1) {
-      setLocation(`/cases/${cases[0].id}`);
     } else {
-      const mostRecent = cases.reduce((a, b) =>
-        new Date(b.updatedAt ?? 0) > new Date(a.updatedAt ?? 0) ? b : a
-      );
-      setLocation(`/cases/${mostRecent.id}`);
+      const target = cases.length === 1
+        ? cases[0]
+        : cases.reduce((a, b) =>
+            new Date(b.updatedAt ?? 0) > new Date(a.updatedAt ?? 0) ? b : a
+          );
+      const savedTab = localStorage.getItem(`case-last-tab-${target.id}`);
+      const hash = savedTab ? `#${savedTab}` : "";
+      setLocation(`/cases/${target.id}${hash}`);
     }
   }, [cases, isLoading, setLocation]);
 
