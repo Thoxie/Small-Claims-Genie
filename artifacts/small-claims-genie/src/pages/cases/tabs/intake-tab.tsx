@@ -161,6 +161,15 @@ export function IntakeTab({
     onStepChange?.(step);
   };
 
+  // On mount, immediately tell the workspace which step IntakeTab is actually
+  // displaying. This fixes the mismatch when localStorage is empty (e.g. after
+  // a fresh login) and the workspace nav falls back to step 1 while IntakeTab
+  // correctly restores from the database value.
+  useEffect(() => {
+    onStepChange?.(activeTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — only run once on mount
+
   // Jump to forced step when outer nav requests step 1 or 2.
   // forceStepNonce increments on every outer-nav click so this effect re-fires
   // even when forceStep value is unchanged (e.g., clicking outer step 2 twice).
