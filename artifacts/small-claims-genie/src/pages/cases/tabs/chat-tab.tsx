@@ -311,7 +311,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
               placeholder={isRecording ? "🔴 Recording — release to stop…" : i18n.chat.placeholder}
               rows={1}
               disabled={isRecording}
-              className="w-full resize-none overflow-hidden rounded-full border border-input bg-background pl-4 pr-10 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
+              className="w-full resize-none overflow-hidden rounded-full border-2 border-slate-400 bg-background pl-4 pr-10 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
               style={{ minHeight: "42px", maxHeight: "120px" }}
             />
             <button
