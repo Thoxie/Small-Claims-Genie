@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
 import {
@@ -186,6 +186,11 @@ export function IntakeTab({
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
 
+  // Always-current step ref so onSuccess callbacks can guard against backward navigation
+  // even when multiple mutations from rapid step-advances are in flight simultaneously.
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
+
   const saveIntake = useSaveIntakeProgress();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -198,12 +203,20 @@ export function IntakeTab({
   };
 
   const handleNext = (data: Record<string, unknown>) => {
-    const next = Math.min(activeTab + 1, 7) as StepNum;
+    // Capture the current step via ref so that even if this closure is somehow
+    // stale, we always compute next from the actual current step.
+    const currentStep = activeTabRef.current;
+    const next = Math.min(currentStep + 1, 7) as StepNum;
     saveIntake.mutate({ id: caseId, data: { step: next, data } }, {
       onSuccess: () => {
-        setActiveTab(next);
+        // Guard: only advance if next is strictly greater than the step the user
+        // is currently on. This prevents a late-arriving onSuccess from a rapid
+        // multi-step advance from dragging the user backwards.
+        if (next > activeTabRef.current) {
+          setActiveTab(next);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
         invalidateAll();
-        window.scrollTo({ top: 0, behavior: "smooth" });
       },
       onError: (err: Error) => {
         toast({ title: "Could not save progress", description: err?.message || "Please check your connection and try again.", variant: "destructive" });
