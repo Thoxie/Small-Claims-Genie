@@ -11,7 +11,8 @@ import {
   getGetCaseQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle, Play, X, ChevronRight, Sparkles } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle, Play, X, ChevronRight, Sparkles, Loader2, Scale } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -103,7 +104,12 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
 }
 
 // ─── Main Tab ────────────────────────────────────────────────────────────────
-export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[]; onNext?: () => void; onAiCheck?: () => void }) {
+export function DocumentsTab({ caseId, evidenceChecklist, onNext, advisorTrigger }: {
+  caseId: number;
+  evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[];
+  onNext?: () => void;
+  advisorTrigger?: number;
+}) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
   const uploadDoc = useUploadDocument();
   const deleteDoc = useDeleteDocument();
@@ -140,8 +146,6 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: {
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ checkedIds: Array.from(next) }),
       });
-      // Only invalidate (and re-sync from server) when the save actually succeeded.
-      // If we invalidate on failure, the refetch would silently revert the user's click.
       if (res.ok) {
         queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
       }
@@ -149,7 +153,6 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: {
     finally { savingRef.current = false; }
   }, [caseId, getToken, queryClient]);
 
-  // Move save call outside the state updater — React updaters must be pure functions
   const toggleItem = useCallback((id: string) => {
     const next = new Set(checkedItemsRef.current);
     if (next.has(id)) { next.delete(id); } else { next.add(id); }
@@ -192,6 +195,74 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: {
 
   const handleDelete = (docId: number) => {
     deleteDoc.mutate({ id: caseId, docId }, { onSuccess: () => { invalidateDocAndScore(); } });
+  };
+
+  // ─── Inline AI Advisor ────────────────────────────────────────────────────
+  type AdvisorPhase = "idle" | "analyzing" | "results";
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
+  const [advisorQuestions, setAdvisorQuestions] = useState<{ id: string; question: string }[]>([]);
+  const [advisorChecklist, setAdvisorChecklist] = useState<{ id: string; item: string; description: string }[]>([]);
+  const [advisorChecked, setAdvisorChecked] = useState<Set<string>>(new Set());
+  const [advisorTruncatedDocs, setAdvisorTruncatedDocs] = useState<string[]>([]);
+  const [advisorLegalAlert, setAdvisorLegalAlert] = useState("");
+
+  const openAdvisor = useCallback(async () => {
+    setAdvisorOpen(true);
+    setAdvisorPhase("analyzing");
+    setAdvisorQuestions([]);
+    setAdvisorChecklist([]);
+    setAdvisorChecked(new Set());
+    setAdvisorTruncatedDocs([]);
+    setAdvisorLegalAlert("");
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/advisor/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) throw new Error("Analysis failed");
+      const data = await res.json();
+      setAdvisorQuestions(data.questions || []);
+      setAdvisorChecklist(data.evidenceChecklist || []);
+      setAdvisorTruncatedDocs(data.truncatedDocs || []);
+      setAdvisorLegalAlert(typeof data.legalAlert === "string" ? data.legalAlert : "");
+      setAdvisorPhase("results");
+      // Refresh the case so the new checklist appears in the Documents tab immediately
+      queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+    } catch {
+      toast({ title: "Advisor error", description: "Could not analyze your case. Please try again.", variant: "destructive" });
+      setAdvisorPhase("idle");
+      setAdvisorOpen(false);
+    }
+  }, [caseId, getToken, toast, queryClient]);
+
+  // Open advisor when workspace sticky bar button increments the trigger
+  const prevTriggerRef = useRef(0);
+  useEffect(() => {
+    if (!advisorTrigger || advisorTrigger === prevTriggerRef.current) return;
+    prevTriggerRef.current = advisorTrigger;
+    void openAdvisor();
+  }, [advisorTrigger, openAdvisor]);
+
+  const toggleAdvisorItem = (id: string) => {
+    setAdvisorChecked(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      void (async () => {
+        try {
+          const token = await getToken();
+          await fetch(`/api/cases/${caseId}/advisor/checklist`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify({ checkedIds: Array.from(next) }),
+          });
+          queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+        } catch { /* non-critical */ }
+      })();
+      return next;
+    });
   };
 
   const uploadCount = documents?.length ?? 0;
@@ -264,7 +335,14 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: {
             <div className="rounded-xl border border-dashed border-muted-foreground/25 bg-muted/10 p-8 text-center">
               <ClipboardList className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
               <p className="font-semibold text-sm text-foreground">No checklist yet</p>
-              <p className="text-xs text-muted-foreground mt-1">Ask the AI Genie to analyze your case and it will generate a document checklist for you.</p>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">Click the button below — the AI Genie will analyze your case and generate a document checklist for you.</p>
+              <Button
+                type="button"
+                onClick={() => void openAdvisor()}
+                className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+              >
+                <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+              </Button>
             </div>
           ) : (
             <div className="rounded-lg border border-[#a8e6df] bg-[#f0fffe] p-4">
@@ -292,17 +370,6 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-          {onAiCheck && (
-            <div className="flex justify-end pt-3">
-              <Button
-                type="button"
-                onClick={onAiCheck}
-                className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
-              >
-                <Sparkles className="h-4 w-4" /> AI Genie Check My Case
-              </Button>
             </div>
           )}
         </div>
@@ -383,17 +450,6 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: {
               </div>
             )}
           </div>
-          {onAiCheck && (
-            <div className="flex justify-end pt-3">
-              <Button
-                type="button"
-                onClick={onAiCheck}
-                className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
-              >
-                <Sparkles className="h-4 w-4" /> AI Genie Check My Case
-              </Button>
-            </div>
-          )}
         </div>
       )}
 
@@ -474,6 +530,132 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: {
           </div>
         </div>
       )}
+
+      {/* ── Inline AI Advisor Sheet ── */}
+      <Sheet open={advisorOpen} onOpenChange={setAdvisorOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
+          <SheetHeader className="p-5 border-b bg-gradient-to-r from-[#ddf6f3] to-white">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <SheetTitle className="text-base">AI Genie Case Review</SheetTitle>
+                <SheetDescription className="text-xs">Reviewing your uploaded evidence and case details</SheetDescription>
+              </div>
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 p-5 space-y-6 overflow-y-auto">
+
+            {/* Analyzing phase */}
+            {advisorPhase === "analyzing" && (
+              <div className="flex flex-col items-center justify-center py-16 gap-5 text-center">
+                <div className="h-12 w-12 rounded-full bg-[#ddf6f3] flex items-center justify-center animate-pulse">
+                  <Sparkles className="h-6 w-6 text-[#0d6b5e]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#0d6b5e]">Reviewing your case…</p>
+                  <p className="text-sm text-muted-foreground mt-1">Analyzing your documents and evidence</p>
+                </div>
+                <div className="w-64 h-1.5 rounded-full bg-[#ddf6f3] overflow-hidden">
+                  <div className="h-full w-2/5 rounded-full bg-[#14b8a6] animate-[progress-slide_1.4s_ease-in-out_infinite]" />
+                </div>
+              </div>
+            )}
+
+            {/* Results phase */}
+            {advisorPhase === "results" && (
+              <>
+                {advisorTruncatedDocs.length > 0 && (
+                  <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
+                    <span className="shrink-0 mt-0.5">⚠️</span>
+                    <span>
+                      <strong>Large document notice:</strong> The following {advisorTruncatedDocs.length === 1 ? "file was" : "files were"} too large to fully analyze:{" "}
+                      {advisorTruncatedDocs.map((name, i) => (
+                        <span key={i}><em>{name}</em>{i < advisorTruncatedDocs.length - 1 ? ", " : ""}</span>
+                      ))}. Contact us at{" "}
+                      <a href="mailto:support@smallclaimsgenie.com" className="underline font-medium">support@smallclaimsgenie.com</a>{" "}
+                      for assistance.
+                    </span>
+                  </div>
+                )}
+
+                {advisorLegalAlert && (
+                  <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+                        <Scale className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <p className="font-bold text-sm text-amber-900">⚖️ Know Your Legal Rights — You May Be Owed More</p>
+                    </div>
+                    <p className="text-sm text-amber-900 leading-relaxed">{advisorLegalAlert}</p>
+                    <p className="text-xs text-amber-700 font-medium">Review your claim amount before filing — you may want to update it.</p>
+                  </div>
+                )}
+
+                {advisorChecklist.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 rounded-full bg-[#0d6b5e] flex items-center justify-center text-white text-[10px] font-bold">✓</div>
+                      <h3 className="font-semibold text-sm">Evidence to gather for your case</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Check off items as you gather them — your progress is saved automatically.</p>
+                    <div className="space-y-2">
+                      {advisorChecklist.map((item) => (
+                        <button key={item.id} type="button" onClick={() => toggleAdvisorItem(item.id)}
+                          className="w-full flex items-start gap-3 rounded-lg border p-3 text-left hover:bg-muted/40 transition-colors">
+                          <div className="mt-0.5 shrink-0 text-[#0d6b5e]">
+                            {advisorChecked.has(item.id) ? <CheckSquare2 className="h-5 w-5" /> : <Square className="h-5 w-5 text-muted-foreground" />}
+                          </div>
+                          <div>
+                            <p className={`text-sm font-medium ${advisorChecked.has(item.id) ? "line-through text-muted-foreground" : ""}`}>{item.item}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {advisorQuestions.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 rounded-full bg-amber-500 flex items-center justify-center text-white text-[10px] font-bold">?</div>
+                      <h3 className="font-semibold text-sm">Things to think about</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {advisorQuestions.map((q) => (
+                        <div key={q.id} className="rounded-lg border border-[#a8e6df] bg-[#f0fffe] px-4 py-3">
+                          <p className="text-sm text-[#0d6b5e] leading-relaxed">{q.question}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 flex flex-col gap-3">
+                  <Button
+                    type="button"
+                    onClick={() => void openAdvisor()}
+                    variant="outline"
+                    className="w-full gap-2"
+                    disabled={advisorPhase === "analyzing"}
+                  >
+                    {advisorPhase === "analyzing" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    Run Again
+                  </Button>
+                  <Button type="button" onClick={() => setAdvisorOpen(false)} className="w-full bg-[#0d6b5e] hover:bg-[#0a5449] text-white">
+                    Done — Back to My Documents
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">Your checklist is saved — find it in the Document Checklist tab.</p>
+                </div>
+              </>
+            )}
+
+          </div>
+        </SheetContent>
+      </Sheet>
 
     </div>
   );

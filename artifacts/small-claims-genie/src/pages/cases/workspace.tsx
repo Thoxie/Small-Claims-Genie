@@ -78,6 +78,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const [forceStepNonce, setForceStepNonce] = useState(0);
   const [prepTutorialOpen, setPrepTutorialOpen] = useState(false);
   const [chatAutoMessage, setChatAutoMessage] = useState<string | undefined>(undefined);
+  const [docAdvisorTrigger, setDocAdvisorTrigger] = useState(0);
 
   const AI_CHECK_PROMPT = "Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.";
 
@@ -367,6 +368,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               <DocumentsTab
                 caseId={caseId}
                 evidenceChecklist={extCase?.evidenceChecklist || []}
+                advisorTrigger={docAdvisorTrigger}
               />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
@@ -376,7 +378,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button
                   type="button"
                   size="lg"
-                  onClick={goToAiChat}
+                  onClick={() => setDocAdvisorTrigger(n => n + 1)}
                   className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
                 >
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
@@ -417,14 +419,6 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Save &amp; Exit
-                </Button>
-                <Button
-                  type="button"
-                  size="lg"
-                  onClick={goToAiChat}
-                  className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
-                >
-                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2">
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
