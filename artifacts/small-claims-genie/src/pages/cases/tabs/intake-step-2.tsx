@@ -104,6 +104,27 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     autoSave,
   ]);
 
+  // Keep a stable ref to autoSave so the unmount flush below never captures a
+  // stale closure (autoSave itself is memoised but its identity can change if
+  // getToken rotates, so we track it here).
+  const autoSaveRef = useRef(autoSave);
+  autoSaveRef.current = autoSave;
+
+  // Flush any pending debounced save when this component unmounts.
+  // This covers the case where the user navigates away (outer step nav, inner
+  // tab click, browser back) before the 1.5 s debounce fires — without this
+  // the cleanup above would cancel the timeout and the in-flight changes would
+  // never reach the DB, causing the step-3 advisor to see stale data.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+      void autoSaveRef.current(watchedRef.current as Record<string, unknown>);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
   const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
