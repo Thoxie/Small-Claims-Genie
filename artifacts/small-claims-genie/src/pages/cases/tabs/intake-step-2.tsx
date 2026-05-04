@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { LogOut, Sparkles, Maximize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight } from "lucide-react";
+import { LogOut, Sparkles, Maximize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -47,6 +47,52 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
+  // ── Auto-save ──────────────────────────────────────────────────────────────
+  type SaveStatus = "idle" | "saving" | "saved" | "error";
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const autoSave = useCallback(async (values: Record<string, unknown>) => {
+    setSaveStatus("saving");
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/intake`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ step: 2, data: values }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      setSaveStatus("saved");
+      if (savedClearRef.current) clearTimeout(savedClearRef.current);
+      savedClearRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
+      setSaveStatus("error");
+    }
+  }, [caseId, getToken]);
+
+  // Watch all fields — debounce 1.5 s after the last keystroke
+  const watchedValues = form.watch();
+  const watchedRef = useRef(watchedValues);
+  watchedRef.current = watchedValues;
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      void autoSave(watchedRef.current as Record<string, unknown>);
+    }, 1500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [
+    watchedValues.claimType,
+    watchedValues.claimAmount,
+    watchedValues.claimDescription,
+    watchedValues.incidentDate,
+    watchedValues.howAmountCalculated,
+    autoSave,
+  ]);
+
   type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
   const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
@@ -73,11 +119,12 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
     setCopied(false);
     try {
       const token = await getToken();
-      await fetch(`/api/cases/${caseId}/intake`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ step: 2, data: values }),
-      }).catch(() => {});
+      // Flush any pending debounced save so the DB is up to date before AI reads it
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+      await autoSave(values as Record<string, unknown>);
       const res = await fetch(`/api/cases/${caseId}/advisor/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -93,7 +140,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
       setAdvisorPhase("idle");
       setAdvisorOpen(false);
     }
-  }, [caseId, form, getToken, toast]);
+  }, [caseId, form, getToken, toast, autoSave]);
 
   useEffect(() => {
     if (autoOpenAdvisor) {
@@ -186,9 +233,24 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <FormField control={form.control} name="claimDescription" render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  What happened? <span className="text-destructive">*</span>
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">Describe why you're owed money</span>
+                <FormLabel className="flex items-center gap-2 flex-wrap">
+                  <span>What happened? <span className="text-destructive">*</span></span>
+                  <span className="text-xs font-normal text-muted-foreground">Describe why you're owed money</span>
+                  {saveStatus === "saving" && (
+                    <span className="ml-auto flex items-center gap-1 text-[11px] font-normal text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+                    </span>
+                  )}
+                  {saveStatus === "saved" && (
+                    <span className="ml-auto flex items-center gap-1 text-[11px] font-normal text-teal-600">
+                      <CheckCircle className="h-3 w-3" /> Saved
+                    </span>
+                  )}
+                  {saveStatus === "error" && (
+                    <span className="ml-auto flex items-center gap-1 text-[11px] font-normal text-destructive">
+                      <CloudOff className="h-3 w-3" /> Save failed — check connection
+                    </span>
+                  )}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">

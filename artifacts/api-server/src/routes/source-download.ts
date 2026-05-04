@@ -6,7 +6,7 @@ const router: IRouter = Router();
 
 // Simple HTML page with a download button — open in Replit preview
 router.get("/source-download", (req, res): void => {
-  const accept = req.headers.accept ?? "";
+  const _accept = req.headers.accept ?? "";
   const filePath = path.resolve(process.cwd(), "small-claims-genie-source.tar.gz");
   const fileExists = fs.existsSync(filePath);
   const fileStat = fileExists ? fs.statSync(filePath) : null;
