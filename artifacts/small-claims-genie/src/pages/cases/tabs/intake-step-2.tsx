@@ -293,34 +293,26 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
                   >
                     {descExpanded ? <><Minimize2 className="h-3.5 w-3.5" /> Collapse</> : <><Maximize2 className="h-3.5 w-3.5" /> Expand</>}
                   </button>
+                  {/* Full-screen button moved here so resize handle corner is unobstructed */}
+                  <button
+                    type="button"
+                    title="Open full-screen editor"
+                    onClick={() => { setDescModalValue(field.value || ""); setDescModalOpen(true); }}
+                    className="flex items-center gap-1 text-[11px] font-medium text-[#0d6b5e] hover:text-[#0a5449] hover:underline transition-colors"
+                  >
+                    <Maximize2 className="h-3.5 w-3.5" /> Full Screen
+                  </button>
                 </FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    {/* Option A — taller default + auto-grow on input */}
-                    <Textarea
-                      className={`pr-24 resize-none overflow-hidden transition-all ${descExpanded ? "min-h-[400px]" : "min-h-[160px]"}`}
-                      placeholder="Briefly describe why the defendant owes you money…"
-                      {...field}
-                      ref={(el) => {
-                        descTextareaRef.current = el;
-                        if (typeof field.ref === "function") field.ref(el);
-                      }}
-                      onInput={(e) => {
-                        const el = e.currentTarget;
-                        el.style.height = "auto";
-                        el.style.height = `${el.scrollHeight}px`;
-                      }}
-                    />
-                    {/* Option B — full-screen pop-out button, now larger and labelled */}
-                    <button
-                      type="button"
-                      title="Open full-screen editor"
-                      onClick={() => { setDescModalValue(field.value || ""); setDescModalOpen(true); }}
-                      className="absolute bottom-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors"
-                    >
-                      <Maximize2 className="h-3.5 w-3.5" /> Full Screen
-                    </button>
-                  </div>
+                  <Textarea
+                    className={`transition-all ${descExpanded ? "min-h-[400px]" : "min-h-[88px]"}`}
+                    placeholder="Briefly describe why the defendant owes you money…"
+                    {...field}
+                    ref={(el) => {
+                      descTextareaRef.current = el;
+                      if (typeof field.ref === "function") field.ref(el);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -346,11 +338,11 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
                 Save & Exit
               </Button>
               <div className="flex-1" />
-              <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="shrink-0 px-8">
-                {saving ? "Saving…" : i18n.intake.saveAndContinue}
-              </Button>
               <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2 px-8">
                 <Sparkles className="h-4 w-4" /> AI Check My Case
+              </Button>
+              <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="shrink-0 px-8">
+                {saving ? "Saving…" : i18n.intake.saveAndContinue}
               </Button>
             </div>
           </div>
