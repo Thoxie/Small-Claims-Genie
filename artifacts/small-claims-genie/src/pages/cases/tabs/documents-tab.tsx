@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useListDocuments,
@@ -119,30 +119,43 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext }: { caseId: nu
     () => new Set(evidenceChecklist.filter(i => i.checked).map(i => i.id))
   );
 
+  // Sync from server when the prop changes (e.g. initial load, AI generates new checklist)
+  // but only when we have no pending save in flight so we don't overwrite optimistic state.
+  const savingRef = useRef(false);
   useEffect(() => {
+    if (savingRef.current) return;
     setCheckedItems(new Set(evidenceChecklist.filter(i => i.checked).map(i => i.id)));
   }, [evidenceChecklist]);
 
-  const saveChecked = async (next: Set<string>) => {
+  // Keep a ref to the latest checked state so toggleItem can read it without a stale closure
+  const checkedItemsRef = useRef(checkedItems);
+  checkedItemsRef.current = checkedItems;
+
+  const saveChecked = useCallback(async (next: Set<string>) => {
+    savingRef.current = true;
     try {
       const token = await getToken();
-      await fetch(`/api/cases/${caseId}/advisor/checklist`, {
+      const res = await fetch(`/api/cases/${caseId}/advisor/checklist`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ checkedIds: Array.from(next) }),
       });
-      queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
-    } catch { /* silent */ }
-  };
+      // Only invalidate (and re-sync from server) when the save actually succeeded.
+      // If we invalidate on failure, the refetch would silently revert the user's click.
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: getGetCaseQueryKey(caseId) });
+      }
+    } catch { /* network error — optimistic state stays, will sync on next load */ }
+    finally { savingRef.current = false; }
+  }, [caseId, getToken, queryClient]);
 
-  const toggleItem = (id: string) => {
-    setCheckedItems(prev => {
-      const n = new Set(prev);
-      if (n.has(id)) { n.delete(id); } else { n.add(id); }
-      saveChecked(n);
-      return n;
-    });
-  };
+  // Move save call outside the state updater — React updaters must be pure functions
+  const toggleItem = useCallback((id: string) => {
+    const next = new Set(checkedItemsRef.current);
+    if (next.has(id)) { next.delete(id); } else { next.add(id); }
+    setCheckedItems(next);
+    void saveChecked(next);
+  }, [saveChecked]);
 
   const deleteChecklistItem = async (itemId: string) => {
     try {
