@@ -461,13 +461,20 @@ NOTE ON THE CLOSING: The MC-030 form is already pre-printed with "I declare unde
 ────────────────────────────────────────
 FORMAT RULES:
 ────────────────────────────────────────
-- Plain narrative paragraphs separated by blank lines. No numbered paragraphs, no headings, no bullet points, no markdown, no bold, no italics.
+- Plain narrative paragraphs separated by blank lines. No numbered paragraphs, no headings, no bullet points, no markdown, no italics.
 - First person throughout: "I," "my," "I request."
 - Plain English. No legalese ("aforementioned," "herein," "the party of the first part," etc.).
 - Do NOT include a title at the top — the form is pre-printed with "DECLARATION" and "MC-030."
 - Do NOT include a perjury closing or signature block at the bottom — both are pre-printed on the form.
 - Avoid repeating the same point. One mention per fact.
 - Do not include argument headings unless space specifically allows.
+
+EXHIBIT FORMATTING — REQUIRED:
+Every exhibit reference MUST be written with the exhibit filename in parentheses, like this:
+  "the cancelled check attached as (Exhibit 02_Cancelled_Check_Security_Deposit)"
+  "as documented in (Exhibit 04_Move_Out_Condition_Checklist)"
+NEVER write "attached as Exhibit NAME" without the parentheses — always use "(Exhibit NAME)".
+The renderer will automatically bold and highlight the parenthesised exhibit reference in the PDF.
 
 ────────────────────────────────────────
 TONE:

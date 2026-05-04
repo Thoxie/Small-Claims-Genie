@@ -126,7 +126,7 @@ function addDeclarationContinuationPages(
     let y = startY;
 
     for (let i = 0; i < linesOnPage && lineIdx < allLines.length; i++, lineIdx++) {
-      if (allLines[lineIdx]) page.drawText(allLines[lineIdx], { x: MARGIN, y, size: BSIZE, font, color: BLACK });
+      if (allLines[lineIdx]) drawLineMixed(page, font, fontBold, allLines[lineIdx], MARGIN, y, BSIZE, BLACK);
       y -= LINEH;
     }
 
@@ -316,6 +316,38 @@ const BLACK = rgb(0, 0, 0);
 function val(page: any, font: any, text: string | null | undefined, x: number, y: number, size = 9) {
   if (!text) return;
   page.drawText(String(text), { x, y, size, font, color: BLACK });
+}
+
+// Draw a line of text with inline bold for (Exhibit ...) references.
+// Everything inside (Exhibit NAME) is drawn in fontBold; the rest in font.
+function drawLineMixed(
+  page: any,
+  font: any,
+  fontBold: any,
+  text: string,
+  x: number,
+  y: number,
+  size: number,
+  color: any
+) {
+  const EXHIBIT_RE = /(\(Exhibit\s+[^)]+\))/g;
+  const segments: { text: string; bold: boolean }[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = EXHIBIT_RE.exec(text)) !== null) {
+    if (m.index > last) segments.push({ text: text.slice(last, m.index), bold: false });
+    segments.push({ text: m[1], bold: true });
+    last = m.index + m[1].length;
+  }
+  if (last < text.length) segments.push({ text: text.slice(last), bold: false });
+
+  let curX = x;
+  for (const seg of segments) {
+    if (!seg.text) continue;
+    const f = seg.bold ? fontBold : font;
+    page.drawText(seg.text, { x: curX, y, size, font: f, color });
+    curX += f.widthOfTextAtSize(seg.text, size);
+  }
 }
 
 function wrapVal(page: any, font: any, text: string | null | undefined, x: number, startY: number, maxW: number, size: number, lineH: number, maxLines: number): number {
@@ -1514,7 +1546,7 @@ function drawMC030Page(
     for (let pi = 0; pi < allParaLines.length; pi++) {
       for (const lineText of allParaLines[pi]) {
         if (linesUsed >= maxTotalLines) break;
-        page.drawText(lineText, { x: bodyX, y: bodyY, size: bodySize, font, color: BLACK });
+        drawLineMixed(page, font, fontBold, lineText, bodyX, bodyY, bodySize, BLACK);
         bodyY -= bodyLineH;
         linesUsed++;
       }
