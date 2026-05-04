@@ -134,6 +134,7 @@ export function IntakeTab({
   forceStepNonce,
   onStepChange,
   onGoToAiChat,
+  onRegisterFlush,
 }: {
   caseId: number;
   initialData: ExtendedCase;
@@ -141,6 +142,7 @@ export function IntakeTab({
   forceStepNonce?: number;
   onStepChange?: (step: number) => void;
   onGoToAiChat?: () => void;
+  onRegisterFlush?: (flush: (() => Promise<void>) | null) => void;
 }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [, navigate] = useLocation();
@@ -350,6 +352,7 @@ export function IntakeTab({
           autoOpenAdvisor={autoOpenAdvisor}
           onAdvisorOpened={() => setAutoOpenAdvisor(false)}
           onSaveExit={handleSaveExit}
+          onRegisterFlush={onRegisterFlush}
         />
       )}
       {activeTab === 3 && (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   useGetCase,
   useGetCaseReadiness,
@@ -80,6 +80,11 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const [chatAutoMessage, setChatAutoMessage] = useState<string | undefined>(undefined);
   const [docAdvisorTrigger, setDocAdvisorTrigger] = useState(0);
 
+  // Holds an awaitable flush function registered by whichever intake step
+  // is currently mounted.  handleStepClick awaits it before switching away
+  // from the intake tab so the advisor never reads stale DB data.
+  const intakeFlushRef = useRef<(() => Promise<void>) | null>(null);
+
   const AI_CHECK_PROMPT = "Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.";
 
   const goToAiChat = useCallback(() => {
@@ -108,10 +113,16 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     return entry ? parseInt(entry[0]) : 1;
   })();
 
-  // Handle outer stepper click
-  const handleStepClick = (stepN: number) => {
+  // Handle outer stepper click.
+  // When leaving the intake tab for any non-intake destination, await the
+  // registered flush so any pending debounced form saves land in the DB
+  // before the destination tab's AI advisor can read from it.
+  const handleStepClick = async (stepN: number) => {
     const mapping = STEP_MAP[stepN];
     if (!mapping) return;
+    if (activeTab === "intake" && !mapping.intakeStep && intakeFlushRef.current) {
+      await intakeFlushRef.current();
+    }
     if (mapping.intakeStep) {
       setIntakeSubStep(mapping.intakeStep);
       setTrackedInnerStep(mapping.intakeStep);
@@ -361,6 +372,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 setTrackedInnerStep(step);
               }}
               onGoToAiChat={goToAiChat}
+              onRegisterFlush={(fn) => { intakeFlushRef.current = fn; }}
             />
           )}
           {activeTab === "documents" && (

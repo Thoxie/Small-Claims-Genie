@@ -25,9 +25,10 @@ interface Props {
   autoOpenAdvisor?: boolean;
   onAdvisorOpened?: () => void;
   onSaveExit: (d: Record<string, unknown>) => void;
+  onRegisterFlush?: (flush: (() => Promise<void>) | null) => void;
 }
 
-export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvisor, onAdvisorOpened, onSaveExit }: Props) {
+export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvisor, onAdvisorOpened, onSaveExit, onRegisterFlush }: Props) {
   const { getToken } = useAuth();
   const { toast } = useToast();
 
@@ -104,26 +105,31 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     autoSave,
   ]);
 
-  // Keep a stable ref to autoSave so the unmount flush below never captures a
-  // stale closure (autoSave itself is memoised but its identity can change if
-  // getToken rotates, so we track it here).
+  // Keep a stable ref to autoSave so flush closures never go stale.
   const autoSaveRef = useRef(autoSave);
   autoSaveRef.current = autoSave;
 
-  // Flush any pending debounced save when this component unmounts.
-  // This covers the case where the user navigates away (outer step nav, inner
-  // tab click, browser back) before the 1.5 s debounce fires — without this
-  // the cleanup above would cancel the timeout and the in-flight changes would
-  // never reach the DB, causing the step-3 advisor to see stale data.
+  // Register an awaitable flush function with the workspace so that when the
+  // user clicks the outer nav to leave the intake tab, the workspace can
+  // await the save completing before the target tab (e.g. Documents advisor)
+  // reads from the database.  Also deregister on unmount so the ref is never
+  // pointing at a dead component.
   useEffect(() => {
-    return () => {
+    const flush = async () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
         debounceRef.current = null;
       }
-      void autoSaveRef.current(watchedRef.current as Record<string, unknown>);
+      await autoSaveRef.current(watchedRef.current as Record<string, unknown>);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    onRegisterFlush?.(flush);
+    return () => {
+      // Fire the flush on unmount as a safety net for navigation paths that
+      // don't go through handleStepClick (e.g. browser back, inner tab links).
+      void flush();
+      onRegisterFlush?.(null);
+    };
+  }, [onRegisterFlush]); // eslint-disable-line react-hooks/exhaustive-deps
 
   type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
