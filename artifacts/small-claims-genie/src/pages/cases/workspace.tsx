@@ -355,6 +355,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               caseId={caseId}
               evidenceChecklist={extCase?.evidenceChecklist || []}
               onNext={() => handleStepClick(4)}
+              onAiCheck={() => handleStepClick(5)}
             />
           )}
           {activeTab === "chat" && (

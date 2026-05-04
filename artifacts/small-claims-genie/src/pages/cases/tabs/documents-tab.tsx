@@ -11,7 +11,7 @@ import {
   getGetCaseQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle, Play, X, ChevronRight } from "lucide-react";
+import { FileText, Paperclip, Trash2, Eye, ClipboardList, CheckSquare2, Square, AlertCircle, Play, X, ChevronRight, Sparkles } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -103,7 +103,7 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
 }
 
 // ─── Main Tab ────────────────────────────────────────────────────────────────
-export function DocumentsTab({ caseId, evidenceChecklist, onNext }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[]; onNext?: () => void }) {
+export function DocumentsTab({ caseId, evidenceChecklist, onNext, onAiCheck }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[]; onNext?: () => void; onAiCheck?: () => void }) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
   const uploadDoc = useUploadDocument();
   const deleteDoc = useDeleteDocument();
@@ -294,6 +294,17 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext }: { caseId: nu
               </div>
             </div>
           )}
+          {onAiCheck && (
+            <div className="flex justify-end pt-3">
+              <Button
+                type="button"
+                onClick={onAiCheck}
+                className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+              >
+                <Sparkles className="h-4 w-4" /> AI Check My Case
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -372,6 +383,17 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext }: { caseId: nu
               </div>
             )}
           </div>
+          {onAiCheck && (
+            <div className="flex justify-end pt-3">
+              <Button
+                type="button"
+                onClick={onAiCheck}
+                className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+              >
+                <Sparkles className="h-4 w-4" /> AI Check My Case
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
