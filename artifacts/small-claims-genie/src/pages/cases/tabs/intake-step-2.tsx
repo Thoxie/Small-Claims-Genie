@@ -403,10 +403,12 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
                   <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
                     <span className="shrink-0 mt-0.5">⚠️</span>
                     <span>
-                      <strong>Large document notice:</strong> The following {truncatedDocs.length === 1 ? "file was" : "files were"} too large to fully read — only the first 30,000 characters were analyzed:{" "}
+                      <strong>Large document notice:</strong> The following {truncatedDocs.length === 1 ? "file was" : "files were"} too large to fully analyze:{" "}
                       {truncatedDocs.map((name, i) => (
                         <span key={i}><em>{name}</em>{i < truncatedDocs.length - 1 ? ", " : ""}</span>
-                      ))}.
+                      ))}. During beta, please contact us at{" "}
+                      <a href="mailto:support@smallclaimsgenie.com" className="underline font-medium">support@smallclaimsgenie.com</a>{" "}
+                      for assistance.
                     </span>
                   </div>
                 )}
