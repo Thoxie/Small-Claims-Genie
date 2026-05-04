@@ -7,9 +7,9 @@ import type { ExtendedCase } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertCircle, PlusCircle, Play, X, ChevronRight } from "lucide-react";
+import { CheckCircle, AlertCircle, PlusCircle, Play, X, ChevronRight, LogOut, Sparkles } from "lucide-react";
 import { WorkspaceLayout } from "@/components/workspace-layout";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 const VALID_TABS = ["intake", "documents", "chat", "demand-letter", "forms", "prep", "deadlines"];
 
@@ -68,6 +68,7 @@ import { DeadlineCalculatorTab } from "./tabs/deadline-calculator-tab";
 export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) {
   const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useHashTab(caseId);
+  const [, navigate] = useLocation();
 
   // forceStep: signal from the outer nav telling IntakeTab to jump to step 1 or 2.
   // Never seeded from localStorage — only set by outer-nav clicks.
@@ -351,22 +352,57 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             />
           )}
           {activeTab === "documents" && (
-            <DocumentsTab
-              caseId={caseId}
-              evidenceChecklist={extCase?.evidenceChecklist || []}
-              onNext={() => handleStepClick(4)}
-              onAiCheck={() => handleStepClick(5)}
-            />
+            <div>
+              <DocumentsTab
+                caseId={caseId}
+                evidenceChecklist={extCase?.evidenceChecklist || []}
+              />
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={() => handleStepClick(5)}
+                  className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+                >
+                  <Sparkles className="h-4 w-4" /> AI Check My Case
+                </Button>
+                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2">
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
           {activeTab === "chat" && (
             <ChatTab caseId={caseId} isDraftMode={false} currentCase={extCase} />
           )}
           {activeTab === "demand-letter" && (
-            <DemandLetterTab
-              caseId={caseId}
-              currentCase={extCase}
-              onNext={() => handleStepClick(5)}
-            />
+            <div>
+              <DemandLetterTab
+                caseId={caseId}
+                currentCase={extCase}
+              />
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={() => handleStepClick(5)}
+                  className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+                >
+                  <Sparkles className="h-4 w-4" /> AI Check My Case
+                </Button>
+                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2">
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
           {activeTab === "forms" && (
             <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
