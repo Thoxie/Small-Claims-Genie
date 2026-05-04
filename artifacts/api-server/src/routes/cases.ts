@@ -310,7 +310,11 @@ function buildAdvisorBrief(
   lines.push(`Name: ${c.defendantName || "[not entered]"}`);
   lines.push(`Phone: ${c.defendantPhone || "[not entered]"}`);
   lines.push(`Address: ${[c.defendantAddress, c.defendantCity, c.defendantState || "CA", c.defendantZip].filter(Boolean).join(", ") || "[not entered]"}`);
-  lines.push(`Is Business/Entity: ${c.defendantIsBusinessOrEntity ? "Yes" : "No"}`);
+  if (c.defendantIsBusinessOrEntity) {
+    lines.push(`Defendant Type: BUSINESS or ENTITY (the user has already confirmed this — do NOT ask whether they are suing a person or business)`);
+  } else {
+    lines.push(`Defendant Type: INDIVIDUAL/PERSON (the user has already confirmed this — do NOT ask whether they are suing a person or business)`);
+  }
   if (c.defendantIsBusinessOrEntity && c.defendantAgentName) lines.push(`Agent for Service: ${c.defendantAgentName}`);
 
   lines.push("\n-- COURT & FILING --");
@@ -435,15 +439,27 @@ Return this exact JSON structure:
 }
 
 Rules:
+CRITICAL — DO NOT RE-ASK KNOWN INFORMATION:
+- Every field in the case record above was entered by the user. Do NOT ask about any field that already has a value.
+- If Defendant Name is filled in, that is already the established defendant — do NOT ask who should be named as defendant, or to confirm the legal name, or to verify the exact spelling.
+- If Defendant Type says BUSINESS or ENTITY, accept that as final — do NOT ask whether the user is suing a person or business, do NOT suggest adding an individual as a co-defendant unless there is a specific legal reason from the documents.
+- Do NOT ask "who should I name as defendant", "is this a business or an individual", "what is the LLC's exact name", or any variation of these.
+- Do NOT ask about information already visible in the PLAINTIFF or DEFENDANT sections.
+
+QUESTIONS:
 - Read the full content of every uploaded document before forming questions. If a document answers a question, do NOT ask it.
 - Ask 2–4 targeted questions about what is genuinely weak or missing after reviewing ALL documents and fields.
-- If uploaded documents reveal specific facts (dates, amounts, names, terms), use those facts in your questions — e.g. "Your lease shows a $2,400 deposit. Do you have any written record of when you demanded it back?"
-- If the claim description is already detailed, ask about things that would strengthen it (witnesses, timeline gaps, amounts not accounted for).
-- For the evidence checklist: generate 3–6 items specific to this exact claim type. Exclude documents already uploaded AND items the user has already marked as gathered (see EVIDENCE CHECKLIST STATUS above).
+- Focus questions on: timeline gaps, amounts not fully explained, witnesses, events the user hasn't described, or facts that would strengthen the claim.
+- If uploaded documents reveal specific facts (dates, amounts, names, terms), use those facts — e.g. "Your lease shows a $2,400 deposit. Do you have any written record of when you demanded it back?"
+
+EVIDENCE CHECKLIST:
+- Generate 3–6 items specific to this exact claim type.
+- Exclude documents already uploaded AND items the user has already marked as gathered (see EVIDENCE CHECKLIST STATUS above).
 - Security deposit: lease, move-in/out inspection report, bank records showing deposit, texts/emails with landlord
 - Contract disputes: signed contract, invoices, proof of payment, written communications
 - Property damage: repair estimates/receipts, before/after photos, written acknowledgment
 - Money owed: loan agreement, payment history, prior demand letters
+
 - Plain English only. No legal jargon.`;
 
   const completion = await openai.chat.completions.create({
