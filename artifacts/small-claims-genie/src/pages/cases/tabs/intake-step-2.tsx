@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { LogOut, Sparkles, Maximize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff } from "lucide-react";
+import { LogOut, Sparkles, Maximize2, Minimize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -44,6 +44,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
 
   const [descModalOpen, setDescModalOpen] = useState(false);
   const [descModalValue, setDescModalValue] = useState("");
+  const [descExpanded, setDescExpanded] = useState(false);
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
@@ -250,34 +251,59 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
             </FormItem>
           )} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Option C outer wrapper — full-width when inline-expanded */}
+          <div className={descExpanded ? "flex flex-col gap-5" : "grid grid-cols-1 md:grid-cols-2 gap-5"}>
             <FormField control={form.control} name="claimDescription" render={({ field }) => (
-              <FormItem>
+              <FormItem className={descExpanded ? "col-span-2" : ""}>
                 <FormLabel className="flex items-center gap-2 flex-wrap">
                   <span>What happened? <span className="text-destructive">*</span></span>
                   <span className="text-xs font-normal text-muted-foreground">Describe why you're owed money</span>
                   {saveStatus === "saving" && (
-                    <span className="ml-auto flex items-center gap-1 text-[11px] font-normal text-muted-foreground">
+                    <span className="flex items-center gap-1 text-[11px] font-normal text-muted-foreground">
                       <Loader2 className="h-3 w-3 animate-spin" /> Saving…
                     </span>
                   )}
                   {saveStatus === "saved" && (
-                    <span className="ml-auto flex items-center gap-1 text-[11px] font-normal text-teal-600">
+                    <span className="flex items-center gap-1 text-[11px] font-normal text-teal-600">
                       <CheckCircle className="h-3 w-3" /> Saved
                     </span>
                   )}
                   {saveStatus === "error" && (
-                    <span className="ml-auto flex items-center gap-1 text-[11px] font-normal text-destructive">
+                    <span className="flex items-center gap-1 text-[11px] font-normal text-destructive">
                       <CloudOff className="h-3 w-3" /> Save failed — check connection
                     </span>
                   )}
+                  {/* Option C — inline expand/collapse toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setDescExpanded(v => !v)}
+                    className="ml-auto flex items-center gap-1 text-[11px] font-medium text-[#0d6b5e] hover:text-[#0a5449] hover:underline transition-colors"
+                    title={descExpanded ? "Collapse editor" : "Expand inline"}
+                  >
+                    {descExpanded ? <><Minimize2 className="h-3.5 w-3.5" /> Collapse</> : <><Maximize2 className="h-3.5 w-3.5" /> Expand</>}
+                  </button>
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Textarea className="min-h-[88px] pr-10 resize-none" placeholder="Briefly describe why the defendant owes you money…" {...field} />
-                    <button type="button" title="Expand to full editor" onClick={() => { setDescModalValue(field.value || ""); setDescModalOpen(true); }}
-                      className="absolute bottom-2 right-2 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                      <Maximize2 className="h-4 w-4" />
+                    {/* Option A — taller default + auto-grow on input */}
+                    <Textarea
+                      className={`pr-24 resize-none overflow-hidden transition-all ${descExpanded ? "min-h-[400px]" : "min-h-[160px]"}`}
+                      placeholder="Briefly describe why the defendant owes you money…"
+                      {...field}
+                      onInput={(e) => {
+                        const el = e.currentTarget;
+                        el.style.height = "auto";
+                        el.style.height = `${el.scrollHeight}px`;
+                      }}
+                    />
+                    {/* Option B — full-screen pop-out button, now larger and labelled */}
+                    <button
+                      type="button"
+                      title="Open full-screen editor"
+                      onClick={() => { setDescModalValue(field.value || ""); setDescModalOpen(true); }}
+                      className="absolute bottom-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary bg-primary/8 hover:bg-primary/15 border border-primary/20 transition-colors"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" /> Full Screen
                     </button>
                   </div>
                 </FormControl>
@@ -345,29 +371,39 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
       </div>
 
       <Dialog open={descModalOpen} onOpenChange={setDescModalOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90dvh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Maximize2 className="h-5 w-5 text-primary" /> What happened? — Full Description Editor
+        <DialogContent className="w-[95vw] max-w-[95vw] h-[92dvh] max-h-[92dvh] flex flex-col p-0 gap-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-5 pb-4 border-b bg-[#f0fffe]">
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Maximize2 className="h-5 w-5 text-[#0d6b5e]" />
+              Full Description Editor — What happened?
             </DialogTitle>
-            <p className="text-sm text-muted-foreground mt-1">Write as much detail as you need. Include what happened, when, and exactly how much money you lost.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Write as much detail as you need. Include what happened, when, and exactly how much money you lost.</p>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden flex flex-col gap-3 min-h-0">
-            <textarea value={descModalValue} onChange={(e) => setDescModalValue(e.target.value)}
+          <div className="flex-1 min-h-0 flex flex-col px-6 py-4 gap-3">
+            <textarea
+              value={descModalValue}
+              onChange={(e) => setDescModalValue(e.target.value)}
               placeholder="Describe what happened in your own words…"
-              className="flex-1 min-h-[320px] w-full resize-none rounded-lg border border-input bg-background px-4 py-3 text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{descModalValue.length} characters</span>
+              autoFocus
+              className="flex-1 w-full resize-none rounded-lg border border-input bg-background px-4 py-3 text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex items-center justify-between text-xs text-muted-foreground flex-shrink-0">
+              <span>{descModalValue.length.toLocaleString()} characters</span>
               {descModalValue.length > 650 && <span className="text-amber-600 font-medium">⚠ Long descriptions may need a separate MC-030 attachment.</span>}
             </div>
           </div>
-          <DialogFooter className="flex-shrink-0 gap-2">
+          <DialogFooter className="flex-shrink-0 px-6 pb-5 pt-3 border-t gap-2">
             <Button variant="outline" onClick={() => setDescModalOpen(false)}>Cancel</Button>
-            <Button onClick={() => {
-              const currentFieldValue = form.getValues("claimDescription");
-              if (descModalValue !== currentFieldValue) form.setValue("claimDescription", descModalValue, { shouldValidate: true, shouldDirty: true });
-              setDescModalOpen(false);
-            }}>Save Description</Button>
+            <Button
+              className="bg-[#0d6b5e] hover:bg-[#0a5449] text-white"
+              onClick={() => {
+                const currentFieldValue = form.getValues("claimDescription");
+                if (descModalValue !== currentFieldValue) form.setValue("claimDescription", descModalValue, { shouldValidate: true, shouldDirty: true });
+                setDescModalOpen(false);
+              }}
+            >
+              Save &amp; Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
