@@ -365,7 +365,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button
                   type="button"
                   size="lg"
-                  onClick={() => handleStepClick(5)}
+                  onClick={() => handleStepClick(2)}
                   className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
                 >
                   <Sparkles className="h-4 w-4" /> AI Check My Case
@@ -404,7 +404,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button
                   type="button"
                   size="lg"
-                  onClick={() => handleStepClick(5)}
+                  onClick={() => handleStepClick(2)}
                   className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
                 >
                   <Sparkles className="h-4 w-4" /> AI Check My Case
@@ -422,9 +422,6 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Save &amp; Exit
-                </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
-                  <Sparkles className="h-4 w-4" /> AI Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(7)} className="gap-2">
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
