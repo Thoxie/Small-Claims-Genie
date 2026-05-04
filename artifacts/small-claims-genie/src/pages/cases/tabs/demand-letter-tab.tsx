@@ -398,7 +398,7 @@ export function DemandLetterTab({ caseId, currentCase, onNext }: { caseId: numbe
 
       {mode === "demand" && (
         <>
-          <Button onClick={generate} disabled={isGenerating || !hasRequiredInfo} className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white py-5 text-base" size="lg">
+          <Button onClick={generate} disabled={isGenerating || !hasRequiredInfo} className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white py-3.5 text-base" size="lg">
             {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin" />Generating letter…</> : <><Mail className="h-4 w-4" />{letters[tone] ? "Regenerate Letter" : "Generate Letter"} — {TONE_META.find(t => t.value === tone)?.label}</>}
           </Button>
           {error && <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3"><AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" /><p className="text-sm text-destructive">{error}</p></div>}
