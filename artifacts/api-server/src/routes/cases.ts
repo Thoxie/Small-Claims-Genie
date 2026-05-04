@@ -357,9 +357,10 @@ function buildAdvisorBrief(
     for (const doc of docs) {
       lines.push(`\n• File: "${doc.originalName}" | Label: ${doc.label || "unlabeled"} | OCR status: ${doc.ocrStatus}`);
       if (doc.ocrText && doc.ocrText.length > 0 && !doc.ocrText.startsWith("[")) {
-        const text = doc.ocrText.slice(0, 2500);
+        const PER_DOC_LIMIT = 15_000;
+        const text = doc.ocrText.slice(0, PER_DOC_LIMIT);
         lines.push(`  --- DOCUMENT CONTENT START ---`);
-        lines.push(`  ${text}${doc.ocrText.length > 2500 ? "\n  [content truncated]" : ""}`);
+        lines.push(`  ${text}${doc.ocrText.length > PER_DOC_LIMIT ? "\n  [content truncated — document continues beyond this point]" : ""}`);
         lines.push(`  --- DOCUMENT CONTENT END ---`);
       } else {
         lines.push(`  [No text extracted from this document]`);
