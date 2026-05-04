@@ -25,21 +25,31 @@ const STEP_MAP: Record<number, { tab: string; intakeStep?: 1 | 2 }> = {
   8: { tab: "deadlines" },
 };
 
-function getTabFromHash(): string {
-  const hash = window.location.hash.slice(1);
-  return VALID_TABS.includes(hash) ? hash : "intake";
-}
+function useHashTab(caseId: number): [string, (tab: string) => void] {
+  const lsKey = `case-last-tab-${caseId}`;
 
-function useHashTab(): [string, (tab: string) => void] {
-  const [activeTab, setActiveTabState] = useState(getTabFromHash);
+  // Priority: URL hash → localStorage → "intake"
+  function getInitialTab(): string {
+    const hash = window.location.hash.slice(1);
+    if (VALID_TABS.includes(hash)) return hash;
+    const saved = localStorage.getItem(lsKey);
+    return saved && VALID_TABS.includes(saved) ? saved : "intake";
+  }
+
+  const [activeTab, setActiveTabState] = useState(getInitialTab);
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
     window.location.hash = tab;
+    localStorage.setItem(lsKey, tab);
   };
 
   useEffect(() => {
-    const onHashChange = () => setActiveTabState(getTabFromHash());
+    const onHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      const tab = VALID_TABS.includes(hash) ? hash : "intake";
+      setActiveTabState(tab);
+    };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
@@ -57,7 +67,7 @@ import { DeadlineCalculatorTab } from "./tabs/deadline-calculator-tab";
 
 export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) {
   const caseId = parseInt(caseIdParam || "0", 10);
-  const [activeTab, setActiveTab] = useHashTab();
+  const [activeTab, setActiveTab] = useHashTab(caseId);
 
   // forceStep: signal from the outer nav telling IntakeTab to jump to step 1 or 2.
   // Never seeded from localStorage — only set by outer-nav clicks.
