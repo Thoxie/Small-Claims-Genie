@@ -271,7 +271,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
               Save &amp; Exit
             </Button>
             <Button type="button" size="lg" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
-              <Sparkles className="h-4 w-4" /> AI Check My Case
+              <Sparkles className="h-4 w-4" /> AI Genie Check My Case
             </Button>
             <Button type="submit" size="lg" disabled={saving} className="gap-2">
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
