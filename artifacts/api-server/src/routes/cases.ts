@@ -351,16 +351,35 @@ function buildAdvisorBrief(
 
   // Already-uploaded documents
   if (docs.length > 0) {
-    lines.push(`\n-- ALREADY UPLOADED DOCUMENTS (${docs.length}) --`);
-    lines.push("RULE: Do NOT ask the user to upload documents that are already in this list.");
+    lines.push(`\n-- UPLOADED DOCUMENTS (${docs.length}) — READ AND USE THIS CONTENT --`);
+    lines.push("RULE: Do NOT ask the user to upload or provide documents already listed here.");
+    lines.push("RULE: When forming questions or the evidence checklist, reference facts found in these documents.");
     for (const doc of docs) {
-      lines.push(`• "${doc.originalName}" (${doc.label || "unlabeled"}) — OCR: ${doc.ocrStatus}`);
+      lines.push(`\n• File: "${doc.originalName}" | Label: ${doc.label || "unlabeled"} | OCR status: ${doc.ocrStatus}`);
       if (doc.ocrText && doc.ocrText.length > 0 && !doc.ocrText.startsWith("[")) {
-        lines.push(`  Summary: ${doc.ocrText.slice(0, 500)}${doc.ocrText.length > 500 ? "..." : ""}`);
+        const text = doc.ocrText.slice(0, 2500);
+        lines.push(`  --- DOCUMENT CONTENT START ---`);
+        lines.push(`  ${text}${doc.ocrText.length > 2500 ? "\n  [content truncated]" : ""}`);
+        lines.push(`  --- DOCUMENT CONTENT END ---`);
+      } else {
+        lines.push(`  [No text extracted from this document]`);
       }
     }
   } else {
     lines.push("\n-- No documents uploaded yet --");
+  }
+
+  // Evidence checklist — which items the user has already gathered
+  const checklist = Array.isArray(c.evidenceChecklist)
+    ? (c.evidenceChecklist as { id: string; item: string; checked?: boolean }[])
+    : [];
+  const gathered = checklist.filter(i => i.checked).map(i => i.item);
+  const stillNeeded = checklist.filter(i => !i.checked).map(i => i.item);
+  if (checklist.length > 0) {
+    lines.push("\n-- EVIDENCE CHECKLIST STATUS --");
+    if (gathered.length > 0) lines.push(`Already gathered: ${gathered.map(i => `"${i}"`).join(", ")}`);
+    if (stillNeeded.length > 0) lines.push(`Still needed: ${stillNeeded.map(i => `"${i}"`).join(", ")}`);
+    lines.push("RULE: Do NOT add items to the evidence checklist that the user has already gathered.");
   }
 
   return lines.join("\n");
@@ -386,7 +405,7 @@ router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
   const caseBrief = buildAdvisorBrief(caseRecord, docs);
 
-  const prompt = `You are a California small claims court advisor. You have received the COMPLETE case record below. Review everything that is already filled in before generating questions or an evidence checklist.
+  const prompt = `You are a California small claims court advisor. You have received the COMPLETE case record below, including all entered fields AND the full text of every uploaded document. Read every section carefully before generating questions or an evidence checklist.
 
 ${caseBrief}
 
@@ -403,9 +422,11 @@ Return this exact JSON structure:
 }
 
 Rules:
-- Review the MISSING FIELDS list above. Ask 2–4 targeted questions about what is weak or missing — NOT about things already filled in.
+- Read the full content of every uploaded document before forming questions. If a document answers a question, do NOT ask it.
+- Ask 2–4 targeted questions about what is genuinely weak or missing after reviewing ALL documents and fields.
+- If uploaded documents reveal specific facts (dates, amounts, names, terms), use those facts in your questions — e.g. "Your lease shows a $2,400 deposit. Do you have any written record of when you demanded it back?"
 - If the claim description is already detailed, ask about things that would strengthen it (witnesses, timeline gaps, amounts not accounted for).
-- For the evidence checklist: generate 3–6 items specific to this exact claim type. Only list documents NOT already uploaded.
+- For the evidence checklist: generate 3–6 items specific to this exact claim type. Exclude documents already uploaded AND items the user has already marked as gathered (see EVIDENCE CHECKLIST STATUS above).
 - Security deposit: lease, move-in/out inspection report, bank records showing deposit, texts/emails with landlord
 - Contract disputes: signed contract, invoices, proof of payment, written communications
 - Property damage: repair estimates/receipts, before/after photos, written acknowledgment
