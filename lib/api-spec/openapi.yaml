@@ -1000,8 +1000,6 @@ components:
           additionalProperties: true
         intakeComplete:
           type: boolean
-      required:
-        - step
 
     CaseStats:
       type: object
