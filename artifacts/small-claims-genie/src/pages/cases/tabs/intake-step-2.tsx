@@ -430,13 +430,17 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
           </SheetHeader>
           <div className="flex-1 p-5 space-y-6 overflow-y-auto">
             {advisorPhase === "analyzing" && (
-              <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+              <div className="flex flex-col items-center justify-center py-16 gap-5 text-center">
                 <div className="h-12 w-12 rounded-full bg-[#ddf6f3] flex items-center justify-center animate-pulse">
                   <Sparkles className="h-6 w-6 text-[#0d6b5e]" />
                 </div>
                 <div>
                   <p className="font-semibold text-[#0d6b5e]">Reviewing your case…</p>
                   <p className="text-sm text-muted-foreground mt-1">Identifying gaps and preparing questions</p>
+                </div>
+                {/* Animated indeterminate progress bar */}
+                <div className="w-64 h-1.5 rounded-full bg-[#ddf6f3] overflow-hidden">
+                  <div className="h-full w-2/5 rounded-full bg-[#14b8a6] animate-[progress-slide_1.4s_ease-in-out_infinite]" />
                 </div>
               </div>
             )}
