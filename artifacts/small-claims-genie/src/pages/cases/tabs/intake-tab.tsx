@@ -133,12 +133,14 @@ export function IntakeTab({
   forceStep,
   forceStepNonce,
   onStepChange,
+  onGoToAiChat,
 }: {
   caseId: number;
   initialData: ExtendedCase;
   forceStep?: 1 | 2;
   forceStepNonce?: number;
   onStepChange?: (step: number) => void;
+  onGoToAiChat?: () => void;
 }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
   const [, navigate] = useLocation();
@@ -232,9 +234,13 @@ export function IntakeTab({
   };
 
   const goToAdvisor = () => {
-    setAutoOpenAdvisor(true);
-    setActiveTab(2);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (onGoToAiChat) {
+      onGoToAiChat();
+    } else {
+      setAutoOpenAdvisor(true);
+      setActiveTab(2);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const warningsByTab = INTAKE_TABS.map(t => ({

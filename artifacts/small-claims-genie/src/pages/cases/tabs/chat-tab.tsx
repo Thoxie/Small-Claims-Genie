@@ -14,7 +14,13 @@ interface ChatMessage {
   content: string;
 }
 
-export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: number; isDraftMode?: boolean; currentCase?: ExtendedCase }) {
+export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage, onAutoMessageSent }: {
+  caseId: number;
+  isDraftMode?: boolean;
+  currentCase?: ExtendedCase;
+  autoMessage?: string;
+  onAutoMessageSent?: () => void;
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [cleared, setCleared] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
@@ -62,6 +68,15 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase }: { caseId: 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isTyping]);
+
+  const autoMessageFiredRef = useRef(false);
+  useEffect(() => {
+    if (!autoMessage || autoMessageFiredRef.current) return;
+    autoMessageFiredRef.current = true;
+    sendMessage(autoMessage);
+    onAutoMessageSent?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoMessage]);
 
   const detectDownloadCommand = (text: string): { format: "word"; scope: "last" | "all" } | null => {
     const t = text.toLowerCase().trim();

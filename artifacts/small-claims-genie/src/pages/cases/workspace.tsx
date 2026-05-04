@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   useGetCase,
   useGetCaseReadiness,
@@ -77,6 +77,16 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   // effect even when forceStep value hasn't changed (e.g., clicking step 2 twice).
   const [forceStepNonce, setForceStepNonce] = useState(0);
   const [prepTutorialOpen, setPrepTutorialOpen] = useState(false);
+  const [chatAutoMessage, setChatAutoMessage] = useState<string | undefined>(undefined);
+
+  const AI_CHECK_PROMPT = "Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.";
+
+  const goToAiChat = useCallback(() => {
+    setChatAutoMessage(AI_CHECK_PROMPT);
+    setIntakeSubStep(undefined);
+    setActiveTab("chat");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [setActiveTab]);
 
   // Tracks the *actual* inner step reported by IntakeTab via onStepChange.
   // Seeded from localStorage so the outer highlight is correct on refresh
@@ -349,6 +359,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               onStepChange={(step) => {
                 setTrackedInnerStep(step);
               }}
+              onGoToAiChat={goToAiChat}
             />
           )}
           {activeTab === "documents" && (
@@ -365,7 +376,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button
                   type="button"
                   size="lg"
-                  onClick={() => handleStepClick(2)}
+                  onClick={goToAiChat}
                   className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
                 >
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
@@ -378,7 +389,13 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           )}
           {activeTab === "chat" && (
             <div>
-              <ChatTab caseId={caseId} isDraftMode={false} currentCase={extCase} />
+              <ChatTab
+                caseId={caseId}
+                isDraftMode={false}
+                currentCase={extCase}
+                autoMessage={chatAutoMessage}
+                onAutoMessageSent={() => setChatAutoMessage(undefined)}
+              />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -404,7 +421,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button
                   type="button"
                   size="lg"
-                  onClick={() => handleStepClick(2)}
+                  onClick={goToAiChat}
                   className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
                 >
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
@@ -437,7 +454,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   <LogOut className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(8)} className="gap-2">
@@ -454,7 +471,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   <LogOut className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => navigate("/dashboard")} className="gap-2">
