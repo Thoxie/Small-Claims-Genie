@@ -8,12 +8,12 @@ interface Props {
   caseId: number;
   initialData: ExtendedCase;
   onNext: (d: Record<string, unknown>) => void;
-  onBack: () => void;
+  onBack?: () => void;
   saving?: boolean;
   onSaveExit: (d: Record<string, unknown>) => void;
 }
 
-export function IntakeStep4({ caseId, initialData, onNext, onBack, saving, onSaveExit }: Props) {
+export function IntakeStep4({ caseId, initialData, onNext, saving, onSaveExit }: Props) {
   return (
     <div className="space-y-4">
       <DemandLetterTab caseId={caseId} currentCase={initialData} />

@@ -9,12 +9,12 @@ interface Props {
   caseId: number;
   initialData: ExtendedCase;
   onComplete: (d: Record<string, unknown>) => void;
-  onBack: () => void;
+  onBack?: () => void;
   saving?: boolean;
   onSaveExit: (d: Record<string, unknown>) => void;
 }
 
-export function IntakeStep7({ caseId, initialData, onComplete, onBack, saving, onSaveExit }: Props) {
+export function IntakeStep7({ caseId, initialData, onComplete, saving, onSaveExit }: Props) {
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
   return (
