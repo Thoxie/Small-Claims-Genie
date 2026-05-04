@@ -113,7 +113,12 @@ export const casesTable = pgTable("cases", {
   weeklyReminderLastSent: timestamp("weekly_reminder_last_sent", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
-}, (t) => [index("cases_user_id_idx").on(t.userId)]);
+}, (t) => [
+  index("cases_user_id_idx").on(t.userId),
+  index("cases_intake_complete_idx").on(t.intakeComplete),
+  index("cases_hearing_date_idx").on(t.hearingDate),
+  index("cases_confirmation_email_sent_idx").on(t.confirmationEmailSent),
+]);
 
 export const insertCaseSchema = createInsertSchema(casesTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertCase = z.infer<typeof insertCaseSchema>;

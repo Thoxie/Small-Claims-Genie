@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
 import { Readable } from "stream";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
+import { checkAiRateLimit } from "../lib/rate-limiter";
 import multer from "multer";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import mammoth from "mammoth";
@@ -184,6 +185,12 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
 
       // ── IMAGES → Vision API ──────────────────────────────────────────────────
       if (mime.startsWith("image/")) {
+        const imgRateCheck = await checkAiRateLimit(userId);
+        if (!imgRateCheck.allowed) {
+          req.log.warn({ userId, originalName }, "[OCR] Rate limit reached — skipping Vision OCR for image");
+          await db.update(documentsTable).set({ ocrText: null, ocrStatus: "failed" }).where(eq(documentsTable.id, doc.id));
+          return;
+        }
         req.log.info({ originalName }, "[OCR] Processing image via Vision");
         const response = await openai.chat.completions.create({
           model: "gpt-5.2",
@@ -253,6 +260,13 @@ router.post("/cases/:id/documents", upload.single("file"), async (req, res): Pro
 
           const numPages = Math.min(pdfDoc.numPages, 20);
           req.log.info({ totalPages: pdfDoc.numPages, processing: numPages }, "[OCR] pdfjs loaded");
+
+          const pdfRateCheck = await checkAiRateLimit(userId);
+          if (!pdfRateCheck.allowed) {
+            req.log.warn({ userId, originalName }, "[OCR] Rate limit reached — skipping Vision OCR for scanned PDF");
+            await db.update(documentsTable).set({ ocrText: null, ocrStatus: "failed" }).where(eq(documentsTable.id, doc.id));
+            return;
+          }
 
           const pageTexts: string[] = [];
           for (let pageNum = 1; pageNum <= numPages; pageNum++) {
@@ -333,7 +347,7 @@ router.patch("/cases/:id/documents/:docId", async (req, res): Promise<void> => {
   const update: Record<string, any> = {};
   if (typeof label === "string") update.label = label.trim() || null;
   if (typeof description === "string") update.description = description.trim() || null;
-  const [updated] = await db.update(documentsTable).set(update).where(eq(documentsTable.id, docId)).returning();
+  const [updated] = await db.update(documentsTable).set(update).where(and(eq(documentsTable.id, docId), eq(documentsTable.caseId, id))).returning();
   if (!updated) { res.status(404).json({ error: "Document not found" }); return; }
   res.json(updated);
 });
@@ -349,7 +363,7 @@ router.delete("/cases/:id/documents/:docId", async (req, res): Promise<void> => 
   const ownedCase = await getOwnedCase(id, userId);
   if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
 
-  const [deleted] = await db.delete(documentsTable).where(eq(documentsTable.id, docId)).returning();
+  const [deleted] = await db.delete(documentsTable).where(and(eq(documentsTable.id, docId), eq(documentsTable.caseId, id))).returning();
   if (!deleted) {
     res.status(404).json({ error: "Document not found" });
     return;

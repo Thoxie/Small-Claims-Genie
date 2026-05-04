@@ -11,10 +11,8 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { chatMessagesTable } from "@workspace/db";
 import { documentsTable } from "@workspace/db";
 import { checkAiRateLimit } from "../lib/rate-limiter";
-
-function getUserId(req: any): string {
-  return req.userId as string;
-}
+import { getUserId } from "../lib/owned-case";
+import { buildCaseContext } from "../lib/case-context";
 
 async function recalcReadiness(caseId: number): Promise<number> {
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, caseId));
@@ -286,120 +284,15 @@ router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
 });
 
 // ─── Case Advisor: Analyze ────────────────────────────────────────────────────
-// ─── Shared: build advisor case brief ────────────────────────────────────────
+// ─── Shared: build advisor case brief (wraps shared buildCaseContext) ─────────
 const PER_DOC_CHAR_LIMIT = 30_000;
 
 function buildAdvisorBrief(
   c: typeof casesTable.$inferSelect,
   docs: typeof documentsTable.$inferSelect[]
 ): { brief: string; truncatedDocs: string[] } {
-  const truncatedDocs: string[] = [];
-  const lines: string[] = ["=== FULL CASE RECORD ==="];
-
-  lines.push(`Title: ${c.title}`);
-  lines.push(`Intake Step: ${c.intakeStep ?? 1} of 4 | Complete: ${c.intakeComplete ? "Yes" : "No"}`);
-  lines.push(`Readiness Score: ${c.readinessScore ?? 0}%`);
-
-  lines.push("\n-- PLAINTIFF --");
-  lines.push(`Name: ${c.plaintiffName || "[not entered]"}`);
-  lines.push(`Phone: ${c.plaintiffPhone || "[not entered]"}`);
-  lines.push(`Email: ${c.plaintiffEmail || "[not entered]"}`);
-  lines.push(`Address: ${[c.plaintiffAddress, c.plaintiffCity, c.plaintiffState || "CA", c.plaintiffZip].filter(Boolean).join(", ") || "[not entered]"}`);
-
-  lines.push("\n-- DEFENDANT --");
-  lines.push(`Name: ${c.defendantName || "[not entered]"}`);
-  lines.push(`Phone: ${c.defendantPhone || "[not entered]"}`);
-  lines.push(`Address: ${[c.defendantAddress, c.defendantCity, c.defendantState || "CA", c.defendantZip].filter(Boolean).join(", ") || "[not entered]"}`);
-  if (c.defendantIsBusinessOrEntity) {
-    lines.push(`Defendant Type: BUSINESS or ENTITY (the user has already confirmed this — do NOT ask whether they are suing a person or business)`);
-  } else {
-    lines.push(`Defendant Type: INDIVIDUAL/PERSON (the user has already confirmed this — do NOT ask whether they are suing a person or business)`);
-  }
-  if (c.defendantIsBusinessOrEntity && c.defendantAgentName) lines.push(`Agent for Service: ${c.defendantAgentName}`);
-
-  lines.push("\n-- COURT & FILING --");
-  lines.push(`Filing County: ${c.countyId || "[not selected]"}`);
-  if (c.courthouseName) lines.push(`Courthouse: ${c.courthouseName}`);
-  if (c.filingFee) lines.push(`Filing Fee: $${c.filingFee}`);
-
-  lines.push("\n-- CLAIM --");
-  lines.push(`Claim Type: ${c.claimType || "[not entered]"}`);
-  lines.push(`Claim Amount: ${c.claimAmount ? `$${Number(c.claimAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "[not entered]"}`);
-  lines.push(`Incident Date: ${c.incidentDate || "[not entered]"}`);
-  lines.push(`Description:\n${c.claimDescription || "[not entered]"}`);
-  lines.push(`How Amount Calculated:\n${c.howAmountCalculated || "[not entered]"}`);
-
-  lines.push("\n-- PRIOR DEMAND & VENUE --");
-  lines.push(`Prior Demand Made: ${c.priorDemandMade === true ? "Yes" : c.priorDemandMade === false ? "No" : "[not answered]"}`);
-  if (c.priorDemandDescription) lines.push(`Demand Details: ${c.priorDemandDescription}`);
-  lines.push(`Venue Basis: ${c.venueBasis || "[not selected]"}`);
-  if (c.venueReason) lines.push(`Venue Explanation: ${c.venueReason}`);
-
-  lines.push("\n-- ELIGIBILITY FLAGS --");
-  lines.push(`Suing Public Entity: ${c.isSuingPublicEntity ? "Yes" : "No"}`);
-  lines.push(`Attorney Fee Dispute: ${c.isAttyFeeDispute ? "Yes" : "No"}`);
-  lines.push(`Filed 12+ Claims This Year: ${c.filedMoreThan12Claims ? "Yes" : "No"}`);
-  lines.push(`Claim Over $2,500: ${c.claimOver2500 ? "Yes" : "No"}`);
-
-  // What is already filled vs missing
-  const missing: string[] = [];
-  if (!c.plaintiffName) missing.push("plaintiff name");
-  if (!c.plaintiffPhone) missing.push("plaintiff phone");
-  if (!c.plaintiffAddress) missing.push("plaintiff address");
-  if (!c.defendantName) missing.push("defendant name");
-  if (!c.defendantAddress) missing.push("defendant address");
-  if (!c.claimAmount) missing.push("claim amount");
-  if (!c.claimDescription) missing.push("claim description");
-  if (!c.incidentDate) missing.push("incident date");
-  if (!c.howAmountCalculated) missing.push("how amount was calculated");
-  if (c.priorDemandMade === null) missing.push("prior demand answer");
-  if (!c.countyId) missing.push("filing county");
-  if (!c.venueBasis) missing.push("venue basis");
-
-  if (missing.length > 0) {
-    lines.push(`\n-- MISSING FIELDS (${missing.length}) --`);
-    lines.push(missing.map(f => `• ${f}`).join("\n"));
-    lines.push("RULE: Do NOT ask the user for information already filled in above. Only ask about or reference these missing fields.");
-  } else {
-    lines.push("\n-- All required intake fields are filled in. --");
-  }
-
-  // Already-uploaded documents
-  if (docs.length > 0) {
-    lines.push(`\n-- UPLOADED DOCUMENTS (${docs.length}) — READ AND USE THIS CONTENT --`);
-    lines.push("RULE: Do NOT ask the user to upload or provide documents already listed here.");
-    lines.push("RULE: When forming questions or the evidence checklist, reference facts found in these documents.");
-    for (const doc of docs) {
-      lines.push(`\n• File: "${doc.originalName}" | Label: ${doc.label || "unlabeled"} | OCR status: ${doc.ocrStatus}`);
-      if (doc.ocrText && doc.ocrText.length > 0 && !doc.ocrText.startsWith("[")) {
-        const wasTruncated = doc.ocrText.length > PER_DOC_CHAR_LIMIT;
-        if (wasTruncated) truncatedDocs.push(doc.originalName);
-        const text = doc.ocrText.slice(0, PER_DOC_CHAR_LIMIT);
-        lines.push(`  --- DOCUMENT CONTENT START ---`);
-        lines.push(`  ${text}${wasTruncated ? "\n  [content truncated — document continues beyond this point]" : ""}`);
-        lines.push(`  --- DOCUMENT CONTENT END ---`);
-      } else {
-        lines.push(`  [No text extracted from this document]`);
-      }
-    }
-  } else {
-    lines.push("\n-- No documents uploaded yet --");
-  }
-
-  // Evidence checklist — which items the user has already gathered
-  const checklist = Array.isArray(c.evidenceChecklist)
-    ? (c.evidenceChecklist as { id: string; item: string; checked?: boolean }[])
-    : [];
-  const gathered = checklist.filter(i => i.checked).map(i => i.item);
-  const stillNeeded = checklist.filter(i => !i.checked).map(i => i.item);
-  if (checklist.length > 0) {
-    lines.push("\n-- EVIDENCE CHECKLIST STATUS --");
-    if (gathered.length > 0) lines.push(`Already gathered: ${gathered.map(i => `"${i}"`).join(", ")}`);
-    if (stillNeeded.length > 0) lines.push(`Still needed: ${stillNeeded.map(i => `"${i}"`).join(", ")}`);
-    lines.push("RULE: Do NOT add items to the evidence checklist that the user has already gathered.");
-  }
-
-  return { brief: lines.join("\n"), truncatedDocs };
+  const { context: brief, truncatedDocs } = buildCaseContext(c, docs, { docCharLimit: PER_DOC_CHAR_LIMIT });
+  return { brief, truncatedDocs };
 }
 
 router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {

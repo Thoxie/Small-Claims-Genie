@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { checkHelpChatRateLimit } from "../lib/rate-limiter";
 
 const router: IRouter = Router();
 
@@ -274,6 +275,13 @@ If you cannot afford filing fees, use the FW-001 form (available in the Court Fo
 - You do NOT have access to any specific user's case details — for that, they need to open their case and use the Case Advisor tab`;
 
 router.post("/help", async (req, res): Promise<void> => {
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+  const rateCheck = await checkHelpChatRateLimit(ip);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: "Too many requests. Please wait a few minutes before trying again." });
+    return;
+  }
+
   const { message, history = [] } = req.body as {
     message: string;
     history: Array<{ role: "user" | "assistant"; content: string }>;
