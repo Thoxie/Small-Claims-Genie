@@ -341,7 +341,11 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             />
           )}
           {activeTab === "documents" && (
-            <DocumentsTab caseId={caseId} evidenceChecklist={extCase?.evidenceChecklist || []} />
+            <DocumentsTab
+              caseId={caseId}
+              evidenceChecklist={extCase?.evidenceChecklist || []}
+              onNext={() => handleStepClick(4)}
+            />
           )}
           {activeTab === "chat" && (
             <ChatTab caseId={caseId} isDraftMode={false} currentCase={extCase} />

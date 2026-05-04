@@ -103,7 +103,7 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
 }
 
 // ─── Main Tab ────────────────────────────────────────────────────────────────
-export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[] }) {
+export function DocumentsTab({ caseId, evidenceChecklist, onNext }: { caseId: number; evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[]; onNext?: () => void }) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
   const uploadDoc = useUploadDocument();
   const deleteDoc = useDeleteDocument();
@@ -391,6 +391,19 @@ export function DocumentsTab({ caseId, evidenceChecklist }: { caseId: number; ev
         </div>
 
       </div>{/* end flex row */}
+
+      {/* ── Save & Continue ── */}
+      {onNext && (
+        <div className="flex justify-end pt-4 border-t border-gray-100 mt-4">
+          <Button
+            onClick={onNext}
+            className="bg-[#0d6b5e] hover:bg-[#0a5449] text-white gap-2 px-6"
+          >
+            Save &amp; Continue
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* ── Tutorial modal ── */}
       {tutorialOpen && (
