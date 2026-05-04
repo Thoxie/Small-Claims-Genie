@@ -422,7 +422,7 @@ router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
   const { brief: caseBrief, truncatedDocs } = buildAdvisorBrief(caseRecord, docs);
 
-  const prompt = `You are a California small claims court advisor. You have received the COMPLETE case record below, including all entered fields AND the full text of every uploaded document. Read every section carefully before generating questions or an evidence checklist.
+  const prompt = `You are a California small claims court advisor. You have received the COMPLETE case record below, including all entered fields AND the full text of every uploaded document. Read every section carefully before generating questions, a legal alert, or an evidence checklist.
 
 ${caseBrief}
 
@@ -430,6 +430,7 @@ Return ONLY a valid JSON object — no markdown, no explanation, no code blocks.
 
 Return this exact JSON structure:
 {
+  "legalAlert": "...",
   "questions": [
     { "id": "q1", "question": "..." }
   ],
@@ -438,29 +439,46 @@ Return this exact JSON structure:
   ]
 }
 
-Rules:
+CALIFORNIA LAW — YOU MUST APPLY THESE RULES WHEN THEY ARE RELEVANT:
+
+Security Deposit (Civil Code §1950.5):
+- Landlord must return the full deposit (or a written itemized statement of deductions) within 21 CALENDAR DAYS of the tenant vacating.
+- If the landlord fails to return the deposit or provide the itemized statement within 21 days: the tenant is entitled to the FULL deposit back regardless of any claimed damage or deductions.
+- If the landlord acted in BAD FAITH (wrongfully withholding the deposit without honest basis, no itemization, ignoring demands, retaliatory, or fabricating damage claims): the court CAN award a penalty of up to 2× the deposit amount IN ADDITION to the deposit itself (Civil Code §1950.5(l)).
+- Total possible award in a bad faith case: deposit + up to 2× deposit = up to 3× the deposit amount.
+- IMPORTANT: If the claim amount in the case record equals only the deposit itself and the landlord has NOT complied with the 21-day rule or is acting in bad faith, this is a CRITICAL flag — the user may be dramatically under-claiming. You MUST surface this in the legalAlert field.
+
+Demand Before Filing (Civil Code §1950.5 & general small claims):
+- The tenant should send a written demand to the landlord before filing if they have not already done so. Failure to demand first is not required by law but strengthens the case.
+
+RULES:
 CRITICAL — DO NOT RE-ASK KNOWN INFORMATION:
 - Every field in the case record above was entered by the user. Do NOT ask about any field that already has a value.
-- If Defendant Name is filled in, that is already the established defendant — do NOT ask who should be named as defendant, or to confirm the legal name, or to verify the exact spelling.
-- If Defendant Type says BUSINESS or ENTITY, accept that as final — do NOT ask whether the user is suing a person or business, do NOT suggest adding an individual as a co-defendant unless there is a specific legal reason from the documents.
-- Do NOT ask "who should I name as defendant", "is this a business or an individual", "what is the LLC's exact name", or any variation of these.
+- If Defendant Name is filled in, that is the established defendant — do NOT ask who should be named as defendant, confirm the legal name, or verify spelling.
+- If Defendant Type says BUSINESS or ENTITY, accept that as final.
+- Do NOT ask "who should I name as defendant", "is this a business or individual", "what is the LLC's exact name", or any variation.
 - Do NOT ask about information already visible in the PLAINTIFF or DEFENDANT sections.
+
+LEGAL ALERT (legalAlert field):
+- If there is a California law that the user may NOT be aware of that could significantly increase their claim amount or strengthen their case, include a concise plain-English explanation in legalAlert.
+- For security deposit cases: always check whether the claim amount equals only the deposit. If so, flag the 21-day rule and bad faith penalty — e.g.: "California law (Civil Code §1950.5) may entitle you to MORE than just your deposit. If your landlord failed to return it (with an itemized statement) within 21 days of move-out, you can demand the full deposit back regardless of claimed deductions. AND if they acted in bad faith — ignoring your demands, providing no itemization, or fabricating damage — a judge can award up to 2× your deposit as a penalty, on top of the deposit itself. Review your demand amount before filing."
+- If no relevant legal enhancement applies, set legalAlert to null.
 
 QUESTIONS:
 - Read the full content of every uploaded document before forming questions. If a document answers a question, do NOT ask it.
-- Ask 2–4 targeted questions about what is genuinely weak or missing after reviewing ALL documents and fields.
-- Focus questions on: timeline gaps, amounts not fully explained, witnesses, events the user hasn't described, or facts that would strengthen the claim.
-- If uploaded documents reveal specific facts (dates, amounts, names, terms), use those facts — e.g. "Your lease shows a $2,400 deposit. Do you have any written record of when you demanded it back?"
+- Ask 2–4 targeted questions about what is genuinely weak or missing.
+- Focus on: timeline gaps, amounts not fully explained, witnesses, events the user hasn't described, or facts that would strengthen the claim.
+- Use specific facts from uploaded documents when possible.
 
 EVIDENCE CHECKLIST:
 - Generate 3–6 items specific to this exact claim type.
-- Exclude documents already uploaded AND items the user has already marked as gathered (see EVIDENCE CHECKLIST STATUS above).
-- Security deposit: lease, move-in/out inspection report, bank records showing deposit, texts/emails with landlord
+- Exclude documents already uploaded AND items already marked as gathered.
+- Security deposit: lease, move-in/out inspection report, bank records showing deposit paid, 21-day notice (or lack thereof), texts/emails with landlord demanding return
 - Contract disputes: signed contract, invoices, proof of payment, written communications
 - Property damage: repair estimates/receipts, before/after photos, written acknowledgment
 - Money owed: loan agreement, payment history, prior demand letters
 
-- Plain English only. No legal jargon.`;
+Plain English only. No legal jargon.`;
 
   const completion = await openai.chat.completions.create({
     model: "gpt-5.2",

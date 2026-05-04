@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { LogOut, Sparkles, Maximize2, Minimize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff } from "lucide-react";
+import { LogOut, Sparkles, Maximize2, Minimize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff, Scale } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -120,6 +120,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
         .map((i: { id: string }) => i.id)
     )
   );
+  const [legalAlert, setLegalAlert] = useState<string>("");
   const [refinedStatement, setRefinedStatement] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -135,6 +136,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     setAnswers({});
     setEvidenceChecklist([]);
     setCheckedEvidence(new Set());
+    setLegalAlert("");
     setRefinedStatement("");
     setCopied(false);
     try {
@@ -155,6 +157,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
       setQuestions(data.questions || []);
       setEvidenceChecklist(data.evidenceChecklist || []);
       setTruncatedDocs(data.truncatedDocs || []);
+      setLegalAlert(typeof data.legalAlert === "string" ? data.legalAlert : "");
       setAdvisorPhase("questions");
     } catch {
       toast({ title: "Advisor error", description: "Could not analyze your case. Please try again.", variant: "destructive" });
@@ -458,6 +461,18 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                     </span>
                   </div>
                 )}
+                {legalAlert && (
+                  <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+                        <Scale className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <p className="font-bold text-sm text-amber-900">⚖️ Know Your Legal Rights — You May Be Owed More</p>
+                    </div>
+                    <p className="text-sm text-amber-900 leading-relaxed">{legalAlert}</p>
+                    <p className="text-xs text-amber-700 font-medium">Review your claim amount before filing — you may want to update it.</p>
+                  </div>
+                )}
                 {questions.length > 0 && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
@@ -507,6 +522,18 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
             )}
             {advisorPhase === "done" && (
               <>
+                {legalAlert && (
+                  <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+                        <Scale className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <p className="font-bold text-sm text-amber-900">⚖️ Know Your Legal Rights — You May Be Owed More</p>
+                    </div>
+                    <p className="text-sm text-amber-900 leading-relaxed">{legalAlert}</p>
+                    <p className="text-xs text-amber-700 font-medium">Review your claim amount before filing — you may want to update it.</p>
+                  </div>
+                )}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-6 rounded-full bg-green-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0">✓</div>
