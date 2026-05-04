@@ -506,4 +506,62 @@ router.patch("/cases/:id/hearing", async (req, res): Promise<void> => {
   res.json(updated);
 });
 
+// ─── AI Opening Statement Generator ──────────────────────────────────────────
+router.post("/cases/:id/opening-statement", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rateCheck = await checkAiRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
+    return;
+  }
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const [caseRecord] = await db
+    .select()
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+  const { context } = buildCaseContext(caseRecord, docs, { docCharLimit: 8000 });
+
+  const prompt = `You are an expert at writing court-ready opening statements for California small claims court. You have the complete case record below — including all intake fields AND the full text of every uploaded document. Read everything carefully before writing.
+
+${context}
+
+Write a polished, natural-sounding opening statement that the plaintiff will read aloud in court. Requirements:
+
+- Length: 220–320 words (2–3 minutes when spoken at a calm pace)
+- Tone: confident, factual, respectful to the judge — no emotional outbursts
+- Structure:
+  1. Introduce the plaintiff and the nature of the dispute (1–2 sentences)
+  2. Tell the story in chronological order — what happened, key dates, key facts from the claim description AND any uploaded documents
+  3. State the exact dollar amount claimed and how it was calculated
+  4. Mention whether a prior demand was made and what the defendant's response was (or lack thereof)
+  5. Reference specific evidence they have (documents by name if uploaded, or general categories if not)
+  6. Close with a clear, respectful ask for the court to rule in their favor
+
+RULES:
+- Use the plaintiff's actual name (not "I" as the first word — start with "Your Honor" or their name)
+- Incorporate specific facts, dates, amounts, and document contents from the case record — do NOT use placeholders like [amount] or [date]; use the real values
+- If a key field is missing (e.g. no incident date), write around it naturally without calling attention to it
+- Do NOT include legal jargon or case citations — plain English only
+- Output ONLY the statement text — no title, no preamble, no explanation
+
+Return plain text only. No markdown.`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 600,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const statement = (completion.choices[0].message.content || "").trim();
+  if (!statement) { res.status(500).json({ error: "Failed to generate statement" }); return; }
+
+  res.json({ statement });
+});
+
 export default router;

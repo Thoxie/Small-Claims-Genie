@@ -90,6 +90,8 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
   const [isRecording, setIsRecording] = useState(false);
   const [prepMode, setPrepMode] = useState<null | "statement" | "mock-trial">(null);
   const [statementText, setStatementText] = useState(() => buildOpeningStatement(currentCase));
+  const [isRedrafting, setIsRedrafting] = useState(false);
+  const [redraftError, setRedraftError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -277,12 +279,42 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
           </div>
           <button
             type="button"
-            onClick={() => setStatementText(buildOpeningStatement(currentCase))}
-            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-[#0d6b5e] border border-border bg-muted/50 hover:bg-[#f0fffe] hover:border-[#a8e6df] rounded-lg px-3 py-1.5 transition-colors"
+            disabled={isRedrafting}
+            onClick={async () => {
+              setIsRedrafting(true);
+              setRedraftError(null);
+              try {
+                const token = await getToken();
+                const res = await fetch(`/api/cases/${caseId}/opening-statement`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) {
+                  const err = await res.json().catch(() => ({}));
+                  setRedraftError(err.error || "Something went wrong. Please try again.");
+                  return;
+                }
+                const data = await res.json();
+                if (data.statement) setStatementText(data.statement);
+              } catch {
+                setRedraftError("Connection error. Please try again.");
+              } finally {
+                setIsRedrafting(false);
+              }
+            }}
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-[#0d6b5e] border border-border bg-muted/50 hover:bg-[#f0fffe] hover:border-[#a8e6df] rounded-lg px-3 py-1.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <RefreshCw className="h-3.5 w-3.5" /> Re-draft from intake
+            <RefreshCw className={`h-3.5 w-3.5 ${isRedrafting ? "animate-spin" : ""}`} />
+            {isRedrafting ? "Generating…" : "Re-draft from intake"}
           </button>
         </div>
+
+        {redraftError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 flex items-start gap-2.5">
+            <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-red-800">{redraftError}</p>
+          </div>
+        )}
 
         {hasMissingIntake && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 flex items-start gap-2.5">
