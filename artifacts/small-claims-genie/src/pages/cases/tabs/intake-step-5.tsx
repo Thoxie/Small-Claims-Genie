@@ -265,30 +265,20 @@ export function IntakeStep5({ initialData, onNext, onBack, saving, onCheckCase, 
             </div>
           </div>
 
-          <div className={`rounded-xl border px-4 py-3 flex items-center gap-3 flex-wrap ${onCheckCase ? "border-amber-200 bg-amber-50" : "border-border bg-muted/30"}`}>
-            <div className="flex gap-2 shrink-0">
-              <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-              <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Save &amp; Exit
-              </Button>
-            </div>
-            {onCheckCase && (
-              <div className="flex-1 px-2 min-w-[160px]">
-                <p className="text-sm font-semibold text-amber-900 leading-tight">Want to strengthen your case?</p>
-                <p className="text-xs text-amber-700 mt-0.5 leading-snug">Use the Case Advisor for evidence guidance.</p>
-              </div>
-            )}
-            {!onCheckCase && <div className="flex-1" />}
-            <div className="flex gap-2 shrink-0 ml-auto">
-              <Button type="submit" size="lg" disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8">
-                {saving ? "Saving…" : i18n.intake.saveAndContinue}
-              </Button>
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
+            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Save &amp; Exit
+            </Button>
+            <div className="flex gap-2">
               {onCheckCase && (
                 <Button type="button" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 whitespace-nowrap">
-                  <Sparkles className="h-4 w-4" /> Check My Case
+                  <Sparkles className="h-4 w-4" /> AI Check My Case
                 </Button>
               )}
+              <Button type="submit" size="lg" disabled={saving} className="px-8">
+                {saving ? "Saving…" : i18n.intake.saveAndContinue}
+              </Button>
             </div>
           </div>
             </form>

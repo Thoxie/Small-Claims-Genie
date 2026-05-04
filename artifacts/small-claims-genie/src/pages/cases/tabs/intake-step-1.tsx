@@ -567,10 +567,10 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit }: Props) 
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-2">
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
             <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
               <LogOut className="mr-2 h-4 w-4" />
-              Save & Exit
+              Save &amp; Exit
             </Button>
             <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving}>
               {saving ? "Saving…" : i18n.intake.saveAndContinue}

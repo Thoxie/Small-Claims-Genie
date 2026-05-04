@@ -23,14 +23,11 @@ export function IntakeStep6({ caseId, initialData, onNext, onBack, saving, onSav
         onSwitchToPrep={() => onNext({})}
         isDraftMode={false}
       />
-      <div className="flex justify-between items-center pt-2">
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-          <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit({})} disabled={saving}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Save &amp; Exit
-          </Button>
-        </div>
+      <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
+        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit({})} disabled={saving}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Save &amp; Exit
+        </Button>
         <Button size="lg" onClick={() => onNext({})} disabled={saving}>
           {saving ? "Saving…" : i18n.intake.saveAndContinue}
         </Button>

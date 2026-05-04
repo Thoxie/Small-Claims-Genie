@@ -326,22 +326,21 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
             )} />
           </div>
 
-          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-3">
-            <div>
-              <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
-              <p className="text-xs text-[#4a9990] mt-0.5 leading-relaxed">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" size="lg" onClick={onBack}>{i18n.intake.back}</Button>
-              <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Save & Exit
-              </Button>
-              <div className="flex-1" />
-              <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-2 px-8">
+          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4">
+            <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
+            <p className="text-xs text-[#4a9990] mt-0.5 leading-relaxed">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement.</p>
+          </div>
+
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
+            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Save &amp; Exit
+            </Button>
+            <div className="flex gap-2">
+              <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-8">
                 <Sparkles className="h-4 w-4" /> AI Check My Case
               </Button>
-              <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="shrink-0 px-8">
+              <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="px-8">
                 {saving ? "Saving…" : i18n.intake.saveAndContinue}
               </Button>
             </div>
