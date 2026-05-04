@@ -279,10 +279,13 @@ router.get("/cases/:id/readiness", async (req, res): Promise<void> => {
 
 // ─── Case Advisor: Analyze ────────────────────────────────────────────────────
 // ─── Shared: build advisor case brief ────────────────────────────────────────
+const PER_DOC_CHAR_LIMIT = 30_000;
+
 function buildAdvisorBrief(
   c: typeof casesTable.$inferSelect,
   docs: typeof documentsTable.$inferSelect[]
-): string {
+): { brief: string; truncatedDocs: string[] } {
+  const truncatedDocs: string[] = [];
   const lines: string[] = ["=== FULL CASE RECORD ==="];
 
   lines.push(`Title: ${c.title}`);
@@ -357,10 +360,11 @@ function buildAdvisorBrief(
     for (const doc of docs) {
       lines.push(`\n• File: "${doc.originalName}" | Label: ${doc.label || "unlabeled"} | OCR status: ${doc.ocrStatus}`);
       if (doc.ocrText && doc.ocrText.length > 0 && !doc.ocrText.startsWith("[")) {
-        const PER_DOC_LIMIT = 15_000;
-        const text = doc.ocrText.slice(0, PER_DOC_LIMIT);
+        const wasTruncated = doc.ocrText.length > PER_DOC_CHAR_LIMIT;
+        if (wasTruncated) truncatedDocs.push(doc.originalName);
+        const text = doc.ocrText.slice(0, PER_DOC_CHAR_LIMIT);
         lines.push(`  --- DOCUMENT CONTENT START ---`);
-        lines.push(`  ${text}${doc.ocrText.length > PER_DOC_LIMIT ? "\n  [content truncated — document continues beyond this point]" : ""}`);
+        lines.push(`  ${text}${wasTruncated ? "\n  [content truncated — document continues beyond this point]" : ""}`);
         lines.push(`  --- DOCUMENT CONTENT END ---`);
       } else {
         lines.push(`  [No text extracted from this document]`);
@@ -383,7 +387,7 @@ function buildAdvisorBrief(
     lines.push("RULE: Do NOT add items to the evidence checklist that the user has already gathered.");
   }
 
-  return lines.join("\n");
+  return { brief: lines.join("\n"), truncatedDocs };
 }
 
 router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {
@@ -404,7 +408,7 @@ router.post("/cases/:id/advisor/analyze", async (req, res): Promise<void> => {
   if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
 
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
-  const caseBrief = buildAdvisorBrief(caseRecord, docs);
+  const { brief: caseBrief, truncatedDocs } = buildAdvisorBrief(caseRecord, docs);
 
   const prompt = `You are a California small claims court advisor. You have received the COMPLETE case record below, including all entered fields AND the full text of every uploaded document. Read every section carefully before generating questions or an evidence checklist.
 
@@ -450,7 +454,7 @@ Rules:
     if (checklist.length > 0) {
       await db.update(casesTable).set({ evidenceChecklist: checklist }).where(eq(casesTable.id, id));
     }
-    res.json(parsed);
+    res.json({ ...parsed, truncatedDocs });
   } catch {
     res.status(500).json({ error: "Failed to parse AI response" });
   }
@@ -513,7 +517,7 @@ router.post("/cases/:id/advisor/refine", async (req, res): Promise<void> => {
   if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
 
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
-  const caseBrief = buildAdvisorBrief(caseRecord, docs);
+  const { brief: caseBrief } = buildAdvisorBrief(caseRecord, docs);
 
   const { answers } = req.body;
   const answersText = Array.isArray(answers)

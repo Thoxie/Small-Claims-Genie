@@ -97,6 +97,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
   const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [truncatedDocs, setTruncatedDocs] = useState<string[]>([]);
   const [evidenceChecklist, setEvidenceChecklist] = useState<{ id: string; item: string; description: string; checked?: boolean }[]>(
     Array.isArray(initialData.evidenceChecklist) ? initialData.evidenceChecklist : []
   );
@@ -141,6 +142,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
       const data = await res.json();
       setQuestions(data.questions || []);
       setEvidenceChecklist(data.evidenceChecklist || []);
+      setTruncatedDocs(data.truncatedDocs || []);
       setAdvisorPhase("questions");
     } catch {
       toast({ title: "Advisor error", description: "Could not analyze your case. Please try again.", variant: "destructive" });
@@ -397,6 +399,17 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
             )}
             {(advisorPhase === "questions" || advisorPhase === "refining") && (
               <>
+                {truncatedDocs.length > 0 && (
+                  <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
+                    <span className="shrink-0 mt-0.5">⚠️</span>
+                    <span>
+                      <strong>Large document notice:</strong> The following {truncatedDocs.length === 1 ? "file was" : "files were"} too large to fully read — only the first 30,000 characters were analyzed:{" "}
+                      {truncatedDocs.map((name, i) => (
+                        <span key={i}><em>{name}</em>{i < truncatedDocs.length - 1 ? ", " : ""}</span>
+                      ))}.
+                    </span>
+                  </div>
+                )}
                 {questions.length > 0 && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
