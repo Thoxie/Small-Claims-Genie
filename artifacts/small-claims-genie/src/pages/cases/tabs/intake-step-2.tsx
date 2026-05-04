@@ -97,10 +97,17 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
   const [questions, setQuestions] = useState<{ id: string; question: string }[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [evidenceChecklist, setEvidenceChecklist] = useState<{ id: string; item: string; description: string }[]>(
+  const [evidenceChecklist, setEvidenceChecklist] = useState<{ id: string; item: string; description: string; checked?: boolean }[]>(
     Array.isArray(initialData.evidenceChecklist) ? initialData.evidenceChecklist : []
   );
-  const [checkedEvidence, setCheckedEvidence] = useState<Set<string>>(new Set());
+  // Seed checked state from persisted `checked` flag on each item
+  const [checkedEvidence, setCheckedEvidence] = useState<Set<string>>(
+    () => new Set(
+      (Array.isArray(initialData.evidenceChecklist) ? initialData.evidenceChecklist : [])
+        .filter((i: { checked?: boolean }) => i.checked)
+        .map((i: { id: string }) => i.id)
+    )
+  );
   const [refinedStatement, setRefinedStatement] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -182,10 +189,21 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
     setTimeout(() => setCopied(false), 3000);
   };
 
-  const toggleEvidence = (id: string) => {
+  const toggleEvidence = async (id: string) => {
     setCheckedEvidence(prev => {
       const next = new Set(prev);
       if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      // Persist immediately — fire-and-forget, no UI block needed
+      void (async () => {
+        try {
+          const token = await getToken();
+          await fetch(`/api/cases/${caseId}/advisor/checklist`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify({ checkedIds: Array.from(next) }),
+          });
+        } catch { /* non-critical — UI already updated */ }
+      })();
       return next;
     });
   };
