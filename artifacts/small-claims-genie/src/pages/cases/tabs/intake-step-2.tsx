@@ -20,14 +20,14 @@ interface Props {
   caseId: number;
   initialData: Partial<ExtendedCase>;
   onNext: (d: Record<string, unknown>) => void;
-  onBack: () => void;
+  onBack?: () => void;
   saving?: boolean;
   autoOpenAdvisor?: boolean;
   onAdvisorOpened?: () => void;
   onSaveExit: (d: Record<string, unknown>) => void;
 }
 
-export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoOpenAdvisor, onAdvisorOpened, onSaveExit }: Props) {
+export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvisor, onAdvisorOpened, onSaveExit }: Props) {
   const { getToken } = useAuth();
   const { toast } = useToast();
 

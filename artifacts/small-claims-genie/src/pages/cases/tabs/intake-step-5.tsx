@@ -16,13 +16,13 @@ import type { ExtendedCase } from "@/lib/types";
 interface Props {
   initialData: Partial<ExtendedCase>;
   onNext: (d: Record<string, unknown>) => void;
-  onBack: () => void;
+  onBack?: () => void;
   saving?: boolean;
   onCheckCase?: () => void;
   onSaveExit: (d: Record<string, unknown>) => void;
 }
 
-export function IntakeStep5({ initialData, onNext, onBack, saving, onCheckCase, onSaveExit }: Props) {
+export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveExit }: Props) {
   const form = useForm({
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
