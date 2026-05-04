@@ -183,16 +183,17 @@ router.patch("/cases/:id/intake", async (req, res): Promise<void> => {
   const parsed = SaveIntakeProgressBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
-  // Verify ownership
+  // Verify ownership and read current intakeStep so we never go backwards
   const [existing] = await db
-    .select({ id: casesTable.id })
+    .select({ id: casesTable.id, intakeStep: casesTable.intakeStep })
     .from(casesTable)
     .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
   if (!existing) { res.status(404).json({ error: "Case not found" }); return; }
 
   const { step, data, intakeComplete } = parsed.data;
   const updatePayload: Record<string, unknown> = {
-    intakeStep: step,
+    // Only advance intakeStep — never let an auto-save drag it backwards
+    ...(step !== undefined && step > (existing.intakeStep ?? 0) && { intakeStep: step }),
     ...(intakeComplete !== undefined && { intakeComplete }),
     ...(intakeComplete && { status: "intake_complete" }),
   };

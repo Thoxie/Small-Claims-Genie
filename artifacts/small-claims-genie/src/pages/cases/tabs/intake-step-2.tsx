@@ -61,7 +61,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
       const res = await fetch(`/api/cases/${caseId}/intake`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ step: 2, data: values }),
+        body: JSON.stringify({ data: values }),
       });
       if (!res.ok) throw new Error("Save failed");
       setSaveStatus("saved");

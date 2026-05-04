@@ -558,7 +558,7 @@ export const SaveIntakeProgressParams = zod.object({
 });
 
 export const SaveIntakeProgressBody = zod.object({
-  step: zod.number(),
+  step: zod.number().optional(),
   data: zod.record(zod.string(), zod.unknown()).optional(),
   intakeComplete: zod.boolean().optional(),
 });
