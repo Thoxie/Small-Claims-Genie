@@ -45,6 +45,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
   const [descModalOpen, setDescModalOpen] = useState(false);
   const [descModalValue, setDescModalValue] = useState("");
   const [descExpanded, setDescExpanded] = useState(false);
+  const descTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
@@ -71,6 +72,15 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
       setSaveStatus("error");
     }
   }, [caseId, getToken]);
+
+  // Resize description textarea when value changes programmatically
+  // (e.g., after the AI advisor writes a refined statement or the modal saves)
+  useEffect(() => {
+    const el = descTextareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [form.watch("claimDescription")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Watch all fields — debounce 1.5 s after the last keystroke
   const watchedValues = form.watch();
@@ -124,6 +134,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
     setQuestions([]);
     setAnswers({});
     setEvidenceChecklist([]);
+    setCheckedEvidence(new Set());
     setRefinedStatement("");
     setCopied(false);
     try {
@@ -290,6 +301,10 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
                       className={`pr-24 resize-none overflow-hidden transition-all ${descExpanded ? "min-h-[400px]" : "min-h-[160px]"}`}
                       placeholder="Briefly describe why the defendant owes you money…"
                       {...field}
+                      ref={(el) => {
+                        descTextareaRef.current = el;
+                        if (typeof field.ref === "function") field.ref(el);
+                      }}
                       onInput={(e) => {
                         const el = e.currentTarget;
                         el.style.height = "auto";
@@ -301,7 +316,7 @@ export function IntakeStep2({ caseId, initialData, onNext, onBack, saving, autoO
                       type="button"
                       title="Open full-screen editor"
                       onClick={() => { setDescModalValue(field.value || ""); setDescModalOpen(true); }}
-                      className="absolute bottom-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary bg-primary/8 hover:bg-primary/15 border border-primary/20 transition-colors"
+                      className="absolute bottom-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors"
                     >
                       <Maximize2 className="h-3.5 w-3.5" /> Full Screen
                     </button>

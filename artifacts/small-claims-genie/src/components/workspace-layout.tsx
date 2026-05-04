@@ -1,26 +1,8 @@
 import { Fragment } from "react";
-import { LogOut, CalendarDays } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
-
-export const WORKSPACE_STEPS = [
-  { n: 1, label: "Enter The\nParties",  tab: "intake",        icon: null        },
-  { n: 2, label: "Make Your\nClaim",    tab: "intake",        icon: null        },
-  { n: 3, label: "Upload My\nEvidence", tab: "documents",     icon: null        },
-  { n: 4, label: "Send Demand\nLetter", tab: "demand-letter", icon: null        },
-  { n: 5, label: "Review\nYour Case",   tab: "chat",          icon: null        },
-  { n: 6, label: "Create Court\nForms", tab: "forms",         icon: null        },
-  { n: 7, label: "Prep for\nHearing",   tab: "prep",          icon: null        },
-  { n: 8, label: "Deadlines",           tab: "deadlines",     icon: CalendarDays },
-] as const;
-
-// Kept for any legacy reference; real nav now uses WORKSPACE_STEPS
-export const WORKSPACE_TABS = WORKSPACE_STEPS.map((s) => ({
-  value: s.tab,
-  label: s.label,
-}));
-
-export type WorkspaceTab = (typeof WORKSPACE_STEPS)[number]["tab"];
+import { WORKSPACE_STEPS } from "@/lib/workspace-steps";
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;

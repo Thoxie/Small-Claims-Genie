@@ -191,14 +191,21 @@ router.patch("/cases/:id/intake", async (req, res): Promise<void> => {
   if (!existing) { res.status(404).json({ error: "Case not found" }); return; }
 
   const { step, data, intakeComplete } = parsed.data;
+  const stepAdvances = step !== undefined && step > (existing.intakeStep ?? 0);
   const updatePayload: Record<string, unknown> = {
     // Only advance intakeStep — never let an auto-save drag it backwards
-    ...(step !== undefined && step > (existing.intakeStep ?? 0) && { intakeStep: step }),
+    ...(stepAdvances && { intakeStep: step }),
     ...(intakeComplete !== undefined && { intakeComplete }),
     ...(intakeComplete && { status: "intake_complete" }),
   };
   if (data && typeof data === "object") {
     Object.assign(updatePayload, data);
+  }
+
+  // Nothing to update — return the existing row without touching the DB
+  if (Object.keys(updatePayload).length === 0) {
+    res.json(existing);
+    return;
   }
 
   const [updated] = await db
