@@ -11,8 +11,11 @@ export default function Dashboard() {
   useEffect(() => {
     if (isLoading) return;
     if (cases && cases.length > 0) {
-      // Send user to their existing case
-      setLocation(`/cases/${cases[0].id}`);
+      // Restore the last tab the user was on so they resume where they left off
+      const caseId = cases[0].id;
+      const savedTab = localStorage.getItem(`case-last-tab-${caseId}`);
+      const hash = savedTab ? `#${savedTab}` : "";
+      setLocation(`/cases/${caseId}${hash}`);
     } else {
       // No case yet — send them to create one
       setLocation("/cases/new");

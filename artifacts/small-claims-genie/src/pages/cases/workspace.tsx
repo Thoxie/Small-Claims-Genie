@@ -407,7 +407,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   onClick={() => handleStepClick(2)}
                   className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
                 >
-                  <Sparkles className="h-4 w-4" /> AI Check My Case
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2">
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
@@ -438,7 +438,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
-                  <Sparkles className="h-4 w-4" /> AI Check My Case
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(8)} className="gap-2">
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
@@ -455,7 +455,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
-                  <Sparkles className="h-4 w-4" /> AI Check My Case
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => navigate("/dashboard")} className="gap-2">
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
