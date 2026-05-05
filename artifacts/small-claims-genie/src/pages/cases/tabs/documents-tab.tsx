@@ -4,6 +4,7 @@ import {
   useListDocuments,
   useUploadDocument,
   useDeleteDocument,
+  useGetCase,
   getListDocumentsQueryKey,
   getGetCaseReadinessQueryKey,
   getListCasesQueryKey,
@@ -104,13 +105,14 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
 }
 
 // ─── Main Tab ────────────────────────────────────────────────────────────────
-export function DocumentsTab({ caseId, evidenceChecklist, onNext, advisorTrigger }: {
+export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp, onNext, advisorTrigger }: {
   caseId: number;
   evidenceChecklist: { id: string; item: string; description: string; checked?: boolean }[];
   onNext?: () => void;
   advisorTrigger?: number;
 }) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
+  const { data: liveCase } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const uploadDoc = useUploadDocument();
   const deleteDoc = useDeleteDocument();
   const queryClient = useQueryClient();
@@ -118,15 +120,20 @@ export function DocumentsTab({ caseId, evidenceChecklist, onNext, advisorTrigger
   const { toast } = useToast();
   const { getToken } = useAuth();
 
+  // Always prefer the live server data; fall back to the prop on initial render before the query resolves
+  const evidenceChecklist = (
+    liveCase?.evidenceChecklist as { id: string; item: string; description: string; checked?: boolean }[] | null | undefined
+  ) ?? evidenceChecklistProp;
+
   const [activeTab, setActiveTab] = useState<"checklist" | "uploads">("checklist");
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const [checkedItems, setCheckedItems] = useState<Set<string>>(
-    () => new Set(evidenceChecklist.filter(i => i.checked).map(i => i.id))
+    () => new Set(evidenceChecklistProp.filter(i => i.checked).map(i => i.id))
   );
 
-  // Sync from server when the prop changes (e.g. initial load, AI generates new checklist)
-  // but only when we have no pending save in flight so we don't overwrite optimistic state.
+  // Sync checked state whenever the live query delivers fresh data (e.g. returning to this tab)
+  // but skip updates while a save is in flight to avoid overwriting optimistic state.
   const savingRef = useRef(false);
   useEffect(() => {
     if (savingRef.current) return;
