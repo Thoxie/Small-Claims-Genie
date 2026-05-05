@@ -10,8 +10,8 @@ export default function Landing() {
     <div className="flex flex-col w-full bg-white">
 
       {/* ── Hero ── */}
-      <section style={{ backgroundColor: TEAL }} className="px-4 pt-6 pb-7 overflow-hidden">
-        <div className="max-w-5xl mx-auto flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+      <section style={{ backgroundColor: TEAL }} className="px-4 pt-8 pb-7 overflow-hidden">
+        <div className="max-w-5xl mx-auto flex flex-col lg:flex-row items-center gap-8">
 
           {/* Video — top on mobile, right side on desktop */}
           <div className="w-full lg:w-[462px] shrink-0 lg:self-start lg:-mt-4 order-first lg:order-last">
@@ -38,7 +38,7 @@ export default function Landing() {
             <p className="text-base text-primary/65 mb-5 max-w-xl leading-relaxed">
               Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
             </p>
-            <Button asChild size="lg" className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg w-full sm:w-auto">
+            <Button asChild size="lg" className="lg:hidden h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg w-full sm:w-auto">
               <Link href="/cases/new"><Wand2 className="mr-2 h-4 w-4" />Start Your Case Free</Link>
             </Button>
           </div>
