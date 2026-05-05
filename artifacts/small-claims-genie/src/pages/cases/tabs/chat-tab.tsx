@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { useGetChatHistory } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetChatHistory, useClearChatHistory, getGetChatHistoryQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mic, Send, CheckCircle, Loader2, Download, Sparkles, Eraser, Play, ChevronRight, X } from "lucide-react";
 import { i18n } from "@/lib/i18n";
@@ -31,6 +32,16 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  const { mutate: clearChatHistory, isPending: isClearing } = useClearChatHistory({
+    mutation: {
+      onSuccess: () => {
+        setMessages([]);
+        setCleared(true);
+        queryClient.setQueryData(getGetChatHistoryQueryKey(caseId), []);
+      },
+    },
+  });
 
   const downloadChat = async (format: "word", scope: "last" | "all" = "all") => {
     setDownloadingWord(true);
@@ -202,9 +213,10 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
               size="sm"
               variant="outline"
               className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
-              onClick={() => { setMessages([]); setCleared(true); }}
+              onClick={() => clearChatHistory(caseId)}
+              disabled={isClearing}
             >
-              <Eraser className="h-3 w-3" /> Clear Chat
+              {isClearing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Eraser className="h-3 w-3" />} Clear Chat
             </Button>
             {isDraftMode ? (
               <DraftLockedButton label="Subscribe to Export" size="sm" />
