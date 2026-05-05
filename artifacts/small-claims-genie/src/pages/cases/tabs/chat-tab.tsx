@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetChatHistory } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Mic, Send, CheckCircle, Loader2, Download, Sparkles, Eraser, Play, ChevronRight, X } from "lucide-react";
+import { Mic, Send, CheckCircle, Loader2, Download, Sparkles, Eraser, Play, ChevronRight, X, Maximize2, Minimize2 } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
 import { DraftLockedButton } from "@/components/draft-overlay";
@@ -29,7 +29,9 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [downloadingWord, setDownloadingWord] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const expandedScrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const { getToken } = useAuth();
 
@@ -68,6 +70,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (expandedScrollRef.current) expandedScrollRef.current.scrollTop = expandedScrollRef.current.scrollHeight;
   }, [messages, isTyping]);
 
   const autoMessageFiredRef = useRef(false);
@@ -197,25 +200,36 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
           <CheckCircle className="h-4 w-4 shrink-0" />
           <strong className="truncate">Your AI Genie is trained on all your case information.</strong>
         </div>
-        {messages.length > 0 && (
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
-              onClick={() => { sessionStorage.setItem(sessionKey, "1"); setMessages([]); setCleared(true); }}
-            >
-              <Eraser className="h-3 w-3" /> Clear Chat
-            </Button>
-            {isDraftMode ? (
-              <DraftLockedButton label="Subscribe to Export" size="sm" />
-            ) : (
-              <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
-                {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
+        <div className="flex items-center gap-2 shrink-0">
+          {messages.length > 0 && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+                onClick={() => { sessionStorage.setItem(sessionKey, "1"); setMessages([]); setCleared(true); }}
+              >
+                <Eraser className="h-3 w-3" /> Clear Chat
               </Button>
-            )}
-          </div>
-        )}
+              {isDraftMode ? (
+                <DraftLockedButton label="Subscribe to Export" size="sm" />
+              ) : (
+                <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
+                  {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
+                </Button>
+              )}
+            </>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 w-7 px-0 border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => setExpanded(true)}
+            title="Expand to full screen"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
@@ -370,6 +384,176 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
           <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
         </div>
       </div>
+
+      {/* ── Expanded full-screen chat ── */}
+      {expanded && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-background">
+          {/* Header */}
+          <div className="shrink-0 bg-primary/5 border-b border-black/80 px-5 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+              <strong className="text-sm text-primary">Your AI Genie is trained on all your case information.</strong>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {messages.length > 0 && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+                    onClick={() => { sessionStorage.setItem(sessionKey, "1"); setMessages([]); setCleared(true); }}
+                  >
+                    <Eraser className="h-3 w-3" /> Clear Chat
+                  </Button>
+                  {isDraftMode ? (
+                    <DraftLockedButton label="Subscribe to Export" size="sm" />
+                  ) : (
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
+                      {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
+                    </Button>
+                  )}
+                </>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                onClick={() => setExpanded(false)}
+                title="Minimize"
+              >
+                <Minimize2 className="h-3.5 w-3.5" /> Minimize
+              </Button>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 max-w-4xl w-full mx-auto" ref={expandedScrollRef}>
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 px-4 gap-6 max-w-lg mx-auto">
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="h-14 w-14 rounded-2xl bg-[#ddf6f3] flex items-center justify-center text-3xl shadow-sm">🧞</div>
+                  <div>
+                    <p className="font-semibold text-foreground text-base">Your AI Genie is ready</p>
+                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">Ask anything about your California small claims case. I'm trained on your uploaded documents and California court rules.</p>
+                  </div>
+                </div>
+                <div className="w-full space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3" /> Suggested questions — tap to ask
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { q: currentCase?.defendantName ? `What are the strongest arguments in my case against ${currentCase.defendantName}?` : "What are the strongest arguments in my case?", icon: "⚖️" },
+                      { q: "What evidence should I bring to the hearing to prove my claim?", icon: "📋" },
+                      { q: currentCase?.claimAmount ? `How do I prove I'm owed $${Number(currentCase.claimAmount).toLocaleString()}?` : "How do I calculate and prove my damages?", icon: "💵" },
+                      { q: "What questions will the judge likely ask me at the hearing?", icon: "🏛️" },
+                      { q: "What are the weakest parts of my case?", icon: "🔍" },
+                      { q: "What defenses might the other side use?", icon: "🛡️" },
+                      { q: "What should I say first when I talk to the judge?", icon: "🗣️" },
+                      { q: "Is there anything missing from my case file?", icon: "📁" },
+                    ].map(({ q, icon }) => (
+                      <button
+                        key={q}
+                        type="button"
+                        onClick={() => sendMessage(q)}
+                        className="flex items-start gap-3 w-full rounded-xl border border-[#a8e6df] bg-[#f0fffe] hover:bg-[#ddf6f3] px-4 py-3 text-left text-sm text-foreground transition-colors group"
+                      >
+                        <span className="text-base shrink-0 mt-0.5">{icon}</span>
+                        <span className="leading-relaxed text-[#0d6b5e] group-hover:text-[#0a5a50]">{q}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {messages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[75%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-muted rounded-tl-sm'}`}>
+                  {msg.role === 'user' ? (
+                    <p className="text-[13px] leading-[1.55] whitespace-pre-wrap">{msg.content}</p>
+                  ) : (
+                    <div className="text-[13px] leading-[1.55] prose prose-sm max-w-none prose-p:my-1 prose-li:my-0 prose-ul:my-1 prose-ol:my-1 prose-headings:mt-2.5 prose-headings:mb-1 prose-strong:font-semibold prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-li:text-foreground prose-a:text-primary">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-2xl rounded-tl-sm p-4 text-muted-foreground flex gap-1">
+                  <span className="animate-bounce">●</span>
+                  <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>●</span>
+                  <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>●</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-6 pt-1.5 pb-4 max-w-4xl w-full mx-auto">
+            <div className="flex items-center justify-end mb-1.5">
+              {isRecording ? (
+                <span className="flex items-center gap-1 text-[10px] font-medium text-destructive animate-pulse">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
+                  Recording… release mic to stop
+                </span>
+              ) : (
+                <span className="text-xs font-extrabold text-white bg-black px-2 py-0.5 rounded-md">
+                  Click and Hold mic to record voice
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative flex items-center">
+                <textarea
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    const el = e.target as HTMLTextAreaElement;
+                    el.style.height = "auto";
+                    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage(input);
+                      const el = e.target as HTMLTextAreaElement;
+                      el.style.height = "auto";
+                    }
+                  }}
+                  placeholder={isRecording ? "🔴 Recording — release to stop…" : i18n.chat.placeholder}
+                  rows={1}
+                  disabled={isRecording}
+                  className="w-full resize-none overflow-hidden rounded-full border-2 border-slate-400 bg-background pl-4 pr-10 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
+                  style={{ minHeight: "42px", maxHeight: "120px" }}
+                />
+                <button
+                  type="button"
+                  onMouseDown={handleVoiceStart}
+                  onMouseUp={handleVoiceStop}
+                  onMouseLeave={isRecording ? handleVoiceStop : undefined}
+                  onTouchStart={handleVoiceStart}
+                  onTouchEnd={handleVoiceStop}
+                  aria-label={isRecording ? "Recording — release to stop" : "Hold to record"}
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground hover:text-primary'}`}
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => { sendMessage(input); }}
+                disabled={isTyping || isRecording || !input.trim()}
+                className="h-[42px] w-[42px] shrink-0 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                aria-label="Send"
+              >
+                <Send className="h-4 w-4 ml-0.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Tutorial modal ── */}
       {tutorialOpen && (
