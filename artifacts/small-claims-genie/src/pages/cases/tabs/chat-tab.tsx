@@ -386,7 +386,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
                   <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-800">Step 5 Tutorial — Review Your Case</p>
+                  <p className="text-sm font-bold text-gray-800">Step 5 Tutorial — AI Genie Case Review</p>
                   <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
                 </div>
               </div>

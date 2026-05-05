@@ -325,7 +325,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
                   <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-800">Step 5 Tutorial — Review Your Case</p>
+                  <p className="text-sm font-bold text-gray-800">Step 5 Tutorial — AI Genie Case Review</p>
                   <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
                 </div>
               </div>
@@ -340,7 +340,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
               width="800"
               height="450"
               src="https://www.youtube.com/embed/WI3i9F2KJAI?autoplay=1"
-              title="Step 5 Tutorial — Review Your Case"
+              title="Step 5 Tutorial — AI Genie Case Review"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
