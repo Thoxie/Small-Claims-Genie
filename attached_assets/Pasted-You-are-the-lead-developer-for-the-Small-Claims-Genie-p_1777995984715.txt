@@ -1,0 +1,126 @@
+You are the lead developer for the Small Claims Genie project.
+
+Do not make any code changes yet.
+
+Your task is to independently review the attached/source project and evaluate the issues identified below. Treat the prior review as an input, not as a final conclusion. Confirm, reject, refine, or expand each issue based on your own review of the codebase.
+
+Please produce a written engineering/security assessment only.
+
+Prior findings to evaluate:
+
+1. Public/private object storage exposure
+   The API appears to mount `storageRouter` before `requireAuth`, and `/storage/objects/*path` may have its auth/ACL logic commented out. Evaluate whether private uploaded evidence or generated documents could be accessed without authentication if a path is known or guessed.
+
+2. Incomplete ownership checks on document update/delete
+   The document routes appear to verify ownership of the case ID, but then update or delete documents by `docId` only. Evaluate whether a user who owns one case could update/delete a document belonging to another case if they know the document ID.
+
+3. Missing ownership check on chat deletion
+   `DELETE /cases/:id/chat` may delete chat messages for a case without first verifying the authenticated user owns that case. Confirm whether this is accurate.
+
+4. Public debug/calibration/form tooling routes
+   Some SC-100 debug, calibration, verification, evaluation, and preview endpoints may be publicly reachable. Evaluate whether these routes could expose internal tooling, consume OpenAI/API resources, mutate calibration files, or otherwise be unsafe in production.
+
+5. Public upload URL route
+   `POST /storage/uploads/request-url` may issue signed upload URLs without authentication. Evaluate whether this is used, whether it is protected elsewhere, and whether it creates an abuse risk.
+
+6. Stale or broken `/sc100` frontend page
+   The standalone SC-100 generator page may not attach Clerk auth headers to protected API calls and may send an intake body shape that no longer matches the backend schema. Evaluate whether this page is still used, broken, or obsolete.
+
+7. “Repeat verbatim” chat shortcut
+   The chat route may include a dev shortcut where a message containing “repeat verbatim” returns raw case context and OCR/document text. Evaluate whether this is a production risk and whether it should be removed or gated.
+
+8. Non-atomic AI rate limiter
+   The AI rate limiter may read the current counter and then update it separately, allowing concurrent requests to exceed limits. Evaluate whether this matters at expected scale and whether a transactional or atomic DB update is needed.
+
+9. Uploaded OCR/document text placed into AI context
+   The app appears to place OCR text directly into AI context. Evaluate whether prompt-injection boundaries are sufficient and whether uploaded documents should be treated explicitly as untrusted evidence rather than instructions.
+
+10. Heavy/generated/archive artifacts in repository/package
+    The source package may include nested zip files, large mockup files, generated artifacts, or calibration materials that should not ship. Identify whether these should remain in the repo, move to docs/artifacts, or be removed.
+
+Please produce the following deliverables:
+
+A. Executive summary
+Give a short overall assessment of whether the app is production-ready, near-production, prototype-stage, or blocked by launch-critical issues.
+
+B. Issue-by-issue validation
+For each item above, state:
+
+* Confirmed, partially confirmed, not confirmed, or needs more investigation
+* Evidence from the codebase
+* Risk rating: Low, Moderate, High, or Critical
+* Why the risk rating is appropriate
+* Recommended action
+* Whether the action is required before launch or can wait
+
+C. Additional findings
+Identify any other problems you see, including:
+
+* Security risks
+* Authentication/authorization gaps
+* Privacy or legal-data handling risks
+* Broken frontend/backend integration
+* Dead or obsolete code
+* Missing tests
+* Bad developer experience
+* Deployment/build risks
+* Legal/compliance wording risks
+
+D. Risk matrix
+Create a table with:
+
+* Issue
+* Category
+* Risk rating
+* Likelihood
+* Impact
+* Launch blocker: Yes/No
+* Suggested owner
+* Estimated complexity
+
+E. Chronology / implementation sequence
+Create a recommended order of operations. Include:
+
+1. What should be fixed first
+2. What should be verified before making code changes
+3. What can be deferred
+4. What should not be changed unless testing proves it is necessary
+5. What should be removed entirely if obsolete
+6. What tests should be written after each fix
+
+F. “No-change” assessment
+For each major issue, explain the consequence of doing nothing:
+
+* What could happen if left unfixed?
+* Could it create user-data exposure?
+* Could it create legal/compliance risk?
+* Could it break production?
+* Could it create unnecessary cost exposure?
+* Could it simply remain technical debt?
+
+G. Suggested test plan
+Propose a test plan before implementation, including:
+
+* Cross-user authorization tests
+* Storage access tests
+* Upload/download tests
+* Form-generation tests
+* Clerk-authenticated frontend request tests
+* AI/OCR prompt-injection tests
+* Rate-limit concurrency tests
+* Production route exposure tests
+
+Important constraints:
+
+* Do not edit files.
+* Do not refactor.
+* Do not apply patches.
+* Do not delete anything.
+* Do not “fix as you go.”
+* Only produce a written technical review and recommended remediation plan.
+* Be skeptical of the prior review; independently verify it.
+* If you disagree with a prior finding, explain why.
+* If something cannot be verified without running the app or seeing environment variables, say that clearly.
+* Prioritize user privacy, legal-document confidentiality, production safety, and launch readiness.
+
+The final output should be structured, detailed, and written as a lead developer’s review for the project owner.
