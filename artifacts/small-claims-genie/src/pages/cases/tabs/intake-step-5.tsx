@@ -183,7 +183,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
             {/* ── Right column — case summary ── */}
             <div className="rounded-xl border p-5 space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Review Your Case</h3>
+                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">AI Genie Case Review</h3>
                 {onCheckCase && (
                   <Button type="button" onClick={onCheckCase} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white gap-1.5 whitespace-nowrap shrink-0">
                     <Sparkles className="h-3.5 w-3.5" /> Check My Case
@@ -301,7 +301,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
           </div>
           <div className="bg-background px-3 py-2 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold">Review Your Case</p>
+              <p className="text-xs font-bold">AI Genie Case Review</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">Venue &amp; eligibility before filing</p>
             </div>
             <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />

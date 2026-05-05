@@ -104,7 +104,7 @@ const INTAKE_TABS = [
   { num: 2, label: "Make Your Claim" },
   { num: 3, label: "Upload My Evidence" },
   { num: 4, label: "Send Demand Letter" },
-  { num: 5, label: "Review Your Case" },
+  { num: 5, label: "AI Genie Case Review" },
   { num: 6, label: "Create Court Forms" },
   { num: 7, label: "Prep for Hearing" },
 ] as const;

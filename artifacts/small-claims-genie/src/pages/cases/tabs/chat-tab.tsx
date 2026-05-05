@@ -237,6 +237,10 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
                   { q: "What evidence should I bring to the hearing to prove my claim?", icon: "📋" },
                   { q: currentCase?.claimAmount ? `How do I prove I'm owed $${Number(currentCase.claimAmount).toLocaleString()}?` : "How do I calculate and prove my damages?", icon: "💵" },
                   { q: "What questions will the judge likely ask me at the hearing?", icon: "🏛️" },
+                  { q: "What are the weakest parts of my case?", icon: "🔍" },
+                  { q: "What defenses might the other side use?", icon: "🛡️" },
+                  { q: "What should I say first when I talk to the judge?", icon: "🗣️" },
+                  { q: "Is there anything missing from my case file?", icon: "📁" },
                 ].map(({ q, icon }) => (
                   <button
                     key={q}
@@ -359,7 +363,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
         </div>
         <div className="bg-background px-3 py-2 flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold">Review Your Case</p>
+            <p className="text-xs font-bold">AI Genie Case Review</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">Chat with your AI Genie</p>
           </div>
           <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
