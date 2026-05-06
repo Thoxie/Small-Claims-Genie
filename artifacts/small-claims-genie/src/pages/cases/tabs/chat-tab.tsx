@@ -201,24 +201,22 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
           <strong className="truncate">Your AI Genie is trained on all your case information.</strong>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+            onClick={() => { sessionStorage.setItem(sessionKey, "1"); setMessages([]); setCleared(true); }}
+          >
+            <Eraser className="h-3 w-3" /> Clear Chat
+          </Button>
           {messages.length > 0 && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
-                onClick={() => { sessionStorage.setItem(sessionKey, "1"); setMessages([]); setCleared(true); }}
-              >
-                <Eraser className="h-3 w-3" /> Clear Chat
+            isDraftMode ? (
+              <DraftLockedButton label="Subscribe to Export" size="sm" />
+            ) : (
+              <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
+                {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
               </Button>
-              {isDraftMode ? (
-                <DraftLockedButton label="Subscribe to Export" size="sm" />
-              ) : (
-                <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
-                  {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
-                </Button>
-              )}
-            </>
+            )
           )}
           <Button
             size="sm"
@@ -395,24 +393,22 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
               <strong className="text-sm text-primary">Your AI Genie is trained on all your case information.</strong>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
+                onClick={() => { sessionStorage.setItem(sessionKey, "1"); setMessages([]); setCleared(true); }}
+              >
+                <Eraser className="h-3 w-3" /> Clear Chat
+              </Button>
               {messages.length > 0 && (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 px-2 text-xs gap-1 border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50"
-                    onClick={() => { sessionStorage.setItem(sessionKey, "1"); setMessages([]); setCleared(true); }}
-                  >
-                    <Eraser className="h-3 w-3" /> Clear Chat
+                isDraftMode ? (
+                  <DraftLockedButton label="Subscribe to Export" size="sm" />
+                ) : (
+                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
+                    {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
                   </Button>
-                  {isDraftMode ? (
-                    <DraftLockedButton label="Subscribe to Export" size="sm" />
-                  ) : (
-                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => downloadChat("word")} disabled={downloadingWord}>
-                      {downloadingWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} Word
-                    </Button>
-                  )}
-                </>
+                )
               )}
               <Button
                 size="sm"
