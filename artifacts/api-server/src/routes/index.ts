@@ -17,7 +17,6 @@ import demandLetterRouter from "./demand-letter";
 import hearingPrepRouter from "./hearing-prep";
 import storageRouter from "./storage";
 import backupDownloadRouter from "./backup-download";
-import sourceDownloadRouter from "./source-download";
 import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
@@ -37,7 +36,11 @@ router.use(countiesRouter);
 router.use(storageRouter);
 router.use(helpChatRouter);
 router.use(backupDownloadRouter);
-router.use(sourceDownloadRouter);
+// Source download is a dev-only utility — never expose in production
+if (process.env.NODE_ENV !== "production") {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  router.use(require("./source-download").default);
+}
 router.use(stripeRouter); // Stripe routes (checkout is public; internal auth via client_reference_id)
 
 // Form downloads — accept ?token query param (token issued by protected endpoint below)
