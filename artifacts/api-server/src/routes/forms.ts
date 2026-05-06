@@ -3,7 +3,7 @@ import { PDFDocument, StandardFonts, rgb, PDFName, PDFString } from "pdf-lib";
 import { getOwnedCase, getUserId } from "../lib/owned-case";
 import { logger } from "../lib/logger";
 import { redeemDownloadToken } from "../lib/download-tokens";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
@@ -281,6 +281,17 @@ async function getDocumentBuffer(doc: { storageObjectPath: string | null; fileDa
 }
 
 const router: IRouter = Router();
+
+// ─── Dev-only guard ───────────────────────────────────────────────────────────
+// Blocks calibration/debug routes in production. Prevents cost abuse (OpenAI
+// Vision calls at ~$1–$2 each) and field-map sabotage via /calibrate or /verify.
+function devOnly(_req: Request, res: Response, next: NextFunction): void {
+  if (process.env.NODE_ENV === "production") {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  next();
+}
 
 // ─── Auth helper ─────────────────────────────────────────────────────────────
 async function resolveDownloadUser(
@@ -741,7 +752,7 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
 // GET /api/forms/sc100/coordinate-viewer
 // Renders an HTML page showing all 4 SC-100 pages with form PNG as background
 // and every field overlaid at its exact coordinate. Instant visual calibration.
-router.get("/forms/sc100/coordinate-viewer", (_req, res): void => {
+router.get("/forms/sc100/coordinate-viewer", devOnly, (_req, res): void => {
   const LIFT = SC100_CONFIG.lift ?? 4.5;
   const PH = 792;
 
@@ -853,7 +864,7 @@ ${pageBlocks}
 });
 
 // ─── SC-100 custom-data debug preview (no auth — dev calibration only) ────────
-router.post("/forms/sc100/debug-preview-custom", async (req, res): Promise<void> => {
+router.post("/forms/sc100/debug-preview-custom", devOnly, async (req, res): Promise<void> => {
   try {
     const caseData = req.body as Record<string, any>;
     const enriched = enrichForSC100(caseData);
@@ -874,7 +885,7 @@ router.post("/forms/sc100/debug-preview-custom", async (req, res): Promise<void>
 // Generates a 4-page SC-100 with realistic sample data.
 // mode=debug  → red crosshairs + blue labels at every field anchor
 // mode=sample → clean PDF with sample data, no overlays
-router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
+router.get("/forms/sc100/debug-preview", devOnly, async (req, res): Promise<void> => {
   const debugMode = req.query.mode !== "sample";
   const SAMPLE: Record<string, any> = {
     // Plaintiff
@@ -965,7 +976,7 @@ router.get("/forms/sc100/debug-preview", async (req, res): Promise<void> => {
 // Sends each form page PNG to GPT-4o vision, gets exact field coordinates,
 // saves sc100-field-map.json, and hot-reloads the field map in memory.
 // Run once after any form background image change. ~30 seconds to complete.
-router.post("/forms/sc100/calibrate", async (_req, res): Promise<void> => {
+router.post("/forms/sc100/calibrate", devOnly, async (_req, res): Promise<void> => {
   try {
     logger.info("[calibrate] Starting SC-100 field map calibration...");
     const fieldMap = await calibrateSC100(ASSET_DIR);
@@ -993,7 +1004,7 @@ router.post("/forms/sc100/calibrate", async (_req, res): Promise<void> => {
 // ─── SC-100 horizontal-only GPT-4o analysis (dev only) ───────────────────────
 // Generates a filled PDF with realistic data (including long city names),
 // converts to PNG, compares against blank form, reports horizontal issues only.
-router.post("/forms/sc100/horiz-check", async (_req, res): Promise<void> => {
+router.post("/forms/sc100/horiz-check", devOnly, async (_req, res): Promise<void> => {
   const { execSync } = await import("child_process");
   const os = await import("os");
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sc100-horiz-"));
@@ -1095,7 +1106,7 @@ If no issues, say "ALL HORIZONTAL POSITIONS CORRECT".`;
 
 // Generates a sample filled PDF, converts to PNG, sends both blank + filled
 // images to GPT-4o, gets per-field correction offsets, updates field map.
-router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
+router.post("/forms/sc100/verify", devOnly, async (_req, res): Promise<void> => {
   const { execSync } = await import("child_process");
   const os = await import("os");
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sc100-verify-"));
@@ -1167,7 +1178,7 @@ router.post("/forms/sc100/verify", async (_req, res): Promise<void> => {
 });
 
 // ─── SC-100 GPT-4o independent evaluation (dev only) ──────────────────────────
-router.post("/forms/sc100/evaluate", async (_req, res): Promise<void> => {
+router.post("/forms/sc100/evaluate", devOnly, async (_req, res): Promise<void> => {
   try {
     const pages = [1, 2, 3, 4].map((n) => {
       const candidates = [`/tmp/v7-page-${n}.png`, `/tmp/verified-page-${n}.png`];

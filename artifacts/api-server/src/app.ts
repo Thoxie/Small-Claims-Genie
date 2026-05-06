@@ -62,7 +62,9 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 app.use("/api", router);
 // Serve form background images for the coordinate-preview tool (dev only)
-app.use("/form-assets", express.static(path.join(__dirname, "..", "assets")));
+if (process.env.NODE_ENV !== "production") {
+  app.use("/form-assets", express.static(path.join(__dirname, "..", "assets")));
+}
 
 // Global error handler — catches multer errors, validation errors, and anything else
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
