@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogOut, Sparkles, MapPin, Phone, Mail, Globe, ExternalLink, Play, X, ChevronRight } from "lucide-react";
+import { Home, Sparkles, MapPin, Phone, Mail, Globe, ExternalLink, Play, X, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -266,8 +266,8 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
           </div>
 
           <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4 mt-6">
-            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
-              <LogOut className="mr-2 h-4 w-4" />
+            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())}>
+              <Home className="mr-2 h-4 w-4" />
               Save &amp; Exit
             </Button>
             <Button type="button" size="lg" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">

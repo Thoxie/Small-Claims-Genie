@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut, Play, X, ChevronRight } from "lucide-react";
+import { Home, Play, X, ChevronRight } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 import { HearingPrepTab } from "./hearing-prep-tab";
 import type { ExtendedCase } from "@/lib/types";
@@ -46,8 +46,8 @@ export function IntakeStep7({ caseId, initialData, onComplete, saving, onSaveExi
       <HearingPrepTab caseId={caseId} currentCase={initialData} isDraftMode={false} />
 
       <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
-        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit({})} disabled={saving}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit({})}>
+          <Home className="mr-2 h-4 w-4" />
           Save &amp; Exit
         </Button>
         <Button

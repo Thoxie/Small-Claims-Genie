@@ -7,7 +7,7 @@ import type { ExtendedCase } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertCircle, PlusCircle, Play, X, ChevronRight, LogOut, Sparkles } from "lucide-react";
+import { CheckCircle, AlertCircle, PlusCircle, Play, X, ChevronRight, Home, Sparkles } from "lucide-react";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 import { Link, useLocation } from "wouter";
 
@@ -384,7 +384,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
                 <Button
@@ -412,7 +412,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2">
@@ -429,7 +429,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2">
@@ -443,7 +443,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(7)} className="gap-2">
@@ -457,7 +457,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               <HearingPrepTab caseId={caseId} currentCase={extCase} isDraftMode={false} />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
@@ -474,7 +474,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               <DeadlineCalculatorTab caseId={caseId} currentCase={extCase} />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">

@@ -242,9 +242,9 @@ export function IntakeTab({
   };
 
   const handleSaveExit = (formData: Record<string, unknown>) => {
+    navigate("/dashboard");
     saveIntake.mutate({ id: caseId, data: { step: activeTab, data: formData } }, {
-      onSuccess: () => { invalidateAll(); navigate("/dashboard"); },
-      onError: () => { navigate("/dashboard"); },
+      onSuccess: () => { invalidateAll(); },
     });
   };
 

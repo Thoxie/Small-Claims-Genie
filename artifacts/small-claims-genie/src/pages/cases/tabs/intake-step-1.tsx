@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogOut, Play, X, ChevronRight } from "lucide-react";
+import { Home, Play, X, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -569,8 +569,8 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
           </div>
 
           <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4 mt-6">
-            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
-              <LogOut className="mr-2 h-4 w-4" />
+            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())}>
+              <Home className="mr-2 h-4 w-4" />
               Save &amp; Exit
             </Button>
             <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2">

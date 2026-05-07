@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { LogOut, Sparkles, Maximize2, Minimize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff, Scale } from "lucide-react";
+import { Home, Sparkles, Maximize2, Minimize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff, Scale } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -394,8 +394,8 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
 
       {/* ── Full-width footer — outside two-column layout so it spans both columns ── */}
       <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4">
-        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())} disabled={saving}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())}>
+          <Home className="mr-2 h-4 w-4" />
           Save &amp; Exit
         </Button>
         <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
