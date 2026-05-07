@@ -203,7 +203,9 @@ All forms are pre-filled. You review in a modal, edit if needed, and download as
 Two distinct modes — users choose one when they open the tab:
 
 **Mode 1 — Court-Ready Statement**
-The AI builds a personalized, polished statement for what to say when the judge first asks you to explain your case. It uses your case facts and uploaded documents to suggest an opening statement, evidence order, key points to hit, and what NOT to say. Users can edit and refine it, then print or save before the hearing.
+Generates TWO statements in one click:
+- **Primary Statement ("Court Statement")** — a personalized, polished opening statement for what to say when the judge first asks you to explain your case. Uses case facts and uploaded documents. Users can edit and refine it, then print or save.
+- **No-Show Statement ("Statement if Defendant Does Not Appear")** — a short, court-ready statement the plaintiff reads to the judge *only* if the defendant fails to appear. It asks the court to enter judgment in the plaintiff's favor based on the submitted evidence and the defendant's failure to appear. Both statements are editable and included in the print/PDF output.
 
 **Mode 2 — AI Mock Trial (Practice with a Judge)**
 An interactive AI simulation where the AI plays the role of a real small claims judge. It asks the same kinds of questions a judge would ask — "What proof do you have?", "Did you try to resolve this first?", "Why do you believe you're owed this amount?" — and gives feedback on the user's answers. This is practice so users aren't caught off guard on hearing day. Users can speak their answers using voice input or type them.

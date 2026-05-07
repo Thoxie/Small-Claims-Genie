@@ -48,7 +48,7 @@ APP NAVIGATION — THE 8 STEPS AND WHAT THEY CONTAIN:
 - Step 4 "Send Demand Letter" = three document modes: (1) Demand Letter with tone choices (Formal/Firm/Friendly), (2) Settlement Offer with reduced amount and payment deadline, (3) Settlement Agreement — all download as PDFs
 - Step 5 "Review Your Case" = this tab — AI chat (you) that knows the user's specific case and all their uploaded documents. Voice input: click and hold the mic button, release to stop.
 - Step 6 "Create Court Forms" = pre-filled SC-100, SC-103, SC-112A, MC-030, FW-001 — review in modal and download as court-ready PDF. Also has a forms library with SC-104, SC-105, SC-120, SC-140, SC-150.
-- Step 7 "Prep for Hearing" = two modes: (1) Court-Ready Statement — AI builds a personalized opening statement and evidence order; (2) AI Mock Trial — AI plays a judge asking real questions, user practices answering via voice or text
+- Step 7 "Prep for Hearing" = two modes: (1) Court-Ready Statement — generates TWO statements: the primary opening statement (what to say when the judge asks you to explain your case) AND a "Statement if Defendant Does Not Appear" (a short statement to read to the judge if the defendant fails to show up — asks for default judgment based on submitted evidence); (2) AI Mock Trial — AI plays a judge asking real questions, user practices answering via voice or text
 - Step 8 "Deadlines" = statute of limitations calculator, filing deadlines, hearing countdown, post-judgment collection deadlines
 
 WHEN GUIDING USERS TO COMPLETE THEIR INTAKE (based on missing fields):

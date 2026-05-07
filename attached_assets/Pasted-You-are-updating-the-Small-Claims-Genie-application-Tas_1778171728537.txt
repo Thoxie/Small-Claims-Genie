@@ -1,0 +1,81 @@
+You are updating the Small Claims Genie application.
+
+Task:
+Modify the existing “Prepare a Court Statement” feature for Small Claims Court.
+
+Current behavior:
+The user clicks the existing “Prepare a Court Statement” icon/button.
+The application generates one court-ready plaintiff statement.
+That existing statement is good and must not be changed.
+
+Required update:
+When the user clicks the same existing “Prepare a Court Statement” icon/button, the application should now generate two separate court-ready statements:
+
+1. Primary Court Statement
+   - This is the existing statement.
+   - Do not rewrite, shorten, restructure, or materially change it.
+   - Preserve the current output logic, tone, format, and content quality.
+
+2. Defendant No-Show Statement
+   - This is a new secondary statement.
+   - It should be generated at the same time as the primary statement.
+   - It should be clearly labeled:
+     “Statement if Defendant Does Not Appear”
+   - It should be written for the plaintiff to read to the judge if the defendant fails to appear at the small claims hearing.
+   - It should ask the court to enter judgment in favor of the plaintiff based on the defendant’s failure to appear and the plaintiff’s submitted evidence.
+   - It should be concise, respectful, court-ready, and easy to read aloud.
+   - It should not be argumentative or overly aggressive.
+   - It should reference the plaintiff’s evidence, damages, and requested judgment amount.
+   - It should include placeholders or dynamically inserted case data where available, including:
+     - Plaintiff name
+     - Defendant name
+     - Case number
+     - Court name
+     - Hearing date
+     - Claim amount
+     - Brief summary of the claim
+     - Key evidence submitted
+     - Requested judgment amount
+
+Important UI instruction:
+Do not create a second button, second icon, or separate workflow.
+The existing “Prepare a Court Statement” action should generate both statements in one output.
+
+Output structure:
+After the user clicks the existing button/icon, display the result in two clearly separated sections:
+
+Section 1:
+Title: “Court Statement”
+Content: existing court-ready statement, unchanged.
+
+Section 2:
+Title: “Statement if Defendant Does Not Appear”
+Content: newly generated no-show statement.
+
+Suggested no-show statement template:
+
+“Your Honor, my name is [Plaintiff Name], and I am the plaintiff in this matter. The defendant, [Defendant Name], has not appeared for today’s hearing.
+
+I am prepared to proceed. I respectfully ask the Court to consider the evidence and documents I submitted in support of my claim. This case concerns [brief summary of claim]. My evidence includes [brief list of key evidence], which supports my claim that the defendant owes me [requested judgment amount].
+
+Because the defendant has failed to appear and has not contested the evidence presented, I respectfully request that the Court enter judgment in my favor in the amount of [requested judgment amount], plus any allowable court costs or fees.
+
+Thank you, Your Honor.”
+
+Implementation requirements:
+- Preserve the existing court statement generation code.
+- Add the no-show statement as an additional generated output.
+- Do not remove or replace the current statement.
+- Do not change the existing button label unless necessary.
+- Do not create a new button.
+- Ensure both statements are available after one click.
+- If the app supports copying or downloading the statement, both statements should be included in the copied/downloaded output.
+- If the app separates generated documents into cards or panels, use two cards/panels under the same generated result.
+- Maintain the current Small Claims Genie tone: clear, practical, plaintiff-friendly, court-ready, and non-lawyer accessible.
+
+Acceptance criteria:
+- Clicking the existing “Prepare a Court Statement” icon/button produces two statements.
+- The original statement remains unchanged.
+- The new “Statement if Defendant Does Not Appear” appears below or beside the original statement.
+- No second button, second icon, or second workflow is added.
+- The new statement is ready for the plaintiff to read aloud to the judge if the defendant does not appear.

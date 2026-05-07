@@ -70,6 +70,30 @@ function buildOpeningStatement(c: ExtendedCase): string {
   return lines.join("\n");
 }
 
+function buildNoShowStatement(c: ExtendedCase): string {
+  const name = c.plaintiffName?.trim() || "[Your Name]";
+  const defendant = c.defendantName?.trim() || "the defendant";
+  const amount = c.claimAmount ? `$${Number(c.claimAmount).toLocaleString()}` : "[amount claimed]";
+  const caseNumber = c.caseNumber?.trim() || "";
+  const description = (c.claimDescription || "").trim();
+
+  let summary = description
+    ? (description.split(/[.!?\n]/)[0]?.trim() ?? description.slice(0, 120))
+    : "[brief description of my claim]";
+  if (summary.length > 140) summary = summary.slice(0, 140) + "...";
+
+  const lines: string[] = [];
+  lines.push(`Your Honor, my name is ${name}, and I am the plaintiff in this matter.${caseNumber ? ` The case number is ${caseNumber}.` : ""} The defendant, ${defendant}, has not appeared for today's hearing.`);
+  lines.push("");
+  lines.push(`I am prepared to proceed. I respectfully ask the Court to consider the evidence and documents I submitted in support of my claim. This case concerns ${summary}. I have submitted evidence to support my claim that ${defendant} owes me ${amount}.`);
+  lines.push("");
+  lines.push(`Because the defendant has failed to appear and has not contested the evidence I presented, I respectfully request that the Court enter judgment in my favor in the amount of ${amount}, plus any allowable court costs and fees.`);
+  lines.push("");
+  lines.push("Thank you, Your Honor.");
+
+  return lines.join("\n");
+}
+
 function wordsToTime(text: string): string {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   const seconds = Math.round((words / 130) * 60);
@@ -90,6 +114,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
   const [isRecording, setIsRecording] = useState(false);
   const [prepMode, setPrepMode] = useState<null | "statement" | "mock-trial">(null);
   const [statementText, setStatementText] = useState(() => buildOpeningStatement(currentCase));
+  const [noShowText, setNoShowText] = useState(() => buildNoShowStatement(currentCase));
   const [isRedrafting, setIsRedrafting] = useState(false);
   const [redraftError, setRedraftError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
@@ -252,14 +277,21 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
     const speakingTime = wordsToTime(statementText);
     const wordCount = statementText.trim().split(/\s+/).filter(Boolean).length;
     const hasBrackets = /\[.+?\]/.test(statementText);
+    const noShowWordCount = noShowText.trim().split(/\s+/).filter(Boolean).length;
+    const noShowSpeakingTime = wordsToTime(noShowText);
+    const noShowHasBrackets = /\[.+?\]/.test(noShowText);
 
     const printStatement = () => {
       const escaped = statementText.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const escapedNoShow = noShowText.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const noShowWc = noShowText.trim().split(/\s+/).filter(Boolean).length;
+      const noShowTime = wordsToTime(noShowText);
       const draftWatermarkCss = isDraftMode ? `@media print{body::after{content:"DRAFT";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:120px;font-weight:900;color:rgba(13,107,94,0.12);z-index:9999;pointer-events:none;white-space:nowrap;}}` : "";
       const draftBanner = isDraftMode ? `<div style="background:#f0fffe;border:2px dashed #14b8a6;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">🔒</span><span style="font-size:13px;color:#0d6b5e;font-weight:600;">Draft — Subscribe to unlock full PDF access</span></div>` : "";
       const w = window.open("", "_blank");
       if (!w) return;
       w.document.write(`<!DOCTYPE html><html><head><title>Court-Ready Statement</title><style>body{font-family:Georgia,serif;max-width:680px;margin:40px auto;color:#111;padding:0 20px;line-height:1.7}h1{font-family:Arial,sans-serif;color:#0d6b5e;font-size:22px;margin-bottom:4px}.sub{font-family:Arial,sans-serif;color:#666;font-size:13px;margin-bottom:28px}.section{font-family:Arial,sans-serif;font-weight:bold;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#0d6b5e;margin-bottom:10px;margin-top:0}.meta{font-family:Arial,sans-serif;font-size:11px;color:#9ca3af;margin-bottom:28px}.statement{border:1px solid #d1d5db;background:#fff;padding:24px 28px;border-radius:8px;font-size:15px;line-height:1.9;white-space:pre-wrap;margin-bottom:24px}.bracket{color:#d97706;font-style:italic;background:#fffbeb;border-radius:2px;padding:0 2px}.tips{border:1px solid #a8e6df;background:#f0fffe;padding:16px 20px;border-radius:8px;margin-bottom:24px;font-family:Arial,sans-serif}.tips li{font-size:12px;color:#0d6b5e;margin-bottom:6px;line-height:1.5}.mistakes{border:1px solid #fecaca;background:#fff7f7;padding:16px 20px;border-radius:8px;font-family:Arial,sans-serif;font-size:12px;color:#b91c1c;line-height:1.7}.print-btn{margin-top:24px;padding:10px 24px;background:#0d6b5e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:Arial,sans-serif}@media print{.print-btn{display:none}}${draftWatermarkCss}</style></head><body>${draftBanner}<h1>Court-Ready Opening Statement</h1><p class="sub">Prepared for ${currentCase.plaintiffName || "Plaintiff"} · ${currentCase.countyId ? currentCase.countyId + " County" : "CA Small Claims"} · Small Claims Genie</p><p class="meta">~${wordCount} words · estimated speaking time ${speakingTime}</p><div class="section">Your Statement</div><div class="statement">${escaped.replace(/\[([^\]]+)\]/g, '<span class="bracket">[$1]</span>').replace(/\n/g, "<br>")}</div><div class="tips"><div class="section">5 Rules for Speaking in Court</div><ul><li><strong>Introduce yourself</strong> — State your name and what you want the court to decide.</li><li><strong>Tell the story in order</strong> — What happened first, then next. Judges want a clear timeline.</li><li><strong>Name the exact dollar amount</strong> — State ${amount} and how you calculated it.</li><li><strong>Mention your prior demand</strong> — Did you ask them to pay before filing? Say so.</li><li><strong>Keep it under 3 minutes</strong> — Practice until you can state the essentials clearly.</li></ul></div><div class="mistakes"><strong style="display:block;margin-bottom:8px;text-transform:uppercase;font-size:11px;letter-spacing:.06em">Common mistakes to avoid</strong>✕ Don't bring up the defendant's character — stick to facts about this dispute<br/>✕ Don't interrupt the judge — wait until they finish before speaking<br/>✕ Don't bring new papers you haven't already submitted to the clerk<br/>✕ Don't get emotional — calm and factual always wins over angry and passionate</div><button class="print-btn" onclick="window.print()">Print / Save as PDF</button><script>window.onload=function(){window.print()}</script></body></html>`);
+      w.document.write(`<hr style="border:none;border-top:2px solid #e5e7eb;margin:40px 0"><div style="font-family:Arial,sans-serif;font-weight:bold;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:8px">Statement if Defendant Does Not Appear</div><p style="font-family:Arial,sans-serif;font-size:11px;color:#9ca3af;margin-bottom:16px">~${noShowWc} words &nbsp;·&nbsp; ${noShowTime} &nbsp;·&nbsp; Read only if the defendant fails to appear — do not use otherwise</p><div style="border:1px solid #cbd5e1;background:#f8fafc;padding:24px 28px;border-radius:8px;font-size:15px;line-height:1.9;white-space:pre-wrap;margin-bottom:32px">${escapedNoShow.replace(/\[([^\]]+)\]/g,'<span style="color:#d97706;font-style:italic">[$1]</span>').replace(/\n/g,"<br>")}</div>`);
       w.document.close();
     };
 
@@ -296,6 +328,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
                 }
                 const data = await res.json();
                 if (data.statement) setStatementText(data.statement);
+                if (data.noShowStatement) setNoShowText(data.noShowStatement);
               } catch {
                 setRedraftError("Connection error. Please try again.");
               } finally {
@@ -352,6 +385,39 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
               <p className="text-xs text-amber-800">Fill in all <span className="font-bold font-mono">[bracketed]</span> sections before printing — those are placeholders that need your specific details.</p>
             </div>
           )}
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Statement if Defendant Does Not Appear</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Read this <span className="font-semibold">only</span> if the defendant fails to show up. Edit freely to personalize.</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                <Clock className="h-3 w-3" /> {noShowSpeakingTime}
+              </div>
+              <span className="text-xs text-muted-foreground">{noShowWordCount} words</span>
+            </div>
+          </div>
+          <DraftOverlay isDraftMode={isDraftMode}>
+            <Textarea
+              value={noShowText}
+              onChange={e => setNoShowText(e.target.value)}
+              className="font-serif text-sm leading-relaxed min-h-[200px] resize-y bg-slate-50/60"
+              placeholder="No-show statement will appear here…"
+            />
+          </DraftOverlay>
+          {noShowHasBrackets && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-800">Fill in all <span className="font-bold font-mono">[bracketed]</span> sections — those are placeholders for missing intake data.</p>
+            </div>
+          )}
+          <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+            <AlertCircle className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-500">Only read this if the defendant does not appear. If they do appear, use your opening statement above instead.</p>
+          </div>
         </div>
 
         <div className="rounded-2xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-3">

@@ -552,16 +552,47 @@ RULES:
 
 Return plain text only. No markdown.`;
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    max_completion_tokens: 600,
-    messages: [{ role: "user", content: prompt }],
-  });
+  const noShowPrompt = `You are an expert at writing court-ready statements for California small claims court.
 
-  const statement = (completion.choices[0].message.content || "").trim();
+Using the following case information, write a brief statement for the plaintiff to read to the judge ONLY IF the defendant does not appear at the hearing.
+
+${context}
+
+Requirements:
+- Length: 80–120 words (under 1 minute when spoken)
+- Tone: calm, respectful, factual — not emotional or aggressive
+- Structure:
+  1. Plaintiff introduces themselves and notes the defendant has not appeared
+  2. States they are prepared to proceed
+  3. One sentence summarizing what the case is about
+  4. References that evidence has been submitted to the court
+  5. Requests judgment in plaintiff's favor for the exact dollar amount, plus allowable court costs and fees
+- Include the case number if available: ${caseRecord.caseNumber || "(not yet assigned)"}
+- Use actual names and dollar amounts — do NOT use placeholders
+- Start with: "Your Honor, my name is [plaintiff name], and I am the plaintiff in this matter."
+- Output ONLY the statement text — no title, no label, no markdown
+
+Return plain text only.`;
+
+  const [primaryCompletion, noShowCompletion] = await Promise.all([
+    openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 600,
+      messages: [{ role: "user", content: prompt }],
+    }),
+    openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 300,
+      messages: [{ role: "user", content: noShowPrompt }],
+    }),
+  ]);
+
+  const statement = (primaryCompletion.choices[0].message.content || "").trim();
   if (!statement) { res.status(500).json({ error: "Failed to generate statement" }); return; }
 
-  res.json({ statement });
+  const noShowStatement = (noShowCompletion.choices[0].message.content || "").trim();
+
+  res.json({ statement, noShowStatement });
 });
 
 export default router;
