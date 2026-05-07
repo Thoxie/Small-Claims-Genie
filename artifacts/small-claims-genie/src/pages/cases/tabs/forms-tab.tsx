@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
+import { SC104PdfModal, sc104FieldsToBody } from "./SC104PdfModal";
 
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
 const FORMS_CATALOG = [
@@ -535,7 +536,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     return saved ?? {};
   });
   const [sc104Saving, setSc104Saving] = useState(false);
-  const [sc104FormOpen, setSc104FormOpen] = useState(false);
+  const [sc104PdfOpen, setSc104PdfOpen] = useState(false);
   const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
 
@@ -670,7 +671,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     finally { setDownloadingForm(null); }
   }
 
-  async function downloadSignedSC104(signatureDataUrl?: string, body?: Record<string, unknown> | null) {
+  async function downloadSignedSC104(signatureDataUrl?: string, rawFields?: Record<string, string> | null) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
     setDownloadingForm("sc104"); setDownloadError(null);
     try {
@@ -678,7 +679,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
       if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
       const { token } = await tokenRes.json();
-      const formBody = body || sc104FormBody || {};
+      // Convert UI field keys → server body format (docsServed array etc.)
+      const sourceFields = rawFields ?? sc104Fields;
+      const formBody = sc104FieldsToBody(sourceFields);
       const endpoint = signatureDataUrl ? "sc104/signed" : "sc104";
       const filename = signatureDataUrl ? `SC104-Signed-Case-${caseId}.pdf` : `SC104-Case-${caseId}.pdf`;
       const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
@@ -1270,9 +1273,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         );
 
       case "sc104": {
-        const sc104Config = FORM_FIELD_CONFIG["sc104"];
-        const f = sc104Fields;
-        const setF = (key: string, val: string) => setSc104Fields(prev => ({ ...prev, [key]: val }));
+        const hasSavedData = Object.keys(sc104Fields).some(k => (sc104Fields[k] ?? "").trim());
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1281,76 +1282,23 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             {commonWarnings}
             {commonRelated}
 
-            {/* Toggle inline form */}
             <button
               type="button"
-              onClick={() => setSc104FormOpen(o => !o)}
-              className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/30 bg-[#0d6b5e]/5 px-4 py-2.5 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors"
+              onClick={() => setSc104PdfOpen(true)}
+              className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors"
             >
               <span className="flex items-center gap-2">
-                <Pencil className="h-4 w-4" />
-                {sc104FormOpen ? "Close Form" : "Fill Out SC-104"}
+                <FileText className="h-4 w-4" />
+                {hasSavedData ? "Edit SC-104 Form" : "Fill Out SC-104 Form"}
               </span>
-              {sc104FormOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
+                {hasSavedData && <CheckCircle2 className="h-3 w-3 text-[#14b8a6]" />}
+                {hasSavedData ? "Saved data loaded" : "Opens the actual form"}
+                <ChevronRight className="h-4 w-4" />
+              </span>
             </button>
 
-            {sc104FormOpen && (
-              <div className="rounded-xl border border-border bg-muted/20 divide-y divide-border">
-                {sc104Config.groups.map((group) => (
-                  <div key={group.title} className="px-4 py-3 space-y-2.5">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{group.title}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {group.fields.map((field) => {
-                        const val = f[field.key] ?? "";
-                        if (field.type === "select") {
-                          return (
-                            <div key={field.key} className="flex flex-col gap-1">
-                              <label className="text-xs font-medium text-foreground">{field.label}{field.required && <span className="text-rose-500 ml-0.5">*</span>}</label>
-                              <select
-                                value={val}
-                                onChange={e => setF(field.key, e.target.value)}
-                                className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
-                              >
-                                <option value="">— Select —</option>
-                                {field.options?.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                              </select>
-                            </div>
-                          );
-                        }
-                        if (field.type === "textarea") {
-                          return (
-                            <div key={field.key} className="sm:col-span-2 flex flex-col gap-1">
-                              <label className="text-xs font-medium text-foreground">{field.label}{field.required && <span className="text-rose-500 ml-0.5">*</span>}</label>
-                              <textarea value={val} onChange={e => setF(field.key, e.target.value)} placeholder={field.placeholder} rows={3}
-                                className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] resize-none" />
-                            </div>
-                          );
-                        }
-                        return (
-                          <div key={field.key} className="flex flex-col gap-1">
-                            <label className="text-xs font-medium text-foreground">{field.label}{field.required && <span className="text-rose-500 ml-0.5">*</span>}</label>
-                            <input
-                              type={field.type === "date" ? "date" : "text"}
-                              value={val}
-                              onChange={e => setF(field.key, e.target.value)}
-                              placeholder={field.placeholder}
-                              className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex gap-2 flex-wrap pt-1">
-              <Button size="sm" className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
-                onClick={saveSC104ToSystem} disabled={sc104Saving || !sc104FormOpen}>
-                {sc104Saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
-                {sc104Saving ? "Saving…" : "Save to System"}
-              </Button>
+            <div className="flex gap-2 flex-wrap">
               <Button size="sm" className="gap-1.5 bg-[#14b8a6] hover:bg-[#0d9488] text-white h-8 text-xs px-3"
                 onClick={() => { setSc104FormBody(sc104Fields); setSc104SigModalOpen(true); }}
                 disabled={downloadingForm === "sc104"}>
@@ -1844,6 +1792,18 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         disclaimer="By signing, the server declares under penalty of perjury under the laws of the State of California that they are at least 18 years old, not named in this case, and that the information above is true and correct."
         onSign={(dataUrl) => { setSc104SigModalOpen(false); downloadSignedSC104(dataUrl); }}
         onSkipSign={() => { setSc104SigModalOpen(false); downloadSignedSC104(); }}
+      />
+
+      <SC104PdfModal
+        open={sc104PdfOpen}
+        onClose={() => setSc104PdfOpen(false)}
+        fields={sc104Fields}
+        onChange={setSc104Fields}
+        saving={sc104Saving}
+        downloadingForm={downloadingForm}
+        onSave={saveSC104ToSystem}
+        onSignAndDownload={() => { setSc104FormBody(sc104Fields); setSc104PdfOpen(false); setSc104SigModalOpen(true); }}
+        onDownloadNoSig={() => downloadSignedSC104(undefined, sc104Fields)}
       />
 
       <SignaturePadModal
