@@ -16,9 +16,6 @@ const TC = (y: number) => `${((792 - y - 8) / 792) * 100}%`;  // checkboxes/radi
 const INPUT_CLS =
   "absolute text-[clamp(6px,1.1vw,11px)] leading-none bg-[rgba(173,216,230,0.22)] border border-[rgba(0,100,200,0.3)] rounded-[2px] px-[2px] py-0 text-[#0a0a1a] placeholder:text-[rgba(0,0,0,0.28)] focus:bg-[rgba(173,216,230,0.45)] focus:border-[rgba(0,80,200,0.6)] focus:outline-none h-[2%]";
 
-const SELECT_CLS =
-  "absolute text-[clamp(5px,1vw,10px)] leading-none bg-[rgba(173,216,230,0.22)] border border-[rgba(0,100,200,0.3)] rounded-[2px] px-0 py-0 text-[#0a0a1a] focus:bg-[rgba(173,216,230,0.45)] focus:border-[rgba(0,80,200,0.6)] focus:outline-none h-[2%] cursor-pointer";
-
 function fi(
   fields: Record<string, string>,
   set: (k: string, v: string) => void,

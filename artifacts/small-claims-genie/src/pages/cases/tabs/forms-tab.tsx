@@ -530,7 +530,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
-  const [sc104FormBody, setSc104FormBody] = useState<Record<string, unknown> | null>(null);
   const [sc104Fields, setSc104Fields] = useState<Record<string, string>>(() => {
     const saved = currentCase?.sc104Data as Record<string, string> | null | undefined;
     return saved ?? {};
@@ -1300,7 +1299,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
             <div className="flex gap-2 flex-wrap">
               <Button size="sm" className="gap-1.5 bg-[#14b8a6] hover:bg-[#0d9488] text-white h-8 text-xs px-3"
-                onClick={() => { setSc104FormBody(sc104Fields); setSc104SigModalOpen(true); }}
+                onClick={() => setSc104SigModalOpen(true)}
                 disabled={downloadingForm === "sc104"}>
                 {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}
                 Sign &amp; Download SC-104
@@ -1753,9 +1752,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           onClose={() => setModalFormId(null)}
           onDownload={(endpoint, filename, body) => {
             if (endpoint === "sc104") {
-              setSc104FormBody(body);
               setModalFormId(null);
-              setSc104SigModalOpen(true);
+              setSc104PdfOpen(true);
             } else if (endpoint === "sc100a") {
               setSc100aFormBody(body);
               setModalFormId(null);
@@ -1802,7 +1800,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         saving={sc104Saving}
         downloadingForm={downloadingForm}
         onSave={saveSC104ToSystem}
-        onSignAndDownload={() => { setSc104FormBody(sc104Fields); setSc104PdfOpen(false); setSc104SigModalOpen(true); }}
+        onSignAndDownload={() => { setSc104PdfOpen(false); setSc104SigModalOpen(true); }}
         onDownloadNoSig={() => downloadSignedSC104(undefined, sc104Fields)}
       />
 
