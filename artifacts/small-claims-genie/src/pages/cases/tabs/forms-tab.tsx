@@ -482,10 +482,8 @@ function _getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: stri
       reason: "You are filing as a business — DBA registration form required." });
   }
 
-  if (c.hasAdditionalPlaintiff && c.additionalPlaintiffName) {
-    forms.push({ id: "sc100a", number: "SC-100A", required: true,
-      reason: "You have an additional plaintiff — file this alongside SC-100." });
-  }
+  forms.push({ id: "sc100a", number: "SC-100A", required: true,
+    reason: "Filed alongside SC-100 for any additional plaintiffs or defendants." });
 
   forms.push({ id: "mc030", number: "MC-030", required: true,
     reason: "Sworn declaration filed at the same time as SC-100." });
@@ -1034,12 +1032,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   // ── Wizard steps ──────────────────────────────────────────────────────────
   type StepStatus = "required" | "optional" | "skipped";
   const allWizardSteps = useMemo(() => {
-    const additionalPartyRequired = !!(currentCase.hasAdditionalPlaintiff && currentCase.additionalPlaintiffName);
     return [
       { id: "sc100",  number: "SC-100",  shortLabel: "Plaintiff's Claim",  status: "required" as StepStatus },
       { id: "mc030",  number: "MC-030",  shortLabel: "Declaration",         status: "required" as StepStatus },
       { id: "sc103",  number: "SC-103",  shortLabel: "Fictitious Name",    status: (showSC103 ? "required" : "skipped") as StepStatus },
-      { id: "sc100a", number: "SC-100A", shortLabel: "Other Parties",      status: (additionalPartyRequired ? "required" : "optional") as StepStatus },
+      { id: "sc100a", number: "SC-100A", shortLabel: "Other Parties",      status: "required" as StepStatus },
       { id: "sc112a", number: "SC-112A", shortLabel: "Proof of Service",   status: "required" as StepStatus },
       { id: "sc104",  number: "SC-104",  shortLabel: "Personal Service",   status: "optional" as StepStatus },
       { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
