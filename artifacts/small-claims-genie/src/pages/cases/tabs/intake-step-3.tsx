@@ -16,7 +16,7 @@ interface Props {
 
 export function IntakeStep3({ caseId, initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {
   return (
-    <div className="space-y-4">
+    <div className="px-4 pt-3 pb-4 space-y-4">
       <DocumentsTab caseId={caseId} evidenceChecklist={initialData.evidenceChecklist || []} />
       <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4">
         <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit({})}>
