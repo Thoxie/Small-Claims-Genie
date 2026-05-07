@@ -530,7 +530,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
-  const [sc104Fields] = useState<Record<string, string>>(() => {
+  const [sc104Fields, setSc104Fields] = useState<Record<string, string>>(() => {
     const saved = currentCase?.sc104Data as Record<string, string> | null | undefined;
     return saved ?? {};
   });
@@ -1795,7 +1795,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       <SC104PdfModal
         open={sc104PdfOpen}
         onClose={() => setSc104PdfOpen(false)}
+        caseId={caseId}
+        getToken={getToken}
         fields={sc104Fields}
+        onChange={setSc104Fields}
         saving={sc104Saving}
         onSave={saveSC104ToSystem}
       />
