@@ -530,6 +530,12 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
   const [sc104FormBody, setSc104FormBody] = useState<Record<string, unknown> | null>(null);
+  const [sc104Fields, setSc104Fields] = useState<Record<string, string>>(() => {
+    const saved = currentCase?.sc104Data as Record<string, string> | null | undefined;
+    return saved ?? {};
+  });
+  const [sc104Saving, setSc104Saving] = useState(false);
+  const [sc104FormOpen, setSc104FormOpen] = useState(false);
   const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
 
@@ -931,6 +937,25 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     setModalFormId("sc112a");
   }
 
+  async function saveSC104ToSystem() {
+    if (isDraftMode) { toast({ title: "Subscribe to Save", description: "Start your subscription to save form data." }); return; }
+    setSc104Saving(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/forms/sc104-data`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(sc104Fields),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      toast({ title: "SC-104 saved", description: "Your form data has been saved to your case." });
+    } catch {
+      toast({ title: "Save failed", description: "Could not save SC-104 data. Please try again.", variant: "destructive" });
+    } finally {
+      setSc104Saving(false);
+    }
+  }
+
   function getInitialValues(formId: string): Record<string, string> {
     const cc = currentCase;
     const courthouseStreet = cc.courthouseAddress || "";
@@ -1013,8 +1038,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "mc030",  number: "MC-030",  shortLabel: "Declaration",         status: "required" as StepStatus },
       { id: "sc103",  number: "SC-103",  shortLabel: "Fictitious Name",    status: (showSC103 ? "required" : "skipped") as StepStatus },
       { id: "sc100a", number: "SC-100A", shortLabel: "Other Parties",      status: (additionalPartyRequired ? "required" : "optional") as StepStatus },
-      { id: "sc112a", number: "SC-112A", shortLabel: "Mail Service",        status: "required" as StepStatus },
       { id: "sc104",  number: "SC-104",  shortLabel: "Proof of Service",   status: "required" as StepStatus },
+      { id: "sc112a", number: "SC-112A", shortLabel: "Mail Service",        status: "optional" as StepStatus },
       { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
       { id: "sc150",  number: "SC-150",  shortLabel: "Postpone Trial",     status: "optional" as StepStatus },
       { id: "sc140",  number: "SC-140",  shortLabel: "Notice of Appeal",   status: "optional" as StepStatus },
@@ -1243,6 +1268,105 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             </div>
           </div>
         );
+
+      case "sc104": {
+        const sc104Config = FORM_FIELD_CONFIG["sc104"];
+        const f = sc104Fields;
+        const setF = (key: string, val: string) => setSc104Fields(prev => ({ ...prev, [key]: val }));
+        return (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              To be completed by the person who served the court papers — <strong className="text-foreground">not you</strong>. Fill in the server's details, who was served, and how service was made.
+            </p>
+            {commonWarnings}
+            {commonRelated}
+
+            {/* Toggle inline form */}
+            <button
+              type="button"
+              onClick={() => setSc104FormOpen(o => !o)}
+              className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/30 bg-[#0d6b5e]/5 px-4 py-2.5 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Pencil className="h-4 w-4" />
+                {sc104FormOpen ? "Close Form" : "Fill Out SC-104"}
+              </span>
+              {sc104FormOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+
+            {sc104FormOpen && (
+              <div className="rounded-xl border border-border bg-muted/20 divide-y divide-border">
+                {sc104Config.groups.map((group) => (
+                  <div key={group.title} className="px-4 py-3 space-y-2.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{group.title}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {group.fields.map((field) => {
+                        const val = f[field.key] ?? "";
+                        if (field.type === "select") {
+                          return (
+                            <div key={field.key} className="flex flex-col gap-1">
+                              <label className="text-xs font-medium text-foreground">{field.label}{field.required && <span className="text-rose-500 ml-0.5">*</span>}</label>
+                              <select
+                                value={val}
+                                onChange={e => setF(field.key, e.target.value)}
+                                className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                              >
+                                <option value="">— Select —</option>
+                                {field.options?.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                              </select>
+                            </div>
+                          );
+                        }
+                        if (field.type === "textarea") {
+                          return (
+                            <div key={field.key} className="sm:col-span-2 flex flex-col gap-1">
+                              <label className="text-xs font-medium text-foreground">{field.label}{field.required && <span className="text-rose-500 ml-0.5">*</span>}</label>
+                              <textarea value={val} onChange={e => setF(field.key, e.target.value)} placeholder={field.placeholder} rows={3}
+                                className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] resize-none" />
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={field.key} className="flex flex-col gap-1">
+                            <label className="text-xs font-medium text-foreground">{field.label}{field.required && <span className="text-rose-500 ml-0.5">*</span>}</label>
+                            <input
+                              type={field.type === "date" ? "date" : "text"}
+                              value={val}
+                              onChange={e => setF(field.key, e.target.value)}
+                              placeholder={field.placeholder}
+                              className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2 flex-wrap pt-1">
+              <Button size="sm" className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
+                onClick={saveSC104ToSystem} disabled={sc104Saving || !sc104FormOpen}>
+                {sc104Saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
+                {sc104Saving ? "Saving…" : "Save to System"}
+              </Button>
+              <Button size="sm" className="gap-1.5 bg-[#14b8a6] hover:bg-[#0d9488] text-white h-8 text-xs px-3"
+                onClick={() => { setSc104FormBody(sc104Fields); setSc104SigModalOpen(true); }}
+                disabled={downloadingForm === "sc104"}>
+                {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <PenLine className="h-3 w-3" />}
+                Sign &amp; Download SC-104
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 px-3"
+                onClick={() => downloadSignedSC104(undefined, sc104Fields)}
+                disabled={downloadingForm === "sc104"}>
+                {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                Download Without Signature
+              </Button>
+            </div>
+          </div>
+        );
+      }
 
       default: {
         const hasFieldConfig = !!FORM_FIELD_CONFIG[currentStep.id];

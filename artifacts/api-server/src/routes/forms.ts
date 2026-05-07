@@ -2332,6 +2332,23 @@ router.post("/cases/:id/forms/sc104/signed", async (req, res): Promise<void> => 
   }
 });
 
+// ─── SC-104 Save Data ─────────────────────────────────────────────────────────
+router.patch("/cases/:id/forms/sc104-data", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+  const userId = getUserId(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+  try {
+    await db.update(casesTable).set({ sc104Data: req.body }).where(eq(casesTable.id, id));
+    res.json({ ok: true });
+  } catch (err: any) {
+    req.log.error({ err }, "SC-104 save data error");
+    res.status(500).json({ error: "Failed to save SC-104 data." });
+  }
+});
+
 // ─── SC-105 AI Draft ──────────────────────────────────────────────────────────
 router.post("/cases/:id/forms/sc105/ai-draft", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
