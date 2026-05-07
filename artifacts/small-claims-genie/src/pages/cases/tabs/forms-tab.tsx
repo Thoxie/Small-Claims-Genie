@@ -1797,10 +1797,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         onClose={() => setSc104PdfOpen(false)}
         fields={sc104Fields}
         saving={sc104Saving}
-        downloadingForm={downloadingForm}
         onSave={saveSC104ToSystem}
-        onSignAndDownload={() => { setSc104PdfOpen(false); setSc104SigModalOpen(true); }}
-        onDownloadNoSig={() => downloadSignedSC104(undefined, sc104Fields)}
       />
 
       <SignaturePadModal
