@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { PDFDocument, StandardFonts, rgb, PDFName, PDFString } from "pdf-lib";
 import { getOwnedCase, getUserId } from "../lib/owned-case";
+import { requireAuth } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import type { Request, Response, NextFunction } from "express";
@@ -2333,7 +2334,7 @@ router.post("/cases/:id/forms/sc104/signed", async (req, res): Promise<void> => 
 });
 
 // ─── SC-104 Save Data ─────────────────────────────────────────────────────────
-router.patch("/cases/:id/forms/sc104-data", async (req, res): Promise<void> => {
+router.patch("/cases/:id/forms/sc104-data", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
   const userId = getUserId(req);
