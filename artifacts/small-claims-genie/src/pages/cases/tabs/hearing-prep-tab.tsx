@@ -349,6 +349,12 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
           </div>
         )}
 
+        <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] px-4 py-3 space-y-1">
+          <p className="text-sm font-bold text-[#0d6b5e]">Two statements are included below — use whichever fits what happens in court.</p>
+          <p className="text-xs text-[#0d6b5e]/80 leading-relaxed"><span className="font-semibold">Statement 1 — Court Statement:</span> This is your main opening statement. Read it when the judge asks you to explain your case at the start of the hearing.</p>
+          <p className="text-xs text-[#0d6b5e]/80 leading-relaxed"><span className="font-semibold">Statement 2 — If Defendant Doesn't Appear:</span> Use this one only if the defendant fails to show up — which happens more often than you'd think. It asks the judge to rule in your favor based on the evidence you've already submitted.</p>
+        </div>
+
         {hasMissingIntake && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 flex items-start gap-2.5">
             <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
