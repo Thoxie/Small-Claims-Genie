@@ -305,8 +305,8 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-[#0d6b5e] flex items-center justify-center shrink-0"><FileText className="h-5 w-5 text-white" /></div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Court-Ready Statement</h2>
-              <p className="text-xs text-muted-foreground">Pre-drafted from your case — refine it, then practice out loud</p>
+              <h2 className="text-lg font-bold text-gray-900">Court-Ready Statements</h2>
+              <p className="text-xs text-muted-foreground">Pre-drafted from your case — refine them, then practice out loud.</p>
             </div>
           </div>
           <button
@@ -349,10 +349,24 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
           </div>
         )}
 
-        <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] px-4 py-3 space-y-1">
-          <p className="text-sm font-bold text-[#0d6b5e]">Two statements are included below — use whichever fits what happens in court.</p>
-          <p className="text-xs text-[#0d6b5e]/80 leading-relaxed"><span className="font-semibold">Statement 1 — Court Statement:</span> This is your main opening statement. Read it when the judge asks you to explain your case at the start of the hearing.</p>
-          <p className="text-xs text-[#0d6b5e]/80 leading-relaxed"><span className="font-semibold">Statement 2 — If Defendant Doesn't Appear:</span> Use this one only if the defendant fails to show up — which happens more often than you'd think. It asks the judge to rule in your favor based on the evidence you've already submitted.</p>
+        <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] px-4 py-4 space-y-3">
+          <p className="text-sm font-bold text-[#0d6b5e]">We include two statements for your hearing:</p>
+          <div className="space-y-2.5">
+            <div className="flex gap-3">
+              <div className="h-5 w-5 rounded-full bg-[#0d6b5e] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</div>
+              <div>
+                <p className="text-xs font-semibold text-gray-900">Statement if the Defendant Appears</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Use this statement if the defendant shows up and the judge asks you to present your case.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="h-5 w-5 rounded-full bg-[#0d6b5e] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</div>
+              <div>
+                <p className="text-xs font-semibold text-gray-900">Statement if the Defendant Does Not Appear</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Use this statement if the defendant does not show up and you need to ask the judge to enter judgment in your favor based on your evidence.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {hasMissingIntake && (
