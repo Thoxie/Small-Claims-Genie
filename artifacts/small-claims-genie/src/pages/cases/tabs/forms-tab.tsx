@@ -490,7 +490,7 @@ function _getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: stri
   forms.push({ id: "mc030", number: "MC-030", required: true,
     reason: "Sworn declaration filed at the same time as SC-100." });
 
-  forms.push({ id: "sc104", number: "SC-104", required: true,
+  forms.push({ id: "sc112a", number: "SC-112A", required: true,
     reason: "Proves the defendant was properly served with your court papers." });
 
   forms.push({ id: "fw001", number: "FW-001", required: false,
@@ -1040,8 +1040,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "mc030",  number: "MC-030",  shortLabel: "Declaration",         status: "required" as StepStatus },
       { id: "sc103",  number: "SC-103",  shortLabel: "Fictitious Name",    status: (showSC103 ? "required" : "skipped") as StepStatus },
       { id: "sc100a", number: "SC-100A", shortLabel: "Other Parties",      status: (additionalPartyRequired ? "required" : "optional") as StepStatus },
-      { id: "sc104",  number: "SC-104",  shortLabel: "Proof of Service",   status: "required" as StepStatus },
-      { id: "sc112a", number: "SC-112A", shortLabel: "Mail Service",        status: "optional" as StepStatus },
+      { id: "sc112a", number: "SC-112A", shortLabel: "Proof of Service",   status: "required" as StepStatus },
+      { id: "sc104",  number: "SC-104",  shortLabel: "Personal Service",   status: "optional" as StepStatus },
       { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
       { id: "sc150",  number: "SC-150",  shortLabel: "Postpone Trial",     status: "optional" as StepStatus },
       { id: "sc140",  number: "SC-140",  shortLabel: "Notice of Appeal",   status: "optional" as StepStatus },
