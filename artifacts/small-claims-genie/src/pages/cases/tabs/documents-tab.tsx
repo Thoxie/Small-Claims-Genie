@@ -345,8 +345,9 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
               <p className="text-xs text-muted-foreground mt-1 mb-4">Click the button below — the AI Genie will analyze your case and generate a document checklist for you.</p>
               <Button
                 type="button"
+                size="lg"
                 onClick={() => void openAdvisor()}
-                className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+                className="bg-amber-500 hover:bg-amber-600 text-white gap-2"
               >
                 <Sparkles className="h-4 w-4" /> AI Genie Check My Case
               </Button>
