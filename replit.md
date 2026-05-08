@@ -18,6 +18,7 @@ Small Claims Genie is a California small claims court SaaS application designed 
     -   Changes to what the Hearing Prep tab offers (modes, functionality)
     -   Any workflow or process change a user might ask the AI about
     This is non-negotiable. The AI is the primary user support channel; if the prompts are stale, users get wrong guidance. Treat prompt updates as part of every UI feature task.
+5.  **UI content-fit check — always verify before coding.** Before implementing any UI change that places text or content into a constrained space (pill labels, badges, truncated containers, fixed-width elements, single-line fields), check whether the content will actually fit. If it will not fit without clipping or truncation, stop and tell the user clearly — do not silently truncate or clip. Either: (a) confirm the content fits as-is, (b) warn the user it won't fit and ask them to shorten the content, or (c) warn the user and propose a layout change to accommodate it. Never ship truncated content without flagging it first.
 
 ## System Architecture
 
