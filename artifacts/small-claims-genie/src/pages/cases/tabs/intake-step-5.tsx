@@ -265,19 +265,6 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
             </div>
           </div>
 
-          <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4 mt-6" style={{ paddingRight: '165px' }}>
-            <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())}>
-              <Home className="mr-2 h-4 w-4" />
-              Save &amp; Exit
-            </Button>
-            <Button type="button" size="lg" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
-              <Sparkles className="h-4 w-4" /> AI Genie Check My Case
-            </Button>
-            <Button type="submit" size="lg" disabled={saving} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              {saving ? "Saving…" : i18n.intake.saveAndContinue}
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
             </form>
           </Form>
         </div>
@@ -307,6 +294,21 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
             <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
           </div>
         </div>
+      </div>
+
+      {/* ── Full-width footer — outside two-column layout so it spans both columns ── */}
+      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8" style={{ paddingRight: '165px' }}>
+        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())}>
+          <Home className="mr-2 h-4 w-4" />
+          Save &amp; Exit
+        </Button>
+        <Button type="button" size="lg" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
+          <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+        </Button>
+        <Button type="button" size="lg" onClick={() => form.handleSubmit(onNext)()} disabled={saving} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+          {saving ? "Saving…" : i18n.intake.saveAndContinue}
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* ── Tutorial video modal ── */}
