@@ -26,7 +26,7 @@ export function IntakeStep4({ caseId, initialData, onNext, saving, onSaveExit, o
         <Button type="button" size="lg" onClick={onAiCheck} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
           <Sparkles className="h-4 w-4" /> AI Genie Check My Case
         </Button>
-        <Button size="lg" onClick={() => onNext({})} disabled={saving} className="gap-2">
+        <Button size="lg" onClick={() => onNext({})} disabled={saving} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
           {saving ? "Saving…" : i18n.intake.saveAndContinue}
           <ChevronRight className="h-4 w-4" />
         </Button>

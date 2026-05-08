@@ -573,7 +573,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
               <Home className="mr-2 h-4 w-4" />
               Save &amp; Exit
             </Button>
-            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2">
+            <Button type="submit" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
               {saving ? "Saving…" : i18n.intake.saveAndContinue}
               <ChevronRight className="h-4 w-4" />
             </Button>

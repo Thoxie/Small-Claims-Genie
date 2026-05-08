@@ -401,7 +401,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
         <Button type="button" size="lg" onClick={openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
           <Sparkles className="h-4 w-4" /> AI Genie Check My Case
         </Button>
-        <Button type="button" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2" onClick={() => form.handleSubmit(onNext)()}>
+        <Button type="button" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2" onClick={() => form.handleSubmit(onNext)()} style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
           {saving ? "Saving…" : i18n.intake.saveAndContinue}
           <ChevronRight className="h-4 w-4" />
         </Button>
