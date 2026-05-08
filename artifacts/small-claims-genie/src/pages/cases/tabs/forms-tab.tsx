@@ -560,7 +560,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [buildingPacket, setBuildingPacket] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [wizardIndex, setWizardIndex] = useState(0);
-  const [sc112aInitialMethod, setSc112aInitialMethod] = useState<string>("");
   const [sc112aNotifyMethod, setSc112aNotifyMethod] = useState<string>("");
 
   // ── Documents for exhibit selector ────────────────────────────────────────
@@ -1213,49 +1212,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       case "sc112a":
         return (
           <div className="space-y-4">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Choose how you will serve the defendant. The form is filled out differently depending on your selection.
-            </p>
-
-            {/* ── Section 1: Initial service method ─────────────────────── */}
-            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
-              <h4 className="text-sm font-semibold text-foreground">How will you deliver the court papers?</h4>
-              <RadioGroup value={sc112aInitialMethod} onValueChange={setSc112aInitialMethod} className="gap-0">
-
-                {/* Option 1 — Clerk */}
-                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aInitialMethod === "clerk" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                  <RadioGroupItem value="clerk" id="sc112a-clerk" className="mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">Court Papers Delivered by Clerk</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Lowest cost, court handles service, least reliable.</p>
-                    <p className="text-[11px] text-[#0d6b5e] mt-1.5 leading-relaxed bg-[#0d6b5e]/5 rounded-md px-2 py-1.5">
-                      <span className="font-semibold">Note:</span> If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
-                    </p>
-                  </div>
-                </label>
-
-                {/* Option 2 — Adult */}
-                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aInitialMethod === "adult" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                  <RadioGroupItem value="adult" id="sc112a-adult" className="mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">Court Papers Delivered by Adult</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Someone 18+ not in the case delivers to defendant.</p>
-                  </div>
-                </label>
-
-                {/* Option 3 — Process Server */}
-                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aInitialMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                  <RadioGroupItem value="process_server" id="sc112a-ps" className="mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">Court Papers Delivered by Process Server</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Most reliable, professional service by licensed Process Server.</p>
-                  </div>
-                </label>
-
-              </RadioGroup>
-            </div>
-
-            {/* ── Section 2: Post-filing notification method ─────────────── */}
+            {/* ── Notification method ────────────────────────────────────── */}
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
               <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
               <RadioGroup value={sc112aNotifyMethod} onValueChange={setSc112aNotifyMethod} className="gap-0">
