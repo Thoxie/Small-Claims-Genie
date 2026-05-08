@@ -1438,7 +1438,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       <div className="bg-card rounded-xl border-2 border-border transition-all">
 
         {/* Card header */}
-        {currentStep.id !== "sc112a" && currentStep.id !== "sc104" && (
+        {currentStep.id !== "sc104" && (
         <div className="p-5 border-b flex items-start gap-4">
           <div className="rounded-lg p-2.5 shrink-0 bg-primary/10">
             <FileText className="w-5 h-5 text-primary" />
