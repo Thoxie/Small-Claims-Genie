@@ -1457,14 +1457,12 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </span>
               )}
             </div>
-            <h3 className="text-base font-bold mt-1.5 leading-snug text-foreground">
+            <p className="text-base font-bold mt-1.5 leading-snug text-foreground">
               {catalogCurrentForm?.name ?? currentStep.shortLabel}
-            </h3>
-            {catalogCurrentForm?.shortDesc && (
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                {catalogCurrentForm.shortDesc}
-              </p>
-            )}
+              {catalogCurrentForm?.shortDesc && (
+                <span className="font-normal text-sm text-muted-foreground"> — {catalogCurrentForm.shortDesc}</span>
+              )}
+            </p>
           </div>
           {/* Navigation — right side of header */}
           <div className="shrink-0 flex flex-col items-end gap-2">
