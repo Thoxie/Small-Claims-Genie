@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 import { SC104PdfModal, sc104FieldsToBody } from "./SC104PdfModal";
@@ -558,6 +559,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [buildingPacket, setBuildingPacket] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [wizardIndex, setWizardIndex] = useState(0);
+  const [notifyMethod, setNotifyMethod] = useState<string>("");
 
   // ── Documents for exhibit selector ────────────────────────────────────────
   const [documents, setDocuments] = useState<DocumentWithMeta[]>([]);
@@ -1463,6 +1465,51 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
       </div>
 
+
+      {/* ── Notify Defendant Section ────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+        <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
+        <RadioGroup value={notifyMethod} onValueChange={setNotifyMethod} className="gap-0">
+
+          {/* Radio 1 — Certified Mail by Clerk */}
+          <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+            <RadioGroupItem value="certified_mail" id="notify-mail" className="mt-0.5 shrink-0" />
+            <p className="text-xs text-foreground leading-relaxed">
+              <span className="font-semibold">Certified Mail Service by Court Clerk</span> — Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.
+            </p>
+          </label>
+
+          {/* Bold sub-note beneath radio 1 */}
+          <p className="text-xs font-bold text-foreground px-3 pb-1">
+            If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
+          </p>
+
+          {/* Radio 2 — Fallback note as option */}
+          <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "clerk_fallback" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+            <RadioGroupItem value="clerk_fallback" id="notify-clerk-fallback" className="mt-0.5 shrink-0" />
+            <p className="text-xs text-foreground leading-relaxed">
+              If the court clerk's service attempt is unsuccessful, you can still choose Adult Service or Process Server Service
+            </p>
+          </label>
+
+          {/* Radio 3 — Adult Service */}
+          <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+            <RadioGroupItem value="adult_service" id="notify-adult" className="mt-0.5 shrink-0" />
+            <p className="text-xs text-foreground leading-relaxed">
+              <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
+            </p>
+          </label>
+
+          {/* Radio 4 — Process Server */}
+          <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+            <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
+            <p className="text-xs text-foreground leading-relaxed">
+              <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
+            </p>
+          </label>
+
+        </RadioGroup>
+      </div>
 
       {/* ── Additional Forms ────────────────────────────────────────────────── */}
       {additionalSteps.length > 0 && (
