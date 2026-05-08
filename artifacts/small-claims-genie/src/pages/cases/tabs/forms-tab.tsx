@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
@@ -934,11 +934,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   function toggleExhibit(docId: number) {
     setSelectedExhibits(prev => prev.includes(docId) ? prev.filter(id => id !== docId) : [...prev, docId]);
-  }
-
-  function openSC112A() {
-    setModalInitialValues(getInitialValues("sc112a"));
-    setModalFormId("sc112a");
   }
 
   async function saveSC104ToSystem() {
