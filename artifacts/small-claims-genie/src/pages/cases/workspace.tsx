@@ -395,7 +395,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 >
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2">
+                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -415,7 +415,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2">
+                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -432,7 +432,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2">
+                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -446,7 +446,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(7)} className="gap-2">
+                <Button type="button" size="lg" onClick={() => handleStepClick(7)} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -463,7 +463,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(8)} className="gap-2">
+                <Button type="button" size="lg" onClick={() => handleStepClick(8)} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -480,7 +480,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
-                <Button type="button" size="lg" onClick={() => navigate("/dashboard")} className="gap-2">
+                <Button type="button" size="lg" onClick={() => navigate("/dashboard")} className="gap-2" style={{ marginRight: '160px', paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
