@@ -1398,7 +1398,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <span className={`text-[11px] font-bold leading-none ${i === wizardIndex ? "text-foreground" : "text-muted-foreground/60"}`}>
                   {i + 1}. {step.number}
                 </span>
-                <span className={`text-[10px] leading-tight whitespace-nowrap text-center px-0.5 ${i === wizardIndex ? "text-foreground/70" : "text-muted-foreground/40"}`}>
+                <span className={`text-[10px] leading-tight whitespace-nowrap text-center px-0.5 ${i === wizardIndex ? "text-foreground/70 font-bold" : "text-muted-foreground/40"}`}>
                   {step.shortLabel}
                 </span>
               </button>
