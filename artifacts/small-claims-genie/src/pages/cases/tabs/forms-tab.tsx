@@ -1125,7 +1125,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </div>
             )}
             {commonWarnings}
-            {commonRelated}
             <div className="flex gap-2 flex-wrap pt-1">
               <Button size="sm" className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
                 onClick={viewSC100} disabled={viewingPdf || downloadingPdf}>
