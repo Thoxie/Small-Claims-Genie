@@ -1389,7 +1389,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <button
                 key={step.id}
                 onClick={() => setWizardIndex(i)}
-                className="flex flex-col items-center gap-1.5 group flex-1 min-w-0 max-w-[90px]"
+                className="flex flex-col items-center gap-1.5 group flex-1 min-w-0"
                 title={step.number}
               >
                 <div className={`w-4 h-4 rounded-full transition-all shrink-0 ${
@@ -1398,7 +1398,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <span className={`text-[11px] font-bold leading-none ${i === wizardIndex ? "text-foreground" : "text-muted-foreground/60"}`}>
                   {i + 1}. {step.number}
                 </span>
-                <span className={`text-[10px] leading-none truncate w-full text-center px-0.5 ${i === wizardIndex ? "text-foreground/70" : "text-muted-foreground/40"}`}>
+                <span className={`text-[10px] leading-tight whitespace-nowrap text-center px-0.5 ${i === wizardIndex ? "text-foreground/70" : "text-muted-foreground/40"}`}>
                   {step.shortLabel}
                 </span>
               </button>
