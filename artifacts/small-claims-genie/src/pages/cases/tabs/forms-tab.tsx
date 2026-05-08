@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 import { SC104PdfModal, sc104FieldsToBody } from "./SC104PdfModal";
@@ -489,9 +488,6 @@ function _getRecommendedForms(c: ExtendedCase): Array<{ id: string; number: stri
   forms.push({ id: "mc030", number: "MC-030", required: true,
     reason: "Sworn declaration filed at the same time as SC-100." });
 
-  forms.push({ id: "sc112a", number: "SC-112A", required: true,
-    reason: "Proves the defendant was properly served with your court papers." });
-
   forms.push({ id: "fw001", number: "FW-001", required: false,
     reason: "Optional — request to waive filing fees if you qualify financially." });
 
@@ -560,7 +556,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [buildingPacket, setBuildingPacket] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [wizardIndex, setWizardIndex] = useState(0);
-  const [sc112aNotifyMethod, setSc112aNotifyMethod] = useState<string>("");
 
   // ── Documents for exhibit selector ────────────────────────────────────────
   const [documents, setDocuments] = useState<DocumentWithMeta[]>([]);
@@ -1039,7 +1034,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "mc030",  number: "MC-030",  shortLabel: "Declaration",         status: "required" as StepStatus },
       { id: "sc103",  number: "SC-103",  shortLabel: "Fictitious Name",    status: (showSC103 ? "required" : "skipped") as StepStatus },
       { id: "sc100a", number: "SC-100A", shortLabel: "Other Parties",      status: "required" as StepStatus },
-      { id: "sc112a", number: "SC-112A", shortLabel: "Proof of Service",   status: "required" as StepStatus },
       { id: "sc104",  number: "SC-104",  shortLabel: "Personal Service",   status: "optional" as StepStatus },
       { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
       { id: "sc150",  number: "SC-150",  shortLabel: "Postpone Trial",     status: "optional" as StepStatus },
@@ -1204,63 +1198,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 onClick={() => { if (!mc030Text.trim()) { toast({ title: "Declaration required", description: "Please write or generate your declaration text first.", variant: "destructive" }); return; } setMc030SigModalOpen(true); }}
                 disabled={buildingPacket}>
                 <PenLine className="h-3 w-3" />Sign &amp; Download
-              </Button>
-            </div>
-          </div>
-        );
-
-      case "sc112a":
-        return (
-          <div className="space-y-4">
-            {/* ── Notification method ────────────────────────────────────── */}
-            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
-              <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
-              <RadioGroup value={sc112aNotifyMethod} onValueChange={setSc112aNotifyMethod} className="gap-0">
-
-                {/* Option 1 — Certified Mail by Clerk */}
-                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                  <RadioGroupItem value="certified_mail" id="sc112a-notify-mail" className="mt-0.5 shrink-0" />
-                  <p className="text-xs text-foreground leading-relaxed">
-                    <span className="font-semibold">Certified Mail Service by Court Clerk</span> — Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.
-                  </p>
-                </label>
-
-                {/* Bold heading between option 1 and 2 */}
-                <p className="text-xs font-bold text-foreground px-3 pt-1 pb-0.5">
-                  If the court clerk's service attempt is unsuccessful, you can still choose Adult Service or Process Server Service
-                </p>
-
-                {/* Option 2 — Adult Service */}
-                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                  <RadioGroupItem value="adult_service" id="sc112a-notify-adult" className="mt-0.5 shrink-0" />
-                  <p className="text-xs text-foreground leading-relaxed">
-                    <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
-                  </p>
-                </label>
-
-                {/* Option 3 — Process Server Service */}
-                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "process_server_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                  <RadioGroupItem value="process_server_service" id="sc112a-notify-ps" className="mt-0.5 shrink-0" />
-                  <p className="text-xs text-foreground leading-relaxed">
-                    <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
-                  </p>
-                </label>
-
-              </RadioGroup>
-            </div>
-
-            {!currentCase.caseNumber && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
-                Your case number isn't on file yet — it will be assigned when you file at the courthouse. Write it in on the form after you receive it.
-              </div>
-            )}
-            {commonWarnings}
-            {commonRelated}
-            <div className="flex gap-2 flex-wrap pt-1">
-              <Button size="sm" className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
-                onClick={openSC112A} disabled={downloadingForm === "sc112a"}>
-                {downloadingForm === "sc112a" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}Fill Out &amp; Download SC-112A
               </Button>
             </div>
           </div>
