@@ -292,7 +292,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
             <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
             <div className="relative z-10 flex flex-col items-center gap-2">
               <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
-                <Play className="w-5 h-5 text-white ml-1" fill="white" />
+                <Play className="w-[18px] h-[18px] text-white ml-1" fill="white" />
               </div>
               <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
             </div>
@@ -322,7 +322,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
             <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
-                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                  <Play className="w-3 h-3 text-white ml-0.5" fill="white" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-gray-800">Step 5 Tutorial — AI Genie Case Review</p>
