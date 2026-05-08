@@ -1256,41 +1256,37 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             </div>
 
             {/* ── Section 2: Post-filing notification method ─────────────── */}
-            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">Notify Defendant Immediately after filing with the court</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Choose how you will notify the defendant once the court has processed your filing.</p>
-              </div>
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+              <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
               <RadioGroup value={sc112aNotifyMethod} onValueChange={setSc112aNotifyMethod} className="gap-0">
 
                 {/* Option 1 — Certified Mail by Clerk */}
                 <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                   <RadioGroupItem value="certified_mail" id="sc112a-notify-mail" className="mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">Certified Mail Service by Court Clerk</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.</p>
-                    <p className="text-[11px] text-[#0d6b5e] mt-1.5 leading-relaxed bg-[#0d6b5e]/5 rounded-md px-2 py-1.5">
-                      <span className="font-semibold">Note:</span> If the court clerk's service attempt is unsuccessful, you can still choose Adult Service or Process Server Service.
-                    </p>
-                  </div>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    <span className="font-semibold">Certified Mail Service by Court Clerk</span> — Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.
+                  </p>
                 </label>
+
+                {/* Bold heading between option 1 and 2 */}
+                <p className="text-xs font-bold text-foreground px-3 pt-1 pb-0.5">
+                  If the court clerk's service attempt is unsuccessful, you can still choose Adult Service or Process Server Service
+                </p>
 
                 {/* Option 2 — Adult Service */}
                 <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                   <RadioGroupItem value="adult_service" id="sc112a-notify-adult" className="mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">Service by Adult</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Someone 18 or older, not involved in the case, delivers the court papers to the defendant.</p>
-                  </div>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
+                  </p>
                 </label>
 
                 {/* Option 3 — Process Server Service */}
                 <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "process_server_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                   <RadioGroupItem value="process_server_service" id="sc112a-notify-ps" className="mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">Service by Process Server</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Most reliable option. A professional Process Server handles delivery and proof of service.</p>
-                  </div>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
+                  </p>
                 </label>
 
               </RadioGroup>
