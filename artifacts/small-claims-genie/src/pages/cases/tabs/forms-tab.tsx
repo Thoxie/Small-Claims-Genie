@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Mail, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 import { SC104PdfModal, sc104FieldsToBody } from "./SC104PdfModal";
@@ -559,6 +560,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [buildingPacket, setBuildingPacket] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [wizardIndex, setWizardIndex] = useState(0);
+  const [sc112aInitialMethod, setSc112aInitialMethod] = useState<string>("");
+  const [sc112aNotifyMethod, setSc112aNotifyMethod] = useState<string>("");
 
   // ── Documents for exhibit selector ────────────────────────────────────────
   const [documents, setDocuments] = useState<DocumentWithMeta[]>([]);
@@ -1209,24 +1212,90 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
       case "sc112a":
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              To be completed by the person who mailed the court papers — <strong className="text-foreground">not you</strong>. Fill in the name and address of whoever was served.
+              Choose how you will serve the defendant. The form is filled out differently depending on your selection.
             </p>
-            <div className="rounded-xl border border-border bg-muted/30 p-4">
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 shrink-0 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center mt-0.5">
-                  <Mail className="h-4 w-4 text-[#0d6b5e]" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm mb-1.5">How Service by Mail Works</h4>
-                  <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-                    <p><span className="font-semibold text-foreground">Who mails it:</span> A non-party adult (not you) mails the court papers to the defendant and then completes this form.</p>
-                    <p><span className="font-semibold text-foreground">Timing:</span> Serve the defendant at least 15 days before the hearing (30 days if outside the county).</p>
+
+            {/* ── Section 1: Initial service method ─────────────────────── */}
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">How will you deliver the court papers?</h4>
+              <RadioGroup value={sc112aInitialMethod} onValueChange={setSc112aInitialMethod} className="gap-0">
+
+                {/* Option 1 — Clerk */}
+                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aInitialMethod === "clerk" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                  <RadioGroupItem value="clerk" id="sc112a-clerk" className="mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">Court Papers Delivered by Clerk</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Lowest cost, court handles service, least reliable.</p>
+                    <p className="text-[11px] text-[#0d6b5e] mt-1.5 leading-relaxed bg-[#0d6b5e]/5 rounded-md px-2 py-1.5">
+                      <span className="font-semibold">Note:</span> If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
+                    </p>
                   </div>
-                </div>
-              </div>
+                </label>
+
+                {/* Option 2 — Adult */}
+                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aInitialMethod === "adult" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                  <RadioGroupItem value="adult" id="sc112a-adult" className="mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">Court Papers Delivered by Adult</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Someone 18+ not in the case delivers to defendant.</p>
+                  </div>
+                </label>
+
+                {/* Option 3 — Process Server */}
+                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aInitialMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                  <RadioGroupItem value="process_server" id="sc112a-ps" className="mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">Court Papers Delivered by Process Server</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Most reliable, professional service by licensed Process Server.</p>
+                  </div>
+                </label>
+
+              </RadioGroup>
             </div>
+
+            {/* ── Section 2: Post-filing notification method ─────────────── */}
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">Notify Defendant Immediately after filing with the court</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Choose how you will notify the defendant once the court has processed your filing.</p>
+              </div>
+              <RadioGroup value={sc112aNotifyMethod} onValueChange={setSc112aNotifyMethod} className="gap-0">
+
+                {/* Option 1 — Certified Mail by Clerk */}
+                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                  <RadioGroupItem value="certified_mail" id="sc112a-notify-mail" className="mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">Certified Mail Service by Court Clerk</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.</p>
+                    <p className="text-[11px] text-[#0d6b5e] mt-1.5 leading-relaxed bg-[#0d6b5e]/5 rounded-md px-2 py-1.5">
+                      <span className="font-semibold">Note:</span> If the court clerk's service attempt is unsuccessful, you can still choose Adult Service or Process Server Service.
+                    </p>
+                  </div>
+                </label>
+
+                {/* Option 2 — Adult Service */}
+                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                  <RadioGroupItem value="adult_service" id="sc112a-notify-adult" className="mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">Service by Adult</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Someone 18 or older, not involved in the case, delivers the court papers to the defendant.</p>
+                  </div>
+                </label>
+
+                {/* Option 3 — Process Server Service */}
+                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${sc112aNotifyMethod === "process_server_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                  <RadioGroupItem value="process_server_service" id="sc112a-notify-ps" className="mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">Service by Process Server</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Most reliable option. A professional Process Server handles delivery and proof of service.</p>
+                  </div>
+                </label>
+
+              </RadioGroup>
+            </div>
+
             {!currentCase.caseNumber && (
               <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
