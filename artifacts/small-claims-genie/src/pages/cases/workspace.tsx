@@ -382,7 +382,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 evidenceChecklist={extCase?.evidenceChecklist || []}
                 advisorTrigger={docAdvisorTrigger}
               />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
@@ -410,7 +410,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 autoMessage={chatAutoMessage}
                 onAutoMessageSent={() => setChatAutoMessage(undefined)}
               />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
@@ -427,7 +427,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 caseId={caseId}
                 currentCase={extCase}
               />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
@@ -441,7 +441,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "forms" && (
             <div>
               <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
@@ -455,7 +455,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "prep" && (
             <div>
               <HearingPrepTab caseId={caseId} currentCase={extCase} isDraftMode={false} />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
@@ -472,7 +472,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "deadlines" && (
             <div>
               <DeadlineCalculatorTab caseId={caseId} currentCase={extCase} />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit

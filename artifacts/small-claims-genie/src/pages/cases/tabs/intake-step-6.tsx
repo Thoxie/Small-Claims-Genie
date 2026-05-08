@@ -24,7 +24,7 @@ export function IntakeStep6({ caseId, initialData, onNext, saving, onSaveExit, o
         onSwitchToPrep={() => onNext({})}
         isDraftMode={false}
       />
-      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4">
+      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4">
         <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit({})}>
           <Home className="mr-2 h-4 w-4" />
           Save &amp; Exit
