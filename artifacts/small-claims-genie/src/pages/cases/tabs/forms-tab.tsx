@@ -1034,7 +1034,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     return [
       { id: "sc100",  number: "SC-100",  shortLabel: "Plaintiff's Claim",  status: "required" as StepStatus },
       { id: "mc030",  number: "MC-030",  shortLabel: "Declaration",         status: "required" as StepStatus },
-      { id: "sc112a", number: "SC-112A", shortLabel: "Select Delivery Method Below", status: "required" as StepStatus },
+      { id: "sc112a", number: "Serve Defendant Court Filed Papers", shortLabel: "Choose Delivery Method", status: "required" as StepStatus },
       { id: "sc103",  number: "SC-103",  shortLabel: "Fictitious Name",    status: (showSC103 ? "required" : "skipped") as StepStatus },
       ...(currentCase.hasAdditionalPlaintiff ? [{ id: "sc100a", number: "SC-100A", shortLabel: "Other Parties", status: "required" as StepStatus }] : []),
       { id: "sc104",  number: "SC-104",  shortLabel: "Personal Service",   status: "optional" as StepStatus },
