@@ -1,0 +1,191 @@
+We are close to beta for Small Claims Genie. Replit’s scan showed “zero SAST findings,” but I need a focused pre-beta security audit of the highest-risk areas for this specific app.
+
+Small Claims Genie handles sensitive small-claims legal information, including user case facts, uploaded documents/evidence, generated forms, AI chat/history, user contact information, and possibly payment status. Please review the app for real exploitable risk, not just static code issues.
+
+Focus on these areas in priority order:
+
+1. User data isolation — HIGH RISK
+
+Confirm that one user cannot access another user’s data by changing IDs, URLs, API params, document IDs, case IDs, form IDs, chat IDs, or download links.
+
+Specifically test and review:
+- Case records
+- Uploaded documents
+- Generated forms/PDFs
+- AI chat or case-history records
+- Dashboard data
+- Payment status
+- Any saved user profile data
+
+Every backend query should be scoped to the authenticated user. For example, it should not only fetch by `caseId`; it should verify `caseId` belongs to the current logged-in user.
+
+2. File upload and document security — HIGH RISK
+
+Review all upload, storage, preview, and download logic.
+
+Confirm:
+- Uploaded files are private by default.
+- Users cannot guess or access another user’s file URL.
+- Download links require authentication or expire.
+- File ownership is checked server-side before viewing or downloading.
+- Dangerous file types are blocked or sanitized.
+- File size limits exist.
+- File names cannot cause path traversal or injection issues.
+- Uploaded document text is not logged unnecessarily.
+- Uploaded files are not sent to AI unless the user initiates that workflow.
+
+3. API route authorization — HIGH RISK
+
+Review every backend/API route.
+
+Each protected API route should:
+- Require authentication.
+- Verify ownership of the requested case/document/form/chat/payment record.
+- Validate input.
+- Limit request size.
+- Avoid returning internal fields.
+- Avoid exposing stack traces or secrets.
+- Rate-limit expensive or abuse-prone actions.
+
+Pay special attention to routes for:
+- AI chat
+- Case creation/editing
+- Document upload
+- Document retrieval/download
+- Form/PDF generation
+- Payment status
+- Stripe/payment webhooks
+- Admin/debug functions
+
+4. Secrets and environment variables — HIGH RISK
+
+Check that no sensitive keys are exposed in:
+- GitHub/repository code
+- Frontend/browser bundle
+- Logs
+- Build output
+- Client-side environment variables
+- Error messages
+
+Specifically check for:
+- OpenAI API key
+- Database URL
+- Database service-role/admin key
+- JWT/session secret
+- Stripe secret key
+- Stripe webhook signing secret
+- Storage credentials
+- Email provider credentials
+- Admin credentials
+
+No service-role/admin key should ever be exposed to the frontend.
+
+5. Authentication and protected routes — HIGH RISK
+
+Test all protected pages and routes while logged out and while logged in as another user.
+
+Confirm unauthorized users cannot access:
+- Dashboard
+- Case dashboard
+- Documents page
+- Generated forms
+- Download endpoints
+- Payment-only features
+- Admin pages
+- Saved AI outputs
+- API routes
+
+Also review:
+- Logout behavior
+- Expired session behavior
+- Password reset or magic-link flow
+- Email verification
+- Old links after logout or account changes
+
+6. Database and storage permission rules — HIGH RISK
+
+Review database policies and storage permissions.
+
+Confirm:
+- Tables are not publicly readable unless intentionally public.
+- Storage buckets are private by default.
+- Row-level or equivalent access controls are enforced.
+- Users can only read/write their own cases, documents, forms, and AI history.
+- Direct database/storage access cannot bypass application-level checks.
+- Service-role operations are limited to trusted server-side code only.
+
+7. Payment and webhook security — HIGH RISK
+
+If Stripe or another payment system is used, review the entire payment/access flow.
+
+Confirm:
+- Webhook signatures are validated.
+- Users cannot manually mark themselves as paid.
+- Paid features are checked server-side.
+- Canceled/refunded users lose access where appropriate.
+- Price IDs and plan IDs are validated server-side.
+- The frontend cannot control the final amount, plan, or access level.
+
+8. AI-specific security review — HIGH RISK
+
+Review AI routes, prompts, tool calls, document access, and cost controls.
+
+Test whether a user can prompt the app to:
+- Reveal hidden system prompts or developer instructions.
+- Access another user’s case or documents.
+- Reveal internal logs or database content.
+- Bypass legal disclaimers.
+- Misrepresent the app as a lawyer or law firm.
+- Generate fraudulent, abusive, or improper court filings.
+- Send overly long or repeated requests that create excessive API cost.
+
+Confirm:
+- AI has access only to the current user’s authorized data.
+- AI outputs are framed as legal information/decision support, not legal representation.
+- Rate limits or cost controls exist for AI endpoints.
+- Prompt and document content are not unnecessarily stored in logs.
+
+9. Logging and privacy audit — HIGH RISK
+
+Review server logs, client logs, error logs, AI logs, analytics, and monitoring.
+
+Confirm logs do not unnecessarily contain:
+- User legal facts
+- Uploaded document text
+- Generated court filings
+- Addresses
+- Phone numbers
+- Emails
+- Opposing-party names
+- Payment data
+- API keys
+- Database credentials
+- Session tokens
+
+For beta, logs should be useful for debugging but should not expose sensitive legal content.
+
+10. Admin access controls — HIGH RISK
+
+If any admin tools exist, review them carefully.
+
+Confirm:
+- Admin pages require authentication.
+- Admin status is verified server-side, not only in the frontend.
+- Non-admin users cannot access admin APIs.
+- Admin actions are logged.
+- Admin users cannot casually access sensitive user documents unless necessary.
+- Debug or test admin routes are disabled in production.
+
+Deliverables requested:
+
+Please produce a concise security audit report with:
+
+1. Pass/fail status for each of the 10 areas above.
+2. Specific files, routes, components, or configuration areas reviewed.
+3. Any vulnerabilities or risky patterns found.
+4. Severity for each issue: critical, high, moderate, or low.
+5. Recommended fix for each issue.
+6. Whether the issue blocks beta launch.
+7. A final beta-readiness recommendation.
+
+Please do not only say “SAST is clean.” I need a practical pre-beta security review focused on user-data isolation, document privacy, API authorization, secrets, auth, database/storage rules, payments, AI abuse, logging, and admin controls.
