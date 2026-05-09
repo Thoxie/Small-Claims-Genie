@@ -35,7 +35,7 @@ export default function Landing() {
               Don't lose because you're unprepared.<br />
               Get your money back!
             </h1>
-            <p className="text-base text-primary/65 mb-5 max-w-xl leading-relaxed">
+            <p className="text-lg text-gray-700 mb-5 max-w-xl leading-relaxed">
               Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
             </p>
             <Button asChild size="lg" className="lg:hidden h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg w-full sm:w-auto">
