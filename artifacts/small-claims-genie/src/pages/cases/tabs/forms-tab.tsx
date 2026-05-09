@@ -1425,7 +1425,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
         {/* Card header */}
         {currentStep.id !== "sc104" && (
-        <div className="p-5 border-b flex items-start gap-4">
+        <div className={`p-5 flex items-start gap-4 ${currentStep.id !== "sc112a" ? "border-b" : ""}`}>
           {currentStep.id !== "sc112a" && (
             <div className="rounded-lg p-2.5 shrink-0 bg-primary/10">
               <FileText className="w-5 h-5 text-primary" />
@@ -1459,7 +1459,34 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </p>
             )}
             {currentStep.id === "sc112a" && (
-              <h4 className="text-sm font-bold text-foreground pt-1">Notify Defendant Immediately after filing with the court</h4>
+              <div className="space-y-2 pt-1">
+                <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
+                <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+                  <RadioGroup value={notifyMethod} onValueChange={setNotifyMethod} className="gap-0">
+                    <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                      <RadioGroupItem value="certified_mail" id="notify-mail" className="mt-0.5 shrink-0" />
+                      <p className="text-xs text-foreground leading-relaxed">
+                        <span className="font-semibold">Certified Mail Service by Court Clerk</span> — Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.
+                      </p>
+                    </label>
+                    <p className="text-xs font-bold text-foreground px-3 pb-1">
+                      If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
+                    </p>
+                    <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                      <RadioGroupItem value="adult_service" id="notify-adult" className="mt-0.5 shrink-0" />
+                      <p className="text-xs text-foreground leading-relaxed">
+                        <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
+                      </p>
+                    </label>
+                    <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                      <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
+                      <p className="text-xs text-foreground leading-relaxed">
+                        <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
+                      </p>
+                    </label>
+                  </RadioGroup>
+                </div>
+              </div>
             )}
           </div>
           {/* Navigation — right side of header */}
@@ -1511,9 +1538,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         )}
 
         {/* Card body */}
-        <div className="p-5">
-          {renderStepBody()}
-        </div>
+        {currentStep.id !== "sc112a" && (
+          <div className="p-5">
+            {renderStepBody()}
+          </div>
+        )}
 
       </div>
 
