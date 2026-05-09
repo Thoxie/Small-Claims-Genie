@@ -1346,7 +1346,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={`pt-3 pb-4 md:pb-6 space-y-4 ${currentStep.id === "sc112a" ? "px-1 md:px-2" : "px-4 md:px-6"}`}>
+    <div className={`pt-3 pb-4 md:pb-6 space-y-4 ${currentStep.id === "sc112a" ? "-mx-4 px-1" : "px-4 md:px-6"}`}>
 
       {isDraftMode && <DraftModeBanner />}
 
