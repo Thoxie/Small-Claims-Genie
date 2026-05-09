@@ -56,7 +56,7 @@ export function WorkspaceLayout({
           {/* ── Numbered stepper ── */}
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
             {/* min-w-max always prevents Firefox from collapsing below content size */}
-            <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-1.5 min-w-max">
+            <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-1 min-w-max">
               {WORKSPACE_STEPS.map((step, idx) => {
                 const isActive = step.n === currentOuterStep;
                 const isDone = completedSteps
@@ -68,8 +68,8 @@ export function WorkspaceLayout({
                   <Fragment key={step.n}>
                     {/* Dash separator */}
                     {idx > 0 && (
-                      <span className={`text-sm font-bold mx-0.5 shrink-0 select-none ${isDone ? "text-[#14b8a6]" : "text-gray-300"}`}>
-                        —
+                      <span className={`text-xs font-bold mx-px shrink-0 select-none ${isDone ? "text-[#14b8a6]" : "text-gray-300"}`}>
+                        –
                       </span>
                     )}
 
@@ -77,7 +77,7 @@ export function WorkspaceLayout({
                     <button
                       onClick={() => onStepClick(step.n)}
                       className={[
-                        "flex items-center gap-1 shrink-0 px-1.5 py-2 rounded-lg transition-all text-left border-2",
+                        "flex items-center gap-0.5 shrink-0 px-1 py-1.5 rounded-lg transition-all text-left border-2",
                         isActive
                           ? "bg-[#14b8a6] text-white border-black shadow-md"
                           : isDone
@@ -100,7 +100,7 @@ export function WorkspaceLayout({
                       </span>
 
                       {/* Label — no break-words; whitespace-pre-line only for \n splits */}
-                      <div className="hidden sm:flex flex-col items-start w-[52px] md:w-[56px]">
+                      <div className="hidden sm:flex flex-col items-start w-[44px] md:w-[48px]">
                         {Icon && <Icon className={`h-3 w-3 mb-0.5 shrink-0 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
                         <span className="text-[10px] md:text-[11px] font-semibold leading-tight whitespace-pre-line w-full">
                           {step.label}
