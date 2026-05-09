@@ -1432,7 +1432,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           <div className="p-4">
             {/* Top row: heading left, nav buttons right — same baseline */}
             <div className="flex items-center justify-between gap-4 mb-3">
-              <h4 className="text-sm font-bold text-foreground leading-snug">Notify Defendant Immediately after filing with the court</h4>
+              <h4 className="text-base font-bold text-foreground leading-snug">Notify Defendant Immediately after filing with the court</h4>
               <div className="flex items-center gap-1 shrink-0">
                 <Button
                   variant="outline"
