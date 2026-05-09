@@ -1,7 +1,5 @@
 import { Router, type IRouter } from "express";
 import { requireAuth } from "../middlewares/auth";
-import path from "path";
-import fs from "fs";
 import healthRouter from "./health";
 import countiesRouter from "./counties";
 import helpChatRouter from "./help-chat";
@@ -20,15 +18,6 @@ import backupDownloadRouter from "./backup-download";
 import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
-
-// Temporary: serve the security review doc as a direct download
-router.get("/download-review", (_req, res) => {
-  const filePath = path.resolve(process.cwd(), "..", "..", "small-claims-genie-security-review.docx");
-  if (!fs.existsSync(filePath)) { res.status(404).json({ error: "File not found" }); return; }
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-  res.setHeader("Content-Disposition", 'attachment; filename="SCG-Security-Assessment.docx"');
-  res.sendFile(filePath);
-});
 
 // Public routes — no auth required
 router.use(healthRouter);
