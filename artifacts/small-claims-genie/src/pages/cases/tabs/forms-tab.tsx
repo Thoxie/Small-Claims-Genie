@@ -1209,7 +1209,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         return (
           <div className="space-y-4">
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
-              <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
               <RadioGroup value={notifyMethod} onValueChange={setNotifyMethod} className="gap-0">
 
                 {/* Radio 1 — Certified Mail by Clerk */}
@@ -1458,6 +1457,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <span className="font-normal text-sm text-muted-foreground"> — {catalogCurrentForm.shortDesc}</span>
                 )}
               </p>
+            )}
+            {currentStep.id === "sc112a" && (
+              <h4 className="text-sm font-bold text-foreground pt-1">Notify Defendant Immediately after filing with the court</h4>
             )}
           </div>
           {/* Navigation — right side of header */}
