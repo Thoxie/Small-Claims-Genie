@@ -1430,42 +1430,44 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         {/* ── Process Server card — vertical layout so radio group gets full width ── */}
         {currentStep.id === "sc112a" && (
           <div className="p-4">
-            {/* Nav row — pinned to top right */}
-            <div className="flex items-center justify-end gap-1 mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setGuideDialogFormId(currentStep.id)}
-                className="h-7 text-xs gap-1 px-2"
-                title="How to fill out this form"
-              >
-                <Info className="w-3.5 h-3.5" />How to Fill Video
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setWizardIndex(prev => Math.max(prev - 1, 0))}
-                disabled={wizardIndex === 0}
-                className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
-              >
-                <ChevronLeft className="w-4 h-4 text-foreground" />
-              </Button>
-              <span className="text-sm text-foreground font-semibold px-1.5 tabular-nums">
-                {wizardIndex + 1} / {wizardSteps.length}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
-                disabled={wizardIndex === wizardSteps.length - 1}
-                className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
-              >
-                <ChevronRight className="w-4 h-4 text-foreground" />
-              </Button>
+            {/* Top row: heading left, nav buttons right — same baseline */}
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <h4 className="text-sm font-bold text-foreground leading-snug">Notify Defendant Immediately after filing with the court</h4>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setGuideDialogFormId(currentStep.id)}
+                  className="h-7 text-xs gap-1 px-2"
+                  title="How to fill out this form"
+                >
+                  <Info className="w-3.5 h-3.5" />How to Fill Video
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWizardIndex(prev => Math.max(prev - 1, 0))}
+                  disabled={wizardIndex === 0}
+                  className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
+                >
+                  <ChevronLeft className="w-4 h-4 text-foreground" />
+                </Button>
+                <span className="text-sm text-foreground font-semibold px-1.5 tabular-nums">
+                  {wizardIndex + 1} / {wizardSteps.length}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
+                  disabled={wizardIndex === wizardSteps.length - 1}
+                  className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
+                >
+                  <ChevronRight className="w-4 h-4 text-foreground" />
+                </Button>
+              </div>
             </div>
-            {/* Heading + radio group — full card width */}
+            {/* Radio group + deadline warning — full card width */}
             <div className="space-y-3">
-              <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
                 <RadioGroup value={notifyMethod} onValueChange={setNotifyMethod} className="gap-0">
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
