@@ -1471,25 +1471,33 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                     <RadioGroupItem value="certified_mail" id="notify-mail" className="mt-0.5 shrink-0" />
                     <p className="text-xs text-foreground leading-relaxed">
-                      <span className="font-semibold">Certified Mail Service by Court Clerk</span> — Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.
+                      <span className="font-semibold">Certified Mail by Court Clerk</span> — Lowest-cost, least reliable option. Ask the clerk for certified-mail service when you file at court. The clerk handles the mailing, so no extra service papers are needed. Service only counts if the defendant signs for delivery. If the defendant refuses, ignores, or does not sign for the mail, service fails and the deadline does not restart.
                     </p>
                   </label>
                   <p className="text-xs font-bold text-foreground px-3 pb-1">
-                    If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
+                    If Service by Clerk is refused by defendant, you can still follow-up and implement these services for reliability.
                   </p>
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                     <RadioGroupItem value="adult_service" id="notify-adult" className="mt-0.5 shrink-0" />
                     <p className="text-xs text-foreground leading-relaxed">
-                      <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
+                      <span className="font-semibold">Service by Adult</span> — Reliable low-cost option. Someone 18 or older, who is not part of the case, hands the papers to the defendant. That person must complete Proof of Service (SC-104 – Proof of Service) generated from this system. You file it with the court as soon as possible and bring a stamped copy to your hearing as proof.
                     </p>
                   </label>
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                     <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
                     <p className="text-xs text-foreground leading-relaxed">
-                      <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
+                      <span className="font-semibold">Service by Process Server</span> — Best overall option. A professional Process Server finds and serves the defendant correctly. This usually costs more, but it is the most reliable choice if the defendant may avoid service or if your hearing date is coming up. The process server will file the Proof of Service with the court. Make sure you get a stamped copy from the Process Server to bring to court.
                     </p>
                   </label>
                 </RadioGroup>
+              </div>
+
+              {/* Deadline Warning */}
+              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
+                <p className="text-xs font-bold text-amber-800 mb-1">Deadline Warning</p>
+                <p className="text-xs text-amber-900 leading-relaxed">
+                  The defendant must be served before the court deadline — usually <span className="font-semibold">15 days before the hearing</span> if the defendant is in the same county, or <span className="font-semibold">20 days before the hearing</span> if outside the county. If service fails, act quickly. You may need to serve another way. If you are running out of time, file <span className="font-semibold">SC-150 Request to Postpone Trial</span> below. If the court gives you a new hearing date, the service deadline is based on that new date.
+                </p>
               </div>
             </div>
           </div>

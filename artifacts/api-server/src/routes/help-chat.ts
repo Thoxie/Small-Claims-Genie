@@ -109,11 +109,11 @@ Check this if you want court mail sent to a P.O. Box or different address than y
 A prior demand is any time you formally asked the defendant to pay or fix the problem before going to court. This includes: a written letter or email asking for payment, a text message demanding repayment, a verbal request documented in writing, or a formal demand letter. Courts expect you to have tried to resolve the issue first.
 
 **"What is 'service of process' and how do I do it?"**
-After filing, the court clerk will give you a hearing date. You must then formally notify the defendant — this is called "service." Options in California small claims:
-- **Certified mail** — Sheriff or registered process server sends it (most common)
-- **Substituted service** — leave documents with someone at defendant's home or workplace, then mail a copy
-- **Personal service** — hand-deliver to defendant directly
-Service MUST be completed at least 15 days before the hearing if the defendant is in the same county, or 20 days if in a different county.
+After filing, the court clerk will give you a hearing date. You must then formally notify the defendant — this is called "service." The app walks you through this in Step 6 (Create Court Forms) via the Process Server card. Three options:
+- **Certified Mail by Court Clerk** — Lowest-cost, least reliable. Ask the clerk for certified-mail service when you file. Service only counts if the defendant signs for delivery. If the defendant refuses or ignores the mail, service fails and the deadline does not restart.
+- **Service by Adult** — Reliable low-cost option. Someone 18 or older who is not part of the case hand-delivers the papers to the defendant. That person must complete SC-104 (Proof of Service), which you generate in the app and file with the court.
+- **Service by Process Server** — Best overall. A professional finds and serves the defendant correctly. Most reliable if the defendant may avoid service or if your hearing is coming up. The process server files proof of service; get a stamped copy to bring to court.
+Service MUST be completed at least 15 days before the hearing if the defendant is in the same county, or 20 days if in a different county. If you are running out of time, file SC-150 (Request to Postpone Trial) from the forms library.
 
 **"What is the filing fee / how much does it cost to file?"**
 California small claims filing fees (2026): $30–$75 depending on claim amount. If you cannot afford the fee, file FW-001 (Fee Waiver Application) at the courthouse.
@@ -174,7 +174,7 @@ All California small claims forms pre-filled from your intake data. Two sections
 ### Phase Cards (stage-specific forms):
 - **SC-100** — Plaintiff's Claim and ORDER to Go to Small Claims Court. The MAIN filing form. File at the courthouse to officially start your case.
 - **SC-103** — Fictitious Business Name Declaration. Required if the defendant uses a DBA ("doing business as") name. File alongside SC-100.
-- **SC-112A** — Proof of Service by Mail. Certifies you mailed court papers to the defendant. Required after filing.
+- **Process Server card** — Select how to notify the defendant after filing: Certified Mail by Court Clerk, Service by Adult (requires SC-104), or Service by Process Server. Defendant must be served 15 days before hearing (same county) or 20 days (different county).
 - **MC-030** — Declaration Attachment. Adds extra facts that don't fit on the main form. Available with or without exhibit attachments.
 - **FW-001** — Application for Waiver of Court Fees. If you qualify financially, the court may waive filing fees.
 
@@ -192,8 +192,8 @@ All forms are pre-filled. You review in a modal, edit if needed, and download as
 2. **Go to your county courthouse's small claims clerk window** (not the main clerk — look for the small claims division specifically)
 3. **Pay the filing fee** ($30–$75 depending on claim amount). Bring cash or check — some courthouses don't take credit cards.
 4. **The clerk stamps your SC-100 and assigns a hearing date** — write this down immediately
-5. **Serve the defendant** — you must notify them of the lawsuit using certified mail or a process server. This must be done at least 15 days before the hearing (20 days if the defendant is in a different county).
-6. **File proof of service (SC-112A)** — after the defendant is served, return to the courthouse and file SC-112A to confirm service was completed
+5. **Serve the defendant** — notify them of the lawsuit using the method you chose on the Process Server card in Step 6: Certified Mail by Court Clerk, Service by Adult (file SC-104 Proof of Service), or Service by Process Server. Must be done at least 15 days before the hearing (20 days if defendant is in a different county). If running out of time, file SC-150 to postpone.
+6. **File proof of service** — after the defendant is served, file the applicable proof of service form with the courthouse to confirm service was completed
 7. **Gather your evidence** — organize everything you'll bring to the hearing (receipts, contracts, photos, texts, emails, repair estimates)
 8. **Use Hearing Prep** — run through the Mock Trial and build your Court-Ready Statement before hearing day
 
