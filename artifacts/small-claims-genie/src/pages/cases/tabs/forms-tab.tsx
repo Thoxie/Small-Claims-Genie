@@ -1441,7 +1441,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
+              {currentStep.id !== "sc112a" && (
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
+              )}
               {currentStep.id !== "sc112a" && (
                 <Badge variant={currentStep.status === "optional" ? "outline" : "default"} className="text-xs">
                   {currentStep.status === "optional" ? "Optional" : "Required"}
@@ -1456,12 +1458,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </span>
               )}
             </div>
-            <p className="text-base font-bold mt-1.5 leading-snug text-foreground">
-              {catalogCurrentForm?.name ?? currentStep.shortLabel}
-              {catalogCurrentForm?.shortDesc && (
-                <span className="font-normal text-sm text-muted-foreground"> — {catalogCurrentForm.shortDesc}</span>
-              )}
-            </p>
+            {currentStep.id !== "sc112a" && (
+              <p className="text-base font-bold mt-1.5 leading-snug text-foreground">
+                {catalogCurrentForm?.name ?? currentStep.shortLabel}
+                {catalogCurrentForm?.shortDesc && (
+                  <span className="font-normal text-sm text-muted-foreground"> — {catalogCurrentForm.shortDesc}</span>
+                )}
+              </p>
+            )}
           </div>
           {/* Navigation — right side of header */}
           <div className="shrink-0 flex flex-col items-end gap-2">
