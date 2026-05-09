@@ -30,6 +30,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-white text-foreground">
+      {/* ── Announcement bar ── */}
+      <div className="w-full bg-amber-50 border-b border-amber-100 py-1.5 text-center">
+        <p className="text-[13px] font-medium text-amber-800 tracking-wide">
+          California Small Claims Now&nbsp;—&nbsp;49 States Coming Soon
+        </p>
+      </div>
+
       <header className="sticky top-0 z-40 w-full bg-white shadow-sm" style={{ borderBottom: "2px solid #ddf6f3" }}>
 
         {/* ── Main header row ── */}
