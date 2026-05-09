@@ -1346,7 +1346,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={`pt-3 pb-4 md:pb-6 space-y-4 ${currentStep.id === "sc112a" ? "-mx-4 px-1" : "px-4 md:px-6"}`}>
+    <div className="pt-3 pb-4 md:pb-6 space-y-4 px-4 md:px-6">
 
       {isDraftMode && <DraftModeBanner />}
 
@@ -1425,22 +1425,88 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
         {/* Card header */}
         {currentStep.id !== "sc104" && (
-        <div className={`p-5 flex items-start gap-4 ${currentStep.id !== "sc112a" ? "border-b" : ""}`}>
-          {currentStep.id !== "sc112a" && (
-            <div className="rounded-lg p-2.5 shrink-0 bg-primary/10">
-              <FileText className="w-5 h-5 text-primary" />
+        <>
+
+        {/* ── Process Server card — vertical layout so radio group gets full width ── */}
+        {currentStep.id === "sc112a" && (
+          <div className="p-4">
+            {/* Nav row — pinned to top right */}
+            <div className="flex items-center justify-end gap-1 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGuideDialogFormId(currentStep.id)}
+                className="h-7 text-xs gap-1 px-2"
+                title="How to fill out this form"
+              >
+                <Info className="w-3.5 h-3.5" />How to Fill Video
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWizardIndex(prev => Math.max(prev - 1, 0))}
+                disabled={wizardIndex === 0}
+                className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
+              >
+                <ChevronLeft className="w-4 h-4 text-foreground" />
+              </Button>
+              <span className="text-sm text-foreground font-semibold px-1.5 tabular-nums">
+                {wizardIndex + 1} / {wizardSteps.length}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWizardIndex(prev => Math.min(prev + 1, wizardSteps.length - 1))}
+                disabled={wizardIndex === wizardSteps.length - 1}
+                className="h-9 w-9 p-0 border-2 border-foreground/30 text-foreground hover:bg-foreground/10 disabled:opacity-30"
+              >
+                <ChevronRight className="w-4 h-4 text-foreground" />
+              </Button>
             </div>
-          )}
+            {/* Heading + radio group — full card width */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
+              <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+                <RadioGroup value={notifyMethod} onValueChange={setNotifyMethod} className="gap-0">
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                    <RadioGroupItem value="certified_mail" id="notify-mail" className="mt-0.5 shrink-0" />
+                    <p className="text-xs text-foreground leading-relaxed">
+                      <span className="font-semibold">Certified Mail Service by Court Clerk</span> — Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.
+                    </p>
+                  </label>
+                  <p className="text-xs font-bold text-foreground px-3 pb-1">
+                    If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
+                  </p>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                    <RadioGroupItem value="adult_service" id="notify-adult" className="mt-0.5 shrink-0" />
+                    <p className="text-xs text-foreground leading-relaxed">
+                      <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
+                    </p>
+                  </label>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                    <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
+                    <p className="text-xs text-foreground leading-relaxed">
+                      <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
+                    </p>
+                  </label>
+                </RadioGroup>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Standard card header — horizontal layout for all other forms ── */}
+        {currentStep.id !== "sc112a" && (
+        <div className="p-5 flex items-start gap-4 border-b">
+          <div className="rounded-lg p-2.5 shrink-0 bg-primary/10">
+            <FileText className="w-5 h-5 text-primary" />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              {currentStep.id !== "sc112a" && (
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
-              )}
-              {currentStep.id !== "sc112a" && (
-                <Badge variant={currentStep.status === "optional" ? "outline" : "default"} className="text-xs">
-                  {currentStep.status === "optional" ? "Optional" : "Required"}
-                </Badge>
-              )}
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
+              <Badge variant={currentStep.status === "optional" ? "outline" : "default"} className="text-xs">
+                {currentStep.status === "optional" ? "Optional" : "Required"}
+              </Badge>
               {currentStep.id === "sc103" && isBusinessCase && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-medium">Business cases only</span>
               )}
@@ -1450,46 +1516,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </span>
               )}
             </div>
-            {currentStep.id !== "sc112a" && (
-              <p className="text-base font-bold mt-1.5 leading-snug text-foreground">
-                {catalogCurrentForm?.name ?? currentStep.shortLabel}
-                {catalogCurrentForm?.shortDesc && (
-                  <span className="font-normal text-sm text-muted-foreground"> — {catalogCurrentForm.shortDesc}</span>
-                )}
-              </p>
-            )}
-            {currentStep.id === "sc112a" && (
-              <div className="space-y-2 pt-1">
-                <h4 className="text-sm font-bold text-foreground">Notify Defendant Immediately after filing with the court</h4>
-                <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
-                  <RadioGroup value={notifyMethod} onValueChange={setNotifyMethod} className="gap-0">
-                    <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                      <RadioGroupItem value="certified_mail" id="notify-mail" className="mt-0.5 shrink-0" />
-                      <p className="text-xs text-foreground leading-relaxed">
-                        <span className="font-semibold">Certified Mail Service by Court Clerk</span> — Lowest-cost option. The court attempts delivery, but it may be slower or less reliable.
-                      </p>
-                    </label>
-                    <p className="text-xs font-bold text-foreground px-3 pb-1">
-                      If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
-                    </p>
-                    <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                      <RadioGroupItem value="adult_service" id="notify-adult" className="mt-0.5 shrink-0" />
-                      <p className="text-xs text-foreground leading-relaxed">
-                        <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
-                      </p>
-                    </label>
-                    <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                      <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
-                      <p className="text-xs text-foreground leading-relaxed">
-                        <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
-                      </p>
-                    </label>
-                  </RadioGroup>
-                </div>
-              </div>
-            )}
+            <p className="text-base font-bold mt-1.5 leading-snug text-foreground">
+              {catalogCurrentForm?.name ?? currentStep.shortLabel}
+              {catalogCurrentForm?.shortDesc && (
+                <span className="font-normal text-sm text-muted-foreground"> — {catalogCurrentForm.shortDesc}</span>
+              )}
+            </p>
           </div>
-          {/* Navigation — right side of header */}
+          {/* Navigation — right side */}
           <div className="shrink-0 flex flex-col items-end gap-2">
             <div className="flex items-center gap-1">
               <Button
@@ -1535,6 +1569,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             )}
           </div>
         </div>
+        )}
+
+        </>
         )}
 
         {/* Card body */}
