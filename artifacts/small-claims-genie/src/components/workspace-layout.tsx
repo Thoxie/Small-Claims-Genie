@@ -77,7 +77,7 @@ export function WorkspaceLayout({
                     <button
                       onClick={() => onStepClick(step.n)}
                       className={[
-                        "flex items-center gap-0.5 shrink-0 px-1 py-1.5 rounded-lg transition-all text-left border-2",
+                        "flex items-center gap-1 shrink-0 px-1.5 py-2 rounded-lg transition-all text-left border-2",
                         isActive
                           ? "bg-[#14b8a6] text-white border-black shadow-md"
                           : isDone
@@ -100,7 +100,7 @@ export function WorkspaceLayout({
                       </span>
 
                       {/* Label — no break-words; whitespace-pre-line only for \n splits */}
-                      <div className="hidden sm:flex flex-col items-start w-[44px] md:w-[48px]">
+                      <div className="hidden sm:flex flex-col items-start w-[50px] md:w-[54px]">
                         {Icon && <Icon className={`h-3 w-3 mb-0.5 shrink-0 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
                         <span className="text-[10px] md:text-[11px] font-semibold leading-tight whitespace-pre-line w-full">
                           {step.label}
