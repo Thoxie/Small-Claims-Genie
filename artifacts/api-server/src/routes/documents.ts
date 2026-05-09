@@ -4,7 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { casesTable, documentsTable } from "@workspace/db";
 import { getUserId, getOwnedCase } from "../lib/owned-case";
-import { checkAiRateLimit } from "../lib/rate-limiter";
+import { checkAiRateLimit, checkWriteRateLimit } from "../lib/rate-limiter";
 import multer from "multer";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import mammoth from "mammoth";
@@ -120,6 +120,11 @@ router.get("/cases/:id/documents/:docId/file", async (req, res): Promise<void> =
 
 router.post("/cases/:id/documents", upload.single("file"), async (req, res): Promise<void> => {
   const userId = getUserId(req);
+  const rateCheck = await checkWriteRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
+    return;
+  }
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }

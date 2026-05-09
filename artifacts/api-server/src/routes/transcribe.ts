@@ -1,6 +1,8 @@
 import { Router, type IRouter } from "express";
 import multer from "multer";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { checkWriteRateLimit } from "../lib/rate-limiter";
+import { getUserId } from "../lib/owned-case";
 
 const router: IRouter = Router();
 
@@ -33,6 +35,12 @@ const audioUpload = multer({
 });
 
 router.post("/transcribe", audioUpload.single("audio"), async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rateCheck = await checkWriteRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
+    return;
+  }
   if (!req.file) {
     res.status(400).json({ error: "No audio file provided" });
     return;

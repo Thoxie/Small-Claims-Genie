@@ -10,7 +10,7 @@ import {
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { chatMessagesTable } from "@workspace/db";
 import { documentsTable } from "@workspace/db";
-import { checkAiRateLimit } from "../lib/rate-limiter";
+import { checkAiRateLimit, checkWriteRateLimit } from "../lib/rate-limiter";
 import { getUserId } from "../lib/owned-case";
 import { buildCaseContext } from "../lib/case-context";
 
@@ -86,6 +86,11 @@ router.get("/cases/stats", async (req, res): Promise<void> => {
 // Create a new case owned by the current user
 router.post("/cases", async (req, res): Promise<void> => {
   const userId = getUserId(req);
+  const rateCheck = await checkWriteRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
+    return;
+  }
   const parsed = CreateCaseBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

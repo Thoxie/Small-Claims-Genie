@@ -25,6 +25,7 @@ import SC100Generator from "@/pages/sc100-generator";
 import Resume from "@/pages/resume";
 import Pricing from "@/pages/pricing";
 import Download from "@/pages/download";
+import AccountPage from "@/pages/account";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 
@@ -217,6 +218,9 @@ function Router() {
               </Route>
               <Route path="/sc100">
                 <RequireAuth><SC100Generator /></RequireAuth>
+              </Route>
+              <Route path="/account">
+                <RequireAuth><AccountPage /></RequireAuth>
               </Route>
 
               <Route component={NotFound} />

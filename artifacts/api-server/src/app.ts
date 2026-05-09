@@ -66,14 +66,19 @@ if (process.env.NODE_ENV !== "production") {
   app.use("/form-assets", express.static(path.join(__dirname, "..", "assets")));
 }
 
-// Global error handler — catches multer errors, validation errors, and anything else
+// Global error handler — catches multer errors, validation errors, and anything else.
+// In production, 5xx details are never sent to the client — only logged server-side.
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   const message = err instanceof Error ? err.message : "Internal server error";
   const status = (err as { status?: number; statusCode?: number })?.status
     ?? (err as { statusCode?: number })?.statusCode
     ?? 500;
   logger.error({ err }, message);
-  res.status(status).json({ error: message });
+  const clientMessage =
+    status >= 500 && process.env.NODE_ENV === "production"
+      ? "Internal server error"
+      : message;
+  res.status(status).json({ error: clientMessage });
 });
 
 export default app;

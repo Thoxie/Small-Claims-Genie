@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 
 const MAX_AI_CALLS_PER_HOUR = 30;
 const MAX_HELP_CALLS_PER_HOUR = 10;
+const MAX_WRITE_OPS_PER_HOUR = 60;
 const WINDOW_MS = 3_600_000;
 
 async function checkRateLimit(
@@ -43,4 +44,12 @@ export async function checkHelpChatRateLimit(
   ip: string
 ): Promise<{ allowed: boolean; retryAfterSec?: number }> {
   return checkRateLimit(`ip:${ip}`, MAX_HELP_CALLS_PER_HOUR);
+}
+
+// General write-operation limiter — applied to case creation, document uploads,
+// and voice transcription to prevent scripted abuse and runaway storage costs.
+export async function checkWriteRateLimit(
+  userId: string
+): Promise<{ allowed: boolean; retryAfterSec?: number }> {
+  return checkRateLimit(`write:${userId}`, MAX_WRITE_OPS_PER_HOUR);
 }

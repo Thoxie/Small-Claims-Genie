@@ -146,6 +146,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
               >
                 Terms of Service
               </Link>
+              <Link
+                href="/account"
+                className="text-xs text-primary/50 hover:text-primary underline underline-offset-2 transition-colors"
+              >
+                Privacy / Delete Data
+              </Link>
             </div>
           </div>
         </div>

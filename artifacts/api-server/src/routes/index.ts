@@ -16,6 +16,7 @@ import hearingPrepRouter from "./hearing-prep";
 import storageRouter from "./storage";
 import backupDownloadRouter from "./backup-download";
 import stripeRouter from "./stripe";
+import accountRouter from "./account";
 
 const router: IRouter = Router();
 
@@ -38,6 +39,7 @@ router.use(sc100WordRouter);
 
 // Protected routes — Clerk JWT required on every request
 router.use(requireAuth);
+router.use(accountRouter);
 router.use(casesRouter);
 router.use(documentsRouter);
 router.use(chatRouter);
