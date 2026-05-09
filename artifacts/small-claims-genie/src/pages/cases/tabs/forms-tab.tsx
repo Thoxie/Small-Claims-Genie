@@ -1442,9 +1442,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
-              <Badge variant={currentStep.status === "optional" ? "outline" : "default"} className="text-xs">
-                {currentStep.status === "optional" ? "Optional" : "Required"}
-              </Badge>
+              {currentStep.id !== "sc112a" && (
+                <Badge variant={currentStep.status === "optional" ? "outline" : "default"} className="text-xs">
+                  {currentStep.status === "optional" ? "Optional" : "Required"}
+                </Badge>
+              )}
               {currentStep.id === "sc103" && isBusinessCase && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-medium">Business cases only</span>
               )}
