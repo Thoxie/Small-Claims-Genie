@@ -4,9 +4,32 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
 
+// Whisper-supported audio formats. Include video/webm and video/mp4 because
+// some browsers label audio-only MediaRecorder output with a video/* MIME type.
+const ALLOWED_AUDIO_MIMES = new Set([
+  "audio/webm",
+  "audio/mp4",
+  "audio/ogg",
+  "audio/wav",
+  "audio/mpeg",
+  "audio/aac",
+  "audio/x-m4a",
+  "audio/m4a",
+  "audio/flac",
+  "video/webm",
+  "video/mp4",
+]);
+
 const audioUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB — ample for short voice recordings
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_AUDIO_MIMES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Unsupported audio type "${file.mimetype}". Allowed: webm, mp4, ogg, wav, mp3, aac, m4a.`));
+    }
+  },
 });
 
 router.post("/transcribe", audioUpload.single("audio"), async (req, res): Promise<void> => {
@@ -15,8 +38,15 @@ router.post("/transcribe", audioUpload.single("audio"), async (req, res): Promis
     return;
   }
 
-  const mimeType = req.file.mimetype || "audio/webm";
-  const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("aac") ? "aac" : "webm";
+  const mimeType = req.file.mimetype;
+  const ext =
+    mimeType.includes("mp4") || mimeType.includes("m4a") ? "mp4"
+    : mimeType.includes("aac")  ? "aac"
+    : mimeType.includes("ogg")  ? "ogg"
+    : mimeType.includes("wav")  ? "wav"
+    : mimeType.includes("mpeg") ? "mp3"
+    : mimeType.includes("flac") ? "flac"
+    : "webm";
 
   const audioFile = new File([new Uint8Array(req.file.buffer)], `recording.${ext}`, { type: mimeType });
 
