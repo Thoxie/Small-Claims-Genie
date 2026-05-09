@@ -1526,7 +1526,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </span>
               )}
             </div>
-            <p className="text-base font-bold mt-1.5 leading-snug text-foreground">
+            <p className="text-base font-bold mt-1.5 leading-snug text-foreground truncate">
               {catalogCurrentForm?.name ?? currentStep.shortLabel}
               {catalogCurrentForm?.shortDesc && (
                 <span className="font-normal text-sm text-muted-foreground"> — {catalogCurrentForm.shortDesc}</span>
