@@ -1434,9 +1434,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         {/* Card header */}
         {currentStep.id !== "sc104" && (
         <div className="p-5 border-b flex items-start gap-4">
-          <div className="rounded-lg p-2.5 shrink-0 bg-primary/10">
-            <FileText className="w-5 h-5 text-primary" />
-          </div>
+          {currentStep.id !== "sc112a" && (
+            <div className="rounded-lg p-2.5 shrink-0 bg-primary/10">
+              <FileText className="w-5 h-5 text-primary" />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">{currentStep.number}</span>
