@@ -1225,13 +1225,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
                 </p>
 
-                {/* Radio 2 */}
-                <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "clerk_fallback" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
-                  <RadioGroupItem value="clerk_fallback" id="notify-clerk-fallback" className="mt-0.5 shrink-0" />
-                  <p className="text-xs text-foreground leading-relaxed">
-                    If the court clerk's service attempt is unsuccessful, you can still choose Adult Service or Process Server Service
-                  </p>
-                </label>
 
                 {/* Radio 3 — Adult Service */}
                 <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
