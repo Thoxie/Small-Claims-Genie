@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PlusCircle, ChevronRight, FileText, Wand2 } from "lucide-react";
+import { ChevronRight, FileText, Wand2 } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "In Progress",
@@ -90,16 +90,10 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
       <div className="container mx-auto px-4 py-10 max-w-2xl">
 
-        <div className="flex items-center justify-end mb-8">
-          <Button asChild size="sm" className="gap-2 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold px-5 shadow-sm">
-            <Link href="/cases/new">
-              <PlusCircle className="h-4 w-4" /> New Case
-            </Link>
-          </Button>
-        </div>
+        <div className="mb-8" />
 
         <h1 className="text-2xl font-bold text-foreground mb-1">Your Cases</h1>
-        <p className="text-muted-foreground text-sm mb-6">Pick up where you left off, or start a new case.</p>
+        <p className="text-muted-foreground text-sm mb-6">Pick up where you left off.</p>
 
         {isLoading && (
           <div className="flex flex-col gap-4">
