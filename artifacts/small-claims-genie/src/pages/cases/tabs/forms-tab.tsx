@@ -10,7 +10,6 @@ import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, Al
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
-import { SC104PdfModal } from "./SC104PdfModal";
 import { sc104FieldsToBody } from "./sc104-utils";
 
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
@@ -560,7 +559,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     "serviceAddress", "serviceCity", "serviceState", "serviceZip",
   ]);
   const [sc104Saving, setSc104Saving] = useState(false);
-  const [sc104PdfOpen, setSc104PdfOpen] = useState(false);
   const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
 
@@ -731,6 +729,25 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       URL.revokeObjectURL(url);
       setModalFormId(null);
     } catch { setDownloadError("Download failed — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
+  async function openSC104InNewTab() {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    setDownloadingForm("sc104"); setDownloadError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/forms/sc104`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(sc104FieldsToBody(sc104Fields)),
+      });
+      if (!res.ok) { setDownloadError("Failed to generate SC-104 PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { setDownloadError("Failed to open SC-104 PDF — please try again."); }
     finally { setDownloadingForm(null); }
   }
 
@@ -1370,23 +1387,23 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Enter the details provided by the person who served the papers. Your case information is pre-filled automatically — click below to add the server's details, then get your completed PDF in one step.
+              Your case information is pre-filled automatically. Click below to open the SC-104 PDF — fill in the server's details directly on the form, then print or save it.
             </p>
             {commonWarnings}
             {commonRelated}
 
             <button
               type="button"
-              onClick={() => setSc104PdfOpen(true)}
-              className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors"
+              onClick={openSC104InNewTab}
+              disabled={downloadingForm === "sc104"}
+              className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
             >
               <span className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                {hasSavedData ? "Edit SC-104 Form" : "Fill Out SC-104 Form"}
+                {downloadingForm === "sc104" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                Open SC-104 PDF
               </span>
               <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
-                {hasSavedData && <CheckCircle2 className="h-3 w-3 text-[#14b8a6]" />}
-                {hasSavedData ? "Saved data loaded" : "Opens the actual form"}
+                Opens in a new tab
                 <ChevronRight className="h-4 w-4" />
               </span>
             </button>
@@ -1992,7 +2009,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           onDownload={(endpoint, filename, body) => {
             if (endpoint === "sc104") {
               setModalFormId(null);
-              setSc104PdfOpen(true);
+              openSC104InNewTab();
             } else if (endpoint === "sc100a") {
               setSc100aFormBody(body);
               setModalFormId(null);
@@ -2031,16 +2048,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         onSkipSign={() => { setSc104SigModalOpen(false); downloadSignedSC104(); }}
       />
 
-      <SC104PdfModal
-        open={sc104PdfOpen}
-        onClose={() => setSc104PdfOpen(false)}
-        caseId={caseId}
-        getToken={getToken}
-        fields={sc104Fields}
-        onChange={setSc104Fields}
-        onSave={saveSC104ToSystem}
-        prefilledKeys={sc104WasPreFilled ? SC104_PREFILLED_KEYS : new Set()}
-      />
 
       <SignaturePadModal
         open={sc100aSigModalOpen}
