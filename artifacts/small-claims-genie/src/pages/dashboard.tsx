@@ -27,7 +27,7 @@ function formatCurrency(amount?: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
 }
 
-function formatDate(date: Date) {
+function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
