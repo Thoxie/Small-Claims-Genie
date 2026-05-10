@@ -46,7 +46,6 @@ function titleCase(str?: string | null) {
   return str.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 }
 
-/** "orange" → "Orange County" */
 function countyDisplayName(countyId?: string | null): string | null {
   if (!countyId) return null;
   const name = countyId
@@ -56,9 +55,22 @@ function countyDisplayName(countyId?: string | null): string | null {
   return `${name} County`;
 }
 
+/** Label stacked above value — used in the 2-col metadata grid */
+function MetaCell({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+        {label}
+      </span>
+      <span className="text-sm font-medium text-foreground leading-snug">{value}</span>
+    </div>
+  );
+}
+
 function ReadinessItem({ label, complete }: { label: string; complete: boolean }) {
   return (
-    <div className="flex items-center gap-2 py-1">
+    <div className="flex items-center gap-2 py-1.5 border-b border-gray-100 last:border-0">
       {complete
         ? <CheckCircle className="h-3.5 w-3.5 text-green-600 shrink-0" />
         : <Circle className="h-3.5 w-3.5 text-gray-300 shrink-0" />}
@@ -70,22 +82,15 @@ function ReadinessItem({ label, complete }: { label: string; complete: boolean }
   );
 }
 
-function SnapshotRow({ label, value, wrap }: { label: string; value?: string | null; wrap?: boolean }) {
+/** Compact row used in Case Snapshot card */
+function SnapRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <div className={`flex gap-3 py-1.5 border-b border-gray-100 last:border-0 ${wrap ? "flex-col gap-0.5" : "justify-between items-baseline"}`}>
-      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
-      <span className={`text-xs font-medium text-foreground ${wrap ? "" : "text-right"}`}>{value}</span>
-    </div>
-  );
-}
-
-function CardMeta({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex gap-2 text-xs text-muted-foreground">
-      <span className="font-medium text-foreground/60 shrink-0">{label}</span>
-      <span>{value}</span>
+    <div className="flex flex-col gap-0.5 py-1.5 border-b border-gray-100 last:border-0">
+      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+        {label}
+      </span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
     </div>
   );
 }
@@ -94,13 +99,15 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
   const savedTab = localStorage.getItem(`case-last-tab-${c.id}`);
   const hash = savedTab ? `#${savedTab}` : "";
 
-  const plaintiff = c.plaintiffName?.trim() || null;
-  const defendant = c.defendantName?.trim() || null;
-  const amount = formatCurrency(c.claimAmount);
-  const savedDate = formatDate(c.updatedAt);
+  const plaintiff  = c.plaintiffName?.trim() || null;
+  const defendant  = c.defendantName?.trim() || null;
+  const amount     = formatCurrency(c.claimAmount);
+  const savedDate  = formatDate(c.updatedAt);
   const countyName = countyDisplayName(c.countyId);
 
-  const courtName = c.courthouseName ?? (countyName ? `${countyName} Superior Court — Small Claims` : null);
+  const courtName = c.courthouseName
+    ?? (countyName ? `${countyName} Superior Court — Small Claims` : null);
+
   const courtAddress = [
     c.courthouseAddress,
     c.courthouseCity,
@@ -121,14 +128,14 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
     { label: "Review",        complete: !!(c.intakeComplete) },
   ];
   const completeCount = readinessItems.filter(i => i.complete).length;
-  const readinessPct = Math.round((completeCount / readinessItems.length) * 100);
+  const readinessPct  = Math.round((completeCount / readinessItems.length) * 100);
 
-  // Status badge: only show a "passed intake" status if every checklist item
-  // is actually complete. Otherwise always say "In Progress."
-  const allComplete = completeCount === readinessItems.length;
+  const allComplete   = completeCount === readinessItems.length;
   const derivedStatus = allComplete ? c.status : "draft";
-  const statusLabel = STATUS_LABEL[derivedStatus] ?? STATUS_LABEL[c.status] ?? c.status;
-  const statusColor = STATUS_COLOR[derivedStatus] ?? STATUS_COLOR[c.status] ?? "bg-gray-100 text-gray-700 border-gray-200";
+  const statusLabel   = STATUS_LABEL[derivedStatus] ?? STATUS_LABEL[c.status] ?? c.status;
+  const statusColor   = STATUS_COLOR[derivedStatus] ?? STATUS_COLOR[c.status] ?? "bg-gray-100 text-gray-700 border-gray-200";
+
+  const evidenceLabel = c.documentCount != null ? `${c.documentCount} total` : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -146,42 +153,42 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
         </div>
       )}
 
-      {/* ── Main case card ── */}
-      <div className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3 shadow-sm">
+      {/* ══ Main case card ══ */}
+      <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
 
-        {/* Header: name + status badge */}
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold text-foreground text-base leading-snug flex-1 min-w-0">{heading}</h3>
-          <Badge className={`shrink-0 text-xs font-medium border ${statusColor}`} variant="outline">
-            {statusLabel}
-          </Badge>
+        {/* Zone 1 — identity + status block */}
+        <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
+          {/* Left: case name + sub-line */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-foreground leading-snug">{heading}</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {[amount, titleCase(c.claimType)].filter(Boolean).join(" · ")}
+            </p>
+          </div>
+          {/* Right: status + readiness stacked */}
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <Badge className={`text-xs font-medium border ${statusColor}`} variant="outline">
+              {statusLabel}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              Readiness:{" "}
+              <span className="font-semibold text-foreground">{readinessPct}%</span>
+            </span>
+          </div>
         </div>
 
-        {/* Amount · Claim type · Readiness % */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
-          {amount && <span className="font-semibold text-foreground">{amount}</span>}
-          {amount && c.claimType && <span className="text-muted-foreground">·</span>}
-          {c.claimType && (
-            <span className="text-muted-foreground">{titleCase(c.claimType)}</span>
-          )}
-          <span className="ml-auto text-xs text-muted-foreground">
-            Readiness:{" "}
-            <span className="font-semibold text-foreground">{readinessPct}%</span>
-          </span>
+        {/* Zone 2 — court metadata 2-column grid */}
+        <div className="border-t border-gray-100 px-6 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+            {countyName   && <MetaCell label="County"           value={countyName} />}
+            {courtName    && <MetaCell label="Court"            value={courtName} />}
+            {courtAddress && <MetaCell label="Court Address"    value={courtAddress} />}
+            {evidenceLabel && <MetaCell label="Evidence Documents" value={evidenceLabel} />}
+          </div>
         </div>
 
-        {/* Court metadata */}
-        <div className="flex flex-col gap-1.5 pt-2 border-t border-gray-100">
-          {countyName && <CardMeta label="County" value={countyName} />}
-          {courtName  && <CardMeta label="Court"  value={courtName} />}
-          {courtAddress && <CardMeta label="Address" value={courtAddress} />}
-          {c.documentCount != null && (
-            <CardMeta label="Evidence documents uploaded" value={`${c.documentCount} total`} />
-          )}
-        </div>
-
-        {/* Footer: updated + resume button */}
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+        {/* Zone 3 — updated date + resume button */}
+        <div className="border-t border-gray-100 flex items-center justify-between gap-2 px-6 py-3">
           <span className="text-xs text-muted-foreground">Updated {savedDate}</span>
           <Button
             asChild
@@ -195,32 +202,29 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
         </div>
       </div>
 
-      {/* ── Two-column: Readiness (left) + Snapshot (right) ── */}
+      {/* ══ Two-column: Readiness (left) + Snapshot (right) ══ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
 
         {/* Case Readiness */}
-        <div className="bg-white border border-border rounded-xl p-4 shadow-sm">
-          <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">
+        <div className="bg-white border border-border rounded-xl px-5 py-4 shadow-sm h-full">
+          <h4 className="text-[11px] font-semibold text-foreground uppercase tracking-wide mb-2">
             Case Readiness
           </h4>
-          <div className="flex flex-col">
-            {readinessItems.map(item => (
-              <ReadinessItem key={item.label} label={item.label} complete={item.complete} />
-            ))}
-          </div>
+          {readinessItems.map(item => (
+            <ReadinessItem key={item.label} label={item.label} complete={item.complete} />
+          ))}
         </div>
 
-        {/* Case Snapshot */}
-        <div className="bg-white border border-border rounded-xl p-4 shadow-sm">
-          <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">
+        {/* Case Snapshot — identity only, no court repetition */}
+        <div className="bg-white border border-border rounded-xl px-5 py-4 shadow-sm h-full">
+          <h4 className="text-[11px] font-semibold text-foreground uppercase tracking-wide mb-2">
             Case Snapshot
           </h4>
-          <SnapshotRow label="Plaintiff"  value={plaintiff} />
-          <SnapshotRow label="Defendant"  value={defendant} />
-          {countyName && <SnapshotRow label="County" value={countyName} />}
-          {courtName  && <SnapshotRow label="Court"  value={courtName} wrap />}
-          {courtAddress && <SnapshotRow label="Address" value={courtAddress} wrap />}
-          <SnapshotRow label="Last updated" value={savedDate} />
+          <SnapRow label="Plaintiff"          value={plaintiff} />
+          <SnapRow label="Defendant"          value={defendant} />
+          <SnapRow label="County"             value={countyName} />
+          <SnapRow label="Evidence Documents" value={evidenceLabel} />
+          <SnapRow label="Last Updated"       value={savedDate} />
         </div>
       </div>
 
@@ -246,43 +250,53 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
 
-        {/* Title + subtitle on one line */}
-        <div className="flex items-baseline gap-2 mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Your Cases</h1>
-          <span className="text-sm text-muted-foreground">Pick up where you left off.</span>
-        </div>
+        {/* Stacked title */}
+        <h1 className="text-2xl font-bold text-foreground mb-1">Your Cases</h1>
+        <p className="text-sm text-muted-foreground mb-6">Pick up where you left off.</p>
 
+        {/* Loading skeleton */}
         {isLoading && (
           <div className="flex flex-col gap-4">
-            <div className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3">
-              <div className="flex justify-between items-start gap-3">
-                <Skeleton className="h-5 w-56" />
-                <Skeleton className="h-5 w-20 rounded-full" />
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+              <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
+                <div className="flex flex-col gap-2 flex-1">
+                  <Skeleton className="h-6 w-64" />
+                  <Skeleton className="h-4 w-36" />
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <Skeleton className="h-5 w-24 rounded-full" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
               </div>
-              <Skeleton className="h-4 w-36" />
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-gray-100">
-                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-3 w-full" />)}
+              <div className="border-t border-gray-100 px-6 py-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="flex flex-col gap-1">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+              <div className="border-t border-gray-100 flex items-center justify-between px-6 py-3">
                 <Skeleton className="h-3 w-28" />
                 <Skeleton className="h-8 w-28 rounded-full" />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white border border-border rounded-xl p-4 flex flex-col gap-2">
-                <Skeleton className="h-3 w-24 mb-1" />
-                {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-4 w-full" />)}
-              </div>
-              <div className="bg-white border border-border rounded-xl p-4 flex flex-col gap-2">
-                <Skeleton className="h-3 w-24 mb-1" />
-                {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-4 w-full" />)}
-              </div>
+              {[1, 2].map(i => (
+                <div key={i} className="bg-white border border-border rounded-xl px-5 py-4 flex flex-col gap-2">
+                  <Skeleton className="h-3 w-24 mb-1" />
+                  {[1, 2, 3, 4, 5].map(j => <Skeleton key={j} className="h-5 w-full" />)}
+                </div>
+              ))}
             </div>
           </div>
         )}
 
+        {/* Error state */}
         {isError && (
           <div className="text-center py-16 flex flex-col items-center gap-4">
             <p className="text-muted-foreground">Couldn't load your cases. Please try refreshing.</p>
@@ -290,6 +304,7 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Empty state */}
         {!isLoading && !isError && cases && cases.length === 0 && (
           <div className="text-center py-16 flex flex-col items-center gap-5">
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
@@ -304,6 +319,7 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Case view */}
         {!isLoading && !isError && cases && cases.length > 0 && (
           <CaseView c={cases[0]} justSaved={justSaved} />
         )}

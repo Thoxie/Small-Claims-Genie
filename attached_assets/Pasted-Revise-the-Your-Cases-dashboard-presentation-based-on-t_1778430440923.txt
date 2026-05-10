@@ -1,0 +1,255 @@
+Revise the “Your Cases” dashboard presentation based on the latest screenshot.
+
+Goal:
+The current screen contains most of the right information, but the presentation still feels too vertical and form-like. Redesign the dashboard so the information feels more horizontal, polished, and professional. The case card should feel like a compact legal case dashboard, not a stacked list of labels and values.
+
+Do not add deadlines, hearing dates, draft outputs, demand letter status, generate forms buttons, download packet buttons, next-step prompts, or extra workflow buttons.
+
+Required changes:
+
+1. Restore the saved confirmation banner.
+
+The dashboard appears after a user clicks “Save and Exit,” so the saved confirmation must appear.
+
+Place it below the page subtitle and above the main case card.
+
+Text:
+“Saved successfully.”
+“Your case progress was saved May 10, 2026.”
+
+Design:
+- Subtle success-style banner
+- Light green or soft success background
+- Rounded corners
+- Small check icon is okay
+- Professional and understated
+- Do not make it oversized
+
+2. Stack the page title and subtitle.
+
+Current issue:
+“Your Cases” and “Pick up where you left off.” appear on the same line.
+
+Change to:
+Your Cases
+Pick up where you left off.
+
+Design:
+- Title on its own line
+- Subtitle directly underneath
+- Keep the layout clean and centered within the dashboard container
+
+3. Widen the dashboard container.
+
+Current issue:
+The content feels too narrow and vertical even though there is a lot of unused horizontal space.
+
+Increase the dashboard content width on desktop.
+
+Suggested:
+- Use a max-width around 900px to 1000px
+- Keep it centered
+- Maintain good spacing from the header and footer
+- On mobile, keep full-width responsive padding
+
+4. Redesign the main case card into three clear zones.
+
+The main case card should not look like a vertical form. It should have a clear horizontal structure.
+
+Zone 1: Top row — case identity and status
+
+Left side:
+- Maya Chen vs. Ethan Reed
+- $2,000 · Security Deposit
+
+Right side:
+- Status badge: In Progress
+- Readiness: 80%
+
+Design:
+- The status and readiness should feel visually connected as a small status block.
+- Do not leave the readiness floating awkwardly.
+
+Zone 2: Middle row — court and evidence metadata grid
+
+Replace the current stacked label/value format with a clean 2-column metadata grid on desktop.
+
+Display these four items:
+
+County
+Sacramento County
+
+Court
+Sacramento County Superior Court – Gordon D. Schaber Courthouse
+
+Court Address
+720 9th St, Sacramento, CA 95814
+
+Evidence Documents
+6 total
+
+Important:
+- Use “Court Address,” not just “Address.”
+- Use “Evidence Documents,” not “Evidence documents uploaded.”
+- Evidence should only show the total number.
+- Do not break evidence down by type.
+
+Design:
+- Labels should be muted and small.
+- Values should be darker and more readable.
+- Labels and values should have clear separation.
+- Avoid the current cramped style where label and value sit too close together.
+- On desktop, use a 2-column grid.
+- On mobile, stack the grid into one column.
+
+Zone 3: Bottom row — update date and resume action
+
+Left side:
+- Updated May 10, 2026
+
+Right side:
+- Existing Resume Case button
+
+Design:
+- Keep the existing Resume Case button style.
+- Add a subtle divider above this row if needed.
+- Keep the bottom row compact.
+
+5. Remove repetitive court information from Case Snapshot.
+
+Current issue:
+The Case Snapshot repeats the court name and full address already shown in the main card. The long court/address text makes the lower right card look uneven and too tall.
+
+Revise Case Snapshot to focus only on quick identity confirmation.
+
+Display:
+Case Snapshot
+- Plaintiff: Maya Chen
+- Defendant: Ethan Reed
+- County: Sacramento County
+- Evidence Documents: 6 total
+- Last Updated: May 10, 2026
+
+Do not include:
+- Full court name
+- Court address
+- Claim type
+- Amount
+
+Those items are already shown in the main case card.
+
+6. Keep Case Readiness, but balance it with Case Snapshot.
+
+Keep:
+Case Readiness
+- Claim Details: Complete
+- Parties: Complete
+- Timeline: Complete
+- Evidence: Complete
+- Review: Incomplete
+
+Design:
+- Case Readiness and Case Snapshot should sit side by side on desktop.
+- They should have equal width.
+- They should have similar height if possible.
+- Use the same card style, padding, border radius, and shadow.
+- Keep rows compact and aligned.
+
+7. Keep readiness logic consistent.
+
+Because Review is incomplete:
+- Status badge must say “In Progress”
+- Readiness must be 80%
+- Review must say “Incomplete”
+
+Do not show 100% unless every readiness item is complete.
+
+8. Improve label/value presentation.
+
+Across the dashboard:
+- Do not place labels and values too close together.
+- Labels should be visually muted.
+- Values should be visually stronger.
+- Use either clean rows or small metadata blocks.
+- Avoid making the page look like a plain form.
+
+Example metadata block style:
+
+County
+Sacramento County
+
+Court Address
+720 9th St, Sacramento, CA 95814
+
+The label should sit above or clearly separate from the value.
+
+9. Make the dashboard feel more horizontal.
+
+The main improvement should be reducing the “up and down” feeling.
+
+Use:
+- Wider desktop container
+- 2-column metadata grid inside the main card
+- Side-by-side lower cards
+- Better horizontal alignment in the top and bottom rows
+
+Avoid:
+- Long vertical stacks of plain text rows
+- Repeating the same information in multiple cards
+- Oversized vertical spacing
+
+10. Keep the trust/security line.
+
+Keep this centered below the lower cards:
+
+“Your case information is saved securely and can be updated anytime.”
+
+Design:
+- Small, muted text
+- Centered
+- Do not style it like a legal disclaimer
+
+11. Adjust the Quick Help button.
+
+Current issue:
+The Quick Help button visually competes with the dashboard because it sits too close to the card area.
+
+Keep the button, but make it less distracting on this page.
+
+Acceptable fixes:
+- Move it lower-right closer to the bottom corner
+- Reduce its visual prominence slightly
+- Ensure it does not align directly with the dashboard cards
+
+Do not remove it unless the existing layout system requires removal.
+
+12. Preserve the existing brand style.
+
+Keep:
+- Light blue/soft background
+- White cards
+- Rounded corners
+- Soft shadows
+- Navy/dark blue typography
+- Yellow header CTA button
+- Existing Resume Case button style
+- Existing navigation/header
+- Existing footer
+
+13. Responsive behavior.
+
+Desktop:
+- Dashboard container should be wider and centered
+- Main case card should span the full dashboard container width
+- The metadata section inside the main card should use a 2-column grid
+- Case Readiness and Case Snapshot should sit side by side below the main card
+
+Mobile:
+- All cards should stack vertically
+- Metadata grid should become one column
+- Court address should wrap cleanly
+- Resume Case button should remain easy to tap
+- No horizontal overflow
+
+Final result:
+The dashboard should feel like a compact, professional legal case command center after Save and Exit. It should clearly show that the case was saved, identify the case, show county, court, court address, evidence document total, readiness status, and allow the user to resume the case. The page should feel horizontal, balanced, and intentionally designed rather than like stacked form fields.
