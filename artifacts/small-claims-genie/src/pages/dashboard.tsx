@@ -248,9 +248,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
 
-        {/* Stacked title */}
-        <h1 className="text-2xl font-bold text-foreground mb-1">Your Cases</h1>
-        <p className="text-sm text-muted-foreground mb-6">Pick up where you left off.</p>
+        {/* Title + subtitle on one line */}
+        <div className="flex items-baseline gap-2 mb-6">
+          <h1 className="text-2xl font-bold text-foreground">Your Cases</h1>
+          <span className="text-sm text-muted-foreground">Pick up where you left off.</span>
+        </div>
 
         {isLoading && (
           <div className="flex flex-col gap-4">
