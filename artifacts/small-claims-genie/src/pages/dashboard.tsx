@@ -28,16 +28,8 @@ function formatCurrency(amount?: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
 }
 
-function timeAgo(date: Date) {
-  const diff = Date.now() - new Date(date).getTime();
-  const days = Math.floor(diff / 86_400_000);
-  if (days === 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 7) return `${days} days ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks}w ago`;
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
+function formatDate(date: Date) {
+  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function CaseCard({ c }: { c: Case }) {
@@ -81,7 +73,7 @@ function CaseCard({ c }: { c: Case }) {
       </div>
 
       <div className="flex items-center justify-between gap-2 pt-1">
-        <span className="text-xs text-muted-foreground">Updated {timeAgo(c.updatedAt)}</span>
+        <span className="text-xs text-muted-foreground">Updated {formatDate(c.updatedAt)}</span>
         <Button asChild size="sm" className="gap-1.5 rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90">
           <Link href={`/cases/${c.id}${hash}`}>
             Resume Case <ChevronRight className="h-3.5 w-3.5" />
