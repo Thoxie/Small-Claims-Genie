@@ -2203,7 +2203,6 @@ async function buildSC104Pdf(
 
   // Item 3 — documents served checkboxes (placeholder did not mark these; positions kept from previous calibration)
   if (docs.includes("sc100")) xm1(53, 298);
-  if (docs.includes("sc120")) xm1(53, 279);
   if (docs.includes("other")) { xm1(53, 108); v1(b.docsServedOther, 100, 108); }
 
   // ── Page 2 ────────────────────────────────────────────────────────────────

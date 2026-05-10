@@ -9,7 +9,6 @@ import { Loader2, CheckCircle2, X, Info, FileText, Pencil, ChevronDown, ChevronU
 export function sc104FieldsToBody(f: Record<string, string>): Record<string, unknown> {
   const docsServed: string[] = [];
   if (f["docsServed_sc100"] === "yes") docsServed.push("sc100");
-  if (f["docsServed_sc120"] === "yes") docsServed.push("sc120");
   if ((f["docsServedOther"] ?? "").trim()) docsServed.push("other");
   return { ...f, docsServed };
 }
@@ -135,7 +134,6 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
   // Build documents line
   const docsList = [
     f("docsServed_sc100") === "yes" ? "SC-100 Plaintiff's Claim" : "",
-    f("docsServed_sc120") === "yes" ? "SC-120 Defendant's Claim" : "",
     f("docsServedOther") || "",
   ].filter(Boolean).join(" · ");
 
