@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight, FileText, Wand2 } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "In Progress",
@@ -124,13 +124,8 @@ export default function Dashboard() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground">No cases yet</h2>
-              <p className="text-muted-foreground text-sm mt-1">Start your first case and we'll walk you through everything.</p>
+              <p className="text-muted-foreground text-sm mt-1">Contact support to get started with your case.</p>
             </div>
-            <Button asChild size="lg" className="gap-2 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold px-8 shadow-sm">
-              <Link href="/cases/new">
-                <Wand2 className="h-5 w-5" /> Start Your First Case
-              </Link>
-            </Button>
           </div>
         )}
 
