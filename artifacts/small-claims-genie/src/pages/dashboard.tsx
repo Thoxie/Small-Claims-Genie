@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useListCases } from "@workspace/api-client-react";
 import type { Case } from "@workspace/api-client-react";
 import { Link } from "wouter";
@@ -106,7 +105,7 @@ function SnapRow({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
+function CaseView({ c }: { c: Case }) {
   const savedTab = localStorage.getItem(`case-last-tab-${c.id}`);
   const hash = savedTab ? `#${savedTab}` : "";
 
@@ -249,14 +248,6 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
 
 export default function Dashboard() {
   const { data: cases, isLoading, isError } = useListCases();
-  const [justSaved, setJustSaved] = useState(false);
-
-  useEffect(() => {
-    if (sessionStorage.getItem("scg-just-saved") === "true") {
-      setJustSaved(true);
-      sessionStorage.removeItem("scg-just-saved");
-    }
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
@@ -331,7 +322,7 @@ export default function Dashboard() {
 
         {/* Case view */}
         {!isLoading && !isError && cases && cases.length > 0 && (
-          <CaseView c={cases[0]} justSaved={justSaved} />
+          <CaseView c={cases[0]} />
         )}
 
       </div>
