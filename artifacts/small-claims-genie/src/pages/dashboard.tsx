@@ -253,9 +253,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
-        {/* Stacked title */}
-        <h1 className="text-2xl font-bold text-foreground mb-1">Your Case</h1>
-        <p className="text-sm text-muted-foreground mb-6">Pick up where you left off.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-6">Your Case — Pick up where you left off.</h1>
 
         {/* Loading skeleton */}
         {isLoading && (
