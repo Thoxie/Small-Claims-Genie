@@ -55,6 +55,17 @@ function countyDisplayName(countyId?: string | null): string | null {
   return `${name} County`;
 }
 
+/**
+ * Extracts the short courthouse name from a full name.
+ * "Sacramento County Superior Court - Gordon D. Schaber Courthouse"
+ * → "Gordon D. Schaber Courthouse"
+ */
+function shortCourtName(full?: string | null): string | null {
+  if (!full) return null;
+  const idx = Math.max(full.lastIndexOf(" - "), full.lastIndexOf(" – "));
+  return idx > 0 ? full.slice(idx + 3).trim() : full;
+}
+
 /** Label stacked above value — used in the 2-col metadata grid */
 function MetaCell({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -105,8 +116,9 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
   const savedDate  = formatDate(c.updatedAt);
   const countyName = countyDisplayName(c.countyId);
 
-  const courtName = c.courthouseName
+  const courtName      = c.courthouseName
     ?? (countyName ? `${countyName} Superior Court — Small Claims` : null);
+  const courtNameShort = shortCourtName(courtName);
 
   const courtAddress = [
     c.courthouseAddress,
@@ -180,9 +192,9 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
         {/* Zone 2 — court metadata 2-column grid */}
         <div className="border-t border-gray-100 px-6 py-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-            {countyName   && <MetaCell label="County"           value={countyName} />}
-            {courtName    && <MetaCell label="Court"            value={courtName} />}
-            {courtAddress && <MetaCell label="Court Address"    value={courtAddress} />}
+            {countyName    && <MetaCell label="County"             value={countyName} />}
+            {courtNameShort && <MetaCell label="Court"            value={courtNameShort} />}
+            {courtAddress  && <MetaCell label="Court Address"     value={courtAddress} />}
             {evidenceLabel && <MetaCell label="Evidence Documents" value={evidenceLabel} />}
           </div>
         </div>
@@ -215,16 +227,16 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
           ))}
         </div>
 
-        {/* Case Snapshot — identity only, no court repetition */}
+        {/* Filing Overview */}
         <div className="bg-white border border-border rounded-xl px-5 py-4 shadow-sm h-full">
           <h4 className="text-[11px] font-semibold text-foreground uppercase tracking-wide mb-2">
-            Case Snapshot
+            Filing Overview
           </h4>
-          <SnapRow label="Plaintiff"          value={plaintiff} />
-          <SnapRow label="Defendant"          value={defendant} />
-          <SnapRow label="County"             value={countyName} />
-          <SnapRow label="Evidence Documents" value={evidenceLabel} />
-          <SnapRow label="Last Updated"       value={savedDate} />
+          <SnapRow label="Venue"               value={countyName} />
+          <SnapRow label="Claim Limit"         value="Within California small claims limit" />
+          <SnapRow label="Court Identified"    value={courtName ? "Yes" : "No"} />
+          <SnapRow label="Parties Identified"  value={plaintiff && defendant ? "Yes" : "Incomplete"} />
+          <SnapRow label="Evidence Documents"  value={c.documentCount != null ? `${c.documentCount} uploaded` : "None uploaded"} />
         </div>
       </div>
 

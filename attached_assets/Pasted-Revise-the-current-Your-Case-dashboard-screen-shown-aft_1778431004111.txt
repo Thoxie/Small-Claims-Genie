@@ -1,0 +1,227 @@
+Revise the current “Your Case” dashboard screen shown after Save and Exit.
+
+Be precise with placement. Do not make broad unrelated changes. Do not add deadlines, hearing dates, draft outputs, demand letter status, generate forms buttons, download packet buttons, next-step prompts, or extra workflow buttons.
+
+Goal:
+The current layout is cleaner, but it still feels incomplete and repetitive. The screen needs a saved confirmation banner, less duplication between cards, and a stronger lower-right card that adds value instead of repeating the main case card.
+
+1. Add the saved confirmation banner in the correct position.
+
+Current issue:
+The saved confirmation banner is missing.
+
+Placement:
+Insert the banner inside the main dashboard content column.
+
+Exact position:
+- Below the subtitle: “Pick up where you left off.”
+- Above the large main case card for “Maya Chen vs. Ethan Reed”
+- It should align with the left and right edges of the main case card.
+
+Text:
+Saved successfully.
+Your case progress was saved May 10, 2026.
+
+Design:
+- Soft green or subtle success background
+- Rounded corners
+- Small check icon on the left is acceptable
+- Professional, understated
+- Not oversized
+- Use similar width as the main case card
+- Add appropriate vertical spacing above and below it
+
+2. Keep the main case card in its current position, but clean up its content.
+
+The main case card should remain:
+- Directly below the saved confirmation banner
+- Above the two lower cards
+- Full width of the dashboard content container
+
+Main card content should be:
+
+Top-left:
+Maya Chen vs. Ethan Reed
+$2,000 · Security Deposit
+
+Top-right:
+Status badge: In Progress
+Readiness: 80%
+
+Middle metadata grid:
+County: Sacramento County
+Court: Gordon D. Schaber Courthouse
+Court Address: 720 9th St, Sacramento, CA 95814
+Evidence Documents: 6 total
+
+Bottom-left:
+Updated May 10, 2026
+
+Bottom-right:
+Existing Resume Case button
+
+Important:
+- Do not use the longer court text “Sacramento County Superior Court – Gordon D. Schaber Courthouse” in the main card.
+- Use the shorter court display: “Gordon D. Schaber Courthouse”
+- Keep the county separately as “Sacramento County”
+- Use “Court Address,” not just “Address”
+- Use “Evidence Documents,” not “Evidence documents uploaded”
+- Evidence must only show the total number
+
+3. Use clear label/value formatting in the main card.
+
+Current issue:
+Some label/value areas still look like form data.
+
+Use either of these formats consistently:
+
+Option A, same-line format:
+County: Sacramento County
+
+Option B, stacked metadata format:
+County
+Sacramento County
+
+If using same-line format, include the colon.
+If using stacked metadata blocks, make labels muted and values stronger.
+
+Do not display labels and values as:
+County Sacramento County
+Court Gordon D. Schaber Courthouse
+Address 720 9th St...
+
+The main metadata area should remain a 2-column grid on desktop and stack to 1 column on mobile.
+
+4. Keep the two lower cards below the main card, side by side on desktop.
+
+Placement:
+The lower section should remain directly below the main case card.
+
+Left card:
+Case Readiness
+
+Right card:
+Replace Case Snapshot with Filing Overview
+
+Both cards should:
+- Sit side by side on desktop
+- Have equal width
+- Align with the left and right edges of the main card
+- Stack vertically on mobile
+- Have similar height, padding, and row spacing
+
+5. Keep the left lower card as Case Readiness.
+
+Content:
+Case Readiness
+Claim Details: Complete
+Parties: Complete
+Timeline: Complete
+Evidence: Complete
+Review: Incomplete
+
+Keep the current readiness logic:
+- Status: In Progress
+- Readiness: 80%
+- Review: Incomplete
+
+6. Replace the right lower card.
+
+Current issue:
+The current “Case Snapshot” repeats County and Evidence Documents from the main card, so it feels duplicative.
+
+Replace the card title:
+From: Case Snapshot
+To: Filing Overview
+
+New right-card content:
+Filing Overview
+Venue: Sacramento County
+Claim Limit: Within California small claims limit
+Court Identified: Yes
+Parties Identified: Yes
+Evidence Documents: 6 uploaded
+
+Do not include:
+- Plaintiff
+- Defendant
+- Court address
+- Full court name
+- Claim amount
+- Claim type
+
+Those details are already covered in the main case card or are not needed here.
+
+Purpose:
+The Filing Overview card should make the dashboard feel smarter and more legally useful without creating a new workflow.
+
+7. Keep the security reassurance line.
+
+Placement:
+Keep it centered below the two lower cards.
+
+Text:
+Your case information is saved securely and can be updated anytime.
+
+Design:
+- Small
+- Muted
+- Centered
+- Do not style it like a legal disclaimer
+
+8. Keep the Quick Help button, but avoid overlap.
+
+The Quick Help button may remain floating on the right side.
+
+Make sure:
+- It does not overlap any dashboard card
+- It does not visually align so closely with the lower cards that it competes with them
+- It remains usable on mobile
+
+9. Preserve the existing page structure and brand.
+
+Keep:
+- Existing header
+- Existing footer
+- Existing navigation
+- Existing yellow “Start or Resume Your Case” button
+- Light blue page background
+- White cards
+- Rounded corners
+- Soft shadows
+- Navy/dark typography
+- Existing dark “Resume Case” button style
+
+10. Responsive and overflow check.
+
+Before completing, verify the layout at:
+- Desktop
+- Laptop
+- Tablet
+- Mobile
+
+Make sure:
+- No text is cut off
+- No horizontal scrolling appears
+- Court address wraps cleanly
+- Long values do not overflow the cards
+- Buttons do not overlap text
+- Lower cards stack properly on mobile
+
+Final result:
+The screen should read top to bottom as:
+
+Your Case
+Pick up where you left off.
+
+Saved successfully banner
+
+Main case card with case identity, county, court, court address, evidence document total, status, readiness, updated date, and Resume Case button
+
+Two lower cards:
+Left: Case Readiness
+Right: Filing Overview
+
+Security reassurance line
+
+The dashboard should feel like a professional legal case command center, not a repeated list of the same details.
