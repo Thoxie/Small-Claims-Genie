@@ -247,6 +247,7 @@ export function IntakeTab({
       { id: caseId, data: { step: activeTab, data: formData } },
     );
     toast({ title: "Progress saved", description: "Returning to your dashboard…" });
+    sessionStorage.setItem("scg-just-saved", "true");
     window.location.href = "/dashboard";
   };
 

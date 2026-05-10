@@ -73,9 +73,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
 
   const saveExit = () => {
     toast({ title: "Progress saved", description: "Returning to your dashboard…" });
-    // Use direct browser navigation instead of wouter navigate — the workspace
-    // sets window.location.hash for tab tracking which can interfere with
-    // wouter's pushState. A full navigation also gives the dashboard a clean load.
+    sessionStorage.setItem("scg-just-saved", "true");
     window.location.href = "/dashboard";
   };
 

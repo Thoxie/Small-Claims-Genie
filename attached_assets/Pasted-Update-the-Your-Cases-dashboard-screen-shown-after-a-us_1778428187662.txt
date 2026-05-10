@@ -1,0 +1,101 @@
+Update the “Your Cases” dashboard screen shown after a user clicks “Save and Exit.”
+
+Goal:
+Make the dashboard feel more professional, complete, and legally credible while keeping it clean and simple. This screen should reassure the user that their case was saved and give them a useful case overview before they resume later.
+
+Do not add deadlines, draft outputs, next-step workflow prompts, or extra action buttons beyond the existing “Resume Case” button.
+
+Changes to make:
+
+1. Add a save confirmation banner near the top of the dashboard.
+
+Text:
+“Saved successfully.”
+“Your case progress was saved May 10, 2026.”
+
+Design:
+Use a subtle success-style banner.
+Keep it professional and not overly colorful.
+It should sit above the case card and below the “Pick up where you left off.” subtitle.
+
+2. Improve the existing case card.
+
+Keep the current main information:
+- Case name: John Plaintiff vs. ACME INC.
+- Amount: $5,000
+- Claim type: Money Owed
+- Updated May 10, 2026
+- Intake Complete badge
+- Readiness: 100%
+- Resume Case button
+
+Add these additional case details inside the card or directly beneath the main case info:
+- Court: California Small Claims
+- Jurisdiction: California
+- Evidence uploaded: 4 total
+- Status: Intake Complete
+
+Important:
+For evidence, only show the total number. Do not break it down by document type. Do not show photos/contracts/messages/etc.
+
+3. Add a simple “Case Readiness” section.
+
+This can be inside the card beneath the main row, or as a clean panel below the card.
+
+Display:
+Case Readiness
+- Claim Details: Complete
+- Parties: Complete
+- Timeline: Complete
+- Evidence: Complete
+- Review: Complete
+
+Use a polished checklist style with checkmarks or subtle status indicators.
+
+4. Add a “Case Snapshot” section.
+
+This should summarize the case in a compact professional layout.
+
+Display:
+Case Snapshot
+- Claim type: Money Owed
+- Amount: $5,000
+- Plaintiff: John Plaintiff
+- Defendant: ACME INC.
+- Court: California Small Claims
+- Last updated: May 10, 2026
+
+5. Add a small trust/security line near the bottom of the dashboard.
+
+Text:
+“Your case information is saved securely and can be updated anytime.”
+
+Design:
+Small, muted text.
+Do not make it look like a legal disclaimer.
+
+6. Keep the visual style consistent with the current screen.
+
+Use:
+- Clean white cards
+- Soft shadows
+- Rounded corners
+- Navy/dark blue text and buttons
+- Light blue/soft background
+- Professional spacing
+- Mobile responsive layout
+
+7. Do not overcomplicate the dashboard.
+
+Do not add:
+- Filing deadlines
+- Hearing dates
+- Draft outputs
+- Demand letter status
+- Generate forms button
+- Download packet button
+- Next recommended step
+- Extra workflow buttons
+- Detailed evidence breakdown
+
+The final dashboard should feel like a polished case command center, but still simple: saved confirmation, main case card, case readiness, case snapshot, evidence total, and secure-save reassurance.
