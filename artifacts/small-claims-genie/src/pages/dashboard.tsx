@@ -46,14 +46,24 @@ function CaseCard({ c }: { c: Case }) {
   const statusLabel = STATUS_LABEL[c.status] ?? c.status;
   const statusColor = STATUS_COLOR[c.status] ?? "bg-gray-100 text-gray-700 border-gray-200";
   const amount = formatCurrency(c.claimAmount);
-  const vsLabel = c.defendantName ? `vs. ${c.defendantName}` : null;
+
+  // Build the heading from intake names. Fall back to the stored title only if
+  // neither plaintiff nor defendant has been entered yet.
+  const plaintiff = c.plaintiffName?.trim();
+  const defendant = c.defendantName?.trim();
+  const heading = plaintiff && defendant
+    ? `${plaintiff} vs. ${defendant}`
+    : plaintiff
+    ? `${plaintiff} vs. (defendant TBD)`
+    : defendant
+    ? `(plaintiff TBD) vs. ${defendant}`
+    : c.title;
 
   return (
     <div className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground text-base leading-snug truncate">{c.title}</h3>
-          {vsLabel && <p className="text-sm text-muted-foreground truncate mt-0.5">{vsLabel}</p>}
+          <h3 className="font-semibold text-foreground text-base leading-snug">{heading}</h3>
         </div>
         <Badge className={`shrink-0 text-xs font-medium border ${statusColor}`} variant="outline">
           {statusLabel}
