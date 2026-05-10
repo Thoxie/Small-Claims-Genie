@@ -533,8 +533,31 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
   const [sc104Fields, setSc104Fields] = useState<Record<string, string>>(() => {
     const saved = currentCase?.sc104Data as Record<string, string> | null | undefined;
-    return saved ?? {};
+    if (saved && Object.keys(saved).length > 0) return saved;
+    // Auto-seed from intake data when no saved data exists
+    const cc = currentCase;
+    const isBusiness = !!cc?.defendantIsBusinessOrEntity;
+    const hasMc030 = !!cc?.mc030DeclarationTitle;
+    return {
+      personServedName: isBusiness ? "" : (cc?.defendantName || ""),
+      businessName: isBusiness ? (cc?.defendantName || "") : "",
+      authorizedPerson: isBusiness ? (cc?.defendantAgentName || "") : "",
+      authorizedTitle: isBusiness ? (cc?.defendantAgentTitle || "") : "",
+      docsServed_sc100: "yes",
+      docsServedOther: hasMc030 ? "MC-030 Declaration" : "",
+      serviceAddress: cc?.defendantAddress || "",
+      serviceCity: cc?.defendantCity || "",
+      serviceState: cc?.defendantState || "CA",
+      serviceZip: cc?.defendantZip || "",
+    };
   });
+  // Track whether sc104Fields were seeded from intake (no prior DB save)
+  const sc104WasPreFilled = !(currentCase?.sc104Data && Object.keys(currentCase.sc104Data).length > 0);
+  const SC104_PREFILLED_KEYS: ReadonlySet<string> = new Set([
+    "personServedName", "businessName", "authorizedPerson", "authorizedTitle",
+    "docsServed_sc100", "docsServedOther",
+    "serviceAddress", "serviceCity", "serviceState", "serviceZip",
+  ]);
   const [sc104Saving, setSc104Saving] = useState(false);
   const [sc104PdfOpen, setSc104PdfOpen] = useState(false);
   const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
@@ -2007,6 +2030,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         onChange={setSc104Fields}
         saving={sc104Saving}
         onSave={saveSC104ToSystem}
+        prefilledKeys={sc104WasPreFilled ? SC104_PREFILLED_KEYS : new Set()}
       />
 
       <SignaturePadModal
