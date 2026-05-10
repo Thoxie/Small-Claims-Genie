@@ -57,7 +57,6 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [caseInfoExpanded, setCaseInfoExpanded] = useState(false);
-  const [sameAddress, setSameAddress] = useState(true);
   const blankFormUrl = `${import.meta.env.BASE_URL}sc104-form.pdf`;
 
   const hasData = Object.keys(fields).some(k => (fields[k] ?? "").trim());
@@ -65,20 +64,6 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
 
   const f = (key: string) => fields[key] ?? "";
   const set = (key: string) => (v: string) => onChange({ ...fields, [key]: v });
-
-  // When "same address" is toggled on, copy defendant's address back into service address fields
-  function handleSameAddressToggle(checked: boolean) {
-    setSameAddress(checked);
-    if (checked) {
-      onChange({
-        ...fields,
-        serviceAddress: fields["serviceAddress"] ?? "",
-        serviceCity: fields["serviceCity"] ?? "",
-        serviceState: fields["serviceState"] ?? "",
-        serviceZip: fields["serviceZip"] ?? "",
-      });
-    }
-  }
 
   const fetchPreview = useCallback(async () => {
     setLoadingPreview(true);
@@ -104,8 +89,6 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
   useEffect(() => {
     if (open) {
       setMode("edit");
-      // If defendant's address is in the pre-filled fields, default to "same address"
-      setSameAddress(true);
     }
     if (!open) {
       if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
@@ -307,35 +290,6 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
               )}
 
               <Field label="Date served" id="serviceDate" value={f("serviceDate")} onChange={set("serviceDate")} placeholder="MM/DD/YYYY" />
-
-              {/* Address toggle */}
-              {hasCaseInfo && addressLine ? (
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input type="checkbox" checked={sameAddress} onChange={e => handleSameAddressToggle(e.target.checked)} className="h-3.5 w-3.5 rounded" />
-                    Service was at the defendant's address: <span className="font-medium">{addressLine}</span>
-                  </label>
-                  {!sameAddress && (
-                    <div className="space-y-2 pl-5 border-l-2 border-muted">
-                      <Field label="Actual address where served" id="serviceAddress" value={f("serviceAddress")} onChange={set("serviceAddress")} placeholder="Street address" />
-                      <div className="flex gap-2">
-                        <Field label="City" id="serviceCity" value={f("serviceCity")} onChange={set("serviceCity")} placeholder="City" half />
-                        <Field label="State" id="serviceState" value={f("serviceState")} onChange={set("serviceState")} placeholder="CA" half />
-                        <Field label="Zip" id="serviceZip" value={f("serviceZip")} onChange={set("serviceZip")} placeholder="Zip" half />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Field label="Address where served" id="serviceAddress" value={f("serviceAddress")} onChange={set("serviceAddress")} placeholder="Street address" />
-                  <div className="flex gap-2">
-                    <Field label="City" id="serviceCity" value={f("serviceCity")} onChange={set("serviceCity")} placeholder="City" half />
-                    <Field label="State" id="serviceState" value={f("serviceState")} onChange={set("serviceState")} placeholder="CA" half />
-                    <Field label="Zip" id="serviceZip" value={f("serviceZip")} onChange={set("serviceZip")} placeholder="Zip" half />
-                  </div>
-                </div>
-              )}
             </section>
 
             {/* ── Server's information ── */}
