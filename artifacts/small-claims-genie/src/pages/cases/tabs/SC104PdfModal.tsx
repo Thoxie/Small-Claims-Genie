@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, CheckCircle2, X, Info, FileText, Pencil, Sparkles } from "lucide-react";
+import { Loader2, CheckCircle2, X, Info, FileText, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 
 // Convert UI field state → server body format
 export function sc104FieldsToBody(f: Record<string, string>): Record<string, unknown> {
@@ -26,38 +26,30 @@ interface Props {
   prefilledKeys?: ReadonlySet<string>;
 }
 
-/** Standard editable field */
-function Field({ label, id, value, onChange, placeholder, type = "text", half = false, prefilled = false }: {
+function Field({ label, id, value, onChange, placeholder, type = "text", half = false }: {
   label: string; id: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; type?: string; half?: boolean; prefilled?: boolean;
+  placeholder?: string; type?: string; half?: boolean;
 }) {
   return (
     <div className={half ? "flex-1 min-w-0" : "w-full"}>
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <Label htmlFor={id} className="text-[10px] font-medium text-muted-foreground">{label}</Label>
-        {prefilled && (
-          <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-teal-100 text-teal-700 leading-none">From case</span>
-        )}
-      </div>
+      <Label htmlFor={id} className="text-[10px] font-medium text-muted-foreground mb-0.5 block">{label}</Label>
       <Input
         id={id} type={type} value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`h-7 text-xs ${prefilled ? "bg-teal-50 border-teal-200 focus:border-teal-400" : ""}`}
+        className="h-7 text-xs"
       />
     </div>
   );
 }
 
-function Check({ label, checked, onChange, prefilled = false }: {
-  label: string; checked: boolean; onChange: (v: boolean) => void; prefilled?: boolean;
-}) {
+/** A read-only row in the case summary card */
+function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <label className={`flex items-center gap-2 text-xs cursor-pointer select-none rounded px-2 py-1 ${prefilled ? "bg-teal-50 border border-teal-100" : ""}`}>
-      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="h-3.5 w-3.5 rounded" />
-      <span>{label}</span>
-      {prefilled && <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-teal-100 text-teal-700 leading-none ml-auto">From case</span>}
-    </label>
+    <div className="flex items-baseline gap-2 text-xs">
+      <span className="text-muted-foreground shrink-0 w-28">{label}</span>
+      <span className="font-medium text-foreground">{value || <span className="text-muted-foreground italic">Not entered</span>}</span>
+    </div>
   );
 }
 
@@ -65,16 +57,30 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const [caseInfoExpanded, setCaseInfoExpanded] = useState(false);
+  const [sameAddress, setSameAddress] = useState(true);
   const blankFormUrl = `${import.meta.env.BASE_URL}sc104-form.pdf`;
 
   const hasData = Object.keys(fields).some(k => (fields[k] ?? "").trim());
-  const isPrefilled = (key: string) => prefilledKeys.has(key);
+  const hasCaseInfo = prefilledKeys.size > 0;
 
   const f = (key: string) => fields[key] ?? "";
   const set = (key: string) => (v: string) => onChange({ ...fields, [key]: v });
-  const setCheck = (key: string) => (v: boolean) => onChange({ ...fields, [key]: v ? "yes" : "" });
 
-  // Fetch a server-generated pre-filled PDF preview
+  // When "same address" is toggled on, copy defendant's address back into service address fields
+  function handleSameAddressToggle(checked: boolean) {
+    setSameAddress(checked);
+    if (checked) {
+      onChange({
+        ...fields,
+        serviceAddress: fields["serviceAddress"] ?? "",
+        serviceCity: fields["serviceCity"] ?? "",
+        serviceState: fields["serviceState"] ?? "",
+        serviceZip: fields["serviceZip"] ?? "",
+      });
+    }
+  }
+
   const fetchPreview = useCallback(async () => {
     setLoadingPreview(true);
     try {
@@ -96,21 +102,21 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
     }
   }, [caseId, getToken, fields]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // On open: if we have saved or pre-filled data, go straight to edit so user sees the pre-fill;
-  // if nothing at all, show blank form
   useEffect(() => {
     if (open) {
-      if (hasData) {
-        setMode("edit");
-      }
+      setMode("edit");
+      // If defendant's address is in the pre-filled fields, default to "same address"
+      setSameAddress(true);
     }
     if (!open) {
       if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
       setMode("view");
+      setCaseInfoExpanded(false);
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave() {
+    // If "same address" is still selected, ensure service address fields carry the pre-filled values
     await onSave();
     await fetchPreview();
     setMode("view");
@@ -118,7 +124,22 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
 
   const objectSrc = previewUrl ?? blankFormUrl;
 
-  // Count how many server fields are filled
+  // Build a human-readable "who is being served" line
+  const servedLine = f("businessName")
+    ? [f("businessName"), f("authorizedPerson") && `c/o ${f("authorizedPerson")}`, f("authorizedTitle") && `(${f("authorizedTitle")})`].filter(Boolean).join(" ")
+    : f("personServedName");
+
+  // Build a human-readable address line
+  const addressLine = [f("serviceAddress"), f("serviceCity"), f("serviceState"), f("serviceZip")].filter(Boolean).join(", ");
+
+  // Build documents line
+  const docsList = [
+    f("docsServed_sc100") === "yes" ? "SC-100 Plaintiff's Claim" : "",
+    f("docsServed_sc120") === "yes" ? "SC-120 Defendant's Claim" : "",
+    f("docsServedOther") || "",
+  ].filter(Boolean).join(" · ");
+
+  // Server progress
   const serverKeys = ["serviceMethod", "serviceDate", "serviceTime", "serverName", "serverPhone", "serverAddress", "serverCity", "serverState", "serverZip", "signDate"];
   const serverFilled = serverKeys.filter(k => (f(k) ?? "").trim()).length;
   const serverComplete = serverFilled === serverKeys.length;
@@ -197,149 +218,138 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
               <span>
                 {hasData
                   ? "Your data is shown on the form. Switch to \"Enter Details\" to edit it."
-                  : "Switch to \"Enter Details\" to fill in the form — case information will be pre-filled for you."}
+                  : "Switch to \"Enter Details\" to fill in the server details."}
               </span>
             </div>
           </div>
         )}
 
-        {/* ── Edit mode: form inputs ── */}
+        {/* ── Edit mode ── */}
         {mode === "edit" && (
-          <div className="flex-1 min-h-0 overflow-y-auto bg-background px-4 py-4 space-y-5">
+          <div className="flex-1 min-h-0 overflow-y-auto bg-background px-4 py-4 space-y-4">
 
-            {/* Pre-fill banner */}
-            {prefilledKeys.size > 0 && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3">
-                <Sparkles className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-semibold text-teal-900">Case information pre-filled from your intake</p>
-                  <p className="text-xs text-teal-800 mt-0.5">Fields marked <span className="font-semibold bg-teal-100 text-teal-700 px-1 rounded">From case</span> were filled automatically. Check them and correct if needed. Complete the <strong>Server Details</strong> section — that must be filled in by the person who served the papers.</p>
-                </div>
+            {/* ── Case info summary card (read-only, collapsible) ── */}
+            {hasCaseInfo && (
+              <div className="rounded-xl border border-teal-200 bg-teal-50 overflow-hidden">
+                <button
+                  className="w-full flex items-center justify-between px-4 py-3 text-left"
+                  onClick={() => setCaseInfoExpanded(v => !v)}
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-teal-600 shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-teal-900">Case information filled from your intake</p>
+                      <p className="text-[10px] text-teal-700 mt-0.5">Serving <strong>{servedLine || "—"}</strong> · {docsList || "—"}</p>
+                    </div>
+                  </div>
+                  {caseInfoExpanded
+                    ? <ChevronUp className="h-3.5 w-3.5 text-teal-600 shrink-0" />
+                    : <ChevronDown className="h-3.5 w-3.5 text-teal-600 shrink-0" />}
+                </button>
+
+                {caseInfoExpanded && (
+                  <div className="px-4 pb-4 pt-1 border-t border-teal-200 space-y-2">
+                    <SummaryRow label="Defendant" value={servedLine} />
+                    {f("authorizedPerson") && <SummaryRow label="Authorized agent" value={`${f("authorizedPerson")}${f("authorizedTitle") ? ` (${f("authorizedTitle")})` : ""}`} />}
+                    <SummaryRow label="Documents" value={docsList} />
+                    <SummaryRow label="Serve-to address" value={addressLine} />
+                    <p className="text-[10px] text-teal-700 pt-1">
+                      Need to correct something? Update it in your <strong>Intake</strong> tab and re-open this form.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Server completion progress */}
+            {/* ── Server completion progress ── */}
             <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${serverComplete ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}`}>
               {serverComplete
                 ? <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                 : <Info className="h-4 w-4 text-amber-500 shrink-0" />}
               <p className={`text-xs ${serverComplete ? "text-green-800" : "text-amber-800"}`}>
                 {serverComplete
-                  ? "All server details are filled in. Click Save & Preview to generate the form."
-                  : `Server details: ${serverFilled} of ${serverKeys.length} fields completed — scroll down to finish.`}
+                  ? "All server details complete. Click Save & Preview to generate the form."
+                  : `Complete the fields below — the person who served the papers fills these in.`}
               </p>
             </div>
 
-            {/* ── Section 1: Who is being served ── */}
-            <section className="space-y-2">
-              <h3 className="text-xs font-semibold text-foreground border-b pb-1">1 — Who Is Being Served</h3>
-              <Field
-                label="1a. Name of person being served (individual)"
-                id="personServedName" value={f("personServedName")} onChange={set("personServedName")}
-                placeholder="Full legal name of defendant"
-                prefilled={isPrefilled("personServedName")}
-              />
-              <p className="text-[10px] text-muted-foreground">— OR if serving a business or entity —</p>
-              <Field
-                label="1b. Business or agency name"
-                id="businessName" value={f("businessName")} onChange={set("businessName")}
-                placeholder="Business name"
-                prefilled={isPrefilled("businessName")}
-              />
-              <div className="flex gap-2">
-                <Field
-                  label="Person authorized for service" id="authorizedPerson"
-                  value={f("authorizedPerson")} onChange={set("authorizedPerson")}
-                  placeholder="Name" half prefilled={isPrefilled("authorizedPerson")}
-                />
-                <Field
-                  label="Job title" id="authorizedTitle"
-                  value={f("authorizedTitle")} onChange={set("authorizedTitle")}
-                  placeholder="Title" half prefilled={isPrefilled("authorizedTitle")}
-                />
-              </div>
-            </section>
+            {/* ── How service was made ── */}
+            <section className="space-y-3">
+              <h3 className="text-xs font-semibold text-foreground border-b pb-1">How Were the Papers Delivered?</h3>
 
-            {/* ── Section 3: Documents served ── */}
-            <section className="space-y-2">
-              <h3 className="text-xs font-semibold text-foreground border-b pb-1">3 — Documents Served</h3>
-              <Check
-                label="SC-100, Plaintiff's Claim and ORDER"
-                checked={f("docsServed_sc100") === "yes"} onChange={setCheck("docsServed_sc100")}
-                prefilled={isPrefilled("docsServed_sc100")}
-              />
-              <Check
-                label="SC-120, Defendant's Claim and ORDER"
-                checked={f("docsServed_sc120") === "yes"} onChange={setCheck("docsServed_sc120")}
-              />
-              <Field
-                label="Other documents served (describe)"
-                id="docsServedOther" value={f("docsServedOther")} onChange={set("docsServedOther")}
-                placeholder="e.g. MC-030 Declaration"
-                prefilled={isPrefilled("docsServedOther") && !!f("docsServedOther")}
-              />
-            </section>
-
-            {/* ── Section 4: How service was made ── */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2 border-b pb-1">
-                <h3 className="text-xs font-semibold text-foreground">4 — How Service Was Made</h3>
-                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">Server completes</span>
-              </div>
-
-              {/* Service method */}
-              <div className="flex gap-4 text-xs pt-0.5">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="flex flex-col gap-2 text-xs">
+                <label className="flex items-start gap-2 cursor-pointer p-2.5 rounded-lg border border-border hover:bg-muted/50 transition-colors">
                   <input type="radio" name="serviceMethod" value="personal"
                     checked={f("serviceMethod") === "personal"}
-                    onChange={() => set("serviceMethod")("personal")} />
-                  Personal service (handed directly to person)
+                    onChange={() => set("serviceMethod")("personal")}
+                    className="mt-0.5" />
+                  <div>
+                    <p className="font-medium">Personal service</p>
+                    <p className="text-muted-foreground text-[10px]">Handed directly to the defendant</p>
+                  </div>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-start gap-2 cursor-pointer p-2.5 rounded-lg border border-border hover:bg-muted/50 transition-colors">
                   <input type="radio" name="serviceMethod" value="substituted"
                     checked={f("serviceMethod") === "substituted"}
-                    onChange={() => set("serviceMethod")("substituted")} />
-                  Substituted service (left with another adult)
+                    onChange={() => set("serviceMethod")("substituted")}
+                    className="mt-0.5" />
+                  <div>
+                    <p className="font-medium">Substituted service</p>
+                    <p className="text-muted-foreground text-[10px]">Left with a responsible adult at home or workplace</p>
+                  </div>
                 </label>
               </div>
 
-              {/* Date and time */}
+              {f("serviceMethod") === "substituted" && (
+                <Field
+                  label="Who were the papers left with? (name or description)"
+                  id="subPersonDesc" value={f("subPersonDesc")} onChange={set("subPersonDesc")}
+                  placeholder="e.g. Jane Doe, co-worker"
+                />
+              )}
+
               <div className="flex gap-2">
                 <Field label="Date served" id="serviceDate" value={f("serviceDate")} onChange={set("serviceDate")} placeholder="MM/DD/YYYY" half />
                 <Field label="Time served" id="serviceTime" value={f("serviceTime")} onChange={set("serviceTime")} placeholder="e.g. 2:30 p.m." half />
               </div>
 
-              {/* Address where served — pre-filled from defendant's intake address */}
-              <Field
-                label="Address where served"
-                id="serviceAddress" value={f("serviceAddress")} onChange={set("serviceAddress")}
-                placeholder="Street address"
-                prefilled={isPrefilled("serviceAddress")}
-              />
-              <div className="flex gap-2">
-                <Field label="City" id="serviceCity" value={f("serviceCity")} onChange={set("serviceCity")} placeholder="City" half prefilled={isPrefilled("serviceCity")} />
-                <Field label="State" id="serviceState" value={f("serviceState")} onChange={set("serviceState")} placeholder="CA" half prefilled={isPrefilled("serviceState")} />
-                <Field label="Zip" id="serviceZip" value={f("serviceZip")} onChange={set("serviceZip")} placeholder="Zip" half prefilled={isPrefilled("serviceZip")} />
-              </div>
-
-              {f("serviceMethod") === "substituted" && (
-                <Field
-                  label="Name / description of person papers were left with"
-                  id="subPersonDesc" value={f("subPersonDesc")} onChange={set("subPersonDesc")}
-                  placeholder="Description of person"
-                />
+              {/* Address toggle */}
+              {hasCaseInfo && addressLine ? (
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input type="checkbox" checked={sameAddress} onChange={e => handleSameAddressToggle(e.target.checked)} className="h-3.5 w-3.5 rounded" />
+                    Service was at the defendant's address: <span className="font-medium">{addressLine}</span>
+                  </label>
+                  {!sameAddress && (
+                    <div className="space-y-2 pl-5 border-l-2 border-muted">
+                      <Field label="Actual address where served" id="serviceAddress" value={f("serviceAddress")} onChange={set("serviceAddress")} placeholder="Street address" />
+                      <div className="flex gap-2">
+                        <Field label="City" id="serviceCity" value={f("serviceCity")} onChange={set("serviceCity")} placeholder="City" half />
+                        <Field label="State" id="serviceState" value={f("serviceState")} onChange={set("serviceState")} placeholder="CA" half />
+                        <Field label="Zip" id="serviceZip" value={f("serviceZip")} onChange={set("serviceZip")} placeholder="Zip" half />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Field label="Address where served" id="serviceAddress" value={f("serviceAddress")} onChange={set("serviceAddress")} placeholder="Street address" />
+                  <div className="flex gap-2">
+                    <Field label="City" id="serviceCity" value={f("serviceCity")} onChange={set("serviceCity")} placeholder="City" half />
+                    <Field label="State" id="serviceState" value={f("serviceState")} onChange={set("serviceState")} placeholder="CA" half />
+                    <Field label="Zip" id="serviceZip" value={f("serviceZip")} onChange={set("serviceZip")} placeholder="Zip" half />
+                  </div>
+                </div>
               )}
             </section>
 
-            {/* ── Section 5: Server's information ── */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2 border-b pb-1">
-                <h3 className="text-xs font-semibold text-foreground">5 — Server's Information</h3>
-                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">Server completes</span>
-              </div>
+            {/* ── Server's information ── */}
+            <section className="space-y-3">
+              <h3 className="text-xs font-semibold text-foreground border-b pb-1">Who Served the Papers?</h3>
+              <p className="text-[10px] text-muted-foreground">This must be someone other than you — a friend, family member, or process server over 18.</p>
               <div className="flex gap-2">
-                <Field label="Server's full name" id="serverName" value={f("serverName")} onChange={set("serverName")} placeholder="Name of person who served" half />
-                <Field label="Phone" id="serverPhone" value={f("serverPhone")} onChange={set("serverPhone")} placeholder="Phone number" half />
+                <Field label="Server's full name" id="serverName" value={f("serverName")} onChange={set("serverName")} placeholder="Name" half />
+                <Field label="Phone number" id="serverPhone" value={f("serverPhone")} onChange={set("serverPhone")} placeholder="Phone" half />
               </div>
               <Field label="Server's street address" id="serverAddress" value={f("serverAddress")} onChange={set("serverAddress")} placeholder="Street address" />
               <div className="flex gap-2">
@@ -347,16 +357,14 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
                 <Field label="State" id="serverState" value={f("serverState")} onChange={set("serverState")} placeholder="CA" half />
                 <Field label="Zip" id="serverZip" value={f("serverZip")} onChange={set("serverZip")} placeholder="Zip" half />
               </div>
-              <Field label="Fee for service ($)" id="serverFee" value={f("serverFee")} onChange={set("serverFee")} placeholder="0.00" />
+              <Field label="Fee for service (enter 0 if no fee)" id="serverFee" value={f("serverFee")} onChange={set("serverFee")} placeholder="0.00" />
             </section>
 
-            {/* ── Section 6: Declaration date ── */}
+            {/* ── Signature date ── */}
             <section className="space-y-2">
-              <div className="flex items-center gap-2 border-b pb-1">
-                <h3 className="text-xs font-semibold text-foreground">6 — Declaration Date</h3>
-                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">Server completes</span>
-              </div>
-              <Field label="Date signed (server signs after completing service)" id="signDate" value={f("signDate")} onChange={set("signDate")} placeholder="MM/DD/YYYY" />
+              <h3 className="text-xs font-semibold text-foreground border-b pb-1">Declaration Date</h3>
+              <p className="text-[10px] text-muted-foreground">The date the server signs the form — must be after service was completed.</p>
+              <Field label="Date signed" id="signDate" value={f("signDate")} onChange={set("signDate")} placeholder="MM/DD/YYYY" />
             </section>
 
             <div className="pt-2 pb-6">
@@ -369,7 +377,7 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
                 Save &amp; Preview Form
               </Button>
               <p className="text-[10px] text-muted-foreground text-center mt-2">
-                Saving generates a preview of the filled SC-104. Use the card buttons to sign and download.
+                Generates a preview of the filled SC-104. Use the card buttons to sign and download.
               </p>
             </div>
           </div>
