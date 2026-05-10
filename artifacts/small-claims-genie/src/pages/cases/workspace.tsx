@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, PlusCircle, Play, X, ChevronRight, Home, Sparkles } from "lucide-react";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 import { Link, useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 const VALID_TABS = ["intake", "documents", "chat", "demand-letter", "forms", "prep", "deadlines"];
 
@@ -69,6 +70,12 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useHashTab(caseId);
   const [, navigate] = useLocation();
+  const { toast } = useToast();
+
+  const saveExit = () => {
+    toast({ title: "Progress saved", description: "Returning to your dashboard…" });
+    navigate("/dashboard");
+  };
 
   // forceStep: signal from the outer nav telling IntakeTab to jump to step 1 or 2.
   // Never seeded from localStorage — only set by outer-nav clicks.
@@ -383,7 +390,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 advisorTrigger={docAdvisorTrigger}
               />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
@@ -411,7 +418,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 onAutoMessageSent={() => setChatAutoMessage(undefined)}
               />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
@@ -428,7 +435,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 currentCase={extCase}
               />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
@@ -442,7 +449,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             <div>
               <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
@@ -456,7 +463,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             <div>
               <HearingPrepTab caseId={caseId} currentCase={extCase} isDraftMode={false} />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
@@ -473,14 +480,14 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             <div>
               <DeadlineCalculatorTab caseId={caseId} currentCase={extCase} />
               <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={() => navigate("/dashboard")}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
                 <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
-                <Button type="button" size="lg" onClick={() => navigate("/dashboard")} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                <Button type="button" size="lg" onClick={saveExit} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

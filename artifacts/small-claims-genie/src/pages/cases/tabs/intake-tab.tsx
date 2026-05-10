@@ -241,13 +241,14 @@ export function IntakeTab({
     });
   };
 
-  const handleSaveExit = async (formData: Record<string, unknown>) => {
-    try {
-      await saveIntake.mutateAsync({ id: caseId, data: { step: activeTab, data: formData } });
-      invalidateAll();
-    } catch {
-      // navigate even if save fails — data will be restored from DB on next open
-    }
+  const handleSaveExit = (formData: Record<string, unknown>) => {
+    // Fire the save — runs in background via singleton QueryClient even after
+    // the component unmounts, because wouter navigation is client-side (no reload).
+    saveIntake.mutate(
+      { id: caseId, data: { step: activeTab, data: formData } },
+      { onSuccess: () => { invalidateAll(); } },
+    );
+    toast({ title: "Progress saved", description: "Returning to your dashboard…" });
     navigate("/dashboard");
   };
 
