@@ -242,10 +242,10 @@ export function IntakeTab({
   };
 
   const handleSaveExit = (formData: Record<string, unknown>) => {
-    navigate("/dashboard");
     saveIntake.mutate({ id: caseId, data: { step: activeTab, data: formData } }, {
       onSuccess: () => { invalidateAll(); },
     });
+    window.location.href = "/dashboard";
   };
 
   const goToAdvisor = () => {
