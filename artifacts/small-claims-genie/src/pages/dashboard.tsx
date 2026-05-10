@@ -152,18 +152,16 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
   return (
     <div className="flex flex-col gap-4">
 
-      {/* ── Save confirmation banner ── */}
-      {justSaved && (
-        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-green-800">Saved successfully.</p>
-            {savedDate && (
-              <p className="text-xs text-green-700 mt-0.5">Your case progress was saved {savedDate}.</p>
-            )}
-          </div>
+      {/* ── Save confirmation banner — always visible ── */}
+      <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-green-800">Saved successfully.</p>
+          {savedDate && (
+            <p className="text-xs text-green-700 mt-0.5">Your case progress was saved {savedDate}.</p>
+          )}
         </div>
-      )}
+      </div>
 
       {/* ══ Main case card ══ */}
       <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
