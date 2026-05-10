@@ -241,11 +241,14 @@ export function IntakeTab({
     });
   };
 
-  const handleSaveExit = (formData: Record<string, unknown>) => {
-    saveIntake.mutate({ id: caseId, data: { step: activeTab, data: formData } }, {
-      onSuccess: () => { invalidateAll(); },
-    });
-    window.location.href = "/dashboard";
+  const handleSaveExit = async (formData: Record<string, unknown>) => {
+    try {
+      await saveIntake.mutateAsync({ id: caseId, data: { step: activeTab, data: formData } });
+      invalidateAll();
+    } catch {
+      // navigate even if save fails — data will be restored from DB on next open
+    }
+    navigate("/dashboard");
   };
 
   const goToAdvisor = () => {

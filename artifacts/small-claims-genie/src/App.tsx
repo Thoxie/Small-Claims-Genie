@@ -185,6 +185,21 @@ function Router() {
           </Layout>
         </Route>
 
+        {/* ── Protected named routes — must come before /cases/:id so these        ── */}
+        {/* paths aren't captured as a case ID (e.g. /dashboard → id="dashboard") ── */}
+        <Route path="/dashboard">
+          <Layout><RequireAuth><Dashboard /></RequireAuth></Layout>
+        </Route>
+        <Route path="/resume">
+          <Layout><RequireAuth><Resume /></RequireAuth></Layout>
+        </Route>
+        <Route path="/sc100">
+          <Layout><RequireAuth><SC100Generator /></RequireAuth></Layout>
+        </Route>
+        <Route path="/account">
+          <Layout><RequireAuth><AccountPage /></RequireAuth></Layout>
+        </Route>
+
         {/* ── Case workspace — render-prop so the id is passed explicitly     ── */}
         {/* (children-syntax in Wouter doesn't reliably push params to context) */}
         <Route path="/cases/:id">
@@ -197,7 +212,6 @@ function Router() {
         <Route>
           <Layout>
             <Switch>
-              {/* Public */}
               <Route path="/" component={Landing} />
               <Route path="/counties" component={Counties} />
               <Route path="/resources" component={Resources} />
@@ -208,21 +222,6 @@ function Router() {
               <Route path="/download" component={Download} />
               <Route path="/terms" component={Terms} />
               <Route path="/tos" component={TermsOfService} />
-
-              {/* Protected */}
-              <Route path="/dashboard">
-                <RequireAuth><Dashboard /></RequireAuth>
-              </Route>
-              <Route path="/resume">
-                <RequireAuth><Resume /></RequireAuth>
-              </Route>
-              <Route path="/sc100">
-                <RequireAuth><SC100Generator /></RequireAuth>
-              </Route>
-              <Route path="/account">
-                <RequireAuth><AccountPage /></RequireAuth>
-              </Route>
-
               <Route component={NotFound} />
             </Switch>
           </Layout>
