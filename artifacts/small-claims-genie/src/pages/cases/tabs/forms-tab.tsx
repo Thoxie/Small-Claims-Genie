@@ -735,11 +735,19 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     }
     setDownloadingForm("sc104"); setDownloadError(null);
     try {
-      const token = await getToken();
+      // Use the download-token pattern (same as every other form) so the PDF
+      // endpoint never needs to verify a short-lived Clerk JWT directly.
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${clerkToken}` },
+      });
+      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
+      const { token } = await tokenRes.json();
       const res = await fetch(`/api/cases/${caseId}/forms/sc104`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(sc104FieldsToBody(sc104Fields)),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...sc104FieldsToBody(sc104Fields), token }),
       });
       if (!res.ok) { win.close(); setDownloadError("Failed to generate SC-104 PDF — please try again."); return; }
       const blob = await res.blob();
