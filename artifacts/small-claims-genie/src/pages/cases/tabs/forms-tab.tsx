@@ -1224,6 +1224,66 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   If Service by Clerk is refused by defendant you can still follow-up and implement these services for reliability.
                 </p>
 
+                {/* Conditional guidance box — certified mail selected */}
+                {notifyMethod === "certified_mail" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">At the Filing Window</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Ask the clerk to send the defendant your claim by certified mail. Some courts require a local request form and a small certified-mail fee — ask the clerk whether anything else is needed before leaving the filing window.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Is Only Complete If the Defendant Signs</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Do not assume the defendant has been served just because the clerk mailed the papers. Service is only complete if the certified-mail receipt is signed by the defendant and the court accepts it as valid proof.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Check Status 10–14 Days After Filing</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Look up your case online using your case number, or contact the clerk to confirm whether the signed receipt came back and was accepted by the court.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">If Certified Mail Fails</p>
+                        <p className="text-xs text-blue-800 leading-relaxed mb-1">Service fails if the defendant refused delivery, ignored the postal notice, someone else signed in a way the court doesn't accept, or the mail was returned. Your case is <strong>not dismissed</strong> — you do not need to start over.</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Switch to another method quickly: personal service by an adult not involved in your case, sheriff service, or a registered process server.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Watch the Service Deadline</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">The defendant must be served at least <strong>15 days before the hearing</strong> if they are in the same county, or <strong>20 days before</strong> if they are outside the county. A failed certified mail attempt does <strong>not</strong> restart that deadline.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <FileText className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Not Enough Time? Request a Postponement</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">If the hearing date is too close to complete service, file <strong>SC-150 (Request to Postpone Trial)</strong> — available in the optional forms section below. File at least 10 days before the hearing when possible.</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
+                      <p className="text-xs font-semibold text-blue-900 mb-0.5">Recommended Next Step</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">Check the case status with the clerk as soon as possible after the mailing attempt. If no signed receipt is on file, don't wait — switch to a more reliable service method and request a postponement if the hearing date is too close.</p>
+                    </div>
+
+                  </div>
+                )}
 
                 {/* Radio 3 — Adult Service */}
                 <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "adult_service" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
