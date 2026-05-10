@@ -1,33 +1,151 @@
-import { useEffect } from "react";
-import { useLocation } from "wouter";
 import { useListCases } from "@workspace/api-client-react";
-import { Loader2 } from "lucide-react";
+import type { Case } from "@workspace/api-client-react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PlusCircle, ChevronRight, FileText, Wand2 } from "lucide-react";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 
-export default function Dashboard() {
-  const [, setLocation] = useLocation();
-  const { data: cases, isLoading } = useListCases();
+const STATUS_LABEL: Record<string, string> = {
+  draft: "In Progress",
+  intake_complete: "Intake Complete",
+  documents_uploaded: "Docs Uploaded",
+  ready_to_file: "Ready to File",
+  filed: "Filed",
+};
 
-  useEffect(() => {
-    if (isLoading) return;
-    if (cases && cases.length > 0) {
-      // Restore the last tab the user was on so they resume where they left off
-      const caseId = cases[0].id;
-      const savedTab = localStorage.getItem(`case-last-tab-${caseId}`);
-      const hash = savedTab ? `#${savedTab}` : "";
-      setLocation(`/cases/${caseId}${hash}`);
-    } else {
-      // No case yet — send them to create one
-      setLocation("/cases/new");
-    }
-  }, [cases, isLoading, setLocation]);
+const STATUS_COLOR: Record<string, string> = {
+  draft: "bg-amber-100 text-amber-800 border-amber-200",
+  intake_complete: "bg-blue-100 text-blue-800 border-blue-200",
+  documents_uploaded: "bg-purple-100 text-purple-800 border-purple-200",
+  ready_to_file: "bg-green-100 text-green-800 border-green-200",
+  filed: "bg-gray-100 text-gray-700 border-gray-200",
+};
+
+function formatCurrency(amount?: number) {
+  if (!amount) return null;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
+}
+
+function timeAgo(date: Date) {
+  const diff = Date.now() - new Date(date).getTime();
+  const days = Math.floor(diff / 86_400_000);
+  if (days === 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
+
+function CaseCard({ c }: { c: Case }) {
+  const savedTab = localStorage.getItem(`case-last-tab-${c.id}`);
+  const hash = savedTab ? `#${savedTab}` : "";
+  const statusLabel = STATUS_LABEL[c.status] ?? c.status;
+  const statusColor = STATUS_COLOR[c.status] ?? "bg-gray-100 text-gray-700 border-gray-200";
+  const amount = formatCurrency(c.claimAmount);
+  const vsLabel = c.defendantName ? `vs. ${c.defendantName}` : null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-white">
-      <img src={logoPath} alt="Small Claims Genie" className="h-20 w-auto opacity-80" />
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        <span className="text-sm font-medium">Loading your case…</span>
+    <div className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-foreground text-base leading-snug truncate">{c.title}</h3>
+          {vsLabel && <p className="text-sm text-muted-foreground truncate mt-0.5">{vsLabel}</p>}
+        </div>
+        <Badge className={`shrink-0 text-xs font-medium border ${statusColor}`} variant="outline">
+          {statusLabel}
+        </Badge>
+      </div>
+
+      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        {amount && <span className="font-medium text-foreground">{amount}</span>}
+        {c.claimType && <span className="capitalize">{c.claimType.replace(/_/g, " ")}</span>}
+        {c.readinessScore != null && (
+          <span className="ml-auto text-xs">
+            Readiness: <span className="font-semibold text-foreground">{c.readinessScore}%</span>
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between gap-2 pt-1">
+        <span className="text-xs text-muted-foreground">Updated {timeAgo(c.updatedAt)}</span>
+        <Button asChild size="sm" className="gap-1.5 rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90">
+          <Link href={`/cases/${c.id}${hash}`}>
+            Resume Case <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const { data: cases, isLoading, isError } = useListCases();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
+      <div className="container mx-auto px-4 py-10 max-w-2xl">
+
+        <div className="flex items-center justify-between mb-8 gap-4">
+          <img src={logoPath} alt="Small Claims Genie" className="h-14 w-auto" />
+          <Button asChild size="sm" className="gap-2 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold px-5 shadow-sm">
+            <Link href="/cases/new">
+              <PlusCircle className="h-4 w-4" /> New Case
+            </Link>
+          </Button>
+        </div>
+
+        <h1 className="text-2xl font-bold text-foreground mb-1">Your Cases</h1>
+        <p className="text-muted-foreground text-sm mb-6">Pick up where you left off, or start a new case.</p>
+
+        {isLoading && (
+          <div className="flex flex-col gap-4">
+            {[1, 2].map(i => (
+              <div key={i} className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-4 w-32" />
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-8 w-28 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {isError && (
+          <div className="text-center py-16 flex flex-col items-center gap-4">
+            <p className="text-muted-foreground">Couldn't load your cases. Please try refreshing the page.</p>
+            <Button variant="outline" onClick={() => window.location.reload()}>Refresh</Button>
+          </div>
+        )}
+
+        {!isLoading && !isError && cases && cases.length === 0 && (
+          <div className="text-center py-16 flex flex-col items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <FileText className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">No cases yet</h2>
+              <p className="text-muted-foreground text-sm mt-1">Start your first case and we'll walk you through everything.</p>
+            </div>
+            <Button asChild size="lg" className="gap-2 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold px-8 shadow-sm">
+              <Link href="/cases/new">
+                <Wand2 className="h-5 w-5" /> Start Your First Case
+              </Link>
+            </Button>
+          </div>
+        )}
+
+        {!isLoading && !isError && cases && cases.length > 0 && (
+          <div className="flex flex-col gap-4">
+            {cases.map(c => <CaseCard key={c.id} c={c} />)}
+          </div>
+        )}
+
       </div>
     </div>
   );
