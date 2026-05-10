@@ -1,0 +1,223 @@
+Yes. It is better than the prior version, but it still feels underdeveloped and slightly inconsistent.
+
+What needs to change:
+
+The saved confirmation banner is missing entirely. Since this dashboard appears after “Save and Exit,” that confirmation should be present.
+
+The case card still does not say “documents.” It says “Evidence uploaded: 6 total.” That is too vague. It should say “Documents uploaded: 6 total” or “Evidence documents uploaded: 6 total.”
+
+“California Small Claims · California” is repetitive and not useful. It should not say California twice.
+
+The dashboard should show the county and court address. That makes it feel much more legitimate and court-specific.
+
+The “Case Snapshot” repeats information already shown in the main card. It should focus on court and party confirmation details instead of repeating claim type and amount again.
+
+The “Your Cases” title and subtitle are on the same line. It looks slightly awkward. I would return to a stronger title/subtitle stack: title on one line, subtitle below.
+
+The main case card has too much empty horizontal space. The right-side status area could be cleaner and more useful.
+
+The lower two cards are good, but the Case Readiness card is visually heavier than the snapshot. It may be better to make both cards the same height and make the snapshot more useful.
+
+The Quick Help floating button distracts from the dashboard. It is not wrong, but it should be moved lower or made less visually dominant on this page.
+
+Use this prompt for Replit:
+
+Revise the “Your Cases” dashboard screen again based on the current screenshot.
+
+Goal:
+Make the dashboard feel more court-specific, professional, and useful after a user clicks “Save and Exit.” The current layout is cleaner than before, but it is missing the saved confirmation banner, repeats “California,” does not show county or court address, and the evidence/document language is too vague.
+
+Do not add deadlines, hearing dates, draft outputs, demand letter status, generate forms buttons, download packet buttons, next-step prompts, or extra workflow buttons.
+
+Required changes:
+
+1. Restore the saved confirmation banner.
+
+The dashboard appears after a user clicks “Save and Exit,” so the page must reassure the user that their work was saved.
+
+Place this banner below the page subtitle and above the main case card.
+
+Text:
+“Saved successfully.”
+“Your case progress was saved May 10, 2026.”
+
+Design:
+- Subtle success-style banner
+- Light green or very soft success background
+- Professional, not bright
+- Rounded corners
+- Small check icon is okay
+- Do not make it oversized
+
+2. Fix the page title layout.
+
+Current issue:
+“Your Cases” and “Pick up where you left off.” are on the same line.
+
+Change to:
+Your Cases
+Pick up where you left off.
+
+The title should be larger and bold.
+The subtitle should sit directly underneath in smaller muted text.
+
+3. Remove repetitive California wording.
+
+Current issue:
+The main case card says:
+“California Small Claims · California”
+
+This is repetitive.
+
+Replace that line with more useful court-specific information.
+
+Use:
+“Orange County Small Claims Court”
+
+Then show the court address separately:
+“Court address: 700 Civic Center Drive West, Santa Ana, CA 92701”
+
+Do not show “California Small Claims · California.”
+Do not repeat California unless it is part of the court address.
+
+4. Add county information.
+
+The dashboard should show the county because small claims is county-specific.
+
+Add:
+“County: Orange County”
+
+This can appear in the main card metadata or in the Case Snapshot section.
+
+5. Fix evidence/document language.
+
+Current issue:
+The card says:
+“Evidence uploaded: 6 total”
+
+This is too vague.
+
+Change it to:
+“Evidence documents uploaded: 6 total”
+
+Important:
+Only show the total number.
+Do not break it down by document type.
+Do not list photos, contracts, messages, receipts, emails, etc.
+
+6. Improve the main case card.
+
+The main card should include:
+
+- Maya Chen vs. Ethan Reed
+- $2,000 · Security Deposit
+- County: Orange County
+- Court: Orange County Small Claims Court
+- Court address: 700 Civic Center Drive West, Santa Ana, CA 92701
+- Evidence documents uploaded: 6 total
+- Updated May 10, 2026
+- Status badge: In Progress
+- Readiness: 80%
+- Existing Resume Case button
+
+Design:
+- Keep it compact
+- Avoid too much empty space
+- Use clean metadata rows or compact labels
+- Court address should be readable but not oversized
+- Keep the Resume Case button on the right on desktop
+- On mobile, stack cleanly
+
+7. Revise Case Snapshot so it is not repetitive.
+
+Current issue:
+Case Snapshot repeats claim type and amount, which are already prominent in the main card.
+
+Revise Case Snapshot to focus on identity and court confirmation.
+
+Display:
+Case Snapshot
+- Plaintiff: Maya Chen
+- Defendant: Ethan Reed
+- County: Orange County
+- Court: Orange County Small Claims Court
+- Court address: 700 Civic Center Drive West, Santa Ana, CA 92701
+- Last updated: May 10, 2026
+
+Do not include claim type or amount in Case Snapshot because those are already shown in the main card.
+
+8. Keep Case Readiness but make it visually balanced.
+
+Keep:
+Case Readiness
+- Claim Details: Complete
+- Parties: Complete
+- Timeline: Complete
+- Evidence: Complete
+- Review: Incomplete
+
+Readiness should remain 80% because 4 of 5 items are complete.
+
+Make the Case Readiness card and Case Snapshot card visually balanced:
+- Same width
+- Similar height if possible
+- Similar padding
+- Same card style
+
+9. Keep the status/readiness logic consistent.
+
+Because Review is incomplete:
+- Status badge should be “In Progress”
+- Readiness should be 80%
+- Review should be “Incomplete”
+
+Do not show 100% unless every readiness item is complete.
+
+10. Keep the security reassurance line.
+
+Keep this centered below the two lower cards:
+
+“Your case information is saved securely and can be updated anytime.”
+
+Use small, muted text.
+Do not style it like a legal disclaimer.
+
+11. Adjust the Quick Help button.
+
+The Quick Help floating button is visually competing with the dashboard.
+
+Keep it, but make it less distracting on this page:
+- Move it slightly lower on desktop, or
+- Reduce visual prominence slightly, or
+- Ensure it does not align directly with the dashboard cards
+
+Do not remove it unless the existing design system requires it.
+
+12. Preserve the existing brand style.
+
+Keep:
+- Light blue background
+- White cards
+- Rounded corners
+- Soft shadows
+- Navy/dark blue typography
+- Yellow header CTA button
+- Existing Resume Case button style
+- Existing navigation/header
+- Existing footer
+
+13. Responsive behavior.
+
+Desktop:
+- Dashboard container should be centered
+- Main case card should be full width within the dashboard container
+- Case Readiness and Case Snapshot should sit side by side below the main card
+
+Mobile:
+- Cards should stack vertically
+- Court address should wrap cleanly
+- Resume Case button should be easy to tap
+- No horizontal overflow
+
+Final result:
+The dashboard should feel like a compact legal case command center after Save and Exit. It should clearly show that the case was saved, identify the parties, show the county, court, court address, evidence document count, readiness status, and allow the user to resume the case without unnecessary extra workflow features.

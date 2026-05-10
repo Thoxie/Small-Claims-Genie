@@ -309,13 +309,13 @@ export function HelpGenieWidget() {
       {/* ── Floating button ── */}
       <button
         onClick={() => open ? handleClose() : setOpen(true)}
-        className="fixed bottom-[6px] right-5 z-[60] flex items-center gap-2 pl-3 pr-4 h-12 rounded-full shadow-lg text-white font-bold text-sm transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-5 right-5 z-[60] flex items-center gap-1.5 pl-2.5 pr-3.5 h-10 rounded-full shadow-md text-white font-medium text-xs transition-all hover:scale-105 active:scale-95 opacity-90 hover:opacity-100"
         style={{ background: open ? "#0a5449" : "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}
         aria-label={open ? "Close Help Genie" : "Open Help Genie"}
       >
         {open
-          ? <ChevronDown className="h-4 w-4 shrink-0" />
-          : <Sparkles className="h-4 w-4 shrink-0" />}
+          ? <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+          : <Sparkles className="h-3.5 w-3.5 shrink-0" />}
         <span>{open ? "Close" : "Quick Help"}</span>
       </button>
     </>
