@@ -25,21 +25,35 @@ const STATUS_COLOR: Record<string, string> = {
 
 function formatCurrency(amount?: number) {
   if (!amount) return null;
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
-function formatDate(date: Date | string) {
-  return new Date(date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+function formatDate(date: Date | string | undefined | null) {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function titleCase(str?: string | null) {
+  if (!str) return null;
+  return str.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 }
 
 function ReadinessItem({ label, complete }: { label: string; complete: boolean }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-2 py-1">
       {complete
-        ? <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-        : <Circle className="h-4 w-4 text-gray-300 shrink-0" />}
-      <span className={`text-sm ${complete ? "text-foreground" : "text-muted-foreground"}`}>{label}</span>
-      <span className={`ml-auto text-xs font-medium ${complete ? "text-green-700" : "text-muted-foreground"}`}>
+        ? <CheckCircle className="h-3.5 w-3.5 text-green-600 shrink-0" />
+        : <Circle className="h-3.5 w-3.5 text-gray-300 shrink-0" />}
+      <span className="text-sm text-foreground flex-1">{label}</span>
+      <span className={`text-xs font-medium ${complete ? "text-green-700" : "text-muted-foreground"}`}>
         {complete ? "Complete" : "Incomplete"}
       </span>
     </div>
@@ -49,19 +63,9 @@ function ReadinessItem({ label, complete }: { label: string; complete: boolean }
 function SnapshotRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <div className="flex justify-between items-start gap-4 py-2 border-b border-gray-100 last:border-0">
-      <span className="text-sm text-muted-foreground shrink-0">{label}</span>
-      <span className="text-sm font-medium text-foreground text-right">{value}</span>
-    </div>
-  );
-}
-
-function CaseDetail({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-      <span className="font-medium text-foreground/70">{label}:</span>
-      <span>{value}</span>
+    <div className="flex justify-between items-baseline gap-3 py-1.5 border-b border-gray-100 last:border-0">
+      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
+      <span className="text-xs font-medium text-foreground text-right">{value}</span>
     </div>
   );
 }
@@ -70,11 +74,8 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
   const savedTab = localStorage.getItem(`case-last-tab-${c.id}`);
   const hash = savedTab ? `#${savedTab}` : "";
 
-  const statusLabel = STATUS_LABEL[c.status] ?? c.status;
-  const statusColor = STATUS_COLOR[c.status] ?? "bg-gray-100 text-gray-700 border-gray-200";
-  const amount = formatCurrency(c.claimAmount);
-  const plaintiff = c.plaintiffName?.trim();
-  const defendant = c.defendantName?.trim();
+  const plaintiff = c.plaintiffName?.trim() || null;
+  const defendant = c.defendantName?.trim() || null;
 
   const heading = plaintiff && defendant
     ? `${plaintiff} vs. ${defendant}`
@@ -82,6 +83,10 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
     : defendant ? `(plaintiff TBD) vs. ${defendant}`
     : c.title;
 
+  const amount = formatCurrency(c.claimAmount);
+
+  // Derive readiness from the checklist items, not from the server field,
+  // so the percentage stays consistent with what the checklist shows.
   const readinessItems = [
     { label: "Claim Details", complete: !!(c.claimType && c.claimAmount) },
     { label: "Parties",       complete: !!(plaintiff && defendant) },
@@ -89,6 +94,17 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
     { label: "Evidence",      complete: !!(c.documentCount && c.documentCount > 0) },
     { label: "Review",        complete: !!(c.intakeComplete) },
   ];
+  const completeCount = readinessItems.filter(i => i.complete).length;
+  const readinessPct = Math.round((completeCount / readinessItems.length) * 100);
+
+  // Status badge: use server status but only show "Intake Complete" if readiness
+  // is actually 100%; otherwise fall back to "In Progress".
+  const allComplete = completeCount === readinessItems.length;
+  const derivedStatus = allComplete ? c.status : "draft";
+  const statusLabel = STATUS_LABEL[derivedStatus] ?? STATUS_LABEL[c.status] ?? c.status;
+  const statusColor = STATUS_COLOR[derivedStatus] ?? STATUS_COLOR[c.status] ?? "bg-gray-100 text-gray-700 border-gray-200";
+
+  const savedDate = formatDate(c.updatedAt);
 
   return (
     <div className="flex flex-col gap-4">
@@ -99,49 +115,58 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
           <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-green-800">Saved successfully.</p>
-            <p className="text-xs text-green-700 mt-0.5">Your case progress was saved {formatDate(c.updatedAt)}.</p>
+            {savedDate && (
+              <p className="text-xs text-green-700 mt-0.5">
+                {"Your case progress was saved "}
+                {savedDate}.
+              </p>
+            )}
           </div>
         </div>
       )}
 
       {/* ── Main case card ── */}
-      <div className="bg-white border border-border rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+      <div className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3 shadow-sm">
 
-        {/* Header row */}
+        {/* Header */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground text-base leading-snug">{heading}</h3>
-          </div>
+          <h3 className="font-semibold text-foreground text-base leading-snug flex-1 min-w-0">{heading}</h3>
           <Badge className={`shrink-0 text-xs font-medium border ${statusColor}`} variant="outline">
             {statusLabel}
           </Badge>
         </div>
 
-        {/* Key figures */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-          {amount && <span className="font-semibold text-foreground text-base">{amount}</span>}
-          {c.claimType && <span className="text-muted-foreground capitalize">{c.claimType.replace(/_/g, " ")}</span>}
-          {c.readinessScore != null && (
-            <span className="ml-auto text-xs text-muted-foreground">
-              Readiness: <span className="font-semibold text-foreground">{c.readinessScore}%</span>
+        {/* Amount · Claim type · Readiness */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">
+          {amount && <span className="font-semibold text-foreground">{amount}</span>}
+          {amount && c.claimType && <span className="text-muted-foreground">·</span>}
+          {c.claimType && (
+            <span className="text-muted-foreground capitalize">{c.claimType.replace(/_/g, " ")}</span>
+          )}
+          <span className="ml-auto text-xs text-muted-foreground">
+            Readiness:{" "}
+            <span className="font-semibold text-foreground">{readinessPct}%</span>
+          </span>
+        </div>
+
+        {/* Compact metadata line */}
+        <div className="flex flex-col gap-1 text-xs text-muted-foreground border-t border-gray-100 pt-2">
+          <span>California Small Claims · California</span>
+          {c.documentCount != null && (
+            <span>
+              Evidence uploaded: {c.documentCount} total
             </span>
           )}
         </div>
 
-        {/* Extra case details */}
-        <div className="flex flex-col gap-1.5 pt-1 border-t border-gray-100">
-          <CaseDetail label="Court" value="California Small Claims" />
-          <CaseDetail label="Jurisdiction" value="California" />
-          {c.documentCount != null && (
-            <CaseDetail label="Evidence uploaded" value={`${c.documentCount} file${c.documentCount !== 1 ? "s" : ""}`} />
-          )}
-          <CaseDetail label="Status" value={statusLabel} />
-        </div>
-
         {/* Footer */}
-        <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-100">
-          <span className="text-xs text-muted-foreground">Updated {formatDate(c.updatedAt)}</span>
-          <Button asChild size="sm" className="gap-1.5 rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90">
+        <div className="flex items-center justify-between gap-2 border-t border-gray-100 pt-2">
+          <span className="text-xs text-muted-foreground">Updated {savedDate}</span>
+          <Button
+            asChild
+            size="sm"
+            className="gap-1.5 rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+          >
             <Link href={`/cases/${c.id}${hash}`}>
               Resume Case <ChevronRight className="h-3.5 w-3.5" />
             </Link>
@@ -149,25 +174,31 @@ function CaseView({ c, justSaved }: { c: Case; justSaved: boolean }) {
         </div>
       </div>
 
-      {/* ── Case Readiness ── */}
-      <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex flex-col gap-3">
-        <h4 className="text-sm font-semibold text-foreground">Case Readiness</h4>
-        <div className="flex flex-col gap-2">
+      {/* ── Two-column row: Readiness + Snapshot ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* Case Readiness */}
+        <div className="bg-white border border-border rounded-xl p-4 shadow-sm flex flex-col gap-2">
+          <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">
+            Case Readiness
+          </h4>
           {readinessItems.map(item => (
             <ReadinessItem key={item.label} label={item.label} complete={item.complete} />
           ))}
         </div>
-      </div>
 
-      {/* ── Case Snapshot ── */}
-      <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex flex-col gap-1">
-        <h4 className="text-sm font-semibold text-foreground mb-2">Case Snapshot</h4>
-        <SnapshotRow label="Claim type"   value={c.claimType ? c.claimType.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()) : null} />
-        <SnapshotRow label="Amount"       value={amount} />
-        <SnapshotRow label="Plaintiff"    value={plaintiff ?? null} />
-        <SnapshotRow label="Defendant"    value={defendant ?? null} />
-        <SnapshotRow label="Court"        value="California Small Claims" />
-        <SnapshotRow label="Last updated" value={formatDate(c.updatedAt)} />
+        {/* Case Snapshot */}
+        <div className="bg-white border border-border rounded-xl p-4 shadow-sm flex flex-col">
+          <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">
+            Case Snapshot
+          </h4>
+          <SnapshotRow label="Plaintiff"    value={plaintiff} />
+          <SnapshotRow label="Defendant"    value={defendant} />
+          <SnapshotRow label="Claim type"   value={titleCase(c.claimType)} />
+          <SnapshotRow label="Amount"       value={amount} />
+          <SnapshotRow label="Court"        value="California Small Claims" />
+          <SnapshotRow label="Last updated" value={savedDate} />
+        </div>
       </div>
 
       {/* ── Trust line ── */}
@@ -194,21 +225,32 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
 
-        <h1 className="text-2xl font-bold text-foreground mb-1">Your Cases</h1>
-        <p className="text-muted-foreground text-sm mb-6">Pick up where you left off.</p>
+        {/* Title + subtitle on one line */}
+        <div className="flex items-baseline gap-2 mb-6">
+          <h1 className="text-2xl font-bold text-foreground">Your Cases</h1>
+          <span className="text-sm text-muted-foreground">Pick up where you left off.</span>
+        </div>
 
         {isLoading && (
           <div className="flex flex-col gap-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3">
-                <Skeleton className="h-5 w-56" />
-                <Skeleton className="h-4 w-36" />
-                <div className="flex justify-between items-center pt-2">
-                  <Skeleton className="h-3 w-28" />
-                  <Skeleton className="h-8 w-28 rounded-full" />
-                </div>
+            <div className="bg-white border border-border rounded-xl p-5 flex flex-col gap-3">
+              <Skeleton className="h-5 w-56" />
+              <Skeleton className="h-4 w-36" />
+              <div className="flex justify-between items-center pt-2">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-8 w-28 rounded-full" />
               </div>
-            ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white border border-border rounded-xl p-4 flex flex-col gap-2">
+                <Skeleton className="h-3 w-24 mb-1" />
+                {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-4 w-full" />)}
+              </div>
+              <div className="bg-white border border-border rounded-xl p-4 flex flex-col gap-2">
+                <Skeleton className="h-3 w-24 mb-1" />
+                {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-4 w-full" />)}
+              </div>
+            </div>
           </div>
         )}
 
@@ -226,7 +268,9 @@ export default function Dashboard() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground">No cases yet</h2>
-              <p className="text-muted-foreground text-sm mt-1">Contact support to get started with your case.</p>
+              <p className="text-muted-foreground text-sm mt-1">
+                Contact support to get started with your case.
+              </p>
             </div>
           </div>
         )}

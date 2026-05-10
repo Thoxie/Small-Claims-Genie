@@ -1,0 +1,165 @@
+Revise the “Your Cases” dashboard layout based on the current implementation.
+
+Goal:
+Make the dashboard feel more polished, compact, and professional. The current version stacks too many large cards vertically and repeats information. Redesign it so the user can understand the case status at a glance.
+
+Do not add deadlines, hearing dates, draft outputs, demand letter status, generate forms buttons, download packet buttons, next-step prompts, or extra workflow buttons.
+
+Required layout changes:
+
+1. Keep the saved confirmation banner, but fix the text and spacing.
+
+Current issue:
+The banner text appears as “savedMay 10, 2026.”
+
+Correct text:
+“Saved successfully.”
+“Your case progress was saved May 10, 2026.”
+
+Design:
+Keep it subtle, clean, and professional.
+Place it below “Pick up where you left off.” and above the case card.
+Do not make it oversized.
+
+2. Redesign the dashboard structure.
+
+Current issue:
+The page stacks the main case card, Case Readiness card, and Case Snapshot card vertically. This makes the dashboard too long and less professional.
+
+New structure:
+- Top: page title and subtitle
+- Then: saved confirmation banner
+- Then: one main case card
+- Then: a two-column section below the case card:
+  - Left: Case Readiness
+  - Right: Case Snapshot
+
+On desktop:
+Case Readiness and Case Snapshot should sit side by side in equal-width cards.
+
+On mobile:
+They should stack vertically.
+
+3. Improve the main case card.
+
+Keep the main card compact and useful.
+
+Main card should include:
+- Case name: Maya Chen vs. Ethan Reed
+- Amount and claim type: $2,000 · Security Deposit
+- Court/jurisdiction metadata in one compact line:
+  “California Small Claims · California”
+- Evidence count:
+  “Evidence uploaded: 6 total”
+- Last updated:
+  “Updated May 10, 2026”
+- Status badge
+- Readiness percentage
+- Existing “Resume Case” button
+
+Important:
+Evidence should only show the total number. Do not break evidence down by type. Do not say photos, contracts, messages, etc.
+
+4. Fix the status/readiness contradiction.
+
+Current issue:
+The badge says “In Progress,” but readiness says “100%,” while the Review checklist says “Incomplete.”
+
+Make the status internally consistent.
+
+Use this logic:
+- If Review is incomplete, the status badge should say “In Progress” and readiness should be less than 100%.
+- For the current sample case, set readiness to 80% because 4 of 5 readiness items are complete.
+- Keep Review as “Incomplete.”
+
+So the current sample should show:
+Status badge: “In Progress”
+Readiness: 80%
+
+Do not show “Readiness: 100%” unless every Case Readiness item is complete.
+
+5. Redesign Case Readiness.
+
+Keep Case Readiness as a smaller card below the main case card, in the left column on desktop.
+
+Display:
+Case Readiness
+- Claim Details: Complete
+- Parties: Complete
+- Timeline: Complete
+- Evidence: Complete
+- Review: Incomplete
+
+Design:
+Use a clean checklist style.
+Use subtle checkmarks or status indicators.
+Make complete items visually distinct from incomplete items, but keep the colors professional and understated.
+Do not make this card too tall.
+
+6. Redesign Case Snapshot.
+
+Keep Case Snapshot as a smaller card below the main case card, in the right column on desktop.
+
+Display only:
+Case Snapshot
+- Plaintiff: Maya Chen
+- Defendant: Ethan Reed
+- Claim type: Security Deposit
+- Amount: $2,000
+- Court: California Small Claims
+- Last updated: May 10, 2026
+
+Avoid unnecessary repetition from the main card, but keep enough information so the user can confirm they are looking at the correct case.
+
+7. Reduce duplicate information and visual padding.
+
+Current issue:
+The dashboard feels padded because the same details appear in several places and the cards are too tall.
+
+Fix:
+- Use tighter spacing inside the cards.
+- Do not repeat “Jurisdiction: California” again in Case Snapshot if “Court: California Small Claims” is already shown.
+- Keep the main card focused on case identity, status, evidence total, and resume action.
+- Keep the lower cards focused on readiness and confirmation details.
+
+8. Keep the trust/security line at the bottom.
+
+Text:
+“Your case information is saved securely and can be updated anytime.”
+
+Design:
+Small, muted text centered below the two-column section.
+Do not style it like a legal disclaimer.
+
+9. Preserve the existing site style.
+
+Keep:
+- Light blue/soft background
+- White cards
+- Rounded corners
+- Soft shadows
+- Navy/dark blue typography
+- Existing “Resume Case” button style
+- Existing navigation/header
+- Existing footer
+
+10. Responsive behavior.
+
+Desktop:
+The content should feel centered and not too narrow.
+The main case card should be full-width within the dashboard container.
+Case Readiness and Case Snapshot should sit side by side below it.
+
+Mobile:
+All cards should stack vertically.
+Spacing should remain clean and readable.
+The Resume Case button should remain easy to tap.
+
+Final result:
+The dashboard should feel like a compact case command center:
+- Saved confirmation
+- Main case status card
+- Side-by-side Case Readiness and Case Snapshot
+- Evidence total only
+- No contradiction between status and readiness
+- No unnecessary extra workflow features
