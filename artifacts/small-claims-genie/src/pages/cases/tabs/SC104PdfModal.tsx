@@ -4,14 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, X, Info, ChevronDown, ChevronUp, ExternalLink, AlertCircle } from "lucide-react";
-
-// Convert UI field state → server body format
-export function sc104FieldsToBody(f: Record<string, string>): Record<string, unknown> {
-  const docsServed: string[] = [];
-  if (f["docsServed_sc100"] === "yes") docsServed.push("sc100");
-  if ((f["docsServedOther"] ?? "").trim()) docsServed.push("other");
-  return { ...f, docsServed };
-}
+import { sc104FieldsToBody } from "./sc104-utils";
 
 interface Props {
   open: boolean;

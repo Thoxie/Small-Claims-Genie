@@ -10,7 +10,8 @@ import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, Al
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
-import { SC104PdfModal, sc104FieldsToBody } from "./SC104PdfModal";
+import { SC104PdfModal } from "./SC104PdfModal";
+import { sc104FieldsToBody } from "./sc104-utils";
 
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
 const FORMS_CATALOG = [
@@ -584,7 +585,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [selectedExhibits, setSelectedExhibits] = useState<number[]>(savedExhibitIds ?? []);
   const [buildingPacket, setBuildingPacket] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
-  const [wizardIndex, setWizardIndex] = useState(0);
+  const [wizardIndex, setWizardIndex] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`sc_forms_step_${caseId}`);
+      const n = stored !== null ? parseInt(stored, 10) : 0;
+      return isNaN(n) ? 0 : n;
+    } catch { return 0; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(`sc_forms_step_${caseId}`, String(wizardIndex)); } catch {}
+  }, [wizardIndex, caseId]);
   const [notifyMethod, setNotifyMethod] = useState<string>("");
 
   // ── Documents for exhibit selector ────────────────────────────────────────
