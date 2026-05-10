@@ -1782,6 +1782,13 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         }}>
                         <PenLine className="h-3 w-3" />Sign &amp; Download
                       </Button>
+                    ) : step.id === "sc104" ? (
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3"
+                        onClick={openSC104InNewTab}
+                        disabled={downloadingForm === "sc104"}>
+                        {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                        Open SC-104 PDF
+                      </Button>
                     ) : hasFieldConfig ? (
                       <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3"
                         onClick={() => { setModalInitialValues(getInitialValues(step.id)); setModalFormId(step.id); }}>
