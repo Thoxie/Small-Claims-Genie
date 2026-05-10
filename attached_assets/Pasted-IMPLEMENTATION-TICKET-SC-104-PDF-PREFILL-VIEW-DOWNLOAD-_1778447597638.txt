@@ -1,0 +1,125 @@
+IMPLEMENTATION TICKET — SC-104 PDF PREFILL / VIEW / DOWNLOAD / PRINT
+
+Project: Small Claims Genie
+Scope: Court Forms UI section only.
+Do not refactor unrelated files. Do not redesign the app. Do not create placeholder/demo-only behavior. The change must affect the actual live-rendered application UI.
+
+Objective:
+In the existing Court Forms section, when the user selects SC-104 Proof of Service, the app must open the SC-104 PDF in a viewer/modal/page and prefill the available AcroForm fields using data already collected during the user intake process. The user must then be able to view the filled PDF, download it, and print it.
+
+Uploaded files:
+I am uploading these SC-104 files again:
+1. SC-104_Proof_of_Service_AcroForm.pdf
+2. sc104.pdf
+3. SC-104_Proof_of_Service_INDIVIDUAL SERVICE.pdf
+
+Use the AcroForm version for actual PDF field filling:
+SC-104_Proof_of_Service_AcroForm.pdf
+
+Before coding, inspect the repository and identify:
+1. The actual rendered Court Forms UI component/route.
+2. The data source/list that defines available court forms.
+3. The current SC-104 form entry, if one exists.
+4. The actual intake data source used by the app, including whether the data comes from React state, context, localStorage, IndexedDB, Supabase, or another existing repository/service.
+5. The existing PDF viewing/download/print pattern, if one already exists elsewhere in the app.
+
+Do not assume file names, routes, or data keys. Inspect them first.
+
+Functional requirements:
+
+1. SC-104 must appear in the existing Court Forms UI section.
+   - It must be labeled: “SC-104 Proof of Service”
+   - It must not open a blank/unfilled PDF if intake data exists.
+   - It must not link directly to the raw static PDF unless no prefill data exists and a clear fallback message is shown.
+
+2. When the user clicks SC-104, generate a new filled PDF from the uploaded AcroForm PDF using pdf-lib or the project’s existing PDF library.
+   - Load the AcroForm PDF.
+   - Fill only fields that can be safely prefilled from intake.
+   - Preserve fields that must be completed manually by the process server.
+
+3. Prefill these SC-104 fields when matching intake data exists:
+   - Court name and court street address.
+   - County.
+   - Case number, if already assigned/stored.
+   - Case name.
+   - Hearing date.
+   - Hearing time.
+   - Department.
+   - Person being served / defendant name.
+   - Business/entity name, if the defendant is a business/entity.
+   - Person authorized for service, if collected.
+   - Job title, if collected.
+   - Service street address.
+   - Service city.
+   - Service state.
+   - Service zip.
+   - Check or mark SC-100 as the document served when the case is a plaintiff’s claim.
+   - If MC-030 or other attachments are part of the filing packet, fill the “Other” document field with the applicable document names.
+
+4. Leave these fields blank/manual because they are completed after service:
+   - Actual service date.
+   - Actual service time.
+   - Personal service vs substituted service selection, unless the user has already specifically chosen this in a service workflow.
+   - Name/description of person who received substituted service.
+   - Mailing date and mailing location for substituted service.
+   - Server name.
+   - Server phone.
+   - Server address.
+   - Server fee.
+   - Process server county of registration.
+   - Process server registration number.
+   - Signature date.
+   - Server signature.
+
+5. Use the actual AcroForm field names from the PDF.
+   - Do not invent field names.
+   - Add a small internal utility or debug-only helper that logs the SC-104 PDF field names to the console during development.
+   - Remove or disable noisy console output after mapping is complete unless the project already uses debug flags.
+
+6. Create a clear field-mapping object for SC-104.
+   - The mapping must connect actual PDF AcroForm field names to actual intake data keys.
+   - Add inline comments for fields intentionally left blank.
+   - If an intake value is missing, leave that PDF field blank. Do not insert “undefined,” “null,” placeholder text, or fake data.
+
+7. The filled PDF must be displayed to the user.
+   - Display the generated filled PDF Blob/object URL inside the existing UI pattern if available.
+   - The user must be able to download the filled PDF.
+   - The user must be able to print the filled PDF.
+   - The PDF should be visibly filled before download/print.
+
+8. The UI must include a short note near SC-104:
+   “SC-104 is a Proof of Service. Some fields must be completed by the person who serves the papers after service is completed.”
+
+9. The generated file name should be:
+   SC-104_Proof_of_Service_prefilled.pdf
+
+10. Add error handling:
+   - If the AcroForm PDF is missing, show a visible error message.
+   - If the PDF loads but fields cannot be found, show a visible error message.
+   - If intake data is missing, still open the form but leave missing fields blank.
+   - Do not silently fail.
+
+Acceptance criteria:
+
+A. In the actual running app, go to the existing Court Forms section.
+B. SC-104 Proof of Service is visible.
+C. Click SC-104.
+D. The app opens a PDF viewer/modal/page showing SC-104.
+E. The displayed PDF is generated from the AcroForm version, not the blank static display version.
+F. At minimum, when the corresponding intake data exists, the PDF visibly shows:
+   - Court name/address.
+   - Case name.
+   - Defendant/person being served.
+   - Service address.
+G. SC-100 is checked or marked as served when the case is based on SC-100.
+H. Manual server/service-completion fields remain blank.
+I. Download produces SC-104_Proof_of_Service_prefilled.pdf.
+J. Print opens/prints the filled PDF, not the blank PDF.
+K. The change must work at desktop, laptop, tablet, and mobile widths.
+L. No horizontal overflow, clipped buttons, or broken modal layout.
+M. No unrelated features, no unrelated refactors, and no fake sample data.
+
+Important:
+This has failed multiple times because prior changes did not affect the actual live-rendered application. Before coding, trace the rendered SC-104 click path from the Court Forms UI to the PDF display/download behavior. After coding, verify in the running app that the actual user-facing SC-104 button opens the filled PDF.
+
+If anything is unclear, ask concise clarification questions before coding. Do not proceed with assumptions that would create another non-functional implementation.

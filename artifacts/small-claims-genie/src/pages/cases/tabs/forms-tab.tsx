@@ -1387,7 +1387,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Your case information is pre-filled automatically. Click below to open the SC-104 PDF — fill in the server's details directly on the form, then print or save it.
+              SC-104 is a Proof of Service. Some fields must be completed by the person who serves the papers after service is completed. Your case information is pre-filled — click below to open the form, fill in the server&apos;s details directly on the PDF, then save or print it.
             </p>
             {commonWarnings}
             {commonRelated}
