@@ -18,9 +18,14 @@ localPort = 18304
 run = "pnpm --filter @workspace/small-claims-genie run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/small-claims-genie", "run", "build" ]
 publicDir = "artifacts/small-claims-genie/dist/public"
 serve = "static"
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/small-claims-genie", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
 
 [[services.production.rewrites]]
 from = "/*"
