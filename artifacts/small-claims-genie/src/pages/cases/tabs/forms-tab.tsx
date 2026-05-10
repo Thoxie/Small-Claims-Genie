@@ -707,7 +707,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const sourceFields = rawFields ?? sc104Fields;
       const formBody = sc104FieldsToBody(sourceFields);
       const endpoint = signatureDataUrl ? "sc104/signed" : "sc104";
-      const filename = signatureDataUrl ? `SC104-Signed-Case-${caseId}.pdf` : `SC104-Case-${caseId}.pdf`;
+      const filename = signatureDataUrl ? `SC-104_Proof_of_Service_prefilled-signed.pdf` : `SC-104_Proof_of_Service_prefilled.pdf`;
       const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -726,6 +726,13 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   async function openSC104InNewTab() {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    // Open the window synchronously (direct response to user click) before any
+    // async operations — this prevents popup blockers from suppressing it.
+    const win = window.open("", "_blank");
+    if (!win) {
+      toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." });
+      return;
+    }
     setDownloadingForm("sc104"); setDownloadError(null);
     try {
       const token = await getToken();
@@ -734,12 +741,12 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(sc104FieldsToBody(sc104Fields)),
       });
-      if (!res.ok) { setDownloadError("Failed to generate SC-104 PDF — please try again."); return; }
+      if (!res.ok) { win.close(); setDownloadError("Failed to generate SC-104 PDF — please try again."); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
+      win.location.href = url;
       setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch { setDownloadError("Failed to open SC-104 PDF — please try again."); }
+    } catch { win.close(); setDownloadError("Failed to open SC-104 PDF — please try again."); }
     finally { setDownloadingForm(null); }
   }
 
