@@ -531,7 +531,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
-  const [sc104Fields, setSc104Fields] = useState<Record<string, string>>(() => {
+  const [sc104Fields] = useState<Record<string, string>>(() => {
     const saved = currentCase?.sc104Data as Record<string, string> | null | undefined;
     if (saved && Object.keys(saved).length > 0) return saved;
     // Auto-seed from intake data when no saved data exists
@@ -551,14 +551,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       serviceZip: cc?.defendantZip || "",
     };
   });
-  // Track whether sc104Fields were seeded from intake (no prior DB save)
-  const sc104WasPreFilled = !(currentCase?.sc104Data && Object.keys(currentCase.sc104Data).length > 0);
-  const SC104_PREFILLED_KEYS: ReadonlySet<string> = new Set([
-    "personServedName", "businessName", "authorizedPerson", "authorizedTitle",
-    "docsServed_sc100", "docsServedOther",
-    "serviceAddress", "serviceCity", "serviceState", "serviceZip",
-  ]);
-  const [sc104Saving, setSc104Saving] = useState(false);
   const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
 
@@ -986,25 +978,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     setSelectedExhibits(prev => prev.includes(docId) ? prev.filter(id => id !== docId) : [...prev, docId]);
   }
 
-  async function saveSC104ToSystem() {
-    if (isDraftMode) { toast({ title: "Subscribe to Save", description: "Start your subscription to save form data." }); return; }
-    setSc104Saving(true);
-    try {
-      const token = await getToken();
-      const res = await fetch(`/api/cases/${caseId}/forms/sc104-data`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(sc104Fields),
-      });
-      if (!res.ok) throw new Error("Save failed");
-      toast({ title: "SC-104 saved", description: "Your form data has been saved to your case." });
-    } catch {
-      toast({ title: "Save failed", description: "Could not save SC-104 data. Please try again.", variant: "destructive" });
-    } finally {
-      setSc104Saving(false);
-    }
-  }
-
   function getInitialValues(formId: string): Record<string, string> {
     const cc = currentCase;
     const courthouseStreet = cc.courthouseAddress || "";
@@ -1383,7 +1356,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         );
 
       case "sc104": {
-        const hasSavedData = Object.keys(sc104Fields).some(k => (sc104Fields[k] ?? "").trim());
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
