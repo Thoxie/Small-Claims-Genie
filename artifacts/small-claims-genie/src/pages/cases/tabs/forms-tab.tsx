@@ -1360,7 +1360,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              To be completed by the person who served the court papers — <strong className="text-foreground">not you</strong>. Fill in the server's details, who was served, and how service was made.
+              Enter the details provided by the person who served the papers. Your case information is pre-filled automatically — click below to add the server's details, then get your completed PDF in one step.
             </p>
             {commonWarnings}
             {commonRelated}
@@ -2028,7 +2028,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         getToken={getToken}
         fields={sc104Fields}
         onChange={setSc104Fields}
-        saving={sc104Saving}
         onSave={saveSC104ToSystem}
         prefilledKeys={sc104WasPreFilled ? SC104_PREFILLED_KEYS : new Set()}
       />
