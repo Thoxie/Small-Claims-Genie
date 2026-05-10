@@ -1419,10 +1419,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             <span className="text-sm font-semibold text-foreground">
               Form {wizardIndex + 1} of {wizardSteps.length}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {wizardSteps.length} required for your case ·{" "}
-              {additionalSteps.length} additional
-            </span>
           </div>
           <div className="h-2 rounded-full bg-secondary overflow-hidden">
             <div
