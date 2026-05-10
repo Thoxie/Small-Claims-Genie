@@ -2225,7 +2225,6 @@ async function buildSC104Pdf(
   if (b.serviceMethod === "personal") {
     xm2(53, 677);
     v2(b.serviceDate, 142, 662);
-    v2(b.serviceTime, 342, 662);
     v2(b.serviceAddress, 160, 652);
     v2(b.serviceCity,            115, 638);
     v2(b.serviceState || "CA",   412, 638);
@@ -2244,7 +2243,6 @@ async function buildSC104Pdf(
   if (b.serviceMethod === "substituted") {
     xm2(53, 603);
     v2(b.serviceDate, 170, 522);
-    v2(b.serviceTime, 370, 522);
     if (b.serviceAddress) v2(b.serviceAddress, 133, 495);
     v2(b.serviceCity,            115, 453);
     v2(b.serviceState || "CA",   408, 453);

@@ -138,7 +138,7 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
   ].filter(Boolean).join(" · ");
 
   // Server progress
-  const serverKeys = ["serviceMethod", "serviceDate", "serviceTime", "serverName", "serverPhone", "serverAddress", "serverCity", "serverState", "serverZip", "signDate"];
+  const serverKeys = ["serviceMethod", "serviceDate", "serverName", "serverPhone", "serverAddress", "serverCity", "serverState", "serverZip", "signDate"];
   const serverFilled = serverKeys.filter(k => (f(k) ?? "").trim()).length;
   const serverComplete = serverFilled === serverKeys.length;
 
@@ -306,10 +306,7 @@ export function SC104PdfModal({ open, onClose, caseId, getToken, fields, onChang
                 />
               )}
 
-              <div className="flex gap-2">
-                <Field label="Date served" id="serviceDate" value={f("serviceDate")} onChange={set("serviceDate")} placeholder="MM/DD/YYYY" half />
-                <Field label="Time served" id="serviceTime" value={f("serviceTime")} onChange={set("serviceTime")} placeholder="e.g. 2:30 p.m." half />
-              </div>
+              <Field label="Date served" id="serviceDate" value={f("serviceDate")} onChange={set("serviceDate")} placeholder="MM/DD/YYYY" />
 
               {/* Address toggle */}
               {hasCaseInfo && addressLine ? (
