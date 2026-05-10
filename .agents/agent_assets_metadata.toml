@@ -132,3 +132,9 @@ id = "2cVakm9ZFZw7Sy3O1HXR3"
 uri = "file://small-claims-genie-source.tar.gz"
 type = "unspecified"
 title = "Small Claims Genie — Source Code (TAR.GZ)"
+
+[[outputs]]
+id = "HM4uPcKpdujQgP0zs0eR7"
+uri = "file://scg-source-current.tar.gz"
+type = "unspecified"
+title = "Small Claims Genie — Current Source Code (May 10, 2026)"
