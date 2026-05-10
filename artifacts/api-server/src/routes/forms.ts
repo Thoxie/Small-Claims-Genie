@@ -2177,11 +2177,12 @@ async function buildSC104Pdf(
   }
   const courtInfo = courtInfoLines.join("\n");
 
-  // Service address: prefer sc104Fields values saved by user, fall back to defendant address from intake
-  const serviceStreet = b.serviceAddress || d.defendantAddress || "";
-  const serviceCity   = b.serviceCity    || d.defendantCity    || "";
-  const serviceState  = b.serviceState   || d.defendantState   || "CA";
-  const serviceZip    = b.serviceZip     || d.defendantZip     || "";
+  // Service address: use defendant's address from intake (the most reliable source).
+  // The process server fills in the actual service address after service is performed.
+  const serviceStreet = d.defendantAddress || "";
+  const serviceCity   = d.defendantCity    || "";
+  const serviceState  = d.defendantState   || "CA";
+  const serviceZip    = d.defendantZip     || "";
 
   function setField(form: any, name: string, value: string) {
     try {
@@ -2208,22 +2209,16 @@ async function buildSC104Pdf(
   setField(form, "SC-104[0].Page1[0].RightCaption[0].Dept[0]",       d.hearingCourtroom || "");
 
   // ── Item 1 — Person / entity being served ───────────────────────────────
-  // 1a. Individual's full name (defendant name for individuals; blank if business defendant)
-  setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]",
-    b.personServedName || (b.businessName ? "" : (d.defendantName || "")));
-  // 1b. Business / entity name
-  setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", b.businessName || "");
-  // 1b. Person authorized to accept service on behalf of business
-  setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]", b.authorizedPerson || "");
+  // Pre-fill from intake: defendant name in 1a (the person being served).
+  // Items 1b (business/entity name, authorized person, job title) are left
+  // blank — they require knowledge the process server fills in after service.
+  setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]", d.defendantName || "");
+  setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", "");
+  setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]", "");
 
   // ── Item 3 — Documents served ────────────────────────────────────────────
-  // 3a. SC-100 Plaintiff's Claim (check when plaintiff is serving initial papers)
-  checkBox(form, "SC-104[0].Page1[0].List3[0].Lia[0].Filed_cb[0]", docs.includes("sc100"));
-  // 3d. Other documents (e.g. MC-030, SC-105, or other attachments) — intentionally left blank if none
-  if ((b.docsServedOther || "").trim()) {
-    checkBox(form, "SC-104[0].Page1[0].List3[0].Lid[0].NotYet_cb[0]", true);
-    setField(form, "SC-104[0].Page1[0].List3[0].Lid[0].T1865[0]", b.docsServedOther);
-  }
+  // SC-100 is the primary document served in all small claims initial filings.
+  checkBox(form, "SC-104[0].Page1[0].List3[0].Lia[0].Filed_cb[0]", true);
 
   // ── Page 2 — Header ──────────────────────────────────────────────────────
   setField(form, "SC-104[0].Page2[0].PxCaption[0].CaseName[0]",   caseName);
