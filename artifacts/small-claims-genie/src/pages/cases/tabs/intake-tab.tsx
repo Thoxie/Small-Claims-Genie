@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useSaveIntakeProgress,
@@ -145,7 +144,6 @@ export function IntakeTab({
   onRegisterFlush?: (flush: (() => Promise<void>) | null) => void;
 }) {
   const isFreshCase = !initialData.plaintiffName && !initialData.plaintiffAddress;
-  const [, navigate] = useLocation();
 
   const getInitialStep = (): StepNum => {
     if (forceStep) return forceStep;
@@ -242,14 +240,14 @@ export function IntakeTab({
   };
 
   const handleSaveExit = (formData: Record<string, unknown>) => {
-    // Fire the save — runs in background via singleton QueryClient even after
-    // the component unmounts, because wouter navigation is client-side (no reload).
+    // Fire the save in the background, then navigate directly via the browser.
+    // Using window.location.href bypasses wouter so the hash-based tab tracking
+    // in the workspace can't interfere with navigation.
     saveIntake.mutate(
       { id: caseId, data: { step: activeTab, data: formData } },
-      { onSuccess: () => { invalidateAll(); } },
     );
     toast({ title: "Progress saved", description: "Returning to your dashboard…" });
-    navigate("/dashboard");
+    window.location.href = "/dashboard";
   };
 
   const goToAdvisor = () => {

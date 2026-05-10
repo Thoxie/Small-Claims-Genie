@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, PlusCircle, Play, X, ChevronRight, Home, Sparkles } from "lucide-react";
 import { WorkspaceLayout } from "@/components/workspace-layout";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 const VALID_TABS = ["intake", "documents", "chat", "demand-letter", "forms", "prep", "deadlines"];
@@ -69,12 +69,14 @@ import { DeadlineCalculatorTab } from "./tabs/deadline-calculator-tab";
 export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) {
   const caseId = parseInt(caseIdParam || "0", 10);
   const [activeTab, setActiveTab] = useHashTab(caseId);
-  const [, navigate] = useLocation();
   const { toast } = useToast();
 
   const saveExit = () => {
     toast({ title: "Progress saved", description: "Returning to your dashboard…" });
-    navigate("/dashboard");
+    // Use direct browser navigation instead of wouter navigate — the workspace
+    // sets window.location.hash for tab tracking which can interfere with
+    // wouter's pushState. A full navigation also gives the dashboard a clean load.
+    window.location.href = "/dashboard";
   };
 
   // forceStep: signal from the outer nav telling IntakeTab to jump to step 1 or 2.
