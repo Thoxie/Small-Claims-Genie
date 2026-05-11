@@ -138,7 +138,7 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
 
   // Always prefer the live server data; fall back to the prop on initial render before the query resolves
   const evidenceChecklist = (
-    liveCase?.evidenceChecklist as { id: string; item: string; description: string; checked?: boolean }[] | null | undefined
+    (liveCase as any)?.evidenceChecklist as { id: string; item: string; description: string; checked?: boolean }[] | null | undefined
   ) ?? evidenceChecklistProp;
 
   const [activeTab, setActiveTab] = useState<"checklist" | "uploads">("checklist");
@@ -664,9 +664,9 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
                     onClick={() => void openAdvisor()}
                     variant="outline"
                     className="w-full gap-2"
-                    disabled={advisorPhase === "analyzing"}
+                    disabled={false}
                   >
-                    {advisorPhase === "analyzing" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    <Sparkles className="h-4 w-4" />
                     Run Again
                   </Button>
                   <Button type="button" onClick={() => setAdvisorOpen(false)} className="w-full bg-[#0d6b5e] hover:bg-[#0a5449] text-white">

@@ -527,7 +527,22 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
 
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
-  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+
+  // Use the caller-supplied exhibitDocIds (in the user's chosen order) to drive
+  // exhibit letter assignment. If none are supplied, fall back to all docs.
+  const requestedExhibitIds: number[] = Array.isArray(req.body?.exhibitDocIds)
+    ? (req.body.exhibitDocIds as unknown[]).filter((v): v is number => typeof v === "number")
+    : [];
+
+  const allDocs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+  // If the caller provided an ordered exhibit list, honour that order exactly.
+  // Otherwise fall back to the full document list in DB order.
+  const docs = requestedExhibitIds.length > 0
+    ? (() => {
+        const byId = new Map(allDocs.map(d => [d.id, d]));
+        return requestedExhibitIds.map(eid => byId.get(eid)).filter((d): d is typeof allDocs[number] => d !== undefined);
+      })()
+    : allDocs;
 
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   const amt = caseRecord.claimAmount

@@ -941,7 +941,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     setMc030AiGenerating(true); setMc030AiError(null);
     try {
       const clerkToken = await getToken();
-      const res = await fetch(`/api/cases/${caseId}/forms/mc030-ai`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${clerkToken}` }, body: JSON.stringify({}) });
+      const res = await fetch(`/api/cases/${caseId}/forms/mc030-ai`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${clerkToken}` }, body: JSON.stringify({ exhibitDocIds: selectedExhibits }) });
       if (!res.ok) { const err = await res.json().catch(() => ({})); setMc030AiError(err.error || "AI generation failed."); return null; }
       const data = await res.json();
       const text = data.declarationText ?? null;
