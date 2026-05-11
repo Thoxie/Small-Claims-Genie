@@ -470,11 +470,13 @@ FORMAT RULES:
 - Do not include argument headings unless space specifically allows.
 
 EXHIBIT FORMATTING — REQUIRED:
-Every exhibit reference MUST be written with the exhibit filename in parentheses, like this:
-  "the cancelled check attached as (Exhibit 02_Cancelled_Check_Security_Deposit)"
-  "as documented in (Exhibit 04_Move_Out_Condition_Checklist)"
-NEVER write "attached as Exhibit NAME" without the parentheses — always use "(Exhibit NAME)".
-The renderer will automatically bold and highlight the parenthesised exhibit reference in the PDF.
+An authoritative exhibit list is provided below with a letter (A, B, C…) and a plain English name for each document.
+You MUST use ONLY that letter and that plain English name — never the raw filename, never a number.
+Format every exhibit reference exactly like this:
+  "(Exhibit A — Repair Invoice)"
+  "(Exhibit B — Security Deposit Receipt)"
+NEVER write a raw filename (anything with underscores, file extensions, or numeric prefixes) in the declaration.
+The renderer will automatically bold and highlight parenthesised exhibit references in the PDF.
 
 ────────────────────────────────────────
 TONE:
@@ -558,14 +560,51 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
     );
   }
 
-  // Evidence — the AI MUST reference each item by name in the narrative.
+  // ── Friendly exhibit name helper ──────────────────────────────────────────
+  const friendlyExhibitName = (description: string | null | undefined, originalName: string): string => {
+    if (description?.trim()) return description.trim();
+    return originalName
+      .replace(/\.[^/.]+$/, "")        // strip extension
+      .replace(/[_]+/g, " ")           // underscores → spaces
+      .replace(/^\s*\d+[\s\-._]+/, "") // strip leading numeric prefix (01_, 03-)
+      .replace(/\s*\(\d+\)\s*$/, "")  // strip trailing copy count (1), (2)
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  // ── Strip raw exhibit refs from claimDescription so AI can't copy filenames ─
+  const stripExhibitRefs = (text: string): string =>
+    text
+      .replace(/\(Exhibit\s+[^)]+\)/gi, "")
+      .replace(/Exhibit\s+\d+[\w().\s_-]*/gi, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+  if (caseRecord.claimDescription) {
+    const idx = parts.findIndex(p => p.startsWith("\nPlaintiff's Description"));
+    if (idx !== -1) {
+      parts[idx] = `\nPlaintiff's Description of What Happened:\n${stripExhibitRefs(caseRecord.claimDescription)}`;
+    }
+  }
+
+  // Evidence — assign exhibit letters and use only friendly names
+  const EXHIBIT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   if (docs.length > 0) {
-    parts.push(`\n=== EVIDENCE — supporting documents the plaintiff has uploaded ===`);
-    parts.push(`(REQUIRED: reference each item below by name in your declaration narrative, and tell the judge what fact it proves.)`);
-    for (const doc of docs.slice(0, 8)) {
-      const tag = [doc.label, doc.description].filter(Boolean).join(" — ");
-      const heading = tag ? `"${doc.originalName}" (${tag})` : `"${doc.originalName}"`;
-      parts.push(`\nEvidence item: ${heading}`);
+    const exhibitDocs = docs.slice(0, 8).map((doc, i) => ({
+      letter: EXHIBIT_LETTERS[i] ?? String(i + 1),
+      name: friendlyExhibitName(doc.description, doc.originalName),
+      doc,
+    }));
+
+    parts.push(`\n=== AUTHORITATIVE EXHIBIT LIST — use ONLY these letters and names ===`);
+    parts.push(`CRITICAL RULE: reference exhibits ONLY as "(Exhibit LETTER — Name)" using this exact list. Never use raw filenames, underscores, file extensions, or numbers.`);
+    for (const { letter, name } of exhibitDocs) {
+      parts.push(`  Exhibit ${letter}: ${name}`);
+    }
+
+    parts.push(`\n=== EVIDENCE DETAILS (reference each by letter and name above) ===`);
+    for (const { letter, name, doc } of exhibitDocs) {
+      parts.push(`\nExhibit ${letter} — ${name}:`);
       if (doc.ocrText && !doc.ocrText.startsWith("[")) {
         parts.push(`Contents extracted from document:\n${doc.ocrText.slice(0, 1500)}`);
       }
