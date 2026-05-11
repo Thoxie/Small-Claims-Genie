@@ -441,14 +441,15 @@ PARAGRAPH 1 — OPENING (1–2 sentences):
 State who the plaintiff is and what they are asking the Court to do. Lead with the strongest fact, not a long introduction.
 Example: "I am [Name], and I ask this Court to enter judgment against [Defendant] for $[amount] for [specific breach or harm]."
 
-PARAGRAPH 2 — KEY FACTS (3–5 sentences):
-The top 3–5 facts that support the plaintiff, in chronological order. Include:
+PARAGRAPH 2 — KEY FACTS:
+The facts that support the plaintiff, in chronological order. Include:
 - Specific dates for every event.
 - The agreement, payment, or transaction (with amount and date).
 - Exactly what the defendant did or failed to do, and when.
-- The strongest document or exhibit (reference it by name and state what it proves).
+- Every exhibit must be referenced here (follow the EVIDENCE strategy above).
 - Any fact the other side is likely to dispute — state the provable counter-fact.
 Mention only facts provable by documents, exhibits, emails, payments, or other evidence. Prefer specific facts over conclusions. Do not write "they acted in bad faith" — write "they refused to respond to my written request dated [date]."
+With 4 or more exhibits, use the compact listing strategy — do NOT pad sentences just to mention each exhibit individually, but every letter must appear.
 
 PARAGRAPH 3 — HARM / PREJUDICE (2–3 sentences):
 Explain what the plaintiff has lost and what the ongoing harm is. If there is a deadline or urgency, state it. Keep it factual, not emotional.
@@ -484,9 +485,16 @@ TONE:
 Calm, credible, factual, and judicial. No emotional exaggeration. No insults. No speculation. No unsupported accusations.
 
 ────────────────────────────────────────
-EVIDENCE — REQUIRED:
+EVIDENCE — MANDATORY:
 ────────────────────────────────────────
-You MUST reference every supporting document provided in the case, by name, and state what fact it proves (e.g., "the signed contract attached as Exhibit A confirms the agreed price of $[amount]," "the cancelled check dated [date] proves payment in full"). Weave evidence references naturally into Paragraph 2. If no documents have been uploaded, note in Paragraph 2 that the plaintiff will present their testimony at the hearing.
+You MUST reference EVERY exhibit in the authoritative list below — absolutely no skipping, no matter how many there are.
+
+Strategy based on exhibit count:
+• 1–3 exhibits: Weave each into Paragraph 2 as a full sentence stating what the exhibit proves.
+• 4–6 exhibits: Cover the 2–3 most critical exhibits in narrative sentences, then add one compact sentence listing the rest: "Additional supporting documents include [Name] (Exhibit C), [Name] (Exhibit D), and [Name] (Exhibit E)."
+• 7+ exhibits: Name the 2 most important exhibits in the narrative, then add: "Additional evidence includes: [Name] (Exhibit C), [Name] (Exhibit D), [Name] (Exhibit E), [Name] (Exhibit F), [Name] (Exhibit G)..." listing every remaining exhibit. Every single exhibit letter and name must appear at least once in the declaration.
+
+If no documents have been uploaded, note in Paragraph 2 that the plaintiff will present their testimony at the hearing.
 
 ────────────────────────────────────────
 STATUTES — DEFAULT IS NONE:
@@ -605,23 +613,29 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   // Evidence — assign exhibit letters and use only friendly names
   const EXHIBIT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   if (docs.length > 0) {
-    const exhibitDocs = docs.slice(0, 8).map((doc, i) => ({
+    // No artificial cap — honour all selected exhibits (up to 26 letters).
+    const exhibitDocs = docs.slice(0, 26).map((doc, i) => ({
       letter: EXHIBIT_LETTERS[i] ?? String(i + 1),
       name: friendlyExhibitName(doc.description, doc.originalName),
       doc,
     }));
 
-    parts.push(`\n=== AUTHORITATIVE EXHIBIT LIST — use ONLY these letters and names ===`);
+    // When there are many exhibits, cap OCR text per document so the prompt
+    // stays within reasonable context limits (~600 chars each for 7+ docs).
+    const ocrCap = exhibitDocs.length >= 7 ? 600 : exhibitDocs.length >= 4 ? 900 : 1500;
+
+    parts.push(`\n=== AUTHORITATIVE EXHIBIT LIST — ${exhibitDocs.length} exhibit(s). You MUST reference EVERY one. ===`);
     parts.push(`CRITICAL RULE: reference exhibits ONLY as "(Exhibit LETTER — Name)" using this exact list. Never use raw filenames, underscores, file extensions, or numbers.`);
     for (const { letter, name } of exhibitDocs) {
       parts.push(`  Exhibit ${letter}: ${name}`);
     }
+    parts.push(`ALL ${exhibitDocs.length} exhibits listed above must appear in the declaration. Use the compact listing strategy from the system prompt if there are 4 or more.`);
 
     parts.push(`\n=== EVIDENCE DETAILS (reference each by letter and name above) ===`);
     for (const { letter, name, doc } of exhibitDocs) {
       parts.push(`\nExhibit ${letter} — ${name}:`);
       if (doc.ocrText && !doc.ocrText.startsWith("[")) {
-        parts.push(`Contents extracted from document:\n${doc.ocrText.slice(0, 1500)}`);
+        parts.push(`Contents extracted from document:\n${doc.ocrText.slice(0, ocrCap)}`);
       }
     }
   } else {

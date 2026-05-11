@@ -1455,16 +1455,20 @@ async function generateMC030Declaration(
     ``,
     `Return a JSON object with exactly two fields:`,
     `1. "declarationTitle": All-caps title, max 80 characters. Specific to the case facts.`,
-    `2. "declarationText": Exactly 8 numbered paragraphs separated by \\n. Each paragraph starts with its number and a period ("1. "). Each paragraph is ONE concise sentence, max 100 characters. Total length: 550-700 characters.`,
+    `2. "declarationText": Numbered paragraphs separated by \\n. Each paragraph starts with its number and a period ("1. "). Each paragraph is ONE concise sentence, max 120 characters.`,
+    hasExhibits
+      ? `   Use enough paragraphs to cover all key facts AND every exhibit — minimum 8, add more if needed to reference all ${exhibits!.length} exhibit(s). Target total length: 600–950 characters.`
+      : `   Use 8 paragraphs. Target total length: 550-700 characters.`,
     `   STRICT RULES — violation will break the PDF form layout:`,
     `   - Plain text only. Absolutely NO asterisks, NO markdown, NO bold, NO brackets.`,
     `   - Separate paragraphs with \\n only (single newline, never double).`,
     `   - Do NOT include "I declare under penalty of perjury" — already printed on the form.`,
     `   - The form already has a printed signature block, date line, and printed name line at the bottom — NEVER add any of those to the text. Do not end with a name, a date, "Respectfully", "Sincerely", "Signed", or any closing statement whatsoever.`,
-    `   - Paragraph 8 must end with the specific dollar amount requested and nothing else after it.`,
+    `   - The final paragraph must end with the specific dollar amount requested and nothing else after it.`,
     hasExhibits ? [
       `   EXHIBIT REFERENCE RULES (strictly enforced):`,
-      `   - You MUST reference each exhibit from the AUTHORITATIVE EXHIBIT LIST at least once.`,
+      `   - You MUST reference EVERY exhibit from the AUTHORITATIVE EXHIBIT LIST — no exceptions, no skipping.`,
+      `   - If there are 4 or more exhibits, after 2 key narrative facts add one compact sentence listing all remaining exhibits: "Supporting documents include: [Name] (Exhibit C), [Name] (Exhibit D)..."`,
       `   - Use EXACTLY this format: (Exhibit LETTER — Name) — e.g. (Exhibit A — Repair Invoice).`,
       `   - The LETTER must come from the list above (A, B, C…). NEVER use a number (1, 2, 3) as the identifier.`,
       `   - The Name must match the name in the list exactly. NEVER copy filenames or any text from the case description.`,
