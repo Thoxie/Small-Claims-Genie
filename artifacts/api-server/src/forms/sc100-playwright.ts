@@ -1,3 +1,9 @@
+// KNOWN-GOOD FIELD MAP STATE — 2026-05-11 ~21:45 UTC
+// Commit: 658ee4796315db94f19339ae83e29e5766234d7b
+// All field coordinates were calibrated from a user-supplied reference PDF (bbox analysis).
+// If SC-100 field alignment breaks, restore sc100-field-map.json from that commit.
+// Key positions: pg1 court-info y≈209-249 x≈400; pg2 phone x=425.4, name x=96, zip x=491.5;
+// pg3 attyFeeNo x=409.6 y=631.7, publicEntityNo x=295.1 y=666; pg4 date x=55, name y=297.
 import * as path from "path";
 import * as fs from "fs";
 import { withPage } from "./chromium-pool";
