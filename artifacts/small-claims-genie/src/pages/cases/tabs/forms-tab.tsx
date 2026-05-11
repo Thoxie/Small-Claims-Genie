@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Paperclip, Sparkles, Package, Eye, Pencil, Play, X, ChevronRight, ChevronLeft, Maximize2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
@@ -568,6 +568,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [mc030Text, setMc030Text] = useState("");
   const [mc030AiGenerating, setMc030AiGenerating] = useState(false);
   const [mc030AiError, setMc030AiError] = useState<string | null>(null);
+  const [mc030PopoutOpen, setMc030PopoutOpen] = useState(false);
   // Initialise from DB-persisted value; null means "never saved" → auto-select all docs.
   const savedExhibitIds = Array.isArray(currentCase?.mc030ExhibitDocIds)
     ? (currentCase.mc030ExhibitDocIds as number[])
@@ -1203,10 +1204,20 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground block mb-1">Sworn Statement <span className="text-rose-500">*</span></label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-foreground">Sworn Statement <span className="text-rose-500">*</span></label>
+                <button
+                  onClick={() => setMc030PopoutOpen(true)}
+                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5 rounded hover:bg-muted/60"
+                  title="Open full editor"
+                >
+                  <Maximize2 className="h-3 w-3" />
+                  Expand
+                </button>
+              </div>
               <textarea value={mc030Text} onChange={e => setMc030Text(e.target.value)}
                 placeholder="Write your declaration here. Use numbered paragraphs: '1. On January 15, 2025, I paid defendant $2,400 for…'"
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent resize-none" rows={5} />
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent resize-none overflow-y-auto" rows={15} />
               <div className="mt-1.5 flex items-center gap-2">
                 <button onClick={generateMC030Declaration} disabled={mc030AiGenerating}
                   className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#0d6b5e]/10 text-[#0d6b5e] hover:bg-[#0d6b5e]/20 transition-colors disabled:opacity-50">
@@ -1216,6 +1227,31 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 {mc030AiError && <p className="text-xs text-rose-600">{mc030AiError}</p>}
               </div>
             </div>
+
+            {/* ── Pop-out full editor dialog ── */}
+            <Dialog open={mc030PopoutOpen} onOpenChange={setMc030PopoutOpen}>
+              <DialogContent className="max-w-3xl w-full h-[90vh] flex flex-col gap-0 p-0">
+                <DialogHeader className="px-6 pt-5 pb-3 border-b border-border shrink-0">
+                  <DialogTitle className="text-base font-semibold">Edit Sworn Statement</DialogTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">Changes are saved automatically as you type.</p>
+                </DialogHeader>
+                <div className="flex-1 min-h-0 px-6 py-4">
+                  <textarea
+                    value={mc030Text}
+                    onChange={e => setMc030Text(e.target.value)}
+                    placeholder="Write your declaration here. Use numbered paragraphs: '1. On January 15, 2025, I paid defendant $2,400 for…'"
+                    className="w-full h-full rounded-lg border border-input bg-background px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent resize-none overflow-y-auto font-mono"
+                    autoFocus
+                  />
+                </div>
+                <DialogFooter className="px-6 pb-5 pt-3 border-t border-border shrink-0 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{mc030Text.length} characters</span>
+                  <Button size="sm" onClick={() => setMc030PopoutOpen(false)} className="bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 px-5 text-xs">
+                    Done
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />

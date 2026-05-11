@@ -434,6 +434,18 @@ GOAL:
 Produce a polished, short, court-ready declaration — approximately two-thirds of a page — that gives the judge the clearest factual basis to rule in the plaintiff's favor. Every sentence must help the judge decide the issue. Cut anything that does not.
 
 ────────────────────────────────────────
+EVIDENCE — MANDATORY (read this before writing any paragraph):
+────────────────────────────────────────
+You MUST reference EVERY exhibit in the authoritative list provided — absolutely no skipping, no matter how many there are.
+
+Strategy based on exhibit count:
+• 1–3 exhibits: Weave each into Paragraph 2 as a full sentence stating what the exhibit proves.
+• 4–6 exhibits: Cover the 2–3 most critical exhibits in narrative sentences, then add one compact sentence listing the rest: "Additional supporting documents include [Name] (Exhibit C), [Name] (Exhibit D), and [Name] (Exhibit E)."
+• 7+ exhibits: Name the 2 most important exhibits in the narrative, then add: "Additional evidence includes: [Name] (Exhibit C), [Name] (Exhibit D), [Name] (Exhibit E), [Name] (Exhibit F), [Name] (Exhibit G)..." listing every remaining exhibit. Every single exhibit letter and name must appear at least once in the declaration.
+
+If no documents have been uploaded, note in Paragraph 2 that the plaintiff will present their testimony at the hearing.
+
+────────────────────────────────────────
 STRUCTURE — four paragraphs in this exact order:
 ────────────────────────────────────────
 
@@ -483,18 +495,6 @@ The renderer will automatically bold and highlight parenthesised exhibit referen
 TONE:
 ────────────────────────────────────────
 Calm, credible, factual, and judicial. No emotional exaggeration. No insults. No speculation. No unsupported accusations.
-
-────────────────────────────────────────
-EVIDENCE — MANDATORY:
-────────────────────────────────────────
-You MUST reference EVERY exhibit in the authoritative list below — absolutely no skipping, no matter how many there are.
-
-Strategy based on exhibit count:
-• 1–3 exhibits: Weave each into Paragraph 2 as a full sentence stating what the exhibit proves.
-• 4–6 exhibits: Cover the 2–3 most critical exhibits in narrative sentences, then add one compact sentence listing the rest: "Additional supporting documents include [Name] (Exhibit C), [Name] (Exhibit D), and [Name] (Exhibit E)."
-• 7+ exhibits: Name the 2 most important exhibits in the narrative, then add: "Additional evidence includes: [Name] (Exhibit C), [Name] (Exhibit D), [Name] (Exhibit E), [Name] (Exhibit F), [Name] (Exhibit G)..." listing every remaining exhibit. Every single exhibit letter and name must appear at least once in the declaration.
-
-If no documents have been uploaded, note in Paragraph 2 that the plaintiff will present their testimony at the hearing.
 
 ────────────────────────────────────────
 STATUTES — DEFAULT IS NONE:
