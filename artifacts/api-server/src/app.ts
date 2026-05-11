@@ -60,6 +60,17 @@ app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
+// Clear-Site-Data endpoint — no auth required.
+// Chrome caches session routing cookies (GAESA) and HTTP/3 alt-svc entries across
+// deploys, causing 403s that no server-side code change can fix. Visiting this URL
+// in Chrome sends the Clear-Site-Data header which instructs the browser to wipe
+// all cached data (cookies, HTTP cache, localStorage) for this origin, then
+// redirects to the app so the user gets a fresh session.
+app.get("/api/clear-chrome", (_req: Request, res: Response) => {
+  res.set("Clear-Site-Data", '"cookies", "cache", "storage"');
+  res.redirect(302, "/");
+});
+
 app.use("/api", router);
 // Serve form background images for the coordinate-preview tool (dev only)
 if (process.env.NODE_ENV !== "production") {
