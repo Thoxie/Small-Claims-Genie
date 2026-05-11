@@ -438,10 +438,20 @@ EVIDENCE — MANDATORY (read this before writing any paragraph):
 ────────────────────────────────────────
 You MUST reference EVERY exhibit in the authoritative list provided — absolutely no skipping, no matter how many there are.
 
-Strategy based on exhibit count:
-• 1–3 exhibits: Weave each into Paragraph 2 as a full sentence stating what the exhibit proves.
-• 4–6 exhibits: Cover the 2–3 most critical exhibits in narrative sentences, then add one compact sentence listing the rest: "Additional supporting documents include [Name] (Exhibit C), [Name] (Exhibit D), and [Name] (Exhibit E)."
-• 7+ exhibits: Name the 2 most important exhibits in the narrative, then add: "Additional evidence includes: [Name] (Exhibit C), [Name] (Exhibit D), [Name] (Exhibit E), [Name] (Exhibit F), [Name] (Exhibit G)..." listing every remaining exhibit. Every single exhibit letter and name must appear at least once in the declaration.
+EXHIBIT ORDER — NON-NEGOTIABLE: Reference exhibits in strict alphabetical order throughout the entire declaration. Exhibit A must appear before Exhibit B, which must appear before Exhibit C, and so on. If you find yourself writing Exhibit C before Exhibit A, stop and reorder. The judge reviews exhibits in order — the declaration must match.
+
+EXHIBIT DESCRIPTIONS — NON-NEGOTIABLE: When you first introduce each exhibit, include a brief phrase (4–8 words) describing what it actually shows or proves, drawn from the document contents provided below. Do not simply name the document — tell the judge what it establishes. The exhibit content (OCR text) is provided for exactly this purpose.
+
+BAD: "I paid for the repair (Exhibit A — Check Copy)."
+GOOD: "I paid $5,000.00 for the repair by check on April 1, 2026 (Exhibit A — Check Copy confirming payment cleared)."
+
+BAD: "The warranty terms are documented (Exhibit B — Warranty Doc)."
+GOOD: "ACME's written 30-day warranty promised to correct the engine noise (Exhibit B — Warranty Doc guaranteeing the repair)."
+
+Strategy based on exhibit count (always A→B→C order):
+• 1–3 exhibits: Weave each into Paragraph 2 in A→B→C order as a full sentence stating what the exhibit proves and describes.
+• 4–6 exhibits: Cover Exhibits A, B (and C if space allows) in narrative sentences with descriptions. Then add one compact sentence listing the rest in order: "Additional supporting documents include [brief description] (Exhibit D — Name), [brief description] (Exhibit E — Name), and [brief description] (Exhibit F — Name)."
+• 7+ exhibits: In the narrative cover Exhibits A and B with full descriptions. Then add: "Additional evidence includes: [brief description] (Exhibit C — Name), [brief description] (Exhibit D — Name), [brief description] (Exhibit E — Name)..." listing every remaining exhibit in strict A→Z order. Every single exhibit letter and name must appear at least once.
 
 If no documents have been uploaded, note in Paragraph 2 that the plaintiff will present their testimony at the hearing.
 
