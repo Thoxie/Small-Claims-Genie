@@ -39,6 +39,20 @@ const objectStorage = new ObjectStorageService();
 
 // ─── Exhibit & declaration helpers ───────────────────────────────────────────
 
+// Produce a clean, human-readable exhibit name.
+// Prefers the user-set description; if absent, derives a readable label from the
+// filename by stripping the extension, replacing underscores with spaces, and
+// removing trailing copy-count suffixes like " (1)".
+function friendlyExhibitName(description: string | null | undefined, originalName: string): string {
+  if (description?.trim()) return description.trim();
+  return originalName
+    .replace(/\.[^/.]+$/, "")       // strip file extension
+    .replace(/[_]+/g, " ")          // underscores → spaces
+    .replace(/\s*\(\d+\)\s*$/, "")  // strip trailing " (1)", " (2)" etc.
+    .replace(/\s+/g, " ")           // collapse any double-spaces
+    .trim();
+}
+
 // Generate a professional court exhibit cover page inserted before the exhibit content.
 function generateExhibitCoverPage(
   masterDoc: PDFDocument,
@@ -1685,7 +1699,7 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
     const exhibitDocs = exhibitIds.map((eid) => exhibitDocMap.get(eid)).filter((d): d is typeof rawExhibitDocs[number] => d !== undefined);
     const exhibitList: Array<{ letter: string; name: string }> = exhibitDocs.map((doc, i) => ({
       letter: LETTERS[i] ?? String(i + 1),
-      name: doc.description || doc.originalName || `Document ${i + 1}`,
+      name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
     }));
 
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
@@ -1751,7 +1765,7 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       const label = `EXHIBIT ${letter}`;
       try {
         const fileBuffer = await getDocumentBuffer(doc);
-        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
+        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, friendlyExhibitName(doc.description, doc.originalName), label, font, fontBold);
       } catch (docErr) {
         req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Signed] Failed to embed exhibit");
       }
@@ -1797,7 +1811,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     const fpExhibitDocs = exhibitIds.map((eid) => fpDocMap.get(eid)).filter((d): d is typeof rawFpDocs[number] => d !== undefined);
     const fpExhibitList: Array<{ letter: string; name: string }> = fpExhibitDocs.map((doc, i) => ({
       letter: LETTERS_FP[i] ?? String(i + 1),
-      name: doc.description || doc.originalName || `Document ${i + 1}`,
+      name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
     }));
 
     const masterDoc = await PDFDocument.create();
@@ -1853,7 +1867,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
       const label = `EXHIBIT ${letter}`;
       try {
         const fileBuffer = await getDocumentBuffer(doc);
-        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
+        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, friendlyExhibitName(doc.description, doc.originalName), label, font, fontBold);
       } catch (docErr) {
         req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Exhibits] Failed to embed exhibit");
       }
