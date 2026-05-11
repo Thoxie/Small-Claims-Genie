@@ -41,15 +41,27 @@ const objectStorage = new ObjectStorageService();
 
 // Produce a clean, human-readable exhibit name.
 // Prefers the user-set description; if absent, derives a readable label from the
-// filename by stripping the extension, replacing underscores with spaces, and
-// removing trailing copy-count suffixes like " (1)".
+// filename by stripping the extension, leading numeric prefixes (01_, 03-, etc.),
+// underscores, and trailing copy-count suffixes like " (1)".
 function friendlyExhibitName(description: string | null | undefined, originalName: string): string {
   if (description?.trim()) return description.trim();
   return originalName
-    .replace(/\.[^/.]+$/, "")       // strip file extension
-    .replace(/[_]+/g, " ")          // underscores → spaces
-    .replace(/\s*\(\d+\)\s*$/, "")  // strip trailing " (1)", " (2)" etc.
-    .replace(/\s+/g, " ")           // collapse any double-spaces
+    .replace(/\.[^/.]+$/, "")           // strip file extension
+    .replace(/[_]+/g, " ")              // underscores → spaces
+    .replace(/^\s*\d+\s*[-.\s]+\s*/, "") // strip leading numeric prefix: "01_", "03-", "3. " etc.
+    .replace(/\s*\(\d+\)\s*$/, "")      // strip trailing " (1)", " (2)" etc.
+    .replace(/\s+/g, " ")               // collapse any double-spaces
+    .trim();
+}
+
+// Remove any exhibit references already present in the case description so the AI
+// does not copy them into the declaration. We supply the authoritative exhibit list
+// separately and do not want the AI mixing the two sources.
+function stripExhibitRefsFromDesc(text: string): string {
+  return text
+    .replace(/\(Exhibit\s+[^)]+\)/gi, "")   // remove "(Exhibit ...)" patterns
+    .replace(/Exhibit\s+\d+[_\w().\s-]*/gi, "") // remove bare "Exhibit 03_filename" refs
+    .replace(/\s{2,}/g, " ")
     .trim();
 }
 
@@ -1416,9 +1428,18 @@ async function generateMC030Declaration(
   const plaintiffName  = String(d.plaintiffName  || "Plaintiff");
   const defendantName  = String(d.defendantName  || "Defendant");
   const claimAmount    = d.claimAmount  ? `$${Number(d.claimAmount).toFixed(2)}` : "an amount to be determined";
-  const claimDesc      = String(d.claimDescription || "");
+  // Strip any exhibit references out of the case description BEFORE passing to the AI.
+  // The case description may contain raw filename references like "(Exhibit 03_file.docx)"
+  // that the user wrote during intake. If left in, the AI copies them verbatim and
+  // ignores the authoritative exhibit list we provide below.
+  const claimDesc      = stripExhibitRefsFromDesc(String(d.claimDescription || ""));
   const incidentDate   = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
   const hasExhibits    = exhibits && exhibits.length > 0;
+
+  // Build a clear, numbered exhibit reference table for the prompt.
+  const exhibitTable = hasExhibits
+    ? exhibits!.map(e => `  Exhibit ${e.letter} — ${e.name}`).join("\n")
+    : "";
 
   const prompt = [
     `You are drafting a California small claims court MC-030 Declaration for ${plaintiffName} against ${defendantName}.`,
@@ -1428,8 +1449,9 @@ async function generateMC030Declaration(
     `- Defendant: ${defendantName}`,
     `- Claim amount: ${claimAmount}`,
     incidentDate ? `- Date of incident: ${incidentDate}` : "",
-    claimDesc    ? `- Case description: ${claimDesc}` : "",
-    hasExhibits  ? `- Exhibits attached: ${exhibits!.map(e => `Exhibit ${e.letter} — ${e.name}`).join("; ")}` : "",
+    claimDesc    ? `- Case description (background facts only — ignore any exhibit references in this text): ${claimDesc}` : "",
+    ``,
+    hasExhibits ? `AUTHORITATIVE EXHIBIT LIST — use ONLY these identifiers and names. Do not invent others.\n${exhibitTable}` : "",
     ``,
     `Return a JSON object with exactly two fields:`,
     `1. "declarationTitle": All-caps title, max 80 characters. Specific to the case facts.`,
@@ -1440,7 +1462,14 @@ async function generateMC030Declaration(
     `   - Do NOT include "I declare under penalty of perjury" — already printed on the form.`,
     `   - The form already has a printed signature block, date line, and printed name line at the bottom — NEVER add any of those to the text. Do not end with a name, a date, "Respectfully", "Sincerely", "Signed", or any closing statement whatsoever.`,
     `   - Paragraph 8 must end with the specific dollar amount requested and nothing else after it.`,
-    hasExhibits  ? `   - You MUST reference each attached exhibit at least once using EXACTLY this format: (Exhibit LETTER — Name). Example: (Exhibit A — Home Depot Receipt). Use the exact letter and name from the exhibit list above. Do NOT use brackets, asterisks, or any other wrapper — only parentheses.` : "",
+    hasExhibits ? [
+      `   EXHIBIT REFERENCE RULES (strictly enforced):`,
+      `   - You MUST reference each exhibit from the AUTHORITATIVE EXHIBIT LIST at least once.`,
+      `   - Use EXACTLY this format: (Exhibit LETTER — Name) — e.g. (Exhibit A — Repair Invoice).`,
+      `   - The LETTER must come from the list above (A, B, C…). NEVER use a number (1, 2, 3) as the identifier.`,
+      `   - The Name must match the name in the list exactly. NEVER copy filenames or any text from the case description.`,
+      `   - Any exhibit reference in the case description is wrong — discard it and use the list above instead.`,
+    ].join("\n") : "",
     ``,
     `Respond with only the JSON object.`,
   ].filter(Boolean).join("\n");
