@@ -1331,19 +1331,76 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   </p>
                 </label>
                 {notifyMethod === "adult_service" && (
-                  <div className="ml-6 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 flex items-center gap-3">
-                    <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
-                      <FileText className="w-4 h-4 text-blue-600" />
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <p className="text-xs text-blue-900 flex-1 leading-snug">
+                        <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
+                      </p>
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black hover:bg-blue-100"
+                        onClick={openSC104InNewTab}
+                        disabled={downloadingForm === "sc104"}>
+                        {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                        Open SC-104 PDF
+                      </Button>
                     </div>
-                    <p className="text-xs text-blue-900 flex-1 leading-snug">
-                      <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
-                    </p>
-                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black hover:bg-blue-100"
-                      onClick={openSC104InNewTab}
-                      disabled={downloadingForm === "sc104"}>
-                      {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-                      Open SC-104 PDF
-                    </Button>
+
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">You Cannot Serve the Papers Yourself</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">The person serving the documents must be at least 18 years old and must not be a party in the case.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 4 — How the Third-Party Server Delivered the Papers</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">The third-party server fills out only one part of Section 4, depending on how the papers were delivered.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 4a — Personal Service</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Use this if the server handed the papers directly to the defendant or to the correct authorized person for the business. The server must enter the date and time of delivery, plus the full address including city, state, and ZIP code.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 4b — Substituted Service</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Use this if the server left the papers with another responsible adult instead of handing them directly to the defendant. The server must check the box showing who received the papers, enter the date, time, and address, and write the name or description of the adult who received them.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 5 — Server's Information</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">The person serving the documents enters their own name, phone number, address, city, state, and ZIP code.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 6 — Third-Party Server's Signature</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">After serving the papers, the third-party server dates, prints their name, and signs the form. Do not complete or sign this section yourself — the person who served the papers must be the one who signs.</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
+                      <p className="text-xs font-semibold text-blue-900 mb-0.5">After the Server Signs</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">File the completed SC-104 with the court as soon as possible. The form must be filed at least <strong>5 days before the hearing</strong>.</p>
+                    </div>
+
                   </div>
                 )}
 
@@ -1657,19 +1714,76 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     </p>
                   </label>
                   {notifyMethod === "adult_service" && (
-                    <div className="ml-6 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 flex items-center gap-3">
-                      <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
-                        <FileText className="w-4 h-4 text-blue-600" />
+                    <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
+                          <FileText className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <p className="text-xs text-blue-900 flex-1 leading-snug">
+                          <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
+                        </p>
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black hover:bg-blue-100"
+                          onClick={openSC104InNewTab}
+                          disabled={downloadingForm === "sc104"}>
+                          {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                          Open SC-104 PDF
+                        </Button>
                       </div>
-                      <p className="text-xs text-blue-900 flex-1 leading-snug">
-                        <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
-                      </p>
-                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black hover:bg-blue-100"
-                        onClick={openSC104InNewTab}
-                        disabled={downloadingForm === "sc104"}>
-                        {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-                        Open SC-104 PDF
-                      </Button>
+
+                      <div className="flex gap-2.5">
+                        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">You Cannot Serve the Papers Yourself</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">The person serving the documents must be at least 18 years old and must not be a party in the case.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2.5">
+                        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 4 — How the Third-Party Server Delivered the Papers</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">The third-party server fills out only one part of Section 4, depending on how the papers were delivered.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2.5">
+                        <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 4a — Personal Service</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">Use this if the server handed the papers directly to the defendant or to the correct authorized person for the business. The server must enter the date and time of delivery, plus the full address including city, state, and ZIP code.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2.5">
+                        <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 4b — Substituted Service</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">Use this if the server left the papers with another responsible adult instead of handing them directly to the defendant. The server must check the box showing who received the papers, enter the date, time, and address, and write the name or description of the adult who received them.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2.5">
+                        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 5 — Server's Information</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">The person serving the documents enters their own name, phone number, address, city, state, and ZIP code.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2.5">
+                        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Section 6 — Third-Party Server's Signature</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">After serving the papers, the third-party server dates, prints their name, and signs the form. Do not complete or sign this section yourself — the person who served the papers must be the one who signs.</p>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">After the Server Signs</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">File the completed SC-104 with the court as soon as possible. The form must be filed at least <strong>5 days before the hearing</strong>.</p>
+                      </div>
+
                     </div>
                   )}
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
