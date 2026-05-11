@@ -51,7 +51,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
       <div className="flex gap-4 items-start">
         <div className="flex-1 min-w-0">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onNext)} className="space-y-5">
+            <div className="space-y-5">
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
@@ -265,7 +265,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
             </div>
           </div>
 
-            </form>
+            </div>
           </Form>
         </div>
 

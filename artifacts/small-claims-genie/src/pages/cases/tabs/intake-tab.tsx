@@ -201,16 +201,20 @@ export function IntakeTab({
   };
 
   const handleNext = (data: Record<string, unknown>) => {
-    // Capture the current step via ref so that even if this closure is somehow
-    // stale, we always compute next from the actual current step.
+    // Capture the current step at call time so the onSuccess closure can verify
+    // the user hasn't already moved away before the network round-trip completes.
     const currentStep = activeTabRef.current;
     const next = Math.min(currentStep + 1, 7) as StepNum;
     saveIntake.mutate({ id: caseId, data: { step: next, data } }, {
       onSuccess: () => {
-        // Guard: only advance if next is strictly greater than the step the user
-        // is currently on. This prevents a late-arriving onSuccess from a rapid
-        // multi-step advance from dragging the user backwards.
-        if (next > activeTabRef.current) {
+        // Only navigate if the user is still on the same step they were on when
+        // they clicked. This prevents two failure modes:
+        //   1. A late-arriving callback from a previous step firing after the
+        //      user has already advanced (or gone back) would silently no-op.
+        //   2. A duplicate save (e.g. from form onSubmit + footer button both
+        //      firing) lands here; the second callback sees currentStep !== activeTabRef
+        //      because the first already advanced the step, so it no-ops correctly.
+        if (activeTabRef.current === currentStep) {
           setActiveTab(next);
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
