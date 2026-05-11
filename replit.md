@@ -54,6 +54,29 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
 -   The API build uses esbuild, while the frontend uses Vite.
 -   Monorepo structure is enforced by pnpm workspaces and TypeScript composite projects.
 
+## Staging vs Production Environments
+
+This project uses Replit's two-environment model. The development workspace **is** the staging environment; the published deployment **is** production. They are fully separated — different databases, different Clerk tenants.
+
+| | Staging (this workspace) | Production (published app) |
+|---|---|---|
+| **APP_ENV** | `staging` | `production` |
+| **Database** | Replit dev PostgreSQL | Replit production PostgreSQL (created on first Publish) |
+| **Clerk keys** | `CLERK_SECRET_KEY_DEV` + `VITE_CLERK_PUBLISHABLE_KEY_DEV` | `CLERK_SECRET_KEY` + `VITE_CLERK_PUBLISHABLE_KEY` |
+| **Visible indicator** | Amber banner at top of every page | No banner |
+
+**How key switching works:**
+- Frontend (`App.tsx`): uses `import.meta.env.DEV` — true in Vite dev server (staging), false in production builds.
+- API (`auth.ts`): uses `APP_ENV === "production"` — only uses the production Clerk key when deployed; staging uses dev key with prod key as fallback.
+- Database: `DATABASE_URL` is runtime-managed by Replit. The dev workspace has its own DB; Replit provisions a separate production DB automatically when you first click Publish.
+
+**Promotion workflow (staging → production):**
+1. Build and test the feature in this workspace (staging).
+2. Verify in the preview pane — the amber "STAGING ENVIRONMENT" banner confirms you're on staging.
+3. Click **Publish** in Replit to deploy to production. Replit diffs and migrates the schema automatically.
+4. Confirm the production URL has no staging banner and is working correctly.
+5. Never push to GitHub automatically — always do so explicitly per user preference #1.
+
 ## External Dependencies
 
 -   **Database:** PostgreSQL

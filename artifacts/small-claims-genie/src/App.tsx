@@ -245,19 +245,27 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <ErrorBoundary>
-                <Router />
-              </ErrorBoundary>
-            </WouterRouter>
-            <Toaster />
-            <HelpGenieWidget />
-          </TooltipProvider>
-        </QueryClientProvider>
-      </ClerkProvider>
+      {import.meta.env.DEV && (
+        <div className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 bg-amber-500 px-4 py-1.5 text-xs font-semibold text-white shadow-md">
+          <span>⚠</span>
+          <span>STAGING ENVIRONMENT — This is not production. Changes here do not affect live users or real data.</span>
+        </div>
+      )}
+      <div className={import.meta.env.DEV ? "pt-8" : ""}>
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <ErrorBoundary>
+                  <Router />
+                </ErrorBoundary>
+              </WouterRouter>
+              <Toaster />
+              <HelpGenieWidget />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </ClerkProvider>
+      </div>
     </ErrorBoundary>
   );
 }

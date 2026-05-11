@@ -3,14 +3,22 @@ import { verifyToken } from "@clerk/express";
 import { logger } from "../lib/logger";
 
 async function verifyWithEitherKey(token: string): Promise<{ sub: string }> {
+  const isProduction = process.env.APP_ENV === "production";
   const devKey = process.env.CLERK_SECRET_KEY_DEV;
   const prodKey = process.env.CLERK_SECRET_KEY;
+
+  // In production, only ever use the production key — never attempt dev key verification.
+  // In staging/development, try the dev key first and fall back to the prod key.
+  if (isProduction) {
+    if (prodKey) return await verifyToken(token, { secretKey: prodKey });
+    throw new Error("No Clerk production secret key configured");
+  }
 
   if (devKey) {
     try {
       return await verifyToken(token, { secretKey: devKey });
     } catch {
-      // dev key failed — try prod key next
+      // dev key failed — fall back to prod key
     }
   }
 

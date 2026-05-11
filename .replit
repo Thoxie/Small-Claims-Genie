@@ -98,6 +98,10 @@ channel = "stable-25_05"
 
 [userenv.development]
 VITE_CLERK_PUBLISHABLE_KEY_DEV = "pk_test_d2lzZS1tYXJsaW4tNTAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+APP_ENV = "staging"
+
+[userenv.production]
+APP_ENV = "production"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-fbe13e76-2c09-46f1-9698-68ef867b76ca"
