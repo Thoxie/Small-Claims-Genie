@@ -1731,6 +1731,13 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
     }));
 
+    // ── Diagnostic log — traces exactly what names reach the AI ──────────────
+    req.log.info(
+      { exhibitList: exhibitList.map(e => ({ letter: e.letter, name: e.name })),
+        rawDescriptions: exhibitDocs.map(doc => ({ id: doc.id, description: doc.description, originalName: doc.originalName })) },
+      "[MC-030 Signed] Exhibit list passed to AI"
+    );
+
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
     if (!declarationTitle || !declarationText) {
       const ai = await generateMC030Declaration(d, exhibitList);

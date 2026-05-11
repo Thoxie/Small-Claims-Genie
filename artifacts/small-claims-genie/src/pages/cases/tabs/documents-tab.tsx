@@ -88,14 +88,17 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
           {uploadDate && <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">Uploaded {uploadDate}</span>}
           {saving && <span className="text-[10px] text-muted-foreground shrink-0">saving…</span>}
         </div>
-        <input
-          className="w-full text-xs text-foreground/60 bg-transparent border-b border-transparent hover:border-muted-foreground/40 focus:border-primary/60 focus:outline-none transition-colors mt-0.5 placeholder:text-foreground/40"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
-          maxLength={120}
-          placeholder="Enter Name of Document"
-        />
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="text-[10px] font-semibold text-muted-foreground shrink-0 select-none">Evidence Name</span>
+          <input
+            className="flex-1 min-w-0 text-xs text-foreground/60 bg-transparent border-b border-transparent hover:border-muted-foreground/40 focus:border-primary/60 focus:outline-none transition-colors placeholder:text-foreground/40"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
+            maxLength={120}
+            placeholder="Enter name for this document…"
+          />
+        </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
         <Button
