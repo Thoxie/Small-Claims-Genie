@@ -90,20 +90,48 @@ export async function measureMC030BodyLines(text: string): Promise<number> {
   return lines;
 }
 
-// ─── MC-030 internals ─────────────────────────────────────────────────────────
+// ─── Exhibit ordering helper ──────────────────────────────────────────────────
+// Given an ordered list of docs and an AI-returned exhibitOrder (1-indexed doc
+// numbers in first-mention order), returns docs sorted so index 0 → Exhibit A,
+// index 1 → Exhibit B, etc.  Any docs not mentioned by the AI are appended at
+// the end so nothing is ever silently dropped.
+function applyExhibitOrder<T>(docs: T[], exhibitOrder: number[]): T[] {
+  const ordered: T[] = [];
+  const usedIndices = new Set<number>();
+  for (const docNum of exhibitOrder) {
+    const idx = docNum - 1; // 1-indexed → 0-indexed
+    if (idx >= 0 && idx < docs.length && !usedIndices.has(idx)) {
+      ordered.push(docs[idx]);
+      usedIndices.add(idx);
+    }
+  }
+  // Append any docs the AI did not mention (safety net — should not happen)
+  for (let i = 0; i < docs.length; i++) {
+    if (!usedIndices.has(i)) ordered.push(docs[i]);
+  }
+  return ordered;
+}
+
+// ─── MC-030 AI declaration generator ─────────────────────────────────────────
+//
+// Exhibits are passed as a numbered list (no pre-assigned letters).
+// The AI assigns exhibit letters A, B, C… in strict first-mention order as it
+// writes the narrative.  It returns an "exhibitOrder" array of 1-based document
+// numbers so we can sort the physical tabs to match the narrative.
+//
 async function generateMC030Declaration(
   d: Record<string, any>,
-  exhibits?: Array<{ letter: string; name: string }>
-): Promise<{ declarationTitle: string; declarationText: string }> {
-  const plaintiffName  = String(d.plaintiffName  || "Plaintiff");
-  const defendantName  = String(d.defendantName  || "Defendant");
-  const claimAmount    = d.claimAmount  ? `$${Number(d.claimAmount).toFixed(2)}` : "an amount to be determined";
-  const claimDesc      = stripExhibitRefsFromDesc(String(d.claimDescription || ""));
-  const incidentDate   = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
-  const hasExhibits    = exhibits && exhibits.length > 0;
+  exhibits?: Array<{ docIndex: number; name: string }>
+): Promise<{ declarationTitle: string; declarationText: string; exhibitOrder: number[] }> {
+  const plaintiffName = String(d.plaintiffName  || "Plaintiff");
+  const defendantName = String(d.defendantName  || "Defendant");
+  const claimAmount   = d.claimAmount ? `$${Number(d.claimAmount).toFixed(2)}` : "an amount to be determined";
+  const claimDesc     = stripExhibitRefsFromDesc(String(d.claimDescription || ""));
+  const incidentDate  = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
+  const hasExhibits   = exhibits && exhibits.length > 0;
 
-  const exhibitTable = hasExhibits
-    ? exhibits!.map(e => `  Exhibit ${e.letter} — ${e.name}`).join("\n")
+  const documentList = hasExhibits
+    ? exhibits!.map(e => `  Document ${e.docIndex}: ${e.name}`).join("\n")
     : "";
 
   const prompt = [
@@ -116,29 +144,43 @@ async function generateMC030Declaration(
     incidentDate ? `- Date of incident: ${incidentDate}` : "",
     claimDesc    ? `- Case description (background facts only — ignore any exhibit references in this text): ${claimDesc}` : "",
     ``,
-    hasExhibits ? `AUTHORITATIVE EXHIBIT LIST — use ONLY these identifiers and names. Do not invent others.\n${exhibitTable}` : "",
+    hasExhibits ? [
+      `AVAILABLE DOCUMENTS — you must reference ALL of them:`,
+      documentList,
+      ``,
+      `EXHIBIT LETTER ASSIGNMENT RULES (strictly enforced):`,
+      `- Do NOT pre-assign letters based on document number order.`,
+      `- Assign exhibit letters A, B, C… in strict FIRST-MENTION ORDER as you write the narrative.`,
+      `  The first document you choose to mention gets Exhibit A. The second gets Exhibit B. And so on.`,
+      `- You decide which document to mention first based on what makes the strongest narrative — not document list order.`,
+      `- Every reference MUST use this exact format (parentheses required):`,
+      `  (Exhibit X — [substantive explanation of what this document is and why it supports the claim])`,
+      `  Example: (Exhibit A — repair invoice from ACME Auto showing the $3,200 cost to fix the damage caused by defendant)`,
+      `  The description must explain WHAT the document proves, not just what it is called.  Never copy a raw filename.`,
+      `- Once you assign a letter to a document, use that same letter for all subsequent references to it.`,
+      `- You MUST reference every document in the list — no omissions.`,
+    ].join("\n") : "",
     ``,
-    `Return a JSON object with exactly two fields:`,
+    `Return a JSON object with exactly these fields:`,
     `1. "declarationTitle": All-caps title, max 80 characters. Specific to the case facts.`,
     `2. "declarationText": Numbered paragraphs separated by \\n. Each paragraph starts with its number and a period ("1. "). Each paragraph is ONE concise sentence, max 120 characters.`,
     hasExhibits
-      ? `   Use enough paragraphs to cover all key facts AND every exhibit — minimum 8, add more if needed to reference all ${exhibits!.length} exhibit(s). Target total length: 600–950 characters.`
+      ? `   Use enough paragraphs to cover all key facts AND every document — minimum 8. Target total length: 600–950 characters.`
       : `   Use 8 paragraphs. Target total length: 550-700 characters.`,
-    `   STRICT RULES — violation will break the PDF form layout:`,
-    `   - Plain text only. Absolutely NO asterisks, NO markdown, NO bold, NO brackets.`,
+    `   STRICT FORMATTING RULES — violation breaks the PDF layout:`,
+    `   - Plain text only. No asterisks, no markdown, no bold. Exhibit references use parentheses as shown above — no square brackets.`,
     `   - Separate paragraphs with \\n only (single newline, never double).`,
     `   - Do NOT include "I declare under penalty of perjury" — already printed on the form.`,
-    `   - The form already has a printed signature block, date line, and printed name line at the bottom — NEVER add any of those to the text. Do not end with a name, a date, "Respectfully", "Sincerely", "Signed", or any closing statement whatsoever.`,
-    `   - The final paragraph must end with the specific dollar amount requested and nothing else after it.`,
-    hasExhibits ? [
-      `   EXHIBIT REFERENCE RULES (strictly enforced):`,
-      `   - You MUST reference EVERY exhibit from the AUTHORITATIVE EXHIBIT LIST — no exceptions, no skipping.`,
-      `   - If there are 4 or more exhibits, after 2 key narrative facts add one compact sentence listing all remaining exhibits: "Supporting documents include: [Name] (Exhibit C), [Name] (Exhibit D)..."`,
-      `   - Use EXACTLY this format: (Exhibit LETTER — Name) — e.g. (Exhibit A — Repair Invoice).`,
-      `   - The LETTER must come from the list above (A, B, C…). NEVER use a number (1, 2, 3) as the identifier.`,
-      `   - The Name must match the name in the list exactly. NEVER copy filenames or any text from the case description.`,
-      `   - Any exhibit reference in the case description is wrong — discard it and use the list above instead.`,
-    ].join("\n") : "",
+    `   - Do NOT end with a name, date, "Respectfully", "Signed", or any closing — the form already has a signature block.`,
+    `   - The final paragraph must state the specific dollar amount requested and nothing else after it.`,
+    hasExhibits
+      ? [
+        `3. "exhibitOrder": An array of integers listing the Document numbers in the order you FIRST assigned them a letter.`,
+        `   Example: if you first mentioned Document 3, then Document 1, then Document 2, return [3, 1, 2].`,
+        `   This array controls which physical tab becomes Exhibit A, B, C, etc.`,
+        `   Every document number from 1 to ${exhibits!.length} must appear exactly once.`,
+      ].join("\n")
+      : `3. "exhibitOrder": []`,
     ``,
     `Respond with only the JSON object.`,
   ].filter(Boolean).join("\n");
@@ -147,20 +189,33 @@ async function generateMC030Declaration(
     model: "gpt-4o-mini",
     messages: [{ role: "user", content: prompt }],
     temperature: 0.4,
-    max_tokens: 1200,
+    max_tokens: 1400,
     response_format: { type: "json_object" },
   });
 
   try {
-    const parsed = JSON.parse(completion.choices[0]?.message?.content || "{}") as { declarationTitle?: string; declarationText?: string };
+    const parsed = JSON.parse(completion.choices[0]?.message?.content || "{}") as {
+      declarationTitle?: string;
+      declarationText?: string;
+      exhibitOrder?: unknown;
+    };
+
+    // Validate exhibitOrder: must be an array of integers
+    const rawOrder = parsed.exhibitOrder;
+    const exhibitOrder: number[] = Array.isArray(rawOrder)
+      ? rawOrder.map(Number).filter(n => Number.isInteger(n) && n >= 1)
+      : [];
+
     return {
       declarationTitle: parsed.declarationTitle || `DECLARATION OF ${plaintiffName.toUpperCase()}`,
-      declarationText:  stripMC030Wrappers(parsed.declarationText  || claimDesc),
+      declarationText:  stripMC030Wrappers(parsed.declarationText || claimDesc),
+      exhibitOrder,
     };
   } catch {
     return {
       declarationTitle: `DECLARATION OF ${plaintiffName.toUpperCase()}`,
       declarationText:  stripMC030Wrappers(claimDesc),
+      exhibitOrder:     [],
     };
   }
 }
@@ -341,6 +396,8 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
   }
   try {
     const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    // Fetch docs in user-selected order (exhibitIds preserves the user's ordering)
     const rawExhibitDocs = exhibitIds.length > 0
       ? await db.select().from(documentsTable).where(
           and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
@@ -348,24 +405,37 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       : [];
     const exhibitDocMap = new Map(rawExhibitDocs.map((doc) => [doc.id, doc]));
     const exhibitDocs = exhibitIds.map((eid) => exhibitDocMap.get(eid)).filter((d): d is typeof rawExhibitDocs[number] => d !== undefined);
-    const exhibitList: Array<{ letter: string; name: string }> = exhibitDocs.map((doc, i) => ({
-      letter: LETTERS[i] ?? String(i + 1),
+
+    // Pass documents as a numbered list — no pre-assigned letters.
+    // The AI assigns letters in first-mention order and returns exhibitOrder.
+    const numberedExhibits = exhibitDocs.map((doc, i) => ({
+      docIndex: i + 1,
       name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
     }));
 
     req.log.info(
-      { exhibitList: exhibitList.map(e => ({ letter: e.letter, name: e.name })),
-        rawDescriptions: exhibitDocs.map(doc => ({ id: doc.id, description: doc.description, originalName: doc.originalName })) },
-      "[MC-030 Signed] Exhibit list passed to AI"
+      { numberedExhibits, rawDescriptions: exhibitDocs.map(doc => ({ id: doc.id, description: doc.description, originalName: doc.originalName })) },
+      "[MC-030 Signed] Numbered exhibit list passed to AI"
     );
 
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+    let exhibitOrder: number[] = [];
+
     if (!declarationTitle || !declarationText) {
-      const ai = await generateMC030Declaration(d, exhibitList);
+      const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
+      exhibitOrder     = ai.exhibitOrder;
+    } else {
+      // Pre-supplied text: preserve user-selected document order
+      exhibitOrder = exhibitDocs.map((_, i) => i + 1);
     }
     declarationText = stripMC030Wrappers(declarationText || "");
+
+    req.log.info({ exhibitOrder }, "[MC-030 Signed] AI exhibit order");
+
+    // Sort exhibit docs to match the narrative order the AI chose
+    const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
 
     if (declarationTitle) {
       db.update(casesTable)
@@ -395,8 +465,9 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
 
     if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
 
-    for (let i = 0; i < exhibitDocs.length; i++) {
-      const doc = exhibitDocs[i];
+    // Attach exhibit tabs in narrative order (A = first mentioned, B = second, …)
+    for (let i = 0; i < orderedDocs.length; i++) {
+      const doc = orderedDocs[i];
       const letter = LETTERS[i] ?? String(i + 1);
       const label = `EXHIBIT ${letter}`;
       try {
@@ -433,16 +504,20 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     : [];
 
   try {
-    const LETTERS_FP = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const rawFpDocs = exhibitIds.length > 0
+    const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    // Fetch docs in user-selected order
+    const rawDocs = exhibitIds.length > 0
       ? await db.select().from(documentsTable).where(
           and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
         )
       : [];
-    const fpDocMap = new Map(rawFpDocs.map((doc) => [doc.id, doc]));
-    const fpExhibitDocs = exhibitIds.map((eid) => fpDocMap.get(eid)).filter((d): d is typeof rawFpDocs[number] => d !== undefined);
-    const fpExhibitList: Array<{ letter: string; name: string }> = fpExhibitDocs.map((doc, i) => ({
-      letter: LETTERS_FP[i] ?? String(i + 1),
+    const docMap = new Map(rawDocs.map((doc) => [doc.id, doc]));
+    const exhibitDocs = exhibitIds.map((eid) => docMap.get(eid)).filter((d): d is typeof rawDocs[number] => d !== undefined);
+
+    // Numbered list — AI assigns letters in first-mention order
+    const numberedExhibits = exhibitDocs.map((doc, i) => ({
+      docIndex: i + 1,
       name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
     }));
 
@@ -451,12 +526,23 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     const fontBold = await masterDoc.embedFont(StandardFonts.HelveticaBold);
 
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+    let exhibitOrder: number[] = [];
+
     if (!declarationTitle || !declarationText) {
-      const ai = await generateMC030Declaration(d, fpExhibitList);
+      const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
+      exhibitOrder     = ai.exhibitOrder;
+    } else {
+      // Pre-supplied text: preserve user-selected document order
+      exhibitOrder = exhibitDocs.map((_, i) => i + 1);
     }
     declarationText = stripMC030Wrappers(declarationText || "");
+
+    req.log.info({ exhibitOrder }, "[MC-030 Filing Packet] AI exhibit order");
+
+    // Sort exhibit docs to match the narrative order the AI chose
+    const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
 
     if (declarationTitle) {
       db.update(casesTable)
@@ -474,15 +560,16 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     drawMC030Page(mc030Page, font, fontBold, d, b, declarationTitle, formDeclText);
     if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
 
-    for (let i = 0; i < fpExhibitDocs.length; i++) {
-      const doc = fpExhibitDocs[i];
-      const letter = LETTERS_FP[i] ?? String(i + 1);
+    // Attach exhibit tabs in narrative order
+    for (let i = 0; i < orderedDocs.length; i++) {
+      const doc = orderedDocs[i];
+      const letter = LETTERS[i] ?? String(i + 1);
       const label = `EXHIBIT ${letter}`;
       try {
         const fileBuffer = await getDocumentBuffer(doc);
         await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, friendlyExhibitName(doc.description, doc.originalName), label, font, fontBold);
       } catch (docErr) {
-        req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Exhibits] Failed to embed exhibit");
+        req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Filing Packet] Failed to embed exhibit");
       }
     }
 
