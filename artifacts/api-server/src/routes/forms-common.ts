@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
 import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
