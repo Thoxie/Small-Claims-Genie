@@ -356,8 +356,13 @@ function val(page: any, font: any, text: string | null | undefined, x: number, y
   page.drawText(String(text), { x, y, size, font, color: BLACK });
 }
 
-// Draw a line of text with inline bold for (Exhibit ...) references.
-// Everything inside (Exhibit NAME) is drawn in fontBold; the rest in font.
+// Draw a line of text with inline bold for exhibit references.
+// Two patterns are matched:
+//   1. A full "(Exhibit ...)" parenthetical that fits on one line.
+//   2. A bare "Exhibit X — partial name" that results from word-wrapping
+//      splitting a multi-exhibit parenthetical across lines (no closing ")"
+//      on this line, or continuing from a previous line that had no opening).
+// Everything matching either pattern is drawn in fontBold; the rest in font.
 function drawLineMixed(
   page: any,
   font: any,
@@ -368,7 +373,7 @@ function drawLineMixed(
   size: number,
   color: any
 ) {
-  const EXHIBIT_RE = /(\(Exhibit\s+[^)]+\))/g;
+  const EXHIBIT_RE = /(\(Exhibit\s+[^)]+\)|Exhibit\s+[A-Z]+(?:\s*—\s*[^;)\n]*)?)/g;
   const segments: { text: string; bold: boolean }[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
