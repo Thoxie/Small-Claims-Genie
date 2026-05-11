@@ -1411,6 +1411,39 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <span className="font-semibold">Service by Process Server</span> — Most reliable option. A professional Process Server handles delivery and proof of service.
                   </p>
                 </label>
+                {notifyMethod === "process_server" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">e-Filing and Serving Your Small Claims Case With a Licensed Process Server</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">After your Small Claims Genie packet is prepared, your case still needs to be filed with the court and served on the defendant. A licensed process server may be able to e-file your case, receive the court-stamped documents, serve the defendant, and file the proof of service with the court if available in your county.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Be Ready to Provide</p>
+                        <ul className="text-xs text-blue-800 leading-relaxed space-y-1 mt-1">
+                          <li>• Your completed Small Claims Genie filing packet with all forms — make sure they are signed by you.</li>
+                          <li>• The defendant's full legal name.</li>
+                          <li>• The defendant's best address for service.</li>
+                          <li>• Any helpful details such as work address, business hours, apartment number, gate code, vehicle description, or photo.</li>
+                          <li>• Your contact information and any deadline concerns.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5 space-y-1.5">
+                      <p className="text-xs font-semibold text-blue-900">Important</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">Filing your case does not mean the defendant has been served. Your hearing may be delayed if the defendant is not served correctly or if the proof of service is not filed before the deadline.</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">Small Claims Genie does not file or serve documents for you. A process server or legal support provider may charge separate fees for court filing, e-filing, service attempts, and proof-of-service filing.</p>
+                    </div>
+
+                  </div>
+                )}
 
               </RadioGroup>
             </div>
@@ -1792,6 +1825,39 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       <span className="font-semibold">Service by Process Server</span> — Best overall option. A professional Process Server finds and serves the defendant correctly. This usually costs more, but it is the most reliable choice if the defendant may avoid service or if your hearing date is coming up. The process server will file the Proof of Service with the court. Make sure you get a stamped copy from the Process Server to bring to court.
                     </p>
                   </label>
+                  {notifyMethod === "process_server" && (
+                    <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+
+                      <div className="flex gap-2.5">
+                        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">e-Filing and Serving Your Small Claims Case With a Licensed Process Server</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">After your Small Claims Genie packet is prepared, your case still needs to be filed with the court and served on the defendant. A licensed process server may be able to e-file your case, receive the court-stamped documents, serve the defendant, and file the proof of service with the court if available in your county.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2.5">
+                        <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Be Ready to Provide</p>
+                          <ul className="text-xs text-blue-800 leading-relaxed space-y-1 mt-1">
+                            <li>• Your completed Small Claims Genie filing packet with all forms — make sure they are signed by you.</li>
+                            <li>• The defendant's full legal name.</li>
+                            <li>• The defendant's best address for service.</li>
+                            <li>• Any helpful details such as work address, business hours, apartment number, gate code, vehicle description, or photo.</li>
+                            <li>• Your contact information and any deadline concerns.</li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5 space-y-1.5">
+                        <p className="text-xs font-semibold text-blue-900">Important</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Filing your case does not mean the defendant has been served. Your hearing may be delayed if the defendant is not served correctly or if the proof of service is not filed before the deadline.</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Small Claims Genie does not file or serve documents for you. A process server or legal support provider may charge separate fees for court filing, e-filing, service attempts, and proof-of-service filing.</p>
+                      </div>
+
+                    </div>
+                  )}
                 </RadioGroup>
               </div>
 
