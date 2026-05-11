@@ -329,23 +329,23 @@
       },
       "attyFeeYes": {
         "x": 364.3,
-        "y": 634
+        "y": 631.7
       },
       "attyFeeNo": {
-        "x": 424.3,
-        "y": 634
+        "x": 409.6,
+        "y": 631.7
       },
       "attyArbitration": {
         "x": 489.1,
         "y": 645.1
       },
       "publicEntityYes": {
-        "x": 299.5,
-        "y": 676.3
+        "x": 242.5,
+        "y": 666
       },
       "publicEntityNo": {
-        "x": 359.5,
-        "y": 676.3
+        "x": 295.1,
+        "y": 666
       },
       "publicEntityDate": {
         "x": 441.1,
