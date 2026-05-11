@@ -1411,7 +1411,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                   <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
                   <p className="text-xs text-foreground leading-relaxed">
-                    <span className="font-semibold">Service by Process Server — Most reliable option.</span> A professional Process Server handles delivery and proof of service.
+                    <span className="font-bold">Service by Process Server — Most reliable option.</span> A professional Process Server handles delivery and proof of service.
                   </p>
                 </label>
                 {notifyMethod === "process_server" && (
@@ -1828,7 +1828,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                     <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
                     <p className="text-xs text-foreground leading-relaxed">
-                      <span className="font-semibold">Service by Process Server — Best overall option.</span> A professional Process Server finds and serves the defendant correctly. This usually costs more, but it is the most reliable choice if the defendant may avoid service or if your hearing date is coming up. The process server will file the Proof of Service with the court. Make sure you get a stamped copy from the Process Server to bring to court.
+                      <span className="font-bold">Service by Process Server — Best overall option.</span> A professional Process Server finds and serves the defendant correctly. This usually costs more, but it is the most reliable choice if the defendant may avoid service or if your hearing date is coming up. The process server will file the Proof of Service with the court. Make sure you get a stamped copy from the Process Server to bring to court.
                     </p>
                   </label>
                   {notifyMethod === "process_server" && (
