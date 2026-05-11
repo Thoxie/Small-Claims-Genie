@@ -29,9 +29,9 @@ import AccountPage from "@/pages/account";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 
-// In development (Vite dev server), use the dev Clerk key if available.
-// In production builds, ALWAYS use the production key — never the dev key,
-// because dev Clerk instances refuse to initialize at non-localhost domains.
+// In development (Vite dev server / staging), use the dev Clerk key if available.
+// In production builds, ALWAYS use the production key — dev Clerk instances
+// are scoped to *.replit.dev and will not work on the custom domain.
 const PUBLISHABLE_KEY = (
   import.meta.env.DEV
     ? (import.meta.env.VITE_CLERK_PUBLISHABLE_KEY_DEV || import.meta.env.VITE_CLERK_PUBLISHABLE_KEY)
