@@ -88,6 +88,7 @@ export interface Case {
   readinessScore?: number;
   mc030DeclarationTitle?: string;
   mc030ExhibitDocIds?: number[];
+  notifyMethod?: string;
   createdAt: Date;
   updatedAt: Date;
 }

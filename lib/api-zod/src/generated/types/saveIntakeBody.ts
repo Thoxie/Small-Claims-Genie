@@ -8,7 +8,7 @@
 import type { SaveIntakeBodyData } from "./saveIntakeBodyData";
 
 export interface SaveIntakeBody {
-  step: number;
+  step?: number;
   data?: SaveIntakeBodyData;
   intakeComplete?: boolean;
 }

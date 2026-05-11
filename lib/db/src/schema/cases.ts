@@ -104,6 +104,8 @@ export const casesTable = pgTable("cases", {
   mc030ExhibitDocIds: jsonb("mc030_exhibit_doc_ids"),
   // ── SC-104 Proof of Service saved field data ─────────────────────────────────
   sc104Data: jsonb("sc104_data"),
+  // ── Court Forms — service method selection ───────────────────────────────────
+  notifyMethod: text("notify_method"),
   // ── Email reminder tracking ──────────────────────────────────────────────────
   reminder30DaySent: boolean("reminder_30_day_sent").default(false),
   reminder14DaySent: boolean("reminder_14_day_sent").default(false),

@@ -789,6 +789,8 @@ components:
           type: array
           items:
             type: integer
+        notifyMethod:
+          type: string
         createdAt:
           type: string
           format: date-time
@@ -989,6 +991,8 @@ components:
           type: array
           items:
             type: integer
+        notifyMethod:
+          type: string
 
     SaveIntakeBody:
       type: object

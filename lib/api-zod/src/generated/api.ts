@@ -123,6 +123,7 @@ export const ListCasesResponseItem = zod.object({
   readinessScore: zod.number().optional(),
   mc030DeclarationTitle: zod.string().optional(),
   mc030ExhibitDocIds: zod.array(zod.number()).optional(),
+  notifyMethod: zod.string().optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -233,6 +234,7 @@ export const GetCaseStatsResponse = zod.object({
       readinessScore: zod.number().optional(),
       mc030DeclarationTitle: zod.string().optional(),
       mc030ExhibitDocIds: zod.array(zod.number()).optional(),
+      notifyMethod: zod.string().optional(),
       createdAt: zod.coerce.date(),
       updatedAt: zod.coerce.date(),
     }),
@@ -334,6 +336,7 @@ export const GetCaseResponse = zod
     readinessScore: zod.number().optional(),
     mc030DeclarationTitle: zod.string().optional(),
     mc030ExhibitDocIds: zod.array(zod.number()).optional(),
+    notifyMethod: zod.string().optional(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   })
@@ -460,6 +463,7 @@ export const UpdateCaseBody = zod.object({
   readinessScore: zod.number().optional(),
   mc030DeclarationTitle: zod.string().optional(),
   mc030ExhibitDocIds: zod.array(zod.number()).optional(),
+  notifyMethod: zod.string().optional(),
 });
 
 export const UpdateCaseResponse = zod.object({
@@ -549,6 +553,7 @@ export const UpdateCaseResponse = zod.object({
   readinessScore: zod.number().optional(),
   mc030DeclarationTitle: zod.string().optional(),
   mc030ExhibitDocIds: zod.array(zod.number()).optional(),
+  notifyMethod: zod.string().optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -660,6 +665,7 @@ export const SaveIntakeProgressResponse = zod.object({
   readinessScore: zod.number().optional(),
   mc030DeclarationTitle: zod.string().optional(),
   mc030ExhibitDocIds: zod.array(zod.number()).optional(),
+  notifyMethod: zod.string().optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });

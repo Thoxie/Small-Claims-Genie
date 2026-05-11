@@ -585,7 +585,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   useEffect(() => {
     try { localStorage.setItem(`sc_forms_step_${caseId}`, String(wizardIndex)); } catch {}
   }, [wizardIndex, caseId]);
-  const [notifyMethod, setNotifyMethod] = useState<string>("");
+  const [notifyMethod, setNotifyMethod] = useState<string>(currentCase.notifyMethod ?? "");
 
   // ── Documents for exhibit selector ────────────────────────────────────────
   const [documents, setDocuments] = useState<DocumentWithMeta[]>([]);
@@ -637,6 +637,24 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     }, 1000);
     return () => clearTimeout(t);
   }, [selectedExhibits, caseId, getToken]);
+
+  // ── Auto-save notifyMethod to DB whenever it changes ────────────────────────
+  const notifyMethodInitial = useRef(notifyMethod);
+  useEffect(() => {
+    if (notifyMethod === notifyMethodInitial.current) return;
+    notifyMethodInitial.current = notifyMethod;
+    const t = setTimeout(async () => {
+      try {
+        const token = await getToken();
+        await fetch(`/api/cases/${caseId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ notifyMethod }),
+        });
+      } catch { /* silent — best-effort */ }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [notifyMethod, caseId, getToken]);
 
   // ── Auto-save mc030Title to DB whenever it changes (debounced 1s) ──────────
   const mc030TitleInitial = useRef(mc030Title);

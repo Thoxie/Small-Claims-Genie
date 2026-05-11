@@ -115,6 +115,7 @@ export interface Case {
   readinessScore?: number;
   mc030DeclarationTitle?: string;
   mc030ExhibitDocIds?: number[];
+  notifyMethod?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -248,12 +249,13 @@ export interface UpdateCaseBody {
   readinessScore?: number;
   mc030DeclarationTitle?: string;
   mc030ExhibitDocIds?: number[];
+  notifyMethod?: string;
 }
 
 export type SaveIntakeBodyData = { [key: string]: unknown };
 
 export interface SaveIntakeBody {
-  step: number;
+  step?: number;
   data?: SaveIntakeBodyData;
   intakeComplete?: boolean;
 }
