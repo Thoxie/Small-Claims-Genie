@@ -1395,12 +1395,16 @@ export async function measureMC030BodyLines(text: string): Promise<number> {
   return lines;
 }
 
-async function generateMC030Declaration(d: Record<string, any>): Promise<{ declarationTitle: string; declarationText: string }> {
+async function generateMC030Declaration(
+  d: Record<string, any>,
+  exhibits?: Array<{ letter: string; name: string }>
+): Promise<{ declarationTitle: string; declarationText: string }> {
   const plaintiffName  = String(d.plaintiffName  || "Plaintiff");
   const defendantName  = String(d.defendantName  || "Defendant");
   const claimAmount    = d.claimAmount  ? `$${Number(d.claimAmount).toFixed(2)}` : "an amount to be determined";
   const claimDesc      = String(d.claimDescription || "");
   const incidentDate   = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
+  const hasExhibits    = exhibits && exhibits.length > 0;
 
   const prompt = [
     `You are drafting a California small claims court MC-030 Declaration for ${plaintiffName} against ${defendantName}.`,
@@ -1411,6 +1415,7 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
     `- Claim amount: ${claimAmount}`,
     incidentDate ? `- Date of incident: ${incidentDate}` : "",
     claimDesc    ? `- Case description: ${claimDesc}` : "",
+    hasExhibits  ? `- Exhibits attached: ${exhibits!.map(e => `Exhibit ${e.letter} — ${e.name}`).join("; ")}` : "",
     ``,
     `Return a JSON object with exactly two fields:`,
     `1. "declarationTitle": All-caps title, max 80 characters. Specific to the case facts.`,
@@ -1421,6 +1426,7 @@ async function generateMC030Declaration(d: Record<string, any>): Promise<{ decla
     `   - Do NOT include "I declare under penalty of perjury" — already printed on the form.`,
     `   - The form already has a printed signature block, date line, and printed name line at the bottom — NEVER add any of those to the text. Do not end with a name, a date, "Respectfully", "Sincerely", "Signed", or any closing statement whatsoever.`,
     `   - Paragraph 8 must end with the specific dollar amount requested and nothing else after it.`,
+    hasExhibits  ? `   - You MUST reference each attached exhibit at least once using EXACTLY this format: (Exhibit LETTER — Name). Example: (Exhibit A — Home Depot Receipt). Use the exact letter and name from the exhibit list above. Do NOT use brackets, asterisks, or any other wrapper — only parentheses.` : "",
     ``,
     `Respond with only the JSON object.`,
   ].filter(Boolean).join("\n");
@@ -1668,9 +1674,23 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
     sigBytes = Buffer.from(base64, "base64");
   }
   try {
+    // ── Fetch exhibit docs up-front so the AI declaration can reference them ──
+    const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const rawExhibitDocs = exhibitIds.length > 0
+      ? await db.select().from(documentsTable).where(
+          and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
+        )
+      : [];
+    const exhibitDocMap = new Map(rawExhibitDocs.map((doc) => [doc.id, doc]));
+    const exhibitDocs = exhibitIds.map((eid) => exhibitDocMap.get(eid)).filter((d): d is typeof rawExhibitDocs[number] => d !== undefined);
+    const exhibitList: Array<{ letter: string; name: string }> = exhibitDocs.map((doc, i) => ({
+      letter: LETTERS[i] ?? String(i + 1),
+      name: doc.description || doc.originalName || `Document ${i + 1}`,
+    }));
+
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
     if (!declarationTitle || !declarationText) {
-      const ai = await generateMC030Declaration(d);
+      const ai = await generateMC030Declaration(d, exhibitList);
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
     }
@@ -1724,25 +1744,16 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
     // Continuation pages go after the signed MC-030 form but before any exhibits
     if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
 
-    // ── Append exhibit pages (same logic as /mc030-with-exhibits) ────────────
-    if (exhibitIds.length > 0) {
-      const docs = await db.select().from(documentsTable).where(
-        and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
-      );
-      const docMap = new Map(docs.map((doc) => [doc.id, doc]));
-      const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-      for (let i = 0; i < exhibitIds.length; i++) {
-        const doc = docMap.get(exhibitIds[i]);
-        if (!doc) continue;
-        const letter = LETTERS[i] ?? String(i + 1);
-        const label = `EXHIBIT ${letter}`;
-        try {
-          const fileBuffer = await getDocumentBuffer(doc);
-          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
-        } catch (docErr) {
-          req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Signed] Failed to embed exhibit");
-        }
+    // ── Append exhibit pages ──────────────────────────────────────────────────
+    for (let i = 0; i < exhibitDocs.length; i++) {
+      const doc = exhibitDocs[i];
+      const letter = LETTERS[i] ?? String(i + 1);
+      const label = `EXHIBIT ${letter}`;
+      try {
+        const fileBuffer = await getDocumentBuffer(doc);
+        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
+      } catch (docErr) {
+        req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Signed] Failed to embed exhibit");
       }
     }
 
@@ -1775,6 +1786,20 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     : [];
 
   try {
+    // ── Fetch exhibit docs up-front so the AI declaration can reference them ──
+    const LETTERS_FP = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const rawFpDocs = exhibitIds.length > 0
+      ? await db.select().from(documentsTable).where(
+          and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
+        )
+      : [];
+    const fpDocMap = new Map(rawFpDocs.map((doc) => [doc.id, doc]));
+    const fpExhibitDocs = exhibitIds.map((eid) => fpDocMap.get(eid)).filter((d): d is typeof rawFpDocs[number] => d !== undefined);
+    const fpExhibitList: Array<{ letter: string; name: string }> = fpExhibitDocs.map((doc, i) => ({
+      letter: LETTERS_FP[i] ?? String(i + 1),
+      name: doc.description || doc.originalName || `Document ${i + 1}`,
+    }));
+
     const masterDoc = await PDFDocument.create();
     const font = await masterDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await masterDoc.embedFont(StandardFonts.HelveticaBold);
@@ -1782,7 +1807,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     // ── Generate AI declaration if not provided ───────────────────────────────
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
     if (!declarationTitle || !declarationText) {
-      const ai = await generateMC030Declaration(d);
+      const ai = await generateMC030Declaration(d, fpExhibitList);
       declarationTitle = declarationTitle || ai.declarationTitle;
       declarationText  = declarationText  || ai.declarationText;
     }
@@ -1821,25 +1846,16 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     drawMC030Page(mc030Page, font, fontBold, d, b, declarationTitle, formDeclText);
     if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
 
-    // ── Exhibit pages ────────────────────────────────────────────────────────
-    if (exhibitIds.length > 0) {
-      const docs = await db.select().from(documentsTable).where(
-        and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
-      );
-      const docMap = new Map(docs.map((doc) => [doc.id, doc]));
-      const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-      for (let i = 0; i < exhibitIds.length; i++) {
-        const doc = docMap.get(exhibitIds[i]);
-        if (!doc) continue;
-        const letter = LETTERS[i] ?? String(i + 1);
-        const label = `EXHIBIT ${letter}`;
-        try {
-          const fileBuffer = await getDocumentBuffer(doc);
-          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
-        } catch (docErr) {
-          req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Exhibits] Failed to embed exhibit");
-        }
+    // ── Exhibit pages (use pre-fetched docs so ordering matches declaration) ──
+    for (let i = 0; i < fpExhibitDocs.length; i++) {
+      const doc = fpExhibitDocs[i];
+      const letter = LETTERS_FP[i] ?? String(i + 1);
+      const label = `EXHIBIT ${letter}`;
+      try {
+        const fileBuffer = await getDocumentBuffer(doc);
+        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
+      } catch (docErr) {
+        req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Exhibits] Failed to embed exhibit");
       }
     }
 
