@@ -942,7 +942,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     setMc030AiGenerating(true); setMc030AiError(null);
     try {
       const clerkToken = await getToken();
-      const res = await fetch(`/api/cases/${caseId}/forms/mc030-ai`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${clerkToken}` }, body: JSON.stringify({ exhibitDocIds: selectedExhibits }) });
+      const res = await fetch(`/api/cases/${caseId}/forms/mc030-ai`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${clerkToken}` }, body: JSON.stringify({ exhibitDocIds: orderedExhibitIds }) });
       if (!res.ok) { const err = await res.json().catch(() => ({})); setMc030AiError(err.error || "AI generation failed."); return null; }
       const data = await res.json();
       const text = data.declarationText ?? null;
@@ -968,7 +968,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const { token } = await tokenRes.json();
       const res = await fetch(`/api/cases/${caseId}/forms/mc030-with-exhibits`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, exhibitDocIds: selectedExhibits }),
+        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, exhibitDocIds: orderedExhibitIds }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); toast({ title: "Build failed", description: err.error || "Failed to build packet.", variant: "destructive" }); return; }
       const blob = await res.blob();
@@ -994,7 +994,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const res = await fetch(`/api/cases/${caseId}/forms/mc030/signed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl, exhibitDocIds: selectedExhibits }),
+        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl, exhibitDocIds: orderedExhibitIds }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})) as { error?: string }; toast({ title: "Build failed", description: err.error || "Failed to build signed MC-030.", variant: "destructive" }); return; }
       const blob = await res.blob();
@@ -1084,6 +1084,12 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   }
 
   const EXHIBIT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  // Exhibits in document-list order (A = first doc in list that is checked, etc.)
+  // This ensures A/B/C always matches the visual order regardless of click order.
+  const orderedExhibitIds = documents
+    .filter((d: DocumentWithMeta) => selectedExhibits.includes(d.id))
+    .map((d: DocumentWithMeta) => d.id);
 
   // ── Wizard steps ──────────────────────────────────────────────────────────
   type StepStatus = "required" | "optional" | "skipped";
@@ -1267,9 +1273,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               ) : (
                 <div className="space-y-1.5 max-h-36 overflow-y-auto rounded-lg border border-border p-2">
                   {documents.map((doc: DocumentWithMeta, _idx: number) => {
-                    const selectedIdx = selectedExhibits.indexOf(doc.id);
-                    const isSelected = selectedIdx !== -1;
-                    const exhibitLetter = isSelected ? EXHIBIT_LETTERS[selectedIdx] ?? String(selectedIdx + 1) : null;
+                    const isSelected = selectedExhibits.includes(doc.id);
+                    const orderedIdx = isSelected ? orderedExhibitIds.indexOf(doc.id) : -1;
+                    const exhibitLetter = isSelected ? EXHIBIT_LETTERS[orderedIdx] ?? String(orderedIdx + 1) : null;
                     return (
                       <label key={doc.id} className={`flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer transition-colors ${isSelected ? "bg-[#0d6b5e]/8 border border-[#0d6b5e]/25" : "hover:bg-muted/50 border border-transparent"}`}>
                         <input type="checkbox" checked={isSelected} onChange={() => toggleExhibit(doc.id)} className="rounded border-input h-4 w-4 accent-[#0d6b5e]" />
