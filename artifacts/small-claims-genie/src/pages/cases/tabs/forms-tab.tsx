@@ -1331,14 +1331,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   </p>
                 </label>
                 {notifyMethod === "adult_service" && (
-                  <div className="ml-6 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 flex items-center gap-3">
-                    <div className="rounded-lg p-1.5 shrink-0 bg-white border border-amber-200">
-                      <FileText className="w-4 h-4 text-amber-600" />
+                  <div className="ml-6 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 flex items-center gap-3">
+                    <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
+                      <FileText className="w-4 h-4 text-blue-600" />
                     </div>
-                    <p className="text-xs text-foreground flex-1 leading-snug">
+                    <p className="text-xs text-blue-900 flex-1 leading-snug">
                       <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
                     </p>
-                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-amber-300 hover:bg-amber-100"
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black hover:bg-blue-100"
                       onClick={openSC104InNewTab}
                       disabled={downloadingForm === "sc104"}>
                       {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
@@ -1657,14 +1657,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     </p>
                   </label>
                   {notifyMethod === "adult_service" && (
-                    <div className="ml-6 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 flex items-center gap-3">
-                      <div className="rounded-lg p-1.5 shrink-0 bg-white border border-amber-200">
-                        <FileText className="w-4 h-4 text-amber-600" />
+                    <div className="ml-6 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 flex items-center gap-3">
+                      <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
+                        <FileText className="w-4 h-4 text-blue-600" />
                       </div>
-                      <p className="text-xs text-foreground flex-1 leading-snug">
+                      <p className="text-xs text-blue-900 flex-1 leading-snug">
                         <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
                       </p>
-                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-amber-300 hover:bg-amber-100"
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black hover:bg-blue-100"
                         onClick={openSC104InNewTab}
                         disabled={downloadingForm === "sc104"}>
                         {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
