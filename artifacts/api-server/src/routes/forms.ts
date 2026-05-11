@@ -2160,7 +2160,6 @@ async function buildSC104Pdf(
   sigBytes?: Buffer,
 ): Promise<Uint8Array> {
   const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
-  const docs: string[] = b.docsServed || [];
 
   // Build court info block (same pattern as SC-105 / SC-112A)
   const county = CALIFORNIA_COUNTIES.find((cc: any) => cc.id === d.countyId);
@@ -2216,9 +2215,8 @@ async function buildSC104Pdf(
     setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]", "");
     // 1b: business/entity name
     setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", d.defendantName || "");
-    // 1b: authorized agent name and title (from intake)
-    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]",
-      [d.defendantAgentName, d.defendantAgentTitle].filter(Boolean).join(" — ") || "");
+    // 1b: person authorized for service and job title — left blank for the process server to complete
+    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]", "");
   } else {
     // 1a: individual defendant's name
     setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]", d.defendantName || "");
