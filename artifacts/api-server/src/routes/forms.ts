@@ -2209,16 +2209,34 @@ async function buildSC104Pdf(
   setField(form, "SC-104[0].Page1[0].RightCaption[0].Dept[0]",       d.hearingCourtroom || "");
 
   // ── Item 1 — Person / entity being served ───────────────────────────────
-  // Pre-fill from intake: defendant name in 1a (the person being served).
-  // Items 1b (business/entity name, authorized person, job title) are left
-  // blank — they require knowledge the process server fills in after service.
-  setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]", d.defendantName || "");
-  setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", "");
-  setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]", "");
+  // Route defendant into the correct field based on whether they are a business/entity.
+  const isBusiness = !!d.defendantIsBusinessOrEntity;
+  if (isBusiness) {
+    // 1a: blank (not serving an individual)
+    setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]", "");
+    // 1b: business/entity name
+    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", d.defendantName || "");
+    // 1b: authorized agent name and title (from intake)
+    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]",
+      [d.defendantAgentName, d.defendantAgentTitle].filter(Boolean).join(" — ") || "");
+  } else {
+    // 1a: individual defendant's name
+    setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]", d.defendantName || "");
+    // 1b: blank (not a business)
+    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", "");
+    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]", "");
+  }
 
   // ── Item 3 — Documents served ────────────────────────────────────────────
-  // SC-100 is the primary document served in all small claims initial filings.
+  // SC-100 is always served in small claims initial filings.
   checkBox(form, "SC-104[0].Page1[0].List3[0].Lia[0].Filed_cb[0]", true);
+  // 3d. Other: list any additional forms filed in this case (e.g. MC-030 Declaration).
+  const otherDocs: string[] = [];
+  if (d.mc030DeclarationTitle) otherDocs.push("MC-030, Declaration");
+  if (otherDocs.length > 0) {
+    checkBox(form, "SC-104[0].Page1[0].List3[0].Lid[0].NotYet_cb[0]", true);
+    setField(form, "SC-104[0].Page1[0].List3[0].Lid[0].T1865[0]", otherDocs.join("; "));
+  }
 
   // ── Page 2 — Header ──────────────────────────────────────────────────────
   setField(form, "SC-104[0].Page2[0].PxCaption[0].CaseName[0]",   caseName);
