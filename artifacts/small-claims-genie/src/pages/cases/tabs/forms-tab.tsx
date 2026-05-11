@@ -1330,6 +1330,22 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <span className="font-semibold">Service by Adult</span> — Someone 18 or older, not involved in the case, delivers the court papers to the defendant.
                   </p>
                 </label>
+                {notifyMethod === "adult_service" && (
+                  <div className="ml-6 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 flex items-center gap-3">
+                    <div className="rounded-lg p-1.5 shrink-0 bg-white border border-amber-200">
+                      <FileText className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <p className="text-xs text-foreground flex-1 leading-snug">
+                      <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
+                    </p>
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-amber-300 hover:bg-amber-100"
+                      onClick={openSC104InNewTab}
+                      disabled={downloadingForm === "sc104"}>
+                      {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                      Open SC-104 PDF
+                    </Button>
+                  </div>
+                )}
 
                 {/* Radio 4 — Process Server */}
                 <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
@@ -1640,6 +1656,22 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       <span className="font-semibold">Service by Adult</span> — Reliable low-cost option. Someone 18 or older, who is not part of the case, hands the papers to the defendant. That person must complete Proof of Service (SC-104 – Proof of Service) generated from this system. You file it with the court as soon as possible and bring a stamped copy to your hearing as proof.
                     </p>
                   </label>
+                  {notifyMethod === "adult_service" && (
+                    <div className="ml-6 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 flex items-center gap-3">
+                      <div className="rounded-lg p-1.5 shrink-0 bg-white border border-amber-200">
+                        <FileText className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <p className="text-xs text-foreground flex-1 leading-snug">
+                        <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
+                      </p>
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-amber-300 hover:bg-amber-100"
+                        onClick={openSC104InNewTab}
+                        disabled={downloadingForm === "sc104"}>
+                        {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                        Open SC-104 PDF
+                      </Button>
+                    </div>
+                  )}
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                     <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
                     <p className="text-xs text-foreground leading-relaxed">
