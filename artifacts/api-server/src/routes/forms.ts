@@ -1739,7 +1739,7 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
         const label = `EXHIBIT ${letter}`;
         try {
           const fileBuffer = await getDocumentBuffer(doc);
-          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.originalName, label, font, fontBold);
+          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
         } catch (docErr) {
           req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Signed] Failed to embed exhibit");
         }
@@ -1836,7 +1836,7 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
         const label = `EXHIBIT ${letter}`;
         try {
           const fileBuffer = await getDocumentBuffer(doc);
-          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.originalName, label, font, fontBold);
+          await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, doc.description || doc.originalName, label, font, fontBold);
         } catch (docErr) {
           req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Exhibits] Failed to embed exhibit");
         }

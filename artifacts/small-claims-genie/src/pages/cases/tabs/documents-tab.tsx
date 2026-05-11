@@ -32,9 +32,16 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
   const [description, setDescription] = useState(doc.description || "");
   const [saving, setSaving] = useState(false);
   const [viewing, setViewing] = useState(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedRef = useRef(doc.description || "");
+
+  const uploadDate = doc.createdAt
+    ? new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : null;
 
   const save = async (nextDesc: string) => {
-    if (nextDesc === (doc.description || "")) return;
+    if (nextDesc === lastSavedRef.current) return;
+    lastSavedRef.current = nextDesc;
     setSaving(true);
     try {
       const token = await getToken();
@@ -47,6 +54,12 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
     } catch { /* silent */ }
     setSaving(false);
   };
+
+  useEffect(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => { void save(description); }, 600);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [description]);
 
   const handleView = async () => {
     if (viewing) return;
@@ -70,18 +83,18 @@ function DocTile({ doc, caseId, onDelete, deleting, getToken, onSaved }: {
         <FileText className="h-4 w-4 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="flex-1 min-w-0 text-sm font-medium truncate">{label}</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="min-w-0 text-sm font-medium truncate">{label}</p>
+          {uploadDate && <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">Uploaded {uploadDate}</span>}
           {saving && <span className="text-[10px] text-muted-foreground shrink-0">saving…</span>}
         </div>
         <input
           className="w-full text-xs text-foreground/60 bg-transparent border-b border-transparent hover:border-muted-foreground/40 focus:border-primary/60 focus:outline-none transition-colors mt-0.5 placeholder:text-foreground/40"
           value={description}
           onChange={e => setDescription(e.target.value)}
-          onBlur={() => save(description)}
           onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
-          maxLength={80}
-          placeholder="Add a note…"
+          maxLength={120}
+          placeholder="Enter Name of Document"
         />
       </div>
       <div className="flex items-center gap-1 shrink-0">
