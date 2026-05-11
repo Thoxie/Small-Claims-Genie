@@ -13,6 +13,8 @@ export interface Document {
   filename: string;
   originalName: string;
   label?: string;
+  /** User-provided display name for the document (used as exhibit label in MC-030) */
+  description?: string;
   mimeType: string;
   fileSize: number;
   ocrText?: string;

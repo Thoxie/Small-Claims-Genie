@@ -30,9 +30,7 @@ export interface ExtendedCase extends Case {
   sc104Data?: Record<string, string> | null;
 }
 
-export interface DocumentWithMeta extends Document {
-  description?: string;
-}
+export type DocumentWithMeta = Document;
 
 export interface SpeechRecognitionResult {
   readonly length: number;

@@ -136,6 +136,8 @@ export interface Document {
   filename: string;
   originalName: string;
   label?: string;
+  /** User-provided display name for the document (used as exhibit label in MC-030) */
+  description?: string;
   mimeType: string;
   fileSize: number;
   ocrText?: string;
@@ -278,6 +280,12 @@ export interface CaseReadiness {
   weaknesses: string[];
   nextSteps: string[];
   filingGuidance: string;
+}
+
+export interface UpdateDocumentBody {
+  label?: string;
+  /** User-provided display name for the document */
+  description?: string;
 }
 
 export interface SendChatMessageBody {

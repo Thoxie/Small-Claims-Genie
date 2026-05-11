@@ -1238,7 +1238,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       <label key={doc.id} className={`flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer transition-colors ${isSelected ? "bg-[#0d6b5e]/8 border border-[#0d6b5e]/25" : "hover:bg-muted/50 border border-transparent"}`}>
                         <input type="checkbox" checked={isSelected} onChange={() => toggleExhibit(doc.id)} className="rounded border-input h-4 w-4 accent-[#0d6b5e]" />
                         <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <span className="text-xs text-foreground truncate flex-1">{doc.originalName || doc.filename}</span>
+                        <span className="text-xs text-foreground truncate flex-1">{doc.description || doc.originalName || doc.filename}</span>
                         {exhibitLetter && <span className="shrink-0 text-[10px] font-black bg-[#0d6b5e] text-white px-1.5 py-0.5 rounded-full">EXHIBIT {exhibitLetter}</span>}
                       </label>
                     );

@@ -350,6 +350,12 @@ export const GetCaseResponse = zod
             filename: zod.string(),
             originalName: zod.string(),
             label: zod.string().optional(),
+            description: zod
+              .string()
+              .optional()
+              .describe(
+                "User-provided display name for the document (used as exhibit label in MC-030)",
+              ),
             mimeType: zod.string(),
             fileSize: zod.number(),
             ocrText: zod.string().optional(),
@@ -699,6 +705,12 @@ export const ListDocumentsResponseItem = zod.object({
   filename: zod.string(),
   originalName: zod.string(),
   label: zod.string().optional(),
+  description: zod
+    .string()
+    .optional()
+    .describe(
+      "User-provided display name for the document (used as exhibit label in MC-030)",
+    ),
   mimeType: zod.string(),
   fileSize: zod.number(),
   ocrText: zod.string().optional(),
@@ -717,6 +729,41 @@ export const UploadDocumentParams = zod.object({
 export const UploadDocumentBody = zod.object({
   file: zod.instanceof(File),
   label: zod.string().optional(),
+});
+
+/**
+ * @summary Update document label or description
+ */
+export const UpdateDocumentParams = zod.object({
+  id: zod.coerce.number(),
+  docId: zod.coerce.number(),
+});
+
+export const UpdateDocumentBody = zod.object({
+  label: zod.string().optional(),
+  description: zod
+    .string()
+    .optional()
+    .describe("User-provided display name for the document"),
+});
+
+export const UpdateDocumentResponse = zod.object({
+  id: zod.number(),
+  caseId: zod.number(),
+  filename: zod.string(),
+  originalName: zod.string(),
+  label: zod.string().optional(),
+  description: zod
+    .string()
+    .optional()
+    .describe(
+      "User-provided display name for the document (used as exhibit label in MC-030)",
+    ),
+  mimeType: zod.string(),
+  fileSize: zod.number(),
+  ocrText: zod.string().optional(),
+  ocrStatus: zod.enum(["pending", "processing", "complete", "failed"]),
+  createdAt: zod.coerce.date(),
 });
 
 /**

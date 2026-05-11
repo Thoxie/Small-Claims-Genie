@@ -35,4 +35,5 @@ export * from "./sendChatMessageBody";
 export * from "./sendOpenaiMessageBody";
 export * from "./sendOpenaiVoiceMessageBody";
 export * from "./updateCaseBody";
+export * from "./updateDocumentBody";
 export * from "./uploadDocumentBody";

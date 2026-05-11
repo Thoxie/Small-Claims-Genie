@@ -284,6 +284,40 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 
   /cases/{id}/documents/{docId}:
+    patch:
+      operationId: updateDocument
+      tags: [documents]
+      summary: Update document label or description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: docId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDocumentBody"
+      responses:
+        "200":
+          description: Updated document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
     delete:
       operationId: deleteDocument
       tags: [documents]
@@ -1074,6 +1108,9 @@ components:
           type: string
         label:
           type: string
+        description:
+          type: string
+          description: User-provided display name for the document (used as exhibit label in MC-030)
         mimeType:
           type: string
         fileSize:
@@ -1095,6 +1132,15 @@ components:
         - fileSize
         - ocrStatus
         - createdAt
+
+    UpdateDocumentBody:
+      type: object
+      properties:
+        label:
+          type: string
+        description:
+          type: string
+          description: User-provided display name for the document
 
     ChatMessage:
       type: object

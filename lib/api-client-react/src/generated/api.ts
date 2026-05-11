@@ -40,6 +40,7 @@ import type {
   SendOpenaiMessageBody,
   SendOpenaiVoiceMessageBody,
   UpdateCaseBody,
+  UpdateDocumentBody,
   UploadDocumentBody,
 } from "./api.schemas";
 
@@ -1038,6 +1039,94 @@ export const useUploadDocument = <
   TContext
 > => {
   return useMutation(getUploadDocumentMutationOptions(options));
+};
+
+/**
+ * @summary Update document label or description
+ */
+export const getUpdateDocumentUrl = (id: number, docId: number) => {
+  return `/api/cases/${id}/documents/${docId}`;
+};
+
+export const updateDocument = async (
+  id: number,
+  docId: number,
+  updateDocumentBody: UpdateDocumentBody,
+  options?: RequestInit,
+): Promise<Document> => {
+  return customFetch<Document>(getUpdateDocumentUrl(id, docId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateDocumentBody),
+  });
+};
+
+export const getUpdateDocumentMutationOptions = <
+  TError = ErrorType<ApiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDocument>>,
+    TError,
+    { id: number; docId: number; data: BodyType<UpdateDocumentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateDocument>>,
+  TError,
+  { id: number; docId: number; data: BodyType<UpdateDocumentBody> },
+  TContext
+> => {
+  const mutationKey = ["updateDocument"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateDocument>>,
+    { id: number; docId: number; data: BodyType<UpdateDocumentBody> }
+  > = (props) => {
+    const { id, docId, data } = props ?? {};
+
+    return updateDocument(id, docId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateDocumentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateDocument>>
+>;
+export type UpdateDocumentMutationBody = BodyType<UpdateDocumentBody>;
+export type UpdateDocumentMutationError = ErrorType<ApiError>;
+
+/**
+ * @summary Update document label or description
+ */
+export const useUpdateDocument = <
+  TError = ErrorType<ApiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDocument>>,
+    TError,
+    { id: number; docId: number; data: BodyType<UpdateDocumentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateDocument>>,
+  TError,
+  { id: number; docId: number; data: BodyType<UpdateDocumentBody> },
+  TContext
+> => {
+  return useMutation(getUpdateDocumentMutationOptions(options));
 };
 
 /**
