@@ -185,15 +185,15 @@ async function generateMC030Declaration(
     `Respond with only the JSON object.`,
   ].filter(Boolean).join("\n");
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.4,
-    max_tokens: 1400,
-    response_format: { type: "json_object" },
-  });
-
   try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
+      max_tokens: 1600,
+      response_format: { type: "json_object" },
+    });
+
     const parsed = JSON.parse(completion.choices[0]?.message?.content || "{}") as {
       declarationTitle?: string;
       declarationText?: string;
@@ -421,20 +421,25 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
     let exhibitOrder: number[] = [];
 
-    if (!declarationTitle || !declarationText) {
+    if (!declarationText) {
+      // No pre-supplied text — generate everything with AI (assigns exhibit letters in narrative order)
       const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
       declarationTitle = declarationTitle || ai.declarationTitle;
-      declarationText  = declarationText  || ai.declarationText;
+      declarationText  = ai.declarationText;
       exhibitOrder     = ai.exhibitOrder;
     } else {
-      // Pre-supplied text: preserve user-selected document order
+      // Text already provided — preserve sequential order so physical tabs match the
+      // pre-generated narrative (which uses position-based letter assignment from mc030-ai).
       exhibitOrder = exhibitDocs.map((_, i) => i + 1);
+      if (!declarationTitle) {
+        declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
+      }
     }
     declarationText = stripMC030Wrappers(declarationText || "");
 
-    req.log.info({ exhibitOrder }, "[MC-030 Signed] AI exhibit order");
+    req.log.info({ exhibitOrder }, "[MC-030 Signed] exhibit order");
 
-    // Sort exhibit docs to match the narrative order the AI chose
+    // Sort exhibit docs to match the narrative order
     const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
 
     if (declarationTitle) {
@@ -528,20 +533,25 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
     let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
     let exhibitOrder: number[] = [];
 
-    if (!declarationTitle || !declarationText) {
+    if (!declarationText) {
+      // No pre-supplied text — generate everything with AI (assigns exhibit letters in narrative order)
       const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
       declarationTitle = declarationTitle || ai.declarationTitle;
-      declarationText  = declarationText  || ai.declarationText;
+      declarationText  = ai.declarationText;
       exhibitOrder     = ai.exhibitOrder;
     } else {
-      // Pre-supplied text: preserve user-selected document order
+      // Text already provided — preserve sequential order so physical tabs match the
+      // pre-generated narrative (which uses position-based letter assignment from mc030-ai).
       exhibitOrder = exhibitDocs.map((_, i) => i + 1);
+      if (!declarationTitle) {
+        declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
+      }
     }
     declarationText = stripMC030Wrappers(declarationText || "");
 
-    req.log.info({ exhibitOrder }, "[MC-030 Filing Packet] AI exhibit order");
+    req.log.info({ exhibitOrder }, "[MC-030 Filing Packet] exhibit order");
 
-    // Sort exhibit docs to match the narrative order the AI chose
+    // Sort exhibit docs to match the narrative order
     const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
 
     if (declarationTitle) {
