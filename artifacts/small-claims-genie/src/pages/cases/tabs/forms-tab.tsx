@@ -1331,22 +1331,24 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   </p>
                 </label>
                 {notifyMethod === "adult_service" && (
-                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
-                        <FileText className="w-4 h-4 text-blue-600" />
+                  <>
+                    {/* Amber Required Card */}
+                    <div className="mx-3 mb-2 rounded-xl border border-amber-300 bg-amber-50 p-4 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-amber-800 bg-amber-200 rounded px-1.5 py-0.5">Required</span>
+                        <p className="text-xs font-bold text-amber-900">Complete the SC-104 — Proof of Service</p>
                       </div>
-                      <p className="text-xs text-blue-900 flex-1 leading-snug min-w-0">
-                        <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
-                      </p>
-                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black bg-white hover:bg-gray-50"
+                      <p className="text-xs text-amber-800 leading-relaxed">This form must be completed by the person who served the court papers — not you — and filed with the court before your hearing. Open it below, have your server fill it out and sign it, then file it.</p>
+                      <Button size="sm" className="h-8 text-xs gap-1.5 px-4 shrink-0 bg-[#0d6b5e] hover:bg-[#0a5a4f] text-white border-0 w-full sm:w-auto"
                         onClick={openSC104InNewTab}
                         disabled={downloadingForm === "sc104"}>
-                        {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-                        Open and Complete the SC-104 - Proof of Service
+                        {downloadingForm === "sc104" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+                        Open and Complete the SC-104 — Proof of Service
                       </Button>
                     </div>
+
+                    {/* Blue Instructions Panel */}
+                    <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
 
                     <div className="flex gap-2.5">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -1402,6 +1404,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     </div>
 
                   </div>
+                  </>
                 )}
 
                 {/* Radio 4 — Process Server */}
@@ -1747,22 +1750,24 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     </p>
                   </label>
                   {notifyMethod === "adult_service" && (
-                    <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
-
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="rounded-lg p-1.5 shrink-0 bg-white border border-blue-200">
-                          <FileText className="w-4 h-4 text-blue-600" />
+                    <>
+                      {/* Amber Required Card */}
+                      <div className="mx-3 mb-2 rounded-xl border border-amber-300 bg-amber-50 p-4 space-y-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-amber-800 bg-amber-200 rounded px-1.5 py-0.5">Required</span>
+                          <p className="text-xs font-bold text-amber-900">Complete the SC-104 — Proof of Service</p>
                         </div>
-                        <p className="text-xs text-blue-900 flex-1 leading-snug min-w-0">
-                          <span className="font-semibold">Proof of Service</span> — Documents that the defendant was properly served with the court papers.
-                        </p>
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-3 shrink-0 border-black bg-white hover:bg-gray-50"
+                        <p className="text-xs text-amber-800 leading-relaxed">This form must be completed by the person who served the court papers — not you — and filed with the court before your hearing. Open it below, have your server fill it out and sign it, then file it.</p>
+                        <Button size="sm" className="h-8 text-xs gap-1.5 px-4 shrink-0 bg-[#0d6b5e] hover:bg-[#0a5a4f] text-white border-0 w-full sm:w-auto"
                           onClick={openSC104InNewTab}
                           disabled={downloadingForm === "sc104"}>
-                          {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-                          Open and Complete the SC-104 - Proof of Service
+                          {downloadingForm === "sc104" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+                          Open and Complete the SC-104 — Proof of Service
                         </Button>
                       </div>
+
+                      {/* Blue Instructions Panel */}
+                      <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
 
                       <div className="flex gap-2.5">
                         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -1818,6 +1823,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       </div>
 
                     </div>
+                    </>
                   )}
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${notifyMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                     <RadioGroupItem value="process_server" id="notify-ps" className="mt-0.5 shrink-0" />
