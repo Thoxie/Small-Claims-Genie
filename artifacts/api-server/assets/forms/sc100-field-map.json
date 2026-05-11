@@ -1,0 +1,395 @@
+{
+  "version": "2.0",
+  "generated": "2026-05-11T18:54:47.133Z",
+  "imageSize": {
+    "w": 2550,
+    "h": 3300
+  },
+  "pageSize": {
+    "w": 612,
+    "h": 792
+  },
+  "pages": {
+    "1": {
+      "countyDisplay": {
+        "x": 426,
+        "y": 114.2,
+        "size": 11
+      },
+      "courthouseName": {
+        "x": 363.6,
+        "y": 134.4,
+        "size": 8
+      },
+      "courthouseAddress": {
+        "x": 363.6,
+        "y": 153.6,
+        "size": 8
+      },
+      "courthouseLocation": {
+        "x": 363.6,
+        "y": 172.8,
+        "size": 8
+      },
+      "caseNameDisplay": {
+        "x": 410.4,
+        "y": 241.9,
+        "size": 8
+      }
+    },
+    "2": {
+      "plaintiffNameHeader": {
+        "x": 163,
+        "y": 35.8,
+        "size": 9
+      },
+      "caseNumberHeader": {
+        "x": 440,
+        "y": 35.8,
+        "size": 9
+      },
+      "plaintiffName": {
+        "x": 70.6,
+        "y": 105.1,
+        "size": 11
+      },
+      "plaintiffPhone": {
+        "x": 462,
+        "y": 105.1,
+        "size": 11
+      },
+      "plaintiffStreet": {
+        "x": 136.3,
+        "y": 126.2,
+        "size": 11
+      },
+      "plaintiffCity": {
+        "x": 362.4,
+        "y": 126.2,
+        "size": 11
+      },
+      "plaintiffState": {
+        "x": 458.4,
+        "y": 126.2,
+        "size": 11
+      },
+      "plaintiffZip": {
+        "x": 500.4,
+        "y": 126.2,
+        "size": 11
+      },
+      "plaintiffMailingStreet": {
+        "x": 196.3,
+        "y": 153.1,
+        "size": 11
+      },
+      "plaintiffMailingCity": {
+        "x": 362.4,
+        "y": 153.1,
+        "size": 11
+      },
+      "plaintiffMailingState": {
+        "x": 458.4,
+        "y": 153.1,
+        "size": 11
+      },
+      "plaintiffMailingZip": {
+        "x": 500.4,
+        "y": 153.1,
+        "size": 11
+      },
+      "plaintiffEmail": {
+        "x": 193.7,
+        "y": 179.5,
+        "size": 11
+      },
+      "p2Name": {
+        "x": 70.6,
+        "y": 206.9,
+        "size": 11
+      },
+      "p2Phone": {
+        "x": 462,
+        "y": 206.9,
+        "size": 11
+      },
+      "p2Street": {
+        "x": 136.3,
+        "y": 228,
+        "size": 11
+      },
+      "p2City": {
+        "x": 362.4,
+        "y": 228,
+        "size": 11
+      },
+      "p2State": {
+        "x": 458.4,
+        "y": 228,
+        "size": 11
+      },
+      "p2Zip": {
+        "x": 500.4,
+        "y": 228,
+        "size": 11
+      },
+      "p2MailingStreet": {
+        "x": 196.3,
+        "y": 254.9,
+        "size": 11
+      },
+      "p2MailingCity": {
+        "x": 362.4,
+        "y": 254.9,
+        "size": 11
+      },
+      "p2MailingState": {
+        "x": 458.4,
+        "y": 254.9,
+        "size": 11
+      },
+      "p2MailingZip": {
+        "x": 500.4,
+        "y": 254.9,
+        "size": 11
+      },
+      "p2Email": {
+        "x": 193.7,
+        "y": 281.3,
+        "size": 11
+      },
+      "defendantName": {
+        "x": 70.6,
+        "y": 383.5,
+        "size": 11
+      },
+      "defendantPhone": {
+        "x": 462,
+        "y": 383.5,
+        "size": 11
+      },
+      "defendantStreet": {
+        "x": 136.3,
+        "y": 404.6,
+        "size": 11
+      },
+      "defendantCity": {
+        "x": 358.8,
+        "y": 404.6,
+        "size": 11
+      },
+      "defendantState": {
+        "x": 454.8,
+        "y": 404.6,
+        "size": 11
+      },
+      "defendantZip": {
+        "x": 496.8,
+        "y": 404.6,
+        "size": 11
+      },
+      "defendantMailingStreet": {
+        "x": 196.3,
+        "y": 431.5,
+        "size": 11
+      },
+      "defendantMailingCity": {
+        "x": 358.8,
+        "y": 431.5,
+        "size": 11
+      },
+      "defendantMailingState": {
+        "x": 454.8,
+        "y": 431.5,
+        "size": 11
+      },
+      "defendantMailingZip": {
+        "x": 496.8,
+        "y": 431.5,
+        "size": 11
+      },
+      "agentName": {
+        "x": 70.6,
+        "y": 493.9,
+        "size": 11
+      },
+      "agentTitle": {
+        "x": 413,
+        "y": 493.9,
+        "size": 11
+      },
+      "agentStreet": {
+        "x": 136.3,
+        "y": 520.8,
+        "size": 11
+      },
+      "agentCity": {
+        "x": 325.2,
+        "y": 520.8,
+        "size": 11
+      },
+      "agentState": {
+        "x": 423.6,
+        "y": 520.8,
+        "size": 11
+      },
+      "agentZip": {
+        "x": 462,
+        "y": 520.8,
+        "size": 11
+      },
+      "claimAmount": {
+        "x": 357.6,
+        "y": 597.1,
+        "size": 11
+      },
+      "claimDescription": {
+        "x": 79.2,
+        "y": 625.9,
+        "size": 10
+      }
+    },
+    "3": {
+      "p3PlaintiffHeader": {
+        "x": 163,
+        "y": 37,
+        "size": 9
+      },
+      "p3CaseNumberHeader": {
+        "x": 440,
+        "y": 37,
+        "size": 9
+      },
+      "incidentDate": {
+        "x": 244.3,
+        "y": 85.2,
+        "size": 11
+      },
+      "dateStarted": {
+        "x": 324,
+        "y": 103.7,
+        "size": 11
+      },
+      "dateThrough": {
+        "x": 508.8,
+        "y": 103.7,
+        "size": 11
+      },
+      "howAmountCalculated": {
+        "x": 81.6,
+        "y": 131.5,
+        "size": 10
+      },
+      "needsMC031": {
+        "x": 65.8,
+        "y": 197.8
+      },
+      "priorDemandYes": {
+        "x": 65.8,
+        "y": 273.1
+      },
+      "priorDemandNo": {
+        "x": 121.7,
+        "y": 273.1
+      },
+      "priorDemandWhyNot": {
+        "x": 187.2,
+        "y": 273.1,
+        "size": 10
+      },
+      "venueA": {
+        "x": 107.3,
+        "y": 378.7
+      },
+      "venueB": {
+        "x": 107.3,
+        "y": 436.3
+      },
+      "venueC": {
+        "x": 107.3,
+        "y": 467.5
+      },
+      "venueD": {
+        "x": 107.3,
+        "y": 501.1
+      },
+      "venueE": {
+        "x": 107.3,
+        "y": 535.7
+      },
+      "venueOtherText": {
+        "x": 182.4,
+        "y": 535.2,
+        "size": 10
+      },
+      "venueZip": {
+        "x": 443.5,
+        "y": 585.1,
+        "size": 11
+      },
+      "attyFeeYes": {
+        "x": 364.3,
+        "y": 618.7
+      },
+      "attyFeeNo": {
+        "x": 424.3,
+        "y": 618.7
+      },
+      "attyArbitration": {
+        "x": 489.1,
+        "y": 645.1
+      },
+      "publicEntityYes": {
+        "x": 299.5,
+        "y": 676.3
+      },
+      "publicEntityNo": {
+        "x": 359.5,
+        "y": 676.3
+      },
+      "publicEntityDate": {
+        "x": 441.1,
+        "y": 702.7,
+        "size": 11
+      }
+    },
+    "4": {
+      "p4PlaintiffHeader": {
+        "x": 163,
+        "y": 35.8,
+        "size": 9
+      },
+      "p4CaseNumberHeader": {
+        "x": 440,
+        "y": 35.8,
+        "size": 9
+      },
+      "filed12Yes": {
+        "x": 63.4,
+        "y": 107.3
+      },
+      "filed12No": {
+        "x": 112.6,
+        "y": 107.3
+      },
+      "over2500Yes": {
+        "x": 277,
+        "y": 139
+      },
+      "over2500No": {
+        "x": 323.5,
+        "y": 139
+      },
+      "declarationDate": {
+        "x": 34.8,
+        "y": 280.8,
+        "size": 11
+      },
+      "declarantName": {
+        "x": 91.9,
+        "y": 316.3,
+        "size": 11
+      }
+    }
+  }
+}
