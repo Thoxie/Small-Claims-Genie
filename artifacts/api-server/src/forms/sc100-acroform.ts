@@ -6,7 +6,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { PDFDocument, PDFName, PDFString } from "pdf-lib";
+import { PDFDocument, PDFDict, PDFName, PDFBool } from "pdf-lib";
 import { CALIFORNIA_COUNTIES } from "../routes/counties";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -14,7 +14,8 @@ import { CALIFORNIA_COUNTIES } from "../routes/counties";
 function setField(form: ReturnType<PDFDocument["getForm"]>, name: string, value: string): void {
   try {
     const f = form.getTextField(name);
-    f.acroField.dict.set(PDFName.of("DA"), PDFString.of("/Helv 10 Tf 0 g"));
+    // Preserve the original DA (TimesNewRomanPSMT 11pt for most fields).
+    // Do NOT override with Helv — Helvetica is not in this PDF's resource dict.
     f.setText(value || "");
   } catch {
     // field not present in this revision — silently skip
@@ -260,6 +261,14 @@ export async function buildSC100AcroformPdf(
     } catch {
       // Signature embedding failed — generate unsigned PDF rather than failing entirely.
     }
+  }
+
+  // Tell all PDF viewers to regenerate field appearances using each field's
+  // original DA (TimesNewRomanPSMT). Without this flag some viewers show blank
+  // fields because they rely on AP streams that pdf-lib may not regenerate.
+  const acroFormDict = pdfDoc.catalog.lookup(PDFName.of("AcroForm"), PDFDict);
+  if (acroFormDict) {
+    acroFormDict.set(PDFName.of("NeedAppearances"), PDFBool.True);
   }
 
   const saved = await pdfDoc.save();
