@@ -162,6 +162,11 @@ async function buildAll() {
       "wrangler",
       "zeromq",
       "zeromq-prebuilt",
+      // stripe-replit-sync must NOT be bundled — it uses __dirname to locate
+      // its ./migrations SQL files at runtime. When bundled, __dirname points
+      // to the esbuild output dir and the migrations directory is not found,
+      // causing runMigrations() to silently skip all table creation.
+      "stripe-replit-sync",
       "playwright",
       "playwright-core",
       "playwright-core/*",
