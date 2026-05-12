@@ -65,17 +65,21 @@ router.get("/stripe/products", async (_req, res) => {
 });
 
 // Create a Stripe Checkout session and return the URL
-// Body: { priceId: string, successPath?: string, cancelPath?: string }
+// Body: { priceIds: string[], successPath?: string, cancelPath?: string }
+// Also accepts legacy { priceId: string } for backward compatibility
 router.post("/stripe/checkout", async (req: any, res) => {
   try {
-    const { priceId, successPath, cancelPath } = req.body as {
-      priceId: string;
+    const { priceId, priceIds, successPath, cancelPath } = req.body as {
+      priceId?: string;
+      priceIds?: string[];
       successPath?: string;
       cancelPath?: string;
     };
 
-    if (!priceId) {
-      res.status(400).json({ error: "priceId is required" });
+    const ids: string[] = priceIds ?? (priceId ? [priceId] : []);
+
+    if (ids.length === 0) {
+      res.status(400).json({ error: "priceId or priceIds is required" });
       return;
     }
 
@@ -88,11 +92,11 @@ router.post("/stripe/checkout", async (req: any, res) => {
 
     const sessionParams: any = {
       payment_method_types: ["card"],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: ids.map((id) => ({ price: id, quantity: 1 })),
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
-      allow_promotion_codes: true, // enables promo code field in Stripe checkout
+      allow_promotion_codes: true,
     };
 
     // Attach the Clerk user ID as client_reference_id so we can track the purchase

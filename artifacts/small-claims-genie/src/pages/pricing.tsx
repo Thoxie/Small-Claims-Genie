@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
-import { Wand2, Trophy, UserCheck, Loader2 } from "lucide-react";
+import { Wand2, Trophy, UserCheck, Loader2, X } from "lucide-react";
 
 const CHECK = (
   <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 border-[#0d6b5e] text-[#0d6b5e] inline-flex items-center justify-center text-[11px] font-black mt-[2px]">
@@ -22,25 +22,38 @@ const _PLAN_KEYS = {
 
 type PlanKey = (typeof _PLAN_KEYS)[keyof typeof _PLAN_KEYS];
 
+const PLAN_PRICES: Record<PlanKey, number> = {
+  personal_low: 79,
+  personal_high: 99,
+  business_low: 99,
+  business_high: 109,
+  paralegal: 159,
+  collection_low: 89,
+  collection_high: 109,
+};
+
 async function startCheckout(
   getToken: () => Promise<string | null>,
-  planKey: PlanKey,
+  planKeys: PlanKey[],
   setLoading: (k: PlanKey | null) => void,
   _navigate: (path: string) => void
 ) {
-  setLoading(planKey);
+  setLoading(planKeys[0]);
   try {
     const productsRes = await fetch("/api/stripe/products");
     if (!productsRes.ok) throw new Error("Could not load products");
     const { products } = await productsRes.json();
 
-    const product = (products as any[]).find(
-      (p: any) => p.metadata?.plan === planKey
-    );
-    if (!product || !product.prices?.[0]?.id) {
-      throw new Error("Product not found in Stripe. Please contact support.");
+    const priceIds: string[] = [];
+    for (const planKey of planKeys) {
+      const product = (products as any[]).find(
+        (p: any) => p.metadata?.plan === planKey
+      );
+      if (!product || !product.prices?.[0]?.id) {
+        throw new Error("Product not found in Stripe. Please contact support.");
+      }
+      priceIds.push(product.prices[0].id);
     }
-    const priceId = product.prices[0].id;
 
     const token = await getToken().catch(() => null);
 
@@ -51,7 +64,7 @@ async function startCheckout(
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
-        priceId,
+        priceIds,
         successPath: "/dashboard?payment=success",
         cancelPath: "/pricing?payment=cancelled",
       }),
@@ -70,6 +83,79 @@ async function startCheckout(
     alert(err?.message || "Something went wrong. Please try again.");
     setLoading(null);
   }
+}
+
+function ParalegalAddOnModal({
+  basePlanKey,
+  baseLabel,
+  onConfirm,
+  onDismiss,
+  isLoading,
+}: {
+  basePlanKey: PlanKey;
+  baseLabel: string;
+  onConfirm: (addParalegal: boolean) => void;
+  onDismiss: () => void;
+  isLoading: boolean;
+}) {
+  const basePrice = PLAN_PRICES[basePlanKey];
+  const totalWithParalegal = basePrice + 159;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-7 relative">
+        <button
+          onClick={onDismiss}
+          className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <h2 className="text-[20px] font-black text-[#0d6b5e] mb-1 leading-tight">
+          One last step
+        </h2>
+        <p className="text-[13px] text-[#5a6478] mb-5">
+          You selected <strong>{baseLabel}</strong> for <strong>${basePrice}</strong>. Would you like to add paralegal support?
+        </p>
+
+        <div className="bg-[#f5f3ff] border-2 border-[#6366f1] rounded-2xl p-4 mb-5">
+          <div className="flex items-start gap-3">
+            <UserCheck className="w-5 h-5 text-[#6366f1] shrink-0 mt-0.5" />
+            <div>
+              <p className="font-black text-[#0d6b5e] text-[15px] leading-tight mb-1">
+                Add Paralegal Review <span className="text-[#6366f1]">+$159</span>
+              </p>
+              <ul className="text-[12px] text-[#5a6478] space-y-[3px]">
+                <li>✓ Trained paralegal reviews your full case package</li>
+                <li>✓ 30-minute support session by phone or Zoom</li>
+                <li>✓ Document, evidence, and exhibit review</li>
+                <li>✓ Paralegal support at your hearing by Zoom</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => onConfirm(true)}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 w-full rounded-full bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
+            {isLoading ? "Loading…" : `Yes, add Paralegal Review — $${totalWithParalegal} total`}
+          </button>
+          <button
+            onClick={() => onConfirm(false)}
+            disabled={isLoading}
+            className="flex items-center justify-center w-full rounded-full border-2 border-[#0d6b5e] text-[#0d6b5e] hover:bg-[#f0faf8] text-[15px] font-black min-h-[52px] px-5 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Loading…" : `No thanks, continue — $${basePrice}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function CheckoutButton({
@@ -381,13 +467,38 @@ export default function Pricing() {
   const { getToken } = useAuth();
   const [, navigate] = useLocation();
   const [loadingKey, setLoadingKey] = useState<PlanKey | null>(null);
+  const [addOnModal, setAddOnModal] = useState<{ planKey: PlanKey; label: string } | null>(null);
 
   const handleCheckout = (planKey: PlanKey) => {
-    startCheckout(getToken, planKey, setLoadingKey, navigate);
+    if (planKey.startsWith("personal_") || planKey.startsWith("business_")) {
+      const label = planKey.startsWith("personal_") ? "Personal Case" : "Business Case";
+      setAddOnModal({ planKey, label });
+    } else {
+      startCheckout(getToken, [planKey], setLoadingKey, navigate);
+    }
+  };
+
+  const handleModalConfirm = (addParalegal: boolean) => {
+    if (!addOnModal) return;
+    const keys: PlanKey[] = addParalegal
+      ? [addOnModal.planKey, "paralegal"]
+      : [addOnModal.planKey];
+    setAddOnModal(null);
+    startCheckout(getToken, keys, setLoadingKey, navigate);
   };
 
   return (
     <div className="min-h-screen bg-[#f0faf8]">
+      {addOnModal && (
+        <ParalegalAddOnModal
+          basePlanKey={addOnModal.planKey}
+          baseLabel={addOnModal.label}
+          onConfirm={handleModalConfirm}
+          onDismiss={() => setAddOnModal(null)}
+          isLoading={loadingKey !== null}
+        />
+      )}
+
       <div className="w-full px-7 pb-10 pt-6 flex flex-col items-center">
 
         <div className="text-center mb-6">
