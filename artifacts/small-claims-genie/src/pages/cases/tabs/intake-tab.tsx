@@ -200,30 +200,25 @@ export function IntakeTab({
     queryClient.invalidateQueries({ queryKey: getGetCaseStatsQueryKey() });
   };
 
-  const handleNext = (data: Record<string, unknown>) => {
-    // Capture the current step at call time so the onSuccess closure can verify
-    // the user hasn't already moved away before the network round-trip completes.
+  const handleNext = async (data: Record<string, unknown>) => {
+    // Capture step at call time. Using mutateAsync (not mutate) avoids the
+    // TanStack Query v5 issue where per-invocation callbacks from a previous
+    // pending mutate() call can be silently dropped when mutate() is called a
+    // second time, which caused the step-4 ↔ step-5 navigation loop.
     const currentStep = activeTabRef.current;
     const next = Math.min(currentStep + 1, 7) as StepNum;
-    saveIntake.mutate({ id: caseId, data: { step: next, data } }, {
-      onSuccess: () => {
-        // Only navigate if the user is still on the same step they were on when
-        // they clicked. This prevents two failure modes:
-        //   1. A late-arriving callback from a previous step firing after the
-        //      user has already advanced (or gone back) would silently no-op.
-        //   2. A duplicate save (e.g. from form onSubmit + footer button both
-        //      firing) lands here; the second callback sees currentStep !== activeTabRef
-        //      because the first already advanced the step, so it no-ops correctly.
-        if (activeTabRef.current === currentStep) {
-          setActiveTab(next);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-        invalidateAll();
-      },
-      onError: (err: Error) => {
-        toast({ title: "Could not save progress", description: err?.message || "Please check your connection and try again.", variant: "destructive" });
-      },
-    });
+    try {
+      await saveIntake.mutateAsync({ id: caseId, data: { step: next, data } });
+      // Guard: only advance if the user is still on the step that triggered
+      // this save (prevents a late-resolving duplicate from jumping forward).
+      if (activeTabRef.current === currentStep) {
+        setActiveTab(next);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      invalidateAll();
+    } catch (err) {
+      toast({ title: "Could not save progress", description: (err as Error)?.message || "Please check your connection and try again.", variant: "destructive" });
+    }
   };
 
   const handleComplete = (formData: Record<string, unknown>) => {

@@ -305,7 +305,7 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
         <Button type="button" size="lg" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
           <Sparkles className="h-4 w-4" /> AI Genie Check My Case
         </Button>
-        <Button type="button" size="lg" onClick={() => form.handleSubmit(onNext)()} disabled={saving} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+        <Button type="button" size="lg" onClick={() => onNext(form.getValues())} disabled={saving} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
           {saving ? "Saving…" : i18n.intake.saveAndContinue}
           <ChevronRight className="h-4 w-4" />
         </Button>
