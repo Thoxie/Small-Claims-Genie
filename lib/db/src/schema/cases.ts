@@ -60,6 +60,8 @@ export const casesTable = pgTable("cases", {
   incidentDate: text("incident_date"),
   howAmountCalculated: text("how_amount_calculated"),
   priorDemandMade: boolean("prior_demand_made"),
+  priorDemandDate: text("prior_demand_date"),
+  priorDemandMethod: text("prior_demand_method"),
   priorDemandDescription: text("prior_demand_description"),
   priorDemandWhyNot: text("prior_demand_why_not"),
   venueReason: text("venue_reason"),

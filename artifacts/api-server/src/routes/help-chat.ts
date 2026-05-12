@@ -70,7 +70,7 @@ The intake spans Steps 1 and 2 in the navigation bar. All data auto-fills every 
   - Incident date (date range if the problem happened over time)
   - What happened — a detailed description of your dispute in your own words
   - **AI writing assistant**: Users can click a button to have the AI analyze their description and suggest a stronger, clearer version — or ask clarifying questions to help write one
-  - Did you already ask the defendant to pay or fix the problem before filing? (courts expect this — describe how and when)
+  - Did you already ask the defendant to pay or fix the problem before filing? (courts expect this). If yes: **date of demand** (when you contacted them), **method of contact** (in person, phone, text message, email, written letter, or certified mail), and **their response** (optional — what the defendant said or did when you asked). These three fields auto-fill Section 4 of the SC-100 form.
   - Venue basis: why you are filing in the selected county (defendant lives there, business located there, incident happened there, etc.)
   - Eligibility questions: suing a public entity? attorney fee dispute? filing frequency check
   - Review a summary and confirm before saving

@@ -64,6 +64,8 @@ export interface Case {
   incidentDate?: string;
   howAmountCalculated?: string;
   priorDemandMade?: boolean;
+  priorDemandDate?: string;
+  priorDemandMethod?: string;
   priorDemandDescription?: string;
   priorDemandWhyNot?: string;
   venueReason?: string;

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,6 +28,8 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
       priorDemandMade: initialData.priorDemandMade ?? false,
+      priorDemandDate: initialData.priorDemandDate || "",
+      priorDemandMethod: initialData.priorDemandMethod || "",
       priorDemandDescription: initialData.priorDemandDescription || "",
       priorDemandWhyNot: initialData.priorDemandWhyNot || "",
       venueBasis: initialData.venueBasis || "",
@@ -83,15 +86,49 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
                   </FormItem>
                 )} />
                 {madeDemand && (
-                  <FormField control={form.control} name="priorDemandDescription" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>How and when did you ask them?</FormLabel>
-                      <FormControl>
-                        <Textarea className="min-h-[90px]" placeholder="e.g. Sent a text on Oct 1st and an email on Oct 5th demanding payment." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField control={form.control} name="priorDemandDate" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date of demand</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="priorDemandMethod" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>How did you contact them?</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select method" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="in person">In person</SelectItem>
+                              <SelectItem value="phone">Phone</SelectItem>
+                              <SelectItem value="text message">Text message</SelectItem>
+                              <SelectItem value="email">Email</SelectItem>
+                              <SelectItem value="written letter">Written letter</SelectItem>
+                              <SelectItem value="certified mail">Certified mail</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <FormField control={form.control} name="priorDemandDescription" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Their response <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                        <FormControl>
+                          <Textarea className="min-h-[72px]" placeholder="e.g. They said they would pay but never did, or they denied owing anything." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
                 )}
                 {!madeDemand && (
                   <FormField control={form.control} name="priorDemandWhyNot" render={({ field }) => (

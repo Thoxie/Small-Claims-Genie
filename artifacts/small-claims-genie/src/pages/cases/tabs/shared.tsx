@@ -129,6 +129,8 @@ export const intakeStep3Schema = z.object({});
 
 export const intakeStep4Schema = z.object({
   priorDemandMade: z.boolean(),
+  priorDemandDate: z.string().optional().or(z.literal("")),
+  priorDemandMethod: z.string().optional().or(z.literal("")),
   priorDemandDescription: z.string().optional(),
   priorDemandWhyNot: z.string().optional().or(z.literal("")),
   venueBasis: z.string().min(1, "Please select a reason"),

@@ -773,6 +773,10 @@ components:
           type: string
         priorDemandMade:
           type: boolean
+        priorDemandDate:
+          type: string
+        priorDemandMethod:
+          type: string
         priorDemandDescription:
           type: string
         priorDemandWhyNot:
@@ -977,6 +981,10 @@ components:
           type: string
         priorDemandMade:
           type: boolean
+        priorDemandDate:
+          type: string
+        priorDemandMethod:
+          type: string
         priorDemandDescription:
           type: string
         priorDemandWhyNot:
@@ -1201,6 +1209,14 @@ components:
           type: string
         priorDemandMade:
           type: boolean
+        priorDemandDate:
+          type: string
+        priorDemandMethod:
+          type: string
+        priorDemandDescription:
+          type: string
+        priorDemandWhyNot:
+          type: string
         venueReason:
           type: string
         isSuingPublicEntity:

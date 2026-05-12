@@ -60,18 +60,18 @@ function buildCourtInfo(d: Record<string, any>): string {
 }
 
 // Build a description for the prior-demand text box (Section 4).
-// Uses structured intake data when available; falls back to generic language.
+// Uses structured intake data (date, method, response description) when available;
+// falls back to generic language.
 function buildPriorDemandText(d: Record<string, any>): string {
   if (d.priorDemandMade === false) {
     return str(d.priorDemandWhyNot);
   }
-  // Demand was made — compose a readable description from available fields.
+  // Demand was made — compose from structured fields (date + method) and append
+  // the defendant's response description if provided.
   const parts: string[] = [];
-  if (d.priorDemandDescription) {
-    return str(d.priorDemandDescription);
-  }
   const method = str(d.priorDemandMethod || d.demandMethod || "");
   const demandDate = str(d.priorDemandDate || d.demandDate || "");
+
   if (demandDate && method) {
     parts.push(`Plaintiff contacted defendant on ${demandDate} by ${method} to request payment.`);
   } else if (demandDate) {
@@ -81,6 +81,12 @@ function buildPriorDemandText(d: Record<string, any>): string {
   } else {
     parts.push("Plaintiff contacted defendant to demand payment prior to filing.");
   }
+
+  // Append the defendant's response / free-text notes if provided.
+  if (d.priorDemandDescription) {
+    parts.push(str(d.priorDemandDescription));
+  }
+
   if (d.demandLetterSentDate || d.demandLetterGenerated) {
     const dateStr = d.demandLetterSentDate ? ` on ${str(d.demandLetterSentDate)}` : "";
     parts.push(`A written demand letter was sent${dateStr}.`);
