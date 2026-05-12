@@ -267,7 +267,7 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         {([
           { text: "Paralegal case review — a trained paralegal reviews your claim summary, uploaded documents, damages, and filing packet before you submit." },
           { text: "Document, evidence, and exhibit review — identifies missing information, organizes receipts, contracts, photos, messages, invoices, and estimates, and ensures your written explanation and selected evidence are clear for the court." },
-          { text: "One-hour paralegal support session — talk by phone or Zoom to walk through your case, documents, filing steps, evidence, and hearing preparation." },
+          { text: "30-minute paralegal support session — talk by phone or Zoom to walk through your case, documents, filing steps, evidence, and hearing preparation." },
           { text: "Court-form review support — helps confirm that names, addresses, claim amount, parties, dates, and case details appear complete and consistent." },
           { text: "Paralegal support at your hearing by Zoom to provide non-attorney procedural and organizational support.", bold: true },
           { text: "Filing and service guidance — helps you understand the basic filing sequence, court-stamped copies, service of the defendant, and proof of service requirements." },
