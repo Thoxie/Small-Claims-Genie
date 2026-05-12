@@ -91,10 +91,10 @@ const faqs = [
 
 export default function FAQ() {
   return (
-    <div className="flex flex-col w-full bg-[#f0faf8]">
+    <div className="flex flex-col w-full bg-[#f5fdfb]">
 
       {/* ── Header ── */}
-      <section className="px-6 pt-10 pb-6 bg-[#f0faf8]">
+      <section className="px-6 pt-10 pb-6 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-black text-primary mb-2">
             Frequently Asked Questions
@@ -107,7 +107,7 @@ export default function FAQ() {
       </section>
 
       {/* ── FAQ Boxes ── */}
-      <section className="px-6 pb-10 bg-[#f0faf8]">
+      <section className="px-6 pb-10 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto flex flex-col gap-3">
           {faqs.map(({ q, a }, i) => (
             <div
@@ -122,7 +122,7 @@ export default function FAQ() {
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section className="px-6 pb-12 bg-[#f0faf8]">
+      <section className="px-6 pb-12 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto border border-gray-200 rounded-xl px-8 py-8 text-center bg-gray-50">
           <h2 className="text-lg font-black text-primary mb-1.5">Still have questions?</h2>
           <p className="text-sm text-muted-foreground mb-5">

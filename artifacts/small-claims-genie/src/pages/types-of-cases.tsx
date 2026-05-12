@@ -39,10 +39,10 @@ const cases = [
 
 export default function TypesOfCases() {
   return (
-    <div className="flex flex-col w-full bg-[#f0faf8]">
+    <div className="flex flex-col w-full bg-[#f5fdfb]">
 
       {/* ── Header ── */}
-      <section className="px-6 pt-10 pb-4 bg-[#f0faf8]">
+      <section className="px-6 pt-10 pb-4 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-black text-primary mb-2">
             Types of Small Claims
@@ -58,7 +58,7 @@ export default function TypesOfCases() {
       </section>
 
       {/* ── Case Type Boxes ── */}
-      <section className="px-6 pb-8 bg-[#f0faf8]">
+      <section className="px-6 pb-8 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
             {cases.map(({ title, desc }) => (
@@ -72,7 +72,7 @@ export default function TypesOfCases() {
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section className="px-6 pb-12 bg-[#f0faf8]">
+      <section className="px-6 pb-12 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto">
           <div className="border-2 border-gray-200 rounded-xl px-6 py-6 bg-gray-50">
             <p className="text-sm text-muted-foreground mb-4">
