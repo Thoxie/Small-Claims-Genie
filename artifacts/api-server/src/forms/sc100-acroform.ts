@@ -1,6 +1,5 @@
 // SC-100 AcroForm filler — uses pdf-lib to fill the official California AcroForm PDF.
-// This replaces the Playwright/PNG approach in sc100-playwright.ts (kept intact, commented
-// out in forms-sc100.ts). To revert, swap the import in buildSC100Pdf() back to Playwright.
+// This is the sole SC-100 renderer; the legacy Playwright/PNG approach has been removed.
 //
 // Field names confirmed from PDF inspection on 2026-05-12.
 // AcroForm source: assets/forms/sc100_acroform.pdf (Rev. January 1, 2026)
