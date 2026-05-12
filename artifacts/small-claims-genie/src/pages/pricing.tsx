@@ -413,6 +413,14 @@ export default function Pricing() {
           All plans include AI chat, document uploads, all 58 California counties, and email reminders.
         </p>
 
+        <p className="mt-3 text-center text-[11px] text-[#8a96a8]">
+          By purchasing, you agree to our{" "}
+          <a href="/payment-terms" className="underline underline-offset-2 hover:text-[#0d6b5e] transition-colors">
+            Payment Terms
+          </a>
+          , including pay-only-if-you-win and paralegal support conditions.
+        </p>
+
       </div>
     </div>
   );

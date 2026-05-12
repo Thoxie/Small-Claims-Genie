@@ -21,6 +21,7 @@ import FAQ from "@/pages/faq";
 import TypesOfCases from "@/pages/types-of-cases";
 import Terms from "@/pages/terms";
 import TermsOfService from "@/pages/tos";
+import PaymentTerms from "@/pages/payment-terms";
 import SC100Generator from "@/pages/sc100-generator";
 import Resume from "@/pages/resume";
 import Pricing from "@/pages/pricing";
@@ -222,6 +223,7 @@ function Router() {
               <Route path="/download" component={Download} />
               <Route path="/terms" component={Terms} />
               <Route path="/tos" component={TermsOfService} />
+              <Route path="/payment-terms" component={PaymentTerms} />
               <Route component={NotFound} />
             </Switch>
           </Layout>
