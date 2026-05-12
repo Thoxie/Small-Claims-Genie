@@ -131,7 +131,7 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         </button>
       </div>
 
-      <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
+      <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
         <strong className="block text-[13px] text-[#0d6b5e] mb-[2px] leading-[1.25]">Best for a straightforward consumer dispute.</strong>
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Built to move a user from confusion to a cleaner, more organized filing package.</span>
       </div>
@@ -198,7 +198,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         </button>
       </div>
 
-      <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
+      <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
         <strong className="block text-[13px] text-[#0d6b5e] mb-[2px] leading-[1.25]">Best for more document-heavy disputes.</strong>
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Designed for cases where the facts are commercial, the records matter more, and the user needs tighter structure.</span>
       </div>
@@ -260,7 +260,7 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         </div>
       </div>
 
-      <div className="bg-[#f5f3ff] border border-[#c7d2fe] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
+      <div className="bg-[#f5f3ff] border border-[#c7d2fe] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
         <strong className="block text-[13px] text-[#4338ca] mb-[2px] leading-[1.25]">Best for document-heavy or higher-stress cases.</strong>
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">For users who want another set of eyes on the paperwork before they file or appear in court.</span>
       </div>
@@ -269,7 +269,7 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         {([
           { text: "Paralegal case review — a trained paralegal reviews your claim summary, uploaded documents, damages, and filing packet before you submit." },
           { text: "Document, evidence, and exhibit review — identifies missing information, organizes receipts, contracts, photos, messages, invoices, and estimates, and ensures your written explanation and selected evidence are clear for the court." },
-          { text: "30-minute paralegal support session — talk by phone or Zoom to walk through your case, documents, filing steps, evidence, and hearing preparation." },
+          { text: "30-minute paralegal support session — talk by phone or Zoom to walk through your case, documents, filing steps, evidence, and hearing preparation.", bold: true },
           { text: "Court-form review support — helps confirm that names, addresses, claim amount, parties, dates, and case details appear complete and consistent." },
           { text: "Paralegal support at your hearing by Zoom to provide non-attorney procedural and organizational support.", bold: true },
           { text: "Filing and service guidance — helps you understand the basic filing sequence, court-stamped copies, service of the defendant, and proof of service requirements." },
@@ -334,7 +334,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
         </button>
       </div>
 
-      <div className="bg-[#fffbeb] border border-[#fde68a] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
+      <div className="bg-[#fffbeb] border border-[#fde68a] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
         <strong className="block text-[13px] text-[#92400e] mb-[2px] leading-[1.25]">Best for winners who still need to collect.</strong>
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Every enforcement tool California law provides — writs, levies, garnishments, and liens — in one guided workflow.</span>
       </div>
