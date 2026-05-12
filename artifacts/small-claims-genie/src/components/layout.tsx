@@ -145,7 +145,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 href="/terms"
                 className="text-xs text-primary/50 hover:text-primary underline underline-offset-2 transition-colors"
               >
-                Terms of Use
+                Terms of Service
               </Link>
               <Link
                 href="/account"
