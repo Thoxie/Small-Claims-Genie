@@ -188,8 +188,6 @@ function CheckoutButton({
 }
 
 function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
-  const [selectedTier, setSelectedTier] = useState<"personal_low" | "personal_high">("personal_low");
-
   return (
     <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative border-[3px] border-[#14b8a6]/60">
 
@@ -201,20 +199,27 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
-        <button
-          onClick={() => setSelectedTier("personal_low")}
-          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "personal_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
-        >
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$79</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
-        </button>
-        <button
-          onClick={() => setSelectedTier("personal_high")}
-          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "personal_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
-        >
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
-        </button>
+        {([
+          { key: "personal_low" as PlanKey, price: "$79", label: "Up to $5,000" },
+          { key: "personal_high" as PlanKey, price: "$99", label: "$5,000 and above" },
+        ]).map(({ key, price, label }) => (
+          <button
+            key={key}
+            onClick={() => loadingKey === null && onCheckout(key)}
+            disabled={loadingKey !== null}
+            className="h-full rounded-xl px-3 text-center border-2 border-[#14b8a6] bg-[#f0faf8] transition-all flex flex-col items-center justify-center cursor-pointer group hover:bg-[#e0f5f2] hover:border-[#0d6b5e] hover:shadow-[0_0_0_3px_rgba(20,184,166,0.25)] disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loadingKey === key ? (
+              <Loader2 className="w-5 h-5 animate-spin text-[#0d6b5e]" />
+            ) : (
+              <>
+                <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
+                <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
+                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Buy →</span>
+              </>
+            )}
+          </button>
+        ))}
       </div>
 
       <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
@@ -222,7 +227,7 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Built to move a user from confusion to a cleaner, more organized filing package.</span>
       </div>
 
-      <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
+      <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-4">
         {[
           "AI Case Advisor that helps organize your facts, spot weak points, and strengthen your claim before filing.",
           "Step-by-step guided intake that turns your story into a cleaner, more organized case package.",
@@ -240,25 +245,13 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         ))}
       </ul>
 
-      <div className="flex flex-col items-center gap-2">
-        <CheckoutButton
-          planKey={selectedTier}
-          label="Start Personal Case"
-          icon={<Wand2 className="w-4 h-4 flex-shrink-0" />}
-          className="bg-[#0d6b5e] hover:bg-[#0a5a4f]"
-          loadingKey={loadingKey}
-          onCheckout={onCheckout}
-        />
-        <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
-      </div>
+      <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
 
     </section>
   );
 }
 
 function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
-  const [selectedTier, setSelectedTier] = useState<"business_low" | "business_high">("business_low");
-
   return (
     <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative border-[3px] border-[#14b8a6]">
 
@@ -270,20 +263,27 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
-        <button
-          onClick={() => setSelectedTier("business_low")}
-          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "business_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
-        >
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
-        </button>
-        <button
-          onClick={() => setSelectedTier("business_high")}
-          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "business_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
-        >
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$109</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
-        </button>
+        {([
+          { key: "business_low" as PlanKey, price: "$99", label: "Up to $5,000" },
+          { key: "business_high" as PlanKey, price: "$109", label: "$5,000 and above" },
+        ]).map(({ key, price, label }) => (
+          <button
+            key={key}
+            onClick={() => loadingKey === null && onCheckout(key)}
+            disabled={loadingKey !== null}
+            className="h-full rounded-xl px-3 text-center border-2 border-[#14b8a6] bg-[#f0faf8] transition-all flex flex-col items-center justify-center cursor-pointer group hover:bg-[#e0f5f2] hover:border-[#0d6b5e] hover:shadow-[0_0_0_3px_rgba(20,184,166,0.25)] disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loadingKey === key ? (
+              <Loader2 className="w-5 h-5 animate-spin text-[#0d6b5e]" />
+            ) : (
+              <>
+                <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
+                <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
+                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Buy →</span>
+              </>
+            )}
+          </button>
+        ))}
       </div>
 
       <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
@@ -291,7 +291,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Designed for cases where the facts are commercial, the records matter more, and the user needs tighter structure.</span>
       </div>
 
-      <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
+      <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-4">
         {[
           "AI Business Case Advisor that helps organize your facts, damages, records, and claim strategy.",
           "Guided business case intake that turns invoices, contracts, payments, dates, and communications into a cleaner case package.",
@@ -309,17 +309,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         ))}
       </ul>
 
-      <div className="flex flex-col items-center gap-2">
-        <CheckoutButton
-          planKey={selectedTier}
-          label="Start Business Case"
-          icon={<Wand2 className="w-4 h-4 flex-shrink-0" />}
-          className="bg-[#0d6b5e] hover:bg-[#0a5a4f]"
-          loadingKey={loadingKey}
-          onCheckout={onCheckout}
-        />
-        <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
-      </div>
+      <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
 
     </section>
   );
