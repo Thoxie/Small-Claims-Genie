@@ -554,6 +554,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sc100aSigModalOpen, setSc100aSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
 
+  // ── FW-001 inline form state ────────────────────────────────────────────────
+  const [fw001Basis, setFw001Basis] = useState<"5a" | "5b" | "5c">("5a");
+  const [fw001Benefits, setFw001Benefits] = useState("");
+  const [fw001Income, setFw001Income] = useState("");
+  const [fw001Rent, setFw001Rent] = useState("");
+  const [fw001Food, setFw001Food] = useState("");
+  const [fw001Utilities, setFw001Utilities] = useState("");
+  const [fw001Transport, setFw001Transport] = useState("");
+  const [fw001Medical, setFw001Medical] = useState("");
+
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
   const [viewingPdf, setViewingPdf] = useState(false);
   const [sc100EditOpen, setSc100EditOpen] = useState(false);
@@ -774,6 +784,47 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       win.location.href = url;
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch { win.close(); setDownloadError("Failed to open SC-104 PDF — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
+  async function openFW001InNewTab() {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    const win = window.open("", "_blank");
+    if (!win) {
+      toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." });
+      return;
+    }
+    setDownloadingForm("fw001"); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${clerkToken}` },
+      });
+      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const body: Record<string, unknown> = {
+        token,
+        eligibilityBasis: fw001Basis,
+        benefits: fw001Benefits,
+        grossMonthlyIncome: fw001Income || undefined,
+        monthlyRent: fw001Rent || undefined,
+        monthlyFood: fw001Food || undefined,
+        monthlyUtilities: fw001Utilities || undefined,
+        monthlyTransportation: fw001Transport || undefined,
+        monthlyMedical: fw001Medical || undefined,
+      };
+      const res = await fetch(`/api/cases/${caseId}/forms/fw001`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) { win.close(); setDownloadError("Failed to generate FW-001 PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      win.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { win.close(); setDownloadError("Failed to open FW-001 PDF — please try again."); }
     finally { setDownloadingForm(null); }
   }
 
@@ -1577,6 +1628,91 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 {downloadingForm === "sc104" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
                 Download Without Signature
               </Button>
+            </div>
+          </div>
+        );
+      }
+
+      case "fw001": {
+        const inputCls = "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent";
+        const labelCls = "text-xs font-semibold text-foreground block mb-1";
+        return (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Your name, address, county, and case information are pre-filled from intake. Just pick your eligibility basis below and click <span className="font-semibold">Open FW-001 PDF</span> — the filled form opens in a new tab so you can review, print, and file it with the court.
+            </p>
+            {commonWarnings}
+
+            {/* Eligibility basis */}
+            <div>
+              <label className={labelCls}>Why are you requesting a fee waiver? <span className="text-rose-500">*</span></label>
+              <select value={fw001Basis} onChange={e => setFw001Basis(e.target.value as "5a" | "5b" | "5c")} className={inputCls}>
+                <option value="5a">I receive public benefits (Medi-Cal, CalWORKS, SSI, CalFresh, IHSS, etc.)</option>
+                <option value="5b">My gross monthly income is below the threshold for my household size</option>
+                <option value="5c">I don't have enough income to cover basic needs and court fees</option>
+              </select>
+            </div>
+
+            {/* Benefits text — shown for 5a */}
+            {fw001Basis === "5a" && (
+              <div>
+                <label className={labelCls}>Which benefits do you receive? <span className="text-muted-foreground font-normal">(helps check the right boxes)</span></label>
+                <textarea value={fw001Benefits} onChange={e => setFw001Benefits(e.target.value)}
+                  placeholder="e.g. Medi-Cal, CalFresh (Food Stamps), SSI"
+                  className={`${inputCls} resize-none`} rows={2} />
+              </div>
+            )}
+
+            {/* Gross monthly income — shown for 5b and 5c */}
+            {(fw001Basis === "5b" || fw001Basis === "5c") && (
+              <div>
+                <label className={labelCls}>Your gross monthly income (before taxes)</label>
+                <input type="text" value={fw001Income} onChange={e => setFw001Income(e.target.value)}
+                  placeholder="e.g. 2400.00" className={inputCls} />
+              </div>
+            )}
+
+            {/* Expense fields — shown for 5c */}
+            {fw001Basis === "5c" && (
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { label: "Rent / mortgage", val: fw001Rent, set: setFw001Rent, ph: "e.g. 1200.00" },
+                  { label: "Food & household", val: fw001Food, set: setFw001Food, ph: "e.g. 400.00" },
+                  { label: "Utilities & phone", val: fw001Utilities, set: setFw001Utilities, ph: "e.g. 150.00" },
+                  { label: "Transportation", val: fw001Transport, set: setFw001Transport, ph: "e.g. 200.00" },
+                  { label: "Medical & dental", val: fw001Medical, set: setFw001Medical, ph: "e.g. 100.00" },
+                ] as { label: string; val: string; set: (v: string) => void; ph: string }[]).map(({ label, val, set, ph }) => (
+                  <div key={label}>
+                    <label className={labelCls}>{label}</label>
+                    <input type="text" value={val} onChange={e => set(e.target.value)} placeholder={ph} className={inputCls} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {commonRelated}
+
+            {/* Open in browser button */}
+            <button
+              type="button"
+              onClick={openFW001InNewTab}
+              disabled={downloadingForm === "fw001"}
+              className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
+            >
+              <span className="flex items-center gap-2">
+                {downloadingForm === "fw001" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                Open FW-001 PDF
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
+                Opens in a new tab
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            </button>
+
+            <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
+              <p className="text-xs text-amber-800 leading-relaxed">
+                <span className="font-semibold">This form is confidential.</span> The court will not give it to the other party. File it at the clerk's window before or at the same time as your SC-100.
+              </p>
             </div>
           </div>
         );
