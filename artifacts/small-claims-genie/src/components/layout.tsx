@@ -43,7 +43,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 md:px-6 h-[70px] md:h-[106px] flex items-center justify-between">
 
           {/* Logo — nudged left on desktop to make room for extra nav item */}
-          <Link href="/" className="flex items-center shrink-0 md:ml-8">
+          <Link href="/" aria-label="Small Claims Genie home page" className="flex items-center shrink-0 md:ml-8">
             <img
               src={logoPath}
               alt={i18n.brand.name}
@@ -75,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               size="sm"
               className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
             >
-              <Link href="/resume">
+              <Link href="/resume" aria-label="Start or Resume Your Case">
                 <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
                 <span className="hidden sm:inline">Start or Resume Your Case</span>
                 <span className="sm:hidden">Start</span>

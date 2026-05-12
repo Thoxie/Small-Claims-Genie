@@ -52,10 +52,10 @@ const features = [
 
 export default function HowItWorks() {
   return (
-    <div className="flex flex-col w-full bg-white">
+    <div className="flex flex-col w-full bg-[#f0faf8]">
 
       {/* ── Hero ── */}
-      <section className="px-4 pt-7 pb-5 text-center bg-white">
+      <section className="px-4 pt-7 pb-5 text-center bg-[#f0faf8]">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-lg sm:text-xl md:text-2xl font-black leading-tight mb-1 text-primary whitespace-nowrap">
             Lawyers aren't allowed in Small Claims Court.
@@ -69,7 +69,7 @@ export default function HowItWorks() {
       </section>
 
       {/* ── Six Feature Boxes ── */}
-      <section className="px-4 pb-0 bg-white">
+      <section className="px-4 pb-0 bg-[#f0faf8]">
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {features.map(({ title, bullets }) => (
@@ -90,7 +90,7 @@ export default function HowItWorks() {
       </section>
 
       {/* ── Bottom CTA Banner ── */}
-      <section className="px-4 pt-4 pb-8 bg-white">
+      <section className="px-4 pt-4 pb-8 bg-[#f0faf8]">
         <div className="max-w-3xl mx-auto">
           <div className="border-2 border-gray-300 rounded-xl px-8 py-10 text-center bg-gray-50">
             <h2 className="text-2xl sm:text-3xl font-black text-primary mb-2">

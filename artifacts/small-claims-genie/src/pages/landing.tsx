@@ -3,11 +3,11 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
 
-const TEAL = "#ddf6f3";
+const TEAL = "#f0faf8";
 
 export default function Landing() {
   return (
-    <div className="flex flex-col w-full bg-white">
+    <div className="flex flex-col w-full bg-[#f0faf8]">
 
       {/* ── Hero ── */}
       <section style={{ backgroundColor: TEAL }} className="px-4 pt-8 pb-7 overflow-hidden">
@@ -47,7 +47,7 @@ export default function Landing() {
       </section>
 
       {/* ── Three Feature Boxes ── */}
-      <section className="px-4 pt-5 pb-5 bg-white">
+      <section className="px-4 pt-5 pb-5 bg-[#f0faf8]">
         <div className="container mx-auto max-w-5xl">
           <div className="grid md:grid-cols-3 gap-4">
             {[
