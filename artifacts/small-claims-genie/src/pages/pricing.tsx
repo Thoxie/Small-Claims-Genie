@@ -209,7 +209,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         {[
           "AI Business Case Advisor that helps organize your facts, damages, records, and claim strategy.",
           "Guided business case intake that turns invoices, contracts, payments, dates, and communications into a cleaner case package.",
-          "Downloadable California small claims court forms, including SC-100, SC-105, and MC-030 when applicable.",
+          "Downloadable court ready small claims court forms to submit and serve the defendant.",
           "Evidence organizer for invoices, estimates, contracts, warranties, payment records, messages, and business documents.",
           "Demand letter generator with a downloadable PDF you can send before filing.",
           "Case Readiness Score that shows what is complete, what is missing, and what to fix before court.",
