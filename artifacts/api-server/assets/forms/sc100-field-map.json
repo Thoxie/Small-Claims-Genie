@@ -171,22 +171,22 @@
       },
       "defendantStreet": {
         "x": 135.5,
-        "y": 411,
+        "y": 398,
         "size": 11
       },
       "defendantCity": {
         "x": 358.8,
-        "y": 411,
+        "y": 398,
         "size": 11
       },
       "defendantState": {
         "x": 454.8,
-        "y": 411,
+        "y": 398,
         "size": 11
       },
       "defendantZip": {
         "x": 491.5,
-        "y": 411,
+        "y": 398,
         "size": 11
       },
       "defendantMailingStreet": {
@@ -221,22 +221,22 @@
       },
       "agentStreet": {
         "x": 135.5,
-        "y": 520.8,
+        "y": 507.8,
         "size": 11
       },
       "agentCity": {
         "x": 325.2,
-        "y": 520.8,
+        "y": 507.8,
         "size": 11
       },
       "agentState": {
         "x": 423.6,
-        "y": 520.8,
+        "y": 507.8,
         "size": 11
       },
       "agentZip": {
         "x": 462,
-        "y": 520.8,
+        "y": 507.8,
         "size": 11
       },
       "claimAmount": {
