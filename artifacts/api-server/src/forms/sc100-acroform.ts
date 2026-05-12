@@ -7,7 +7,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { PDFDocument, PDFName, PDFString, rgb } from "pdf-lib";
+import { PDFDocument, PDFName, PDFString } from "pdf-lib";
 import { CALIFORNIA_COUNTIES } from "../routes/counties";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
