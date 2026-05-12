@@ -138,14 +138,14 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
 
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
         {[
-          "Guided intake by text or voice — speak your facts and the AI organizes them.",
-          "AI Case Advisor — an ongoing chat that knows your case and helps you think through every step.",
-          "Upload documents and photos — AI reads and extracts the text automatically.",
-          "Official California court forms (SC-100, SC-105) generated as print-ready PDFs.",
-          "Demand letter generation before filing so your claim starts cleaner and stronger.",
-          "Mock hearing — AI plays the judge and questions you so you can practice your answers.",
-          "Opening statement built from your facts, with estimated speaking time.",
-          "Case Readiness Score so you always know exactly how prepared you are.",
+          "AI Case Advisor that helps organize your facts, spot weak points, and strengthen your claim before filing.",
+          "Step-by-step guided intake that turns your story into a cleaner, more organized case package.",
+          "Downloadable California small claims court forms, including SC-100 and SC-105 when applicable.",
+          "Evidence organizer for receipts, screenshots, messages, photos, contracts, and records.",
+          "Demand letter generator with a downloadable PDF you can send before filing.",
+          "Case Readiness Score that shows what is complete, what is missing, and what to fix before court.",
+          "Opening statement builder that helps you prepare a short, clear explanation for the judge.",
+          "Mock hearing practice where AI plays the judge and asks questions so you can practice your answers.",
         ].map((f) => (
           <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
             {CHECK}
@@ -207,14 +207,14 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
 
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
         {[
-          "Guided intake by text or voice — speak your facts and the AI structures them.",
-          "AI Case Advisor — an ongoing chat that knows your dispute and helps at every step.",
-          "Upload contracts, invoices, and photos — AI reads and extracts the text automatically.",
-          "Official California court forms (SC-100, SC-105, MC-030) generated as print-ready PDFs.",
-          "Demand letter generation before filing so your claim starts cleaner and stronger.",
-          "Mock hearing — AI plays the judge and questions you so you can practice your answers.",
-          "Opening statement built from your business facts, with estimated speaking time.",
-          "Case Readiness Score so you always know exactly how prepared you are.",
+          "AI Business Case Advisor that helps organize your facts, damages, records, and claim strategy.",
+          "Guided business case intake that turns invoices, contracts, payments, dates, and communications into a cleaner case package.",
+          "Downloadable California small claims court forms, including SC-100, SC-105, and MC-030 when applicable.",
+          "Evidence organizer for invoices, estimates, contracts, warranties, payment records, messages, and business documents.",
+          "Demand letter generator with a downloadable PDF you can send before filing.",
+          "Case Readiness Score that shows what is complete, what is missing, and what to fix before court.",
+          "Opening statement builder that helps you explain the dispute, damages, and proof clearly.",
+          "Mock hearing practice focused on records, damages, credibility, and likely judge questions.",
         ].map((f) => (
           <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
             {CHECK}
