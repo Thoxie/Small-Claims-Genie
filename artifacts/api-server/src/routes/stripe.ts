@@ -21,6 +21,12 @@ router.get("/stripe/config", async (_req, res) => {
 router.get("/stripe/products", async (_req, res) => {
   try {
     const result = await db.execute(sql`
+      WITH latest_products AS (
+        SELECT DISTINCT ON (metadata->>'plan') id
+        FROM stripe.products
+        WHERE active = true AND metadata->>'plan' IS NOT NULL
+        ORDER BY metadata->>'plan', created DESC
+      )
       SELECT
         p.id AS product_id,
         p.name AS product_name,
@@ -31,6 +37,7 @@ router.get("/stripe/products", async (_req, res) => {
         pr.currency,
         pr.active AS price_active
       FROM stripe.products p
+      JOIN latest_products lp ON lp.id = p.id
       LEFT JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
       WHERE p.active = true
       ORDER BY pr.unit_amount ASC NULLS LAST
