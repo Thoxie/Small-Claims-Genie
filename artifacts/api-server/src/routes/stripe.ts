@@ -17,7 +17,10 @@ router.get("/stripe/config", async (_req, res) => {
   }
 });
 
-// List all active products with their prices
+// List all active products with their prices.
+// Primary source: stripe.products DB table (populated by backfill).
+// Fallback: Stripe API directly — used when the server just started and the
+// backfill hasn't finished yet, preventing a race condition on first deploy.
 router.get("/stripe/products", async (_req, res) => {
   try {
     const result = await db.execute(sql`
@@ -64,7 +67,47 @@ router.get("/stripe/products", async (_req, res) => {
       }
     }
 
-    res.json({ products: Array.from(map.values()) });
+    const dbProducts = Array.from(map.values());
+
+    // If the DB returned results, we're done.
+    if (dbProducts.length > 0) {
+      res.json({ products: dbProducts });
+      return;
+    }
+
+    // DB is empty — backfill hasn't run yet (e.g. fresh deploy). Fall back to
+    // the Stripe API directly so checkout works immediately on first startup.
+    logger.warn("stripe.products table empty — falling back to Stripe API");
+    const stripe = await getUncachableStripeClient();
+    const [stripeProducts, stripePrices] = await Promise.all([
+      stripe.products.list({ active: true, limit: 100 }),
+      stripe.prices.list({ active: true, limit: 100 }),
+    ]);
+
+    const pricesByProduct = new Map<string, any[]>();
+    for (const price of stripePrices.data) {
+      const pid = typeof price.product === "string" ? price.product : price.product.id;
+      if (!pricesByProduct.has(pid)) pricesByProduct.set(pid, []);
+      pricesByProduct.get(pid)!.push({
+        id: price.id,
+        unit_amount: price.unit_amount,
+        currency: price.currency,
+      });
+    }
+
+    const fallbackProducts = stripeProducts.data
+      .filter((p) => p.metadata?.plan)
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description ?? null,
+        metadata: p.metadata,
+        prices: (pricesByProduct.get(p.id) ?? []).sort(
+          (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
+        ),
+      }));
+
+    res.json({ products: fallbackProducts });
   } catch (err) {
     logger.error({ err }, "stripe/products error");
     res.status(500).json({ error: "Failed to load products" });
