@@ -1,4 +1,30 @@
 User-agent: *
+
+# Allow all public pages
 Allow: /
+Allow: /pricing
+Allow: /how-it-works
+Allow: /faq
+Allow: /types-of-cases
+Allow: /resources
+Allow: /counties
+Allow: /terms
+
+# Block private app routes
+Disallow: /api/
+Disallow: /cases/
+Disallow: /cases/new
+Disallow: /dashboard
+Disallow: /resume
+Disallow: /account
+Disallow: /sc100
+Disallow: /download
+
+# Block auth pages
+Disallow: /sign-in
+Disallow: /sign-up
+
+# Block duplicate terms page
+Disallow: /tos
 
 Sitemap: https://smallclaimsgenie.com/sitemap.xml
