@@ -366,7 +366,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
           loadingKey={loadingKey}
           onCheckout={onCheckout}
         />
-        <p className="text-[12px] text-[#8a96a8] text-center whitespace-nowrap">When you win & judgment is entered. One-time flat fee.</p>
+        <p className="text-[12px] text-[#8a96a8] text-center">When you win &amp; judgment is entered.<br />One-time flat fee.</p>
       </div>
 
     </section>
