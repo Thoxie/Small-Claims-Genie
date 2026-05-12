@@ -388,7 +388,7 @@ export default function Pricing() {
 
         <div className="text-center mb-5">
           <h1 className="text-[clamp(18px,1.6vw,24px)] font-black tracking-[-0.03em] leading-tight text-[#0d6b5e]">
-            Only Pay If You Win — Pick the plan that best fits your case.
+            <span className="underline underline-offset-4">Only Pay If You Win</span> — Pick the plan that best fits your case.
           </h1>
         </div>
 
