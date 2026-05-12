@@ -385,6 +385,9 @@ export default function Pricing() {
       <div className="w-full px-7 pb-10 pt-6 flex flex-col items-center">
 
         <div className="text-center mb-5">
+          <p className="text-[clamp(13px,1.1vw,16px)] font-black tracking-widest uppercase text-[#0d6b5e] mb-1">
+            Only Pay If You Win
+          </p>
           <h1 className="text-[clamp(18px,1.6vw,24px)] font-black tracking-[-0.03em] leading-tight text-[#0d6b5e]">
             Pick the plan that best fits your case.
           </h1>
