@@ -5,6 +5,9 @@ import { getOwnedCase } from "../lib/owned-case";
 import { logger } from "../lib/logger";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { type FormConfig } from "../forms/form-renderer";
+// ── AcroForm builder (new — replaces Playwright approach) ────────────────────
+import { buildSC100AcroformPdf } from "../forms/sc100-acroform";
+// ── Playwright builder (kept for reference; swap back if AcroForm has issues) ─
 import { buildSC100Pdf as buildSC100PlaywrightPdf, refreshFieldMap } from "../forms/sc100-playwright";
 import { calibrateSC100, verifySC100 } from "../forms/sc100-calibrate";
 import {
@@ -248,7 +251,10 @@ async function buildSC100Pdf(
   caseData: Record<string, any>,
   signaturePngBytes?: Buffer
 ): Promise<Buffer> {
-  return buildSC100PlaywrightPdf(caseData, ASSET_DIR, signaturePngBytes);
+  // ── AcroForm path (active) ──────────────────────────────────────────────────
+  return buildSC100AcroformPdf(caseData, ASSET_DIR, signaturePngBytes);
+  // ── Playwright/PNG path (preserved — uncomment to revert) ──────────────────
+  // return buildSC100PlaywrightPdf(caseData, ASSET_DIR, signaturePngBytes);
 }
 
 // ─── SC-100 routes ────────────────────────────────────────────────────────────
