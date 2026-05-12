@@ -11,8 +11,10 @@ const CHECK = (
 
 // Product metadata keys — must match what's seeded in Stripe
 const _PLAN_KEYS = {
-  personal: "personal",
-  business: "business",
+  personal_low: "personal_low",
+  personal_high: "personal_high",
+  business_low: "business_low",
+  business_high: "business_high",
   paralegal: "paralegal",
   collection_low: "collection_low",
   collection_high: "collection_high",
@@ -28,7 +30,6 @@ async function startCheckout(
 ) {
   setLoading(planKey);
   try {
-    // 1. Fetch products from our API to get the real Stripe price ID
     const productsRes = await fetch("/api/stripe/products");
     if (!productsRes.ok) throw new Error("Could not load products");
     const { products } = await productsRes.json();
@@ -41,10 +42,8 @@ async function startCheckout(
     }
     const priceId = product.prices[0].id;
 
-    // 2. Get auth token (optional — guest checkout still works)
     const token = await getToken().catch(() => null);
 
-    // 3. Create a checkout session
     const checkoutRes = await fetch("/api/stripe/checkout", {
       method: "POST",
       headers: {
@@ -65,7 +64,7 @@ async function startCheckout(
 
     const { url } = await checkoutRes.json();
     if (url) {
-      window.location.href = url; // redirect to Stripe hosted checkout
+      window.location.href = url;
     }
   } catch (err: any) {
     alert(err?.message || "Something went wrong. Please try again.");
@@ -102,61 +101,50 @@ function CheckoutButton({
   );
 }
 
-function PricingCard({
-  plan,
-  tagline,
-  price,
-  priceSub,
-  valueBold,
-  valueSub,
-  features,
-  ctaLabel,
-  planKey,
-  badge,
-  highlight,
-  loadingKey,
-  onCheckout,
-}: {
-  plan: string;
-  tagline: string;
-  price: string;
-  priceSub: string;
-  valueBold: string;
-  valueSub: string;
-  features: string[];
-  ctaLabel: string;
-  planKey: PlanKey;
-  badge?: string;
-  highlight?: boolean;
-  loadingKey: PlanKey | null;
-  onCheckout: (planKey: PlanKey) => void;
-}) {
-  return (
-    <section className={`bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative ${highlight ? "border-[3px] border-[#14b8a6]" : "border-[3px] border-[#14b8a6]/60"}`}>
+function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
+  const [selectedTier, setSelectedTier] = useState<"personal_low" | "personal_high">("personal_low");
 
-      {badge && (
-        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#0d6b5e] text-white text-[11px] font-black px-3 py-1 rounded-full whitespace-nowrap tracking-wide shadow">
-          {badge}
-        </div>
-      )}
+  return (
+    <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative border-[3px] border-[#14b8a6]/60">
 
       <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
-        <p className="text-xl font-black tracking-tight text-[#0d6b5e] mb-1.5 leading-tight">{plan}</p>
-        <p className="text-[13px] text-[#5a6478] leading-[1.4]">{tagline}</p>
+        <p className="text-xl font-black tracking-tight text-[#0d6b5e] mb-1.5 leading-tight">Personal Case</p>
+        <p className="text-[13px] text-[#5a6478] leading-[1.4]">
+          For person-versus-person disputes only, such as conflicts with a neighbor, roommate, acquaintance, friend, or other individual.
+        </p>
       </div>
 
-      <div className="pb-4 flex items-end gap-2 min-h-[68px]">
-        <span className="text-[32px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
-        <span className="text-[14px] font-extrabold pb-[3px] text-[#33405c]">{priceSub}</span>
+      <div className="pb-4 grid grid-cols-2 gap-3 min-h-[68px] items-center">
+        <button
+          onClick={() => setSelectedTier("personal_low")}
+          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "personal_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+        >
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$79</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
+        </button>
+        <button
+          onClick={() => setSelectedTier("personal_high")}
+          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "personal_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+        >
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
+        </button>
       </div>
 
       <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
-        <strong className="block text-[13px] text-[#0d6b5e] mb-[2px] leading-[1.25]">{valueBold}</strong>
-        <span className="block text-[11px] text-[#5a6478] leading-[1.3]">{valueSub}</span>
+        <strong className="block text-[13px] text-[#0d6b5e] mb-[2px] leading-[1.25]">Best for a straightforward consumer dispute.</strong>
+        <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Built to move a user from confusion to a cleaner, more organized filing package.</span>
       </div>
 
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
-        {features.map((f) => (
+        {[
+          "Guided case intake that organizes your facts, dates, damages, and parties fast.",
+          "AI case evaluation to identify weak points, missing proof, and stronger framing.",
+          "Step-by-step help preparing court-ready forms and filing information.",
+          "Evidence checklist for receipts, screenshots, messages, photos, contracts, and records.",
+          "Demand letter support before filing so your claim starts cleaner and stronger.",
+          "Hearing prep workflow so you know what to bring, what to say, and what matters.",
+        ].map((f) => (
           <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
             {CHECK}
             <span>{f}</span>
@@ -166,8 +154,75 @@ function PricingCard({
 
       <div className="flex flex-col items-center gap-2">
         <CheckoutButton
-          planKey={planKey}
-          label={ctaLabel}
+          planKey={selectedTier}
+          label="Start Personal Case"
+          icon={<Wand2 className="w-4 h-4 flex-shrink-0" />}
+          className="bg-[#0d6b5e] hover:bg-[#0a5a4f]"
+          loadingKey={loadingKey}
+          onCheckout={onCheckout}
+        />
+        <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
+      </div>
+
+    </section>
+  );
+}
+
+function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
+  const [selectedTier, setSelectedTier] = useState<"business_low" | "business_high">("business_low");
+
+  return (
+    <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative border-[3px] border-[#14b8a6]">
+
+      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
+        <p className="text-xl font-black tracking-tight text-[#0d6b5e] mb-1.5 leading-tight">Business Case</p>
+        <p className="text-[13px] text-[#5a6478] leading-[1.4]">
+          For any case involving a business on either side, including a business suing an individual or an individual suing a business.
+        </p>
+      </div>
+
+      <div className="pb-4 grid grid-cols-2 gap-3 min-h-[68px] items-center">
+        <button
+          onClick={() => setSelectedTier("business_low")}
+          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "business_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+        >
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
+        </button>
+        <button
+          onClick={() => setSelectedTier("business_high")}
+          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "business_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+        >
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$109</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
+        </button>
+      </div>
+
+      <div className="bg-[#f7f9fc] border border-[#e3e8f0] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
+        <strong className="block text-[13px] text-[#0d6b5e] mb-[2px] leading-[1.25]">Best for more document-heavy disputes.</strong>
+        <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Designed for cases where the facts are commercial, the records matter more, and the user needs tighter structure.</span>
+      </div>
+
+      <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
+        {[
+          "Guided business case intake that organizes your facts, dates, damages, parties, and business records fast.",
+          "AI review of your facts and uploads to tighten the claim story before filing.",
+          "Support preparing court-ready filing details with clearer damages and requested relief.",
+          "Evidence guidance for estimates, invoices, communications, warranties, and proof of payment.",
+          "Demand letter support to present a stronger pre-suit position and show reasonableness.",
+          "Submission and hearing checklist so your exhibits, timeline, and records are easier to present.",
+        ].map((f) => (
+          <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
+            {CHECK}
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex flex-col items-center gap-2">
+        <CheckoutButton
+          planKey={selectedTier}
+          label="Start Business Case"
           icon={<Wand2 className="w-4 h-4 flex-shrink-0" />}
           className="bg-[#0d6b5e] hover:bg-[#0a5a4f]"
           loadingKey={loadingKey}
@@ -260,7 +315,6 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
         </p>
       </div>
 
-      {/* Tier selector */}
       <div className="pb-4 grid grid-cols-2 gap-3 min-h-[68px] items-center">
         <button
           onClick={() => setSelectedTier("collection_low")}
@@ -273,7 +327,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
           onClick={() => setSelectedTier("collection_high")}
           className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "collection_high" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
         >
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$109</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">Judgments $5,000 and above</span>
         </button>
       </div>
@@ -338,51 +392,9 @@ export default function Pricing() {
         </div>
 
         <div className="w-full max-w-[1400px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
-          <PricingCard
-            plan="Personal Case"
-            tagline="For person-versus-person disputes only, such as conflicts with a neighbor, roommate, acquaintance, friend, or other individual."
-            price="$69"
-            priceSub="flat fee"
-            valueBold="Best for a straightforward consumer dispute."
-            valueSub="Built to move a user from confusion to a cleaner, more organized filing package."
-            features={[
-              "Guided case intake that organizes your facts, dates, damages, and parties fast.",
-              "AI case evaluation to identify weak points, missing proof, and stronger framing.",
-              "Step-by-step help preparing court-ready forms and filing information.",
-              "Evidence checklist for receipts, screenshots, messages, photos, contracts, and records.",
-              "Demand letter support before filing so your claim starts cleaner and stronger.",
-              "Hearing prep workflow so you know what to bring, what to say, and what matters.",
-            ]}
-            ctaLabel="Start Personal Case"
-            planKey="personal"
-            loadingKey={loadingKey}
-            onCheckout={handleCheckout}
-          />
-
-          <PricingCard
-            plan="Business Case"
-            tagline="For any case involving a business on either side, including a business suing an individual or an individual suing a business."
-            price="$89"
-            priceSub="flat fee"
-            valueBold="Best for more document-heavy disputes."
-            valueSub="Designed for cases where the facts are commercial, the records matter more, and the user needs tighter structure."
-            features={[
-              "Guided business case intake that organizes your facts, dates, damages, parties, and business records fast.",
-              "AI review of your facts and uploads to tighten the claim story before filing.",
-              "Support preparing court-ready filing details with clearer damages and requested relief.",
-              "Evidence guidance for estimates, invoices, communications, warranties, and proof of payment.",
-              "Demand letter support to present a stronger pre-suit position and show reasonableness.",
-              "Submission and hearing checklist so your exhibits, timeline, and records are easier to present.",
-            ]}
-            ctaLabel="Start Business Case"
-            planKey="business"
-            highlight
-            loadingKey={loadingKey}
-            onCheckout={handleCheckout}
-          />
-
+          <PersonalCard loadingKey={loadingKey} onCheckout={handleCheckout} />
+          <BusinessCard loadingKey={loadingKey} onCheckout={handleCheckout} />
           <GeniePlusCard loadingKey={loadingKey} onCheckout={handleCheckout} />
-
           <CollectionCard loadingKey={loadingKey} onCheckout={handleCheckout} />
         </div>
 
