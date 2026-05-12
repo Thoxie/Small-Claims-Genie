@@ -393,7 +393,6 @@ export default function Pricing() {
           <h1 className="text-[clamp(18px,1.6vw,24px)] font-black tracking-[-0.03em] leading-tight text-[#0d6b5e]">
             Pick the plan that best fits your case.
           </h1>
-          <p className="text-[13px] text-[#5a6478] mt-1">Have a promo code? You'll enter it on the next screen.</p>
         </div>
 
         <div className="w-full max-w-[1400px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
