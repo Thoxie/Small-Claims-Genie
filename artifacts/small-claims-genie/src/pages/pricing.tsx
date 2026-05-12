@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
-import { Wand2, Trophy, UserCheck, Loader2, X } from "lucide-react";
+import { Trophy, UserCheck, Loader2, X } from "lucide-react";
 
 const CHECK = (
   <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 border-[#0d6b5e] text-[#0d6b5e] inline-flex items-center justify-center text-[11px] font-black mt-[2px]">
