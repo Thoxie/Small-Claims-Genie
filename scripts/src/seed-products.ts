@@ -10,16 +10,28 @@ import { getUncachableStripeClient } from "./stripeClient";
 
 const PRODUCTS = [
   {
-    name: "Personal Case",
-    description: "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts.",
-    amount: 6900, // $69.00
-    metadata: { plan: "personal" },
+    name: "Personal Case (up to $5,000)",
+    description: "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims up to $5,000.",
+    amount: 7900, // $79.00
+    metadata: { plan: "personal_low" },
   },
   {
-    name: "Business Case",
-    description: "For any case involving a business on either side — individual suing a business or vice versa.",
-    amount: 8900, // $89.00
-    metadata: { plan: "business" },
+    name: "Personal Case ($5,000 and above)",
+    description: "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims of $5,000 or more.",
+    amount: 9900, // $99.00
+    metadata: { plan: "personal_high" },
+  },
+  {
+    name: "Business Case (up to $5,000)",
+    description: "For any case involving a business on either side — individual suing a business or vice versa. Claims up to $5,000.",
+    amount: 9900, // $99.00
+    metadata: { plan: "business_low" },
+  },
+  {
+    name: "Business Case ($5,000 and above)",
+    description: "For any case involving a business on either side — individual suing a business or vice versa. Claims of $5,000 or more.",
+    amount: 10900, // $109.00
+    metadata: { plan: "business_high" },
   },
   {
     name: "Genie Plus: Paralegal Review",
@@ -36,7 +48,7 @@ const PRODUCTS = [
   {
     name: "Post-Judgment Collection ($5,000 and above)",
     description: "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments of $5,000 or more.",
-    amount: 9900, // $99.00
+    amount: 10900, // $109.00
     metadata: { plan: "collection_high" },
   },
 ];
@@ -46,15 +58,15 @@ async function seedProducts() {
   console.log("Seeding Stripe products for Small Claims Genie...\n");
 
   for (const product of PRODUCTS) {
-    // Check if already exists
-    const existing = await stripe.products.search({
-      query: `name:'${product.name}' AND active:'true'`,
-    });
+    // Check if already exists by metadata plan key
+    const allProducts = await stripe.products.list({ active: true, limit: 100 });
+    const existing = allProducts.data.find(
+      (p) => p.metadata?.plan === product.metadata.plan
+    );
 
-    if (existing.data.length > 0) {
-      const prod = existing.data[0];
-      const prices = await stripe.prices.list({ product: prod.id, active: true });
-      console.log(`✓ Already exists: ${product.name} (${prod.id})`);
+    if (existing) {
+      const prices = await stripe.prices.list({ product: existing.id, active: true });
+      console.log(`✓ Already exists: ${product.name} (${existing.id})`);
       if (prices.data.length > 0) {
         console.log(`  Price: $${prices.data[0].unit_amount! / 100} (${prices.data[0].id})\n`);
       }
@@ -81,8 +93,6 @@ async function seedProducts() {
   }
 
   console.log("Done! Webhooks will sync these to your local database automatically.");
-  console.log("\nNext: Create a promo code in the Stripe dashboard:");
-  console.log("  Stripe Dashboard → Products → Coupons → Create coupon → 100% off → Generate promotion codes");
 }
 
 seedProducts().catch((err) => {
