@@ -171,22 +171,22 @@
       },
       "defendantStreet": {
         "x": 135.5,
-        "y": 404.6,
+        "y": 398,
         "size": 11
       },
       "defendantCity": {
         "x": 358.8,
-        "y": 404.6,
+        "y": 398,
         "size": 11
       },
       "defendantState": {
         "x": 454.8,
-        "y": 404.6,
+        "y": 398,
         "size": 11
       },
       "defendantZip": {
         "x": 491.5,
-        "y": 404.6,
+        "y": 398,
         "size": 11
       },
       "defendantMailingStreet": {
@@ -240,7 +240,7 @@
         "size": 11
       },
       "claimAmount": {
-        "x": 357.6,
+        "x": 330,
         "y": 578,
         "size": 11
       },
@@ -287,11 +287,11 @@
       },
       "priorDemandYes": {
         "x": 65.8,
-        "y": 302
+        "y": 289
       },
       "priorDemandNo": {
         "x": 121.7,
-        "y": 302
+        "y": 289
       },
       "priorDemandWhyNot": {
         "x": 187.2,
@@ -299,24 +299,24 @@
         "size": 10
       },
       "venueA": {
-        "x": 62,
-        "y": 378.7
+        "x": 72,
+        "y": 394
       },
       "venueB": {
-        "x": 62,
-        "y": 436.3
+        "x": 72,
+        "y": 451.6
       },
       "venueC": {
-        "x": 62,
-        "y": 467.5
+        "x": 72,
+        "y": 482.8
       },
       "venueD": {
-        "x": 62,
-        "y": 501.1
+        "x": 72,
+        "y": 516.4
       },
       "venueE": {
-        "x": 62,
-        "y": 535.7
+        "x": 72,
+        "y": 551
       },
       "venueOtherText": {
         "x": 182.4,
@@ -325,7 +325,7 @@
       },
       "venueZip": {
         "x": 443.5,
-        "y": 611,
+        "y": 598,
         "size": 11
       },
       "attyFeeYes": {
@@ -382,7 +382,7 @@
         "y": 139
       },
       "declarationDate": {
-        "x": 55,
+        "x": 67,
         "y": 280.8,
         "size": 11
       },

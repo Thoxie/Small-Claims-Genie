@@ -261,6 +261,9 @@ router.get("/cases/:id/forms/sc100", async (req, res): Promise<void> => {
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
   try {
     const enriched = await aiEnrichForSC100(enrichForSC100(c as unknown as Record<string, any>));
+    enriched.needsMC031 =
+      ((enriched.claimDescriptionForForm ?? "").length > 360) ||
+      ((enriched.howAmountCalculated ?? "").length > 210);
     const pdfBytes = await buildSC100Pdf(enriched);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -288,6 +291,9 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
   }
   try {
     const enriched = await aiEnrichForSC100(enrichForSC100(c as unknown as Record<string, any>));
+    enriched.needsMC031 =
+      ((enriched.claimDescriptionForForm ?? "").length > 360) ||
+      ((enriched.howAmountCalculated ?? "").length > 210);
     const pdfBytes = await buildSC100Pdf(enriched, sigBytes);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
