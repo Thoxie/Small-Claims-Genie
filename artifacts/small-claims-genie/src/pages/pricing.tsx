@@ -107,24 +107,24 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
   return (
     <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative border-[3px] border-[#14b8a6]/60">
 
-      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
+      <div className="pb-4 pt-1 h-[138px] flex flex-col">
         <p className="text-xl font-black tracking-tight text-[#0d6b5e] mb-1.5 leading-tight">Personal Case</p>
         <p className="text-[13px] text-[#5a6478] leading-[1.4]">
           For person-versus-person disputes only, such as conflicts with a neighbor, roommate, acquaintance, friend, or other individual.
         </p>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 min-h-[88px] items-center">
+      <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         <button
           onClick={() => setSelectedTier("personal_low")}
-          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "personal_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "personal_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
         >
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$79</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
         </button>
         <button
           onClick={() => setSelectedTier("personal_high")}
-          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "personal_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "personal_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
         >
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
@@ -174,24 +174,24 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
   return (
     <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative border-[3px] border-[#14b8a6]">
 
-      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
+      <div className="pb-4 pt-1 h-[138px] flex flex-col">
         <p className="text-xl font-black tracking-tight text-[#0d6b5e] mb-1.5 leading-tight">Business Case</p>
         <p className="text-[13px] text-[#5a6478] leading-[1.4]">
           For any case involving a business on either side, including a business suing an individual or an individual suing a business.
         </p>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 min-h-[88px] items-center">
+      <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         <button
           onClick={() => setSelectedTier("business_low")}
-          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "business_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "business_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
         >
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$99</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
         </button>
         <button
           onClick={() => setSelectedTier("business_high")}
-          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "business_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "business_high" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
         >
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$109</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
@@ -243,7 +243,7 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         ADD-ON PARALEGAL SUPPORT
       </div>
 
-      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
+      <div className="pb-4 pt-1 h-[138px] flex flex-col">
         <div className="flex items-center gap-2 mb-1.5">
           <UserCheck className="w-5 h-5 text-[#6366f1] shrink-0" />
           <p className="text-xl font-black tracking-tight text-[#0d6b5e] leading-tight">Genie Plus: Paralegal Review</p>
@@ -253,8 +253,8 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         </p>
       </div>
 
-      <div className="mb-4 grid grid-cols-1 min-h-[88px] items-center">
-        <div className="rounded-xl p-[10px_12px] text-center border-2 border-[#6366f1] bg-[#f5f3ff] ring-2 ring-[#6366f1]">
+      <div className="mb-4 h-[90px]">
+        <div className="h-full rounded-xl px-3 text-center border-2 border-[#6366f1] bg-[#f5f3ff] ring-2 ring-[#6366f1] flex flex-col items-center justify-center">
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#6366f1]">$159</span>
           <span className="block text-[11px] font-bold text-[#33405c] mt-1">flat fee</span>
         </div>
@@ -307,7 +307,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
         ADD-ON AFTER YOU WIN
       </div>
 
-      <div className="pb-4 pt-1 min-h-[138px] flex flex-col">
+      <div className="pb-4 pt-1 h-[138px] flex flex-col">
         <div className="flex items-center gap-2 mb-1.5">
           <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
           <p className="text-xl font-black tracking-tight text-[#0d6b5e] leading-tight">Post-Judgment Collection</p>
@@ -317,20 +317,20 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
         </p>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 min-h-[88px] items-center">
+      <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         <button
           onClick={() => setSelectedTier("collection_low")}
-          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "collection_low" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "collection_low" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
         >
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$89</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Judgments up to $5,000</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
         </button>
         <button
           onClick={() => setSelectedTier("collection_high")}
-          className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "collection_high" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
+          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "collection_high" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
         >
           <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$109</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Judgments $5,000 and above</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
         </button>
       </div>
 
