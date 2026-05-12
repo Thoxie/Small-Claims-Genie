@@ -386,10 +386,16 @@ export default function Pricing() {
     <div className="min-h-screen bg-[#f0faf8]">
       <div className="w-full px-7 pb-10 pt-6 flex flex-col items-center">
 
-        <div className="text-center mb-5">
-          <h1 className="text-[clamp(18px,1.6vw,24px)] font-black tracking-[-0.03em] leading-tight text-[#0d6b5e]">
-            <span className="underline underline-offset-4">Only Pay If You Win</span> — Pick the plan that best fits your case.
-          </h1>
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Trophy className="w-8 h-8 text-[#0d6b5e] shrink-0" />
+            <h1 className="text-[clamp(28px,2.8vw,42px)] font-black tracking-[-0.04em] leading-none text-[#0d6b5e]">
+              Only Pay If You Win
+            </h1>
+          </div>
+          <p className="text-[clamp(14px,1.1vw,17px)] text-[#5a6478] font-medium">
+            Pick the plan that best fits your case.
+          </p>
         </div>
 
         <div className="w-full max-w-[1400px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
