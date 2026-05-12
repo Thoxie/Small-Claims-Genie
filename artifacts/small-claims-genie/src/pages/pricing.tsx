@@ -114,7 +114,7 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         </p>
       </div>
 
-      <div className="pb-4 grid grid-cols-2 gap-3 min-h-[68px] items-center">
+      <div className="mb-4 grid grid-cols-2 gap-3 min-h-[88px] items-center">
         <button
           onClick={() => setSelectedTier("personal_low")}
           className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "personal_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
@@ -181,7 +181,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
         </p>
       </div>
 
-      <div className="pb-4 grid grid-cols-2 gap-3 min-h-[68px] items-center">
+      <div className="mb-4 grid grid-cols-2 gap-3 min-h-[88px] items-center">
         <button
           onClick={() => setSelectedTier("business_low")}
           className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "business_low" ? "bg-[#f0faf8] border-[#14b8a6] ring-2 ring-[#14b8a6]" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
@@ -253,9 +253,11 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         </p>
       </div>
 
-      <div className="pb-4 flex items-end gap-2 min-h-[68px]">
-        <span className="text-[32px] font-black tracking-[-0.05em] leading-none text-[#6366f1]">$159</span>
-        <span className="text-[14px] font-extrabold pb-[3px] text-[#33405c]">flat fee</span>
+      <div className="mb-4 grid grid-cols-1 min-h-[88px] items-center">
+        <div className="rounded-xl p-[10px_12px] text-center border-2 border-[#6366f1] bg-[#f5f3ff] ring-2 ring-[#6366f1]">
+          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#6366f1]">$159</span>
+          <span className="block text-[11px] font-bold text-[#33405c] mt-1">flat fee</span>
+        </div>
       </div>
 
       <div className="bg-[#f5f3ff] border border-[#c7d2fe] rounded-xl p-[8px_12px] mb-4 min-h-[72px] flex flex-col justify-center">
@@ -315,7 +317,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
         </p>
       </div>
 
-      <div className="pb-4 grid grid-cols-2 gap-3 min-h-[68px] items-center">
+      <div className="mb-4 grid grid-cols-2 gap-3 min-h-[88px] items-center">
         <button
           onClick={() => setSelectedTier("collection_low")}
           className={`rounded-xl p-[10px_12px] text-center border transition-all ${selectedTier === "collection_low" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
