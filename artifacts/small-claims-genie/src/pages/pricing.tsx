@@ -138,12 +138,14 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
 
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
         {[
-          "Guided case intake that organizes your facts, dates, damages, and parties fast.",
-          "AI case evaluation to identify weak points, missing proof, and stronger framing.",
-          "Step-by-step help preparing court-ready forms and filing information.",
-          "Evidence checklist for receipts, screenshots, messages, photos, contracts, and records.",
-          "Demand letter support before filing so your claim starts cleaner and stronger.",
-          "Hearing prep workflow so you know what to bring, what to say, and what matters.",
+          "Guided intake by text or voice — speak your facts and the AI organizes them.",
+          "AI Case Advisor — an ongoing chat that knows your case and helps you think through every step.",
+          "Upload documents and photos — AI reads and extracts the text automatically.",
+          "Official California court forms (SC-100, SC-105) generated as print-ready PDFs.",
+          "Demand letter drafted and downloaded as a formatted PDF.",
+          "Mock hearing — AI plays the judge and questions you so you can practice your answers.",
+          "Opening statement built from your facts, with estimated speaking time.",
+          "Case Readiness Score so you always know exactly how prepared you are.",
         ].map((f) => (
           <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
             {CHECK}
@@ -205,12 +207,14 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
 
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
         {[
-          "Guided business case intake that organizes your facts, dates, damages, parties, and business records fast.",
-          "AI review of your facts and uploads to tighten the claim story before filing.",
-          "Support preparing court-ready filing details with clearer damages and requested relief.",
-          "Evidence guidance for estimates, invoices, communications, warranties, and proof of payment.",
-          "Demand letter support to present a stronger pre-suit position and show reasonableness.",
-          "Submission and hearing checklist so your exhibits, timeline, and records are easier to present.",
+          "Guided intake by text or voice — speak your facts and the AI structures them.",
+          "AI Case Advisor — an ongoing chat that knows your dispute and helps at every step.",
+          "Upload contracts, invoices, and photos — AI reads and extracts the text automatically.",
+          "Official California court forms (SC-100, SC-105, MC-030) generated as print-ready PDFs.",
+          "Demand letter drafted and downloaded as a formatted PDF.",
+          "Mock hearing — AI plays the judge and questions you so you can practice your answers.",
+          "Opening statement built from your business facts, with estimated speaking time.",
+          "Case Readiness Score so you always know exactly how prepared you are.",
         ].map((f) => (
           <li key={f} className="flex gap-[8px] items-start text-[#20304f] text-[14px] leading-[1.35]">
             {CHECK}
