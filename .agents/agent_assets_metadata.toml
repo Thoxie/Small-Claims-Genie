@@ -138,3 +138,9 @@ id = "HM4uPcKpdujQgP0zs0eR7"
 uri = "file://scg-source-current.tar.gz"
 type = "unspecified"
 title = "Small Claims Genie — Current Source Code (May 10, 2026)"
+
+[[outputs]]
+id = "Q2dG7axmC4VU6La30Ii4U"
+uri = "file://scg-source-backup.tar.gz"
+type = "unspecified"
+title = "Small Claims Genie — Source Backup (May 12, 2026)"
