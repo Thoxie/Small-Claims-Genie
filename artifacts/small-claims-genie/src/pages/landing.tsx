@@ -1,7 +1,7 @@
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { FileText, Scale, BookOpen, ClipboardList, Mic, Wand2 } from "lucide-react";
+import { FileText, Scale, BookOpen, ClipboardList, Wand2 } from "lucide-react";
 
 const TEAL = "#f5fdfb";
 
@@ -109,9 +109,7 @@ export default function Landing() {
       {/* ── AI Chat Callout ── */}
       <section className="px-4 py-8 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 bg-amber-400/20 text-amber-300 px-4 py-1.5 rounded-full text-xs font-semibold mb-4">
-            <Mic className="h-3.5 w-3.5" /> Voice + Text AI Chat
-          </div>
+          <p className="text-amber-300 text-base font-semibold mb-2">Voice &amp; Text AI Chat — Included Free</p>
           <h2 className="text-2xl md:text-3xl font-bold mb-3">Your Genie Knows Your Case.</h2>
           <p className="text-base text-primary-foreground/75 max-w-xl mx-auto leading-relaxed">
             Unlike generic AI tools, your Genie has read your documents, knows your case facts, and gives advice specific to your situation — by voice or text.
