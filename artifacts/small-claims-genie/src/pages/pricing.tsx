@@ -215,7 +215,7 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
               <>
                 <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
                 <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
-                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Buy →</span>
+                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Get Started</span>
               </>
             )}
           </button>
@@ -279,7 +279,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
               <>
                 <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
                 <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
-                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Buy →</span>
+                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Get Started</span>
               </>
             )}
           </button>
@@ -334,10 +334,21 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
       </div>
 
       <div className="mb-4 h-[90px]">
-        <div className="h-full rounded-xl px-3 text-center border-2 border-[#6366f1] bg-[#f5f3ff] ring-2 ring-[#6366f1] flex flex-col items-center justify-center">
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#6366f1]">$159</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">flat fee</span>
-        </div>
+        <button
+          onClick={() => loadingKey === null && onCheckout("paralegal")}
+          disabled={loadingKey !== null}
+          className="w-full h-full rounded-xl px-3 text-center border-2 border-[#6366f1] bg-[#f5f3ff] transition-all flex flex-col items-center justify-center cursor-pointer group hover:bg-[#ede9fe] hover:border-[#4f46e5] hover:shadow-[0_0_0_3px_rgba(99,102,241,0.25)] disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {loadingKey === "paralegal" ? (
+            <Loader2 className="w-5 h-5 animate-spin text-[#6366f1]" />
+          ) : (
+            <>
+              <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#6366f1]">$159</span>
+              <span className="block text-[11px] font-bold text-[#33405c] mt-1">flat fee</span>
+              <span className="block text-[10px] font-bold text-[#6366f1] group-hover:text-[#4f46e5] mt-[3px] transition-colors">Get Started</span>
+            </>
+          )}
+        </button>
       </div>
 
       <div className="bg-[#f5f3ff] border border-[#c7d2fe] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
@@ -361,25 +372,13 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         ))}
       </ul>
 
-      <div className="flex flex-col items-center gap-2">
-        <CheckoutButton
-          planKey="paralegal"
-          label="Add-On Paralegal Support"
-          icon={<UserCheck className="w-4 h-4 flex-shrink-0" />}
-          className="bg-[#6366f1] hover:bg-[#4f46e5]"
-          loadingKey={loadingKey}
-          onCheckout={onCheckout}
-        />
-        <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
-      </div>
+      <p className="text-[12px] text-[#8a96a8] text-center">One-time flat fee. No subscription.</p>
 
     </section>
   );
 }
 
 function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
-  const [selectedTier, setSelectedTier] = useState<"collection_low" | "collection_high">("collection_low");
-
   return (
     <section className="bg-white border-[3px] border-amber-400 rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative">
 
@@ -398,20 +397,27 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
-        <button
-          onClick={() => setSelectedTier("collection_low")}
-          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "collection_low" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
-        >
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$89</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">Up to $5,000</span>
-        </button>
-        <button
-          onClick={() => setSelectedTier("collection_high")}
-          className={`h-full rounded-xl px-3 text-center border transition-all flex flex-col items-center justify-center ${selectedTier === "collection_high" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400" : "bg-[#f7f9fc] border-[#e3e8f0]"}`}
-        >
-          <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">$109</span>
-          <span className="block text-[11px] font-bold text-[#33405c] mt-1">$5,000 and above</span>
-        </button>
+        {([
+          { key: "collection_low" as PlanKey, price: "$89", label: "Up to $5,000" },
+          { key: "collection_high" as PlanKey, price: "$109", label: "$5,000 and above" },
+        ]).map(({ key, price, label }) => (
+          <button
+            key={key}
+            onClick={() => loadingKey === null && onCheckout(key)}
+            disabled={loadingKey !== null}
+            className="h-full rounded-xl px-3 text-center border-2 border-amber-400 bg-amber-50 transition-all flex flex-col items-center justify-center cursor-pointer group hover:bg-amber-100 hover:border-amber-500 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.25)] disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loadingKey === key ? (
+              <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+            ) : (
+              <>
+                <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
+                <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
+                <span className="block text-[10px] font-bold text-amber-500 group-hover:text-amber-600 mt-[3px] transition-colors">Get Started</span>
+              </>
+            )}
+          </button>
+        ))}
       </div>
 
       <div className="bg-[#fffbeb] border border-[#fde68a] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
@@ -437,17 +443,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
         ))}
       </ul>
 
-      <div className="flex flex-col items-center gap-2">
-        <CheckoutButton
-          planKey={selectedTier}
-          label="Add Collection Tools"
-          icon={<Trophy className="w-4 h-4 flex-shrink-0" />}
-          className="bg-amber-500 hover:bg-amber-600"
-          loadingKey={loadingKey}
-          onCheckout={onCheckout}
-        />
-        <p className="text-[12px] text-[#8a96a8] text-center">When you win &amp; judgment is entered.<br />One-time flat fee.</p>
-      </div>
+      <p className="text-[12px] text-[#8a96a8] text-center">When you win &amp; judgment is entered.<br />One-time flat fee.</p>
 
     </section>
   );
