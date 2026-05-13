@@ -135,9 +135,9 @@ stripeProtectedRouter.post("/stripe/checkout", async (req: any, res) => {
     }
 
     // Validate all submitted price IDs against active prices in our Stripe catalog.
-    // This prevents callers from submitting arbitrary or foreign price IDs.
-    // Note: validate each ID individually to avoid Drizzle parameterizing arrays
-    // as record tuples (which breaks ANY(${ids}::text[]) in PostgreSQL).
+    // Check the local DB first (fast); fall back to the Stripe API for any IDs
+    // not yet synced to the DB (e.g. when stripe.prices table is empty on a fresh
+    // production deploy before the StripeSync backfill has run).
     const validIds = new Set<string>();
     for (const id of ids) {
       const result = await db.execute(
@@ -145,6 +145,21 @@ stripeProtectedRouter.post("/stripe/checkout", async (req: any, res) => {
       );
       if ((result.rows as any[]).length > 0) validIds.add(id);
     }
+
+    // For any IDs not found in the DB, verify directly against the Stripe API.
+    const idsNotInDb = ids.filter((id) => !validIds.has(id));
+    if (idsNotInDb.length > 0) {
+      const stripeForValidation = await getUncachableStripeClient();
+      for (const id of idsNotInDb) {
+        try {
+          const price = await stripeForValidation.prices.retrieve(id);
+          if (price.active) validIds.add(id);
+        } catch {
+          // Price not found in Stripe — will be caught as invalid below
+        }
+      }
+    }
+
     const invalidIds = ids.filter((id) => !validIds.has(id));
     if (invalidIds.length > 0) {
       logger.warn({ userId, invalidIds }, "stripe/checkout: invalid price IDs submitted");
