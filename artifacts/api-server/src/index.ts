@@ -34,7 +34,10 @@ async function initStripe() {
 
     const stripeSync = await getStripeSync();
 
-    const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(",")[0]}`;
+    // Prefer a custom domain (e.g. smallclaimsgenie.com) over the .replit.app dev domain.
+    const allDomains = (process.env.REPLIT_DOMAINS ?? "").split(",").filter(Boolean);
+    const preferredDomain = allDomains.find((d) => !d.includes(".replit.app")) ?? allDomains[0] ?? "";
+    const webhookBaseUrl = `https://${preferredDomain}`;
     await stripeSync.findOrCreateManagedWebhook(`${webhookBaseUrl}/api/stripe/webhook`);
     logger.info("Stripe webhook configured");
 
