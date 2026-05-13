@@ -1,6 +1,7 @@
-import { Link } from "wouter";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
+import { GenieModal } from "@/components/genie-modal";
 
 const faqs = [
   {
@@ -90,8 +91,12 @@ const faqs = [
 ];
 
 export default function FAQ() {
+  const [genieOpen, setGenieOpen] = useState(false);
+
   return (
     <div className="flex flex-col w-full bg-[#f5fdfb]">
+
+      {genieOpen && <GenieModal onClose={() => setGenieOpen(false)} />}
 
       {/* ── Header ── */}
       <section className="px-6 pt-10 pb-6 bg-[#f5fdfb]">
@@ -101,7 +106,7 @@ export default function FAQ() {
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             Clear answers to common questions about how Small Claims Genie helps you prepare a small claims case.
-            If you don't see your question here, describe what happened in plain English and Small Claims Genie will guide you.
+            Don't see your question? Ask the Genie below — free, no account needed.
           </p>
         </div>
       </section>
@@ -123,16 +128,20 @@ export default function FAQ() {
 
       {/* ── Bottom CTA ── */}
       <section className="px-6 pb-12 bg-[#f5fdfb]">
-        <div className="max-w-3xl mx-auto border border-gray-200 rounded-xl px-8 py-8 text-center bg-gray-50">
+        <div className="max-w-3xl mx-auto border-2 border-[#a8e6df] rounded-xl px-8 py-8 text-center bg-[#f0fffe]">
           <h2 className="text-lg font-black text-primary mb-1.5">Still have questions?</h2>
-          <p className="text-sm text-muted-foreground mb-5">
-            Start your case and ask the Genie directly — it knows your documents, your facts, and your county.
+          <p className="text-sm text-muted-foreground mb-2">
+            Describe your situation in plain English — by voice or text. The Genie will tell you if you have a case,
+            what evidence you need, and exactly how Small Claims Genie can help you win.
           </p>
-          <Button asChild size="lg" className="h-10 px-7 text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-sm">
-            <Link href="/cases/new">
-              <Wand2 className="mr-2 h-4 w-4" />
-              Ask the Genie
-            </Link>
+          <p className="text-xs text-[#0d6b5e] font-semibold mb-5">Free to use — no account required.</p>
+          <Button
+            size="lg"
+            onClick={() => setGenieOpen(true)}
+            className="h-11 px-7 text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-sm"
+          >
+            <Wand2 className="mr-2 h-4 w-4" />
+            Ask the Genie — Free
           </Button>
         </div>
       </section>
