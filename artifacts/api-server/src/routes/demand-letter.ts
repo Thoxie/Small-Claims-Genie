@@ -445,14 +445,19 @@ EXHIBIT LETTER ASSIGNMENT — first-mention order:
 - You decide which document to mention first based on what makes the strongest legal narrative.
 - Once you assign a letter to a document, use that same letter for all subsequent references to it.
 
-EXHIBIT DESCRIPTIONS — NON-NEGOTIABLE: When you first introduce each exhibit, include a brief phrase (4–8 words) describing what it actually shows or proves, drawn from the document contents provided below. Do not simply name the document — tell the judge what it establishes.
+EXHIBIT NAMING — CRITICAL RULE: Every exhibit reference MUST start with the EXACT document name from the numbered list above, followed by an optional short description of what it proves. NEVER invent a different name, NEVER use the document's OCR content as the name, NEVER substitute synonyms. The name you write in the declaration must match what appears on the physical tab — the user will be handing this to a judge while pointing at the tab.
 
-GOOD: "I paid $1,542.42 by check on April 1, 2026 (Exhibit A — check copy confirming payment cleared), and ACME's written warranty promised to correct the engine noise (Exhibit B — warranty guaranteeing the repair)."
+Format: (Exhibit A — [Exact Document Name from list]: [optional: what it proves])
+Examples:
+  WRONG: "(Exhibit A — Written Estimate and Work Order)" if the document list says "Document 1: ABC Estimate"
+  RIGHT:  "(Exhibit A — ABC Estimate: written agreement to fix the engine lifter noise)"
+  WRONG: "(Exhibit B — Copy of Payment Check)" if the list says "Document 2: Check Copy"
+  RIGHT:  "(Exhibit B — Check Copy: confirms $5,000 payment cleared on April 1, 2026)"
 
 Strategy based on document count:
 • 1–3 documents: Weave each into Paragraph 2 as a full sentence stating what the exhibit proves.
-• 4–6 documents: Cover the 2–3 most important in narrative sentences. Then add one compact sentence listing the rest: "Additional supporting evidence includes [brief description] (Exhibit D — Name), [brief description] (Exhibit E — Name)."
-• 7+ documents: In the narrative cover the 2 strongest. Then list every remaining one: "Additional evidence includes: [description] (Exhibit C — Name), [description] (Exhibit D — Name)..." Every document number must appear exactly once.
+• 4–6 documents: Cover the 2–3 most important in narrative sentences. Then add one compact sentence listing the rest: "Additional supporting evidence includes (Exhibit D — [Exact Name]), (Exhibit E — [Exact Name])."
+• 7+ documents: In the narrative cover the 2 strongest. Then list every remaining one: "Additional evidence includes: (Exhibit C — [Exact Name]), (Exhibit D — [Exact Name])..." Every document number must appear exactly once.
 
 If no documents have been uploaded, note in Paragraph 2 that the plaintiff will present their testimony at the hearing.
 
@@ -494,11 +499,10 @@ FORMAT RULES:
 - Do not include argument headings unless space specifically allows.
 
 EXHIBIT FORMATTING — REQUIRED:
-An authoritative exhibit list is provided below with a letter (A, B, C…) and a plain English name for each document.
-You MUST use ONLY that letter and that plain English name — never the raw filename, never a number.
-Format every exhibit reference exactly like this:
-  "(Exhibit A — Repair Invoice)"
-  "(Exhibit B — Security Deposit Receipt)"
+Format every exhibit reference exactly like this (parentheses required):
+  "(Exhibit A — [EXACT name from the document list])"
+  "(Exhibit A — [EXACT name from the document list]: optional brief description of what it proves)"
+The name after the dash MUST match the name from the numbered document list exactly — not a synonym, not an OCR-based description, not an invented label. Use the exact name provided.
 NEVER write a raw filename (anything with underscores, file extensions, or numeric prefixes) in the declaration.
 The renderer will automatically bold and highlight parenthesised exhibit references in the PDF.
 
