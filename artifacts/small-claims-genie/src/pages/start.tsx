@@ -25,7 +25,7 @@ export default function Start() {
     if (!isLoaded) return;
 
     if (!isSignedIn) {
-      navigate("/pricing", { replace: true });
+      navigate("/sign-in?redirect=/start", { replace: true });
       return;
     }
 
