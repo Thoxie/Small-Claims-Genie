@@ -438,15 +438,17 @@ EVIDENCE — MANDATORY (read this before writing any paragraph):
 ────────────────────────────────────────
 You MUST reference EVERY exhibit in the authoritative list provided — absolutely no skipping, no matter how many there are.
 
-EXHIBIT ORDER — NON-NEGOTIABLE: Reference exhibits in strict alphabetical order throughout the entire declaration. Exhibit A must appear before Exhibit B, which must appear before Exhibit C, and so on. If you find yourself writing Exhibit C before Exhibit A, stop and reorder. The judge reviews exhibits in order — the declaration must match.
+EXHIBIT ORDER — ABSOLUTE HARD RULE — NO EXCEPTIONS:
+Exhibits MUST appear in strict A → B → C → D → E … order throughout the entire declaration.
+Exhibit A MUST be the first exhibit mentioned. Exhibit B MUST be the second. Exhibit C MUST be the third. And so on.
+NEVER write a higher letter before a lower one. Writing "(Exhibit B …)" before "(Exhibit A …)" is a critical error.
+The letters are pre-assigned and fixed — do NOT reassign them.
+BEFORE you write Paragraph 2, mentally list every exhibit A, B, C… and plan the narrative sentences so they introduce each exhibit in that exact sequence. If strict chronological order would cause you to mention B before A, RESTRUCTURE the sentence order so A comes first — even if that means departing from strict chronology. The alphabetical order of the exhibit tabs is what the judge uses to follow along; the declaration must match the tab order exactly.
 
 EXHIBIT DESCRIPTIONS — NON-NEGOTIABLE: When you first introduce each exhibit, include a brief phrase (4–8 words) describing what it actually shows or proves, drawn from the document contents provided below. Do not simply name the document — tell the judge what it establishes. The exhibit content (OCR text) is provided for exactly this purpose.
 
-BAD: "I paid for the repair (Exhibit A — Check Copy)."
-GOOD: "I paid $5,000.00 for the repair by check on April 1, 2026 (Exhibit A — Check Copy confirming payment cleared)."
-
-BAD: "The warranty terms are documented (Exhibit B — Warranty Doc)."
-GOOD: "ACME's written 30-day warranty promised to correct the engine noise (Exhibit B — Warranty Doc guaranteeing the repair)."
+BAD: "I paid for the repair (Exhibit B — Check Copy)." [← wrong because A must come before B]
+GOOD: "ACME's 30-day warranty promised to correct the noise (Exhibit A — Warranty Doc), and I paid $1,542.42 by check on April 1, 2026 (Exhibit B — Check Copy confirming payment cleared)." [← correct: A before B]
 
 Strategy based on exhibit count (always A→B→C order):
 • 1–3 exhibits: Weave each into Paragraph 2 in A→B→C order as a full sentence stating what the exhibit proves and describes.

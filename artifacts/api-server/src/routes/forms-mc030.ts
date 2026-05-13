@@ -114,11 +114,12 @@ function applyExhibitOrder<T>(docs: T[], exhibitOrder: number[]): T[] {
 
 // ─── MC-030 AI declaration generator ─────────────────────────────────────────
 //
-// Exhibits are passed as a numbered list (no pre-assigned letters).
-// The AI assigns exhibit letters A, B, C… in strict first-mention order as it
-// writes the narrative.  It returns an "exhibitOrder" array of 1-based document
-// numbers so we can sort the physical tabs to match the narrative.
+// Exhibits are pre-assigned letters A, B, C… in document-list order.
+// The AI must write the narrative referencing them in strict A→B→C order.
+// exhibitOrder is always sequential so physical tabs match the pre-assignment.
 //
+const DECL_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 async function generateMC030Declaration(
   d: Record<string, any>,
   exhibits?: Array<{ docIndex: number; name: string }>
@@ -130,8 +131,9 @@ async function generateMC030Declaration(
   const incidentDate  = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
   const hasExhibits   = exhibits && exhibits.length > 0;
 
+  // Pre-assign letters in document-list order: doc 1 → A, doc 2 → B, etc.
   const documentList = hasExhibits
-    ? exhibits!.map(e => `  Document ${e.docIndex}: ${e.name}`).join("\n")
+    ? exhibits!.map((e, i) => `  Exhibit ${DECL_LETTERS[i]}: ${e.name}`).join("\n")
     : "";
 
   const prompt = [
@@ -145,27 +147,28 @@ async function generateMC030Declaration(
     claimDesc    ? `- Case description (background facts only — ignore any exhibit references in this text): ${claimDesc}` : "",
     ``,
     hasExhibits ? [
-      `AVAILABLE DOCUMENTS — you must reference ALL of them:`,
+      `AVAILABLE EXHIBITS — you must reference ALL of them:`,
       documentList,
       ``,
-      `EXHIBIT LETTER ASSIGNMENT RULES (strictly enforced):`,
-      `- Do NOT pre-assign letters based on document number order.`,
-      `- Assign exhibit letters A, B, C… in strict FIRST-MENTION ORDER as you write the narrative.`,
-      `  The first document you choose to mention gets Exhibit A. The second gets Exhibit B. And so on.`,
-      `- You decide which document to mention first based on what makes the strongest narrative — not document list order.`,
+      `EXHIBIT RULES (absolute — no exceptions):`,
+      `- Exhibit letters are PRE-ASSIGNED as shown above. Do NOT change them.`,
+      `- You MUST reference every exhibit listed — no omissions.`,
+      `- Exhibits MUST appear in strict A → B → C → D … order in the narrative.`,
+      `  Exhibit A must be the FIRST exhibit mentioned. Exhibit B must be the SECOND. And so on.`,
+      `  NEVER write a later letter before an earlier one. Writing B before A is a critical error.`,
+      `  If chronological order would cause you to mention B before A, restructure the narrative`,
+      `  so A appears first — even if that means departing from strict chronology.`,
       `- Every reference MUST use this exact format (parentheses required):`,
-      `  (Exhibit X — [substantive explanation of what this document is and why it supports the claim])`,
-      `  Example: (Exhibit A — repair invoice from ACME Auto showing the $3,200 cost to fix the damage caused by defendant)`,
-      `  The description must explain WHAT the document proves, not just what it is called.  Never copy a raw filename.`,
-      `- Once you assign a letter to a document, use that same letter for all subsequent references to it.`,
-      `- You MUST reference every document in the list — no omissions.`,
+      `  (Exhibit X — [what this document proves and why it supports the claim])`,
+      `  Example: (Exhibit A — warranty doc guaranteeing the repair would fix the noise)`,
+      `  Describe WHAT the document proves. Never copy a raw filename.`,
     ].join("\n") : "",
     ``,
     `Return a JSON object with exactly these fields:`,
     `1. "declarationTitle": All-caps title, max 80 characters. Specific to the case facts.`,
     `2. "declarationText": Numbered paragraphs separated by \\n. Each paragraph starts with its number and a period ("1. "). Each paragraph is ONE concise sentence, max 120 characters.`,
     hasExhibits
-      ? `   Use enough paragraphs to cover all key facts AND every document — minimum 8. Target total length: 600–950 characters.`
+      ? `   Use enough paragraphs to cover all key facts AND every exhibit — minimum 8. Target total length: 600–950 characters.`
       : `   Use 8 paragraphs. Target total length: 550-700 characters.`,
     `   STRICT FORMATTING RULES — violation breaks the PDF layout:`,
     `   - Plain text only. No asterisks, no markdown, no bold. Exhibit references use parentheses as shown above — no square brackets.`,
@@ -174,12 +177,7 @@ async function generateMC030Declaration(
     `   - Do NOT end with a name, date, "Respectfully", "Signed", or any closing — the form already has a signature block.`,
     `   - The final paragraph must state the specific dollar amount requested and nothing else after it.`,
     hasExhibits
-      ? [
-        `3. "exhibitOrder": An array of integers listing the Document numbers in the order you FIRST assigned them a letter.`,
-        `   Example: if you first mentioned Document 3, then Document 1, then Document 2, return [3, 1, 2].`,
-        `   This array controls which physical tab becomes Exhibit A, B, C, etc.`,
-        `   Every document number from 1 to ${exhibits!.length} must appear exactly once.`,
-      ].join("\n")
+      ? `3. "exhibitOrder": ${JSON.stringify(exhibits!.map((_, i) => i + 1))} — exhibits are already in correct order, return this array unchanged.`
       : `3. "exhibitOrder": []`,
     ``,
     `Respond with only the JSON object.`,
