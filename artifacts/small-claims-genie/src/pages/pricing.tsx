@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/clerk-react";
 import { Trophy, UserCheck, Loader2, X } from "lucide-react";
@@ -508,8 +508,10 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
   );
 }
 
+const PENDING_PLAN_KEY = "scg_pending_plan";
+
 export default function Pricing() {
-  const { getToken } = useAuth();
+  const { getToken, isSignedIn, isLoaded } = useAuth();
   const [, navigate] = useLocation();
   const [loadingKey, setLoadingKey] = useState<PlanKey | null>(null);
   const [addOnModal, setAddOnModal] = useState<{ planKey: PlanKey; label: string } | null>(null);
@@ -519,8 +521,24 @@ export default function Pricing() {
     return params.get("payment") === "cancelled";
   });
 
-  // Every plan click goes through terms acceptance first
+  // When Clerk finishes loading and user is signed in, check for a pending plan
+  // saved before they were redirected to sign-in
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    const pending = sessionStorage.getItem(PENDING_PLAN_KEY) as PlanKey | null;
+    if (pending) {
+      sessionStorage.removeItem(PENDING_PLAN_KEY);
+      setTermsModal(pending);
+    }
+  }, [isLoaded, isSignedIn]);
+
+  // Plan button click — require sign-in first, then terms
   const handleCheckout = (planKey: PlanKey) => {
+    if (!isSignedIn) {
+      sessionStorage.setItem(PENDING_PLAN_KEY, planKey);
+      navigate(`/sign-in?redirect=${encodeURIComponent("/pricing")}`);
+      return;
+    }
     setTermsModal(planKey);
   };
 
