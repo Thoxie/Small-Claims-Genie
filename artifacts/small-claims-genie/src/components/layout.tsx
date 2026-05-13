@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { i18n } from "@/lib/i18n";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { Button } from "@/components/ui/button";
-import { Wand2, Menu, X } from "lucide-react";
+import { Wand2, Menu, X, LogIn, Sparkles, ChevronDown } from "lucide-react";
 import { UserButton, useAuth } from "@clerk/clerk-react";
 
 const NAV_LINKS = [
@@ -18,12 +18,27 @@ const NAV_LINKS = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [ctaOpen, setCtaOpen] = useState(false);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const { isSignedIn, isLoaded } = useAuth();
 
   // Close mobile menu whenever the route changes
   useEffect(() => {
     setMenuOpen(false);
+    setCtaOpen(false);
   }, [location]);
+
+  // Close CTA dropdown on outside click
+  useEffect(() => {
+    if (!ctaOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (ctaRef.current && !ctaRef.current.contains(e.target as Node)) {
+        setCtaOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [ctaOpen]);
 
   const isActive = (href: string) =>
     href === "/" ? location === "/" : location === href || location.startsWith(href.split("#")[0] + "/");
@@ -42,7 +57,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* ── Main header row ── */}
         <div className="container mx-auto px-4 md:px-6 h-[70px] md:h-[106px] flex items-center justify-between">
 
-          {/* Logo — nudged left on desktop to make room for extra nav item */}
+          {/* Logo */}
           <Link href="/" aria-label="Small Claims Genie home page" className="flex items-center shrink-0 md:ml-8">
             <img
               src={logoPath}
@@ -53,7 +68,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop center nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.filter(l => l.href !== "/start").map(link => (
+            {NAV_LINKS.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -69,36 +84,64 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Right side actions */}
           <div className="flex items-center gap-2 md:gap-3">
 
-            {/* Sign In — only when Clerk has loaded and user is logged out */}
-            {isLoaded && !isSignedIn && (
-              <Link
-                href="/sign-in?redirect=/start"
-                className="hidden sm:inline-flex items-center text-sm font-semibold text-primary hover:text-primary/80 transition-colors px-2"
-              >
-                Sign In
-              </Link>
-            )}
-
-            {/* Primary CTA — changes based on auth state */}
             {isLoaded && (
-              <Button
-                asChild
-                size="sm"
-                className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
-              >
-                {isSignedIn ? (
+              isSignedIn ? (
+                /* ── Signed-in: go straight to cases ── */
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
+                >
                   <Link href="/start" aria-label="My Cases">
                     <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
                     <span>My Cases</span>
                   </Link>
-                ) : (
-                  <Link href="/pricing" aria-label="Start Your Case">
-                    <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
-                    <span className="hidden sm:inline">Start Your Case</span>
+                </Button>
+              ) : (
+                /* ── Logged-out: dropdown with two clear paths ── */
+                <div ref={ctaRef} className="relative">
+                  <Button
+                    size="sm"
+                    onClick={() => setCtaOpen(v => !v)}
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9 flex items-center gap-1"
+                    aria-expanded={ctaOpen}
+                    aria-haspopup="true"
+                  >
+                    <Wand2 className="h-3.5 w-3.5 md:h-4 md:w-4 shrink-0" />
+                    <span className="hidden sm:inline">Start or Resume Your Case</span>
                     <span className="sm:hidden">Start</span>
-                  </Link>
-                )}
-              </Button>
+                    <ChevronDown className={`h-3 w-3 shrink-0 transition-transform ${ctaOpen ? "rotate-180" : ""}`} />
+                  </Button>
+
+                  {ctaOpen && (
+                    <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 min-w-[230px]">
+                      <Link
+                        href="/pricing"
+                        onClick={() => setCtaOpen(false)}
+                        className="flex items-start gap-3 px-4 py-3.5 hover:bg-primary/5 transition-colors group"
+                      >
+                        <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-bold text-[#20304f] group-hover:text-primary transition-colors">I'm new — choose a plan</p>
+                          <p className="text-[11px] text-[#8a96a8] leading-snug">Pick your case type and get started</p>
+                        </div>
+                      </Link>
+                      <div className="border-t border-gray-100" />
+                      <Link
+                        href="/sign-in?redirect=/start"
+                        onClick={() => setCtaOpen(false)}
+                        className="flex items-start gap-3 px-4 py-3.5 hover:bg-primary/5 transition-colors group"
+                      >
+                        <LogIn className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-bold text-[#20304f] group-hover:text-primary transition-colors">I have an account — sign in</p>
+                          <p className="text-[11px] text-[#8a96a8] leading-snug">Resume where you left off</p>
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )
             )}
 
             {/* Clerk user avatar */}
@@ -134,31 +177,43 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
-            {isLoaded && !isSignedIn && (
-              <Link
-                href="/sign-in?redirect=/start"
-                className="flex items-center px-3 py-2.5 rounded-lg text-sm font-semibold text-primary hover:bg-primary/5 transition-colors"
-              >
-                Sign In
-              </Link>
-            )}
-            <div className="pt-2 pb-1">
-              <Button
-                asChild
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-full"
-              >
-                {isSignedIn ? (
-                  <Link href="/start">
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    My Cases
-                  </Link>
+
+            <div className="border-t border-gray-100 pt-2 pb-1 space-y-2">
+              {isLoaded && (
+                isSignedIn ? (
+                  <Button
+                    asChild
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-full"
+                  >
+                    <Link href="/start">
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      My Cases
+                    </Link>
+                  </Button>
                 ) : (
-                  <Link href="/pricing">
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    Start Your Case
-                  </Link>
-                )}
-              </Button>
+                  <>
+                    <Button
+                      asChild
+                      className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-full"
+                    >
+                      <Link href="/pricing">
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        I'm new — choose a plan
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full border-primary text-primary hover:bg-primary/5 font-bold rounded-full"
+                    >
+                      <Link href="/sign-in?redirect=/start">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        I have an account — sign in
+                      </Link>
+                    </Button>
+                  </>
+                )
+              )}
             </div>
           </div>
         )}
