@@ -19,7 +19,7 @@ const NAV_LINKS = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
 
   // Close mobile menu whenever the route changes
   useEffect(() => {
@@ -70,8 +70,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Right side actions */}
           <div className="flex items-center gap-2 md:gap-3">
 
-            {/* Sign In — only when logged out */}
-            {!isSignedIn && (
+            {/* Sign In — only when Clerk has loaded and user is logged out */}
+            {isLoaded && !isSignedIn && (
               <Link
                 href="/sign-in?redirect=/start"
                 className="hidden sm:inline-flex items-center text-sm font-semibold text-primary hover:text-primary/80 transition-colors px-2"
@@ -126,7 +126,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
-            {!isSignedIn && (
+            {isLoaded && !isSignedIn && (
               <Link
                 href="/sign-in?redirect=/start"
                 className="flex items-center px-3 py-2.5 rounded-lg text-sm font-semibold text-primary hover:bg-primary/5 transition-colors"
