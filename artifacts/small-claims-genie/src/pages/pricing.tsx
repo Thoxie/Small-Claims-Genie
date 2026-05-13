@@ -158,34 +158,6 @@ function ParalegalAddOnModal({
   );
 }
 
-function CheckoutButton({
-  planKey,
-  label,
-  icon,
-  className,
-  loadingKey,
-  onCheckout,
-}: {
-  planKey: PlanKey;
-  label: string;
-  icon: React.ReactNode;
-  className: string;
-  loadingKey: PlanKey | null;
-  onCheckout: (planKey: PlanKey) => void;
-}) {
-  const isLoading = loadingKey === planKey;
-  const isDisabled = loadingKey !== null;
-  return (
-    <button
-      onClick={() => !isDisabled && onCheckout(planKey)}
-      disabled={isDisabled}
-      className={`flex items-center justify-center gap-2 w-full rounded-full text-white text-[15px] font-black min-h-[56px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${className}`}
-    >
-      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
-      {isLoading ? "Loading…" : label}
-    </button>
-  );
-}
 
 function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
   return (

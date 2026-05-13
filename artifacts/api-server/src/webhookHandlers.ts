@@ -57,7 +57,8 @@ export class WebhookHandlers {
               priceId = typeof firstItem.price === "string" ? firstItem.price : firstItem.price?.id ?? null;
               const prod = firstItem.price?.product;
               productId = typeof prod === "string" ? prod : prod?.id ?? null;
-              planKey = firstItem.price?.metadata?.plan ?? firstItem.price?.product?.metadata?.plan ?? null;
+              const prodObj = typeof firstItem.price?.product === "object" && firstItem.price?.product !== null ? firstItem.price.product as { metadata?: Record<string, string> } : null;
+              planKey = firstItem.price?.metadata?.plan ?? prodObj?.metadata?.plan ?? null;
             }
           } catch (err) {
             logger.warn({ err, sessionId: session.id }, "Could not fetch line items — recording without product detail");
