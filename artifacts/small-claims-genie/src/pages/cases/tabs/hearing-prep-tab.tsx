@@ -296,7 +296,7 @@ export function HearingPrepTab({ caseId, currentCase, isDraftMode = false }: { c
     };
 
     return (
-      <div className="p-5 md:p-8 space-y-5 max-w-2xl mx-auto">
+      <div className="p-5 md:p-8 space-y-5 max-w-[740px] mx-auto">
         <button type="button" onClick={() => setPrepMode(null)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
