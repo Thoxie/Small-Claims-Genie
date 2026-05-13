@@ -495,11 +495,11 @@ export default function Pricing() {
           <div className="flex items-center justify-center gap-3 mb-2">
             <Trophy className="w-8 h-8 text-[#0d6b5e] shrink-0" />
             <h1 className="text-[clamp(28px,2.8vw,42px)] font-black tracking-[-0.04em] leading-none text-[#0d6b5e]">
-              Only Pay If You Win
+              30-Day Money-Back Guarantee
             </h1>
           </div>
           <p className="text-[clamp(14px,1.1vw,17px)] text-[#5a6478] font-medium">
-            Pick the plan that best fits your case.
+            Get your money back for any reason
           </p>
         </div>
 
