@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },
   { href: "/resources", label: "Resources" },
-  { href: "/start", label: "Start or Resume a Case" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -80,18 +79,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             )}
 
-            {/* Start or Resume Your Case — always visible, shorter label on small phones */}
-            <Button
-              asChild
-              size="sm"
-              className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
-            >
-              <Link href="/start" aria-label="Start or Resume Your Case">
-                <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
-                <span className="hidden sm:inline">Start or Resume Your Case</span>
-                <span className="sm:hidden">Start</span>
-              </Link>
-            </Button>
+            {/* Primary CTA — changes based on auth state */}
+            {isLoaded && (
+              <Button
+                asChild
+                size="sm"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
+              >
+                {isSignedIn ? (
+                  <Link href="/start" aria-label="My Cases">
+                    <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
+                    <span>My Cases</span>
+                  </Link>
+                ) : (
+                  <Link href="/pricing" aria-label="Start Your Case">
+                    <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
+                    <span className="hidden sm:inline">Start Your Case</span>
+                    <span className="sm:hidden">Start</span>
+                  </Link>
+                )}
+              </Button>
+            )}
 
             {/* Clerk user avatar */}
             <UserButton afterSignOutUrl="/sign-in" />
@@ -139,10 +147,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 asChild
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-full"
               >
-                <Link href="/start">
-                  <Wand2 className="mr-2 h-4 w-4" />
-                  Start or Resume Your Case
-                </Link>
+                {isSignedIn ? (
+                  <Link href="/start">
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    My Cases
+                  </Link>
+                ) : (
+                  <Link href="/pricing">
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Start Your Case
+                  </Link>
+                )}
               </Button>
             </div>
           </div>
