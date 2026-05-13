@@ -14,8 +14,6 @@ import { CALIFORNIA_COUNTIES } from "../routes/counties";
 function setField(form: ReturnType<PDFDocument["getForm"]>, name: string, value: string): void {
   try {
     const f = form.getTextField(name);
-    // Force 12pt so no field renders at an auto-sized or larger default size.
-    f.setFontSize(12);
     f.setText(value || "");
   } catch {
     // field not present in this revision — silently skip

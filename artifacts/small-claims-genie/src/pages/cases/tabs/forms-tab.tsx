@@ -1140,10 +1140,28 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const EXHIBIT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   // Exhibits in document-list order (A = first doc in list that is checked, etc.)
-  // This ensures A/B/C always matches the visual order regardless of click order.
+  // This is the canonical order sent to the backend as exhibitDocIds.
   const orderedExhibitIds = documents
     .filter((d: DocumentWithMeta) => selectedExhibits.includes(d.id))
     .map((d: DocumentWithMeta) => d.id);
+
+  // After AI generation, reorder selected exhibits by the AI's first-mention order
+  // so labels and display both match the declaration narrative.
+  // mc030ExhibitOrder is 1-based indices into orderedExhibitIds.
+  const aiOrderedExhibitIds: number[] =
+    mc030ExhibitOrder.length > 0 && mc030ExhibitOrder.length === orderedExhibitIds.length
+      ? mc030ExhibitOrder.map(i => orderedExhibitIds[i - 1]).filter((id): id is number => id !== undefined)
+      : orderedExhibitIds;
+
+  // For display: selected exhibits in AI order first, then unselected docs after.
+  const displayDocList: typeof documents = mc030ExhibitOrder.length > 0
+    ? [
+        ...aiOrderedExhibitIds
+          .map(id => documents.find((d: DocumentWithMeta) => d.id === id))
+          .filter((d): d is DocumentWithMeta => d !== undefined),
+        ...documents.filter((d: DocumentWithMeta) => !selectedExhibits.includes(d.id)),
+      ]
+    : documents;
 
   // ── Wizard steps ──────────────────────────────────────────────────────────
   type StepStatus = "required" | "optional" | "skipped";
@@ -1326,9 +1344,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </p>
               ) : (
                 <div className="space-y-1.5 max-h-36 overflow-y-auto rounded-lg border border-border p-2">
-                  {documents.map((doc: DocumentWithMeta, _idx: number) => {
+                  {displayDocList.map((doc: DocumentWithMeta, _idx: number) => {
                     const isSelected = selectedExhibits.includes(doc.id);
-                    const orderedIdx = isSelected ? orderedExhibitIds.indexOf(doc.id) : -1;
+                    const orderedIdx = isSelected ? aiOrderedExhibitIds.indexOf(doc.id) : -1;
                     const exhibitLetter = isSelected ? EXHIBIT_LETTERS[orderedIdx] ?? String(orderedIdx + 1) : null;
                     return (
                       <label key={doc.id} className={`flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer transition-colors ${isSelected ? "bg-[#0d6b5e]/8 border border-[#0d6b5e]/25" : "hover:bg-muted/50 border border-transparent"}`}>
