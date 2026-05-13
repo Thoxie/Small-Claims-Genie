@@ -215,7 +215,7 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
               <>
                 <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
                 <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
-                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Get Started</span>
+                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Start Personal Case</span>
               </>
             )}
           </button>
@@ -279,7 +279,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
               <>
                 <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
                 <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
-                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Get Started</span>
+                <span className="block text-[10px] font-bold text-[#14b8a6] group-hover:text-[#0d6b5e] mt-[3px] transition-colors">Start Business Case</span>
               </>
             )}
           </button>
@@ -345,7 +345,7 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
             <>
               <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#6366f1]">$159</span>
               <span className="block text-[11px] font-bold text-[#33405c] mt-1">flat fee</span>
-              <span className="block text-[10px] font-bold text-[#6366f1] group-hover:text-[#4f46e5] mt-[3px] transition-colors">Get Started</span>
+              <span className="block text-[10px] font-bold text-[#6366f1] group-hover:text-[#4f46e5] mt-[3px] transition-colors">Add Paralegal Review</span>
             </>
           )}
         </button>
@@ -413,7 +413,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
               <>
                 <span className="block text-[26px] font-black tracking-[-0.05em] leading-none text-[#0d6b5e]">{price}</span>
                 <span className="block text-[11px] font-bold text-[#33405c] mt-1">{label}</span>
-                <span className="block text-[10px] font-bold text-amber-500 group-hover:text-amber-600 mt-[3px] transition-colors">Get Started</span>
+                <span className="block text-[10px] font-bold text-amber-500 group-hover:text-amber-600 mt-[3px] transition-colors">Start Collection Help</span>
               </>
             )}
           </button>
