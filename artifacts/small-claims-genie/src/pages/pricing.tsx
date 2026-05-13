@@ -159,6 +159,93 @@ function ParalegalAddOnModal({
 }
 
 
+function TermsAcceptanceModal({
+  onConfirm,
+  onDismiss,
+}: {
+  onConfirm: () => void;
+  onDismiss: () => void;
+}) {
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPayment, setAcceptedPayment] = useState(false);
+  const canProceed = acceptedTerms && acceptedPayment;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-7 relative">
+        <button
+          onClick={onDismiss}
+          className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <h2 className="text-[20px] font-black text-[#0d6b5e] mb-1 leading-tight">
+          Before you continue
+        </h2>
+        <p className="text-[13px] text-[#5a6478] mb-6">
+          Please review and accept the following to proceed to payment.
+        </p>
+
+        <div className="flex flex-col gap-4 mb-7">
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={e => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-[#0d6b5e] accent-[#0d6b5e] cursor-pointer"
+            />
+            <span className="text-[13px] text-[#20304f] leading-snug">
+              I have read and agree to the{" "}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#0d6b5e] underline underline-offset-2 hover:text-[#0a5a4e] transition-colors"
+                onClick={e => e.stopPropagation()}
+              >
+                Terms of Use and Privacy Policy
+              </a>
+              .
+            </span>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={acceptedPayment}
+              onChange={e => setAcceptedPayment(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-[#0d6b5e] accent-[#0d6b5e] cursor-pointer"
+            />
+            <span className="text-[13px] text-[#20304f] leading-snug">
+              I have read and agree to the{" "}
+              <a
+                href="/payment-terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#0d6b5e] underline underline-offset-2 hover:text-[#0a5a4e] transition-colors"
+                onClick={e => e.stopPropagation()}
+              >
+                Payment Terms
+              </a>
+              , including the 30-day money-back guarantee and refund process.
+            </span>
+          </label>
+        </div>
+
+        <button
+          onClick={onConfirm}
+          disabled={!canProceed}
+          className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Continue to Payment
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
   return (
     <section className="bg-white rounded-[24px] shadow-[0_14px_32px_rgba(13,107,94,0.09)] p-[18px_20px] flex flex-col relative border-[3px] border-[#14b8a6]/60">
@@ -426,12 +513,22 @@ export default function Pricing() {
   const [, navigate] = useLocation();
   const [loadingKey, setLoadingKey] = useState<PlanKey | null>(null);
   const [addOnModal, setAddOnModal] = useState<{ planKey: PlanKey; label: string } | null>(null);
+  const [termsModal, setTermsModal] = useState<PlanKey | null>(null);
   const [cancelledBanner, setCancelledBanner] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("payment") === "cancelled";
   });
 
+  // Every plan click goes through terms acceptance first
   const handleCheckout = (planKey: PlanKey) => {
+    setTermsModal(planKey);
+  };
+
+  // Called after user accepts both checkboxes
+  const handleTermsAccepted = () => {
+    const planKey = termsModal;
+    setTermsModal(null);
+    if (!planKey) return;
     if (planKey.startsWith("personal_") || planKey.startsWith("business_")) {
       const label = planKey.startsWith("personal_") ? "Personal Case" : "Business Case";
       setAddOnModal({ planKey, label });
@@ -451,6 +548,12 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-[#f0faf8]">
+      {termsModal && (
+        <TermsAcceptanceModal
+          onConfirm={handleTermsAccepted}
+          onDismiss={() => setTermsModal(null)}
+        />
+      )}
       {addOnModal && (
         <ParalegalAddOnModal
           basePlanKey={addOnModal.planKey}
