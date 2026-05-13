@@ -148,10 +148,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 Terms of Service
               </Link>
               <Link
-                href="/account"
+                href="/payment-terms"
                 className="text-xs text-primary/50 hover:text-primary underline underline-offset-2 transition-colors"
               >
-                Privacy Settings
+                Payment Terms
               </Link>
             </div>
           </div>
