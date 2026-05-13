@@ -6,15 +6,43 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { PDFDocument, PDFDict, PDFName, PDFBool } from "pdf-lib";
+import { PDFDocument, PDFDict, PDFName, PDFBool, PDFString } from "pdf-lib";
 import { CALIFORNIA_COUNTIES } from "../routes/counties";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
+
+// Patch the DA (Default Appearance) string on a field's AcroField dict so
+// that the embedded font size becomes 12pt.  We do this by replacing the
+// size token in the existing DA (e.g. "/Helv 0 Tf 0 g" → "/Helv 12 Tf 0 g")
+// rather than calling the high-level setFontSize(), which internally rebuilds
+// AP streams and breaks rendering when the embedded font isn't wired up by
+// pdf-lib.  With NeedAppearances=true (set at save time) the viewer re-renders
+// each field from its DA, so locking the size here is enough.
+function patchFontSize12(field: ReturnType<ReturnType<PDFDocument["getForm"]>["getTextField"]>): void {
+  try {
+    const acroField = (field as any).acroField;
+    const dict: PDFDict = acroField.dict;
+    const daKey = PDFName.of("DA");
+    const daRaw = dict.lookupMaybe(daKey, PDFString);
+    if (daRaw) {
+      const daStr = daRaw.decodeText();
+      // Replace "0 Tf" (auto-size) or any existing size with "12 Tf"
+      const patched = daStr.replace(/[\d]+(?:\.\d+)?\s+Tf/, "12 Tf");
+      if (patched !== daStr) {
+        dict.set(daKey, PDFString.of(patched));
+      }
+    }
+  } catch {
+    // If we can't patch the DA (e.g. field uses inherited DA), skip silently.
+    // The field will still display its value; size may vary.
+  }
+}
 
 function setField(form: ReturnType<PDFDocument["getForm"]>, name: string, value: string): void {
   try {
     const f = form.getTextField(name);
     f.setText(value || "");
+    patchFontSize12(f);
   } catch {
     // field not present in this revision — silently skip
   }
