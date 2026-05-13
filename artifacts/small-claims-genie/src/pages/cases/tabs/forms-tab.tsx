@@ -1153,9 +1153,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       { id: "sc103",  number: "SC-103",  shortLabel: "Fictitious Name",    status: (showSC103 ? "required" : "skipped") as StepStatus },
       ...(currentCase.hasAdditionalPlaintiff ? [{ id: "sc100a", number: "SC-100A", shortLabel: "Other Parties", status: "required" as StepStatus }] : []),
       { id: "sc104",  number: "SC-104",  shortLabel: "Personal Service",   status: "optional" as StepStatus },
-      { id: "sc105",  number: "SC-105",  shortLabel: "Court Order",        status: "optional" as StepStatus },
       { id: "sc150",  number: "SC-150",  shortLabel: "Postpone Trial",     status: "optional" as StepStatus },
-      { id: "sc140",  number: "SC-140",  shortLabel: "Notice of Appeal",   status: "optional" as StepStatus },
       { id: "fw001",  number: "FW-001",  shortLabel: "Fee Waiver",         status: "optional" as StepStatus },
     ];
   }, [showSC103, currentCase.hasAdditionalPlaintiff, currentCase.additionalPlaintiffName]);

@@ -180,9 +180,7 @@ All California small claims forms pre-filled from your intake data. Two sections
 
 ### Forms Library (supplemental forms):
 - **SC-104** — Proof of Service (personal service on defendant)
-- **SC-105** — Request for Court Order
 - **SC-120** — Defendant's Claim (counter-claim if you are the defendant)
-- **SC-140** — Notice of Appeal (appeal a judgment to superior court)
 - **SC-150** — Request to Postpone Trial (reschedule your hearing)
 
 All forms are pre-filled. You review in a modal, edit if needed, and download as a court-ready PDF. No handwriting required.
