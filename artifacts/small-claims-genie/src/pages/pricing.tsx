@@ -499,7 +499,7 @@ export default function Pricing() {
             </h1>
           </div>
           <p className="text-[clamp(14px,1.1vw,17px)] text-[#5a6478] font-medium">
-            Get your money back for any reason
+            Win With It, Keep It. Otherwise, Request a Refund
           </p>
         </div>
 
