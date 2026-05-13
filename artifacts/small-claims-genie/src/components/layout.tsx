@@ -4,7 +4,7 @@ import { i18n } from "@/lib/i18n";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { Button } from "@/components/ui/button";
 import { Wand2, Menu, X } from "lucide-react";
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton, useAuth } from "@clerk/clerk-react";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -19,6 +19,7 @@ const NAV_LINKS = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isSignedIn } = useAuth();
 
   // Close mobile menu whenever the route changes
   useEffect(() => {
@@ -69,6 +70,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Right side actions */}
           <div className="flex items-center gap-2 md:gap-3">
 
+            {/* Sign In — only when logged out */}
+            {!isSignedIn && (
+              <Link
+                href="/sign-in?redirect=/start"
+                className="hidden sm:inline-flex items-center text-sm font-semibold text-primary hover:text-primary/80 transition-colors px-2"
+              >
+                Sign In
+              </Link>
+            )}
+
             {/* Start or Resume Your Case — always visible, shorter label on small phones */}
             <Button
               asChild
@@ -115,6 +126,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
+            {!isSignedIn && (
+              <Link
+                href="/sign-in?redirect=/start"
+                className="flex items-center px-3 py-2.5 rounded-lg text-sm font-semibold text-primary hover:bg-primary/5 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
             <div className="pt-2 pb-1">
               <Button
                 asChild
