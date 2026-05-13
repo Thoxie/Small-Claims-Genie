@@ -38,19 +38,19 @@ router.use(stripeRouter); // Stripe routes (checkout is public; internal auth vi
 router.use(formsRouter);
 router.use(sc100WordRouter);
 
-// Protected routes — Clerk JWT required on every request
+// Auth-only routes — Clerk JWT required, no purchase needed
 router.use(requireAuth);
-router.use(accountRouter);
+router.use(accountRouter); // Account management always accessible
+
+// Pay-to-start gate — confirmed Stripe purchase required for all case workspace features
+router.use(requiresPurchase);
 router.use(casesRouter);
 router.use(documentsRouter);
 router.use(chatRouter);
 router.use(chatExportRouter);
+router.use(formsTokenRouter);
 router.use(transcribeRouter);
+router.use(demandLetterRouter);
 router.use(hearingPrepRouter);
-
-// Paid-access routes — confirmed Stripe purchase required
-router.use(requiresPurchase);
-router.use(formsTokenRouter);   // Issues download tokens for form PDFs
-router.use(demandLetterRouter); // Demand letter generation + PDF download
 
 export default router;

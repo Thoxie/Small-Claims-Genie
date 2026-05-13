@@ -4,8 +4,36 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight, CheckCircle, FileText, Circle, PartyPopper, X } from "lucide-react";
+import { ChevronRight, CheckCircle, FileText, Circle, PartyPopper, X, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "@clerk/clerk-react";
+
+function usePurchaseStatus() {
+  const { getToken } = useAuth();
+  const [hasPurchase, setHasPurchase] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getToken().then(async (token) => {
+      if (!token) { setHasPurchase(false); return; }
+      try {
+        const res = await fetch("/api/stripe/purchase-status", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          const data = await res.json();
+          setHasPurchase(!!data.hasPurchase);
+        } else {
+          setHasPurchase(false);
+        }
+      } catch {
+        if (!cancelled) setHasPurchase(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [getToken]);
+  return hasPurchase;
+}
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "In Progress",
@@ -265,7 +293,8 @@ function PaymentSuccessBanner({ onDismiss }: { onDismiss: () => void }) {
 }
 
 export default function Dashboard() {
-  const { data: cases, isLoading, isError } = useListCases();
+  const hasPurchase = usePurchaseStatus();
+  const { data: cases, isLoading, isError } = useListCases({ query: { enabled: hasPurchase === true } });
   const [, navigate] = useLocation();
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
@@ -273,10 +302,12 @@ export default function Dashboard() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
       setShowPaymentSuccess(true);
-      // Clean the query string from the URL without a page reload
       navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
+
+  // Still checking purchase status
+  const purchaseChecking = hasPurchase === null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
@@ -286,21 +317,17 @@ export default function Dashboard() {
           <PaymentSuccessBanner onDismiss={() => setShowPaymentSuccess(false)} />
         )}
 
-        <h1 className="text-2xl font-bold text-foreground mb-6">Your Case — Pick up where you left off.</h1>
-
-        {/* Loading skeleton */}
-        {isLoading && (
+        {/* Purchase status loading */}
+        {purchaseChecking && (
           <div className="flex flex-col gap-4">
+            <Skeleton className="h-8 w-72 mb-2" />
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
                 <div className="flex flex-col gap-2 flex-1">
                   <Skeleton className="h-6 w-64" />
                   <Skeleton className="h-4 w-36" />
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <Skeleton className="h-5 w-24 rounded-full" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
+                <Skeleton className="h-5 w-24 rounded-full" />
               </div>
               <div className="border-t border-gray-100 px-6 py-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
@@ -312,48 +339,96 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-              <div className="border-t border-gray-100 flex items-center justify-between px-6 py-3">
-                <Skeleton className="h-3 w-28" />
-                <Skeleton className="h-8 w-28 rounded-full" />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1, 2].map(i => (
-                <div key={i} className="bg-white border border-border rounded-xl px-5 py-4 flex flex-col gap-2">
-                  <Skeleton className="h-3 w-24 mb-1" />
-                  {[1, 2, 3, 4, 5].map(j => <Skeleton key={j} className="h-5 w-full" />)}
-                </div>
-              ))}
             </div>
           </div>
         )}
 
-        {/* Error state */}
-        {isError && (
-          <div className="text-center py-16 flex flex-col items-center gap-4">
-            <p className="text-muted-foreground">Couldn't load your cases. Please try refreshing.</p>
-            <Button variant="outline" onClick={() => window.location.reload()}>Refresh</Button>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!isLoading && !isError && cases && cases.length === 0 && (
-          <div className="text-center py-16 flex flex-col items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <FileText className="h-7 w-7 text-primary" />
+        {/* No purchase — prompt user to choose a plan */}
+        {!purchaseChecking && hasPurchase === false && (
+          <div className="flex flex-col items-center justify-center py-16 gap-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-[#edfaf8] border-2 border-[#14b8a6]/40 flex items-center justify-center">
+              <Sparkles className="h-8 w-8 text-[#0d6b5e]" />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">No cases yet</h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                Contact support to get started with your case.
+            <div className="max-w-md">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Ready to build your case?</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Choose a plan to get started. You'll have full access to all tools — AI advisor, court forms, demand letters, hearing prep, and more — with a 30-day money-back guarantee.
               </p>
             </div>
+            <Link href="/pricing">
+              <Button className="bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white font-bold px-8 py-3 rounded-full text-base shadow-md">
+                Choose a Plan — Start Your Case
+              </Button>
+            </Link>
+            <p className="text-xs text-muted-foreground">30-day money-back guarantee. One-time flat fee. No subscription.</p>
           </div>
         )}
 
-        {/* Case view */}
-        {!isLoading && !isError && cases && cases.length > 0 && (
-          <CaseView c={cases[0]} />
+        {/* Purchased — show normal case dashboard */}
+        {!purchaseChecking && hasPurchase === true && (
+          <>
+            <h1 className="text-2xl font-bold text-foreground mb-6">Your Case — Pick up where you left off.</h1>
+
+            {/* Loading cases skeleton */}
+            {isLoading && (
+              <div className="flex flex-col gap-4">
+                <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+                  <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
+                    <div className="flex flex-col gap-2 flex-1">
+                      <Skeleton className="h-6 w-64" />
+                      <Skeleton className="h-4 w-36" />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-5 w-24 rounded-full" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-100 px-6 py-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                      {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="flex flex-col gap-1">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-4 w-full" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-100 flex items-center justify-between px-6 py-3">
+                    <Skeleton className="h-3 w-28" />
+                    <Skeleton className="h-8 w-28 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Error state */}
+            {isError && (
+              <div className="text-center py-16 flex flex-col items-center gap-4">
+                <p className="text-muted-foreground">Couldn't load your cases. Please try refreshing.</p>
+                <Button variant="outline" onClick={() => window.location.reload()}>Refresh</Button>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!isLoading && !isError && cases && cases.length === 0 && (
+              <div className="text-center py-16 flex flex-col items-center gap-5">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-7 w-7 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">No cases yet</h2>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Contact support to get started with your case.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Case view */}
+            {!isLoading && !isError && cases && cases.length > 0 && (
+              <CaseView c={cases[0]} />
+            )}
+          </>
         )}
 
       </div>
