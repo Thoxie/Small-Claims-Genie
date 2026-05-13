@@ -201,7 +201,7 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         {([
           { key: "personal_low" as PlanKey, price: "$79", label: "Up to $5,000" },
-          { key: "personal_high" as PlanKey, price: "$99", label: "$5,000 and above" },
+          { key: "personal_high" as PlanKey, price: "$99", label: "$5,000+" },
         ]).map(({ key, price, label }) => (
           <button
             key={key}
@@ -265,7 +265,7 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         {([
           { key: "business_low" as PlanKey, price: "$99", label: "Up to $5,000" },
-          { key: "business_high" as PlanKey, price: "$109", label: "$5,000 and above" },
+          { key: "business_high" as PlanKey, price: "$109", label: "$5,000+" },
         ]).map(({ key, price, label }) => (
           <button
             key={key}
@@ -333,7 +333,7 @@ function GeniePlusCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null;
         </p>
       </div>
 
-      <div className="mb-4 h-[90px]">
+      <div className="mb-4 h-[90px] grid grid-cols-1">
         <button
           onClick={() => loadingKey === null && onCheckout("paralegal")}
           disabled={loadingKey !== null}
@@ -399,7 +399,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         {([
           { key: "collection_low" as PlanKey, price: "$89", label: "Up to $5,000" },
-          { key: "collection_high" as PlanKey, price: "$109", label: "$5,000 and above" },
+          { key: "collection_high" as PlanKey, price: "$109", label: "$5,000+" },
         ]).map(({ key, price, label }) => (
           <button
             key={key}
