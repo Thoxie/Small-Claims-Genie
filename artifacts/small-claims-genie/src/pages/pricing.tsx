@@ -1,9 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth, useSignUp } from "@clerk/clerk-react";
 import { Trophy, UserCheck, Loader2, X, Eye, EyeOff } from "lucide-react";
-
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function TermsAndSignUpModal({
   alreadySignedIn,
