@@ -422,7 +422,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                <Button type="button" size="lg" onClick={() => handleStepClick(6)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
