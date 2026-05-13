@@ -1,13 +1,19 @@
+import { useState } from "react";
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { FileText, Scale, BookOpen, ClipboardList, Wand2 } from "lucide-react";
+import { GenieModal } from "@/components/genie-modal";
 
 const TEAL = "#f5fdfb";
 
 export default function Landing() {
+  const [genieOpen, setGenieOpen] = useState(false);
+
   return (
     <div className="flex flex-col w-full bg-[#f5fdfb]">
+
+      {genieOpen && <GenieModal onClose={() => setGenieOpen(false)} />}
 
       {/* ── Hero ── */}
       <section style={{ backgroundColor: TEAL }} className="px-4 pt-8 pb-7 overflow-hidden">
@@ -107,13 +113,23 @@ export default function Landing() {
       </section>
 
       {/* ── AI Chat Callout ── */}
-      <section className="px-4 py-8 bg-primary text-primary-foreground">
+      <section className="px-4 py-10 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-3xl text-center">
           <p className="text-amber-300 text-base font-semibold mb-2">Voice &amp; Text AI Chat — Included Free</p>
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">Your Genie Knows Your Case.</h2>
-          <p className="text-base text-primary-foreground/75 max-w-xl mx-auto leading-relaxed">
-            Unlike generic AI tools, your Genie has read your documents, knows your case facts, and gives advice specific to your situation — by voice or text.
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">Not sure if you have a case?</h2>
+          <p className="text-base text-primary-foreground/75 max-w-xl mx-auto leading-relaxed mb-6">
+            Tell the Genie what happened — by voice or text. It will tell you if you have a case,
+            what evidence you need, and exactly how to win. No account required.
           </p>
+          <Button
+            size="lg"
+            onClick={() => setGenieOpen(true)}
+            className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg"
+          >
+            <Wand2 className="mr-2 h-5 w-5" />
+            Try Ask the Genie — Free
+          </Button>
+          <p className="text-xs text-primary-foreground/40 mt-3">No sign-up. No credit card. Just answers.</p>
         </div>
       </section>
 

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, FileText, Scale, BookOpen, HelpCircle, Wand2 } from "lucide-react";
+import { GenieModal } from "@/components/genie-modal";
 
 const RESOURCES = [
   {
@@ -48,8 +50,13 @@ const RESOURCES = [
 ];
 
 export default function Resources() {
+  const [genieOpen, setGenieOpen] = useState(false);
+
   return (
     <div className="container mx-auto px-4 py-10 max-w-5xl">
+
+      {genieOpen && <GenieModal onClose={() => setGenieOpen(false)} />}
+
       <div className="mb-10">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{i18n.landing.resourcesTitle}</h1>
         <p className="text-muted-foreground text-lg max-w-2xl">
@@ -99,13 +106,27 @@ export default function Resources() {
       </div>
 
       <div className="mt-14 p-8 bg-primary rounded-2xl text-primary-foreground text-center">
-        <h2 className="text-2xl font-bold mb-3">Ready to Start Your Case?</h2>
+        <h2 className="text-2xl font-bold mb-3">Have a question about your situation?</h2>
         <p className="text-primary-foreground/80 mb-6">
-          Stop reading and start preparing. Small Claims Genie walks you through every step.
+          Describe what happened — by voice or text. The Genie will tell you if you have a case,
+          what evidence you need, and how to win. No account required.
         </p>
-        <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full font-bold h-13 px-8">
-          <Link href="/cases/new"><Wand2 className="mr-2 h-5 w-5" />Start Your Case Free</Link>
-        </Button>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            size="lg"
+            onClick={() => setGenieOpen(true)}
+            className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg"
+          >
+            <Wand2 className="mr-2 h-5 w-5" />
+            Ask the Genie — Free
+          </Button>
+          <Button asChild size="lg" className="h-12 px-8 text-base bg-white/10 hover:bg-white/20 text-white rounded-full font-bold border border-white/30">
+            <Link href="/cases/new">
+              <Wand2 className="mr-2 h-5 w-5" />Start Your Case
+            </Link>
+          </Button>
+        </div>
+        <p className="text-xs text-primary-foreground/40 mt-3">No sign-up needed to chat. Flat fee to start your case.</p>
       </div>
     </div>
   );
