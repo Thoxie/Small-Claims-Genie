@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },
   { href: "/resources", label: "Resources" },
-  { href: "/resume", label: "Resume a Case" },
+  { href: "/start", label: "Start or Resume a Case" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -53,7 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop center nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.filter(l => l.href !== "/resume").map(link => (
+            {NAV_LINKS.filter(l => l.href !== "/start").map(link => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -75,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               size="sm"
               className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
             >
-              <Link href="/resume" aria-label="Start or Resume Your Case">
+              <Link href="/start" aria-label="Start or Resume Your Case">
                 <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
                 <span className="hidden sm:inline">Start or Resume Your Case</span>
                 <span className="sm:hidden">Start</span>
@@ -120,7 +120,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 asChild
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-full"
               >
-                <Link href="/resume">
+                <Link href="/start">
                   <Wand2 className="mr-2 h-4 w-4" />
                   Start or Resume Your Case
                 </Link>

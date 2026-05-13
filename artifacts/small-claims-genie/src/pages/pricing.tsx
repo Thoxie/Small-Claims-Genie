@@ -509,6 +509,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
 }
 
 const PENDING_PLAN_KEY = "scg_pending_plan";
+const TERMS_ACCEPTED_KEY = "scg_terms_accepted";
 
 export default function Pricing() {
   const { getToken, isSignedIn, isLoaded } = useAuth();
@@ -521,25 +522,36 @@ export default function Pricing() {
     return params.get("payment") === "cancelled";
   });
 
-  // When Clerk finishes loading and user is signed in, check for a pending plan
-  // saved before they were redirected to sign-in
+  // After sign-up redirect back to /pricing: resume the pending plan
+  // If terms were already accepted before sign-up, skip straight to checkout
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     const pending = sessionStorage.getItem(PENDING_PLAN_KEY) as PlanKey | null;
-    if (pending) {
-      sessionStorage.removeItem(PENDING_PLAN_KEY);
+    if (!pending) return;
+    const termsAlreadyAccepted = sessionStorage.getItem(TERMS_ACCEPTED_KEY) === "true";
+    sessionStorage.removeItem(PENDING_PLAN_KEY);
+    sessionStorage.removeItem(TERMS_ACCEPTED_KEY);
+    if (termsAlreadyAccepted) {
+      proceedToCheckout(pending);
+    } else {
       setTermsModal(pending);
     }
+  // proceedToCheckout is stable (defined below) — exhaustive-deps not needed here
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, isSignedIn]);
 
-  // Plan button click — require sign-in first, then terms
+  // Plan button click — always show terms modal first, auth check happens after
   const handleCheckout = (planKey: PlanKey) => {
-    if (!isSignedIn) {
-      sessionStorage.setItem(PENDING_PLAN_KEY, planKey);
-      navigate(`/sign-in?redirect=${encodeURIComponent("/pricing")}`);
-      return;
-    }
     setTermsModal(planKey);
+  };
+
+  const proceedToCheckout = (planKey: PlanKey) => {
+    if (planKey.startsWith("personal_") || planKey.startsWith("business_")) {
+      const label = planKey.startsWith("personal_") ? "Personal Case" : "Business Case";
+      setAddOnModal({ planKey, label });
+    } else {
+      startCheckout(getToken, [planKey], setLoadingKey, navigate);
+    }
   };
 
   // Called after user accepts both checkboxes
@@ -547,12 +559,13 @@ export default function Pricing() {
     const planKey = termsModal;
     setTermsModal(null);
     if (!planKey) return;
-    if (planKey.startsWith("personal_") || planKey.startsWith("business_")) {
-      const label = planKey.startsWith("personal_") ? "Personal Case" : "Business Case";
-      setAddOnModal({ planKey, label });
-    } else {
-      startCheckout(getToken, [planKey], setLoadingKey, navigate);
+    if (!isSignedIn) {
+      sessionStorage.setItem(PENDING_PLAN_KEY, planKey);
+      sessionStorage.setItem(TERMS_ACCEPTED_KEY, "true");
+      navigate(`/sign-up?redirect=${encodeURIComponent("/pricing")}`);
+      return;
     }
+    proceedToCheckout(planKey);
   };
 
   const handleModalConfirm = (addParalegal: boolean) => {

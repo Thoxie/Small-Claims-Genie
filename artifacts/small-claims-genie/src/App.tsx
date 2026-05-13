@@ -29,6 +29,7 @@ import Download from "@/pages/download";
 import AccountPage from "@/pages/account";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
+import Start from "@/pages/start";
 
 // In development (Vite dev server / staging), use the dev Clerk key if available.
 // In production builds, ALWAYS use the production key — dev Clerk instances
@@ -193,6 +194,9 @@ function Router() {
         </Route>
         <Route path="/resume">
           <Layout><RequireAuth><Resume /></RequireAuth></Layout>
+        </Route>
+        <Route path="/start">
+          <Layout><Start /></Layout>
         </Route>
         <Route path="/sc100">
           <Layout><RequireAuth><SC100Generator /></RequireAuth></Layout>
