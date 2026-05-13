@@ -144,3 +144,9 @@ id = "Q2dG7axmC4VU6La30Ii4U"
 uri = "file://scg-source-backup.tar.gz"
 type = "unspecified"
 title = "Small Claims Genie — Source Backup (May 12, 2026)"
+
+[[outputs]]
+id = "MSYq5EjIRvxoWTU0CedKW"
+uri = "file://SmallClaimsGenie-Investor-Spec.docx"
+type = "word_document"
+title = "Small Claims Genie — Investor Product Spec"
