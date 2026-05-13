@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Wand2, X, Send, Loader2 } from "lucide-react";
+import { Wand2, X, Send, Loader2, Mic, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import type { SpeechRecognitionWindow, SpeechRecognitionInstance, SpeechRecognitionEvent as SpeechRecognitionEvt } from "@/lib/types";
 
 const cases = [
   {
@@ -38,215 +40,285 @@ const cases = [
   },
 ];
 
-function renderResponse(text: string) {
-  return text.split("\n").map((line, i) => {
-    // Convert markdown links [text](url) to anchor tags
-    const parts = line.split(/(\[([^\]]+)\]\(([^)]+)\))/g);
-    const rendered: React.ReactNode[] = [];
-    let k = 0;
-    while (k < parts.length) {
-      if (parts[k].startsWith("[") && k + 2 < parts.length && parts[k + 2]) {
-        // This is a match group — skip, handled by full regex below
-        k++;
-        continue;
-      }
-      rendered.push(parts[k]);
-      k++;
-    }
-
-    // Use regex to properly split line into text + links
-    const linkRe = /\[([^\]]+)\]\(([^)]+)\)/g;
-    const nodes: React.ReactNode[] = [];
-    let last = 0;
-    let m;
-    linkRe.lastIndex = 0;
-    while ((m = linkRe.exec(line)) !== null) {
-      if (m.index > last) nodes.push(line.slice(last, m.index));
-      nodes.push(
-        <Link key={m.index} href={m[2]} className="text-[#0d6b5e] underline underline-offset-2 font-semibold hover:text-[#0a5a4e]">
-          {m[1]}
-        </Link>
-      );
-      last = m.index + m[0].length;
-    }
-    if (last < line.length) nodes.push(line.slice(last));
-
-    if (nodes.length === 0) return <br key={i} />;
-    return <p key={i} className="mb-1.5 last:mb-0">{nodes}</p>;
-  });
+interface Message {
+  role: "user" | "assistant";
+  content: string;
 }
 
 function GenieModal({ onClose }: { onClose: () => void }) {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState("");
-  const responseRef = useRef<HTMLDivElement>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   useEffect(() => {
-    textareaRef.current?.focus();
+    setTimeout(() => textareaRef.current?.focus(), 100);
   }, []);
 
   useEffect(() => {
-    if (responseRef.current) {
-      responseRef.current.scrollTop = responseRef.current.scrollHeight;
-    }
-  }, [response]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streaming]);
 
-  const handleSubmit = async () => {
-    const trimmed = input.trim();
-    if (!trimmed || loading) return;
-    setLoading(true);
-    setResponse("");
-    setDone(false);
+  const handleVoiceStart = () => {
+    const w = window as Window & SpeechRecognitionWindow;
+    const SpeechRecognitionAPI = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) return;
+    const textBefore = input.trim();
+    const recognition = new SpeechRecognitionAPI();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = true;
+    recognition.onresult = (event: SpeechRecognitionEvt) => {
+      let transcript = "";
+      for (let i = 0; i < event.results.length; i++) transcript += event.results[i][0].transcript;
+      setInput(textBefore ? textBefore + " " + transcript.trim() : transcript.trim());
+    };
+    recognition.onerror = () => setIsRecording(false);
+    recognition.onend = () => setIsRecording(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
+  };
+
+  const handleVoiceStop = () => {
+    if (recognitionRef.current) { recognitionRef.current.stop(); recognitionRef.current = null; }
+    setIsRecording(false);
+  };
+
+  const sendMessage = useCallback(async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || streaming) return;
+
     setError("");
+    const userMsg: Message = { role: "user", content: trimmed };
+    const history = [...messages];
+    setMessages(prev => [...prev, userMsg, { role: "assistant", content: "" }]);
+    setInput("");
+    setStreaming(true);
+
+    abortRef.current = new AbortController();
 
     try {
       const res = await fetch("/api/classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: trimmed, history }),
+        signal: abortRef.current.signal,
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError((data as { error?: string }).error ?? "Something went wrong. Please try again.");
-        setLoading(false);
+        setMessages(prev => prev.slice(0, -1));
+        setStreaming(false);
         return;
       }
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let buf = "";
+      let accumulated = "";
 
       while (true) {
-        const { done: streamDone, value } = await reader.read();
-        if (streamDone) break;
+        const { done, value } = await reader.read();
+        if (done) break;
         buf += decoder.decode(value, { stream: true });
         const lines = buf.split("\n");
         buf = lines.pop() ?? "";
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           const payload = line.slice(6).trim();
-          if (payload === "[DONE]") { setDone(true); continue; }
+          if (payload === "[DONE]") continue;
           try {
             const parsed = JSON.parse(payload) as { content?: string; error?: string };
             if (parsed.error) { setError(parsed.error); break; }
-            if (parsed.content) setResponse(prev => prev + parsed.content);
-          } catch { /* ignore malformed */ }
+            if (parsed.content) {
+              accumulated += parsed.content;
+              const snap = accumulated;
+              setMessages(prev => {
+                const next = [...prev];
+                next[next.length - 1] = { role: "assistant", content: snap };
+                return next;
+              });
+            }
+          } catch { }
         }
       }
-    } catch {
-      setError("Could not reach the server. Please check your connection and try again.");
+    } catch (err: unknown) {
+      if (!(err instanceof Error) || err.name !== "AbortError") {
+        setError("Could not reach the server. Please check your connection and try again.");
+        setMessages(prev => prev.slice(0, -1));
+      }
     } finally {
-      setLoading(false);
+      setStreaming(false);
     }
-  };
+  }, [messages, streaming]);
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      sendMessage(input);
     }
   };
 
+  const hasMessages = messages.length > 0;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-lg flex flex-col relative max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-t-[24px] sm:rounded-[24px] shadow-2xl w-full sm:max-w-lg flex flex-col relative"
+        style={{ maxHeight: "min(680px, 95dvh)" }}>
 
         {/* Header */}
-        <div className="flex items-start justify-between px-7 pt-6 pb-4 border-b border-gray-100 shrink-0">
-          <div>
-            <h2 className="text-[20px] font-black text-[#0d6b5e] leading-tight flex items-center gap-2">
-              <Wand2 className="w-5 h-5 text-amber-500" />
-              Ask the Genie
+        <div className="flex items-center gap-3 px-5 py-4 shrink-0 rounded-t-[24px]"
+          style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}>
+          <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+            <Sparkles className="h-4.5 w-4.5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-white font-black text-base leading-tight flex items-center gap-1.5">
+              <Wand2 className="w-4 h-4 text-amber-300" /> Ask the Genie
             </h2>
-            <p className="text-[13px] text-[#5a6478] mt-1">
-              Describe what happened in plain English — the Genie will classify your case and show you how Small Claims Genie can help.
+            <p className="text-white/70 text-[11px] leading-tight">
+              Describe what happened — voice or text
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="ml-4 mt-0.5 shrink-0 text-[#8a96a8] hover:text-[#20304f] transition-colors"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
+          <button onClick={onClose}
+            className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors shrink-0"
+            aria-label="Close">
+            <X className="h-4 w-4 text-white" />
           </button>
         </div>
 
-        {/* Response area */}
-        {(response || loading) && (
-          <div
-            ref={responseRef}
-            className="flex-1 overflow-y-auto px-7 py-4 text-[13.5px] text-[#20304f] leading-relaxed min-h-0"
-          >
-            {response ? renderResponse(response) : null}
-            {loading && !response && (
-              <div className="flex items-center gap-2 text-[#5a6478]">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Analyzing your situation…</span>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0">
+
+          {/* Welcome message */}
+          {!hasMessages && (
+            <div className="flex gap-2.5">
+              <div className="h-7 w-7 rounded-full bg-[#14b8a6]/15 flex items-center justify-center shrink-0 mt-0.5">
+                <Sparkles className="h-3.5 w-3.5 text-[#0d6b5e]" />
               </div>
-            )}
-            {loading && response && (
-              <span className="inline-block w-1.5 h-4 bg-[#0d6b5e] animate-pulse ml-0.5 align-middle" />
-            )}
-          </div>
-        )}
-
-        {error && (
-          <p className="mx-7 mt-3 text-[13px] text-red-600 bg-red-50 rounded-xl px-4 py-2.5 shrink-0">
-            {error}
-          </p>
-        )}
-
-        {/* Input area */}
-        {!done && (
-          <div className="px-7 py-5 shrink-0">
-            <div className="flex flex-col gap-3">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKey}
-                disabled={loading}
-                placeholder="Example: My landlord kept my $1,800 security deposit but never showed me any receipts or deduction list…"
-                rows={4}
-                className="w-full resize-none rounded-2xl border-2 border-gray-200 focus:border-[#0d6b5e] focus:outline-none px-4 py-3 text-[13.5px] text-[#20304f] placeholder:text-[#adb5c5] transition-colors disabled:opacity-60"
-              />
-              <button
-                onClick={handleSubmit}
-                disabled={!input.trim() || loading}
-                className="flex items-center justify-center gap-2 w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white text-[15px] font-black min-h-[48px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {loading ? "Analyzing…" : "Ask the Genie"}
-              </button>
+              <div className="bg-[#f0fffe] border border-[#a8e6df] rounded-2xl rounded-tl-sm px-3.5 py-2.5 max-w-[88%]">
+                <p className="text-sm text-[#0d4a44] leading-relaxed">
+                  Hi! Tell me what happened in plain English — what went wrong, who did it, and roughly how much you're out. I'll tell you if you have a case and exactly how Small Claims Genie can help you win it.
+                </p>
+              </div>
             </div>
-            <p className="text-[11px] text-[#adb5c5] text-center mt-2.5">
-              This is informational only — not legal advice.
-            </p>
-          </div>
-        )}
+          )}
 
-        {/* After response: CTA */}
-        {done && !loading && (
-          <div className="px-7 py-5 border-t border-gray-100 shrink-0">
-            <Link href="/pricing">
-              <button className="flex items-center justify-center gap-2 w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[48px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors">
-                <Wand2 className="w-4 h-4" />
-                See Plans &amp; Get Started
-              </button>
-            </Link>
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              {msg.role === "assistant" && (
+                <div className="h-7 w-7 rounded-full bg-[#14b8a6]/15 flex items-center justify-center shrink-0 mt-0.5">
+                  <Sparkles className="h-3.5 w-3.5 text-[#0d6b5e]" />
+                </div>
+              )}
+              <div className={`rounded-2xl px-3.5 py-2.5 max-w-[88%] text-sm leading-relaxed ${
+                msg.role === "user"
+                  ? "bg-amber-500 text-white rounded-tr-sm font-medium whitespace-pre-wrap"
+                  : "bg-[#f0fffe] border border-[#a8e6df] text-[#0d4a44] rounded-tl-sm"
+              }`}>
+                {msg.role === "user" ? msg.content : (
+                  msg.content
+                    ? <ReactMarkdown
+                        components={{
+                          a: ({ href, children }) => (
+                            href?.startsWith("/")
+                              ? <Link href={href} onClick={onClose} className="text-[#0d6b5e] underline underline-offset-2 font-semibold hover:text-[#0a5449]">{children}</Link>
+                              : <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#0d6b5e] underline underline-offset-2 font-semibold hover:text-[#0a5449]">{children}</a>
+                          ),
+                          p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5">{children}</ol>,
+                          strong: ({ children }) => <strong className="font-semibold text-[#0d6b5e]">{children}</strong>,
+                        }}
+                      >{msg.content}</ReactMarkdown>
+                    : streaming && i === messages.length - 1
+                      ? <span className="flex gap-1 items-center h-4">
+                          <span className="w-1.5 h-1.5 bg-[#14b8a6] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-1.5 h-1.5 bg-[#14b8a6] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-1.5 h-1.5 bg-[#14b8a6] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </span>
+                      : ""
+                )}
+              </div>
+            </div>
+          ))}
+
+          {error && (
+            <p className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 text-center">{error}</p>
+          )}
+
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Voice hint */}
+        <div className="px-4 pt-1 shrink-0 flex items-center justify-end">
+          {isRecording ? (
+            <span className="flex items-center gap-1 text-[10px] font-medium text-destructive animate-pulse">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
+              Recording… release to stop
+            </span>
+          ) : (
+            <span className="text-[10px] text-muted-foreground">
+              Hold mic to record voice
+            </span>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="border-t px-4 py-3 flex gap-2 items-center shrink-0 bg-white rounded-b-[24px]">
+          <div className="flex-1 relative flex items-center">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={e => {
+                setInput(e.target.value);
+                const el = e.target as HTMLTextAreaElement;
+                el.style.height = "auto";
+                el.style.height = Math.min(el.scrollHeight, 100) + "px";
+              }}
+              onKeyDown={handleKey}
+              placeholder={isRecording ? "🔴 Recording — release to stop…" : hasMessages ? "Ask a follow-up question…" : "My landlord kept my $1,800 deposit but never gave me a receipt…"}
+              rows={1}
+              disabled={streaming || isRecording}
+              className="w-full resize-none overflow-hidden rounded-full border border-input bg-background pl-4 pr-10 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/40 disabled:opacity-60 transition-colors"
+              style={{ minHeight: "40px", maxHeight: "100px" }}
+            />
             <button
-              onClick={() => { setResponse(""); setDone(false); setInput(""); }}
-              className="mt-2 w-full text-[13px] text-[#5a6478] hover:text-[#20304f] transition-colors py-1"
+              type="button"
+              onMouseDown={handleVoiceStart}
+              onMouseUp={handleVoiceStop}
+              onMouseLeave={isRecording ? handleVoiceStop : undefined}
+              onTouchStart={handleVoiceStart}
+              onTouchEnd={handleVoiceStop}
+              aria-label={isRecording ? "Recording — release to stop" : "Hold to record voice"}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-full transition-colors ${
+                isRecording ? "text-destructive animate-pulse bg-destructive/10" : "text-muted-foreground hover:text-[#0d6b5e]"
+              }`}
             >
-              Ask another question
+              <Mic className="h-4 w-4" />
             </button>
           </div>
-        )}
+          <Button
+            size="icon"
+            disabled={!input.trim() || streaming || isRecording}
+            onClick={() => sendMessage(input)}
+            className="h-[40px] w-[40px] shrink-0 rounded-full bg-[#0d6b5e] hover:bg-[#0a5449] disabled:opacity-40"
+          >
+            {streaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        <p className="text-[10px] text-muted-foreground text-center pb-3 shrink-0">
+          This is informational only — not legal advice.
+        </p>
       </div>
     </div>
   );
@@ -260,7 +332,7 @@ export default function TypesOfCases() {
 
       {genieOpen && <GenieModal onClose={() => setGenieOpen(false)} />}
 
-      {/* ── Header ── */}
+      {/* Header */}
       <section className="px-6 pt-10 pb-4 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-black text-primary mb-2">
@@ -276,7 +348,7 @@ export default function TypesOfCases() {
         </div>
       </section>
 
-      {/* ── Case Type Boxes ── */}
+      {/* Case Type Boxes */}
       <section className="px-6 pb-8 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
@@ -290,20 +362,23 @@ export default function TypesOfCases() {
         </div>
       </section>
 
-      {/* ── Bottom CTA ── */}
+      {/* Bottom CTA */}
       <section className="px-6 pb-12 bg-[#f5fdfb]">
         <div className="max-w-3xl mx-auto">
-          <div className="border-2 border-gray-200 rounded-xl px-6 py-6 bg-gray-50">
+          <div className="border-2 border-[#a8e6df] rounded-xl px-6 py-6 bg-[#f0fffe]">
+            <p className="text-sm text-[#0d4a44] font-medium mb-1">
+              Not sure if you have a case?
+            </p>
             <p className="text-sm text-muted-foreground mb-4">
-              Not sure which one you have? Describe what happened in plain English. Small Claims Genie will classify the dispute, flag missing proof, and tell you the next step.
+              Describe what happened in plain English — by voice or text. The Genie will analyze your situation, tell you if it qualifies, what evidence you need, and how Small Claims Genie will help you win.
             </p>
             <Button
               size="lg"
               onClick={() => setGenieOpen(true)}
-              className="h-10 px-7 text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-sm"
+              className="h-11 px-7 text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-sm"
             >
               <Wand2 className="mr-2 h-4 w-4" />
-              Ask the Genie
+              Ask the Genie — Free
             </Button>
           </div>
         </div>
