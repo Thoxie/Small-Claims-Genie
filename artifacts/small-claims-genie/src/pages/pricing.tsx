@@ -1,7 +1,62 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, SignUp } from "@clerk/clerk-react";
 import { Trophy, UserCheck, Loader2, X } from "lucide-react";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function SignUpModal({ onDismiss }: { onDismiss: () => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let blocked = false;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const isSubmit = target.closest("button[type='submit'], .cl-formButtonPrimary");
+      if (!isSubmit) return;
+      if (blocked) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+      blocked = true;
+      setTimeout(() => { blocked = false; }, 6000);
+    };
+    container.addEventListener("click", handleClick, true);
+    return () => container.removeEventListener("click", handleClick, true);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onDismiss}
+          className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors z-10"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <div className="text-center mb-4">
+          <p className="text-base font-black text-[#0d6b5e]">Create your free account to continue</p>
+          <p className="text-[12px] text-[#5a6478] mt-1">You'll be taken to payment right after sign-up.</p>
+        </div>
+        <div ref={containerRef}>
+          <SignUp
+            routing="virtual"
+            signInUrl={`${base}/sign-in`}
+            forceRedirectUrl={`${base}/pricing`}
+            appearance={{
+              elements: {
+                rootBox: "w-full",
+                card: "shadow-none border-0 p-0",
+                headerTitle: "text-primary font-bold",
+                formButtonPrimary: "bg-primary hover:bg-primary/90",
+              },
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const CHECK = (
   <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 border-[#0d6b5e] text-[#0d6b5e] inline-flex items-center justify-center text-[11px] font-black mt-[2px]">
@@ -508,39 +563,31 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
   );
 }
 
-const PENDING_PLAN_KEY = "scg_pending_plan";
-const TERMS_ACCEPTED_KEY = "scg_terms_accepted";
-
 export default function Pricing() {
   const { getToken, isSignedIn, isLoaded } = useAuth();
   const [, navigate] = useLocation();
   const [loadingKey, setLoadingKey] = useState<PlanKey | null>(null);
   const [addOnModal, setAddOnModal] = useState<{ planKey: PlanKey; label: string } | null>(null);
   const [termsModal, setTermsModal] = useState<PlanKey | null>(null);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(null);
   const [cancelledBanner, setCancelledBanner] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("payment") === "cancelled";
   });
 
-  // After sign-up redirect back to /pricing: resume the pending plan
-  // If terms were already accepted before sign-up, skip straight to checkout
+  // When the user completes sign-up inside the modal, isSignedIn flips true.
+  // At that point, if we have a pending plan, proceed straight to checkout.
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
-    const pending = sessionStorage.getItem(PENDING_PLAN_KEY) as PlanKey | null;
-    if (!pending) return;
-    const termsAlreadyAccepted = sessionStorage.getItem(TERMS_ACCEPTED_KEY) === "true";
-    sessionStorage.removeItem(PENDING_PLAN_KEY);
-    sessionStorage.removeItem(TERMS_ACCEPTED_KEY);
-    if (termsAlreadyAccepted) {
-      proceedToCheckout(pending);
-    } else {
-      setTermsModal(pending);
-    }
-  // proceedToCheckout is stable (defined below) — exhaustive-deps not needed here
+    if (!isLoaded || !isSignedIn || !pendingPlan) return;
+    setShowSignUp(false);
+    const plan = pendingPlan;
+    setPendingPlan(null);
+    proceedToCheckout(plan);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, pendingPlan]);
 
-  // Plan button click — always show terms modal first, auth check happens after
+  // Plan button click — always show terms modal first
   const handleCheckout = (planKey: PlanKey) => {
     setTermsModal(planKey);
   };
@@ -554,15 +601,17 @@ export default function Pricing() {
     }
   };
 
-  // Called after user accepts both checkboxes
+  // Called after user accepts both checkboxes in terms modal
   const handleTermsAccepted = () => {
     const planKey = termsModal;
     setTermsModal(null);
     if (!planKey) return;
     if (!isSignedIn) {
-      sessionStorage.setItem(PENDING_PLAN_KEY, planKey);
-      sessionStorage.setItem(TERMS_ACCEPTED_KEY, "true");
-      navigate(`/sign-up?redirect=${encodeURIComponent("/pricing")}`);
+      // Store the plan in state and show the embedded sign-up modal.
+      // No page navigation needed — when sign-up completes, isSignedIn flips
+      // and the useEffect above will trigger checkout automatically.
+      setPendingPlan(planKey);
+      setShowSignUp(true);
       return;
     }
     proceedToCheckout(planKey);
@@ -583,6 +632,11 @@ export default function Pricing() {
         <TermsAcceptanceModal
           onConfirm={handleTermsAccepted}
           onDismiss={() => setTermsModal(null)}
+        />
+      )}
+      {showSignUp && (
+        <SignUpModal
+          onDismiss={() => { setShowSignUp(false); setPendingPlan(null); }}
         />
       )}
       {addOnModal && (
