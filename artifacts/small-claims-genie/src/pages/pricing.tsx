@@ -1,58 +1,245 @@
-import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
-import { useAuth, SignUp } from "@clerk/clerk-react";
-import { Trophy, UserCheck, Loader2, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { useLocation, Link } from "wouter";
+import { useAuth, useSignUp } from "@clerk/clerk-react";
+import { Trophy, UserCheck, Loader2, X, Eye, EyeOff } from "lucide-react";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function SignUpModal({ onDismiss }: { onDismiss: () => void }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+function TermsAndSignUpModal({
+  alreadySignedIn,
+  onConfirm,
+  onDismiss,
+}: {
+  alreadySignedIn: boolean;
+  onConfirm: () => void;
+  onDismiss: () => void;
+}) {
+  const { signUp, setActive } = useSignUp();
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPayment, setAcceptedPayment] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState<"form" | "verify">("form");
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    let blocked = false;
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const isSubmit = target.closest("button[type='submit'], .cl-formButtonPrimary");
-      if (!isSubmit) return;
-      if (blocked) { e.preventDefault(); e.stopImmediatePropagation(); return; }
-      blocked = true;
-      setTimeout(() => { blocked = false; }, 6000);
-    };
-    container.addEventListener("click", handleClick, true);
-    return () => container.removeEventListener("click", handleClick, true);
-  }, []);
+  const canProceed = acceptedTerms && acceptedPayment;
+  const canSubmitForm = canProceed && email.trim().length > 0 && password.length >= 8;
 
+  const handleSubmit = async () => {
+    if (!canSubmitForm || !signUp) return;
+    setLoading(true);
+    setError("");
+    try {
+      await signUp.create({ emailAddress: email, password });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setStep("verify");
+    } catch (err: any) {
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || err?.message || "Sign-up failed. Please try again.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!signUp || !setActive) return;
+    setLoading(true);
+    setError("");
+    try {
+      const result = await signUp.attemptEmailAddressVerification({ code });
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        onConfirm();
+      } else {
+        setError("Verification incomplete. Please try again.");
+      }
+    } catch (err: any) {
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || err?.message || "Verification failed. Check the code and try again.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const termsCheckboxes = (
+    <div className="flex flex-col gap-4">
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={acceptedTerms}
+          onChange={e => setAcceptedTerms(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-[#0d6b5e] cursor-pointer"
+        />
+        <span className="text-[13px] text-[#20304f] leading-snug">
+          I have read and agree to the{" "}
+          <a href="/terms" target="_blank" rel="noopener noreferrer"
+            className="text-[#0d6b5e] underline underline-offset-2 hover:text-[#0a5a4e] transition-colors"
+            onClick={e => e.stopPropagation()}>
+            Terms of Use and Privacy Policy
+          </a>.
+        </span>
+      </label>
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={acceptedPayment}
+          onChange={e => setAcceptedPayment(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-[#0d6b5e] cursor-pointer"
+        />
+        <span className="text-[13px] text-[#20304f] leading-snug">
+          I have read and agree to the{" "}
+          <a href="/payment-terms" target="_blank" rel="noopener noreferrer"
+            className="text-[#0d6b5e] underline underline-offset-2 hover:text-[#0a5a4e] transition-colors"
+            onClick={e => e.stopPropagation()}>
+            Payment Terms
+          </a>
+          , including the 30-day money-back guarantee and refund process.
+        </span>
+      </label>
+    </div>
+  );
+
+  // Already signed in — show terms acceptance only
+  if (alreadySignedIn) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-7 relative">
+          <button onClick={onDismiss} className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors" aria-label="Close">
+            <X className="w-5 h-5" />
+          </button>
+          <h2 className="text-[20px] font-black text-[#0d6b5e] mb-1 leading-tight">Before you continue</h2>
+          <p className="text-[13px] text-[#5a6478] mb-6">Please review and accept the following to proceed to payment.</p>
+          <div className="mb-7">{termsCheckboxes}</div>
+          <button
+            onClick={onConfirm}
+            disabled={!canProceed}
+            className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Continue to Payment
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Email verification step
+  if (step === "verify") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-7 relative">
+          <button onClick={onDismiss} className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors" aria-label="Close">
+            <X className="w-5 h-5" />
+          </button>
+          <h2 className="text-[20px] font-black text-[#0d6b5e] mb-1 leading-tight">Check your email</h2>
+          <p className="text-[13px] text-[#5a6478] mb-6">
+            We sent a 6-digit code to <strong>{email}</strong>. Enter it below to verify your account and continue to payment.
+          </p>
+          <div className="mb-5">
+            <label className="block text-[12px] font-bold text-[#20304f] mb-1.5">Verification Code</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="123456"
+              className="w-full border-2 border-[#e3e8f0] focus:border-[#0d6b5e] rounded-xl px-4 py-3 text-[22px] font-black text-center tracking-[0.4em] text-[#0d6b5e] placeholder:text-gray-300 placeholder:font-normal placeholder:tracking-normal outline-none transition-colors"
+              autoFocus
+            />
+          </div>
+          {error && <p className="text-[12px] text-red-600 bg-red-50 rounded-xl px-3 py-2 mb-4 text-center">{error}</p>}
+          <button
+            onClick={handleVerify}
+            disabled={loading || code.length !== 6}
+            className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed mb-3"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Continue to Payment"}
+          </button>
+          <button
+            onClick={() => { setStep("form"); setCode(""); setError(""); }}
+            className="w-full text-[13px] text-[#5a6478] hover:text-[#20304f] transition-colors text-center"
+          >
+            ← Back to sign up
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Combined terms + sign-up form
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onDismiss}
-          className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors z-10"
-          aria-label="Close"
-        >
+      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-7 relative max-h-[92vh] overflow-y-auto">
+        <button onClick={onDismiss} className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors" aria-label="Close">
           <X className="w-5 h-5" />
         </button>
-        <div className="text-center mb-4">
-          <p className="text-base font-black text-[#0d6b5e]">Create your free account to continue</p>
-          <p className="text-[12px] text-[#5a6478] mt-1">You'll be taken to payment right after sign-up.</p>
+
+        <h2 className="text-[20px] font-black text-[#0d6b5e] mb-1 leading-tight">Create your account & continue</h2>
+        <p className="text-[13px] text-[#5a6478] mb-5">
+          Accept our terms and create your free account — you'll go straight to payment after.
+        </p>
+
+        <p className="text-[11px] font-black text-[#0d6b5e] uppercase tracking-widest mb-3">Step 1 — Agree to our terms</p>
+        <div className="mb-6">{termsCheckboxes}</div>
+
+        <p className="text-[11px] font-black text-[#0d6b5e] uppercase tracking-widest mb-3">Step 2 — Create your free account</p>
+        <div className="flex flex-col gap-3 mb-5">
+          <div>
+            <label className="block text-[12px] font-bold text-[#20304f] mb-1.5">Email address</label>
+            <input
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              placeholder="you@example.com"
+              className="w-full border-2 border-[#e3e8f0] focus:border-[#0d6b5e] rounded-xl px-4 py-2.5 text-[14px] text-[#20304f] placeholder:text-gray-300 outline-none transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-[12px] font-bold text-[#20304f] mb-1.5">
+              Password <span className="text-[#8a96a8] font-normal">(8+ characters)</span>
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                placeholder="••••••••"
+                className="w-full border-2 border-[#e3e8f0] focus:border-[#0d6b5e] rounded-xl px-4 py-2.5 pr-11 text-[14px] text-[#20304f] placeholder:text-gray-300 outline-none transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a96a8] hover:text-[#20304f] transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
         </div>
-        <div ref={containerRef}>
-          <SignUp
-            routing="virtual"
-            signInUrl={`${base}/sign-in`}
-            forceRedirectUrl={`${base}/pricing`}
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "shadow-none border-0 p-0",
-                headerTitle: "text-primary font-bold",
-                formButtonPrimary: "bg-primary hover:bg-primary/90",
-              },
-            }}
-          />
-        </div>
+
+        {error && <p className="text-[12px] text-red-600 bg-red-50 rounded-xl px-3 py-2 mb-4 text-center">{error}</p>}
+
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmitForm || loading}
+          className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed mb-4"
+        >
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account & Continue to Payment"}
+        </button>
+
+        <p className="text-center text-[12px] text-[#5a6478]">
+          Already have an account?{" "}
+          <Link href="/sign-in" className="text-[#0d6b5e] font-bold hover:underline">Sign in</Link>
+        </p>
       </div>
     </div>
   );
@@ -214,92 +401,6 @@ function ParalegalAddOnModal({
 }
 
 
-function TermsAcceptanceModal({
-  onConfirm,
-  onDismiss,
-}: {
-  onConfirm: () => void;
-  onDismiss: () => void;
-}) {
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [acceptedPayment, setAcceptedPayment] = useState(false);
-  const canProceed = acceptedTerms && acceptedPayment;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-7 relative">
-        <button
-          onClick={onDismiss}
-          className="absolute top-4 right-4 text-[#8a96a8] hover:text-[#20304f] transition-colors"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <h2 className="text-[20px] font-black text-[#0d6b5e] mb-1 leading-tight">
-          Before you continue
-        </h2>
-        <p className="text-[13px] text-[#5a6478] mb-6">
-          Please review and accept the following to proceed to payment.
-        </p>
-
-        <div className="flex flex-col gap-4 mb-7">
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={e => setAcceptedTerms(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-[#0d6b5e] accent-[#0d6b5e] cursor-pointer"
-            />
-            <span className="text-[13px] text-[#20304f] leading-snug">
-              I have read and agree to the{" "}
-              <a
-                href="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#0d6b5e] underline underline-offset-2 hover:text-[#0a5a4e] transition-colors"
-                onClick={e => e.stopPropagation()}
-              >
-                Terms of Use and Privacy Policy
-              </a>
-              .
-            </span>
-          </label>
-
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={acceptedPayment}
-              onChange={e => setAcceptedPayment(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-[#0d6b5e] accent-[#0d6b5e] cursor-pointer"
-            />
-            <span className="text-[13px] text-[#20304f] leading-snug">
-              I have read and agree to the{" "}
-              <a
-                href="/payment-terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#0d6b5e] underline underline-offset-2 hover:text-[#0a5a4e] transition-colors"
-                onClick={e => e.stopPropagation()}
-              >
-                Payment Terms
-              </a>
-              , including the 30-day money-back guarantee and refund process.
-            </span>
-          </label>
-        </div>
-
-        <button
-          onClick={onConfirm}
-          disabled={!canProceed}
-          className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          Continue to Payment
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; onCheckout: (k: PlanKey) => void }) {
   return (
@@ -564,38 +665,20 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
 }
 
 export default function Pricing() {
-  const { getToken, isSignedIn, isLoaded } = useAuth();
+  const { getToken, isSignedIn } = useAuth();
   const [, navigate] = useLocation();
   const [loadingKey, setLoadingKey] = useState<PlanKey | null>(null);
   const [addOnModal, setAddOnModal] = useState<{ planKey: PlanKey; label: string } | null>(null);
-  const [termsModal, setTermsModal] = useState<PlanKey | null>(null);
-  const [showSignUp, setShowSignUp] = useState(false);
-  // pendingPlan is seeded from sessionStorage so it survives the page reload
-  // that Clerk's forceRedirectUrl triggers after sign-up completes.
-  const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(() => {
-    return (sessionStorage.getItem("scg_pending_plan") as PlanKey | null);
-  });
+  // Single state drives the combined terms + sign-up modal
+  const [checkoutModal, setCheckoutModal] = useState<PlanKey | null>(null);
   const [cancelledBanner, setCancelledBanner] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("payment") === "cancelled";
   });
 
-  // When the user completes sign-up (either inline or via redirect), isSignedIn
-  // flips true. If we have a pending plan (from state or sessionStorage),
-  // proceed straight to checkout and clear the stored value.
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !pendingPlan) return;
-    sessionStorage.removeItem("scg_pending_plan");
-    setShowSignUp(false);
-    const plan = pendingPlan;
-    setPendingPlan(null);
-    proceedToCheckout(plan);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn, pendingPlan]);
-
-  // Plan button click — always show terms modal first
+  // Plan button click — always show the combined terms/sign-up modal first
   const handleCheckout = (planKey: PlanKey) => {
-    setTermsModal(planKey);
+    setCheckoutModal(planKey);
   };
 
   const proceedToCheckout = (planKey: PlanKey) => {
@@ -607,19 +690,11 @@ export default function Pricing() {
     }
   };
 
-  // Called after user accepts both checkboxes in terms modal
-  const handleTermsAccepted = () => {
-    const planKey = termsModal;
-    setTermsModal(null);
+  // Called when terms accepted (signed-in) or sign-up + verification complete (new user)
+  const handleCheckoutConfirm = () => {
+    const planKey = checkoutModal;
+    setCheckoutModal(null);
     if (!planKey) return;
-    if (!isSignedIn) {
-      // Persist the plan to sessionStorage so it survives the page reload
-      // that Clerk's forceRedirectUrl triggers after sign-up completes.
-      sessionStorage.setItem("scg_pending_plan", planKey);
-      setPendingPlan(planKey);
-      setShowSignUp(true);
-      return;
-    }
     proceedToCheckout(planKey);
   };
 
@@ -634,19 +709,11 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-[#f0faf8]">
-      {termsModal && (
-        <TermsAcceptanceModal
-          onConfirm={handleTermsAccepted}
-          onDismiss={() => setTermsModal(null)}
-        />
-      )}
-      {showSignUp && (
-        <SignUpModal
-          onDismiss={() => {
-            sessionStorage.removeItem("scg_pending_plan");
-            setShowSignUp(false);
-            setPendingPlan(null);
-          }}
+      {checkoutModal && (
+        <TermsAndSignUpModal
+          alreadySignedIn={!!isSignedIn}
+          onConfirm={handleCheckoutConfirm}
+          onDismiss={() => setCheckoutModal(null)}
         />
       )}
       {addOnModal && (
