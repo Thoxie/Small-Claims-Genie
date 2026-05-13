@@ -113,12 +113,9 @@ export default function Landing() {
             <Mic className="h-3.5 w-3.5" /> Voice + Text AI Chat
           </div>
           <h2 className="text-2xl md:text-3xl font-bold mb-3">Your Genie Knows Your Case.</h2>
-          <p className="text-base text-primary-foreground/75 mb-5 max-w-xl mx-auto leading-relaxed">
+          <p className="text-base text-primary-foreground/75 max-w-xl mx-auto leading-relaxed">
             Unlike generic AI tools, your Genie has read your documents, knows your case facts, and gives advice specific to your situation — by voice or text.
           </p>
-          <Button asChild size="lg" className="h-11 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg">
-            <Link href="/cases/new"><Wand2 className="mr-2 h-4 w-4" />Start Your Case Free</Link>
-          </Button>
         </div>
       </section>
 
