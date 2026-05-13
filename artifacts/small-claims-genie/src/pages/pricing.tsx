@@ -499,7 +499,7 @@ export default function Pricing() {
             </h1>
           </div>
           <p className="text-[clamp(14px,1.1vw,17px)] text-[#5a6478] font-medium">
-            Start preparing. If it's not helping request a refund under our refund policy.
+            Start preparing. If it's not helping request a refund
           </p>
         </div>
 
