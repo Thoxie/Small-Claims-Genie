@@ -5,10 +5,11 @@ import { getUncachableStripeClient, getStripePublishableKey } from "../stripeCli
 import { logger } from "../lib/logger";
 import { userHasPurchase } from "../lib/purchases";
 
-const router = Router();
+// ─── Public router — no auth required ────────────────────────────────────────
+export const stripePublicRouter = Router();
 
 // Get publishable key (used by frontend to init Stripe.js if needed)
-router.get("/stripe/config", async (_req, res) => {
+stripePublicRouter.get("/stripe/config", async (_req, res) => {
   try {
     const publishableKey = await getStripePublishableKey();
     res.json({ publishableKey });
@@ -19,10 +20,7 @@ router.get("/stripe/config", async (_req, res) => {
 });
 
 // List all active products with their prices.
-// Primary source: stripe.products DB table (populated by backfill).
-// Fallback: Stripe API directly — used when the server just started and the
-// backfill hasn't finished yet, preventing a race condition on first deploy.
-router.get("/stripe/products", async (_req, res) => {
+stripePublicRouter.get("/stripe/products", async (_req, res) => {
   try {
     const result = await db.execute(sql`
       WITH latest_products AS (
@@ -47,7 +45,6 @@ router.get("/stripe/products", async (_req, res) => {
       ORDER BY pr.unit_amount ASC NULLS LAST
     `);
 
-    // Group prices by product
     const map = new Map<string, any>();
     for (const row of result.rows as any[]) {
       if (!map.has(row.product_id)) {
@@ -70,14 +67,12 @@ router.get("/stripe/products", async (_req, res) => {
 
     const dbProducts = Array.from(map.values());
 
-    // If the DB returned results, we're done.
     if (dbProducts.length > 0) {
       res.json({ products: dbProducts });
       return;
     }
 
-    // DB is empty — backfill hasn't run yet (e.g. fresh deploy). Fall back to
-    // the Stripe API directly so checkout works immediately on first startup.
+    // DB empty — backfill hasn't run yet. Fall back to Stripe API directly.
     logger.warn("stripe.products table empty — falling back to Stripe API");
     const stripe = await getUncachableStripeClient();
     const [stripeProducts, stripePrices] = await Promise.all([
@@ -115,11 +110,16 @@ router.get("/stripe/products", async (_req, res) => {
   }
 });
 
-// Create a Stripe Checkout session and return the URL
+// ─── Protected router — requireAuth must run before this ─────────────────────
+export const stripeProtectedRouter = Router();
+
+// Create a Stripe Checkout session and return the URL.
 // Body: { priceIds: string[], successPath?: string, cancelPath?: string }
-// Also accepts legacy { priceId: string } for backward compatibility
-router.post("/stripe/checkout", async (req: any, res) => {
+// Also accepts legacy { priceId: string } for backward compatibility.
+stripeProtectedRouter.post("/stripe/checkout", async (req: any, res) => {
   try {
+    const userId = req.userId as string;
+
     const { priceId, priceIds, successPath, cancelPath } = req.body as {
       priceId?: string;
       priceIds?: string[];
@@ -134,29 +134,36 @@ router.post("/stripe/checkout", async (req: any, res) => {
       return;
     }
 
+    // Validate all submitted price IDs against active prices in our Stripe catalog.
+    // This prevents callers from submitting arbitrary or foreign price IDs.
+    const validationResult = await db.execute(
+      sql`SELECT id FROM stripe.prices WHERE id = ANY(${ids}::text[]) AND active = true`
+    );
+    const validIds = new Set((validationResult.rows as any[]).map((r) => r.id));
+    const invalidIds = ids.filter((id) => !validIds.has(id));
+    if (invalidIds.length > 0) {
+      logger.warn({ userId, invalidIds }, "stripe/checkout: invalid price IDs submitted");
+      res.status(400).json({ error: "One or more price IDs are not valid" });
+      return;
+    }
+
     const stripe = await getUncachableStripeClient();
 
-    // Build absolute URLs from the request host
     const host = `${req.protocol}://${req.get("host")}`;
     const successUrl = `${host}${successPath ?? "/dashboard?payment=success"}`;
-    const cancelUrl = `${host}${cancelPath ?? "/pricing?payment=cancelled"}`;
+    const cancelUrl  = `${host}${cancelPath  ?? "/pricing?payment=cancelled"}`;
 
-    const sessionParams: any = {
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: ids.map((id) => ({ price: id, quantity: 1 })),
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
       allow_promotion_codes: true,
-    };
+      client_reference_id: userId,
+      metadata: { userId },
+    });
 
-    // Attach the Clerk user ID as client_reference_id so we can track the purchase
-    if (req.userId) {
-      sessionParams.client_reference_id = req.userId;
-      sessionParams.metadata = { userId: req.userId };
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
     res.json({ url: session.url });
   } catch (err) {
     logger.error({ err }, "stripe/checkout error");
@@ -164,14 +171,9 @@ router.post("/stripe/checkout", async (req: any, res) => {
   }
 });
 
-// Check whether the authenticated user has a confirmed purchase
-// Used by the frontend to conditionally show payment-required messaging
-router.get("/stripe/purchase-status", async (req: any, res) => {
-  const userId = req.userId as string | undefined;
-  if (!userId) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
+// Check whether the authenticated user has a confirmed purchase.
+stripeProtectedRouter.get("/stripe/purchase-status", async (req: any, res) => {
+  const userId = req.userId as string;
   try {
     const hasPurchase = await userHasPurchase(userId);
     res.json({ hasPurchase });
@@ -180,5 +182,3 @@ router.get("/stripe/purchase-status", async (req: any, res) => {
     res.status(500).json({ error: "Could not check purchase status" });
   }
 });
-
-export default router;

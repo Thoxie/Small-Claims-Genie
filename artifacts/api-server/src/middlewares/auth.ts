@@ -2,25 +2,31 @@ import { type Request, type Response, type NextFunction } from "express";
 import { verifyToken } from "@clerk/express";
 import { logger } from "../lib/logger";
 
-async function verifyWithEitherKey(token: string): Promise<{ sub: string }> {
-  const devKey = process.env.CLERK_SECRET_KEY_DEV;
+async function verifyClerkToken(token: string): Promise<{ sub: string }> {
+  const isProduction = process.env.APP_ENV === "production";
   const prodKey = process.env.CLERK_SECRET_KEY;
+  const devKey  = process.env.CLERK_SECRET_KEY_DEV;
 
-  // Try prod key first, then dev key as fallback.
-  // This matches sessions established under either Clerk tenant.
-  if (prodKey) {
-    try {
-      return await verifyToken(token, { secretKey: prodKey });
-    } catch {
-      // prod key failed — fall back to dev key
-    }
+  if (isProduction) {
+    // Production: accept ONLY production Clerk tokens. Never fall back to dev key.
+    if (!prodKey) throw new Error("CLERK_SECRET_KEY is not configured in production");
+    return await verifyToken(token, { secretKey: prodKey });
   }
 
+  // Staging / development: prefer dev key, fall back to prod key only if dev key absent.
   if (devKey) {
     try {
       return await verifyToken(token, { secretKey: devKey });
     } catch {
-      // dev key also failed
+      // dev key failed — try prod key below
+    }
+  }
+
+  if (prodKey) {
+    try {
+      return await verifyToken(token, { secretKey: prodKey });
+    } catch {
+      // prod key also failed
     }
   }
 
@@ -39,7 +45,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   const token = authHeader.slice(7);
 
   try {
-    const payload = await verifyWithEitherKey(token);
+    const payload = await verifyClerkToken(token);
     (req as any).userId = payload.sub;
     next();
   } catch (err) {
