@@ -576,6 +576,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     (currentCase?.plaintiffName ? `DECLARATION OF ${currentCase.plaintiffName.toUpperCase()} IN SUPPORT OF CLAIM` : "")
   );
   const [mc030Text, setMc030Text] = useState("");
+  const [mc030ExhibitOrder, setMc030ExhibitOrder] = useState<number[]>([]);
   const [mc030AiGenerating, setMc030AiGenerating] = useState(false);
   const [mc030AiError, setMc030AiError] = useState<string | null>(null);
   const [mc030PopoutOpen, setMc030PopoutOpen] = useState(false);
@@ -1003,6 +1004,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         mc030TitleInitial.current = data.declarationTitle; // avoid double-PATCH (save already done by server)
         setMc030Title(data.declarationTitle);
       }
+      // Store exhibit order so download routes can arrange physical tabs to match the narrative
+      if (Array.isArray(data.exhibitOrder)) setMc030ExhibitOrder(data.exhibitOrder);
       return text;
     } catch { setMc030AiError("AI generation failed — please try again."); return null; }
     finally { setMc030AiGenerating(false); }
@@ -1019,7 +1022,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const { token } = await tokenRes.json();
       const res = await fetch(`/api/cases/${caseId}/forms/mc030-with-exhibits`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, exhibitDocIds: orderedExhibitIds }),
+        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, exhibitDocIds: orderedExhibitIds, exhibitOrder: mc030ExhibitOrder.length > 0 ? mc030ExhibitOrder : undefined }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); toast({ title: "Build failed", description: err.error || "Failed to build packet.", variant: "destructive" }); return; }
       const blob = await res.blob();
@@ -1045,7 +1048,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const res = await fetch(`/api/cases/${caseId}/forms/mc030/signed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl, exhibitDocIds: orderedExhibitIds }),
+        body: JSON.stringify({ token, declarationTitle: mc030Title || undefined, declarationText: mc030Text, signatureDataUrl, exhibitDocIds: orderedExhibitIds, exhibitOrder: mc030ExhibitOrder.length > 0 ? mc030ExhibitOrder : undefined }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})) as { error?: string }; toast({ title: "Build failed", description: err.error || "Failed to build signed MC-030.", variant: "destructive" }); return; }
       const blob = await res.blob();

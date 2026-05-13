@@ -114,11 +114,11 @@ function applyExhibitOrder<T>(docs: T[], exhibitOrder: number[]): T[] {
 
 // ─── MC-030 AI declaration generator ─────────────────────────────────────────
 //
-// Exhibits are pre-assigned letters A, B, C… in document-list order.
-// The AI must write the narrative referencing them in strict A→B→C order.
-// exhibitOrder is always sequential so physical tabs match the pre-assignment.
+// Passes documents as a numbered list — no pre-assigned letters.
+// The AI writes in the most legally effective order and assigns exhibit letters
+// in first-mention order (first document mentioned → Exhibit A, etc.).
+// Returns exhibitOrder so physical tabs can be reordered to match the narrative.
 //
-const DECL_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 async function generateMC030Declaration(
   d: Record<string, any>,
@@ -131,9 +131,9 @@ async function generateMC030Declaration(
   const incidentDate  = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
   const hasExhibits   = exhibits && exhibits.length > 0;
 
-  // Pre-assign letters in document-list order: doc 1 → A, doc 2 → B, etc.
+  // Numbered list — AI assigns letters in first-mention order
   const documentList = hasExhibits
-    ? exhibits!.map((e, i) => `  Exhibit ${DECL_LETTERS[i]}: ${e.name}`).join("\n")
+    ? exhibits!.map(e => `  Document ${e.docIndex}: ${e.name}`).join("\n")
     : "";
 
   const prompt = [
@@ -147,28 +147,27 @@ async function generateMC030Declaration(
     claimDesc    ? `- Case description (background facts only — ignore any exhibit references in this text): ${claimDesc}` : "",
     ``,
     hasExhibits ? [
-      `AVAILABLE EXHIBITS — you must reference ALL of them:`,
+      `AVAILABLE DOCUMENTS — you must reference ALL of them:`,
       documentList,
       ``,
-      `EXHIBIT RULES (absolute — no exceptions):`,
-      `- Exhibit letters are PRE-ASSIGNED as shown above. Do NOT change them.`,
-      `- You MUST reference every exhibit listed — no omissions.`,
-      `- Exhibits MUST appear in strict A → B → C → D … order in the narrative.`,
-      `  Exhibit A must be the FIRST exhibit mentioned. Exhibit B must be the SECOND. And so on.`,
-      `  NEVER write a later letter before an earlier one. Writing B before A is a critical error.`,
-      `  If chronological order would cause you to mention B before A, restructure the narrative`,
-      `  so A appears first — even if that means departing from strict chronology.`,
+      `EXHIBIT LETTER ASSIGNMENT — first-mention order:`,
+      `- Do NOT assign letters based on document list order.`,
+      `- Assign letters A, B, C… in the order you FIRST choose to mention each document in the narrative.`,
+      `  The first document you mention gets Exhibit A. The second gets Exhibit B. And so on.`,
+      `- You decide which document to mention first based on what makes the strongest legal narrative.`,
+      `- Once you assign a letter to a document, use that same letter for all subsequent references.`,
       `- Every reference MUST use this exact format (parentheses required):`,
       `  (Exhibit X — [what this document proves and why it supports the claim])`,
-      `  Example: (Exhibit A — warranty doc guaranteeing the repair would fix the noise)`,
+      `  Example: (Exhibit A — check copy confirming $1,542.42 payment cleared)`,
       `  Describe WHAT the document proves. Never copy a raw filename.`,
+      `- You MUST reference every document in the list — no omissions.`,
     ].join("\n") : "",
     ``,
     `Return a JSON object with exactly these fields:`,
     `1. "declarationTitle": All-caps title, max 80 characters. Specific to the case facts.`,
     `2. "declarationText": Numbered paragraphs separated by \\n. Each paragraph starts with its number and a period ("1. "). Each paragraph is ONE concise sentence, max 120 characters.`,
     hasExhibits
-      ? `   Use enough paragraphs to cover all key facts AND every exhibit — minimum 8. Target total length: 600–950 characters.`
+      ? `   Use enough paragraphs to cover all key facts AND every document — minimum 8. Target total length: 600–950 characters.`
       : `   Use 8 paragraphs. Target total length: 550-700 characters.`,
     `   STRICT FORMATTING RULES — violation breaks the PDF layout:`,
     `   - Plain text only. No asterisks, no markdown, no bold. Exhibit references use parentheses as shown above — no square brackets.`,
@@ -177,7 +176,11 @@ async function generateMC030Declaration(
     `   - Do NOT end with a name, date, "Respectfully", "Signed", or any closing — the form already has a signature block.`,
     `   - The final paragraph must state the specific dollar amount requested and nothing else after it.`,
     hasExhibits
-      ? `3. "exhibitOrder": ${JSON.stringify(exhibits!.map((_, i) => i + 1))} — exhibits are already in correct order, return this array unchanged.`
+      ? [
+        `3. "exhibitOrder": Array of document numbers in the order you FIRST mentioned each one.`,
+        `   Example: if you first mentioned Document 3, then Document 1, then Document 2, return [3, 1, 2].`,
+        `   Every document number from 1 to ${exhibits!.length} must appear exactly once.`,
+      ].join("\n")
       : `3. "exhibitOrder": []`,
     ``,
     `Respond with only the JSON object.`,
@@ -426,9 +429,12 @@ router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => 
       declarationText  = ai.declarationText;
       exhibitOrder     = ai.exhibitOrder;
     } else {
-      // Text already provided — preserve sequential order so physical tabs match the
-      // pre-generated narrative (which uses position-based letter assignment from mc030-ai).
-      exhibitOrder = exhibitDocs.map((_, i) => i + 1);
+      // Text already provided — use the caller-supplied exhibitOrder (from mc030-ai response)
+      // so the physical tabs match the narrative the AI already generated.
+      const suppliedOrder: number[] = Array.isArray(b.exhibitOrder)
+        ? (b.exhibitOrder as unknown[]).map(Number).filter((n: number) => !isNaN(n) && n >= 1)
+        : [];
+      exhibitOrder = suppliedOrder.length === exhibitDocs.length ? suppliedOrder : exhibitDocs.map((_, i) => i + 1);
       if (!declarationTitle) {
         declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
       }
@@ -538,9 +544,12 @@ router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<vo
       declarationText  = ai.declarationText;
       exhibitOrder     = ai.exhibitOrder;
     } else {
-      // Text already provided — preserve sequential order so physical tabs match the
-      // pre-generated narrative (which uses position-based letter assignment from mc030-ai).
-      exhibitOrder = exhibitDocs.map((_, i) => i + 1);
+      // Text already provided — use the caller-supplied exhibitOrder (from mc030-ai response)
+      // so the physical tabs match the narrative the AI already generated.
+      const suppliedOrder: number[] = Array.isArray(b.exhibitOrder)
+        ? (b.exhibitOrder as unknown[]).map(Number).filter((n: number) => !isNaN(n) && n >= 1)
+        : [];
+      exhibitOrder = suppliedOrder.length === exhibitDocs.length ? suppliedOrder : exhibitDocs.map((_, i) => i + 1);
       if (!declarationTitle) {
         declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
       }

@@ -436,24 +436,23 @@ Produce a polished, short, court-ready declaration — approximately two-thirds 
 ────────────────────────────────────────
 EVIDENCE — MANDATORY (read this before writing any paragraph):
 ────────────────────────────────────────
-You MUST reference EVERY exhibit in the authoritative list provided — absolutely no skipping, no matter how many there are.
+You MUST reference EVERY document in the numbered list provided — absolutely no skipping, no matter how many there are.
 
-EXHIBIT ORDER — ABSOLUTE HARD RULE — NO EXCEPTIONS:
-Exhibits MUST appear in strict A → B → C → D → E … order throughout the entire declaration.
-Exhibit A MUST be the first exhibit mentioned. Exhibit B MUST be the second. Exhibit C MUST be the third. And so on.
-NEVER write a higher letter before a lower one. Writing "(Exhibit B …)" before "(Exhibit A …)" is a critical error.
-The letters are pre-assigned and fixed — do NOT reassign them.
-BEFORE you write Paragraph 2, mentally list every exhibit A, B, C… and plan the narrative sentences so they introduce each exhibit in that exact sequence. If strict chronological order would cause you to mention B before A, RESTRUCTURE the sentence order so A comes first — even if that means departing from strict chronology. The alphabetical order of the exhibit tabs is what the judge uses to follow along; the declaration must match the tab order exactly.
+EXHIBIT LETTER ASSIGNMENT — first-mention order:
+- Do NOT assign letters based on document list order.
+- Assign letters A, B, C… in the order you FIRST choose to mention each document in the narrative.
+  The first document you mention gets Exhibit A. The second gets Exhibit B. And so on.
+- You decide which document to mention first based on what makes the strongest legal narrative.
+- Once you assign a letter to a document, use that same letter for all subsequent references to it.
 
-EXHIBIT DESCRIPTIONS — NON-NEGOTIABLE: When you first introduce each exhibit, include a brief phrase (4–8 words) describing what it actually shows or proves, drawn from the document contents provided below. Do not simply name the document — tell the judge what it establishes. The exhibit content (OCR text) is provided for exactly this purpose.
+EXHIBIT DESCRIPTIONS — NON-NEGOTIABLE: When you first introduce each exhibit, include a brief phrase (4–8 words) describing what it actually shows or proves, drawn from the document contents provided below. Do not simply name the document — tell the judge what it establishes.
 
-BAD: "I paid for the repair (Exhibit B — Check Copy)." [← wrong because A must come before B]
-GOOD: "ACME's 30-day warranty promised to correct the noise (Exhibit A — Warranty Doc), and I paid $1,542.42 by check on April 1, 2026 (Exhibit B — Check Copy confirming payment cleared)." [← correct: A before B]
+GOOD: "I paid $1,542.42 by check on April 1, 2026 (Exhibit A — check copy confirming payment cleared), and ACME's written warranty promised to correct the engine noise (Exhibit B — warranty guaranteeing the repair)."
 
-Strategy based on exhibit count (always A→B→C order):
-• 1–3 exhibits: Weave each into Paragraph 2 in A→B→C order as a full sentence stating what the exhibit proves and describes.
-• 4–6 exhibits: Cover Exhibits A, B (and C if space allows) in narrative sentences with descriptions. Then add one compact sentence listing the rest in order: "Additional supporting documents include [brief description] (Exhibit D — Name), [brief description] (Exhibit E — Name), and [brief description] (Exhibit F — Name)."
-• 7+ exhibits: In the narrative cover Exhibits A and B with full descriptions. Then add: "Additional evidence includes: [brief description] (Exhibit C — Name), [brief description] (Exhibit D — Name), [brief description] (Exhibit E — Name)..." listing every remaining exhibit in strict A→Z order. Every single exhibit letter and name must appear at least once.
+Strategy based on document count:
+• 1–3 documents: Weave each into Paragraph 2 as a full sentence stating what the exhibit proves.
+• 4–6 documents: Cover the 2–3 most important in narrative sentences. Then add one compact sentence listing the rest: "Additional supporting evidence includes [brief description] (Exhibit D — Name), [brief description] (Exhibit E — Name)."
+• 7+ documents: In the narrative cover the 2 strongest. Then list every remaining one: "Additional evidence includes: [description] (Exhibit C — Name), [description] (Exhibit D — Name)..." Every document number must appear exactly once.
 
 If no documents have been uploaded, note in Paragraph 2 that the plaintiff will present their testimony at the hearing.
 
@@ -531,7 +530,20 @@ STRICT RULES:
 ────────────────────────────────────────
 - Use ONLY the facts provided in the case context. NEVER invent facts, dates, dollar amounts, witnesses, or evidence.
 - The dollar amount stated must match the Amount Sought exactly.
-- Output ONLY the four-paragraph body — no title, no perjury closing, no signature block.`;
+- Output ONLY the four-paragraph body in declarationText — no title, no perjury closing, no signature block.
+
+────────────────────────────────────────
+OUTPUT FORMAT — JSON (required):
+────────────────────────────────────────
+Respond with ONLY a valid JSON object — no markdown fences, no explanation text, nothing else:
+{
+  "declarationText": "<the four-paragraph body>",
+  "exhibitOrder": [<document numbers in the order you first mentioned each one>]
+}
+
+exhibitOrder must list every document number from the provided list exactly once, in the order you first introduced each document in the narrative.
+Example: if you mentioned Document 3 first, then Document 1, then Document 2, return [3, 1, 2].
+If there are no documents, return an empty array: []`;
 
 router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
   const userId = getUserId(req);
@@ -622,30 +634,27 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
     }
   }
 
-  // Evidence — assign exhibit letters and use only friendly names
-  const EXHIBIT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  // Evidence — numbered list; AI assigns exhibit letters in first-mention order
   if (docs.length > 0) {
-    // No artificial cap — honour all selected exhibits (up to 26 letters).
     const exhibitDocs = docs.slice(0, 26).map((doc, i) => ({
-      letter: EXHIBIT_LETTERS[i] ?? String(i + 1),
+      docNum: i + 1,
       name: friendlyExhibitName(doc.description, doc.originalName),
       doc,
     }));
 
-    // When there are many exhibits, cap OCR text per document so the prompt
-    // stays within reasonable context limits (~600 chars each for 7+ docs).
+    // Cap OCR text per document to stay within context limits
     const ocrCap = exhibitDocs.length >= 7 ? 600 : exhibitDocs.length >= 4 ? 900 : 1500;
 
-    parts.push(`\n=== AUTHORITATIVE EXHIBIT LIST — ${exhibitDocs.length} exhibit(s). You MUST reference EVERY one. ===`);
-    parts.push(`CRITICAL RULE: reference exhibits ONLY as "(Exhibit LETTER — Name)" using this exact list. Never use raw filenames, underscores, file extensions, or numbers.`);
-    for (const { letter, name } of exhibitDocs) {
-      parts.push(`  Exhibit ${letter}: ${name}`);
+    parts.push(`\n=== DOCUMENTS — ${exhibitDocs.length} document(s). You MUST reference EVERY one. ===`);
+    parts.push(`Assign exhibit letters A, B, C… in the order you first choose to mention each document (first-mention order). Do NOT assign letters by document number order.`);
+    for (const { docNum, name } of exhibitDocs) {
+      parts.push(`  Document ${docNum}: ${name}`);
     }
-    parts.push(`ALL ${exhibitDocs.length} exhibits listed above must appear in the declaration. Use the compact listing strategy from the system prompt if there are 4 or more.`);
+    parts.push(`ALL ${exhibitDocs.length} documents must appear in the declaration. Use the compact listing strategy from the system prompt if there are 4 or more.`);
 
-    parts.push(`\n=== EVIDENCE DETAILS (reference each by letter and name above) ===`);
-    for (const { letter, name, doc } of exhibitDocs) {
-      parts.push(`\nExhibit ${letter} — ${name}:`);
+    parts.push(`\n=== DOCUMENT CONTENTS (reference each by the exhibit letter you assign) ===`);
+    for (const { docNum, name, doc } of exhibitDocs) {
+      parts.push(`\nDocument ${docNum} — ${name}:`);
       if (doc.ocrText && !doc.ocrText.startsWith("[")) {
         parts.push(`Contents extracted from document:\n${doc.ocrText.slice(0, ocrCap)}`);
       }
@@ -666,17 +675,24 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
         { role: "user", content: `Write the MC-030 declaration now.\n\n${userContent}` },
       ],
     });
-    const rawText = completion.choices[0]?.message?.content ?? "";
-    // Strip any title/header line at the top and any signature/perjury closing
-    // at the bottom. Even with the system prompt forbidding these, models can
-    // still slip them in — this guarantees the textarea the user sees only
-    // contains the numbered body paragraphs.
-    let declarationText = stripMC030Wrappers(rawText);
+    // Parse JSON response: { declarationText, exhibitOrder }
+    const rawContent = completion.choices[0]?.message?.content ?? "";
+    let parsed: { declarationText?: string; exhibitOrder?: number[] };
+    try {
+      const jsonStr = rawContent.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      parsed = JSON.parse(jsonStr);
+    } catch {
+      // Fallback: treat the whole response as plain text with empty exhibitOrder
+      parsed = { declarationText: rawContent, exhibitOrder: [] };
+    }
+    let declarationText = stripMC030Wrappers(parsed.declarationText ?? rawContent);
+    // exhibitOrder is 1-based doc indices in first-mention order (e.g. [3,1,2])
+    const exhibitOrder: number[] = Array.isArray(parsed.exhibitOrder)
+      ? (parsed.exhibitOrder as unknown[]).map(Number).filter((n: number) => !isNaN(n) && n >= 1)
+      : [];
 
     // ── Auto-shrink loop ──────────────────────────────────────────────────────
-    // If the draft would overflow the form's hard physical line cap, ask the
-    // model to compress it (preserving facts/dates/dollar amounts/statutes).
-    // Up to 2 retries; we keep the best (shortest) version.
+    // Exhibit order is already locked in; shrink passes only plain text back.
     let lineCount = await measureMC030BodyLines(declarationText);
     let shrinkAttempts = 0;
     const maxShrinkAttempts = 2;
@@ -691,28 +707,33 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
             { role: "user", content:
               `Your previous draft is ${lineCount} lines. The MC-030 form's hard physical limit is ${MC030_MAX_LINES} lines. ` +
               `Rewrite the SAME facts to fit within ${MC030_MAX_LINES} lines (target ${MC030_MAX_LINES - 2} lines for safety). ` +
-              `Keep every dollar amount, date, party name, and statute citation intact — do not drop any fact. ` +
+              `Keep every dollar amount, date, party name, statute citation, and all exhibit references intact. ` +
               `Compress by tightening sentences, removing filler words, and merging related points. ` +
-              `Output ONLY numbered paragraphs (no title, no perjury closing, no signature block).\n\n` +
+              `Return the same JSON format: { "declarationText": "...", "exhibitOrder": ${JSON.stringify(exhibitOrder)} }\n\n` +
               `Previous draft to compress:\n${declarationText}` },
           ],
         });
         const newRaw = shrink.choices[0]?.message?.content ?? "";
-        const newStripped = stripMC030Wrappers(newRaw);
-        const newCount = await measureMC030BodyLines(newStripped);
-        if (newStripped && newCount < lineCount) {
-          declarationText = newStripped;
+        let newText: string;
+        try {
+          const newJson = JSON.parse(newRaw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim());
+          newText = stripMC030Wrappers(newJson.declarationText ?? newRaw);
+        } catch {
+          newText = stripMC030Wrappers(newRaw);
+        }
+        const newCount = await measureMC030BodyLines(newText);
+        if (newText && newCount < lineCount) {
+          declarationText = newText;
           lineCount = newCount;
         } else {
-          break; // not improving; stop spending tokens
+          break;
         }
       } catch (e) {
-        // If the shrink call fails, fall through with whatever we have.
         req.log?.warn?.({ err: e }, "MC-030 shrink attempt failed");
         break;
       }
     }
-    req.log?.info?.({ lineCount, shrinkAttempts, fits: lineCount <= MC030_MAX_LINES }, "MC-030 declaration line count");
+    req.log?.info?.({ lineCount, shrinkAttempts, fits: lineCount <= MC030_MAX_LINES, exhibitOrder }, "MC-030 declaration line count");
 
     // Derive a declaration title and persist it so SC-100 Section 3 can reference it exactly
     const plaintiffName = caseRecord.plaintiffName ?? "Declarant";
@@ -723,7 +744,7 @@ router.post("/cases/:id/forms/mc030-ai", async (req, res): Promise<void> => {
       .where(eq(casesTable.id, id))
       .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
 
-    res.json({ declarationText, declarationTitle });
+    res.json({ declarationText, declarationTitle, exhibitOrder });
   } catch (err: any) {
     req.log.error({ err }, "MC-030 AI error");
     res.status(500).json({ error: "Failed to generate declaration. Please try again." });
