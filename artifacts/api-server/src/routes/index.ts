@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { requireAuth } from "../middlewares/auth";
+import { requiresPurchase } from "../middlewares/requiresPurchase";
 import healthRouter from "./health";
 import countiesRouter from "./counties";
 import helpChatRouter from "./help-chat";
@@ -44,9 +45,12 @@ router.use(casesRouter);
 router.use(documentsRouter);
 router.use(chatRouter);
 router.use(chatExportRouter);
-router.use(formsTokenRouter);
 router.use(transcribeRouter);
-router.use(demandLetterRouter);
 router.use(hearingPrepRouter);
+
+// Paid-access routes — confirmed Stripe purchase required
+router.use(requiresPurchase);
+router.use(formsTokenRouter);   // Issues download tokens for form PDFs
+router.use(demandLetterRouter); // Demand letter generation + PDF download
 
 export default router;

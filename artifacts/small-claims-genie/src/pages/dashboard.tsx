@@ -1,10 +1,11 @@
 import { useListCases } from "@workspace/api-client-react";
 import type { Case } from "@workspace/api-client-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight, CheckCircle, FileText, Circle } from "lucide-react";
+import { ChevronRight, CheckCircle, FileText, Circle, PartyPopper, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "In Progress",
@@ -246,12 +247,44 @@ function CaseView({ c }: { c: Case }) {
   );
 }
 
+function PaymentSuccessBanner({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-300 rounded-xl px-4 py-4 mb-6 shadow-sm">
+      <PartyPopper className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+      <div className="flex-1">
+        <p className="text-sm font-bold text-emerald-800">Payment confirmed — you're all set!</p>
+        <p className="text-xs text-emerald-700 mt-0.5">
+          Your plan is now active. You can download court forms, generate demand letters, and access all paid features from your case workspace.
+        </p>
+      </div>
+      <button onClick={onDismiss} className="text-emerald-500 hover:text-emerald-700 transition-colors mt-0.5 shrink-0" aria-label="Dismiss">
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { data: cases, isLoading, isError } = useListCases();
+  const [, navigate] = useLocation();
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      setShowPaymentSuccess(true);
+      // Clean the query string from the URL without a page reload
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#edfaf8] to-white">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+
+        {showPaymentSuccess && (
+          <PaymentSuccessBanner onDismiss={() => setShowPaymentSuccess(false)} />
+        )}
 
         <h1 className="text-2xl font-bold text-foreground mb-6">Your Case — Pick up where you left off.</h1>
 

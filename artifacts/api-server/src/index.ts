@@ -4,6 +4,7 @@ import { startReminderScheduler } from "./lib/reminder-scheduler";
 import { warmupBrowser } from "./forms/chromium-pool";
 import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./stripeClient";
+import { ensurePurchasesTable } from "./lib/purchases";
 
 const rawPort = process.env["PORT"];
 
@@ -28,6 +29,7 @@ async function initStripe() {
   try {
     logger.info("Initializing Stripe schema...");
     await runMigrations({ databaseUrl } as Parameters<typeof runMigrations>[0]);
+    await ensurePurchasesTable();
     logger.info("Stripe schema ready");
 
     const stripeSync = await getStripeSync();

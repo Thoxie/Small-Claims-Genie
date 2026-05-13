@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { getUncachableStripeClient, getStripePublishableKey } from "../stripeClient";
 import { logger } from "../lib/logger";
+import { userHasPurchase } from "../lib/purchases";
 
 const router = Router();
 
@@ -160,6 +161,23 @@ router.post("/stripe/checkout", async (req: any, res) => {
   } catch (err) {
     logger.error({ err }, "stripe/checkout error");
     res.status(500).json({ error: "Failed to create checkout session" });
+  }
+});
+
+// Check whether the authenticated user has a confirmed purchase
+// Used by the frontend to conditionally show payment-required messaging
+router.get("/stripe/purchase-status", async (req: any, res) => {
+  const userId = req.userId as string | undefined;
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  try {
+    const hasPurchase = await userHasPurchase(userId);
+    res.json({ hasPurchase });
+  } catch (err) {
+    logger.error({ err }, "stripe/purchase-status error");
+    res.status(500).json({ error: "Could not check purchase status" });
   }
 });
 

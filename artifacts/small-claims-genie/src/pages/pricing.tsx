@@ -454,6 +454,10 @@ export default function Pricing() {
   const [, navigate] = useLocation();
   const [loadingKey, setLoadingKey] = useState<PlanKey | null>(null);
   const [addOnModal, setAddOnModal] = useState<{ planKey: PlanKey; label: string } | null>(null);
+  const [cancelledBanner, setCancelledBanner] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("payment") === "cancelled";
+  });
 
   const handleCheckout = (planKey: PlanKey) => {
     if (planKey.startsWith("personal_") || planKey.startsWith("business_")) {
@@ -486,6 +490,19 @@ export default function Pricing() {
       )}
 
       <div className="w-full px-7 pb-10 pt-6 flex flex-col items-center">
+
+        {cancelledBanner && (
+          <div className="w-full max-w-[1400px] mb-5 flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl px-4 py-3">
+            <span className="text-amber-500 mt-0.5 shrink-0 text-base">⚠</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-800">Payment not completed.</p>
+              <p className="text-xs text-amber-700 mt-0.5">You left before finishing checkout. No charge was made. Select a plan below whenever you're ready.</p>
+            </div>
+            <button onClick={() => setCancelledBanner(false)} className="text-amber-400 hover:text-amber-600 transition-colors mt-0.5 shrink-0" aria-label="Dismiss">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-2">
