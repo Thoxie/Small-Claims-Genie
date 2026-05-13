@@ -570,16 +570,22 @@ export default function Pricing() {
   const [addOnModal, setAddOnModal] = useState<{ planKey: PlanKey; label: string } | null>(null);
   const [termsModal, setTermsModal] = useState<PlanKey | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(null);
+  // pendingPlan is seeded from sessionStorage so it survives the page reload
+  // that Clerk's forceRedirectUrl triggers after sign-up completes.
+  const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(() => {
+    return (sessionStorage.getItem("scg_pending_plan") as PlanKey | null);
+  });
   const [cancelledBanner, setCancelledBanner] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("payment") === "cancelled";
   });
 
-  // When the user completes sign-up inside the modal, isSignedIn flips true.
-  // At that point, if we have a pending plan, proceed straight to checkout.
+  // When the user completes sign-up (either inline or via redirect), isSignedIn
+  // flips true. If we have a pending plan (from state or sessionStorage),
+  // proceed straight to checkout and clear the stored value.
   useEffect(() => {
     if (!isLoaded || !isSignedIn || !pendingPlan) return;
+    sessionStorage.removeItem("scg_pending_plan");
     setShowSignUp(false);
     const plan = pendingPlan;
     setPendingPlan(null);
@@ -607,9 +613,9 @@ export default function Pricing() {
     setTermsModal(null);
     if (!planKey) return;
     if (!isSignedIn) {
-      // Store the plan in state and show the embedded sign-up modal.
-      // No page navigation needed — when sign-up completes, isSignedIn flips
-      // and the useEffect above will trigger checkout automatically.
+      // Persist the plan to sessionStorage so it survives the page reload
+      // that Clerk's forceRedirectUrl triggers after sign-up completes.
+      sessionStorage.setItem("scg_pending_plan", planKey);
       setPendingPlan(planKey);
       setShowSignUp(true);
       return;
@@ -636,7 +642,11 @@ export default function Pricing() {
       )}
       {showSignUp && (
         <SignUpModal
-          onDismiss={() => { setShowSignUp(false); setPendingPlan(null); }}
+          onDismiss={() => {
+            sessionStorage.removeItem("scg_pending_plan");
+            setShowSignUp(false);
+            setPendingPlan(null);
+          }}
         />
       )}
       {addOnModal && (
