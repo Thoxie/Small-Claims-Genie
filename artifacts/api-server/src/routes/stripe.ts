@@ -191,12 +191,26 @@ stripeProtectedRouter.post("/stripe/checkout", async (req: any, res) => {
   }
 });
 
-// Check whether the authenticated user has a confirmed purchase.
+// Check whether the authenticated user has a confirmed purchase OR existing cases.
+// Returning true for either condition allows users who started cases before the
+// payment wall (or whose purchase webhook misfired) to reach their dashboard.
+// The actual payment gate for downloads is enforced separately on the server.
 stripeProtectedRouter.get("/stripe/purchase-status", async (req: any, res) => {
   const userId = req.userId as string;
   try {
     const hasPurchase = await userHasPurchase(userId);
-    res.json({ hasPurchase });
+    if (hasPurchase) {
+      res.json({ hasPurchase: true });
+      return;
+    }
+
+    // Also grant dashboard access to users who already have cases
+    const caseResult = await db.execute(
+      sql`SELECT id FROM cases WHERE user_id = ${userId} LIMIT 1`
+    );
+    const hasCases = (caseResult.rows as any[]).length > 0;
+
+    res.json({ hasPurchase: hasCases });
   } catch (err) {
     logger.error({ err }, "stripe/purchase-status error");
     res.status(500).json({ error: "Could not check purchase status" });
