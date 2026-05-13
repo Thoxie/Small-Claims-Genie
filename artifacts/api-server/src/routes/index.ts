@@ -4,6 +4,7 @@ import { requiresPurchase } from "../middlewares/requiresPurchase";
 import healthRouter from "./health";
 import countiesRouter from "./counties";
 import helpChatRouter from "./help-chat";
+import caseClassifierRouter from "./case-classifier";
 import casesRouter from "./cases";
 import documentsRouter from "./documents";
 import chatRouter from "./chat";
@@ -26,6 +27,7 @@ router.use(healthRouter);
 router.use(countiesRouter);
 router.use(storageRouter);
 router.use(helpChatRouter);
+router.use(caseClassifierRouter);
 router.use(backupDownloadRouter);
 // Source download is a dev-only utility — never expose in production
 if (process.env.NODE_ENV !== "production") {
