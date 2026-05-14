@@ -46,7 +46,12 @@ export default function Login({ onAuthenticated }: LoginProps) {
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <Input
-                type="password"
+                type="text"
+                inputMode="text"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 placeholder="Enter your ADMIN_API_KEY"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
