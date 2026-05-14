@@ -165,6 +165,7 @@ function HearingBadge({ c }: { c: CaseRow }) {
 function UserRow({ user }: { user: UserRow }) {
   const [expanded, setExpanded] = useState(false);
   const upcoming = user.cases.find((c) => c.hearingDate && new Date(c.hearingDate) >= new Date());
+  const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || null;
 
   return (
     <div className="border rounded-lg overflow-hidden mb-2">
@@ -180,13 +181,25 @@ function UserRow({ user }: { user: UserRow }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-sm text-gray-900 truncate">{user.email}</span>
+            {displayName && (
+              <span className="text-xs text-gray-500">({displayName})</span>
+            )}
             {user.hasPurchase && (
               <Badge className="bg-green-100 text-green-700 text-xs">Paid</Badge>
+            )}
+            {user.cases.length === 0 && (
+              <Badge className="bg-gray-100 text-gray-500 text-xs">No cases</Badge>
             )}
             {upcoming && <HearingBadge c={upcoming} />}
           </div>
           <p className="text-xs text-gray-400 mt-0.5">
-            {user.cases.length} case{user.cases.length !== 1 ? "s" : ""} · Last active {fmtDate(user.lastActivity)}
+            {user.cases.length} case{user.cases.length !== 1 ? "s" : ""}
+            {user.lastActivity
+              ? ` · Last active ${fmtDate(user.lastActivity)}`
+              : user.signupDate
+              ? ` · Joined ${fmtDate(user.signupDate)}`
+              : ""}
+            {user.lastSignInAt && ` · Last login ${fmtDate(user.lastSignInAt)}`}
           </p>
         </div>
         <span className="text-xs text-gray-400 hidden sm:block truncate max-w-[180px]" title={user.userId}>
@@ -196,6 +209,27 @@ function UserRow({ user }: { user: UserRow }) {
 
       {expanded && (
         <div className="border-t bg-gray-50 px-4 py-3 space-y-3">
+          {/* Account info for no-case users */}
+          {user.cases.length === 0 && (
+            <div className="bg-white rounded-lg border p-3 text-xs text-gray-600 space-y-1">
+              <p className="font-semibold text-gray-700 mb-1">Account Info</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div>
+                  <span className="text-gray-400">Signed up</span>
+                  <p className="font-medium">{fmtDate(user.signupDate)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Last login</span>
+                  <p className="font-medium">{fmtDate(user.lastSignInAt)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Status</span>
+                  <p className="font-medium text-gray-500">No cases started</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {user.cases.map((c) => (
             <div key={c.id} className="bg-white rounded-lg border p-3">
               <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -210,12 +244,16 @@ function UserRow({ user }: { user: UserRow }) {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
                 <div>
-                  <span className="text-gray-400">Claim</span>
+                  <span className="text-gray-400">Claim Amount</span>
                   <p className="font-medium">{c.claimAmount ? fmtMoney(c.claimAmount) : "—"}</p>
                 </div>
                 <div>
-                  <span className="text-gray-400">Type</span>
+                  <span className="text-gray-400">Claim Type</span>
                   <p className="font-medium">{c.claimType ?? "—"}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">County</span>
+                  <p className="font-medium">{c.countyId ?? "—"}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Readiness</span>
@@ -229,6 +267,16 @@ function UserRow({ user }: { user: UserRow }) {
                   <span className="text-gray-400">Intake</span>
                   <p className="font-medium">{c.intakeComplete ? "✓ Complete" : "In progress"}</p>
                 </div>
+                {(c.courthouseName || c.courthouseAddress || c.courthouseCity) && (
+                  <div className="col-span-2 sm:col-span-3">
+                    <span className="text-gray-400">Court Address</span>
+                    <p className="font-medium">
+                      {[c.courthouseName, c.courthouseAddress, c.courthouseCity]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {c.hearingDate && (
@@ -251,16 +299,8 @@ function UserRow({ user }: { user: UserRow }) {
                       <span className="text-gray-400">Judge</span>
                       <p className="font-medium">{c.hearingJudge ?? "—"}</p>
                     </div>
-                    <div className="col-span-2">
-                      <span className="text-gray-400">Courthouse</span>
-                      <p className="font-medium">
-                        {[c.courthouseName, c.courthouseAddress, c.courthouseCity]
-                          .filter(Boolean)
-                          .join(", ") || "—"}
-                      </p>
-                    </div>
                     {c.hearingNotes && (
-                      <div className="col-span-3">
+                      <div className="col-span-2 sm:col-span-3">
                         <span className="text-gray-400">Notes</span>
                         <p className="font-medium">{c.hearingNotes}</p>
                       </div>

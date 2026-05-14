@@ -26,29 +26,50 @@ const requireAdmin: RequestHandler = (req: Request, res: Response, next: NextFun
 // Apply auth to all /admin/* routes
 router.use("/admin", requireAdmin);
 
-// ── Clerk email lookup via REST API ──────────────────────────────────────────
+// ── Clerk helpers ─────────────────────────────────────────────────────────────
+function clerkSecretKey(): string | undefined {
+  return process.env.APP_ENV === "production"
+    ? process.env.CLERK_SECRET_KEY
+    : (process.env.CLERK_SECRET_KEY_DEV ?? process.env.CLERK_SECRET_KEY);
+}
+
+type ClerkUser = {
+  id: string;
+  email_addresses: Array<{ email_address: string }>;
+  first_name: string | null;
+  last_name: string | null;
+  created_at: number;
+  last_sign_in_at: number | null;
+};
+
+async function getAllClerkUsers(): Promise<ClerkUser[]> {
+  const secretKey = clerkSecretKey();
+  if (!secretKey) return [];
+  try {
+    const res = await fetch(
+      "https://api.clerk.com/v1/users?limit=500&order_by=-created_at",
+      { headers: { Authorization: `Bearer ${secretKey}` } }
+    );
+    if (!res.ok) return [];
+    return (await res.json()) as ClerkUser[];
+  } catch {
+    return [];
+  }
+}
+
 async function getClerkEmails(userIds: string[]): Promise<Map<string, string>> {
   if (userIds.length === 0) return new Map();
-  const secretKey =
-    process.env.APP_ENV === "production"
-      ? process.env.CLERK_SECRET_KEY
-      : (process.env.CLERK_SECRET_KEY_DEV ?? process.env.CLERK_SECRET_KEY);
+  const secretKey = clerkSecretKey();
   if (!secretKey) return new Map();
-
   try {
     const params = new URLSearchParams();
     userIds.slice(0, 100).forEach((id) => params.append("user_id", id));
     params.set("limit", "100");
-
     const clerkRes = await fetch(`https://api.clerk.com/v1/users?${params}`, {
       headers: { Authorization: `Bearer ${secretKey}` },
     });
     if (!clerkRes.ok) return new Map();
-
-    const users = (await clerkRes.json()) as Array<{
-      id: string;
-      email_addresses: Array<{ email_address: string }>;
-    }>;
+    const users = (await clerkRes.json()) as ClerkUser[];
     return new Map(
       users.map((u) => [u.id, u.email_addresses[0]?.email_address ?? u.id])
     );
@@ -113,60 +134,68 @@ router.get("/admin/overview", async (req: Request, res: Response): Promise<void>
 // ── GET /admin/users ──────────────────────────────────────────────────────────
 router.get("/admin/users", async (req: Request, res: Response): Promise<void> => {
   try {
-    const cases = await db
-      .select({
-        id: casesTable.id,
-        userId: casesTable.userId,
-        title: casesTable.title,
-        status: casesTable.status,
-        claimAmount: casesTable.claimAmount,
-        claimType: casesTable.claimType,
-        hearingDate: casesTable.hearingDate,
-        hearingTime: casesTable.hearingTime,
-        hearingJudge: casesTable.hearingJudge,
-        hearingCourtroom: casesTable.hearingCourtroom,
-        hearingNotes: casesTable.hearingNotes,
-        caseNumber: casesTable.caseNumber,
-        courthouseName: casesTable.courthouseName,
-        courthouseAddress: casesTable.courthouseAddress,
-        courthouseCity: casesTable.courthouseCity,
-        readinessScore: casesTable.readinessScore,
-        intakeComplete: casesTable.intakeComplete,
-        documentCount: casesTable.documentCount,
-        createdAt: casesTable.createdAt,
-        updatedAt: casesTable.updatedAt,
-      })
-      .from(casesTable)
-      .orderBy(desc(casesTable.updatedAt));
-
-    const purchases = await db
-      .select({ userId: purchasesTable.userId })
-      .from(purchasesTable)
-      .where(eq(purchasesTable.status, "complete"));
+    const [cases, purchases, allClerkUsers] = await Promise.all([
+      db
+        .select({
+          id: casesTable.id,
+          userId: casesTable.userId,
+          title: casesTable.title,
+          status: casesTable.status,
+          claimAmount: casesTable.claimAmount,
+          claimType: casesTable.claimType,
+          countyId: casesTable.countyId,
+          hearingDate: casesTable.hearingDate,
+          hearingTime: casesTable.hearingTime,
+          hearingJudge: casesTable.hearingJudge,
+          hearingCourtroom: casesTable.hearingCourtroom,
+          hearingNotes: casesTable.hearingNotes,
+          caseNumber: casesTable.caseNumber,
+          courthouseName: casesTable.courthouseName,
+          courthouseAddress: casesTable.courthouseAddress,
+          courthouseCity: casesTable.courthouseCity,
+          readinessScore: casesTable.readinessScore,
+          intakeComplete: casesTable.intakeComplete,
+          documentCount: casesTable.documentCount,
+          createdAt: casesTable.createdAt,
+          updatedAt: casesTable.updatedAt,
+        })
+        .from(casesTable)
+        .orderBy(desc(casesTable.updatedAt)),
+      db
+        .select({ userId: purchasesTable.userId })
+        .from(purchasesTable)
+        .where(eq(purchasesTable.status, "complete")),
+      getAllClerkUsers(),
+    ]);
 
     const paidUserIds = new Set(purchases.map((p) => p.userId));
+    const clerkMap = new Map(allClerkUsers.map((u) => [u.id, u]));
 
-    const userIds = [
-      ...new Set(cases.map((c) => c.userId).filter(Boolean)),
-    ] as string[];
-    const emailMap = await getClerkEmails(userIds);
-
-    // Group cases by userId
-    type UserRow = {
+    type UserEntry = {
       userId: string;
       email: string;
+      firstName: string | null;
+      lastName: string | null;
+      signupDate: string | null;
+      lastSignInAt: string | null;
       cases: typeof cases;
       hasPurchase: boolean;
       lastActivity: Date | null;
     };
-    const usersMap = new Map<string, UserRow>();
+    const usersMap = new Map<string, UserEntry>();
 
+    // Seed from DB cases
     for (const c of cases) {
       const uid = c.userId ?? "unknown";
       if (!usersMap.has(uid)) {
+        const cu = clerkMap.get(uid);
         usersMap.set(uid, {
           userId: uid,
-          email: emailMap.get(uid) ?? uid,
+          email: cu?.email_addresses[0]?.email_address ?? uid,
+          firstName: cu?.first_name ?? null,
+          lastName: cu?.last_name ?? null,
+          signupDate: cu ? new Date(cu.created_at).toISOString() : null,
+          lastSignInAt: cu?.last_sign_in_at ? new Date(cu.last_sign_in_at).toISOString() : null,
           cases: [],
           hasPurchase: paidUserIds.has(uid),
           lastActivity: c.updatedAt,
@@ -175,7 +204,31 @@ router.get("/admin/users", async (req: Request, res: Response): Promise<void> =>
       usersMap.get(uid)!.cases.push(c);
     }
 
-    res.json(Array.from(usersMap.values()));
+    // Add Clerk-only users who have no cases yet
+    for (const cu of allClerkUsers) {
+      if (!usersMap.has(cu.id)) {
+        usersMap.set(cu.id, {
+          userId: cu.id,
+          email: cu.email_addresses[0]?.email_address ?? cu.id,
+          firstName: cu.first_name,
+          lastName: cu.last_name,
+          signupDate: new Date(cu.created_at).toISOString(),
+          lastSignInAt: cu.last_sign_in_at ? new Date(cu.last_sign_in_at).toISOString() : null,
+          cases: [],
+          hasPurchase: paidUserIds.has(cu.id),
+          lastActivity: null,
+        });
+      }
+    }
+
+    // Sort: most recently active first, then most recently signed up
+    const sorted = Array.from(usersMap.values()).sort((a, b) => {
+      const aTime = a.lastActivity?.getTime() ?? new Date(a.signupDate ?? 0).getTime();
+      const bTime = b.lastActivity?.getTime() ?? new Date(b.signupDate ?? 0).getTime();
+      return bTime - aTime;
+    });
+
+    res.json(sorted);
   } catch (err) {
     logger.error({ err }, "Admin users error");
     res.status(500).json({ error: "Internal server error" });

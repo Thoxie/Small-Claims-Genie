@@ -102,6 +102,7 @@ export interface CaseRow {
   status: string;
   claimAmount: number | null;
   claimType: string | null;
+  countyId: string | null;
   hearingDate: string | null;
   hearingTime: string | null;
   hearingJudge: string | null;
@@ -121,6 +122,10 @@ export interface CaseRow {
 export interface UserRow {
   userId: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
+  signupDate: string | null;
+  lastSignInAt: string | null;
   cases: CaseRow[];
   hasPurchase: boolean;
   lastActivity: string | null;
