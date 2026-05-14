@@ -104,7 +104,7 @@ APP_ENV = "staging"
 APP_ENV = "production"
 
 [userenv.shared]
-ADMIN_API_KEY = "SCGadmin2026!"
+ADMIN_API_KEY = "SCGadmin2026"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-fbe13e76-2c09-46f1-9698-68ef867b76ca"
