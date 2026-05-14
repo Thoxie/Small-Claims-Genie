@@ -150,3 +150,9 @@ id = "MSYq5EjIRvxoWTU0CedKW"
 uri = "file://SmallClaimsGenie-Investor-Spec.docx"
 type = "word_document"
 title = "Small Claims Genie — Investor Product Spec"
+
+[[outputs]]
+id = "Rpr_bdKgMzl9C72zWJy_o"
+uri = "file://scg-source.zip"
+type = "unspecified"
+title = "Small Claims Genie — Source Code"
