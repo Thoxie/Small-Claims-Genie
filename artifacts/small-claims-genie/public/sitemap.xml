@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
 
   <!-- Homepage -->
   <url>
     <loc>https://smallclaimsgenie.com/</loc>
-    <lastmod>2026-05-12</lastmod>
+    <lastmod>2026-05-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <video:video>
+      <video:thumbnail_loc>https://smallclaimsgenie.com/opengraph.jpg</video:thumbnail_loc>
+      <video:title>Small Claims Genie — AI-Powered California Small Claims Court Guide</video:title>
+      <video:description>See how Small Claims Genie helps California residents prepare and file small claims court cases with AI-powered guidance, automated court form generation, and step-by-step coaching — no lawyer needed.</video:description>
+      <video:player_loc>https://app.heygen.com/embeds/b789b4bb9ad646b2bed4b078e2d9c6e2</video:player_loc>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:live>no</video:live>
+    </video:video>
   </url>
 
   <!-- Pricing -->
