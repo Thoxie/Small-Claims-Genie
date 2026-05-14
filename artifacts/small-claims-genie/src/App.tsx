@@ -32,6 +32,7 @@ import SignUpPage from "@/pages/sign-up";
 import Start from "@/pages/start";
 import EmailSchedule from "@/pages/email-schedule";
 import Copyright from "@/pages/copyright";
+import BetaPage from "@/pages/beta";
 
 // In development (Vite dev server / staging), use the dev Clerk key if available.
 // In production builds, ALWAYS use the production key — dev Clerk instances
@@ -214,6 +215,9 @@ function Router() {
             <RequireAuth><CaseWorkspace caseIdParam={params.id ?? ""} /></RequireAuth>
           )}
         </Route>
+
+        {/* ── Beta landing — own header, no nav ── */}
+        <Route path="/beta" component={BetaPage} />
 
         {/* ── All other routes — standard Layout + nav ── */}
         <Route>
