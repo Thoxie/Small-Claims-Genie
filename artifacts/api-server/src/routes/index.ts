@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { requireAuth } from "../middlewares/auth";
 import { requiresPurchase } from "../middlewares/requiresPurchase";
 import healthRouter from "./health";
+import adminRouter from "./admin";
 import countiesRouter from "./counties";
 import helpChatRouter from "./help-chat";
 import caseClassifierRouter from "./case-classifier";
@@ -20,6 +21,9 @@ import { stripePublicRouter, stripeProtectedRouter } from "./stripe";
 import accountRouter from "./account";
 
 const router: IRouter = Router();
+
+// ── Admin routes — owner only, uses its own ADMIN_API_KEY bearer check ────────
+router.use(adminRouter);
 
 // ── Public routes — no auth required ─────────────────────────────────────────
 router.use(healthRouter);

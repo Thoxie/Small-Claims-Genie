@@ -1,0 +1,414 @@
+import { Router, type Request, type Response, type NextFunction, type RequestHandler } from "express";
+import { db, casesTable, purchasesTable, aiRateLimitsTable } from "@workspace/db";
+import { sql, count, sum, eq, gte, desc, and, isNotNull } from "drizzle-orm";
+import { logger } from "../lib/logger";
+
+const router = Router();
+
+// In-memory notifications toggle — resets on server restart (acceptable for owner tool)
+let notificationsEnabled = false;
+
+// ── Auth middleware ───────────────────────────────────────────────────────────
+const requireAdmin: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
+  const adminKey = process.env.ADMIN_API_KEY;
+  if (!adminKey) {
+    res.status(503).json({ error: "Admin not configured — set ADMIN_API_KEY in Replit Secrets" });
+    return;
+  }
+  const auth = req.headers.authorization;
+  if (!auth || auth !== `Bearer ${adminKey}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  next();
+};
+
+// Apply auth to all /admin/* routes
+router.use("/admin", requireAdmin);
+
+// ── Clerk email lookup via REST API ──────────────────────────────────────────
+async function getClerkEmails(userIds: string[]): Promise<Map<string, string>> {
+  if (userIds.length === 0) return new Map();
+  const secretKey =
+    process.env.APP_ENV === "production"
+      ? process.env.CLERK_SECRET_KEY
+      : (process.env.CLERK_SECRET_KEY_DEV ?? process.env.CLERK_SECRET_KEY);
+  if (!secretKey) return new Map();
+
+  try {
+    const params = new URLSearchParams();
+    userIds.slice(0, 100).forEach((id) => params.append("user_id", id));
+    params.set("limit", "100");
+
+    const clerkRes = await fetch(`https://api.clerk.com/v1/users?${params}`, {
+      headers: { Authorization: `Bearer ${secretKey}` },
+    });
+    if (!clerkRes.ok) return new Map();
+
+    const users = (await clerkRes.json()) as Array<{
+      id: string;
+      email_addresses: Array<{ email_address: string }>;
+    }>;
+    return new Map(
+      users.map((u) => [u.id, u.email_addresses[0]?.email_address ?? u.id])
+    );
+  } catch {
+    return new Map();
+  }
+}
+
+// ── GET /admin/overview ───────────────────────────────────────────────────────
+router.get("/admin/overview", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const [{ totalUsers }] = await db
+      .select({ totalUsers: sql<number>`count(distinct ${casesTable.userId})` })
+      .from(casesTable);
+
+    const [{ totalCases }] = await db.select({ totalCases: count() }).from(casesTable);
+
+    const [{ paidActivations }] = await db
+      .select({ paidActivations: count() })
+      .from(purchasesTable)
+      .where(eq(purchasesTable.status, "complete"));
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [mtdResult] = await db
+      .select({ total: sum(purchasesTable.amountTotal) })
+      .from(purchasesTable)
+      .where(and(eq(purchasesTable.status, "complete"), gte(purchasesTable.createdAt, startOfMonth)));
+
+    const [totalResult] = await db
+      .select({ total: sum(purchasesTable.amountTotal) })
+      .from(purchasesTable)
+      .where(eq(purchasesTable.status, "complete"));
+
+    const [{ hearingScheduled }] = await db
+      .select({ hearingScheduled: count() })
+      .from(casesTable)
+      .where(isNotNull(casesTable.hearingDate));
+
+    const [{ intakeComplete }] = await db
+      .select({ intakeComplete: count() })
+      .from(casesTable)
+      .where(eq(casesTable.intakeComplete, true));
+
+    res.json({
+      totalUsers: Number(totalUsers),
+      totalCases: Number(totalCases),
+      paidActivations: Number(paidActivations),
+      revenueMtd: Number(mtdResult?.total ?? 0) / 100,
+      revenueTotal: Number(totalResult?.total ?? 0) / 100,
+      hearingScheduled: Number(hearingScheduled),
+      intakeComplete: Number(intakeComplete),
+    });
+  } catch (err) {
+    logger.error({ err }, "Admin overview error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/users ──────────────────────────────────────────────────────────
+router.get("/admin/users", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const cases = await db
+      .select({
+        id: casesTable.id,
+        userId: casesTable.userId,
+        title: casesTable.title,
+        status: casesTable.status,
+        claimAmount: casesTable.claimAmount,
+        claimType: casesTable.claimType,
+        hearingDate: casesTable.hearingDate,
+        hearingTime: casesTable.hearingTime,
+        hearingJudge: casesTable.hearingJudge,
+        hearingCourtroom: casesTable.hearingCourtroom,
+        hearingNotes: casesTable.hearingNotes,
+        caseNumber: casesTable.caseNumber,
+        courthouseName: casesTable.courthouseName,
+        courthouseAddress: casesTable.courthouseAddress,
+        courthouseCity: casesTable.courthouseCity,
+        readinessScore: casesTable.readinessScore,
+        intakeComplete: casesTable.intakeComplete,
+        documentCount: casesTable.documentCount,
+        createdAt: casesTable.createdAt,
+        updatedAt: casesTable.updatedAt,
+      })
+      .from(casesTable)
+      .orderBy(desc(casesTable.updatedAt));
+
+    const purchases = await db
+      .select({ userId: purchasesTable.userId })
+      .from(purchasesTable)
+      .where(eq(purchasesTable.status, "complete"));
+
+    const paidUserIds = new Set(purchases.map((p) => p.userId));
+
+    const userIds = [
+      ...new Set(cases.map((c) => c.userId).filter(Boolean)),
+    ] as string[];
+    const emailMap = await getClerkEmails(userIds);
+
+    // Group cases by userId
+    type UserRow = {
+      userId: string;
+      email: string;
+      cases: typeof cases;
+      hasPurchase: boolean;
+      lastActivity: Date | null;
+    };
+    const usersMap = new Map<string, UserRow>();
+
+    for (const c of cases) {
+      const uid = c.userId ?? "unknown";
+      if (!usersMap.has(uid)) {
+        usersMap.set(uid, {
+          userId: uid,
+          email: emailMap.get(uid) ?? uid,
+          cases: [],
+          hasPurchase: paidUserIds.has(uid),
+          lastActivity: c.updatedAt,
+        });
+      }
+      usersMap.get(uid)!.cases.push(c);
+    }
+
+    res.json(Array.from(usersMap.values()));
+  } catch (err) {
+    logger.error({ err }, "Admin users error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/case-analytics ─────────────────────────────────────────────────
+router.get("/admin/case-analytics", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const byStatus = await db
+      .select({ status: casesTable.status, count: count() })
+      .from(casesTable)
+      .groupBy(casesTable.status)
+      .orderBy(desc(count()));
+
+    const byClaimType = await db
+      .select({ type: casesTable.claimType, cnt: count() })
+      .from(casesTable)
+      .where(isNotNull(casesTable.claimType))
+      .groupBy(casesTable.claimType)
+      .orderBy(desc(count()));
+
+    const byCounty = await db
+      .select({ county: casesTable.countyId, cnt: count() })
+      .from(casesTable)
+      .where(isNotNull(casesTable.countyId))
+      .groupBy(casesTable.countyId)
+      .orderBy(desc(count()));
+
+    const claimAmountRanges = await db
+      .select({
+        range: sql<string>`
+          case
+            when ${casesTable.claimAmount} is null then 'Unknown'
+            when ${casesTable.claimAmount} < 500 then '$0–500'
+            when ${casesTable.claimAmount} < 1500 then '$500–1,500'
+            when ${casesTable.claimAmount} < 3000 then '$1,500–3,000'
+            when ${casesTable.claimAmount} < 7500 then '$3,000–7,500'
+            else '$7,500+'
+          end
+        `,
+        cnt: count(),
+      })
+      .from(casesTable)
+      .groupBy(sql`1`)
+      .orderBy(sql`min(coalesce(${casesTable.claimAmount}, 0))`);
+
+    res.json({
+      byStatus: byStatus.map((r) => ({ status: r.status, count: Number(r.count) })),
+      byClaimType: byClaimType
+        .slice(0, 12)
+        .map((r) => ({ type: r.type ?? "Unknown", count: Number(r.cnt) })),
+      byCounty: byCounty
+        .slice(0, 10)
+        .map((r) => ({ county: r.county ?? "Unknown", count: Number(r.cnt) })),
+      claimAmountRanges: claimAmountRanges.map((r) => ({
+        range: r.range,
+        count: Number(r.cnt),
+      })),
+    });
+  } catch (err) {
+    logger.error({ err }, "Admin case-analytics error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/revenue ────────────────────────────────────────────────────────
+router.get("/admin/revenue", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const purchases = await db
+      .select()
+      .from(purchasesTable)
+      .where(eq(purchasesTable.status, "complete"))
+      .orderBy(desc(purchasesTable.createdAt))
+      .limit(50);
+
+    const userIds = [...new Set(purchases.map((p) => p.userId))];
+    const emailMap = await getClerkEmails(userIds);
+
+    res.json(
+      purchases.map((p) => ({
+        ...p,
+        email: emailMap.get(p.userId) ?? p.userId,
+        amountDollars: (p.amountTotal ?? 0) / 100,
+      }))
+    );
+  } catch (err) {
+    logger.error({ err }, "Admin revenue error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/system ─────────────────────────────────────────────────────────
+router.get("/admin/system", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rateLimits = await db
+      .select()
+      .from(aiRateLimitsTable)
+      .where(gte(aiRateLimitsTable.count, 1))
+      .orderBy(desc(aiRateLimitsTable.count))
+      .limit(20);
+
+    const [{ totalRLUsers }] = await db
+      .select({ totalRLUsers: count() })
+      .from(aiRateLimitsTable)
+      .where(gte(aiRateLimitsTable.count, 1));
+
+    const [{ usersAtLimit }] = await db
+      .select({ usersAtLimit: count() })
+      .from(aiRateLimitsTable)
+      .where(gte(aiRateLimitsTable.count, 30));
+
+    const [{ usersNearLimit }] = await db
+      .select({ usersNearLimit: count() })
+      .from(aiRateLimitsTable)
+      .where(
+        and(
+          gte(aiRateLimitsTable.count, 20),
+          sql`${aiRateLimitsTable.count} < 30`
+        )
+      );
+
+    const rlUserIds = rateLimits.map((r) => r.userId);
+    const emailMap = await getClerkEmails(rlUserIds);
+
+    // Reminder stats
+    const casesWithHearing = await db
+      .select({
+        reminder30DaySent: casesTable.reminder30DaySent,
+        reminder14DaySent: casesTable.reminder14DaySent,
+        reminder7DaySent: casesTable.reminder7DaySent,
+        reminder3DaySent: casesTable.reminder3DaySent,
+        reminder1DaySent: casesTable.reminder1DaySent,
+      })
+      .from(casesTable)
+      .where(isNotNull(casesTable.hearingDate));
+
+    res.json({
+      aiRateLimit: {
+        totalActiveUsers: Number(totalRLUsers),
+        usersAtLimit: Number(usersAtLimit),
+        usersNearLimit: Number(usersNearLimit),
+        topUsers: rateLimits.map((r) => ({
+          userId: r.userId,
+          email: emailMap.get(r.userId) ?? r.userId,
+          count: r.count,
+          resetAt: r.resetAt,
+        })),
+      },
+      reminders: {
+        casesWithHearingDate: casesWithHearing.length,
+        reminder30Sent: casesWithHearing.filter((c) => c.reminder30DaySent).length,
+        reminder14Sent: casesWithHearing.filter((c) => c.reminder14DaySent).length,
+        reminder7Sent: casesWithHearing.filter((c) => c.reminder7DaySent).length,
+        reminder3Sent: casesWithHearing.filter((c) => c.reminder3DaySent).length,
+        reminder1Sent: casesWithHearing.filter((c) => c.reminder1DaySent).length,
+      },
+      server: {
+        uptimeSeconds: Math.floor(process.uptime()),
+        nodeVersion: process.version,
+        env: process.env.APP_ENV ?? "development",
+      },
+    });
+  } catch (err) {
+    logger.error({ err }, "Admin system error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/signups ────────────────────────────────────────────────────────
+router.get("/admin/signups", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const secretKey =
+      process.env.APP_ENV === "production"
+        ? process.env.CLERK_SECRET_KEY
+        : (process.env.CLERK_SECRET_KEY_DEV ?? process.env.CLERK_SECRET_KEY);
+
+    if (!secretKey) {
+      res.json([]);
+      return;
+    }
+
+    const clerkRes = await fetch(
+      "https://api.clerk.com/v1/users?limit=25&order_by=-created_at",
+      { headers: { Authorization: `Bearer ${secretKey}` } }
+    );
+
+    if (!clerkRes.ok) {
+      res.json([]);
+      return;
+    }
+
+    const users = (await clerkRes.json()) as Array<{
+      id: string;
+      email_addresses: Array<{ email_address: string }>;
+      first_name: string | null;
+      last_name: string | null;
+      created_at: number;
+      last_sign_in_at: number | null;
+    }>;
+
+    res.json(
+      users.map((u) => ({
+        id: u.id,
+        email: u.email_addresses[0]?.email_address ?? "—",
+        firstName: u.first_name,
+        lastName: u.last_name,
+        createdAt: new Date(u.created_at).toISOString(),
+        lastSignInAt: u.last_sign_in_at
+          ? new Date(u.last_sign_in_at).toISOString()
+          : null,
+      }))
+    );
+  } catch (err) {
+    logger.error({ err }, "Admin signups error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET/POST /admin/notifications ─────────────────────────────────────────────
+router.get("/admin/notifications", async (_req: Request, res: Response): Promise<void> => {
+  res.json({ enabled: notificationsEnabled });
+});
+
+router.post("/admin/notifications", async (req: Request, res: Response): Promise<void> => {
+  const { enabled } = req.body as { enabled?: boolean };
+  if (typeof enabled !== "boolean") {
+    res.status(400).json({ error: "enabled must be a boolean" });
+    return;
+  }
+  notificationsEnabled = enabled;
+  logger.info({ enabled }, "Admin notifications toggle changed");
+  res.json({ enabled: notificationsEnabled });
+});
+
+export default router;

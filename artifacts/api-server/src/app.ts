@@ -5,6 +5,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 import * as path from "path";
+import { existsSync } from "fs";
 
 const app: Express = express();
 
@@ -75,6 +76,15 @@ app.use("/api", router);
 // Serve form background images for the coordinate-preview tool (dev only)
 if (process.env.NODE_ENV !== "production") {
   app.use("/form-assets", express.static(path.join(__dirname, "..", "assets")));
+}
+
+// Serve admin dashboard static build at /admin/
+const adminDistPath = path.join(__dirname, "..", "..", "admin", "dist", "public");
+if (existsSync(adminDistPath)) {
+  app.use("/admin", express.static(adminDistPath, { index: "index.html" }));
+  app.use("/admin", (_req: Request, res: Response) => {
+    res.sendFile(path.join(adminDistPath, "index.html"));
+  });
 }
 
 // Global error handler — catches multer errors, validation errors, and anything else.
