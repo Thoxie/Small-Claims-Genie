@@ -10,5 +10,7 @@ Disallow: /download
 Disallow: /sign-in
 Disallow: /sign-up
 Disallow: /tos
+Disallow: /email-schedule
+Disallow: /start
 
 Sitemap: https://smallclaimsgenie.com/sitemap.xml
