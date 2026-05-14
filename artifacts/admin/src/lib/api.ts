@@ -65,6 +65,18 @@ export async function fetchNotifications(): Promise<{ enabled: boolean }> {
   return apiFetch<{ enabled: boolean }>("/admin/notifications");
 }
 
+export async function fetchErrors(): Promise<ErrorEntry[]> {
+  return apiFetch<ErrorEntry[]>("/admin/errors");
+}
+
+export async function clearErrors(): Promise<void> {
+  await apiFetch<{ ok: boolean }>("/admin/errors", { method: "DELETE" });
+}
+
+export async function fetchStatus(): Promise<StatusData> {
+  return apiFetch<StatusData>("/admin/status");
+}
+
 export async function setNotifications(enabled: boolean): Promise<{ enabled: boolean }> {
   return apiFetch<{ enabled: boolean }>("/admin/notifications", {
     method: "POST",
@@ -195,4 +207,24 @@ export interface SignupRow {
   lastName: string | null;
   createdAt: string;
   lastSignInAt: string | null;
+}
+
+export interface ErrorEntry {
+  id: number;
+  timestamp: string;
+  level: "error" | "warn";
+  message: string;
+  route?: string;
+  method?: string;
+  statusCode?: number;
+  stack?: string;
+}
+
+export interface StatusData {
+  activeUsers24h: number;
+  recentActiveUsers: { email: string; lastSignInAt: string }[];
+  recentPayments: { email: string; planKey: string | null; amountDollars: number; createdAt: string }[];
+  logLevel: string;
+  memoryMb: number;
+  memoryTotalMb: number;
 }

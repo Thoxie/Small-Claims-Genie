@@ -8,10 +8,15 @@ import {
   fetchSystem,
   fetchSignups,
   fetchNotifications,
+  fetchErrors,
+  fetchStatus,
+  clearErrors,
   setNotifications,
   clearStoredKey,
   type UserRow,
   type CaseRow,
+  type ErrorEntry,
+  type StatusData,
 } from "@/lib/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +54,13 @@ import {
   ChevronDown,
   ChevronRight,
   Search,
+  AlertTriangle,
+  AlertCircle,
+  Trash2,
+  Database,
+  Cpu,
+  UserCheck,
+  ShieldCheck,
 } from "lucide-react";
 
 const CHART_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
@@ -694,6 +706,231 @@ function SignupsTab() {
   );
 }
 
+// ── Status Tab ────────────────────────────────────────────────────────────────
+function StatusTab() {
+  const qc = useQueryClient();
+  const { data: errors, isLoading: errLoading } = useQuery({
+    queryKey: ["errors"],
+    queryFn: fetchErrors,
+    refetchInterval: 30000,
+  });
+  const { data: status, isLoading: statusLoading } = useQuery({
+    queryKey: ["status"],
+    queryFn: fetchStatus,
+    refetchInterval: 60000,
+  });
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const clearMutation = useMutation({
+    mutationFn: clearErrors,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["errors"] }),
+  });
+
+  const errorCount = errors?.filter((e) => e.level === "error").length ?? 0;
+  const warnCount = errors?.filter((e) => e.level === "warn").length ?? 0;
+
+  return (
+    <div className="space-y-6">
+
+      {/* ── Health Strip ── */}
+      {statusLoading ? (
+        <LoadingSkeleton rows={1} cols={4} />
+      ) : status ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card className="shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <UserCheck className="h-4 w-4 text-blue-500" />
+                <p className="text-xs text-gray-500">Active Users (24h)</p>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{status.activeUsers24h}</p>
+            </CardContent>
+          </Card>
+          <Card className="shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <p className="text-xs text-gray-500">Errors (session)</p>
+              </div>
+              <p className={`text-2xl font-bold ${errorCount > 0 ? "text-red-600" : "text-gray-900"}`}>
+                {errorCount}
+                {warnCount > 0 && <span className="text-base font-normal text-amber-500 ml-1">+{warnCount} warn</span>}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Cpu className="h-4 w-4 text-purple-500" />
+                <p className="text-xs text-gray-500">Memory</p>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{status.memoryMb}<span className="text-sm font-normal text-gray-400"> / {status.memoryTotalMb} MB</span></p>
+            </CardContent>
+          </Card>
+          <Card className="shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <ShieldCheck className="h-4 w-4 text-green-500" />
+                <p className="text-xs text-gray-500">Log Level</p>
+              </div>
+              <p className="text-2xl font-bold text-gray-900 capitalize">{status.logLevel}</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {/* ── Active Users 24h ── */}
+      {status && status.recentActiveUsers.length > 0 && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-gray-700">Recently Active Users (last 24h)</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-1">
+              {status.recentActiveUsers.map((u, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5 text-sm border-b border-gray-50 last:border-0">
+                  <span className="text-gray-800 truncate">{u.email}</span>
+                  <span className="text-xs text-gray-400 ml-4 whitespace-nowrap">{fmtDateTime(u.lastSignInAt)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Recent Payment Activity ── */}
+      {status && status.recentPayments.length > 0 && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-gray-700">Recent Payment Activity</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-1">
+              {status.recentPayments.map((p, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5 text-sm border-b border-gray-50 last:border-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CreditCard className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                    <span className="text-gray-800 truncate">{p.email}</span>
+                    {p.planKey && <Badge className="bg-green-50 text-green-700 text-xs">{p.planKey}</Badge>}
+                  </div>
+                  <div className="flex items-center gap-3 ml-4 shrink-0">
+                    <span className="font-semibold text-green-700">{fmtMoney(p.amountDollars)}</span>
+                    <span className="text-xs text-gray-400 hidden sm:block">{fmtDate(p.createdAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Error Feed ── */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-semibold text-gray-700">
+              Server Error Log
+              <span className="ml-2 text-xs font-normal text-gray-400">(last 100 · resets on restart)</span>
+            </CardTitle>
+            {errors && errors.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-gray-400 hover:text-red-600"
+                onClick={() => clearMutation.mutate()}
+                disabled={clearMutation.isPending}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> Clear
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {errLoading ? (
+            <LoadingSkeleton rows={3} cols={1} />
+          ) : !errors || errors.length === 0 ? (
+            <div className="flex items-center gap-2 py-6 justify-center text-green-600">
+              <CheckCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">No errors recorded this session</span>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {errors.map((e) => (
+                <div key={e.id} className="border rounded-lg overflow-hidden">
+                  <button
+                    className="w-full flex items-start gap-3 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors"
+                    onClick={() => setExpandedId(expandedId === e.id ? null : e.id)}
+                  >
+                    {e.level === "error" ? (
+                      <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className={`text-xs ${e.level === "error" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>
+                          {e.statusCode ? `${e.statusCode} ` : ""}{e.level}
+                        </Badge>
+                        {e.method && e.route && (
+                          <span className="text-xs font-mono text-gray-500">{e.method} {e.route}</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-800 mt-0.5 truncate">{e.message}</p>
+                    </div>
+                    <span className="text-xs text-gray-400 whitespace-nowrap ml-2 mt-0.5">{fmtDateTime(e.timestamp)}</span>
+                  </button>
+                  {expandedId === e.id && e.stack && (
+                    <div className="border-t bg-gray-950 px-3 py-2">
+                      <pre className="text-xs text-green-400 whitespace-pre-wrap break-all font-mono leading-relaxed">{e.stack}</pre>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Database Backup Info ── */}
+      <Card className="shadow-sm border-blue-100">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-semibold text-gray-700">Database Backup Status</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-3 text-sm text-gray-600">
+          <p>
+            Small Claims Genie uses Replit's managed PostgreSQL. Replit maintains automatic daily
+            snapshots at the infrastructure level — these are not accessible as downloadable files
+            from the dashboard, but can be requested through Replit support.
+          </p>
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 space-y-2">
+            <p className="font-semibold text-blue-800 text-xs uppercase tracking-wide">Manual Backup Procedure</p>
+            <p className="text-xs text-blue-700">
+              Run this command from the workspace terminal to create a timestamped SQL dump:
+            </p>
+            <pre className="text-xs bg-blue-900 text-blue-100 rounded p-2 overflow-x-auto font-mono">
+              {`pg_dump $DATABASE_URL > backup-$(date +%Y%m%d-%H%M%S).sql`}
+            </pre>
+            <p className="text-xs text-blue-700">
+              Store the output file off-platform (e.g., download it or copy to cloud storage).
+              The existing on-disk backups in <code className="bg-blue-100 px-1 rounded">assets/backups/</code> are ZIP exports created manually — they are not automated.
+            </p>
+          </div>
+          <div className="bg-amber-50 border border-amber-100 rounded-lg p-3">
+            <p className="font-semibold text-amber-800 text-xs uppercase tracking-wide mb-1">Pre-Beta Recommendation</p>
+            <p className="text-xs text-amber-700">
+              Before launching beta, run a manual backup and verify you can restore it to a fresh database.
+              Test the restore with: <code className="bg-amber-100 px-1 rounded">psql $DATABASE_URL {"<"} your-backup.sql</code>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+    </div>
+  );
+}
+
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 function LoadingSkeleton({ rows = 3, cols = 1 }: { rows?: number; cols?: number }) {
   return (
@@ -766,6 +1003,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
             <TabsTrigger value="revenue" className="text-xs sm:text-sm">Revenue</TabsTrigger>
             <TabsTrigger value="system" className="text-xs sm:text-sm">System</TabsTrigger>
             <TabsTrigger value="signups" className="text-xs sm:text-sm">Signups</TabsTrigger>
+            <TabsTrigger value="status" className="text-xs sm:text-sm">Status</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview"><OverviewTab /></TabsContent>
@@ -774,6 +1012,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
           <TabsContent value="revenue"><RevenueTab /></TabsContent>
           <TabsContent value="system"><SystemTab /></TabsContent>
           <TabsContent value="signups"><SignupsTab /></TabsContent>
+          <TabsContent value="status"><StatusTab /></TabsContent>
         </Tabs>
       </div>
     </div>

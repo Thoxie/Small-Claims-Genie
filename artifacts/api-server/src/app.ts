@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
+import { pushError } from "./lib/errorLog";
 import * as path from "path";
 import { existsSync } from "fs";
 
@@ -89,12 +90,21 @@ if (existsSync(adminDistPath)) {
 
 // Global error handler — catches multer errors, validation errors, and anything else.
 // In production, 5xx details are never sent to the client — only logged server-side.
-app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   const message = err instanceof Error ? err.message : "Internal server error";
+  const stack = err instanceof Error ? err.stack : undefined;
   const status = (err as { status?: number; statusCode?: number })?.status
     ?? (err as { statusCode?: number })?.statusCode
     ?? 500;
   logger.error({ err }, message);
+  pushError({
+    level: status >= 500 ? "error" : "warn",
+    message,
+    stack,
+    route: req.path,
+    method: req.method,
+    statusCode: status,
+  });
   const clientMessage =
     status >= 500 && process.env.NODE_ENV === "production"
       ? "Internal server error"

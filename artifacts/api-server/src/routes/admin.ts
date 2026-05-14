@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction, type RequestHan
 import { db, casesTable, purchasesTable, aiRateLimitsTable } from "@workspace/db";
 import { sql, count, sum, eq, gte, desc, and, isNotNull } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { getErrors, clearErrors } from "../lib/errorLog";
 
 const router = Router();
 
@@ -470,6 +471,84 @@ router.get("/admin/signups", async (req: Request, res: Response): Promise<void> 
     );
   } catch (err) {
     logger.error({ err }, "Admin signups error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/errors ─────────────────────────────────────────────────────────
+router.get("/admin/errors", (req: Request, res: Response): void => {
+  res.json(getErrors());
+});
+
+router.delete("/admin/errors", (_req: Request, res: Response): void => {
+  clearErrors();
+  res.json({ ok: true });
+});
+
+// ── GET /admin/status ─────────────────────────────────────────────────────────
+router.get("/admin/status", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const secretKey = clerkSecretKey();
+    const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
+
+    // Active users in last 24h from Clerk
+    let activeUsers24h = 0;
+    let recentActiveUsers: Array<{ email: string; lastSignInAt: string }> = [];
+    if (secretKey) {
+      try {
+        const clerkRes = await fetch(
+          "https://api.clerk.com/v1/users?limit=500&order_by=-last_sign_in_at",
+          { headers: { Authorization: `Bearer ${secretKey}` } }
+        );
+        if (clerkRes.ok) {
+          const users = (await clerkRes.json()) as ClerkUser[];
+          const active = users.filter(
+            (u) => u.last_sign_in_at && u.last_sign_in_at > cutoff24h
+          );
+          activeUsers24h = active.length;
+          recentActiveUsers = active.slice(0, 10).map((u) => ({
+            email: u.email_addresses[0]?.email_address ?? u.id,
+            lastSignInAt: new Date(u.last_sign_in_at!).toISOString(),
+          }));
+        }
+      } catch {
+        // non-fatal
+      }
+    }
+
+    // Recent payments (last 5)
+    const recentPayments = await db
+      .select({
+        amountTotal: purchasesTable.amountTotal,
+        planKey: purchasesTable.planKey,
+        createdAt: purchasesTable.createdAt,
+        userId: purchasesTable.userId,
+      })
+      .from(purchasesTable)
+      .where(eq(purchasesTable.status, "complete"))
+      .orderBy(desc(purchasesTable.createdAt))
+      .limit(5);
+
+    const paymentUserIds = recentPayments.map((p) => p.userId);
+    const emailMap = await getClerkEmails(paymentUserIds);
+
+    const mem = process.memoryUsage();
+
+    res.json({
+      activeUsers24h,
+      recentActiveUsers,
+      recentPayments: recentPayments.map((p) => ({
+        email: emailMap.get(p.userId) ?? p.userId,
+        planKey: p.planKey,
+        amountDollars: (p.amountTotal ?? 0) / 100,
+        createdAt: p.createdAt,
+      })),
+      logLevel: process.env.LOG_LEVEL ?? "info",
+      memoryMb: Math.round(mem.heapUsed / 1024 / 1024),
+      memoryTotalMb: Math.round(mem.heapTotal / 1024 / 1024),
+    });
+  } catch (err) {
+    logger.error({ err }, "Admin status error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
