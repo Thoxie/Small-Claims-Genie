@@ -476,7 +476,7 @@ router.get("/admin/signups", async (req: Request, res: Response): Promise<void> 
 });
 
 // ── GET /admin/errors ─────────────────────────────────────────────────────────
-router.get("/admin/errors", (req: Request, res: Response): void => {
+router.get("/admin/errors", (_req: Request, res: Response): void => {
   res.json(getErrors());
 });
 
