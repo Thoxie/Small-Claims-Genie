@@ -72,14 +72,21 @@ export async function setNotifications(enabled: boolean): Promise<{ enabled: boo
   });
 }
 
-export async function validateKey(key: string): Promise<boolean> {
+export async function validateCredentials(
+  email: string,
+  password: string
+): Promise<{ valid: boolean; key?: string }> {
   try {
-    const res = await fetch(`${API_BASE}/admin/overview`, {
-      headers: { Authorization: `Bearer ${key}` },
+    const res = await fetch(`${API_BASE}/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
-    return res.ok;
+    if (!res.ok) return { valid: false };
+    const data = (await res.json()) as { key: string };
+    return { valid: true, key: data.key };
   } catch {
-    return false;
+    return { valid: false };
   }
 }
 

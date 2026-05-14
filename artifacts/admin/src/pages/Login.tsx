@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { setStoredKey, validateKey } from "@/lib/api";
+import { setStoredKey, validateCredentials } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 
@@ -10,22 +11,23 @@ interface LoginProps {
 }
 
 export default function Login({ onAuthenticated }: LoginProps) {
-  const [key, setKey] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!key.trim()) return;
+    if (!email.trim() || !password.trim()) return;
     setLoading(true);
     setError("");
 
-    const valid = await validateKey(key.trim());
-    if (valid) {
-      setStoredKey(key.trim());
+    const result = await validateCredentials(email.trim(), password.trim());
+    if (result.valid) {
+      setStoredKey(result.key!);
       onAuthenticated();
     } else {
-      setError("Invalid key — check your ADMIN_API_KEY secret.");
+      setError("Invalid email or password.");
     }
     setLoading(false);
   }
@@ -44,20 +46,30 @@ export default function Login({ onAuthenticated }: LoginProps) {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-3">
-            <div>
+            <div className="space-y-1">
+              <Label htmlFor="email">Email</Label>
               <Input
-                type="text"
-                inputMode="text"
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck={false}
-                placeholder="Enter your ADMIN_API_KEY"
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 autoFocus
                 disabled={loading}
-                className="font-mono text-sm"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -68,21 +80,21 @@ export default function Login({ onAuthenticated }: LoginProps) {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading || !key.trim()}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || !email.trim() || !password.trim()}
+            >
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Verifying…
+                  Signing in…
                 </>
               ) : (
                 "Sign In"
               )}
             </Button>
           </form>
-
-          <p className="mt-4 text-center text-xs text-gray-400">
-            Set <code className="bg-gray-100 px-1 rounded">ADMIN_API_KEY</code> in Replit Secrets to enable access.
-          </p>
         </CardContent>
       </Card>
     </div>

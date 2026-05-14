@@ -23,6 +23,32 @@ const requireAdmin: RequestHandler = (req: Request, res: Response, next: NextFun
   next();
 };
 
+// ── POST /admin/login (public — validates email + password, returns key) ──────
+router.post("/admin/login", (req: Request, res: Response): void => {
+  const adminKey = process.env.ADMIN_API_KEY;
+  const adminEmail = process.env.ADMIN_EMAIL;
+
+  if (!adminKey) {
+    res.status(503).json({ error: "Admin not configured" });
+    return;
+  }
+
+  const { email, password } = req.body as { email?: string; password?: string };
+
+  const emailMatch = adminEmail
+    ? email?.toLowerCase().trim() === adminEmail.toLowerCase().trim()
+    : true; // if ADMIN_EMAIL not set, skip email check (backward compat)
+
+  const keyMatch = password?.trim() === adminKey;
+
+  if (!emailMatch || !keyMatch) {
+    res.status(401).json({ error: "Invalid email or password" });
+    return;
+  }
+
+  res.json({ key: adminKey });
+});
+
 // Apply auth to all /admin/* routes
 router.use("/admin", requireAdmin);
 
