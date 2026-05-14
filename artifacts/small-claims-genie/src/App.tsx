@@ -178,6 +178,7 @@ function Router() {
   // unmounted mid-flow (avoids duplicate verification emails).
   if (location.startsWith("/sign-up")) return <SignUpPage />;
   if (location.startsWith("/sign-in")) return <SignInPage />;
+  if (location.startsWith("/beta")) return <BetaPage />;
 
   return (
     <>
@@ -215,9 +216,6 @@ function Router() {
             <RequireAuth><CaseWorkspace caseIdParam={params.id ?? ""} /></RequireAuth>
           )}
         </Route>
-
-        {/* ── Beta landing — own header, no nav ── */}
-        <Route path="/beta" component={BetaPage} />
 
         {/* ── All other routes — standard Layout + nav ── */}
         <Route>
