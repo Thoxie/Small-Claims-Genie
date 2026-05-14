@@ -31,6 +31,7 @@ import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 import Start from "@/pages/start";
 import EmailSchedule from "@/pages/email-schedule";
+import Copyright from "@/pages/copyright";
 
 // In development (Vite dev server / staging), use the dev Clerk key if available.
 // In production builds, ALWAYS use the production key — dev Clerk instances
@@ -227,6 +228,7 @@ function Router() {
               <Route path="/pricing" component={Pricing} />
               <Route path="/download" component={Download} />
               <Route path="/terms" component={Terms} />
+              <Route path="/copyright" component={Copyright} />
               <Route path="/tos" component={TermsOfService} />
               <Route path="/payment-terms" component={PaymentTerms} />
               <Route path="/email-schedule" component={EmailSchedule} />

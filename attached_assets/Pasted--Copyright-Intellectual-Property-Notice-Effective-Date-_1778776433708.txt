@@ -1,0 +1,228 @@
+# Copyright & Intellectual Property Notice
+
+**Effective Date:** 2026
+**Website / Platform:** Small Claims Genie
+**Owner:** [Insert Legal Company Name, if different from Small Claims Genie]
+
+© 2026 Small Claims Genie. All rights reserved.
+
+This Copyright & Intellectual Property Notice applies to the Small Claims Genie website, platform, application, software, technology, content, documents, workflows, templates, designs, user interface, educational materials, videos, text, graphics, databases, compilations, AI-assisted features, system structure, and all other materials made available through Small Claims Genie, whether displayed publicly, provided to users, generated through the platform, or made available through any related website, application, communication, download, subscription, account, dashboard, or digital service.
+
+This Notice is incorporated into and forms part of the Small Claims Genie Terms and Conditions, Privacy Policy, AI / Legal Information Disclaimer, and any other applicable agreements, policies, or notices governing use of the platform.
+
+## 1. Ownership of Copyrighted Materials
+
+All original materials made available through Small Claims Genie are owned by Small Claims Genie, its parent company, affiliates, licensors, authors, developers, contractors, content providers, or other authorized rights holders, unless otherwise expressly stated in writing.
+
+Protected materials may include, without limitation:
+
+* website text, page copy, headings, explanations, legal-information content, help content, intake language, onboarding copy, descriptions, summaries, scripts, FAQs, and instructional materials;
+* software code, source code, object code, front-end code, back-end code, application architecture, databases, data structures, compilations, layouts, design systems, and platform features;
+* visual designs, graphics, icons, logos, page layouts, user interface elements, user experience flows, screen arrangements, dashboards, forms, buttons, menus, navigation structures, and overall look and feel to the extent protected by applicable law;
+* workflows, checklists, guided intake processes, question sequences, decision-support flows, case-preparation flows, document-preparation flows, evidence-organization flows, and other original expressions of Small Claims Genie’s platform logic;
+* templates, forms, sample documents, generated document structures, explanatory notes, written instructions, form-completion guidance, legal-information summaries, educational frameworks, and other original written materials;
+* videos, audio recordings, training materials, images, animations, diagrams, screenshots, presentations, downloadable resources, and other media;
+* AI prompts, prompt structures, system instructions, response frameworks, output formats, data-labeling systems, knowledge organization, training examples, evaluation rubrics, internal workflows, and other proprietary AI-assisted content and operational materials, to the fullest extent protectable by copyright, trade secret, contract, and other applicable law;
+* collections, compilations, selections, arrangements, classifications, taxonomies, databases, knowledge libraries, resource libraries, and curated materials;
+* all updates, revisions, modifications, derivative works, enhancements, improvements, and new versions of the above.
+
+Except for rights expressly granted to users in writing, Small Claims Genie reserves all rights, title, and interest in and to the platform and all protected materials.
+
+## 2. Copyright Notice
+
+The copyright notice for the Small Claims Genie platform is:
+
+**© 2026 Small Claims Genie. All rights reserved.**
+
+If Small Claims Genie is operated by a separate legal entity, the notice may be displayed as:
+
+**© 2026 [Insert Legal Company Name]. All rights reserved. Small Claims Genie is a product, platform, brand, or service of [Insert Legal Company Name].**
+
+If no separate legal entity owns the platform yet, use:
+
+**© 2026 Small Claims Genie. All rights reserved.**
+
+This notice applies to the Small Claims Genie platform and all protected materials made available through it, unless a different copyright notice appears on a specific item.
+
+The absence of a copyright symbol, copyright notice, watermark, footer, label, metadata tag, or other ownership statement on any particular page, file, output, document, image, video, feature, workflow, or other material does not waive Small Claims Genie’s rights or place that material in the public domain.
+
+## 3. Limited License to Users
+
+Subject to compliance with Small Claims Genie’s Terms and Conditions, users are granted a limited, revocable, non-exclusive, non-transferable, non-sublicensable license to access and use the Small Claims Genie platform solely for their own personal, lawful, internal, and non-commercial purposes, unless Small Claims Genie expressly agrees otherwise in writing.
+
+This limited license allows users to:
+
+* access the platform through authorized means;
+* use Small Claims Genie’s features for personal legal-information, case-preparation, document-organization, and decision-support purposes;
+* view platform content for their own personal use;
+* download, save, print, or use documents, drafts, summaries, checklists, or outputs generated for their own matter, subject to these restrictions;
+* submit their own information, documents, facts, and materials for platform processing.
+
+This license does not transfer ownership of Small Claims Genie’s software, content, platform structure, proprietary workflows, templates, prompts, systems, trade secrets, copyrighted materials, or other intellectual property.
+
+All rights not expressly granted are reserved by Small Claims Genie.
+
+## 4. User Ownership of User-Submitted Materials
+
+Users retain ownership of documents, facts, evidence, statements, photographs, records, messages, filings, court papers, personal information, and other materials they upload, submit, enter, or provide to Small Claims Genie, except to the extent those materials are owned by another person or entity.
+
+By submitting materials to Small Claims Genie, users grant Small Claims Genie a limited, worldwide, non-exclusive license to host, store, process, transmit, analyze, display, reproduce, format, summarize, and otherwise use those materials solely as reasonably necessary to provide the platform’s services, operate user accounts, improve platform functionality, maintain security, comply with law, enforce agreements, and provide user-requested outputs.
+
+Small Claims Genie does not claim ownership of a user’s underlying facts, evidence, personal documents, or case-specific materials merely because the user uploads or submits them to the platform.
+
+## 5. Platform Outputs and Generated Materials
+
+Small Claims Genie may generate drafts, summaries, checklists, explanations, timelines, document structures, intake summaries, case-preparation materials, evidence summaries, form-support materials, educational guidance, or other outputs based on user input and platform functionality.
+
+Users may use outputs generated for them by the platform for their own personal legal-information, case-preparation, educational, or internal purposes, subject to the Terms and Conditions and this Notice.
+
+However, platform outputs do not give users ownership of Small Claims Genie’s underlying software, code, systems, prompts, templates, workflows, proprietary methods, platform architecture, educational content, legal-information frameworks, formatting systems, document-generation logic, or other protected materials.
+
+Users may not:
+
+* resell, license, sublicense, publish, distribute, or commercialize Small Claims Genie-generated materials as a standalone product or service;
+* use Small Claims Genie outputs to create, train, support, improve, benchmark, reverse engineer, or validate a competing product, legal technology tool, AI system, document-preparation platform, legal-information service, or automated workflow;
+* remove Small Claims Genie notices, disclaimers, ownership statements, or usage restrictions from generated materials where such notices appear;
+* represent Small Claims Genie-generated materials as independently authored legal advice, attorney work product, or proprietary content of another business or platform;
+* mass-generate outputs for redistribution, publication, sale, or competitive use.
+
+To the extent legally permitted, Small Claims Genie retains all rights in the platform elements, templates, structures, formatting systems, workflows, prompts, and original content embodied in or used to produce platform outputs. Users receive only the limited right to use their own generated outputs for authorized purposes.
+
+## 6. Prohibited Uses
+
+Users and visitors may not, directly or indirectly, do any of the following without Small Claims Genie’s prior written permission:
+
+1. copy, reproduce, duplicate, modify, adapt, translate, publish, display, perform, distribute, transmit, sell, rent, lease, license, sublicense, or otherwise exploit any part of the platform or its protected materials;
+2. scrape, crawl, harvest, extract, download, copy, cache, archive, index, or systematically collect any platform content, outputs, prompts, templates, workflows, pages, data, user interface elements, or other materials;
+3. use bots, spiders, crawlers, scrapers, browser automation, data-mining tools, AI agents, bulk-download tools, automated scripts, or similar technologies to access, copy, monitor, or extract platform materials;
+4. reverse engineer, decompile, disassemble, decode, reconstruct, or otherwise attempt to discover the source code, object code, software architecture, algorithms, prompts, model instructions, system logic, workflow design, database structure, or underlying ideas expressed in the platform;
+5. bypass, disable, interfere with, or circumvent access controls, rate limits, security features, copyright notices, watermarking, authentication systems, account restrictions, usage limits, or technical protections;
+6. create derivative works based on Small Claims Genie content, workflows, templates, prompts, designs, software, outputs, or platform structure;
+7. use Small Claims Genie materials to build, train, test, benchmark, validate, improve, market, sell, or support any competing or similar product, service, website, application, AI system, document-preparation tool, legal-information platform, legal workflow system, or automation system;
+8. frame, mirror, embed, syndicate, white-label, or rebrand the platform or any portion of its content;
+9. remove, obscure, modify, or alter copyright notices, proprietary notices, disclaimers, trademarks, watermarks, metadata, attribution, or other rights-management information;
+10. misrepresent ownership, authorship, source, sponsorship, approval, or affiliation with Small Claims Genie;
+11. use platform materials in a manner that infringes, misappropriates, or violates Small Claims Genie’s copyright, trademark, trade secret, contractual, privacy, publicity, or other legal rights.
+
+Any unauthorized use automatically terminates the limited license granted to the user and may result in suspension or termination of access, deletion of accounts, refusal of service, demand for removal, takedown notices, injunctive relief, damages, attorneys’ fees where available, and any other remedies available under law or contract.
+
+## 7. No Permission to Train AI Systems or Competing Technologies
+
+Small Claims Genie does not grant permission for any person or entity to use Small Claims Genie content, platform outputs, templates, prompts, workflows, software, databases, screen designs, page copy, educational materials, or other protected materials to train, fine-tune, test, benchmark, validate, enhance, improve, or develop any artificial intelligence system, machine-learning model, large language model, legal automation system, document-generation system, chatbot, search system, agentic workflow, or competing technology.
+
+This restriction applies whether the materials are accessed manually, automatically, through a user account, through public web pages, through screenshots, through generated outputs, through downloads, through scraping, or through any other means.
+
+Any such use requires Small Claims Genie’s prior written permission.
+
+## 8. Trade Secrets and Confidential Platform Materials
+
+Certain aspects of Small Claims Genie may constitute confidential information, proprietary information, or trade secrets, including without limitation non-public software code, prompts, prompt chains, system instructions, internal workflows, data structures, evaluation criteria, ranking methods, legal-information frameworks, product strategy, business methods, technical architecture, product roadmaps, internal documentation, operating procedures, and security systems.
+
+No user, visitor, competitor, contractor, or third party is authorized to access, copy, disclose, reverse engineer, reconstruct, publish, distribute, or use Small Claims Genie’s trade secrets or confidential materials except as expressly authorized in writing.
+
+Access to the platform does not create any license to discover, disclose, or use Small Claims Genie’s non-public systems, processes, or confidential information.
+
+## 9. Trademarks, Branding, and Source Identifiers
+
+The names Small Claims Genie, the Small Claims Genie logo, related product names, taglines, slogans, trade dress, designs, page layouts, icons, graphics, and other branding elements are owned by Small Claims Genie or its applicable rights holders and may be protected by trademark, trade dress, unfair competition, copyright, and other laws.
+
+Users may not use Small Claims Genie’s name, logo, branding, trademarks, trade dress, or confusingly similar marks without prior written permission.
+
+Nothing on the platform grants any license or right to use Small Claims Genie’s trademarks, service marks, logos, business names, product names, trade dress, or brand identity.
+
+## 10. Third-Party Materials
+
+The platform may display, link to, reference, process, or incorporate third-party materials, including court forms, public legal resources, government materials, statutes, rules, case information, user-uploaded documents, licensed content, open-source software, or other third-party materials.
+
+Third-party materials remain the property of their respective owners and may be subject to separate terms, licenses, restrictions, or legal protections.
+
+Small Claims Genie does not claim ownership of third-party materials merely because they are referenced, processed, summarized, linked, displayed, or used within the platform.
+
+Government forms, statutes, court rules, or public legal materials may not be owned by Small Claims Genie; however, Small Claims Genie may claim rights in its original selection, arrangement, explanation, formatting, commentary, workflow integration, summaries, educational content, software, templates, platform structure, and other original contributions related to those materials.
+
+## 11. Public Domain and Non-Protectable Materials
+
+Nothing in this Notice is intended to claim copyright ownership over facts, ideas, procedures, systems, methods of operation, legal principles, statutes, court rules, government forms, public-domain materials, or other materials that are not protectable under applicable copyright law.
+
+However, Small Claims Genie may claim protection in the original expression, selection, arrangement, organization, explanation, formatting, compilation, software implementation, workflow design, written guidance, commentary, and platform presentation of those materials to the fullest extent permitted by law.
+
+## 12. Reservation of Rights Beyond Copyright
+
+This Notice is intended to protect Small Claims Genie’s rights under copyright law and, where applicable, under trademark law, trade secret law, contract law, unfair competition law, computer access laws, database protection principles, privacy law, publicity rights, and other applicable legal doctrines.
+
+Some aspects of the platform may not be protected by copyright alone. Small Claims Genie therefore also relies on contractual restrictions, access controls, confidentiality obligations, trade secret protections, trademark rights, anti-circumvention principles, and other available legal protections.
+
+No failure or delay by Small Claims Genie in enforcing any right shall constitute a waiver of that right.
+
+## 13. Copyright Infringement and DMCA Notices
+
+Small Claims Genie respects the intellectual-property rights of others and expects users to do the same.
+
+If you believe that material available on or through Small Claims Genie infringes your copyright, you may submit a written notice containing the information required by the Digital Millennium Copyright Act, including:
+
+1. identification of the copyrighted work claimed to have been infringed;
+2. identification of the material claimed to be infringing and information reasonably sufficient to permit Small Claims Genie to locate the material;
+3. your name, mailing address, telephone number, and email address;
+4. a statement that you have a good-faith belief that use of the material is not authorized by the copyright owner, its agent, or the law;
+5. a statement, under penalty of perjury, that the information in the notice is accurate and that you are the copyright owner or authorized to act on behalf of the copyright owner;
+6. your physical or electronic signature.
+
+DMCA notices should be sent to:
+
+**Copyright Agent**
+Small Claims Genie
+[Insert Mailing Address]
+[Insert Email Address]
+[Insert Phone Number, optional]
+
+Small Claims Genie may remove or disable access to allegedly infringing material and may terminate repeat infringers where appropriate.
+
+## 14. Reporting Unauthorized Use of Small Claims Genie Materials
+
+If you believe that Small Claims Genie materials have been copied, scraped, reproduced, sold, redistributed, used in a competing product, used to train an AI system, or otherwise used without authorization, please contact:
+
+**Small Claims Genie Intellectual Property Department**
+[Insert Email Address]
+[Insert Mailing Address]
+
+Please include the location of the unauthorized material, a description of the material copied or misused, any available screenshots or URLs, and your contact information.
+
+## 15. Enforcement
+
+Small Claims Genie reserves the right to investigate suspected unauthorized use of its platform or protected materials.
+
+Small Claims Genie may enforce its rights through any available means, including but not limited to account suspension, account termination, blocking access, disabling features, issuing cease-and-desist demands, sending takedown notices, seeking injunctive relief, seeking damages, pursuing attorneys’ fees where available, and taking other action permitted by law.
+
+Unauthorized use of Small Claims Genie materials may violate copyright law, trademark law, trade secret law, contract law, computer access laws, unfair competition laws, and other applicable laws.
+
+## 16. No Waiver
+
+Failure by Small Claims Genie to enforce any provision of this Notice, the Terms and Conditions, or any other policy does not constitute a waiver of Small Claims Genie’s rights.
+
+A waiver is effective only if made in writing and signed by an authorized representative of Small Claims Genie.
+
+## 17. Changes to This Notice
+
+Small Claims Genie may update this Copyright & Intellectual Property Notice from time to time. Updated versions will be posted on the platform with a revised effective date. Continued use of the platform after an update constitutes acceptance of the updated Notice to the extent permitted by law.
+
+## 18. Footer Copyright Language
+
+The recommended footer notice is:
+
+**© 2026 Small Claims Genie. All rights reserved.**
+
+If a legal company owns the platform, use:
+
+**© 2026 [Insert Legal Company Name]. All rights reserved. Small Claims Genie is a product of [Insert Legal Company Name].**
+
+Do not list other people, developers, contractors, contributors, investors, users, or unrelated companies in the copyright notice unless they actually own the copyright or the legal entity structure requires it. Contractors and developers should usually assign their work to the company by written agreement rather than being named in the footer.
+
+## 19. Contact
+
+For copyright, intellectual-property, licensing, or permission requests, contact:
+
+**Small Claims Genie**
+[Insert Legal Company Name, if applicable]
+[Insert Mailing Address]
+[Insert Email Address]
+[Insert Phone Number, optional]

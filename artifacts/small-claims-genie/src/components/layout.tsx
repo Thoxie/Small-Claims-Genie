@@ -226,9 +226,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <footer className="border-t py-3" style={{ backgroundColor: "#ddf6f3" }}>
         <div className="container mx-auto px-6 pr-36">
           <div className="flex flex-col md:flex-row justify-between items-center gap-1">
-            <p className="text-xs text-primary/50">
-              © {new Date().getFullYear()} {i18n.brand.name}. AI-powered legal guidance.
-            </p>
+            <Link
+              href="/copyright"
+              className="text-xs text-primary/50 hover:text-primary transition-colors"
+            >
+              © {new Date().getFullYear()} {i18n.brand.name}. All rights reserved.
+            </Link>
             <div className="flex items-center gap-3">
               <Link
                 href="/terms"
