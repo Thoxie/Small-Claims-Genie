@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
 
   <url>
     <loc>https://smallclaimsgenie.com/</loc>
-    <lastmod>2026-05-14</lastmod>
+    <lastmod>2026-05-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <video:video>
+      <video:thumbnail_loc>https://smallclaimsgenie.com/opengraph.jpg</video:thumbnail_loc>
+      <video:title>Small Claims Genie Introduction — Win in Small Claims Court</video:title>
+      <video:description>Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.</video:description>
+      <video:player_loc>https://app.heygen.com/embeds/b789b4bb9ad646b2bed4b078e2d9c6e2</video:player_loc>
+      <video:duration>120</video:duration>
+      <video:publication_date>2026-05-01T00:00:00+00:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:live>no</video:live>
+    </video:video>
   </url>
 
   <url>
@@ -51,15 +62,15 @@
   </url>
 
   <url>
-    <loc>https://smallclaimsgenie.com/beta</loc>
-    <lastmod>2026-05-14</lastmod>
+    <loc>https://smallclaimsgenie.com/startup</loc>
+    <lastmod>2026-05-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://smallclaimsgenie.com/startup</loc>
-    <lastmod>2026-05-14</lastmod>
+    <loc>https://smallclaimsgenie.com/beta</loc>
+    <lastmod>2026-05-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
