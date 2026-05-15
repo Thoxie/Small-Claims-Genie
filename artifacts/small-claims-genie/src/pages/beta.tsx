@@ -240,16 +240,16 @@ export default function BetaPage() {
 
           {/* ── Left: Hero copy ── */}
           <div className="flex-1">
-            <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl" style={{ color: PRIMARY }}>
+            <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl text-gray-900">
               Win in Small Claims Court.
             </h1>
-            <p className="mt-3 text-2xl font-bold text-gray-700 leading-snug">
+            <p className="mt-3 text-2xl font-bold text-gray-900 leading-snug">
               Don't lose because you're unprepared.
             </p>
-            <p className="mt-2 text-2xl font-black" style={{ color: PRIMARY }}>
+            <p className="mt-2 text-2xl font-black text-gray-900">
               Get your money back!
             </p>
-            <p className="mt-6 text-base text-gray-600 leading-relaxed max-w-md">
+            <p className="mt-6 text-base text-gray-700 leading-relaxed max-w-md">
               Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
             </p>
 
