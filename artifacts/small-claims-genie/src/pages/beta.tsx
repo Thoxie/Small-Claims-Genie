@@ -240,33 +240,14 @@ export default function BetaPage() {
 
           {/* ── Left: Hero copy ── */}
           <div className="flex-1">
-            <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl text-gray-900">
-              Win in Small Claims Court.
-            </h1>
-            <p className="mt-3 text-2xl font-bold text-gray-900 leading-snug">
-              Don't lose because you're unprepared.
-            </p>
-            <p className="mt-2 text-2xl font-black text-gray-900">
+            <h1 className="text-3xl sm:text-4xl font-black leading-snug mb-4 text-gray-900 tracking-tight">
+              Win in Small Claims Court.<br />
+              Don't lose because you're unprepared.<br />
               Get your money back!
-            </p>
-            <p className="mt-6 text-base text-gray-700 leading-relaxed max-w-md">
+            </h1>
+            <p className="text-base text-gray-700 leading-relaxed max-w-md">
               Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
             </p>
-
-            {/* Feature list */}
-            <div className="mt-8 space-y-3">
-              {[
-                "AI Case Advisor",
-                "Court-ready SC-100 form",
-                "Demand letter generator",
-                "Hearing prep tools",
-              ].map((f) => (
-                <div key={f} className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <CheckCircle className="h-4 w-4 shrink-0" style={{ color: PRIMARY }} />
-                  {f}
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* ── Right: Sign-up card ── */}
