@@ -135,11 +135,13 @@ function BetaSignUpForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <div className="w-full space-y-5">
       <div className="text-center">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#ddf6f3] border border-[#b8ede8]">
-          <Lock className="h-5 w-5" style={{ color: PRIMARY }} />
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-black tracking-wide text-amber-700 uppercase">
+          Free Offer – Start Now
         </div>
-        <h2 className="text-xl font-black text-gray-900">Request Beta Access</h2>
-        <p className="mt-1 text-sm text-gray-500">24 of 25 spots remaining — free, no credit card</p>
+        <h2 className="text-2xl font-black text-gray-900 leading-tight">Build your case now.</h2>
+        <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+          You'll have full access to all tools — AI advisor, court forms, demand letters, hearing prep, and more.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
