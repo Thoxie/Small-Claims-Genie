@@ -178,7 +178,7 @@ function Router() {
   // unmounted mid-flow (avoids duplicate verification emails).
   if (location.startsWith("/sign-up")) return <SignUpPage />;
   if (location.startsWith("/sign-in")) return <SignInPage />;
-  if (location.startsWith("/beta") || location.startsWith("/startup")) return <BetaPage />;
+  if (location.startsWith("/beta") || location.startsWith("/startup")) return <Layout><BetaPage /></Layout>;
 
   return (
     <>
