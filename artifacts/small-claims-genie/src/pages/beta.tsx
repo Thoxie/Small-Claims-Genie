@@ -233,61 +233,70 @@ export default function BetaPage() {
   }
 
   return (
-    <div className="min-h-[80vh] px-4 py-12" style={{ backgroundColor: TEAL_BG }}>
-      <div className="mx-auto w-full max-w-md">
+    <div className="min-h-[80vh] px-4 py-12 md:py-16" style={{ backgroundColor: TEAL_BG }}>
+      <div className="mx-auto w-full max-w-5xl">
 
-        {/* Hero copy */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl" style={{ color: PRIMARY }}>
-            Win in Small Claims Court.
-          </h1>
-          <p className="mt-2 text-xl font-bold text-gray-700">Don't lose because you're unprepared.</p>
-          <p className="mt-1 text-lg font-black" style={{ color: PRIMARY }}>Get your money back!</p>
-          <p className="mt-4 text-sm text-gray-600 leading-relaxed">
-            Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
-          </p>
-        </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-10 md:gap-16">
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-          {isSignedIn ? (
-            <div className="text-center space-y-5">
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-black tracking-wide text-amber-700 uppercase">
-                Free Offer – Start Now
-              </div>
-              <h2 className="text-2xl font-black text-gray-900">Build your case now.</h2>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                You're already signed in. Jump straight to intake step one.
-              </p>
-              <button
-                onClick={() => navigate("/cases/new")}
-                className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-black text-white shadow-sm transition-all hover:opacity-90"
-                style={{ backgroundColor: PRIMARY }}
-              >
-                <ArrowRight className="h-4 w-4" />
-                Start Building My Case
-              </button>
+          {/* ── Left: Hero copy ── */}
+          <div className="flex-1">
+            <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl" style={{ color: PRIMARY }}>
+              Win in Small Claims Court.
+            </h1>
+            <p className="mt-3 text-2xl font-bold text-gray-700 leading-snug">
+              Don't lose because you're unprepared.
+            </p>
+            <p className="mt-2 text-2xl font-black" style={{ color: PRIMARY }}>
+              Get your money back!
+            </p>
+            <p className="mt-6 text-base text-gray-600 leading-relaxed max-w-md">
+              Small Claims Genie walks you through every step — intake, evidence, AI chat, demand letters and your court-ready forms, ready to file. No lawyer needed.
+            </p>
+
+            {/* Feature list */}
+            <div className="mt-8 space-y-3">
+              {[
+                "AI Case Advisor",
+                "Court-ready SC-100 form",
+                "Demand letter generator",
+                "Hearing prep tools",
+              ].map((f) => (
+                <div key={f} className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
+                  <CheckCircle className="h-4 w-4 shrink-0" style={{ color: PRIMARY }} />
+                  {f}
+                </div>
+              ))}
             </div>
-          ) : (
-            <SignUpForm onSuccess={() => navigate("/cases/new")} />
-          )}
-        </div>
+          </div>
 
-        {/* Feature strip below card */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          {[
-            "AI Case Advisor",
-            "Court-ready SC-100 form",
-            "Demand letter generator",
-            "Hearing prep tools",
-          ].map((f) => (
-            <div key={f} className="flex items-center gap-2 rounded-xl border border-[#ddf6f3] bg-white px-3 py-2.5 text-xs font-semibold text-gray-600 shadow-sm">
-              <CheckCircle className="h-3.5 w-3.5 shrink-0" style={{ color: PRIMARY }} />
-              {f}
+          {/* ── Right: Sign-up card ── */}
+          <div className="w-full md:w-[420px] shrink-0">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              {isSignedIn ? (
+                <div className="text-center space-y-5">
+                  <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-black tracking-wide text-amber-700 uppercase">
+                    Free Offer – Start Now
+                  </div>
+                  <h2 className="text-2xl font-black text-gray-900">Build your case now.</h2>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    You're already signed in. Jump straight to intake step one.
+                  </p>
+                  <button
+                    onClick={() => navigate("/cases/new")}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-black text-white shadow-sm transition-all hover:opacity-90"
+                    style={{ backgroundColor: PRIMARY }}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                    Start Building My Case
+                  </button>
+                </div>
+              ) : (
+                <SignUpForm onSuccess={() => navigate("/cases/new")} />
+              )}
             </div>
-          ))}
-        </div>
+          </div>
 
+        </div>
       </div>
     </div>
   );
