@@ -2,46 +2,16 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth, useSignUp } from "@clerk/clerk-react";
 import { Link } from "wouter";
-import {
-  Loader2, Eye, EyeOff, CheckCircle, ClipboardList, MessageSquare, FileText, Star, Shield, Zap,
-} from "lucide-react";
+import { Loader2, Eye, EyeOff, CheckCircle, ArrowRight, Lock } from "lucide-react";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 
 const PRIMARY = "#0d6b5e";
 const PRIMARY_DARK = "#0a5a4e";
-const TEAL_BG = "#f5fdfb";
-const TEAL_LIGHT = "#ddf6f3";
-
-// ── Value props ────────────────────────────────────────────────────────────────
-const VALUE_PROPS = [
-  {
-    icon: <ClipboardList className="h-6 w-6" style={{ color: PRIMARY }} />,
-    title: "Step-by-step intake wizard",
-    desc: "Answer plain-language questions and we build your complete case file — parties, amounts, timeline, and evidence.",
-  },
-  {
-    icon: <MessageSquare className="h-6 w-6" style={{ color: PRIMARY }} />,
-    title: "AI Case Advisor & Help Genie",
-    desc: "Ask anything, anytime. Get strategy, answer prep, and coaching from an AI trained on California small claims rules.",
-  },
-  {
-    icon: <FileText className="h-6 w-6" style={{ color: PRIMARY }} />,
-    title: "Court-ready forms — SC-100 & more",
-    desc: "Your completed, court-ready SC-100 form generated automatically from your intake. Download and file the same day.",
-  },
-];
-
-// ── Testimonial-style social proof ─────────────────────────────────────────────
-const PROOF_POINTS = [
-  { icon: <Star className="h-4 w-4 text-amber-400 fill-amber-400" />, text: "No lawyer needed" },
-  { icon: <Shield className="h-4 w-4 text-green-600" />, text: "30-day money-back guarantee" },
-  { icon: <Zap className="h-4 w-4" style={{ color: PRIMARY }} />, text: "Ready in under 30 minutes" },
-];
 
 // ── Beta Tester Agreement text ─────────────────────────────────────────────────
 const BETA_AGREEMENT = `Beta Access Agreement: By signing up, you acknowledge that (1) Small Claims Genie is a pre-release beta product and features may change or be temporarily unavailable; (2) your case data may be reset during beta testing and should not be relied on as a permanent record; (3) your beta access is personal and non-transferable — sharing your login is not permitted; and (4) you agree to provide honest feedback to help us improve the product. Beta access is provided free of charge for the duration of the beta period.`;
 
-// ── Sign-up form (inline, custom) ──────────────────────────────────────────────
+// ── Sign-up form ───────────────────────────────────────────────────────────────
 function BetaSignUpForm({ onSuccess }: { onSuccess: () => void }) {
   const { signUp, setActive } = useSignUp();
   const [step, setStep] = useState<"form" | "verify">("form");
@@ -49,12 +19,11 @@ function BetaSignUpForm({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [acceptedBeta, setAcceptedBeta] = useState(false);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const canSubmit = acceptedTerms && acceptedBeta && email.trim().length > 3 && password.length >= 8;
+  const canSubmit = acceptedTerms && email.trim().length > 3 && password.length >= 8;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -66,7 +35,12 @@ function BetaSignUpForm({ onSuccess }: { onSuccess: () => void }) {
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: any) {
-      setError(err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? err?.message ?? "Sign-up failed. Please try again.");
+      setError(
+        err?.errors?.[0]?.longMessage ??
+        err?.errors?.[0]?.message ??
+        err?.message ??
+        "Sign-up failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -86,28 +60,36 @@ function BetaSignUpForm({ onSuccess }: { onSuccess: () => void }) {
         setError("Verification incomplete. Please try again.");
       }
     } catch (err: any) {
-      setError(err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? err?.message ?? "Verification failed. Check the code and try again.");
+      setError(
+        err?.errors?.[0]?.longMessage ??
+        err?.errors?.[0]?.message ??
+        err?.message ??
+        "Incorrect code. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  // ── Email verification step ────────────────────────────────────────────────
+  // ── Verify step ───────────────────────────────────────────────────────────
   if (step === "verify") {
     return (
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 w-full">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: TEAL_LIGHT }}>
-            <CheckCircle className="h-5 w-5" style={{ color: PRIMARY }} />
+      <div className="w-full space-y-5">
+        <div className="text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-50 border border-green-100">
+            <CheckCircle className="h-6 w-6 text-green-600" />
           </div>
-          <div>
-            <h3 className="font-bold text-gray-900 text-base">Check your inbox</h3>
-            <p className="text-xs text-gray-500">We sent a 6-digit code to <strong>{email}</strong></p>
-          </div>
+          <h2 className="text-xl font-black text-gray-900">Check your email</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            We sent a 6-digit code to <strong className="text-gray-700">{email}</strong>
+          </p>
         </div>
+
         <form onSubmit={handleVerify} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Verification code</label>
+            <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+              Verification code
+            </label>
             <input
               type="text"
               inputMode="numeric"
@@ -115,68 +97,89 @@ function BetaSignUpForm({ onSuccess }: { onSuccess: () => void }) {
               value={code}
               onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
               placeholder="123456"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-widest text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0d6b5e] focus:border-transparent"
               autoFocus
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center text-2xl font-bold tracking-widest text-gray-900 placeholder-gray-300 focus:border-[#0d6b5e] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/20"
             />
           </div>
-          {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
+
+          {error && (
+            <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
             disabled={code.length < 6 || loading}
-            className="w-full rounded-full text-white font-black text-base min-h-[52px] flex items-center justify-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-            style={{ backgroundColor: loading || code.length < 6 ? "#94a3b8" : PRIMARY }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-black text-white shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-40"
+            style={{ backgroundColor: PRIMARY }}
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-            {loading ? "Verifying…" : "Confirm & Claim My Spot"}
+            {loading
+              ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</>
+              : <><CheckCircle className="h-4 w-4" /> Confirm &amp; Continue</>}
           </button>
+
           <button
             type="button"
             onClick={() => { setStep("form"); setError(""); setCode(""); }}
-            className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            className="w-full text-center text-sm text-gray-400 hover:text-gray-600 transition-colors"
           >
-            ← Back to sign-up
+            ← Use a different email
           </button>
         </form>
       </div>
     );
   }
 
-  // ── Sign-up form ───────────────────────────────────────────────────────────
+  // ── Sign-up form ──────────────────────────────────────────────────────────
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 w-full">
-      <h3 className="text-xl font-black text-gray-900 mb-1">Claim your free beta spot</h3>
-      <p className="text-sm text-gray-500 mb-6">No credit card. No catch. Cancel anytime.</p>
+    <div className="w-full space-y-5">
+      <div className="text-center">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#ddf6f3] border border-[#b8ede8]">
+          <Lock className="h-5 w-5" style={{ color: PRIMARY }} />
+        </div>
+        <h2 className="text-xl font-black text-gray-900">Request Beta Access</h2>
+        <p className="mt-1 text-sm text-gray-500">24 of 25 spots remaining — free, no credit card</p>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
+          <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+            Email address
+          </label>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0d6b5e] focus:border-transparent"
+            autoComplete="email"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0d6b5e] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/20"
           />
         </div>
 
         {/* Password */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password <span className="font-normal text-gray-400">(8+ characters)</span></label>
+          <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+            Password{" "}
+            <span className="font-normal text-gray-400">(8+ characters)</span>
+          </label>
           <div className="relative">
             <input
               type={showPw ? "text" : "password"}
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Create a password"
+              placeholder="Create a strong password"
               required
               minLength={8}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-11 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0d6b5e] focus:border-transparent"
+              autoComplete="new-password"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-11 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0d6b5e] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d6b5e]/20"
             />
             <button
               type="button"
               onClick={() => setShowPw(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               aria-label={showPw ? "Hide password" : "Show password"}
             >
               {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -184,220 +187,169 @@ function BetaSignUpForm({ onSuccess }: { onSuccess: () => void }) {
           </div>
         </div>
 
-        {/* Terms checkboxes */}
-        <div className="space-y-3 pt-1">
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={e => setAcceptedTerms(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 cursor-pointer"
-              style={{ accentColor: PRIMARY }}
-            />
-            <span className="text-[13px] text-gray-700 leading-snug">
-              I agree to the{" "}
-              <a href="/terms" target="_blank" rel="noopener noreferrer"
-                className="underline underline-offset-2 hover:opacity-80 transition-opacity"
-                style={{ color: PRIMARY }}
-                onClick={e => e.stopPropagation()}>
-                Terms of Use
-              </a>
-              {" "}and{" "}
-              <a href="/payment-terms" target="_blank" rel="noopener noreferrer"
-                className="underline underline-offset-2 hover:opacity-80 transition-opacity"
-                style={{ color: PRIMARY }}
-                onClick={e => e.stopPropagation()}>
-                Payment Terms
-              </a>.
-            </span>
-          </label>
+        {/* Terms checkbox */}
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 hover:bg-gray-100 transition-colors">
+          <input
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={e => setAcceptedTerms(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 cursor-pointer"
+            style={{ accentColor: PRIMARY }}
+          />
+          <span className="text-[13px] leading-snug text-gray-600">
+            I agree to the{" "}
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-75"
+              style={{ color: PRIMARY }}
+              onClick={e => e.stopPropagation()}
+            >
+              Terms of Use
+            </a>
+            {" & "}
+            <a
+              href="/payment-terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-75"
+              style={{ color: PRIMARY }}
+              onClick={e => e.stopPropagation()}
+            >
+              Payment Terms
+            </a>
+            , and the{" "}
+            <button
+              type="button"
+              className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-75 text-left"
+              style={{ color: PRIMARY }}
+              onClick={e => { e.stopPropagation(); alert(BETA_AGREEMENT); }}
+            >
+              Beta Agreement
+            </button>
+            .
+          </span>
+        </label>
 
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={acceptedBeta}
-              onChange={e => setAcceptedBeta(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 cursor-pointer"
-              style={{ accentColor: PRIMARY }}
-            />
-            <span className="text-[13px] text-gray-700 leading-snug">
-              I understand this is a pre-release beta. Data may be reset, and my access is non-transferable.{" "}
-              <button
-                type="button"
-                className="underline underline-offset-2 hover:opacity-80 transition-opacity text-left"
-                style={{ color: PRIMARY }}
-                onClick={() => alert(BETA_AGREEMENT)}
-              >
-                Read full agreement
-              </button>.
-            </span>
-          </label>
-        </div>
+        {error && (
+          <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">
+            {error}
+          </p>
+        )}
 
-        {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
-
+        {/* Submit */}
         <button
           type="submit"
           disabled={!canSubmit || loading}
-          className="w-full rounded-full text-white font-black text-base min-h-[52px] flex items-center justify-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-          style={{ backgroundColor: canSubmit && !loading ? PRIMARY : "#94a3b8" }}
+          className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-black text-white shadow-sm transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          style={{ backgroundColor: PRIMARY }}
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-          {loading ? "Creating your account…" : "Claim My Free Beta Spot"}
+          {loading
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating your account…</>
+            : <><ArrowRight className="h-4 w-4" /> Claim My Beta Spot</>}
         </button>
-
-        <p className="text-center text-xs text-gray-400">
-          Already have an account?{" "}
-          <Link href="/sign-in" className="underline underline-offset-2 hover:opacity-80" style={{ color: PRIMARY }}>
-            Sign in
-          </Link>
-        </p>
       </form>
+
+      <p className="text-center text-xs text-gray-400">
+        Already have an account?{" "}
+        <Link
+          href="/sign-in"
+          className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-75"
+          style={{ color: PRIMARY }}
+        >
+          Sign in
+        </Link>
+      </p>
     </div>
   );
 }
 
-// ── Main beta page ─────────────────────────────────────────────────────────────
+// ── Main page ──────────────────────────────────────────────────────────────────
 export default function BetaPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const [, navigate] = useLocation();
 
-  // Already signed in → send to app
   useEffect(() => {
-    if (isLoaded && isSignedIn) navigate("/");
+    if (isLoaded && isSignedIn) navigate("/dashboard");
   }, [isLoaded, isSignedIn, navigate]);
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: TEAL_BG }}>
+      <div className="flex min-h-screen items-center justify-center bg-[#f5fdfb]">
         <Loader2 className="h-8 w-8 animate-spin" style={{ color: PRIMARY }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: TEAL_BG }}>
+    <div className="min-h-screen flex flex-col lg:flex-row">
 
-      {/* ── Minimal header ── */}
-      <header className="w-full bg-white border-b" style={{ borderColor: TEAL_LIGHT }}>
-        <div className="max-w-5xl mx-auto px-4 h-[70px] flex items-center justify-between">
-          <Link href="/">
-            <img src={logoPath} alt="Small Claims Genie" className="h-[50px] w-auto" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-white px-3 py-1.5 rounded-full" style={{ backgroundColor: PRIMARY }}>
-              Beta Access
-            </span>
-          </div>
+      {/* ── Left panel — brand + value props ─────────────────────────────────── */}
+      <div
+        className="flex flex-col justify-between px-8 py-10 lg:w-[52%] lg:px-16 lg:py-16"
+        style={{ backgroundColor: PRIMARY }}
+      >
+        {/* Logo */}
+        <div>
+          <img
+            src={logoPath}
+            alt="Small Claims Genie"
+            className="h-[52px] w-auto brightness-0 invert"
+          />
         </div>
-      </header>
 
-      <main className="flex-1 flex flex-col">
-
-        {/* ── Hero ── */}
-        <section className="px-4 pt-10 pb-8" style={{ backgroundColor: TEAL_BG }}>
-          <div className="max-w-5xl mx-auto">
-
-            {/* Spot badge */}
-            <div className="flex justify-center mb-5">
-              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm font-bold px-4 py-2 rounded-full shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block" />
-                24 of 25 beta spots remaining
-              </div>
-            </div>
-
-            <div className="flex flex-col lg:flex-row items-start gap-10">
-
-              {/* Left — copy */}
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl sm:text-4xl font-black leading-snug mb-4 tracking-tight" style={{ color: PRIMARY }}>
-                  Be One of the First 25.<br />
-                  File Small Claims Court<br />
-                  with Confidence.
-                </h1>
-                <p className="text-lg text-gray-700 mb-5 leading-relaxed max-w-lg">
-                  Small Claims Genie is opening a limited beta to 25 users — free. Get complete access to our AI-powered case wizard, demand letters, and court-ready SC-100 forms. No credit card. No lawyer.
-                </p>
-
-                {/* Proof points */}
-                <div className="flex flex-wrap gap-3 mb-6">
-                  {PROOF_POINTS.map((p, i) => (
-                    <div key={i} className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-full px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-sm">
-                      {p.icon}
-                      {p.text}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Value props — desktop only */}
-                <div className="hidden lg:flex flex-col gap-4 mt-2">
-                  {VALUE_PROPS.map((v, i) => (
-                    <div key={i} className="flex items-start gap-4 bg-white rounded-2xl px-5 py-4 shadow-sm border border-gray-50">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: TEAL_LIGHT }}>
-                        {v.icon}
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-900 text-sm">{v.title}</p>
-                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{v.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right — sign-up card */}
-              <div className="w-full lg:w-[420px] shrink-0">
-                <BetaSignUpForm onSuccess={() => navigate("/")} />
-              </div>
-            </div>
+        {/* Headline */}
+        <div className="mt-10 lg:mt-0">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+            Beta — 24 of 25 spots remaining
           </div>
-        </section>
 
-        {/* ── Value props — mobile ── */}
-        <section className="lg:hidden px-4 pb-8">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-lg font-black text-gray-900 mb-4">What you get — completely free</h2>
-            <div className="flex flex-col gap-3">
-              {VALUE_PROPS.map((v, i) => (
-                <div key={i} className="flex items-start gap-4 bg-white rounded-2xl px-5 py-4 shadow-sm border border-gray-100">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: TEAL_LIGHT }}>
-                    {v.icon}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">{v.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{v.desc}</p>
-                  </div>
+          <h1 className="text-3xl font-black leading-tight text-white sm:text-4xl lg:text-[2.6rem] lg:leading-[1.15]">
+            Prepare Your California<br />
+            Small Claims Case<br />
+            Online
+          </h1>
+
+          <p className="mt-5 text-base text-white/75 leading-relaxed max-w-md">
+            No lawyer. No jargon. Answer a few plain-language questions, upload your evidence, and walk out with a court-ready SC-100 form — in under 30 minutes.
+          </p>
+
+          {/* Feature list */}
+          <ul className="mt-8 space-y-4">
+            {[
+              { label: "Guided intake wizard", desc: "Organizes your facts, dates, and parties step by step" },
+              { label: "Upload & analyze evidence", desc: "Attach photos, contracts, and receipts — AI reads them" },
+              { label: "AI Case Advisor", desc: "Ask anything about California small claims rules" },
+              { label: "Generate SC-100 & demand letters", desc: "Download court-ready forms in minutes" },
+            ].map((f, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15">
+                  <CheckCircle className="h-3.5 w-3.5 text-white" />
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
+                <div>
+                  <span className="block text-sm font-bold text-white">{f.label}</span>
+                  <span className="text-xs text-white/60">{f.desc}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {/* ── Urgency strip ── */}
-        <section className="px-4 pb-10">
-          <div className="max-w-5xl mx-auto">
-            <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: TEAL_LIGHT }}>
-              <p className="text-sm font-bold mb-1" style={{ color: PRIMARY }}>
-                Why beta? Why now?
-              </p>
-              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
-                We're in the final stages before public launch. Beta users get free access in exchange for honest feedback. Once the 25 spots are gone, new users pay full price. This offer won't repeat.
-              </p>
-            </div>
-          </div>
-        </section>
-
-      </main>
-
-      {/* ── Footer ── */}
-      <footer className="border-t py-4 text-center" style={{ backgroundColor: TEAL_LIGHT }}>
-        <p className="text-xs text-gray-400">
-          © {new Date().getFullYear()} Small Claims Genie.{" "}
-          <Link href="/terms" className="underline underline-offset-2 hover:opacity-80" style={{ color: PRIMARY }}>Terms</Link>
-          {" · "}
-          <Link href="/payment-terms" className="underline underline-offset-2 hover:opacity-80" style={{ color: PRIMARY }}>Payment Terms</Link>
+        {/* Footer note */}
+        <p className="mt-10 text-xs text-white/40 lg:mt-0">
+          © {new Date().getFullYear()} Small Claims Genie · Not legal advice ·{" "}
+          <a href="/terms" className="underline underline-offset-2 hover:text-white/60 transition-colors">Terms</a>
         </p>
-      </footer>
+      </div>
+
+      {/* ── Right panel — sign-up card ────────────────────────────────────────── */}
+      <div className="flex flex-1 items-center justify-center bg-white px-6 py-12 lg:px-12">
+        <div className="w-full max-w-md">
+          <BetaSignUpForm onSuccess={() => navigate("/dashboard")} />
+        </div>
+      </div>
 
     </div>
   );
