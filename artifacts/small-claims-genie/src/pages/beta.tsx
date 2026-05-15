@@ -347,7 +347,7 @@ export default function BetaPage() {
       {/* ── Right panel — sign-up card ────────────────────────────────────────── */}
       <div className="flex flex-1 items-center justify-center bg-white px-6 py-12 lg:px-12">
         <div className="w-full max-w-md">
-          <BetaSignUpForm onSuccess={() => navigate("/dashboard")} />
+          <BetaSignUpForm onSuccess={() => navigate("/cases/new")} />
         </div>
       </div>
 
