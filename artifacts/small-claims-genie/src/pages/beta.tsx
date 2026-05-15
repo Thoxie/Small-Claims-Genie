@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth, useSignUp } from "@clerk/clerk-react";
 import { Link } from "wouter";
@@ -272,10 +272,6 @@ export default function BetaPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const [, navigate] = useLocation();
 
-  useEffect(() => {
-    if (isLoaded && isSignedIn) navigate("/dashboard");
-  }, [isLoaded, isSignedIn, navigate]);
-
   if (!isLoaded) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f5fdfb]">
@@ -349,7 +345,27 @@ export default function BetaPage() {
       {/* ── Right panel — sign-up card ────────────────────────────────────────── */}
       <div className="flex flex-1 items-center justify-center bg-white px-6 py-12 lg:px-12">
         <div className="w-full max-w-md">
-          <BetaSignUpForm onSuccess={() => navigate("/cases/new")} />
+          {isSignedIn ? (
+            <div className="text-center space-y-5">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-black tracking-wide text-amber-700 uppercase">
+                Free Offer – Start Now
+              </div>
+              <h2 className="text-2xl font-black text-gray-900">Build your case now.</h2>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                You're already signed in. Jump straight to intake step one.
+              </p>
+              <button
+                onClick={() => navigate("/cases/new")}
+                className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-black text-white shadow-sm transition-all hover:opacity-90"
+                style={{ backgroundColor: PRIMARY }}
+              >
+                <ArrowRight className="h-4 w-4" />
+                Start Building My Case
+              </button>
+            </div>
+          ) : (
+            <BetaSignUpForm onSuccess={() => navigate("/cases/new")} />
+          )}
         </div>
       </div>
 
