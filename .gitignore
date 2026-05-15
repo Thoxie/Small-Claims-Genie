@@ -56,3 +56,15 @@ Thumbs.db
 
 # Local backup archives (keep out of git)
 backups/
+
+# Large source archives — these bloat git history significantly
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+scg-source*.zip
+small-claims-genie-source*.zip
+small-claims-genie-source*.tar.gz
+
+# Uploaded test assets and screenshots (not part of the app)
+attached_assets/
+screenshots/
