@@ -6,7 +6,7 @@ import { Loader2, Eye, EyeOff, CheckCircle, ArrowRight } from "lucide-react";
 
 const PRIMARY = "#0d6b5e";
 const TEAL_BG = "#f5fdfb";
-const TEAL_LIGHT = "#ddf6f3";
+const _TEAL_LIGHT = "#ddf6f3";
 
 // ── Sign-up form ───────────────────────────────────────────────────────────────
 function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
