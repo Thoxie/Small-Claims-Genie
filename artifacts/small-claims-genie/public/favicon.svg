@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- White background -->
+  <rect width="32" height="32" rx="6" fill="white"/>
+
+  <!-- Center pole -->
+  <rect x="15" y="7" width="2" height="18" rx="1" fill="#0d6b5e"/>
+
+  <!-- Base -->
+  <rect x="9" y="24" width="14" height="2.5" rx="1.25" fill="#0d6b5e"/>
+
+  <!-- Balance beam -->
+  <rect x="4" y="9" width="24" height="2" rx="1" fill="#0d6b5e"/>
+
+  <!-- Top pivot circle -->
+  <circle cx="16" cy="8" r="2" fill="#0d6b5e"/>
+
+  <!-- Left chain -->
+  <rect x="6.5" y="11" width="1.5" height="7" rx="0.75" fill="#0d6b5e"/>
+
+  <!-- Right chain -->
+  <rect x="24" y="11" width="1.5" height="7" rx="0.75" fill="#0d6b5e"/>
+
+  <!-- Left pan -->
+  <path d="M3 18 Q7.25 21.5 11.5 18" stroke="#0d6b5e" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Right pan -->
+  <path d="M20.5 18 Q24.75 21.5 29 18" stroke="#0d6b5e" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

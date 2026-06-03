@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /cases/
+Disallow: /dashboard
+Disallow: /resume
+Disallow: /account
+Disallow: /sc100
+Disallow: /download
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /start
+Disallow: /tos
+Disallow: /email-schedule
+
+Sitemap: https://smallclaimsgenie.com/sitemap.xml

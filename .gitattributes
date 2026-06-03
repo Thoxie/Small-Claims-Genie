@@ -1,0 +1,11 @@
+# LFS tracking for large binary media assets intentionally kept in git.
+#
+# RULES:
+# 1. *.zip and *.tar.* files are excluded from git entirely via .gitignore and
+#    must NOT be added here. Adding an LFS rule for an ignored file is what
+#    caused the "missing LFS object" issue that required a full history rewrite.
+# 2. attached_assets/ is excluded from git entirely via .gitignore, so LFS
+#    rules for files inside it are unnecessary and should not be added here.
+
+artifacts/mockup-sandbox/public/intake-step1-tutorial.mp4 filter=lfs diff=lfs merge=lfs -text
+artifacts/small-claims-genie/public/intake-step1-tutorial.mp4 filter=lfs diff=lfs merge=lfs -text

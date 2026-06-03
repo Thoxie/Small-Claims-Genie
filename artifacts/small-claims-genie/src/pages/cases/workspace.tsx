@@ -1,0 +1,646 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  useGetCase,
+  useGetCaseReadiness,
+} from "@workspace/api-client-react";
+import type { ExtendedCase } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, AlertCircle, Play, X, ChevronRight, Home, Sparkles, Eraser, Maximize2, ChevronsLeftRight } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { WorkspaceLayout } from "@/components/workspace-layout";
+import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+
+const VALID_TABS = ["intake", "documents", "chat", "demand-letter", "forms", "prep", "deadlines"];
+
+// Map outer step number → { tab, intakeStep }
+const STEP_MAP: Record<number, { tab: string; intakeStep?: 1 | 2 }> = {
+  1: { tab: "intake", intakeStep: 1 },
+  2: { tab: "intake", intakeStep: 2 },
+  3: { tab: "documents" },
+  4: { tab: "demand-letter" },
+  5: { tab: "chat" },
+  6: { tab: "forms" },
+  7: { tab: "prep" },
+  8: { tab: "deadlines" },
+};
+
+function useHashTab(caseId: number): [string, (tab: string) => void] {
+  const lsKey = `case-last-tab-${caseId}`;
+
+  // Priority: URL hash → localStorage → "intake"
+  function getInitialTab(): string {
+    const hash = window.location.hash.slice(1);
+    if (VALID_TABS.includes(hash)) return hash;
+    const saved = localStorage.getItem(lsKey);
+    return saved && VALID_TABS.includes(saved) ? saved : "intake";
+  }
+
+  const [activeTab, setActiveTabState] = useState(getInitialTab);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    window.location.hash = tab;
+    localStorage.setItem(lsKey, tab);
+  };
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      const tab = VALID_TABS.includes(hash) ? hash : "intake";
+      setActiveTabState(tab);
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  return [activeTab, setActiveTab];
+}
+
+import { IntakeTab } from "./tabs/intake-tab";
+import { DocumentsTab } from "./tabs/documents-tab";
+import { ChatTab } from "./tabs/chat-tab";
+import { FormsTab } from "./tabs/forms-tab";
+import { DemandLetterTab } from "./tabs/demand-letter-tab";
+import { HearingPrepTab } from "./tabs/hearing-prep-tab";
+import { DeadlineCalculatorTab } from "./tabs/deadline-calculator-tab";
+
+export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) {
+  const caseId = parseInt(caseIdParam || "0", 10);
+  const [activeTab, setActiveTab] = useHashTab(caseId);
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  const saveExit = () => {
+    toast({ title: "Progress saved", description: "Returning to your cases…" });
+    sessionStorage.setItem("scg-just-saved", "true");
+    navigate("/dashboard");
+  };
+
+  // forceStep: signal from the outer nav telling IntakeTab to jump to step 1 or 2.
+  // Never seeded from localStorage — only set by outer-nav clicks.
+  const [intakeSubStep, setIntakeSubStep] = useState<1 | 2 | undefined>(undefined);
+  // Nonce increments on every outer-nav click so IntakeTab always re-fires its
+  // effect even when forceStep value hasn't changed (e.g., clicking step 2 twice).
+  const [forceStepNonce, setForceStepNonce] = useState(0);
+  const [prepTutorialOpen, setPrepTutorialOpen] = useState(false);
+  const [chatAutoMessage, setChatAutoMessage] = useState<string | undefined>(undefined);
+  const [docAdvisorTrigger, setDocAdvisorTrigger] = useState(0);
+
+  // Broadcast the active tab to the global Help Genie widget so it sends
+  // the correct pageContext with each message.
+  useEffect(() => {
+    const TAB_TO_CONTEXT: Record<string, string> = {
+      intake: intakeSubStep === 2 ? "intake-2" : "intake",
+      documents: "documents",
+      "demand-letter": "demand-letter",
+      forms: "court-forms",
+      prep: "hearing-prep",
+    };
+    const ctx = TAB_TO_CONTEXT[activeTab] ?? activeTab;
+    window.dispatchEvent(new CustomEvent("help-genie-page-context", { detail: ctx }));
+  }, [activeTab, intakeSubStep]);
+
+  // Holds an awaitable flush function registered by whichever intake step
+  // is currently mounted.  handleStepClick awaits it before switching away
+  // from the intake tab so the advisor never reads stale DB data.
+  const intakeFlushRef = useRef<(() => Promise<void>) | null>(null);
+
+  const _AI_CHECK_PROMPT = "Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.";
+
+  const [aiGenieOpen, setAiGenieOpen] = useState(false);
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(aiGenieOpen ? 'ai-genie-open' : 'ai-genie-close'));
+  }, [aiGenieOpen]);
+
+  // Handle deep-link redirects from Help Genie
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const { tab, question } = (e as CustomEvent).detail as { tab: string; question?: string };
+      if (tab === 'chat' || tab === 'case-advisor') {
+        if (question) setChatAutoMessage(question);
+        setActiveTab('chat');
+        setAiGenieOpen(true);
+      } else if (VALID_TABS.includes(tab)) {
+        // Flush any unsaved intake data before switching away
+        if (intakeFlushRef.current) {
+          await intakeFlushRef.current();
+        }
+        setActiveTab(tab);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('navigate-workspace-tab', handler);
+    return () => window.removeEventListener('navigate-workspace-tab', handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const [panelWidth, setPanelWidth] = useState<number | string>('50vw');
+  const isDragging = useRef(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const newWidth = window.innerWidth - e.clientX;
+      setPanelWidth(Math.max(320, Math.min(newWidth, window.innerWidth - 40)));
+    };
+    const onMouseUp = () => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
+
+  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, []);
+
+  const goToAiChat = useCallback(() => {
+    setAiGenieOpen(true);
+  }, []);
+
+  // Tracks the *actual* inner step reported by IntakeTab via onStepChange.
+  // Seeded from localStorage so the outer highlight is correct on refresh
+  // without forcing IntakeTab to a different step than what it naturally restores.
+  const [trackedInnerStep, setTrackedInnerStep] = useState<number>(() => {
+    if (!caseId) return 1;
+    const stored = localStorage.getItem(`intake-step-${caseId}`);
+    const step = stored ? parseInt(stored) : NaN;
+    return step >= 1 && step <= 7 ? step : 1;
+  });
+
+  // Compute which outer step number is currently active.
+  // Inner intake steps 1-7 map 1:1 to outer steps 1-7 so the header
+  // tracks every page as the user advances through intake.
+  const currentOuterStep = (() => {
+    if (activeTab === "intake") return Math.min(trackedInnerStep, 7);
+    const entry = Object.entries(STEP_MAP).find(([, v]) => v.tab === activeTab && !v.intakeStep);
+    return entry ? parseInt(entry[0]) : 1;
+  })();
+
+  // Handle outer stepper click.
+  // When leaving the intake tab for any non-intake destination, await the
+  // registered flush so any pending debounced form saves land in the DB
+  // before the destination tab's AI advisor can read from it.
+  const handleStepClick = async (stepN: number) => {
+    const mapping = STEP_MAP[stepN];
+    if (!mapping) return;
+    // Step 8 navigates to the E-File & Deadlines hub page
+    if (stepN === 8) {
+      navigate(`/cases/${caseId}/efile`);
+      return;
+    }
+    if (activeTab === "intake" && !mapping.intakeStep && intakeFlushRef.current) {
+      await intakeFlushRef.current();
+    }
+    if (mapping.intakeStep) {
+      setIntakeSubStep(mapping.intakeStep);
+      setTrackedInnerStep(mapping.intakeStep);
+      setForceStepNonce(n => n + 1);
+      setActiveTab("intake");
+    } else {
+      setIntakeSubStep(undefined);
+      setActiveTab(mapping.tab);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
+  const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
+
+  // If the case doesn't exist or doesn't belong to the signed-in user,
+  // the API returns nothing. Redirect immediately — never render a shell
+  // that looks accessible to a URL someone pasted from another account.
+  useEffect(() => {
+    if (!caseLoading && !currentCase) {
+      navigate("/dashboard");
+    }
+  }, [caseLoading, currentCase, navigate]);
+
+  if (caseLoading) {
+    return (
+      <WorkspaceLayout
+        activeTab={activeTab}
+        currentOuterStep={currentOuterStep}
+        setActiveTab={setActiveTab}
+        onStepClick={handleStepClick}
+      >
+        <div className="container mx-auto p-8">
+          <Skeleton className="h-12 w-1/3 mb-8" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </WorkspaceLayout>
+    );
+  }
+
+  if (!currentCase) {
+    // Redirect is already fired via useEffect above — show nothing while it completes.
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  const extCase = currentCase as ExtendedCase;
+  const score = readiness?.score ?? extCase.readinessScore ?? 0;
+
+  // Compute which steps are truly completed based on actual case data
+  const completedSteps = new Set<number>();
+  // Step 1: parties entered — use intakeStep as canonical signal (moved past step 1 in intake)
+  if ((extCase.intakeStep ?? 1) >= 2 || (extCase.plaintiffName && extCase.defendantName)) completedSteps.add(1);
+  // Step 2: intake fully complete
+  if (extCase.intakeComplete) completedSteps.add(2);
+  // Step 3: at least one document uploaded
+  if ((extCase.documentCount ?? 0) > 0) completedSteps.add(3);
+  // Step 4: demand letter was generated
+  if (extCase.demandLetterText) completedSteps.add(4);
+  // Step 5: case reviewed meaningfully (readiness score reflects substantial data entry)
+  if (score >= 50) completedSteps.add(5);
+  // Step 6: forms were created (mc030 title set, or case is filed)
+  if (extCase.mc030DeclarationTitle || extCase.status === "filed") completedSteps.add(6);
+  // Step 7: hearing is scheduled
+  if (extCase.hearingDate) completedSteps.add(7);
+
+  const borderColor = score >= 80 ? "border-green-400" : score >= 50 ? "border-yellow-400" : "border-red-400";
+  const scoreColor = score >= 80 ? "text-green-600" : score >= 50 ? "text-yellow-600" : "text-red-500";
+  const scoreLabel = score >= 80 ? "Ready to file" : score >= 50 ? "Nearly ready" : "Needs info";
+  const allItems = [
+    ...(readiness?.strengths ?? []).map((s: string) => ({ text: s, ok: true })),
+    ...(readiness?.missingFields ?? []).map((f: string) => ({ text: f, ok: false })),
+  ];
+
+  return (
+    <WorkspaceLayout
+      activeTab={activeTab}
+      currentOuterStep={currentOuterStep}
+      completedSteps={completedSteps}
+      setActiveTab={setActiveTab}
+      onStepClick={handleStepClick}
+    >
+      <div className="container mx-auto px-4 pt-0 pb-6 max-w-6xl flex flex-col gap-3">
+
+        {/* ── Readiness card + video card — only shown on the Prep tab ── */}
+        {activeTab === "prep" && (
+          <div className="flex gap-4 items-start mt-3">
+            {/* Readiness card */}
+            <div className={`flex-1 min-w-0 bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
+              <div className="grid grid-cols-2 gap-4 items-center">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-end gap-2">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Plaintiff</p>
+                      <p className="text-sm font-bold text-foreground leading-tight">{currentCase.plaintiffName || "—"}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground pb-0.5 shrink-0">v.</span>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Defendant</p>
+                      <p className="text-sm font-bold text-foreground leading-tight">{currentCase.defendantName || "—"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className={`text-2xl font-black leading-none ${scoreColor}`}>{score}%</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Readiness</span>
+                    <span className={`text-[10px] font-semibold ${scoreColor}`}>· {scoreLabel}</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-muted-foreground">Claim: <span className="font-semibold text-foreground">{extCase.claimAmount ? `$${Number(extCase.claimAmount).toLocaleString()}` : "—"}</span></span>
+                    {extCase.countyId && (
+                      <span className="text-xs text-muted-foreground">· {extCase.countyId} County</span>
+                    )}
+                    {extCase.caseNumber && (
+                      <span className="text-xs text-muted-foreground">· No. <span className="font-semibold text-foreground">{extCase.caseNumber}</span></span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 border-l border-border pl-4">
+                  {allItems.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                      {allItems.map((item, i) => (
+                        <div key={i} className={`flex items-start gap-1 text-[10px] leading-tight ${item.ok ? "text-green-700" : "text-destructive"}`}>
+                          {item.ok
+                            ? <CheckCircle className="h-3 w-3 shrink-0 mt-0.5 text-green-500" />
+                            : <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
+                          }
+                          <span>{item.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Complete your intake form to see your readiness score.</p>
+                  )}
+                  <div className="mt-1">
+                    <Badge variant={currentCase.status === 'filed' ? 'default' : 'secondary'} className="capitalize text-xs">
+                      {currentCase.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Video tutorial card — same style as other intake steps */}
+            <div
+              onClick={() => setPrepTutorialOpen(true)}
+              className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+              title="Watch the tutorial for this step"
+            >
+              <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                    <Play className="w-[18px] h-[18px] text-white ml-1" fill="white" />
+                  </div>
+                  <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+                </div>
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~2 min</div>
+                <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 7</div>
+              </div>
+              <div className="bg-background px-3 py-2 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold">Prep for Your Hearing</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">What to expect in court</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Video modal for prep tab ── */}
+        {prepTutorialOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setPrepTutorialOpen(false)}
+          >
+            <div
+              className="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-[95vw] max-h-[95vh] flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
+                    <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-800">Step 7 Tutorial — Prep for Your Hearing</p>
+                    <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPrepTutorialOpen(false)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <iframe
+                width="800"
+                height="450"
+                src="https://app.heygen.com/embeds/1ac88511fa1c4a5a9dd5b4d517cc46c5"
+                title="HeyGen video player"
+                frameBorder="0"
+                allow="encrypted-media; fullscreen;"
+                allowFullScreen
+                className="block"
+              />
+              <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
+                <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
+                  Video plays above — click X or press Escape to return to your case.
+                </p>
+                <button
+                  onClick={() => setPrepTutorialOpen(false)}
+                  className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
+                >
+                  Close &amp; Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Tab content ── */}
+        <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
+          {activeTab === "intake" && (
+            <IntakeTab
+              caseId={caseId}
+              initialData={extCase}
+              forceStep={intakeSubStep}
+              forceStepNonce={forceStepNonce}
+              onStepChange={(step) => {
+                setTrackedInnerStep(step);
+              }}
+              onGoToAiChat={goToAiChat}
+              onRegisterFlush={(fn) => { intakeFlushRef.current = fn; }}
+            />
+          )}
+          {activeTab === "documents" && (
+            <div>
+              <DocumentsTab
+                caseId={caseId}
+                evidenceChecklist={extCase?.evidenceChecklist || []}
+                advisorTrigger={docAdvisorTrigger}
+              />
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={() => setDocAdvisorTrigger(n => n + 1)}
+                  className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+                >
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                </Button>
+                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === "chat" && (
+            <Dialog open={true} onOpenChange={(open) => { if (!open) setActiveTab("documents"); }}>
+              <DialogContent className="p-0 gap-0 flex flex-col overflow-hidden" style={{ width: '90vw', maxWidth: '90vw', height: '90vh', maxHeight: '90vh' }}>
+                <DialogTitle className="sr-only">AI Genie — Case Review</DialogTitle>
+                <div className="flex items-center gap-3 px-4 py-3 shrink-0 pr-12"
+                  style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}>
+                  <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                    <Sparkles className="h-4 w-4 text-amber-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-sm leading-tight">AI Genie</p>
+                  </div>
+                  <button className="h-7 px-2 flex items-center gap-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white text-[11px] font-medium"
+                    onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}>
+                    <Eraser className="h-3 w-3" /> Clear Chat
+                  </button>
+                </div>
+                <div className="flex-1 min-h-0 flex flex-col">
+                  <ChatTab
+                    caseId={caseId}
+                    isDraftMode={false}
+                    currentCase={extCase}
+                    autoMessage={chatAutoMessage}
+                    onAutoMessageSent={() => setChatAutoMessage(undefined)}
+                    hideTutorial={true}
+                    freshReview={false}
+                    pageContext="chat"
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+          {activeTab === "demand-letter" && (
+            <div>
+              <DemandLetterTab
+                caseId={caseId}
+                currentCase={extCase}
+              />
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                </Button>
+                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === "forms" && (
+            <div>
+              <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                </Button>
+                <Button type="button" size="lg" onClick={() => handleStepClick(7)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === "prep" && (
+            <div>
+              <HearingPrepTab caseId={caseId} currentCase={extCase} isDraftMode={false} />
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                </Button>
+                <Button type="button" size="lg" onClick={() => handleStepClick(8)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === "deadlines" && (
+            <div>
+              <DeadlineCalculatorTab caseId={caseId} currentCase={extCase} />
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                </Button>
+                <Button type="button" size="lg" onClick={saveExit} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* ── AI Genie side panel — opens in-place from any tab or intake step ── */}
+      <Sheet open={aiGenieOpen} onOpenChange={setAiGenieOpen}>
+        <SheetContent
+          ref={sheetRef}
+          side="right"
+          className="p-0 flex flex-col overflow-visible"
+          style={{ width: panelWidth, maxWidth: '95vw' }}
+          onPointerDownOutside={(e) => {
+            const pe = e.detail.originalEvent as PointerEvent;
+            if (sheetRef.current) {
+              const rect = sheetRef.current.getBoundingClientRect();
+              if (pe.clientX >= rect.left - 30 && pe.clientX <= rect.left + 10) {
+                e.preventDefault();
+              }
+            }
+          }}
+        >
+          {/* ── Drag-to-resize handle — protruding teal pill on left edge ── */}
+          <div
+            onMouseDown={handleResizeMouseDown}
+            className="absolute left-0 top-0 h-full w-6 cursor-col-resize z-20 group"
+            aria-label="Drag to resize panel"
+          >
+            <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-[26px] h-14 bg-[#0d6b5e] rounded-l-xl flex items-center justify-center shadow-[-4px_0_10px_rgba(0,0,0,0.25)] group-hover:bg-[#0a5a4e] group-hover:w-[30px] transition-all duration-150 pointer-events-none">
+              <ChevronsLeftRight className="h-4 w-4 text-white" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 px-4 py-3 shrink-0 pr-12"
+            style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}>
+            <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+              <Sparkles className="h-4 w-4 text-amber-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-sm leading-tight">AI Genie</p>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button className="h-7 px-2 flex items-center gap-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white text-[11px] font-medium"
+                onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}>
+                <Eraser className="h-3 w-3" /> Clear Chat
+              </button>
+              <button className="h-7 w-7 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white"
+                onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-expand'))}>
+                <Maximize2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 min-h-0 flex flex-col">
+            <ChatTab
+              caseId={caseId}
+              isDraftMode={false}
+              currentCase={extCase}
+              autoMessage={chatAutoMessage}
+              onAutoMessageSent={() => setChatAutoMessage(undefined)}
+              hideTutorial={true}
+              freshReview={true}
+              pageContext={activeTab === 'intake' ? (intakeSubStep === 2 ? 'intake-2' : 'intake-1') : activeTab}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+    </WorkspaceLayout>
+  );
+}
