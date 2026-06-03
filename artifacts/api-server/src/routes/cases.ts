@@ -15,6 +15,7 @@ import { getUserId } from "../lib/owned-case";
 import { buildCaseContext } from "../lib/case-context";
 import { getUncachableResendClient } from "../lib/resend";
 import { logger } from "../lib/logger";
+import { buildAdminNewCaseEmail } from "../lib/email-templates";
 
 const ADMIN_EMAIL = "hello@smallclaimsgenie.com";
 
@@ -31,28 +32,14 @@ async function sendAdminPlaintiffNotification(caseRecord: {
       dateStyle: "medium",
       timeStyle: "short",
     });
-    const row = (label: string, value: string | null) => `
-      <tr>
-        <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600; width: 140px;">${label}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${value ?? "(not provided)"}</td>
-      </tr>`;
-    await client.emails.send({
-      from: fromEmail,
-      to: ADMIN_EMAIL,
-      subject: `New case started — ${caseRecord.plaintiffName ?? "Unknown user"}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
-          <h2 style="color: #2563eb;">A user just started a case</h2>
-          <table style="border-collapse: collapse; width: 100%; margin-top: 16px;">
-            ${row("Time (PT)", timestamp)}
-            ${row("Name", caseRecord.plaintiffName)}
-            ${row("Email", caseRecord.plaintiffEmail)}
-            ${row("Phone", caseRecord.plaintiffPhone)}
-            ${row("Address", caseRecord.plaintiffAddress)}
-          </table>
-        </div>
-      `,
+    const { subject, html } = buildAdminNewCaseEmail({
+      plaintiffName: caseRecord.plaintiffName,
+      plaintiffEmail: caseRecord.plaintiffEmail,
+      plaintiffPhone: caseRecord.plaintiffPhone,
+      plaintiffAddress: caseRecord.plaintiffAddress,
+      timestamp,
     });
+    await client.emails.send({ from: fromEmail, to: ADMIN_EMAIL, subject, html });
   } catch (err) {
     logger.error({ err }, "[cases] Failed to send admin plaintiff notification");
   }

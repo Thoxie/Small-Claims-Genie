@@ -516,3 +516,98 @@ export function buildWeeklyCheckInEmail(d: WeeklyCheckInEmailData): { subject: s
 
   return { subject, html };
 }
+
+export type AdminNewCaseEmailData = {
+  plaintiffName: string | null;
+  plaintiffEmail: string | null;
+  plaintiffPhone: string | null;
+  plaintiffAddress: string | null;
+  timestamp: string;
+};
+
+export function buildAdminNewCaseEmail(d: AdminNewCaseEmailData): { subject: string; html: string } {
+  const subject = `New case started — ${d.plaintiffName ?? "Unknown user"}`;
+  const row = (label: string, value: string | null) => `
+      <tr>
+        <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600; width: 140px;">${label}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${value ?? "(not provided)"}</td>
+      </tr>`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
+      <h2 style="color: #2563eb;">A user just started a case</h2>
+      <table style="border-collapse: collapse; width: 100%; margin-top: 16px;">
+        ${row("Time (PT)", d.timestamp)}
+        ${row("Name", d.plaintiffName)}
+        ${row("Email", d.plaintiffEmail)}
+        ${row("Phone", d.plaintiffPhone)}
+        ${row("Address", d.plaintiffAddress)}
+      </table>
+    </div>
+  `;
+  return { subject, html };
+}
+
+export type AdminBetaSignupEmailData = {
+  userEmail: string | null;
+  slotsClaimed: number;
+  slotsRemaining: number;
+  timestamp: string;
+  betaLimit: number;
+};
+
+export function buildAdminBetaSignupEmail(d: AdminBetaSignupEmailData): { subject: string; html: string } {
+  const subject = `New beta sign-up — ${d.slotsClaimed} of ${d.betaLimit} spots claimed`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
+      <h2 style="color: #2563eb;">New beta tester signed up</h2>
+      <table style="border-collapse: collapse; width: 100%; margin-top: 16px;">
+        <tr>
+          <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600; width: 140px;">Time (PT)</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${d.timestamp}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600;">User email</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${d.userEmail ?? "(not provided)"}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600;">Spots claimed</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${d.slotsClaimed} / ${d.betaLimit}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600;">Spots remaining</td>
+          <td style="padding: 8px 12px;">${d.slotsRemaining}</td>
+        </tr>
+      </table>
+    </div>
+  `;
+  return { subject, html };
+}
+
+export function buildBetaWelcomeEmail(): { subject: string; html: string } {
+  const subject = "You're in — welcome to the Small Claims Genie beta!";
+  const html = `
+    <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
+      <h2 style="color: #2563eb;">You've claimed your beta spot!</h2>
+      <p>Hi there,</p>
+      <p>Your beta access is active. You can start building your first small claims case right now.</p>
+      <p style="margin: 24px 0;">
+        <a href="https://smallclaimsgenie.com/cases/new"
+           style="background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+          Start my first case &rarr;
+        </a>
+      </p>
+      <h3 style="margin-top: 32px;">What to expect</h3>
+      <ul style="line-height: 1.8;">
+        <li>AI-powered case preparation, demand letters, and court form generation.</li>
+        <li>This is a beta — you may run into rough edges. We appreciate your patience.</li>
+        <li>Features and workflows may change as we improve the product.</li>
+      </ul>
+      <p style="margin-top: 24px;">
+        Have feedback or questions? Reply to this email or reach us at
+        <a href="mailto:hello@smallclaimsgenie.com">hello@smallclaimsgenie.com</a>.
+      </p>
+      <p>Thanks for being an early supporter,<br/>The Small Claims Genie team</p>
+    </div>
+  `;
+  return { subject, html };
+}

@@ -6,6 +6,7 @@ import { getBetaSlotCount, BETA_LIMIT } from "../lib/beta";
 import { getUserId } from "../lib/owned-case";
 import { getUncachableResendClient } from "../lib/resend";
 import { logger } from "../lib/logger";
+import { buildAdminBetaSignupEmail, buildBetaWelcomeEmail } from "../lib/email-templates";
 
 const ADMIN_EMAIL = "hello@smallclaimsgenie.com";
 
@@ -21,34 +22,8 @@ async function sendAdminNotificationEmail(
       dateStyle: "medium",
       timeStyle: "short",
     });
-    await client.emails.send({
-      from: fromEmail,
-      to: ADMIN_EMAIL,
-      subject: `New beta sign-up — ${slotsClaimed} of ${BETA_LIMIT} spots claimed`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
-          <h2 style="color: #2563eb;">New beta tester signed up</h2>
-          <table style="border-collapse: collapse; width: 100%; margin-top: 16px;">
-            <tr>
-              <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600; width: 140px;">Time (PT)</td>
-              <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${timestamp}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600;">User email</td>
-              <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${userEmail ?? "(not provided)"}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600;">Spots claimed</td>
-              <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${slotsClaimed} / ${BETA_LIMIT}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 12px; background: #f3f4f6; font-weight: 600;">Spots remaining</td>
-              <td style="padding: 8px 12px;">${slotsRemaining}</td>
-            </tr>
-          </table>
-        </div>
-      `,
-    });
+    const { subject, html } = buildAdminBetaSignupEmail({ userEmail, slotsClaimed, slotsRemaining, timestamp, betaLimit: BETA_LIMIT });
+    await client.emails.send({ from: fromEmail, to: ADMIN_EMAIL, subject, html });
   } catch (err) {
     logger.error({ err }, "[beta] Failed to send admin notification email");
   }
@@ -57,35 +32,8 @@ async function sendAdminNotificationEmail(
 async function sendBetaWelcomeEmail(email: string): Promise<void> {
   try {
     const { client, fromEmail } = await getUncachableResendClient();
-    await client.emails.send({
-      from: fromEmail,
-      to: email,
-      subject: "You're in — welcome to the Small Claims Genie beta!",
-      html: `
-        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
-          <h2 style="color: #2563eb;">You've claimed your beta spot!</h2>
-          <p>Hi there,</p>
-          <p>Your beta access is active. You can start building your first small claims case right now.</p>
-          <p style="margin: 24px 0;">
-            <a href="https://smallclaimsgenie.com/cases/new"
-               style="background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
-              Start my first case &rarr;
-            </a>
-          </p>
-          <h3 style="margin-top: 32px;">What to expect</h3>
-          <ul style="line-height: 1.8;">
-            <li>AI-powered case preparation, demand letters, and court form generation.</li>
-            <li>This is a beta — you may run into rough edges. We appreciate your patience.</li>
-            <li>Features and workflows may change as we improve the product.</li>
-          </ul>
-          <p style="margin-top: 24px;">
-            Have feedback or questions? Reply to this email or reach us at
-            <a href="mailto:hello@smallclaimsgenie.com">hello@smallclaimsgenie.com</a>.
-          </p>
-          <p>Thanks for being an early supporter,<br/>The Small Claims Genie team</p>
-        </div>
-      `,
-    });
+    const { subject, html } = buildBetaWelcomeEmail();
+    await client.emails.send({ from: fromEmail, to: email, subject, html });
   } catch (err) {
     // Fire-and-forget — log the error but never block the claim response
     logger.error({ err }, "[beta] Failed to send welcome email");
