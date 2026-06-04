@@ -501,19 +501,15 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
         </div>
       )}
 
-      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-3 pt-1 pb-2 rounded-b-lg">
-        <div className={`flex items-center justify-end mb-1 transition-all duration-200`}>
-          {isRecording ? (
+      <div className="shrink-0 bg-card border-b border-gray-100 px-3 pt-2 pb-2 rounded-b-lg">
+        {isRecording && (
+          <div className="flex items-center justify-end mb-1">
             <span className="flex items-center gap-1 text-[10px] font-medium text-destructive animate-pulse">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
               Recording… tap mic to stop
             </span>
-          ) : (
-            <span className="text-[10px] font-extrabold text-white bg-black px-2 py-0.5 rounded-md">
-              Tap mic to start · tap again to stop
-            </span>
-          )}
-        </div>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <div className="flex-1 relative flex items-center">
             <textarea

@@ -258,7 +258,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
       setActiveTab={setActiveTab}
       onStepClick={handleStepClick}
     >
-      <div className={activeTab === "chat" ? "flex-1 flex flex-col" : "container mx-auto px-4 pt-0 pb-6 max-w-6xl flex flex-col gap-3"}>
+      <div className={activeTab === "chat" ? "flex-1 min-h-0 flex flex-col" : "container mx-auto px-4 pt-0 pb-6 max-w-6xl flex flex-col gap-3"}>
 
         {/* ── Readiness card + video card — only shown on the Prep tab ── */}
         {activeTab === "prep" && (
@@ -399,7 +399,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
         )}
 
         {/* ── Tab content ── */}
-        <div className={activeTab === "chat" ? "flex-1 flex flex-col" : "border rounded-lg bg-white shadow-sm min-h-[600px]"}>
+        <div className={activeTab === "chat" ? "flex-1 min-h-0 flex flex-col" : "border rounded-lg bg-white shadow-sm min-h-[600px]"}>
           {activeTab === "intake" && (
             <IntakeTab
               caseId={caseId}
@@ -440,7 +440,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             </div>
           )}
           {activeTab === "chat" && (
-            <div className="flex-1 flex flex-col rounded-lg border shadow-sm">
+            <div className="flex-1 min-h-0 flex flex-col rounded-lg border shadow-sm">
               {/* Chat body */}
               <div className="flex-1 min-h-0 flex flex-col bg-white overflow-hidden">
                 <ChatTab
