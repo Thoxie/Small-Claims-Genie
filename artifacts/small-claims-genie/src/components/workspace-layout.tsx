@@ -16,7 +16,7 @@ interface WorkspaceLayoutProps {
 
 export function WorkspaceLayout({
   children,
-  activeTab: _activeTab,
+  activeTab,
   currentOuterStep,
   completedSteps,
   setActiveTab: _setActiveTab,
@@ -127,16 +127,18 @@ export function WorkspaceLayout({
         {children}
       </main>
 
-      {/* Sitewide disclaimer */}
-      <footer className="border-t border-gray-100 py-2.5 bg-white">
-        <div className="flex items-center justify-center gap-3">
-          <p className="text-[11px] text-gray-400">
-            © {new Date().getFullYear()} Small Claims Genie. AI-powered legal guidance.
-          </p>
-          <span className="text-gray-300 text-[11px]">·</span>
-          <ContactDialog triggerClassName="text-[11px] text-gray-400 hover:text-[#0d6b5e] underline underline-offset-2 transition-colors" />
-        </div>
-      </footer>
+      {/* Sitewide disclaimer — hidden on chat tab so the sticky action bar sits flush at the viewport bottom */}
+      {activeTab !== 'chat' && (
+        <footer className="border-t border-gray-100 py-2.5 bg-white">
+          <div className="flex items-center justify-center gap-3">
+            <p className="text-[11px] text-gray-400">
+              © {new Date().getFullYear()} Small Claims Genie. AI-powered legal guidance.
+            </p>
+            <span className="text-gray-300 text-[11px]">·</span>
+            <ContactDialog triggerClassName="text-[11px] text-gray-400 hover:text-[#0d6b5e] underline underline-offset-2 transition-colors" />
+          </div>
+        </footer>
+      )}
 
     </div>
   );
