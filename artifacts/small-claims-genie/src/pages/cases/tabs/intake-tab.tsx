@@ -421,6 +421,7 @@ export function IntakeTab({
       )}
       {activeTab === 5 && (
         <IntakeStep5
+          caseId={caseId}
           initialData={initialData}
           onNext={handleNext}
           onBack={() => setActiveTab(4)}

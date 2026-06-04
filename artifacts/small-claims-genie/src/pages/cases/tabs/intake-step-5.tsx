@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Home, Sparkles, MapPin, Phone, Mail, Globe, ExternalLink, Play, X, ChevronRight } from "lucide-react";
+import { Home, Sparkles, Play, X, ChevronRight } from "lucide-react";
+import { ChatTab } from "./chat-tab";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
@@ -15,6 +16,7 @@ import { intakeStep4Schema } from "./shared";
 import type { ExtendedCase } from "@/lib/types";
 
 interface Props {
+  caseId: number;
   initialData: Partial<ExtendedCase>;
   onNext: (d: Record<string, unknown>) => void;
   onBack?: () => void;
@@ -23,7 +25,7 @@ interface Props {
   onSaveExit: (d: Record<string, unknown>) => void;
 }
 
-export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveExit }: Props) {
+export function IntakeStep5({ caseId, initialData, onNext, saving, onCheckCase, onSaveExit }: Props) {
   const form = useForm({
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
@@ -217,87 +219,24 @@ export function IntakeStep5({ initialData, onNext, saving, onCheckCase, onSaveEx
               </div>
             </div>
 
-            {/* ── Right column — case summary ── */}
-            <div className="rounded-xl border p-5 space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">AI Genie Case Review</h3>
-                {onCheckCase && (
-                  <Button type="button" onClick={onCheckCase} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white gap-1.5 whitespace-nowrap shrink-0">
-                    <Sparkles className="h-3.5 w-3.5" /> Check My Case
-                  </Button>
-                )}
+            {/* ── Right column — embedded AI chat ── */}
+            <div className="rounded-xl border overflow-hidden flex flex-col" style={{ height: '520px' }}>
+              <div
+                className="flex items-center gap-2 px-4 py-2.5 shrink-0"
+                style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                <p className="font-semibold text-sm text-white leading-tight">AI Genie — Case Advisor</p>
               </div>
-              <div className="space-y-4 text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Plaintiff</p>
-                    <p className="font-semibold">{initialData.plaintiffName || "—"}</p>
-                    <p className="text-muted-foreground">{initialData.plaintiffAddress || ""}</p>
-                    <p className="text-muted-foreground">{[initialData.plaintiffCity, initialData.plaintiffState, initialData.plaintiffZip].filter(Boolean).join(", ")}</p>
-                    {initialData.plaintiffPhone && <p className="text-muted-foreground">{initialData.plaintiffPhone}</p>}
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Defendant</p>
-                    <p className="font-semibold">{initialData.defendantName || "—"}</p>
-                    <p className="text-muted-foreground">{initialData.defendantAddress || ""}</p>
-                    <p className="text-muted-foreground">{[initialData.defendantCity, initialData.defendantState, initialData.defendantZip].filter(Boolean).join(", ")}</p>
-                  </div>
-                </div>
-                <div className="border-t pt-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Claim</p>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-semibold">{initialData.claimType || "—"}</span>
-                    <span className="font-bold text-primary text-sm">${initialData.claimAmount ? Number(initialData.claimAmount).toLocaleString() : "—"}</span>
-                  </div>
-                  {initialData.incidentDate && <p className="text-muted-foreground text-sm mb-1">Date: {initialData.incidentDate}</p>}
-                  {initialData.claimDescription && <p className="text-sm text-muted-foreground line-clamp-3">{initialData.claimDescription}</p>}
-                  {initialData.howAmountCalculated && (
-                    <div className="mt-2 pt-2 border-t border-dashed">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Amount Calculation</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{initialData.howAmountCalculated}</p>
-                    </div>
-                  )}
-                </div>
-                {(initialData.courthouseName || initialData.countyId) && (
-                  <div className="border-t pt-3 space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Court</p>
-                    {initialData.courthouseName && <p className="font-semibold leading-snug">{initialData.courthouseName}</p>}
-                    {initialData.courthouseAddress && (
-                      <div className="flex items-start gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                        <span className="text-muted-foreground">{initialData.courthouseAddress}, {initialData.courthouseCity} {initialData.courthouseZip}</span>
-                      </div>
-                    )}
-                    {initialData.courthousePhone && (
-                      <div className="flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <a href={`tel:${initialData.courthousePhone.replace(/\D/g, "")}`} className="text-primary font-medium hover:underline">{initialData.courthousePhone}</a>
-                      </div>
-                    )}
-                    {initialData.courthouseClerkEmail && (
-                      <div className="flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <a href={`mailto:${initialData.courthouseClerkEmail}`} className="text-primary hover:underline break-all">{initialData.courthouseClerkEmail}</a>
-                      </div>
-                    )}
-                    {initialData.courthouseWebsite && (
-                      <div className="flex items-center gap-1.5">
-                        <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <a href={initialData.courthouseWebsite} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 break-all">
-                          Court website <ExternalLink className="w-3 h-3 inline shrink-0" />
-                        </a>
-                      </div>
-                    )}
-                    {initialData.filingFee && <p className="text-sm">Filing fee: <span className="font-bold">${initialData.filingFee}</span></p>}
-                    {initialData.courthouseAddress && (
-                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${initialData.courthouseAddress}, ${initialData.courthouseCity}, CA ${initialData.courthouseZip}`)}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors">
-                        <MapPin className="w-3.5 h-3.5" /> Get Directions
-                      </a>
-                    )}
-                  </div>
-                )}
+              <div className="flex-1 min-h-0 flex flex-col bg-white">
+                <ChatTab
+                  caseId={caseId}
+                  isDraftMode={false}
+                  currentCase={initialData as ExtendedCase}
+                  hideTutorial={true}
+                  freshReview={false}
+                  pageContext="intake-1"
+                />
               </div>
             </div>
           </div>
