@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, Play, X, ChevronRight, Home, Sparkles, Eraser, Maximize2, ChevronsLeftRight } from "lucide-react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -111,10 +109,9 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
 
   const _AI_CHECK_PROMPT = "Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.";
 
-  const [aiGenieOpen, setAiGenieOpen] = useState(false);
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent(aiGenieOpen ? 'ai-genie-open' : 'ai-genie-close'));
-  }, [aiGenieOpen]);
+    window.dispatchEvent(new CustomEvent(activeTab === 'chat' ? 'ai-genie-open' : 'ai-genie-close'));
+  }, [activeTab]);
 
   // Handle deep-link redirects from Help Genie
   useEffect(() => {
@@ -123,7 +120,6 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
       if (tab === 'chat' || tab === 'case-advisor') {
         if (question) setChatAutoMessage(question);
         setActiveTab('chat');
-        setAiGenieOpen(true);
       } else if (VALID_TABS.includes(tab)) {
         // Flush any unsaved intake data before switching away
         if (intakeFlushRef.current) {
@@ -138,39 +134,9 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [panelWidth, setPanelWidth] = useState<number | string>('50vw');
-  const isDragging = useRef(false);
-  const sheetRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      const newWidth = window.innerWidth - e.clientX;
-      setPanelWidth(Math.max(320, Math.min(newWidth, window.innerWidth - 40)));
-    };
-    const onMouseUp = () => {
-      if (!isDragging.current) return;
-      isDragging.current = false;
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-  }, []);
-
-  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isDragging.current = true;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  }, []);
-
   const goToAiChat = useCallback(() => {
-    setAiGenieOpen(true);
+    setActiveTab('chat');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Tracks the *actual* inner step reported by IntakeTab via onStepChange.
@@ -433,7 +399,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
         )}
 
         {/* ── Tab content ── */}
-        <div className={`border rounded-lg bg-white shadow-sm ${activeTab === "chat" ? "" : "min-h-[600px]"}`}>
+        <div className={activeTab === "chat" ? "" : "border rounded-lg bg-white shadow-sm min-h-[600px]"}>
           {activeTab === "intake" && (
             <IntakeTab
               caseId={caseId}
@@ -474,36 +440,59 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
             </div>
           )}
           {activeTab === "chat" && (
-            <Dialog open={true} onOpenChange={(open) => { if (!open) setActiveTab("documents"); }}>
-              <DialogContent className="p-0 gap-0 flex flex-col overflow-hidden" style={{ width: '90vw', maxWidth: '90vw', height: '90vh', maxHeight: '90vh' }}>
-                <DialogTitle className="sr-only">AI Genie — Case Review</DialogTitle>
-                <div className="flex items-center gap-3 px-4 py-3 shrink-0 pr-12"
-                  style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}>
-                  <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                    <Sparkles className="h-4 w-4 text-amber-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-bold text-sm leading-tight">AI Genie</p>
-                  </div>
-                  <button className="h-7 px-2 flex items-center gap-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white text-[11px] font-medium"
-                    onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}>
-                    <Eraser className="h-3 w-3" /> Clear Chat
-                  </button>
+            <div className="flex flex-col overflow-hidden rounded-lg border shadow-sm" style={{ height: "calc(100dvh - 92px)", minHeight: "540px" }}>
+              {/* Gradient header */}
+              <div
+                className="flex items-center gap-3 px-4 py-3 shrink-0"
+                style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}
+              >
+                <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                  <Sparkles className="h-4 w-4 text-amber-400" />
                 </div>
-                <div className="flex-1 min-h-0 flex flex-col">
-                  <ChatTab
-                    caseId={caseId}
-                    isDraftMode={false}
-                    currentCase={extCase}
-                    autoMessage={chatAutoMessage}
-                    onAutoMessageSent={() => setChatAutoMessage(undefined)}
-                    hideTutorial={true}
-                    freshReview={false}
-                    pageContext="chat"
-                  />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm leading-tight">AI Genie — Case Advisor</p>
+                  <p className="text-white/60 text-xs leading-tight mt-0.5">Trained on your case facts and uploaded evidence</p>
                 </div>
-              </DialogContent>
-            </Dialog>
+                <button
+                  className="h-7 px-2 flex items-center gap-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white text-[11px] font-medium"
+                  onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}
+                >
+                  <Eraser className="h-3 w-3" /> Clear Chat
+                </button>
+              </div>
+              {/* Chat body */}
+              <div className="flex-1 min-h-0 flex flex-col bg-white">
+                <ChatTab
+                  caseId={caseId}
+                  isDraftMode={false}
+                  currentCase={extCase}
+                  autoMessage={chatAutoMessage}
+                  onAutoMessageSent={() => setChatAutoMessage(undefined)}
+                  hideTutorial={true}
+                  freshReview={false}
+                  pageContext="chat"
+                />
+              </div>
+              {/* Save & Continue footer */}
+              <div className="shrink-0 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
+                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Save &amp; Exit
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  className="gap-2 px-6 border-[#14b8a6] text-[#0d6b5e] hover:bg-[#f0fffe]"
+                  onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}
+                >
+                  <Eraser className="h-4 w-4" /> Clear Chat
+                </Button>
+                <Button type="button" size="lg" onClick={() => handleStepClick(6)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
           {activeTab === "demand-letter" && (
             <div>
@@ -580,66 +569,6 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
 
       </div>
 
-      {/* ── AI Genie side panel — opens in-place from any tab or intake step ── */}
-      <Sheet open={aiGenieOpen} onOpenChange={setAiGenieOpen}>
-        <SheetContent
-          ref={sheetRef}
-          side="right"
-          className="p-0 flex flex-col overflow-visible"
-          style={{ width: panelWidth, maxWidth: '95vw' }}
-          onPointerDownOutside={(e) => {
-            const pe = e.detail.originalEvent as PointerEvent;
-            if (sheetRef.current) {
-              const rect = sheetRef.current.getBoundingClientRect();
-              if (pe.clientX >= rect.left - 30 && pe.clientX <= rect.left + 10) {
-                e.preventDefault();
-              }
-            }
-          }}
-        >
-          {/* ── Drag-to-resize handle — protruding teal pill on left edge ── */}
-          <div
-            onMouseDown={handleResizeMouseDown}
-            className="absolute left-0 top-0 h-full w-6 cursor-col-resize z-20 group"
-            aria-label="Drag to resize panel"
-          >
-            <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-[26px] h-14 bg-[#0d6b5e] rounded-l-xl flex items-center justify-center shadow-[-4px_0_10px_rgba(0,0,0,0.25)] group-hover:bg-[#0a5a4e] group-hover:w-[30px] transition-all duration-150 pointer-events-none">
-              <ChevronsLeftRight className="h-4 w-4 text-white" />
-            </div>
-          </div>
-          <div className="flex items-center gap-3 px-4 py-3 shrink-0 pr-12"
-            style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}>
-            <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-              <Sparkles className="h-4 w-4 text-amber-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm leading-tight">AI Genie</p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <button className="h-7 px-2 flex items-center gap-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white text-[11px] font-medium"
-                onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}>
-                <Eraser className="h-3 w-3" /> Clear Chat
-              </button>
-              <button className="h-7 w-7 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white"
-                onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-expand'))}>
-                <Maximize2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 min-h-0 flex flex-col">
-            <ChatTab
-              caseId={caseId}
-              isDraftMode={false}
-              currentCase={extCase}
-              autoMessage={chatAutoMessage}
-              onAutoMessageSent={() => setChatAutoMessage(undefined)}
-              hideTutorial={true}
-              freshReview={true}
-              pageContext={activeTab === 'intake' ? (intakeSubStep === 2 ? 'intake-2' : 'intake-1') : activeTab}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
 
     </WorkspaceLayout>
   );
