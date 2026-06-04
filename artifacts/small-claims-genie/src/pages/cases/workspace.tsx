@@ -441,25 +441,6 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           )}
           {activeTab === "chat" && (
             <div className="flex flex-col overflow-hidden rounded-lg border shadow-sm" style={{ height: "calc(100dvh - 92px)", minHeight: "540px" }}>
-              {/* Gradient header */}
-              <div
-                className="flex items-center gap-3 px-4 py-3 shrink-0"
-                style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}
-              >
-                <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                  <Sparkles className="h-4 w-4 text-amber-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-bold text-sm leading-tight">AI Genie — Case Advisor</p>
-                  <p className="text-white/60 text-xs leading-tight mt-0.5">Trained on your case facts and uploaded evidence</p>
-                </div>
-                <button
-                  className="h-7 px-2 flex items-center gap-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white text-[11px] font-medium"
-                  onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}
-                >
-                  <Eraser className="h-3 w-3" /> Clear Chat
-                </button>
-              </div>
               {/* Chat body */}
               <div className="flex-1 min-h-0 flex flex-col bg-white">
                 <ChatTab
