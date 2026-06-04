@@ -7,7 +7,7 @@ import type { ExtendedCase } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertCircle, Play, X, ChevronRight, Home, Sparkles, Eraser, Maximize2, ChevronsLeftRight } from "lucide-react";
+import { CheckCircle, AlertCircle, Play, X, ChevronRight, Home, Sparkles, Eraser } from "lucide-react";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
