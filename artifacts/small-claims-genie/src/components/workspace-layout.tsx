@@ -123,7 +123,7 @@ export function WorkspaceLayout({
       </header>
 
       {/* Page content */}
-      <main className="flex-1 flex flex-col bg-white">
+      <main className="flex-1 min-h-0 flex flex-col bg-white">
         {children}
       </main>
 
