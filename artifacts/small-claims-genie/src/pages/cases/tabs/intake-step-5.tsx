@@ -23,9 +23,11 @@ interface Props {
   saving?: boolean;
   onCheckCase?: () => void;
   onSaveExit: (d: Record<string, unknown>) => void;
+  autoCheckMessage?: string;
+  onAutoMessageSent?: () => void;
 }
 
-export function IntakeStep5({ caseId, initialData, onNext, saving, onCheckCase, onSaveExit }: Props) {
+export function IntakeStep5({ caseId, initialData, onNext, saving, onCheckCase, onSaveExit, autoCheckMessage, onAutoMessageSent }: Props) {
   const form = useForm({
     resolver: zodResolver(intakeStep4Schema),
     defaultValues: {
@@ -236,6 +238,8 @@ export function IntakeStep5({ caseId, initialData, onNext, saving, onCheckCase, 
                   hideTutorial={true}
                   freshReview={false}
                   pageContext="intake-1"
+                  autoMessage={autoCheckMessage}
+                  onAutoMessageSent={onAutoMessageSent}
                 />
               </div>
             </div>

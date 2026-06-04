@@ -185,6 +185,7 @@ export function IntakeTab({
   }, [forceStep, forceStepNonce]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [autoOpenAdvisor, setAutoOpenAdvisor] = useState(false);
+  const [autoCheckMessage, setAutoCheckMessage] = useState<string | undefined>(undefined);
   const [missingWarnings, setMissingWarnings] = useState<{ tab: number; label: string }[]>([]);
 
   // Always-current step ref so onSuccess callbacks can guard against backward navigation
@@ -276,7 +277,15 @@ export function IntakeTab({
     window.location.href = "/dashboard";
   };
 
+  const CASE_REVIEW_PROMPT = "Please do a full review of my case. Check my venue, eligibility, prior demand, and overall readiness. Let me know if anything looks wrong or could hurt my case.";
+
   const goToAdvisor = () => {
+    // On step 5, auto-send the review message into the embedded chat panel
+    // instead of navigating away to the full-screen chat tab.
+    if (activeTab === 5) {
+      setAutoCheckMessage(CASE_REVIEW_PROMPT);
+      return;
+    }
     if (onGoToAiChat) {
       onGoToAiChat();
     } else {
@@ -428,6 +437,8 @@ export function IntakeTab({
           saving={saveIntake.isPending || isAdvancing}
           onCheckCase={goToAdvisor}
           onSaveExit={handleSaveExit}
+          autoCheckMessage={autoCheckMessage}
+          onAutoMessageSent={() => setAutoCheckMessage(undefined)}
         />
       )}
       {activeTab === 6 && (
