@@ -442,7 +442,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "chat" && (
             <div className="flex-1 flex flex-col rounded-lg border shadow-sm">
               {/* Chat body */}
-              <div className="flex-1 min-h-0 flex flex-col bg-white">
+              <div className="flex-1 min-h-0 flex flex-col bg-white overflow-hidden">
                 <ChatTab
                   caseId={caseId}
                   isDraftMode={false}
