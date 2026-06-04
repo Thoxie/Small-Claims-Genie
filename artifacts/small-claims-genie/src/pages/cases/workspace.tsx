@@ -455,7 +455,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 />
               </div>
               {/* Save & Continue footer */}
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
                   <Home className="mr-2 h-4 w-4" />
                   Save &amp; Exit
@@ -468,6 +468,15 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}
                 >
                   <Eraser className="h-4 w-4" /> Clear Chat
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+                  disabled={!!chatAutoMessage}
+                  onClick={() => setChatAutoMessage("Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.")}
+                >
+                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>
                 <Button type="button" size="lg" onClick={() => handleStepClick(6)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
                   Save &amp; Continue <ChevronRight className="h-4 w-4" />
