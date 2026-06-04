@@ -86,6 +86,11 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const [forceStepNonce, setForceStepNonce] = useState(0);
   const [prepTutorialOpen, setPrepTutorialOpen] = useState(false);
   const [chatAutoMessage, setChatAutoMessage] = useState<string | undefined>(undefined);
+  const [chatIsTyping, setChatIsTyping] = useState(false);
+
+  const handleAiGenieCheckMyCase = () => {
+    setChatAutoMessage("Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.");
+  };
   const [docAdvisorTrigger, setDocAdvisorTrigger] = useState(0);
 
   // Broadcast the active tab to the global Help Genie widget so it sends
@@ -452,6 +457,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   hideTutorial={true}
                   freshReview={false}
                   pageContext="chat"
+                  onTypingChange={setChatIsTyping}
                 />
               </div>
               {/* Save & Continue footer */}
@@ -473,8 +479,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   type="button"
                   size="lg"
                   className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
-                  disabled={!!chatAutoMessage}
-                  onClick={() => setChatAutoMessage("Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.")}
+                  disabled={chatIsTyping || !!chatAutoMessage}
+                  onClick={handleAiGenieCheckMyCase}
                 >
                   <Sparkles className="h-4 w-4" /> AI Genie Check My Case
                 </Button>

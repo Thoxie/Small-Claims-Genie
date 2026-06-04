@@ -126,7 +126,7 @@ const PAGE_INSTRUCTIONS: Record<string, { title: string; steps: string[] }> = {
   },
 };
 
-export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage, onAutoMessageSent, hideTutorial = false, freshReview, pageContext }: {
+export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage, onAutoMessageSent, hideTutorial = false, freshReview, pageContext, onTypingChange }: {
   caseId: number;
   isDraftMode?: boolean;
   currentCase?: ExtendedCase;
@@ -135,6 +135,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
   hideTutorial?: boolean;
   freshReview?: boolean;
   pageContext?: string;
+  onTypingChange?: (isTyping: boolean) => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const sessionKey = `chat_cleared_${caseId}`;
@@ -194,12 +195,15 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
 
   const autoMessageFiredRef = useRef(false);
   useEffect(() => {
-    if (!autoMessage || autoMessageFiredRef.current) return;
+    if (!autoMessage) { autoMessageFiredRef.current = false; return; }
+    if (autoMessageFiredRef.current) return;
     autoMessageFiredRef.current = true;
     sendMessage(autoMessage, { fresh: freshReview });
     onAutoMessageSent?.();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoMessage]);
+
+  useEffect(() => { onTypingChange?.(isTyping); }, [isTyping, onTypingChange]);
 
   useEffect(() => {
     if (!hideTutorial) return;
