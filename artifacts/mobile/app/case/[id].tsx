@@ -56,7 +56,9 @@ const TABS = [
 
 // ─── Intake Tab ──────────────────────────────────────────────────────────────
 
-function IntakeTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDetails }) {
+const CASE_REVIEW_PROMPT = "Please do a full review of my case. Check my venue, eligibility, prior demand, and overall readiness. Let me know if anything looks wrong or could hurt my case.";
+
+function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData: CaseWithDetails; onCheckCase?: () => void }) {
   const colors = useColors();
   const save = useSaveIntakeProgress();
   const [step, setStep] = useState<1 | 2>(1);
@@ -86,7 +88,7 @@ function IntakeTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDet
     onChangeText: (v: string) => setForm((prev) => ({ ...prev, [key]: v })),
   });
 
-  const onSaveStep = async (isLastStep = false) => {
+  const onSaveStep = async (isLastStep = false, silent = false) => {
     setSaving(true);
     try {
       await save.mutateAsync({
@@ -100,7 +102,7 @@ function IntakeTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDet
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (isLastStep) {
-        Alert.alert("Saved", "Your intake information has been saved.");
+        if (!silent) Alert.alert("Saved", "Your intake information has been saved.");
       } else {
         setStep(2);
       }
@@ -259,6 +261,20 @@ function IntakeTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDet
               )}
             </TouchableOpacity>
           </View>
+
+          {onCheckCase && (
+            <TouchableOpacity
+              style={[styles.checkCaseBtn, { backgroundColor: "#f59e0b", opacity: saving ? 0.7 : 1 }]}
+              onPress={async () => {
+                await onSaveStep(true, true);
+                onCheckCase();
+              }}
+              disabled={saving}
+            >
+              <Feather name="zap" size={16} color="#fff" />
+              <Text style={styles.checkCaseBtnText}>AI Genie Check My Case</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       )}
     </View>
@@ -1681,7 +1697,16 @@ export default function CaseWorkspace() {
 
       {/* Tab content */}
       <View style={{ flex: 1 }}>
-        {activeTab === "intake" && <IntakeTab caseId={caseId} caseData={caseData} />}
+        {activeTab === "intake" && (
+          <IntakeTab
+            caseId={caseId}
+            caseData={caseData}
+            onCheckCase={() => {
+              setPendingAiMessage(CASE_REVIEW_PROMPT);
+              setActiveTab("ai-chat");
+            }}
+          />
+        )}
         {activeTab === "documents" && <DocumentsTab caseId={caseId} />}
         {activeTab === "demand-letter" && <DemandLetterTab caseId={caseId} />}
         {activeTab === "court-forms" && <CourtFormsTab caseId={caseId} />}
@@ -1926,6 +1951,8 @@ const styles = StyleSheet.create({
   intakeBtnRow: { flexDirection: "row", gap: 10, marginTop: 8 },
   intakeBackBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, borderWidth: 1 },
   intakeBackBtnText: { fontSize: 15, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold" },
+  checkCaseBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 52, borderRadius: 12, marginTop: 8 },
+  checkCaseBtnText: { fontSize: 15, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold", color: "#fff" },
 
   letterTypeRow: { flexDirection: "row", gap: 8, marginBottom: 4 },
   letterTypeCard: { flex: 1, padding: 10, borderRadius: 10, borderWidth: 1.5, gap: 4, minHeight: 72, justifyContent: "space-between" },
