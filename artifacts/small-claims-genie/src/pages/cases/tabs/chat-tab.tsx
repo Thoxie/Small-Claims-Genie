@@ -501,15 +501,19 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
         </div>
       )}
 
-      <div className="shrink-0 bg-card border-b border-gray-100 px-3 pt-2 pb-2 rounded-b-lg">
-        {isRecording && (
-          <div className="flex items-center justify-end mb-1">
+      <div className="shrink-0 bg-card border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 pt-1.5 pb-3 rounded-b-lg">
+        <div className={`flex items-center justify-end mb-1.5 transition-all duration-200`}>
+          {isRecording ? (
             <span className="flex items-center gap-1 text-[10px] font-medium text-destructive animate-pulse">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
               Recording… tap mic to stop
             </span>
-          </div>
-        )}
+          ) : (
+            <span className="text-xs font-extrabold text-white bg-black px-2 py-0.5 rounded-md">
+              Tap mic to start · tap again to stop
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 relative flex items-center">
             <textarea
@@ -518,7 +522,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
                 setInput(e.target.value);
                 const el = e.target as HTMLTextAreaElement;
                 el.style.height = "auto";
-                el.style.height = Math.min(el.scrollHeight, 108) + "px";
+                el.style.height = Math.min(el.scrollHeight, 120) + "px";
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -531,26 +535,26 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
               placeholder={isRecording ? "🔴 Recording — tap mic to stop…" : i18n.chat.placeholder}
               rows={1}
               disabled={isRecording}
-              className="w-full resize-none overflow-hidden rounded-full border-2 border-slate-400 bg-background pl-3 pr-9 py-2 text-[13px] leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
-              style={{ minHeight: "38px", maxHeight: "108px" }}
+              className="w-full resize-none overflow-hidden rounded-full border-2 border-slate-400 bg-background pl-4 pr-10 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-70 transition-colors"
+              style={{ minHeight: "42px", maxHeight: "120px" }}
             />
             <button
               type="button"
               onClick={isRecording ? handleVoiceStop : handleVoiceStart}
               aria-label={isRecording ? "Tap to stop recording" : "Tap to start recording"}
-              className={`absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground hover:text-primary'}`}
+              className={`absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full transition-colors ${isRecording ? 'text-destructive animate-pulse bg-destructive/10' : 'text-muted-foreground hover:text-primary'}`}
             >
-              <Mic className="h-3.5 w-3.5" />
+              <Mic className="h-4 w-4" />
             </button>
           </div>
           <button
             type="button"
             onClick={() => { sendMessage(input); }}
             disabled={isTyping || isRecording || !input.trim()}
-            className="h-[38px] w-[38px] shrink-0 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+            className="h-[42px] w-[42px] shrink-0 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:pointer-events-none transition-colors"
             aria-label="Send"
           >
-            <Send className="h-3.5 w-3.5 ml-0.5" />
+            <Send className="h-4 w-4 ml-0.5" />
           </button>
         </div>
       </div>
