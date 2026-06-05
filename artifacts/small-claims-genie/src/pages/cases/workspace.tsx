@@ -198,7 +198,6 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (activeTab === "chat") return;
     const deltaX = e.changedTouches[0].clientX - touchStartX.current;
     const deltaY = e.changedTouches[0].clientY - touchStartY.current;
     if (Math.abs(deltaX) < 60 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
