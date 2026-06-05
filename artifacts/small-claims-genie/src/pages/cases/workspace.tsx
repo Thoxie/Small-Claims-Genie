@@ -425,7 +425,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 evidenceChecklist={extCase?.evidenceChecklist || []}
                 advisorTrigger={docAdvisorTrigger}
               />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 w-full bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
                   <Home className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Save &amp; Exit</span>
@@ -465,7 +465,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 />
               </div>
               {/* Save & Continue footer */}
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-3 sm:px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 w-full bg-white border-t border-border flex items-center justify-between px-3 sm:px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
                   <Home className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Save &amp; Exit</span>
@@ -505,7 +505,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 caseId={caseId}
                 currentCase={extCase}
               />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 w-full bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
                   <Home className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Save &amp; Exit</span>
@@ -526,7 +526,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "forms" && (
             <div>
               <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 w-full bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
                   <Home className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Save &amp; Exit</span>
@@ -547,7 +547,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "prep" && (
             <div>
               <HearingPrepTab caseId={caseId} currentCase={extCase} isDraftMode={false} />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="sticky bottom-0 z-10 w-full bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
                   <Home className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Save &amp; Exit</span>

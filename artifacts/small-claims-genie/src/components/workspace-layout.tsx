@@ -23,7 +23,7 @@ export function WorkspaceLayout({
   onStepClick,
 }: WorkspaceLayoutProps) {
   return (
-    <div className={`flex flex-col bg-white ${activeTab === 'chat' ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
+    <div className={`flex flex-col bg-white overflow-x-hidden ${activeTab === 'chat' ? 'h-[100dvh] overflow-y-hidden' : 'min-h-[100dvh]'}`}>
 
       {/* ── Workspace nav header ── */}
       <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
