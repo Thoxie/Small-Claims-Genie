@@ -239,14 +239,14 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
       <div className="flex gap-4 items-start">
         <div className="flex-1 min-w-0 space-y-4">
 
-      {/* Mobile tutorial trigger — hidden on sm+ where the card is visible */}
       <button
         type="button"
         onClick={() => setTutorialOpen(true)}
-        className="sm:hidden flex items-center gap-1.5 text-[#14b8a6] text-xs font-semibold"
+        className="sm:hidden flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
       >
-        <Play className="w-3.5 h-3.5 fill-current" />
-        Watch Tutorial
+        <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
+        Watch Tutorial Video — Step 1
+        <ChevronRight className="h-3 w-3 ml-auto shrink-0" />
       </button>
 
       {/* ── Step title ── */}
@@ -910,15 +910,6 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
         </form>
       </Form>
-      <button
-        type="button"
-        onClick={() => setTutorialOpen(true)}
-        className="sm:hidden mt-3 flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
-      >
-        <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
-        Watch Tutorial — Step 1
-        <ChevronRight className="h-3 w-3 ml-auto shrink-0" />
-      </button>
         </div>
 
         {/* Right: video tutorial card — desktop only */}

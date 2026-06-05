@@ -1433,7 +1433,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         className="shrink-0 flex items-center gap-2 rounded-lg border-2 border-black bg-amber-500 hover:bg-amber-400 text-black px-3.5 py-1.5 text-center transition-colors"
                       >
                         <ExternalLink className="h-4 w-4 shrink-0" />
-                        <span className="text-sm font-bold leading-tight whitespace-nowrap">e-File and/or Service by Process Server</span>
+                        <span className="text-sm font-bold leading-tight">e-File and/or Service by Process Server</span>
                       </button>
                     </div>
                     <p className="text-sm text-foreground leading-relaxed">
@@ -1828,7 +1828,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         className="sm:hidden flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
       >
         <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
-        Watch Tutorial — Court Forms
+        Watch Tutorial Video — Court Forms
         <ChevronRight className="h-3 w-3 ml-auto shrink-0" />
       </button>
 
@@ -1941,7 +1941,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                           className="shrink-0 flex items-center gap-2 rounded-lg border-2 border-black bg-amber-500 hover:bg-amber-400 text-black px-3.5 py-1.5 text-center transition-colors"
                         >
                           <ExternalLink className="h-4 w-4 shrink-0" />
-                          <span className="text-sm font-bold leading-tight whitespace-nowrap">e-File and/or Service by Process Server</span>
+                          <span className="text-sm font-bold leading-tight">e-File and/or Service by Process Server</span>
                         </button>
                       </div>
                       <p className="text-sm text-foreground leading-relaxed">

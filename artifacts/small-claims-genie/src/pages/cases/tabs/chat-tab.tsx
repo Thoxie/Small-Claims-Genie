@@ -354,10 +354,11 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
         <button
           type="button"
           onClick={() => setTutorialOpen(true)}
-          className="sm:hidden shrink-0 mb-2 flex items-center gap-2 self-start px-3 py-1.5 rounded-lg border border-[#14b8a6] bg-[#f0fffe] text-[#0d6b5e] text-xs font-semibold hover:bg-[#ddf6f3] transition-colors"
+          className="sm:hidden flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
         >
-          <Play className="h-3.5 w-3.5 text-[#14b8a6]" fill="currentColor" />
-          Watch Tutorial
+          <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
+          Watch Tutorial Video — Step 5
+          <ChevronRight className="h-3 w-3 ml-auto shrink-0" />
         </button>
       )}
       {!hideTutorial && <div className="bg-primary/5 border border-black/80 rounded-lg p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
