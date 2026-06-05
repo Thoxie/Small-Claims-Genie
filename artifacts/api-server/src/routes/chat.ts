@@ -110,9 +110,14 @@ router.post("/cases/:id/chat", async (req, res): Promise<void> => {
     ? PAGE_CONTEXT_PROMPTS[pageContext] + SUGGESTIONS_INSTRUCTION
     : SUGGESTIONS_INSTRUCTION;
 
+  const recentHistory = history.slice(-20);
+  const freshnessReminder = recentHistory.length > 0
+    ? `[SYSTEM REMINDER: The case record above was just fetched live from the database. It is the ONLY authoritative source for dollar amounts, dates, and case facts. Any amounts or issues mentioned in the conversation below that differ from the case record above are STALE — do not repeat or re-raise them. Read all figures directly from the case record above.]`
+    : null;
+
   const chatMessages = [
-    { role: "system" as const, content: SYSTEM_PROMPT + "\n\n" + caseContext + "\n\n" + pageAddendum },
-    ...history.slice(-20).map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+    { role: "system" as const, content: SYSTEM_PROMPT + "\n\n" + caseContext + (freshnessReminder ? "\n\n" + freshnessReminder : "") + "\n\n" + pageAddendum },
+    ...recentHistory.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
     { role: "user" as const, content: parsed.data.content },
   ];
 
