@@ -111,6 +111,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   // is currently mounted.  handleStepClick awaits it before switching away
   // from the intake tab so the advisor never reads stale DB data.
   const intakeFlushRef = useRef<(() => Promise<void>) | null>(null);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
   const _AI_CHECK_PROMPT = "Please do a full review of my case. Identify the strongest arguments, any weaknesses or gaps in my evidence, what I should fix or gather before filing, and how strong my chances are.";
 
@@ -190,6 +192,20 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (activeTab === "chat") return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    if (Math.abs(deltaX) < 60 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+    if (deltaX < 0 && currentOuterStep < 8) handleStepClick(currentOuterStep + 1);
+    else if (deltaX > 0 && currentOuterStep > 1) handleStepClick(currentOuterStep - 1);
+  };
+
   const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
 
@@ -209,6 +225,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
         currentOuterStep={currentOuterStep}
         setActiveTab={setActiveTab}
         onStepClick={handleStepClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="container mx-auto p-8">
           <Skeleton className="h-12 w-1/3 mb-8" />
@@ -262,6 +280,8 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
       completedSteps={completedSteps}
       setActiveTab={setActiveTab}
       onStepClick={handleStepClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <div className={activeTab === "chat" ? "flex-1 flex flex-col min-h-0" : "container mx-auto px-4 pt-0 pb-6 max-w-6xl flex flex-col gap-3"}>
 

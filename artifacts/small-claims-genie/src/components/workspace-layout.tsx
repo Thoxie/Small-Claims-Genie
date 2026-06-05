@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { ContactDialog } from "@/components/contact-dialog";
-import { LogOut } from "lucide-react";
+import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { WORKSPACE_STEPS } from "@/lib/workspace-steps";
@@ -12,6 +12,8 @@ interface WorkspaceLayoutProps {
   completedSteps?: Set<number>;
   setActiveTab: (t: string) => void;
   onStepClick: (stepN: number) => void;
+  onTouchStart?: React.TouchEventHandler<HTMLElement>;
+  onTouchEnd?: React.TouchEventHandler<HTMLElement>;
 }
 
 export function WorkspaceLayout({
@@ -21,6 +23,8 @@ export function WorkspaceLayout({
   completedSteps,
   setActiveTab: _setActiveTab,
   onStepClick,
+  onTouchStart,
+  onTouchEnd,
 }: WorkspaceLayoutProps) {
   return (
     <div className={`flex flex-col bg-white overflow-x-hidden ${activeTab === 'chat' ? 'h-[100dvh] overflow-y-hidden' : 'min-h-[100dvh]'}`}>
@@ -54,8 +58,39 @@ export function WorkspaceLayout({
             <span className="text-[11px] md:text-xs font-bold leading-none">Exit</span>
           </a>
 
-          {/* ── Numbered stepper ── */}
-          <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
+          {/* ── Mobile step indicator (hidden on sm+) ── */}
+          <div className="flex-1 min-w-0 sm:hidden flex items-center justify-center gap-1">
+            <button
+              onClick={() => currentOuterStep > 1 && onStepClick(currentOuterStep - 1)}
+              disabled={currentOuterStep <= 1}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[#14b8a6] disabled:text-gray-300 hover:bg-gray-100 transition-colors shrink-0"
+              aria-label="Previous step"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <div className="flex flex-col items-center min-w-0 px-1">
+              <div className="flex items-center gap-1.5">
+                <span className="w-8 h-8 rounded-full bg-[#14b8a6] text-white text-sm font-black flex items-center justify-center shrink-0">
+                  {currentOuterStep}
+                </span>
+                <span className="text-xs text-gray-400 font-medium">of 8</span>
+              </div>
+              <p className="text-[10px] font-semibold text-gray-600 leading-tight text-center mt-0.5 truncate max-w-[120px]">
+                {WORKSPACE_STEPS[currentOuterStep - 1]?.label.replace('\n', ' ')}
+              </p>
+            </div>
+            <button
+              onClick={() => currentOuterStep < 8 && onStepClick(currentOuterStep + 1)}
+              disabled={currentOuterStep >= 8}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[#14b8a6] disabled:text-gray-300 hover:bg-gray-100 transition-colors shrink-0"
+              aria-label="Next step"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* ── Full numbered stepper (desktop only, hidden on mobile) ── */}
+          <div className="hidden sm:block flex-1 min-w-0 overflow-x-auto no-scrollbar">
             {/* min-w-max always prevents Firefox from collapsing below content size */}
             <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl p-1 min-w-max">
               {WORKSPACE_STEPS.map((step, idx) => {
@@ -100,8 +135,8 @@ export function WorkspaceLayout({
                         {step.n}
                       </span>
 
-                      {/* Label — no break-words; whitespace-pre-line only for \n splits */}
-                      <div className="hidden sm:flex flex-col items-start w-[50px] md:w-[54px]">
+                      {/* Label */}
+                      <div className="flex flex-col items-start w-[50px] md:w-[54px]">
                         {Icon && <Icon className={`h-3 w-3 mb-0.5 shrink-0 ${isActive ? "text-white/80" : "text-gray-400"}`} />}
                         <span className="text-[10px] md:text-[11px] font-semibold leading-tight whitespace-pre-line w-full">
                           {step.label}
@@ -123,7 +158,7 @@ export function WorkspaceLayout({
       </header>
 
       {/* Page content */}
-      <main className="flex-1 min-h-0 flex flex-col bg-white">
+      <main className="flex-1 min-h-0 flex flex-col bg-white" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {children}
       </main>
 
