@@ -59,14 +59,14 @@ export function WorkspaceLayout({
           </a>
 
           {/* ── Mobile step indicator (hidden on sm+) ── */}
-          <div className="flex-1 min-w-0 sm:hidden flex items-start justify-center gap-1 pt-1">
+          <div className="flex-1 min-w-0 sm:hidden flex items-center justify-center gap-1">
             <button
               onClick={() => currentOuterStep > 1 && onStepClick(currentOuterStep - 1)}
               disabled={currentOuterStep <= 1}
-              className="w-9 h-9 flex items-center justify-center text-gray-900 disabled:text-gray-300 transition-colors shrink-0"
+              className="w-10 h-8 flex items-center justify-center text-gray-900 disabled:text-gray-300 transition-colors shrink-0"
               aria-label="Previous step"
             >
-              <ChevronLeft className="w-7 h-7" />
+              <ChevronLeft className="w-10 h-10" />
             </button>
             <div className="flex flex-col items-center min-w-0 px-1">
               <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -82,10 +82,10 @@ export function WorkspaceLayout({
             <button
               onClick={() => currentOuterStep < 8 && onStepClick(currentOuterStep + 1)}
               disabled={currentOuterStep >= 8}
-              className="w-9 h-9 flex items-center justify-center text-gray-900 disabled:text-gray-300 transition-colors shrink-0"
+              className="w-10 h-8 flex items-center justify-center text-gray-900 disabled:text-gray-300 transition-colors shrink-0"
               aria-label="Next step"
             >
-              <ChevronRight className="w-7 h-7" />
+              <ChevronRight className="w-10 h-10" />
             </button>
           </div>
 
