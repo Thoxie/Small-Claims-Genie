@@ -321,12 +321,23 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                   </div>
                 </div>
               </div>
+              {/* Mobile-only Watch Tutorial button */}
+              <button
+                onClick={() => setPrepTutorialOpen(true)}
+                className="sm:hidden mt-2 w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border-2 border-[#14b8a6] bg-[#f0fffe] text-[#0d6b5e] hover:bg-[#e0faf8] transition-colors"
+              >
+                <span className="flex items-center gap-2 text-xs font-semibold">
+                  <Play className="h-3.5 w-3.5 text-[#14b8a6]" fill="#14b8a6" />
+                  Watch Tutorial — Step 7
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0" />
+              </button>
             </div>
 
             {/* Video tutorial card — same style as other intake steps */}
             <div
               onClick={() => setPrepTutorialOpen(true)}
-              className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+              className="hidden sm:block cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
               title="Watch the tutorial for this step"
             >
               <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
