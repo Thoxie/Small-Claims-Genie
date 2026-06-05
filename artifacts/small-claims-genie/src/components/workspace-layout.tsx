@@ -63,29 +63,29 @@ export function WorkspaceLayout({
             <button
               onClick={() => currentOuterStep > 1 && onStepClick(currentOuterStep - 1)}
               disabled={currentOuterStep <= 1}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[#14b8a6] disabled:text-gray-300 hover:bg-gray-100 transition-colors shrink-0"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[#0d6b5e] disabled:text-gray-300 hover:bg-gray-100 transition-colors shrink-0"
               aria-label="Previous step"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-7 h-7" />
             </button>
             <div className="flex flex-col items-center min-w-0 px-1">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
                 <span className="w-8 h-8 rounded-full bg-[#14b8a6] text-white text-sm font-black flex items-center justify-center shrink-0">
                   {currentOuterStep}
                 </span>
-                <span className="text-xs text-gray-400 font-medium">of 8</span>
+                <span className="text-sm text-gray-700 font-semibold">of 8</span>
               </div>
-              <p className="text-[10px] font-semibold text-gray-600 leading-tight text-center mt-0.5 truncate max-w-[120px]">
+              <p className="text-[12px] font-bold text-gray-800 leading-tight text-center mt-0.5 truncate max-w-[120px]">
                 {WORKSPACE_STEPS[currentOuterStep - 1]?.label.replace('\n', ' ')}
               </p>
             </div>
             <button
               onClick={() => currentOuterStep < 8 && onStepClick(currentOuterStep + 1)}
               disabled={currentOuterStep >= 8}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[#14b8a6] disabled:text-gray-300 hover:bg-gray-100 transition-colors shrink-0"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[#0d6b5e] disabled:text-gray-300 hover:bg-gray-100 transition-colors shrink-0"
               aria-label="Next step"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-7 h-7" />
             </button>
           </div>
 
