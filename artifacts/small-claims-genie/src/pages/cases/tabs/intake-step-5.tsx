@@ -57,6 +57,17 @@ export function IntakeStep5({ caseId, initialData, onNext, saving, onCheckCase, 
     <div className="px-4 pt-3 pb-4 space-y-5 text-sm">
       <div className="flex gap-4 items-start">
         <div className="flex-1 min-w-0">
+
+          {/* Mobile tutorial trigger — hidden on sm+ where the card is visible */}
+          <button
+            type="button"
+            onClick={() => setTutorialOpen(true)}
+            className="sm:hidden flex items-center gap-1.5 text-[#14b8a6] text-xs font-semibold mb-2"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            Watch Tutorial
+          </button>
+
           <Form {...form}>
             <div className="space-y-5">
 

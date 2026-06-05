@@ -239,6 +239,16 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
       <div className="flex gap-4 items-start">
         <div className="flex-1 min-w-0 space-y-4">
 
+      {/* Mobile tutorial trigger — hidden on sm+ where the card is visible */}
+      <button
+        type="button"
+        onClick={() => setTutorialOpen(true)}
+        className="sm:hidden flex items-center gap-1.5 text-[#14b8a6] text-xs font-semibold"
+      >
+        <Play className="w-3.5 h-3.5 fill-current" />
+        Watch Tutorial
+      </button>
+
       {/* ── Step title ── */}
       <div>
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
