@@ -350,6 +350,16 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
 
       {/* ── Chat column ── */}
       <div className="flex-1 min-w-0 flex flex-col min-h-0" style={hideTutorial ? undefined : { height: "calc(100dvh - 165px)", minHeight: "420px" }}>
+      {!hideTutorial && (
+        <button
+          type="button"
+          onClick={() => setTutorialOpen(true)}
+          className="sm:hidden shrink-0 mb-2 flex items-center gap-2 self-start px-3 py-1.5 rounded-lg border border-[#14b8a6] bg-[#f0fffe] text-[#0d6b5e] text-xs font-semibold hover:bg-[#ddf6f3] transition-colors"
+        >
+          <Play className="h-3.5 w-3.5 text-[#14b8a6]" fill="currentColor" />
+          Watch Tutorial
+        </button>
+      )}
       {!hideTutorial && <div className="bg-primary/5 border border-black/80 rounded-lg p-3 text-sm font-medium text-primary flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <CheckCircle className="h-4 w-4 shrink-0" />
@@ -568,7 +578,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
       {!hideTutorial && (
       <div
         onClick={() => setTutorialOpen(true)}
-        className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+        className="hidden sm:block cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
         title="Watch the tutorial for this step"
       >
         <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
