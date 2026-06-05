@@ -1,0 +1,2 @@
+- [Document upload flow](document-upload-flow.md) — presigned URL flow bypasses Replit proxy; direct multipart upload gives 403 on large files
+- [iOS file input](ios-file-input.md) — display:none blocks .click() on iOS Safari; use opacity-0 positional hiding instead

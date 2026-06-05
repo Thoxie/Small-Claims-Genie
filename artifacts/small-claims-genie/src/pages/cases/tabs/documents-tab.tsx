@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import {
   useListDocuments,
-  useUploadDocument,
   useDeleteDocument,
   useGetCase,
   getListDocumentsQueryKey,
@@ -219,7 +218,7 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
 }) {
   const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
   const { data: liveCase } = useGetCase(caseId, { query: { enabled: !!caseId } });
-  const uploadDoc = useUploadDocument();
+  const [uploading, setUploading] = useState(false);
   const deleteDoc = useDeleteDocument();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -301,20 +300,65 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
 
   const [newestDocId, setNewestDocId] = useState<number | null>(null);
 
+  const MIME_BY_EXT: Record<string, string> = {
+    ".pdf":  "application/pdf",
+    ".jpg":  "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png":  "image/png",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
     e.target.value = "";
+    setUploading(true);
     try {
-      const result = await uploadDoc.mutateAsync({ id: caseId, data: { file, label: file.name } });
+      const token = await getToken();
+      const authHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+      const contentType = MIME_BY_EXT[ext] ?? file.type;
+
+      // Step 1 — request presigned GCS URL (tiny JSON call through proxy)
+      const urlRes = await fetch("/api/storage/uploads/request-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeader },
+        body: JSON.stringify({ name: file.name, size: file.size, contentType, caseId }),
+      });
+      if (!urlRes.ok) {
+        const errData = await urlRes.json().catch(() => ({})) as { error?: string };
+        throw new Error(errData.error ?? "Could not start upload. Please try again.");
+      }
+      const { uploadURL, documentId } = await urlRes.json() as { uploadURL: string; documentId: number };
+
+      // Step 2 — PUT file directly to GCS (bypasses the Replit proxy entirely)
+      const gcsRes = await fetch(uploadURL, {
+        method: "PUT",
+        headers: { "Content-Type": contentType },
+        body: file,
+      });
+      if (!gcsRes.ok) throw new Error("Storage upload failed. Please try again.");
+
+      // Step 3 — finalize: verify + trigger OCR
+      const finalRes = await fetch(`/api/cases/${caseId}/documents/${documentId}/storage-finalize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeader },
+      });
+      if (!finalRes.ok) {
+        const errData = await finalRes.json().catch(() => ({})) as { error?: string };
+        throw new Error(errData.error ?? "Upload verification failed. Please try again.");
+      }
+      const result = await finalRes.json() as { id?: number };
+
       invalidateDocAndScore();
       toast({ title: "Document uploaded", description: "OCR text extraction is running in the background." });
       setActiveTab("uploads");
-      // Track so the new tile auto-focuses the Evidence Name field
-      if ((result as { id?: number })?.id) setNewestDocId((result as { id: number }).id);
+      if (result?.id) setNewestDocId(result.id);
     } catch (err: unknown) {
       const msg = (err instanceof Error ? err.message : null) ?? "Upload failed — please try again.";
       toast({ title: "Upload failed", description: msg, variant: "destructive" });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -364,7 +408,13 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
 
       {/* Sub-tabs + Upload button — same row */}
       <div className="flex items-center gap-6">
-        <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.docx" onChange={handleUpload} />
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="absolute opacity-0 w-0 h-0 overflow-hidden pointer-events-none"
+          accept=".pdf,.jpg,.jpeg,.png,.docx,application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={handleUpload}
+        />
         <button
           type="button"
           onClick={() => setActiveTab("checklist")}
@@ -409,9 +459,9 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
             </span>
           )}
         </button>
-        <Button className="ml-auto shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploadDoc.isPending} data-testid="button-upload-doc">
+        <Button className="ml-auto shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading} data-testid="button-upload-doc">
           <Paperclip className="h-4 w-4 mr-2" />
-          {uploadDoc.isPending ? i18n.documents.processing : i18n.documents.uploadBtn}
+          {uploading ? i18n.documents.processing : i18n.documents.uploadBtn}
         </Button>
       </div>
 
