@@ -270,7 +270,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           <div className="flex gap-4 items-start mt-3">
             {/* Readiness card */}
             <div className={`flex-1 min-w-0 bg-card px-5 py-3 rounded-xl border-2 ${borderColor} shadow-sm`}>
-              <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-start sm:items-center">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-end gap-2">
                     <div>
@@ -298,7 +298,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 border-l border-border pl-4">
+                <div className="flex flex-col gap-1 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
                   {allItems.length > 0 ? (
                     <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                       {allItems.map((item, i) => (
