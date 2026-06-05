@@ -404,12 +404,21 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
 
             </form>
           </Form>
+          <button
+            type="button"
+            onClick={() => setTutorialOpen(true)}
+            className="sm:hidden mt-3 flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
+          >
+            <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
+            Watch Tutorial — Step 2
+            <ChevronRight className="h-3 w-3 ml-auto shrink-0" />
+          </button>
         </div>
 
-        {/* Right: video tutorial card */}
+        {/* Right: video tutorial card — desktop only */}
         <div
           onClick={() => setTutorialOpen(true)}
-          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          className="hidden sm:block cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
           title="Watch the tutorial for this step"
         >
           <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
@@ -434,16 +443,19 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
       </div>
 
       {/* ── Full-width footer — outside two-column layout so it spans both columns ── */}
-      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8" style={{ paddingRight: '165px' }}>
-        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit(form.getValues())}>
-          <Home className="mr-2 h-4 w-4" />
-          Save &amp; Exit
+      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8">
+        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit(form.getValues())}>
+          <Home className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Save &amp; Exit</span>
         </Button>
-        <Button type="button" size="lg" onClick={onGoToAiChat ?? openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
-          <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+        <Button type="button" size="lg" onClick={onGoToAiChat ?? openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-8">
+          <Sparkles className="h-4 w-4" />
+          <span className="sm:hidden">AI Check</span>
+          <span className="hidden sm:inline"> AI Genie Check My Case</span>
         </Button>
-        <Button type="button" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2" onClick={() => form.handleSubmit(onNext)()} style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-          {saving ? "Saving…" : i18n.intake.saveAndContinue}
+        <Button type="button" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2 px-2 sm:px-4" onClick={() => form.handleSubmit(onNext)()}>
+          <span className="sm:hidden">{saving ? "Saving…" : "Continue"}</span>
+          <span className="hidden sm:inline">{saving ? "Saving…" : i18n.intake.saveAndContinue}</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

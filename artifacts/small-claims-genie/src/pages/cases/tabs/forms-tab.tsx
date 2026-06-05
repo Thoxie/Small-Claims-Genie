@@ -1821,6 +1821,17 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
       {isDraftMode && <DraftModeBanner />}
 
+      {/* Mobile tutorial trigger — hidden on desktop */}
+      <button
+        type="button"
+        onClick={() => setTutorialOpen(true)}
+        className="sm:hidden flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
+      >
+        <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
+        Watch Tutorial — Court Forms
+        <ChevronRight className="h-3 w-3 ml-auto shrink-0" />
+      </button>
+
       {/* ── Top row: progress tracker + video card ─────────────────────────── */}
       <div className="flex gap-4 items-start">
 
@@ -1859,10 +1870,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           </div>
         </div>
 
-        {/* Video card */}
+        {/* Video card — desktop only */}
         <div
           onClick={() => setTutorialOpen(true)}
-          className="cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          className="hidden sm:block cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
           title="Watch the tutorial for this step"
         >
           <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">

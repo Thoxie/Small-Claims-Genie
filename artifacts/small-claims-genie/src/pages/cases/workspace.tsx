@@ -425,21 +425,25 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 evidenceChecklist={extCase?.evidenceChecklist || []}
                 advisorTrigger={docAdvisorTrigger}
               />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
-                  <Home className="mr-2 h-4 w-4" />
-                  Save &amp; Exit
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
+                  <Home className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Save &amp; Exit</span>
                 </Button>
                 <Button
                   type="button"
                   size="lg"
                   onClick={() => setDocAdvisorTrigger(n => n + 1)}
-                  className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+                  className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-6"
                 >
-                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                  <Sparkles className="h-4 w-4" />
+                  <span className="sm:hidden">AI Check</span>
+                  <span className="hidden sm:inline"> AI Genie Check My Case</span>
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                <Button type="button" size="lg" onClick={() => handleStepClick(4)} className="gap-2 px-2 sm:px-4">
+                  <span className="sm:hidden">Continue</span>
+                  <span className="hidden sm:inline">Save &amp; Continue</span>
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -461,31 +465,36 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 />
               </div>
               {/* Save & Continue footer */}
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
-                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
-                  <Home className="mr-2 h-4 w-4" />
-                  Save &amp; Exit
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-3 sm:px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
+                  <Home className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Save &amp; Exit</span>
                 </Button>
                 <Button
                   type="button"
                   size="lg"
                   variant="outline"
-                  className="gap-2 px-6 border-[#14b8a6] text-[#0d6b5e] hover:bg-[#f0fffe]"
+                  className="gap-1 sm:gap-2 px-2 sm:px-6 border-[#14b8a6] text-[#0d6b5e] hover:bg-[#f0fffe]"
                   onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}
                 >
-                  <Eraser className="h-4 w-4" /> Clear Chat
+                  <Eraser className="h-4 w-4" />
+                  <span className="hidden sm:inline">Clear Chat</span>
                 </Button>
                 <Button
                   type="button"
                   size="lg"
-                  className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6"
+                  className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-6"
                   disabled={chatIsTyping || !!chatAutoMessage}
                   onClick={handleAiGenieCheckMyCase}
                 >
-                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                  <Sparkles className="h-4 w-4" />
+                  <span className="sm:hidden">AI Check</span>
+                  <span className="hidden sm:inline"> AI Genie Check My Case</span>
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(6)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                <Button type="button" size="lg" onClick={() => handleStepClick(6)} className="gap-2 px-2 sm:px-4">
+                  <span className="sm:hidden">Continue</span>
+                  <span className="hidden sm:inline">Save &amp; Continue</span>
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -496,16 +505,20 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
                 caseId={caseId}
                 currentCase={extCase}
               />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
-                  <Home className="mr-2 h-4 w-4" />
-                  Save &amp; Exit
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
+                  <Home className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Save &amp; Exit</span>
                 </Button>
-                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
-                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-6">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="sm:hidden">AI Check</span>
+                  <span className="hidden sm:inline"> AI Genie Check My Case</span>
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                <Button type="button" size="lg" onClick={() => handleStepClick(5)} className="gap-2 px-2 sm:px-4">
+                  <span className="sm:hidden">Continue</span>
+                  <span className="hidden sm:inline">Save &amp; Continue</span>
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -513,16 +526,20 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "forms" && (
             <div>
               <FormsTab caseId={caseId} currentCase={extCase} onSwitchToIntake={() => setActiveTab("intake")} onSwitchToPrep={() => setActiveTab("prep")} isDraftMode={false} />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
-                  <Home className="mr-2 h-4 w-4" />
-                  Save &amp; Exit
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
+                  <Home className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Save &amp; Exit</span>
                 </Button>
-                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
-                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-6">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="sm:hidden">AI Check</span>
+                  <span className="hidden sm:inline"> AI Genie Check My Case</span>
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(7)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                <Button type="button" size="lg" onClick={() => handleStepClick(7)} className="gap-2 px-2 sm:px-4">
+                  <span className="sm:hidden">Continue</span>
+                  <span className="hidden sm:inline">Save &amp; Continue</span>
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -530,16 +547,20 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
           {activeTab === "prep" && (
             <div>
               <HearingPrepTab caseId={caseId} currentCase={extCase} isDraftMode={false} />
-              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingRight: '165px' }}>
-                <Button type="button" variant="ghost" size="lg" onClick={saveExit}>
-                  <Home className="mr-2 h-4 w-4" />
-                  Save &amp; Exit
+              <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={saveExit}>
+                  <Home className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Save &amp; Exit</span>
                 </Button>
-                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-2 px-6">
-                  <Sparkles className="h-4 w-4" /> AI Genie Check My Case
+                <Button type="button" size="lg" onClick={goToAiChat} className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-6">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="sm:hidden">AI Check</span>
+                  <span className="hidden sm:inline"> AI Genie Check My Case</span>
                 </Button>
-                <Button type="button" size="lg" onClick={() => handleStepClick(8)} className="gap-2" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                  Save &amp; Continue <ChevronRight className="h-4 w-4" />
+                <Button type="button" size="lg" onClick={() => handleStepClick(8)} className="gap-2 px-2 sm:px-4">
+                  <span className="sm:hidden">Continue</span>
+                  <span className="hidden sm:inline">Save &amp; Continue</span>
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>

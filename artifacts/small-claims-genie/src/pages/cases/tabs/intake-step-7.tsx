@@ -45,20 +45,20 @@ export function IntakeStep7({ caseId, initialData, onComplete, saving, onSaveExi
 
       <HearingPrepTab caseId={caseId} currentCase={initialData} isDraftMode={false} />
 
-      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between pl-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4" style={{ paddingRight: '165px' }}>
-        <Button type="button" variant="ghost" size="lg" onClick={() => onSaveExit({})}>
-          <Home className="mr-2 h-4 w-4" />
-          Save &amp; Exit
+      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-4">
+        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit({})}>
+          <Home className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Save &amp; Exit</span>
         </Button>
         <Button
           size="lg"
           onClick={() => onComplete({})}
           disabled={saving}
           data-testid="button-complete-intake"
-          className="gap-2"
-          style={{ paddingLeft: '16px', paddingRight: '16px' }}
+          className="gap-2 px-2 sm:px-4"
         >
-          {saving ? "Saving…" : i18n.intake.saveAndContinue}
+          <span className="sm:hidden">{saving ? "Saving…" : "Continue"}</span>
+          <span className="hidden sm:inline">{saving ? "Saving…" : i18n.intake.saveAndContinue}</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
