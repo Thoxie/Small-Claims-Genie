@@ -403,7 +403,7 @@ export function DocumentsTab({ caseId, evidenceChecklist: evidenceChecklistProp,
             className="sm:hidden flex items-center gap-1.5 text-[#14b8a6] text-xs font-semibold"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            Watch Tutorial
+            Watch Tutorial Video — Step 3
           </button>
 
       {/* Sub-tabs + Upload button — same row */}

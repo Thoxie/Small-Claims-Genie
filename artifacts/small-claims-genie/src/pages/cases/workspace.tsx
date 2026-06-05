@@ -347,7 +347,7 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
               >
                 <span className="flex items-center gap-2 text-xs font-semibold">
                   <Play className="h-3.5 w-3.5 text-[#14b8a6]" fill="#14b8a6" />
-                  Watch Tutorial — Step 7
+                  Watch Tutorial Video — Step 7
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0" />
               </button>
