@@ -1,9 +1,9 @@
 import { useState, type ElementType } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { useGetCase, useListDocuments } from "@workspace/api-client-react";
+import { useGetCase } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 import {
-  FileText, Eye, ArrowLeft, ExternalLink,
+  ArrowLeft, ExternalLink,
   CheckCircle, MapPin, Camera, MessageSquare,
   FileCheck2, Shield, RefreshCw, Gavel, Clock,
   CalendarDays, UserCheck2, TrendingUp, Hourglass,
@@ -12,24 +12,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import type { DocumentWithMeta, ExtendedCase } from "@/lib/types";
+import type { ExtendedCase } from "@/lib/types";
 import { DeadlineCalculatorTab } from "@/pages/cases/tabs/deadline-calculator-tab";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const EXT_COLORS: Record<string, string> = {
-  PDF:  "bg-red-100 text-red-700",
-  DOCX: "bg-blue-100 text-blue-700",
-  DOC:  "bg-blue-100 text-blue-700",
-  PNG:  "bg-purple-100 text-purple-700",
-  JPG:  "bg-purple-100 text-purple-700",
-  JPEG: "bg-purple-100 text-purple-700",
-};
-
-function cleanFilename(raw: string): string {
-  return raw.replace(/^\d+_/, "").replace(/_/g, " ").replace(/\.[^.]+$/, "");
-}
 
 function formatCounty(id: string | undefined | null): string {
   if (!id) return "";
@@ -299,99 +286,14 @@ function CourtFormsSection({
   );
 }
 
-// ─── Read-only document tile ──────────────────────────────────────────────────
-
-function ReadOnlyDocTile({
-  doc,
-  caseId,
-  getToken,
-}: {
-  doc: DocumentWithMeta;
-  caseId: number;
-  getToken: () => Promise<string | null>;
-}) {
-  const [viewing, setViewing] = useState(false);
-  const rawLabel = doc.label || doc.filename || "";
-  const ext = rawLabel.split(".").pop()?.toUpperCase() ?? "";
-  const badgeColor = EXT_COLORS[ext] ?? "bg-gray-100 text-gray-600";
-  const displayFilename = cleanFilename(rawLabel);
-  const uploadDate = doc.createdAt
-    ? new Date(doc.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : null;
-
-  const handleView = async () => {
-    if (viewing) return;
-    setViewing(true);
-    const win = window.open("", "_blank");
-    try {
-      const token = await getToken();
-      const res = await fetch(`/api/cases/${caseId}/documents/${doc.id}/file`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error("Failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      if (win) win.location.href = url;
-    } catch {
-      if (win) win.close();
-    }
-    setViewing(false);
-  };
-
-  return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm">
-      <div className="shrink-0 flex flex-col items-center gap-0.5">
-        <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-          <FileText className="h-4 w-4 text-primary" />
-        </div>
-        {ext && (
-          <span className={`text-[9px] font-bold px-1 py-0.5 rounded leading-none ${badgeColor}`}>
-            {ext}
-          </span>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">
-          {doc.description || displayFilename || "Unnamed document"}
-        </p>
-        <div className="flex items-center gap-1 mt-0.5">
-          <p className="text-[11px] text-muted-foreground/70 truncate">{displayFilename}</p>
-          {uploadDate && (
-            <span className="text-[10px] text-muted-foreground/50 shrink-0 whitespace-nowrap">
-              · {uploadDate}
-            </span>
-          )}
-        </div>
-      </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
-        onClick={handleView}
-        disabled={viewing}
-        aria-label="View document"
-        title="View document"
-      >
-        <Eye className={`h-4 w-4 ${viewing ? "animate-pulse" : ""}`} />
-      </Button>
-    </div>
-  );
-}
-
-// ─── Case info + documents (AI E-Filing System tab body) ──────────────────────
+// ─── Case info (AI E-Filing System tab body) ──────────────────────────────────
 
 function CaseInfoPanel({
   c,
-  documents,
   caseId,
   getToken,
 }: {
   c: ExtendedCase | undefined;
-  documents: DocumentWithMeta[] | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
 }) {
@@ -515,16 +417,14 @@ function CaseInfoPanel({
 
 function EFilingPanel({
   c,
-  documents,
   caseId,
   getToken,
 }: {
   c: ExtendedCase | undefined;
-  documents: DocumentWithMeta[] | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
 }) {
-  return <CaseInfoPanel c={c} documents={documents} caseId={caseId} getToken={getToken} />;
+  return <CaseInfoPanel c={c} caseId={caseId} getToken={getToken} />;
 }
 
 function ProcessServerPanel() {
@@ -741,10 +641,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
   const [activeTab, setActiveTab] = useState<NavTab>("efile");
 
   const { data: caseData } = useGetCase(caseId, { query: { enabled: !!caseId } });
-  const { data: documents } = useListDocuments(caseId, { query: { enabled: !!caseId } });
-
   const c = caseData as ExtendedCase | undefined;
-  const docs = documents as DocumentWithMeta[] | undefined;
 
   const handleStepClick = (stepN: number) => {
     if (stepN === 8) return;
@@ -800,7 +697,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
         {/* ── Content ── */}
         <div className="max-w-5xl mx-auto px-4 py-6">
           {activeTab === "efile" && (
-            <EFilingPanel c={c} documents={docs} caseId={caseId} getToken={getToken} />
+            <EFilingPanel c={c} caseId={caseId} getToken={getToken} />
           )}
           {activeTab === "process_server" && <ProcessServerPanel />}
           {activeTab === "collect" && <CollectPanel />}
