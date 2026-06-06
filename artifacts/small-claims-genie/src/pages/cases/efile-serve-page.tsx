@@ -503,43 +503,9 @@ function CaseInfoPanel({
         </Section>
       </div>
 
-      {/* RIGHT — Court Forms (top) + Evidence (bottom) */}
+      {/* RIGHT — Court Forms */}
       <div className="space-y-6">
         <CourtFormsSection c={c} caseId={caseId} getToken={getToken} />
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-              <FileText className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-sm font-bold text-foreground leading-tight">Your Evidence</h2>
-              <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
-                {documents && documents.length > 0
-                  ? `${documents.length} file${documents.length !== 1 ? "s" : ""} uploaded`
-                  : "No documents uploaded yet"}
-              </p>
-            </div>
-          </div>
-
-          {!documents || documents.length === 0 ? (
-            <div className="rounded-xl border border-dashed bg-card p-8 text-center">
-              <FileText className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Upload your evidence in Step 4</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {documents.map((doc) => (
-                <ReadOnlyDocTile
-                  key={doc.id}
-                  doc={doc as DocumentWithMeta}
-                  caseId={caseId}
-                  getToken={getToken}
-                />
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
