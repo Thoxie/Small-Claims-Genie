@@ -3,10 +3,10 @@ type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/SC100CoordsMockup.tsx": () => import("../components/mockups/SC100CoordsMockup.tsx"),
   "./components/mockups/TextColorComparison.tsx": () => import("../components/mockups/TextColorComparison.tsx"),
-  "./components/mockups/case-header/CaseHeader.tsx": () => import("../components/mockups/case-header/CaseHeader.tsx"),
   "./components/mockups/chat-expand/ExpandIcon.tsx": () => import("../components/mockups/chat-expand/ExpandIcon.tsx"),
   "./components/mockups/chat-expand/FullscreenOverlay.tsx": () => import("../components/mockups/chat-expand/FullscreenOverlay.tsx"),
   "./components/mockups/chat-expand/SlideUpSheet.tsx": () => import("../components/mockups/chat-expand/SlideUpSheet.tsx"),
+  "./components/mockups/case-header/CaseHeader.tsx": () => import("../components/mockups/case-header/CaseHeader.tsx"),
   "./components/mockups/forms-wizard/FormsWizard.tsx": () => import("../components/mockups/forms-wizard/FormsWizard.tsx"),
   "./components/mockups/step-nav/VariantA.tsx": () => import("../components/mockups/step-nav/VariantA.tsx"),
   "./components/mockups/step-nav/VariantB.tsx": () => import("../components/mockups/step-nav/VariantB.tsx"),
