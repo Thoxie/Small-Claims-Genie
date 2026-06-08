@@ -2,6 +2,7 @@
   "name": "@workspace/scripts",
   "version": "0.0.0",
   "private": true,
+  "description": "Small Claims Genie — utility scripts",
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",
