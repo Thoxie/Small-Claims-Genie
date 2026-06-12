@@ -164,85 +164,85 @@ export async function buildSC100AcroformPdf(
 
   // ── PAGE 1 — cover / court header ──────────────────────────────────────────
   queueDirectField("SC-100[0].Page1[0].CaptionRight[0].County[0].CourtInfo[0]", courtInfo);
-  setField("SC-100[0].Page1[0].CaptionRight[0].CN[0].CaseNumber[0]",    caseNumber);
+  queueDirectField("SC-100[0].Page1[0].CaptionRight[0].CN[0].CaseNumber[0]",    caseNumber);
   queueDirectField("SC-100[0].Page1[0].CaptionRight[0].CN[0].CaseName[0]",      caseName);
   // Trial-date rows are clerk-filled; leave blank.
 
   // ── PAGE 2 — caption headers ────────────────────────────────────────────────
-  setField("SC-100[0].Page2[0].PxCaption[0].Plaintiff[0]",  plaintiffHdr);
-  setField("SC-100[0].Page2[0].PxCaption[0].CaseNumber[0]", caseNumber);
+  queueDirectField("SC-100[0].Page2[0].PxCaption[0].Plaintiff[0]",  plaintiffHdr);
+  queueDirectField("SC-100[0].Page2[0].PxCaption[0].CaseNumber[0]", caseNumber);
 
   // ── PAGE 2 §1 — Plaintiff 1 ─────────────────────────────────────────────────
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffName1[0]",         str(d.plaintiffName));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffPhone1[0]",        str(d.plaintiffPhone));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffAddress1[0]",      str(d.plaintiffAddress || d.plaintiffStreet));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffCity1[0]",         str(d.plaintiffCity));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffState1[0]",        str(d.plaintiffState || "CA"));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffZip1[0]",          str(d.plaintiffZip));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingAddress1[0]", str(d.plaintiffMailingAddress));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingCity1[0]",  str(d.plaintiffMailingCity));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingState1[0]", str(d.plaintiffMailingState));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingZip1[0]",   str(d.plaintiffMailingZip));
-  setField("SC-100[0].Page2[0].List1[0].Item1[0].EmailAdd1[0]",             str(d.plaintiffEmail));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffName1[0]",         str(d.plaintiffName));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffPhone1[0]",        str(d.plaintiffPhone));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffAddress1[0]",      str(d.plaintiffAddress || d.plaintiffStreet));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffCity1[0]",         str(d.plaintiffCity));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffState1[0]",        str(d.plaintiffState || "CA"));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffZip1[0]",          str(d.plaintiffZip));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingAddress1[0]", str(d.plaintiffMailingAddress));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingCity1[0]",  str(d.plaintiffMailingCity));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingState1[0]", str(d.plaintiffMailingState));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingZip1[0]",   str(d.plaintiffMailingZip));
+  queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].EmailAdd1[0]",             str(d.plaintiffEmail));
 
   // ── PAGE 2 §1 — Plaintiff 2 (if present) ───────────────────────────────────
   if (d.secondPlaintiffName) {
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffName2[0]",         str(d.p2NameTitle ?? d.secondPlaintiffName));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffPhone2[0]",        str(d.secondPlaintiffPhone));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffAddress2[0]",      str(d.secondPlaintiffAddress));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffCity2[0]",         str(d.secondPlaintiffCity));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffState2[0]",        str(d.secondPlaintiffState || "CA"));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffZip2[0]",          str(d.secondPlaintiffZip));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingAddress2[0]", str(d.secondPlaintiffMailingAddress));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingCity2[0]",  str(d.secondPlaintiffMailingCity));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingState2[0]", str(d.secondPlaintiffMailingState));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingZip2[0]",   str(d.secondPlaintiffMailingZip));
-    setField("SC-100[0].Page2[0].List1[0].Item1[0].EmailAdd2[0]",              str(d.secondPlaintiffEmail));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffName2[0]",         str(d.p2NameTitle ?? d.secondPlaintiffName));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffPhone2[0]",        str(d.secondPlaintiffPhone));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffAddress2[0]",      str(d.secondPlaintiffAddress));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffCity2[0]",         str(d.secondPlaintiffCity));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffState2[0]",        str(d.secondPlaintiffState || "CA"));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffZip2[0]",          str(d.secondPlaintiffZip));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingAddress2[0]", str(d.secondPlaintiffMailingAddress));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingCity2[0]",  str(d.secondPlaintiffMailingCity));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingState2[0]", str(d.secondPlaintiffMailingState));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].PlaintiffMailingZip2[0]",   str(d.secondPlaintiffMailingZip));
+    queueDirectField("SC-100[0].Page2[0].List1[0].Item1[0].EmailAdd2[0]",              str(d.secondPlaintiffEmail));
   }
   // Checkbox1 = more than 2 plaintiffs, Checkbox2 = fictitious name, Checkbox3 = payday lender
   // Leave unchecked unless we have explicit intake data for them.
 
   // ── PAGE 2 §2 — Defendant ──────────────────────────────────────────────────
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantName1[0]",    str(d.defendantName));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantPhone1[0]",   str(d.defendantPhone));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantAddress1[0]", str(d.defendantAddress || d.defendantStreet));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantCity1[0]",    str(d.defendantCity));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantState1[0]",   str(d.defendantState || "CA"));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantZip1[0]",     str(d.defendantZip));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingAddress1[0]", str(d.defendantMailingAddress));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingCity1[0]",    str(d.defendantMailingCity));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingState1[0]",   str(d.defendantMailingState));
-  setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingZip1[0]",     str(d.defendantMailingZip));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantName1[0]",    str(d.defendantName));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantPhone1[0]",   str(d.defendantPhone));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantAddress1[0]", str(d.defendantAddress || d.defendantStreet));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantCity1[0]",    str(d.defendantCity));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantState1[0]",   str(d.defendantState || "CA"));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantZip1[0]",     str(d.defendantZip));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingAddress1[0]", str(d.defendantMailingAddress));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingCity1[0]",    str(d.defendantMailingCity));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingState1[0]",   str(d.defendantMailingState));
+  queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantMailingZip1[0]",     str(d.defendantMailingZip));
 
   // Service-of-process agent (corporations / LLCs / public entities)
   if (d.defendantIsBusinessOrEntity) {
-    setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantName2[0]",    str(d.defendantAgentName));
-    setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantJob1[0]",     str(d.defendantAgentTitle));
-    setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantAddress2[0]", str(d.defendantAgentStreet || d.defendantAddress));
-    setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantCity2[0]",    str(d.defendantAgentCity   || d.defendantCity));
-    setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantState2[0]",   str(d.defendantAgentState  || d.defendantState || "CA"));
-    setField("SC-100[0].Page2[0].List2[0].item2[0].DefendantZip2[0]",     str(d.defendantAgentZip    || d.defendantZip));
+    queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantName2[0]",    str(d.defendantAgentName));
+    queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantJob1[0]",     str(d.defendantAgentTitle));
+    queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantAddress2[0]", str(d.defendantAgentStreet || d.defendantAddress));
+    queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantCity2[0]",    str(d.defendantAgentCity   || d.defendantCity));
+    queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantState2[0]",   str(d.defendantAgentState  || d.defendantState || "CA"));
+    queueDirectField("SC-100[0].Page2[0].List2[0].item2[0].DefendantZip2[0]",     str(d.defendantAgentZip    || d.defendantZip));
   }
   // Checkbox4 = more than one defendant, Checkbox5 = military duty — leave unchecked.
 
   // ── PAGE 2 §3a — Claim amount + description ────────────────────────────────
-  setField("SC-100[0].Page2[0].List3[0].PlaintiffClaimAmount1[0]", str(d.claimAmountFormatted));
+  queueDirectField("SC-100[0].Page2[0].List3[0].PlaintiffClaimAmount1[0]", str(d.claimAmountFormatted));
   queueDirectField("SC-100[0].Page2[0].List3[0].Lia[0].FillField2[0]",    str(d.claimDescriptionForForm));
 
   // ── PAGE 3 — caption headers ────────────────────────────────────────────────
-  setField("SC-100[0].Page3[0].PxCaption[0].Plaintiff[0]",  plaintiffHdr);
-  setField("SC-100[0].Page3[0].PxCaption[0].CaseNumber[0]", caseNumber);
+  queueDirectField("SC-100[0].Page3[0].PxCaption[0].Plaintiff[0]",  plaintiffHdr);
+  queueDirectField("SC-100[0].Page3[0].PxCaption[0].CaseNumber[0]", caseNumber);
 
   // ── PAGE 3 §3b — Incident date ─────────────────────────────────────────────
   // If it's a date range, Date1 = full date (or start), Date2 = start, Date3 = end.
   if (d.hasDateRange) {
-    setField("SC-100[0].Page3[0].List3[0].Lib[0].Date1[0]", "");
-    setField("SC-100[0].Page3[0].List3[0].Lib[0].Date2[0]", str(d.dateStarted));
-    setField("SC-100[0].Page3[0].List3[0].Lib[0].Date3[0]", str(d.dateThrough));
+    queueDirectField("SC-100[0].Page3[0].List3[0].Lib[0].Date1[0]", "");
+    queueDirectField("SC-100[0].Page3[0].List3[0].Lib[0].Date2[0]", str(d.dateStarted));
+    queueDirectField("SC-100[0].Page3[0].List3[0].Lib[0].Date3[0]", str(d.dateThrough));
   } else {
-    setField("SC-100[0].Page3[0].List3[0].Lib[0].Date1[0]", str(d.incidentDate));
-    setField("SC-100[0].Page3[0].List3[0].Lib[0].Date2[0]", "");
-    setField("SC-100[0].Page3[0].List3[0].Lib[0].Date3[0]", "");
+    queueDirectField("SC-100[0].Page3[0].List3[0].Lib[0].Date1[0]", str(d.incidentDate));
+    queueDirectField("SC-100[0].Page3[0].List3[0].Lib[0].Date2[0]", "");
+    queueDirectField("SC-100[0].Page3[0].List3[0].Lib[0].Date3[0]", "");
   }
 
   // ── PAGE 3 §3c — How amount was calculated ─────────────────────────────────
@@ -263,9 +263,9 @@ export async function buildSC100AcroformPdf(
   checkBox(form, "SC-100[0].Page3[0].List5[0].Lid[0].Checkbox5cb[0]", venueLetter === "d");
   checkBox(form, "SC-100[0].Page3[0].List5[0].Lie[0].Checkbox5cb[0]", venueLetter === "e");
   if (venueLetter === "e") {
-    setField("SC-100[0].Page3[0].List5[0].Lie[0].FillField55[0]", str(d.venueOtherText || d.venueReason));
+    queueDirectField("SC-100[0].Page3[0].List5[0].Lie[0].FillField55[0]", str(d.venueOtherText || d.venueReason));
   }
-  setField("SC-100[0].Page3[0].List6[0].item6[0].ZipCode1[0]", str(d.venueZip));
+  queueDirectField("SC-100[0].Page3[0].List6[0].item6[0].ZipCode1[0]", str(d.venueZip));
 
   // ── PAGE 3 §7 — Attorney fee dispute ───────────────────────────────────────
   checkBox(form, "SC-100[0].Page3[0].List7[0].item7[0].Checkbox60[0]", d.isAttyFeeDispute === true);
@@ -276,12 +276,12 @@ export async function buildSC100AcroformPdf(
   checkBox(form, "SC-100[0].Page3[0].List8[0].item8[0].Checkbox61[0]", d.isSuingPublicEntity === true);
   checkBox(form, "SC-100[0].Page3[0].List8[0].item8[0].Checkbox61[1]", d.isSuingPublicEntity === false || d.isSuingPublicEntity == null);
   if (d.publicEntityHasDate) {
-    setField("SC-100[0].Page3[0].List8[0].item8[0].Date4[0]", str(d.publicEntityClaimFiledDate));
+    queueDirectField("SC-100[0].Page3[0].List8[0].item8[0].Date4[0]", str(d.publicEntityClaimFiledDate));
   }
 
   // ── PAGE 4 — caption headers ────────────────────────────────────────────────
-  setField("SC-100[0].Page4[0].PxCaption[0].Plaintiff[0]",  plaintiffHdr);
-  setField("SC-100[0].Page4[0].PxCaption[0].CaseNumber[0]", caseNumber);
+  queueDirectField("SC-100[0].Page4[0].PxCaption[0].Plaintiff[0]",  plaintiffHdr);
+  queueDirectField("SC-100[0].Page4[0].PxCaption[0].CaseNumber[0]", caseNumber);
 
   // ── PAGE 4 §9 — Filed 12+ claims ───────────────────────────────────────────
   checkBox(form, "SC-100[0].Page4[0].List9[0].Item9[0].Checkbox62[0]", d.filedMoreThan12Claims === true);
@@ -292,11 +292,11 @@ export async function buildSC100AcroformPdf(
   checkBox(form, "SC-100[0].Page4[0].List10[0].li10[0].Checkbox63[1]", !d.claimOver2500);
 
   // ── PAGE 4 §11 — Declaration / signature block ────────────────────────────
-  setField("SC-100[0].Page4[0].Sign[0].Date1[0]",         str(d.declarationDate));
-  setField("SC-100[0].Page4[0].Sign[0].PlaintiffName1[0]", str(d.declarantNameTitle || d.plaintiffName));
+  queueDirectField("SC-100[0].Page4[0].Sign[0].Date1[0]",         str(d.declarationDate));
+  queueDirectField("SC-100[0].Page4[0].Sign[0].PlaintiffName1[0]", str(d.declarantNameTitle || d.plaintiffName));
   if (d.secondPlaintiffName) {
-    setField("SC-100[0].Page4[0].Sign[0].Date2[0]",          str(d.declarationDate));
-    setField("SC-100[0].Page4[0].Sign[0].PlaintiffName2[0]", str(d.secondPlaintiffName));
+    queueDirectField("SC-100[0].Page4[0].Sign[0].Date2[0]",          str(d.declarationDate));
+    queueDirectField("SC-100[0].Page4[0].Sign[0].PlaintiffName2[0]", str(d.secondPlaintiffName));
   }
 
   // ── Signature image (signed version only) ─────────────────────────────────

@@ -14,12 +14,33 @@
  */
 
 import * as path from "path";
-import type { FormDefinition, FormBody } from "../registry";
+import { PDFDocument } from "pdf-lib";
+import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
 import { today } from "../enrichment";
 import { ASSET_DIR } from "../../routes/forms-common";
 import { SC103_FIELDS } from "../field-names/sc103-fields";
+
+// SC-103 signature area coordinates (612×792 pt page, bottom-left origin).
+// The "I declare…" section occupies the bottom ~160pt of the page.
+// Signature PNG sits on the right side of the declaration line, above
+// "Type or print your name and title" (FillText10).
+const SIG_X = 315;
+const SIG_Y = 108;    // from page bottom
+const SIG_W = 230;
+const SIG_H = 28;
+
+/** Overlay a signature PNG onto an already-pdftk-filled SC-103 buffer. */
+async function embedSignature(filledBuf: Buffer, sigBytes: Buffer): Promise<Buffer> {
+  const pdfDoc  = await PDFDocument.load(filledBuf, { ignoreEncryption: true });
+  const sigImg  = await pdfDoc.embedPng(sigBytes);
+  const pages   = pdfDoc.getPages();
+  if (pages[0]) {
+    pages[0].drawImage(sigImg, { x: SIG_X, y: SIG_Y, width: SIG_W, height: SIG_H });
+  }
+  return Buffer.from(await pdfDoc.save());
+}
 
 const PDF_PATH = path.join(ASSET_DIR, "forms", "sc103_acroform.pdf");
 
@@ -49,7 +70,7 @@ const sc103Definition: FormDefinition = {
   formId: "SC-103",
   assetPath: PDF_PATH,
   renderingTechnique: "xfa-pdftk",
-  async generate(d, body) {
+  async generate(d, body, opts?: GenerateOptions) {
     const attachedTo = bv(body, "attachedTo", "sc100");
     const bizName    = bv(body, "businessName",    d.plaintiffDbaName || d.plaintiffName);
     const bizAddrParts = [d.plaintiffDbaAddress, d.plaintiffDbaCity, d.plaintiffDbaState, d.plaintiffDbaZip].filter(Boolean);
@@ -74,7 +95,7 @@ const sc103Definition: FormDefinition = {
       checkboxes[field] = bizType === key ? exportVal : false;
     }
 
-    return pdftk_fill_form(PDF_PATH, {
+    const filled = await pdftk_fill_form(PDF_PATH, {
       text: {
         [SC103_FIELDS.text.caseNumber]:       String(d.caseNumber || ""),
         [SC103_FIELDS.text.bizName]:          bizName || "",
@@ -89,6 +110,7 @@ const sc103Definition: FormDefinition = {
       },
       checkboxes,
     });
+    return opts?.signatureBytes ? embedSignature(filled, opts.signatureBytes) : filled;
   },
 };
 
@@ -99,7 +121,7 @@ const sc103SecondaryDefinition: FormDefinition = {
   formId: "SC-103-SECONDARY",
   assetPath: PDF_PATH,
   renderingTechnique: "xfa-pdftk",
-  async generate(d, body) {
+  async generate(d, body, opts?: GenerateOptions) {
     const attachedTo = bv(body, "attachedTo", "sc100");
     const bizName    = bv(body, "businessName",    d.secondPlaintiffDbaName || "");
     const bizAddrParts = [d.secondPlaintiffDbaAddress, d.secondPlaintiffDbaCity, d.secondPlaintiffDbaState, d.secondPlaintiffDbaZip].filter(Boolean);
@@ -122,7 +144,7 @@ const sc103SecondaryDefinition: FormDefinition = {
       checkboxes[field] = bizType === key ? exportVal : false;
     }
 
-    return pdftk_fill_form(PDF_PATH, {
+    const filled = await pdftk_fill_form(PDF_PATH, {
       text: {
         [SC103_FIELDS.text.caseNumber]:       String(d.caseNumber || ""),
         [SC103_FIELDS.text.bizName]:          bizName,
@@ -137,6 +159,7 @@ const sc103SecondaryDefinition: FormDefinition = {
       },
       checkboxes,
     });
+    return opts?.signatureBytes ? embedSignature(filled, opts.signatureBytes) : filled;
   },
 };
 
