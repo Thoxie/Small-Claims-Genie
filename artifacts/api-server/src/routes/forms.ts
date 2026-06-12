@@ -13,6 +13,6 @@
 import formsUnifiedRouter from "./forms-unified";
 
 // Re-export symbols that demand-letter.ts imports from this barrel.
-export { stripMC030Wrappers, measureMC030BodyLines, MC030_MAX_LINES } from "./forms-mc030";
+export { stripMC030Wrappers, measureMC030BodyLines, MC030_MAX_LINES } from "../forms/definitions/mc030-definition";
 
 export default formsUnifiedRouter;
