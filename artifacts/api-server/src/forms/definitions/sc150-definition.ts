@@ -50,9 +50,11 @@ const sc150Definition: FormDefinition = {
         "SC-150[0].Page1[0].sign[0].Date1[0]":     String(body.signDate || today()),
         "SC-150[0].Page1[0].sign[0].printname[0]": requestingPartyName,
       },
+      // XFA export values: CheckBox01[0] (plaintiff) = "1", CheckBox01[1] (defendant) = "2".
+      // These are custom XFA export values, not the AcroForm default "Yes".
       checkboxes: {
-        "SC-150[0].Page1[0].List1[0].item1[0].CheckBox01[0]": isPlaintiff,
-        "SC-150[0].Page1[0].List1[0].item1[0].CheckBox01[1]": isDefendant,
+        "SC-150[0].Page1[0].List1[0].item1[0].CheckBox01[0]": isPlaintiff ? "1" : false,
+        "SC-150[0].Page1[0].List1[0].item1[0].CheckBox01[1]": isDefendant ? "2" : false,
       },
     });
   },

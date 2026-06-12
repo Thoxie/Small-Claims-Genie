@@ -18,13 +18,18 @@ import { ASSET_DIR } from "../../routes/forms-common";
 
 const PDF_PATH = path.join(ASSET_DIR, "forms", "sc103_acroform.pdf");
 
-const BIZ_TYPE_FIELDS: Record<string, string> = {
-  individual:  "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[0]",
-  corporation: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[1]",
-  association: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[2]",
-  llc:         "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[3]",
-  partnership: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[4]",
-  other:       "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[5]",
+/**
+ * XFA export values for business-type checkboxes confirmed via dump_data_fields.
+ * These forms use custom numeric export values (1–6) not the AcroForm default "Yes".
+ * Each entry: [field name, FDF export value when checked].
+ */
+const BIZ_TYPE_FIELDS: Record<string, { field: string; exportVal: string }> = {
+  individual:  { field: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[0]", exportVal: "1" },
+  corporation: { field: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[1]", exportVal: "2" },
+  association: { field: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[2]", exportVal: "3" },
+  llc:         { field: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[3]", exportVal: "4" },
+  partnership: { field: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[4]", exportVal: "5" },
+  other:       { field: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[5]", exportVal: "6" },
 };
 
 function bv(body: Record<string, any>, key: string, fallback: any): any {
@@ -55,11 +60,12 @@ const sc103Definition: FormDefinition = {
     );
     const signerLine = [signerName, d.plaintiffTitle].filter(Boolean).join(", ") || String(d.plaintiffName || "");
 
-    const checkboxes: Record<string, boolean> = {};
-    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox1[0]"] = attachedTo !== "sc120";
-    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox2[0]"] = attachedTo === "sc120";
-    for (const [key, field] of Object.entries(BIZ_TYPE_FIELDS)) {
-      checkboxes[field] = bizType === key;
+    // Attachment checkboxes: XFA export values are "1" (SC-100) and "2" (SC-120), not "Yes".
+    const checkboxes: Record<string, string | boolean> = {};
+    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox1[0]"] = attachedTo !== "sc120" ? "1" : false;
+    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox2[0]"] = attachedTo === "sc120" ? "2" : false;
+    for (const [key, { field, exportVal }] of Object.entries(BIZ_TYPE_FIELDS)) {
+      checkboxes[field] = bizType === key ? exportVal : false;
     }
 
     return pdftk_fill_form(PDF_PATH, {
@@ -102,11 +108,12 @@ const sc103SecondaryDefinition: FormDefinition = {
     const signerName = bv(body, "signerName", d.additionalPlaintiffName || "");
     const signerLine = [signerName, d.secondPlaintiffTitle].filter(Boolean).join(", ") || signerName;
 
-    const checkboxes: Record<string, boolean> = {};
-    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox1[0]"] = attachedTo !== "sc120";
-    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox2[0]"] = attachedTo === "sc120";
-    for (const [key, field] of Object.entries(BIZ_TYPE_FIELDS)) {
-      checkboxes[field] = bizType === key;
+    // Attachment checkboxes: XFA export values are "1" (SC-100) and "2" (SC-120), not "Yes".
+    const checkboxes: Record<string, string | boolean> = {};
+    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox1[0]"] = attachedTo !== "sc120" ? "1" : false;
+    checkboxes["SC-103[0].Page1[0].Attachement[0].CheckBox2[0]"] = attachedTo === "sc120" ? "2" : false;
+    for (const [key, { field, exportVal }] of Object.entries(BIZ_TYPE_FIELDS)) {
+      checkboxes[field] = bizType === key ? exportVal : false;
     }
 
     return pdftk_fill_form(PDF_PATH, {

@@ -31,14 +31,23 @@ function fdfEscape(s: string): string {
 
 export interface FdfFields {
   text?: Record<string, string>;
-  /** Maps field names to true (checked) or false (unchecked). */
-  checkboxes?: Record<string, boolean>;
+  /**
+   * Maps field names to:
+   *  - true   → checked using the standard "Yes" export value (AcroForm forms)
+   *  - false  → unchecked ("Off")
+   *  - string → exact custom export value string (required for XFA forms whose
+   *             FieldStateOption is not "Yes" — e.g. "1", "2", "3", etc.)
+   *             Pass false (not a string) for the unchecked state; "Off" is always correct.
+   */
+  checkboxes?: Record<string, boolean | string>;
 }
 
 /**
  * Generates an FDF file string from text and checkbox field maps.
- * The exported value name for checked checkboxes uses "Yes"; for unchecked: "Off".
- * These are the standard AcroForm export values recognized by Acrobat and pdftk.
+ *
+ * AcroForm standard checkboxes use "Yes" / "Off".
+ * XFA forms (Judicial Council PDFs) use custom numeric export values
+ * ("1", "2", "3", …) for their on-states — pass those as strings here.
  */
 export function generateFdf(fields: FdfFields): string {
   const entries: string[] = [];
@@ -50,9 +59,15 @@ export function generateFdf(fields: FdfFields): string {
     );
   }
 
-  for (const [name, checked] of Object.entries(fields.checkboxes ?? {})) {
+  for (const [name, value] of Object.entries(fields.checkboxes ?? {})) {
+    let exportVal: string;
+    if (typeof value === "string") {
+      exportVal = value;           // custom XFA export value (e.g. "1", "2")
+    } else {
+      exportVal = value ? "Yes" : "Off";   // standard AcroForm
+    }
     entries.push(
-      `<<\n/T(${fdfEscape(name)})\n/V /${checked ? "Yes" : "Off"}\n>>`
+      `<<\n/T(${fdfEscape(name)})\n/V /${exportVal}\n>>`
     );
   }
 

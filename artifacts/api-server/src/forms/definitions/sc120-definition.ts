@@ -30,10 +30,12 @@ const sc120Definition: FormDefinition = {
   async generate(d, body) {
     const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
 
-    // Yes/No checkbox helpers — each question has [0]=Yes [1]=No
-    function yn(yes: any, yesField: string, noField: string): Record<string, boolean> {
+    // Yes/No checkbox helpers — each question has [0]=Yes [1]=No.
+    // XFA export values: Yes field uses "1", No field uses "2" (not the AcroForm default "Yes").
+    // Pass false for the unchecked state so the FDF generator emits /Off.
+    function yn(yes: any, yesField: string, noField: string): Record<string, string | boolean> {
       const v = yes === true || yes === "true";
-      return { [yesField]: v, [noField]: !v };
+      return { [yesField]: v ? "1" : false, [noField]: !v ? "2" : false };
     }
 
     return pdftk_fill_form(PDF_PATH, {
