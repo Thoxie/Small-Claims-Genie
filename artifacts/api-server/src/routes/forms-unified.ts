@@ -105,8 +105,8 @@ router.post("/cases/:id/forms/sc100a/signed", makeFormHandler("SC-100A", (id) =>
 // SC-103 — Fictitious Business Name (XFA via pdftk)
 // ─────────────────────────────────────────────────────────────────────────────
 
-router.post("/cases/:id/forms/sc103",           makeFormHandler("SC-103",           (id) => `SC103-Case-${id}.pdf`));
-router.post("/cases/:id/forms/sc103-secondary", makeFormHandler("SC-103-SECONDARY", (id) => `SC103B-Case-${id}.pdf`));
+router.post("/cases/:id/forms/sc103",           makeFormHandler("SC-103",           (id) => `SC103-Case-${id}.pdf`,  { signed: true }));
+router.post("/cases/:id/forms/sc103-secondary", makeFormHandler("SC-103-SECONDARY", (id) => `SC103B-Case-${id}.pdf`, { signed: true }));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SC-104 — Proof of Service

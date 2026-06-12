@@ -861,7 +861,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const res = await fetch(`/api/cases/${caseId}/forms/sc103`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signature1DataUrl: signatureDataUrl, token }),
+        body: JSON.stringify({ signatureDataUrl, token }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError(err.error || "Failed to generate SC-103 PDF — please try again."); return; }
       const blob = await res.blob();
@@ -885,7 +885,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       const res = await fetch(`/api/cases/${caseId}/forms/sc103-secondary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signature1DataUrl: signatureDataUrl, token }),
+        body: JSON.stringify({ signatureDataUrl, token }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError(err.error || "Failed to generate SC-103 (Plaintiff 2) PDF — please try again."); return; }
       const blob = await res.blob();
