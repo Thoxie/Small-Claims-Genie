@@ -10,6 +10,7 @@
     "test:sc103-secondary": "tsx ./src/test-sc103-secondary.ts",
     "test:mc030": "tsx ./src/test-mc030.ts",
     "test:mc030-ai": "tsx ./src/test-mc030-ai.ts",
+    "test:sc100": "tsx ./src/test-sc100.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
