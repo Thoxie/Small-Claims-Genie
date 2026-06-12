@@ -16,7 +16,7 @@
  * are exported from here for consumption by demand-letter.ts and other callers.
  */
 
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFFont, PDFPage, StandardFonts } from "pdf-lib";
 import { logger } from "../../lib/logger";
 import { db } from "@workspace/db";
 import { documentsTable, casesTable } from "@workspace/db";
@@ -225,9 +225,9 @@ async function generateMC030Declaration(
 }
 
 function drawMC030Page(
-  page: any,
-  font: any,
-  fontBold: any,
+  page: PDFPage,
+  font: PDFFont,
+  fontBold: PDFFont,
   d: Record<string, any>,
   b: Record<string, any>,
   declarationTitle: string,
@@ -321,7 +321,7 @@ function drawMC030Page(
   xmark(page, 408, 80 + LIFT, 5);
 }
 
-function checkOverflow(font: any, declarationText: string): boolean {
+function checkOverflow(font: PDFFont, declarationText: string): boolean {
   if (!declarationText) return false;
   let lines = 0;
   for (const para of declarationText.split(/\n/).map(p => p.trim()).filter(Boolean)) {
