@@ -27,7 +27,7 @@ import { SC103_FIELDS } from "../field-names/sc103-fields";
 // Signature PNG sits on the right side of the declaration line, above
 // "Type or print your name and title" (FillText10).
 const SIG_X = 315;
-const SIG_Y = 145;    // from page bottom
+const SIG_Y = 190;    // from page bottom — above "Sign your name" label and line
 const SIG_W = 230;
 const SIG_H = 28;
 
