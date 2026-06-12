@@ -33,8 +33,17 @@ import {
 } from "../../routes/forms-common";
 import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
+import { MC030_LIFT, MC030_DOWN, MC030_COORDS } from "../field-names/mc030-fields";
+
+const C = MC030_COORDS;
 
 // ─── MC-030 exported constants (consumed by demand-letter.ts) ─────────────────
+// Single source of truth lives in mc030-fields.ts; re-exported here for
+// backward-compatible imports by external callers.
+export const MC030_BODY_SIZE   = C.body.size;    // 10.5
+export const MC030_BODY_MAX_W  = C.body.maxW;    // 540
+export const MC030_MAX_LINES   = C.body.maxLines; // 26
+
 export function stripMC030Wrappers(text: string): string {
   if (!text) return "";
   const lines = text.split("\n");
@@ -78,10 +87,6 @@ export function stripMC030Wrappers(text: string): string {
   while (end > start && isBottomWrapper(lines[end - 1])) end--;
   return lines.slice(start, end).join("\n").trim();
 }
-
-export const MC030_BODY_SIZE   = 10.5;
-export const MC030_BODY_MAX_W  = 540;
-export const MC030_MAX_LINES   = 26;
 
 export async function measureMC030BodyLines(text: string): Promise<number> {
   if (!text) return 0;
@@ -233,8 +238,8 @@ function drawMC030Page(
   declarationTitle: string,
   declarationText: string
 ) {
-  const LIFT = 4.5;
-  const DOWN = 6;
+  const LIFT = MC030_LIFT;
+  const DOWN = MC030_DOWN;
   const v  = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT - DOWN, s);
   const vs = (t: any, x: number, y: number, s = 9) => val(page, font, t, x, y + LIFT, s);
 
@@ -242,37 +247,37 @@ function drawMC030Page(
   const courtCityZip  = [d.courthouseCity, "CA", d.courthouseZip].filter(Boolean).join(" ");
   const cityLine      = [d.plaintiffCity, d.plaintiffState, d.plaintiffZip].filter(Boolean).join(" ");
 
-  v(b.declarantName  || d.plaintiffName,           48,  734);
-  v(b.declarantAddress || d.plaintiffAddress || "", 48,  721);
-  v(b.declarantCityLine || cityLine,                48,  707);
-  v(b.declarantPhone || d.plaintiffPhone,          127, 676);
-  v(b.declarantEmail || d.plaintiffEmail,          127, 665);
-  v("Self-Representing",                           127, 651);
+  v(b.declarantName  || d.plaintiffName,           C.text.declarantName.x,     C.text.declarantName.y);
+  v(b.declarantAddress || d.plaintiffAddress || "", C.text.declarantAddress.x,  C.text.declarantAddress.y);
+  v(b.declarantCityLine || cityLine,                C.text.declarantCityLine.x, C.text.declarantCityLine.y);
+  v(b.declarantPhone || d.plaintiffPhone,           C.text.declarantPhone.x,    C.text.declarantPhone.y);
+  v(b.declarantEmail || d.plaintiffEmail,           C.text.declarantEmail.x,    C.text.declarantEmail.y);
+  v("Self-Representing",                            C.text.declarantAttorney.x, C.text.declarantAttorney.y);
 
-  v(b.courtCounty || countyDisplay,                238, 636);
-  v(b.courtStreet || d.courthouseAddress || "",    127, 625);
-  v(b.courtCityZip || courtCityZip,               127, 602);
-  v(b.branchName   || d.courthouseName || "Small Claims Division", 127, 591);
+  v(b.courtCounty || countyDisplay,                                        C.text.courtCounty.x,  C.text.courtCounty.y);
+  v(b.courtStreet || d.courthouseAddress || "",                             C.text.courtStreet.x,  C.text.courtStreet.y);
+  v(b.courtCityZip || courtCityZip,                                         C.text.courtCityZip.x, C.text.courtCityZip.y);
+  v(b.branchName   || d.courthouseName || "Small Claims Division",           C.text.branchName.x,   C.text.branchName.y);
 
-  v(d.plaintiffName,  154, 573);
-  v(d.defendantName,  154, 556);
-  v(d.caseNumber,     413, 544);
+  v(d.plaintiffName,  C.text.plaintiffName.x, C.text.plaintiffName.y);
+  v(d.defendantName,  C.text.defendantName.x, C.text.defendantName.y);
+  v(d.caseNumber,     C.text.caseNumber.x,    C.text.caseNumber.y);
 
   if (declarationText) {
     const paragraphs = declarationText.split(/\n/).map(p => p.trim()).filter(Boolean);
-    let bodyY = 494 + LIFT;
-    const bodyX    = 36;
-    const bodyMaxW = 540;
-    const bodySize    = 10.5;
-    const bodyLineH   = 11.5;
-    let maxTotalLines = 26;
+    const bodyX     = C.body.x;
+    const bodyMaxW  = C.body.maxW;
+    const bodySize  = C.body.size;
+    const bodyLineH = C.body.lineH;
+    let bodyY = C.body.startY + LIFT;
+    let maxTotalLines = C.body.maxLines;
 
     if (declarationTitle) {
-      const titleWidth = fontBold.widthOfTextAtSize(declarationTitle, 11);
+      const titleWidth = fontBold.widthOfTextAtSize(declarationTitle, C.body.titleSize);
       const titleX = Math.max(bodyX, (PW - titleWidth) / 2);
-      page.drawText(declarationTitle, { x: titleX, y: bodyY, font: fontBold, size: 11, color: BLACK });
-      bodyY -= 2 * bodyLineH;
-      maxTotalLines -= 2;
+      page.drawText(declarationTitle, { x: titleX, y: bodyY, font: fontBold, size: C.body.titleSize, color: BLACK });
+      bodyY -= C.body.titleLines * bodyLineH;
+      maxTotalLines -= C.body.titleLines;
     }
 
     const allParaLines: string[][] = [];
@@ -317,8 +322,8 @@ function drawMC030Page(
     }
   }
 
-  vs(b.signDate || today(), 77, 157);
-  xmark(page, 408, 80 + LIFT, 5);
+  vs(b.signDate || today(), C.text.signDate.x, C.text.signDate.y);
+  xmark(page, C.xmarks.underPenaltyOfPerjury.cx, C.xmarks.underPenaltyOfPerjury.cy + LIFT, 5);
 }
 
 function checkOverflow(font: PDFFont, declarationText: string): boolean {
@@ -455,9 +460,9 @@ export async function generateMC030SignedPdf(
   if (sigBytes) {
     const sigImg = await masterDoc.embedPng(sigBytes);
     const { width: sw, height: sh } = sigImg.scale(1);
-    const maxW = 190, maxH = 42;
+    const { maxW, maxH } = C.sig;
     const scale = Math.min(maxW / sw, maxH / sh, 1);
-    page.drawImage(sigImg, { x: 370, y: 112, width: sw * scale, height: sh * scale });
+    page.drawImage(sigImg, { x: C.sig.x, y: C.sig.y, width: sw * scale, height: sh * scale });
   }
 
   if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
