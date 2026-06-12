@@ -5,8 +5,8 @@ import * as path from "path";
 import * as os from "os";
 import { execFile } from "child_process";
 import { promisify } from "util";
-import mammoth from "mammoth";
-import { withPage } from "../forms/chromium-pool";
+import { docxToPdf } from "../documents/docx-to-pdf";
+export { docxToPdf };
 import { ObjectStorageService } from "../lib/objectStorage";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import { getUserId } from "../lib/owned-case";
@@ -306,24 +306,6 @@ export async function imageToJpeg(buf: Buffer): Promise<Buffer> {
   }
 }
 
-export async function docxToPdf(buf: Buffer): Promise<Buffer> {
-  const { value: html } = await mammoth.convertToHtml({ buffer: buf });
-  const fullHtml = `<!DOCTYPE html><html><head><style>
-    body{font-family:Arial,sans-serif;margin:40px;font-size:12px;line-height:1.6;color:#000}
-    h1,h2,h3{margin-bottom:8px}
-    table{border-collapse:collapse;width:100%}
-    td,th{border:1px solid #ccc;padding:6px;text-align:left}
-    p{margin:0 0 8px}
-  </style></head><body>${html}</body></html>`;
-  return await withPage(async (page) => {
-    await page.setContent(fullHtml, { waitUntil: "domcontentloaded" });
-    const pdfBuf = await page.pdf({
-      format: "Letter",
-      margin: { top: "0.75in", bottom: "0.75in", left: "0.75in", right: "0.75in" },
-    });
-    return Buffer.from(pdfBuf);
-  });
-}
 
 export async function embedExhibitPages(
   masterDoc: PDFDocument,

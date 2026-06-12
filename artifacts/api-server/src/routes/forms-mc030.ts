@@ -1,6 +1,4 @@
-import { Router, type IRouter } from "express";
 import { PDFDocument, StandardFonts } from "pdf-lib";
-import { getOwnedCase } from "../lib/owned-case";
 import { logger } from "../lib/logger";
 import { db } from "@workspace/db";
 import { documentsTable, casesTable } from "@workspace/db";
@@ -12,11 +10,9 @@ import {
   formatDateDisplay,
   friendlyExhibitName, stripExhibitRefsFromDesc,
   addDeclarationContinuationPages, embedExhibitPages,
-  getDocumentBuffer, resolveDownloadUser,
+  getDocumentBuffer,
   val, xmark, drawLineMixed,
 } from "./forms-common";
-
-const router: IRouter = Router();
 
 // ─── MC-030 exported constants (consumed by demand-letter.ts) ─────────────────
 export function stripMC030Wrappers(text: string): string {
@@ -91,21 +87,16 @@ export async function measureMC030BodyLines(text: string): Promise<number> {
 }
 
 // ─── Exhibit ordering helper ──────────────────────────────────────────────────
-// Given an ordered list of docs and an AI-returned exhibitOrder (1-indexed doc
-// numbers in first-mention order), returns docs sorted so index 0 → Exhibit A,
-// index 1 → Exhibit B, etc.  Any docs not mentioned by the AI are appended at
-// the end so nothing is ever silently dropped.
 function applyExhibitOrder<T>(docs: T[], exhibitOrder: number[]): T[] {
   const ordered: T[] = [];
   const usedIndices = new Set<number>();
   for (const docNum of exhibitOrder) {
-    const idx = docNum - 1; // 1-indexed → 0-indexed
+    const idx = docNum - 1;
     if (idx >= 0 && idx < docs.length && !usedIndices.has(idx)) {
       ordered.push(docs[idx]);
       usedIndices.add(idx);
     }
   }
-  // Append any docs the AI did not mention (safety net — should not happen)
   for (let i = 0; i < docs.length; i++) {
     if (!usedIndices.has(i)) ordered.push(docs[i]);
   }
@@ -113,13 +104,6 @@ function applyExhibitOrder<T>(docs: T[], exhibitOrder: number[]): T[] {
 }
 
 // ─── MC-030 AI declaration generator ─────────────────────────────────────────
-//
-// Passes documents as a numbered list — no pre-assigned letters.
-// The AI writes in the most legally effective order and assigns exhibit letters
-// in first-mention order (first document mentioned → Exhibit A, etc.).
-// Returns exhibitOrder so physical tabs can be reordered to match the narrative.
-//
-
 async function generateMC030Declaration(
   d: Record<string, any>,
   exhibits?: Array<{ docIndex: number; name: string }>
@@ -131,7 +115,6 @@ async function generateMC030Declaration(
   const incidentDate  = d.incidentDate ? formatDateDisplay(d.incidentDate) : "";
   const hasExhibits   = exhibits && exhibits.length > 0;
 
-  // Numbered list — AI assigns letters in first-mention order
   const documentList = hasExhibits
     ? exhibits!.map(e => `  Document ${e.docIndex}: ${e.name}`).join("\n")
     : "";
@@ -202,7 +185,6 @@ async function generateMC030Declaration(
       exhibitOrder?: unknown;
     };
 
-    // Validate exhibitOrder: must be an array of integers
     const rawOrder = parsed.exhibitOrder;
     const exhibitOrder: number[] = Array.isArray(rawOrder)
       ? rawOrder.map(Number).filter(n => Number.isInteger(n) && n >= 1)
@@ -265,12 +247,11 @@ function drawMC030Page(
     const bodyLineH   = 11.5;
     let maxTotalLines = 26;
 
-    // Draw declaration title as the first line inside the body area, one blank line above body paragraphs
     if (declarationTitle) {
       const titleWidth = fontBold.widthOfTextAtSize(declarationTitle, 11);
       const titleX = Math.max(bodyX, (PW - titleWidth) / 2);
       page.drawText(declarationTitle, { x: titleX, y: bodyY, font: fontBold, size: 11, color: BLACK });
-      bodyY -= 2 * bodyLineH; // advance past title line + one blank gap before first paragraph
+      bodyY -= 2 * bodyLineH;
       maxTotalLines -= 2;
     }
 
@@ -320,7 +301,6 @@ function drawMC030Page(
   xmark(page, 408, 80 + LIFT, 5);
 }
 
-// ─── Overflow check helper ────────────────────────────────────────────────────
 function checkOverflow(font: any, declarationText: string): boolean {
   if (!declarationText) return false;
   let lines = 0;
@@ -336,277 +316,229 @@ function checkOverflow(font: any, declarationText: string): boolean {
   return false;
 }
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
-router.post("/cases/:id/forms/mc030", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
-  const userId = await resolveDownloadUser(req, res, id);
-  if (!userId) return;
-  const c = await getOwnedCase(id, userId);
-  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
-  const d = c as unknown as Record<string, any>;
-  const b = req.body as Record<string, any>;
-  try {
-    let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
-    if (!declarationTitle || !declarationText) {
-      const ai = await generateMC030Declaration(d);
-      declarationTitle = declarationTitle || ai.declarationTitle;
-      declarationText  = declarationText  || ai.declarationText;
-    }
-    declarationText = stripMC030Wrappers(declarationText || "");
+// ─── Standalone generation functions ─────────────────────────────────────────
 
-    if (declarationTitle) {
-      db.update(casesTable)
-        .set({ mc030DeclarationTitle: declarationTitle })
-        .where(eq(casesTable.id, id))
-        .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
-    }
-
-    const pdfDoc   = await PDFDocument.create();
-    const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const bg       = await pdfDoc.embedPng(loadAsset("mc030_hq-1.png"));
-    const page     = pdfDoc.addPage([PW, PH]);
-    page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-
-    const declOverflows = checkOverflow(font, declarationText);
-    const formDeclText = declOverflows ? "SEE ATTACHED DECLARATION PAGES." : declarationText;
-    drawMC030Page(page, font, fontBold, d, b, declarationTitle, formDeclText);
-    if (declOverflows) addDeclarationContinuationPages(pdfDoc, font, fontBold, declarationText, d, b);
-
-    const pdfBytes = await pdfDoc.save();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="MC030-Case-${id}.pdf"`);
-    res.setHeader("Content-Length", pdfBytes.length);
-    res.send(Buffer.from(pdfBytes));
-  } catch (err: any) {
-    req.log.error({ err }, "MC-030 PDF error");
-    if (!res.headersSent) res.status(500).json({ error: "Failed to generate MC-030 PDF." });
+/**
+ * Generates a basic MC-030 declaration PDF (no exhibits, no signature).
+ * Called by mc030Definition.generate() and the basic route handler.
+ */
+export async function generateMC030BasicPdf(
+  id: number,
+  d: Record<string, any>,
+  b: Record<string, any>
+): Promise<Buffer> {
+  let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+  if (!declarationTitle || !declarationText) {
+    const ai = await generateMC030Declaration(d);
+    declarationTitle = declarationTitle || ai.declarationTitle;
+    declarationText  = declarationText  || ai.declarationText;
   }
-});
+  declarationText = stripMC030Wrappers(declarationText || "");
 
-router.post("/cases/:id/forms/mc030/signed", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
-  const userId = await resolveDownloadUser(req, res, id);
-  if (!userId) return;
-  const c = await getOwnedCase(id, userId);
-  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
-  const d = c as unknown as Record<string, any>;
-  const b = req.body as Record<string, any>;
-  const { signatureDataUrl } = b as { signatureDataUrl?: string };
-  const exhibitIds: number[] = Array.isArray(b.exhibitDocIds)
-    ? b.exhibitDocIds.map(Number).filter((n: number) => !isNaN(n))
-    : [];
-  let sigBytes: Buffer | undefined;
-  if (signatureDataUrl) {
-    const base64 = signatureDataUrl.replace(/^data:image\/\w+;base64,/, "");
-    sigBytes = Buffer.from(base64, "base64");
+  if (declarationTitle) {
+    db.update(casesTable)
+      .set({ mc030DeclarationTitle: declarationTitle })
+      .where(eq(casesTable.id, id))
+      .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
   }
-  try {
-    const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    // Fetch docs in user-selected order (exhibitIds preserves the user's ordering)
-    const rawExhibitDocs = exhibitIds.length > 0
-      ? await db.select().from(documentsTable).where(
-          and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
-        )
-      : [];
-    const exhibitDocMap = new Map(rawExhibitDocs.map((doc) => [doc.id, doc]));
-    const exhibitDocs = exhibitIds.map((eid) => exhibitDocMap.get(eid)).filter((d): d is typeof rawExhibitDocs[number] => d !== undefined);
+  const pdfDoc   = await PDFDocument.create();
+  const font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const bg       = await pdfDoc.embedPng(loadAsset("mc030_hq-1.png"));
+  const page     = pdfDoc.addPage([PW, PH]);
+  page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
 
-    // Pass documents as a numbered list — no pre-assigned letters.
-    // The AI assigns letters in first-mention order and returns exhibitOrder.
-    const numberedExhibits = exhibitDocs.map((doc, i) => ({
-      docIndex: i + 1,
-      name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
-    }));
+  const declOverflows = checkOverflow(font, declarationText);
+  const formDeclText = declOverflows ? "SEE ATTACHED DECLARATION PAGES." : declarationText;
+  drawMC030Page(page, font, fontBold, d, b, declarationTitle, formDeclText);
+  if (declOverflows) addDeclarationContinuationPages(pdfDoc, font, fontBold, declarationText, d, b);
 
-    req.log.info(
-      { numberedExhibits, rawDescriptions: exhibitDocs.map(doc => ({ id: doc.id, description: doc.description, originalName: doc.originalName })) },
-      "[MC-030 Signed] Numbered exhibit list passed to AI"
-    );
+  return Buffer.from(await pdfDoc.save());
+}
 
-    let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
-    let exhibitOrder: number[] = [];
-
-    if (!declarationText) {
-      // No pre-supplied text — generate everything with AI (assigns exhibit letters in narrative order)
-      const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
-      declarationTitle = declarationTitle || ai.declarationTitle;
-      declarationText  = ai.declarationText;
-      exhibitOrder     = ai.exhibitOrder;
-    } else {
-      // Text already provided — use the caller-supplied exhibitOrder (from mc030-ai response)
-      // so the physical tabs match the narrative the AI already generated.
-      const suppliedOrder: number[] = Array.isArray(b.exhibitOrder)
-        ? (b.exhibitOrder as unknown[]).map(Number).filter((n: number) => !isNaN(n) && n >= 1)
-        : [];
-      exhibitOrder = suppliedOrder.length === exhibitDocs.length ? suppliedOrder : exhibitDocs.map((_, i) => i + 1);
-      if (!declarationTitle) {
-        declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
-      }
-    }
-    declarationText = stripMC030Wrappers(declarationText || "");
-
-    req.log.info({ exhibitOrder }, "[MC-030 Signed] exhibit order");
-
-    // Sort exhibit docs to match the narrative order
-    const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
-
-    if (declarationTitle) {
-      db.update(casesTable)
-        .set({ mc030DeclarationTitle: declarationTitle })
-        .where(eq(casesTable.id, id))
-        .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
-    }
-
-    const masterDoc = await PDFDocument.create();
-    const font      = await masterDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold  = await masterDoc.embedFont(StandardFonts.HelveticaBold);
-    const bg        = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
-    const page      = masterDoc.addPage([PW, PH]);
-    page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-
-    const declOverflows = checkOverflow(font, declarationText);
-    const formDeclText = declOverflows ? "SEE ATTACHED DECLARATION PAGES." : declarationText;
-    drawMC030Page(page, font, fontBold, d, b, declarationTitle, formDeclText);
-
-    if (sigBytes) {
-      const sigImg = await masterDoc.embedPng(sigBytes);
-      const { width: sw, height: sh } = sigImg.scale(1);
-      const maxW = 190, maxH = 42;
-      const scale = Math.min(maxW / sw, maxH / sh, 1);
-      page.drawImage(sigImg, { x: 370, y: 112, width: sw * scale, height: sh * scale });
-    }
-
-    if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
-
-    // Attach exhibit tabs in narrative order (A = first mentioned, B = second, …)
-    for (let i = 0; i < orderedDocs.length; i++) {
-      const doc = orderedDocs[i];
-      const letter = LETTERS[i] ?? String(i + 1);
-      const label = `EXHIBIT ${letter}`;
-      try {
-        const fileBuffer = await getDocumentBuffer(doc);
-        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, friendlyExhibitName(doc.description, doc.originalName), label, font, fontBold);
-      } catch (docErr) {
-        req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Signed] Failed to embed exhibit");
-      }
-    }
-
-    const pdfBytes = await masterDoc.save();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-    res.setHeader("Content-Disposition", `attachment; filename="MC030-Signed-Case-${id}.pdf"`);
-    res.setHeader("Content-Length", pdfBytes.length);
-    res.send(Buffer.from(pdfBytes));
-  } catch (err: any) {
-    req.log.error({ err }, "MC-030 signed PDF error");
-    if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed MC-030 PDF." });
-  }
-});
-
-router.post("/cases/:id/forms/mc030-with-exhibits", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
-  const userId = await resolveDownloadUser(req, res, id);
-  if (!userId) return;
-  const c = await getOwnedCase(id, userId);
-  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
-  const d = c as unknown as Record<string, any>;
-  const b = req.body as Record<string, any>;
+/**
+ * Generates a signed MC-030 declaration PDF with optional exhibits.
+ * Signature bytes are embedded when provided.
+ */
+export async function generateMC030SignedPdf(
+  id: number,
+  d: Record<string, any>,
+  b: Record<string, any>,
+  sigBytes: Buffer | undefined
+): Promise<Buffer> {
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const exhibitIds: number[] = Array.isArray(b.exhibitDocIds)
     ? b.exhibitDocIds.map(Number).filter((n: number) => !isNaN(n))
     : [];
 
-  try {
-    const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const rawExhibitDocs = exhibitIds.length > 0
+    ? await db.select().from(documentsTable).where(
+        and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
+      )
+    : [];
+  const exhibitDocMap = new Map(rawExhibitDocs.map((doc) => [doc.id, doc]));
+  const exhibitDocs = exhibitIds
+    .map((eid) => exhibitDocMap.get(eid))
+    .filter((d): d is typeof rawExhibitDocs[number] => d !== undefined);
 
-    // Fetch docs in user-selected order
-    const rawDocs = exhibitIds.length > 0
-      ? await db.select().from(documentsTable).where(
-          and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
-        )
+  const numberedExhibits = exhibitDocs.map((doc, i) => ({
+    docIndex: i + 1,
+    name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
+  }));
+
+  logger.info(
+    { numberedExhibits, rawDescriptions: exhibitDocs.map(doc => ({ id: doc.id, description: doc.description, originalName: doc.originalName })) },
+    "[MC-030 Signed] Numbered exhibit list passed to AI"
+  );
+
+  let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+  let exhibitOrder: number[] = [];
+
+  if (!declarationText) {
+    const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
+    declarationTitle = declarationTitle || ai.declarationTitle;
+    declarationText  = ai.declarationText;
+    exhibitOrder     = ai.exhibitOrder;
+  } else {
+    const suppliedOrder: number[] = Array.isArray(b.exhibitOrder)
+      ? (b.exhibitOrder as unknown[]).map(Number).filter((n: number) => !isNaN(n) && n >= 1)
       : [];
-    const docMap = new Map(rawDocs.map((doc) => [doc.id, doc]));
-    const exhibitDocs = exhibitIds.map((eid) => docMap.get(eid)).filter((d): d is typeof rawDocs[number] => d !== undefined);
-
-    // Numbered list — AI assigns letters in first-mention order
-    const numberedExhibits = exhibitDocs.map((doc, i) => ({
-      docIndex: i + 1,
-      name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
-    }));
-
-    const masterDoc = await PDFDocument.create();
-    const font = await masterDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await masterDoc.embedFont(StandardFonts.HelveticaBold);
-
-    let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
-    let exhibitOrder: number[] = [];
-
-    if (!declarationText) {
-      // No pre-supplied text — generate everything with AI (assigns exhibit letters in narrative order)
-      const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
-      declarationTitle = declarationTitle || ai.declarationTitle;
-      declarationText  = ai.declarationText;
-      exhibitOrder     = ai.exhibitOrder;
-    } else {
-      // Text already provided — use the caller-supplied exhibitOrder (from mc030-ai response)
-      // so the physical tabs match the narrative the AI already generated.
-      const suppliedOrder: number[] = Array.isArray(b.exhibitOrder)
-        ? (b.exhibitOrder as unknown[]).map(Number).filter((n: number) => !isNaN(n) && n >= 1)
-        : [];
-      exhibitOrder = suppliedOrder.length === exhibitDocs.length ? suppliedOrder : exhibitDocs.map((_, i) => i + 1);
-      if (!declarationTitle) {
-        declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
-      }
+    exhibitOrder = suppliedOrder.length === exhibitDocs.length ? suppliedOrder : exhibitDocs.map((_, i) => i + 1);
+    if (!declarationTitle) {
+      declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
     }
-    declarationText = stripMC030Wrappers(declarationText || "");
-
-    req.log.info({ exhibitOrder }, "[MC-030 Filing Packet] exhibit order");
-
-    // Sort exhibit docs to match the narrative order
-    const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
-
-    if (declarationTitle) {
-      db.update(casesTable)
-        .set({ mc030DeclarationTitle: declarationTitle })
-        .where(eq(casesTable.id, id))
-        .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
-    }
-
-    const bg = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
-    const mc030Page = masterDoc.addPage([PW, PH]);
-    mc030Page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
-
-    const declOverflows = checkOverflow(font, declarationText);
-    const formDeclText = declOverflows ? "SEE ATTACHED DECLARATION PAGES." : declarationText;
-    drawMC030Page(mc030Page, font, fontBold, d, b, declarationTitle, formDeclText);
-    if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
-
-    // Attach exhibit tabs in narrative order
-    for (let i = 0; i < orderedDocs.length; i++) {
-      const doc = orderedDocs[i];
-      const letter = LETTERS[i] ?? String(i + 1);
-      const label = `EXHIBIT ${letter}`;
-      try {
-        const fileBuffer = await getDocumentBuffer(doc);
-        await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, friendlyExhibitName(doc.description, doc.originalName), label, font, fontBold);
-      } catch (docErr) {
-        req.log.error({ err: docErr, exhibit: letter }, "[MC-030 Filing Packet] Failed to embed exhibit");
-      }
-    }
-
-    const pdfBytes = await masterDoc.save();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="MC030-Filing-Packet-Case-${id}.pdf"`);
-    res.setHeader("Content-Length", pdfBytes.length);
-    res.send(Buffer.from(pdfBytes));
-  } catch (err: any) {
-    req.log.error({ err }, "MC-030 with-exhibits PDF error");
-    if (!res.headersSent) res.status(500).json({ error: "Failed to generate filing packet." });
   }
-});
+  declarationText = stripMC030Wrappers(declarationText || "");
 
-export default router;
+  logger.info({ exhibitOrder }, "[MC-030 Signed] exhibit order");
+
+  const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
+
+  if (declarationTitle) {
+    db.update(casesTable)
+      .set({ mc030DeclarationTitle: declarationTitle })
+      .where(eq(casesTable.id, id))
+      .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
+  }
+
+  const masterDoc = await PDFDocument.create();
+  const font      = await masterDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold  = await masterDoc.embedFont(StandardFonts.HelveticaBold);
+  const bg        = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
+  const page      = masterDoc.addPage([PW, PH]);
+  page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
+
+  const declOverflows = checkOverflow(font, declarationText);
+  const formDeclText = declOverflows ? "SEE ATTACHED DECLARATION PAGES." : declarationText;
+  drawMC030Page(page, font, fontBold, d, b, declarationTitle, formDeclText);
+
+  if (sigBytes) {
+    const sigImg = await masterDoc.embedPng(sigBytes);
+    const { width: sw, height: sh } = sigImg.scale(1);
+    const maxW = 190, maxH = 42;
+    const scale = Math.min(maxW / sw, maxH / sh, 1);
+    page.drawImage(sigImg, { x: 370, y: 112, width: sw * scale, height: sh * scale });
+  }
+
+  if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
+
+  for (let i = 0; i < orderedDocs.length; i++) {
+    const doc = orderedDocs[i];
+    const letter = LETTERS[i] ?? String(i + 1);
+    const label = `EXHIBIT ${letter}`;
+    try {
+      const fileBuffer = await getDocumentBuffer(doc);
+      await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, friendlyExhibitName(doc.description, doc.originalName), label, font, fontBold);
+    } catch (docErr) {
+      logger.error({ err: docErr, exhibit: letter }, "[MC-030 Signed] Failed to embed exhibit");
+    }
+  }
+
+  return Buffer.from(await masterDoc.save());
+}
+
+/**
+ * Generates an MC-030 filing packet with AI-ordered exhibits (no signature).
+ */
+export async function generateMC030WithExhibitsPdf(
+  id: number,
+  d: Record<string, any>,
+  b: Record<string, any>
+): Promise<Buffer> {
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const exhibitIds: number[] = Array.isArray(b.exhibitDocIds)
+    ? b.exhibitDocIds.map(Number).filter((n: number) => !isNaN(n))
+    : [];
+
+  const rawDocs = exhibitIds.length > 0
+    ? await db.select().from(documentsTable).where(
+        and(inArray(documentsTable.id, exhibitIds), eq(documentsTable.caseId, id))
+      )
+    : [];
+  const docMap = new Map(rawDocs.map((doc) => [doc.id, doc]));
+  const exhibitDocs = exhibitIds
+    .map((eid) => docMap.get(eid))
+    .filter((d): d is typeof rawDocs[number] => d !== undefined);
+
+  const numberedExhibits = exhibitDocs.map((doc, i) => ({
+    docIndex: i + 1,
+    name: friendlyExhibitName(doc.description, doc.originalName) || `Document ${i + 1}`,
+  }));
+
+  let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
+  let exhibitOrder: number[] = [];
+
+  if (!declarationText) {
+    const ai = await generateMC030Declaration(d, numberedExhibits.length > 0 ? numberedExhibits : undefined);
+    declarationTitle = declarationTitle || ai.declarationTitle;
+    declarationText  = ai.declarationText;
+    exhibitOrder     = ai.exhibitOrder;
+  } else {
+    const suppliedOrder: number[] = Array.isArray(b.exhibitOrder)
+      ? (b.exhibitOrder as unknown[]).map(Number).filter((n: number) => !isNaN(n) && n >= 1)
+      : [];
+    exhibitOrder = suppliedOrder.length === exhibitDocs.length ? suppliedOrder : exhibitDocs.map((_, i) => i + 1);
+    if (!declarationTitle) {
+      declarationTitle = `DECLARATION OF ${String(d.plaintiffName || "PLAINTIFF").toUpperCase()}`;
+    }
+  }
+  declarationText = stripMC030Wrappers(declarationText || "");
+
+  logger.info({ exhibitOrder }, "[MC-030 Filing Packet] exhibit order");
+
+  const orderedDocs = applyExhibitOrder(exhibitDocs, exhibitOrder);
+
+  if (declarationTitle) {
+    db.update(casesTable)
+      .set({ mc030DeclarationTitle: declarationTitle })
+      .where(eq(casesTable.id, id))
+      .catch((e: any) => logger.error({ err: e }, "MC-030 title save error"));
+  }
+
+  const masterDoc = await PDFDocument.create();
+  const font      = await masterDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold  = await masterDoc.embedFont(StandardFonts.HelveticaBold);
+  const bg        = await masterDoc.embedPng(loadAsset("mc030_hq-1.png"));
+  const mc030Page = masterDoc.addPage([PW, PH]);
+  mc030Page.drawImage(bg, { x: 0, y: 0, width: PW, height: PH });
+
+  const declOverflows = checkOverflow(font, declarationText);
+  const formDeclText = declOverflows ? "SEE ATTACHED DECLARATION PAGES." : declarationText;
+  drawMC030Page(mc030Page, font, fontBold, d, b, declarationTitle, formDeclText);
+  if (declOverflows) addDeclarationContinuationPages(masterDoc, font, fontBold, declarationText, d, b);
+
+  for (let i = 0; i < orderedDocs.length; i++) {
+    const doc = orderedDocs[i];
+    const letter = LETTERS[i] ?? String(i + 1);
+    const label = `EXHIBIT ${letter}`;
+    try {
+      const fileBuffer = await getDocumentBuffer(doc);
+      await embedExhibitPages(masterDoc, fileBuffer, doc.mimeType, friendlyExhibitName(doc.description, doc.originalName), label, font, fontBold);
+    } catch (docErr) {
+      logger.error({ err: docErr, exhibit: letter }, "[MC-030 Filing Packet] Failed to embed exhibit");
+    }
+  }
+
+  return Buffer.from(await masterDoc.save());
+}

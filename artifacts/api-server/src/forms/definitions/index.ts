@@ -1,0 +1,30 @@
+/**
+ * forms/definitions/index.ts
+ *
+ * Barrel that imports every form definition file.
+ * Importing this file registers all forms with FormRegistry as a side-effect.
+ *
+ * To add a new form:
+ *  1. Create `forms/definitions/<id>-definition.ts`
+ *  2. Call FormRegistry.register(yourDef) at module load time
+ *  3. Add an import line here
+ *
+ * See ADDING_A_FORM.md for the full step-by-step guide.
+ */
+
+// ─── AcroForm fills (pdf-lib) ─────────────────────────────────────────────────
+export * from "./sc100-definition";
+export * from "./sc104-definition";
+export * from "./sc105-definition";
+export * from "./sc112a-definition";
+export * from "./fw001-definition";
+
+// ─── AcroForm fills (pdftk FDF — XFA forms) ──────────────────────────────────
+export * from "./sc103-definition";
+export * from "./sc120-definition";
+export * from "./sc150-definition";
+
+// ─── Overlay forms (PNG background + pdf-lib) ─────────────────────────────────
+export * from "./sc100a-definition";
+export * from "./sc140-definition";
+export * from "./mc030-definition";

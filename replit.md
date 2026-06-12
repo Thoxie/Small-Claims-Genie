@@ -52,10 +52,18 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
 -   **Chat:** Implemented with SSE streaming via raw `fetch` and `ReadableStream`.
 -   **Voice:** Push-to-talk functionality uses `useVoiceRecorder` for Whisper transcription and AI integration.
 -   **Demand Letter:** SSE streaming generation with PDF download.
--   **PDF Generation:**
-    -   **SC-100:** Generated using Playwright + Chromium, rendering HTML/CSS with absolute positioning over base64-embedded 300 DPI PNG backgrounds for precise field placement. Coordinates are stored in `sc100-field-map.json`, derived from `pdftotext -bbox`. Uses a singleton warm-browser pool (`forms/chromium-pool.ts`) to avoid the ~2-4s Chromium cold-launch on every request — browser is pre-warmed at server start, pages are created/closed per request, browser auto-relaunches on disconnect, and shutdown drains in-flight renders for up to 5s.
-    -   **MC-030:** Utilizes `pdf-lib` for form filling; includes an AI declaration auto-generation feature.
-    -   **SC-105:** Uses AcroForm filling with `pdf-lib` for efficient and accurate form population. This is the preferred method for future forms.
+-   **PDF Generation — Unified Form Engine:**
+    All form download endpoints in `routes/forms-unified.ts` dispatch through `FormRegistry` (`forms/registry.ts`) using `makeFormHandler()` (`forms/generic-handler.ts`). Every form is a `FormDefinition` with a `generate(data, body, opts)` method registered at startup. There are no inline download handlers — `makeFormHandler` provides all auth, ownership, PDF streaming, and disposition logic.
+    -   **Rendering technique per form** (chosen by inspecting the official Judicial Council PDF):
+        1. **AcroForm via pdf-lib** (usable fields found by pdf-lib): SC-104, SC-105, SC-112A, FW-001
+        2. **XFA via pdftk FDF fill** (fields found only by pdftk, not pdf-lib): SC-103, SC-103-SECONDARY, SC-120, SC-150
+        3. **PNG overlay via pdf-lib drawing** (no usable fields OR dynamic content required): SC-100, SC-100A, SC-140, MC-030
+    -   **SC-100:** pdf-lib AcroForm overlay (PNG background + coordinate drawing), then `pdftkFlatten`. Deterministic + AI enrichment (`enrichForSC100`, `aiEnrichForSC100`) runs inside `sc100Definition.generate()`. All three variants (basic GET, signed POST, with-overrides POST) use `makeFormHandler`; with-overrides uses `{ downloadParam: "download" }` to drive inline/attachment from `?download=1`.
+    -   **SC-100A:** Overlay (XFA fields have non-descriptive positional IDs; dual-signature embedding requires image placement). Both sig bytes decoded from body inside `sc100aDefinition.generate()`.
+    -   **MC-030:** Overlay with AI declaration generation and optional exhibit assembly (`routes/forms-mc030.ts`). All three variants (basic, signed, with-exhibits) route through one registry entry — `mc030Definition.generate()` inspects opts/body to pick the correct generation function. All three routes use `makeFormHandler`.
+    -   **SC-140:** Overlay — no usable AcroForm fields detected by either pdf-lib or pdftk.
+    -   **Chromium pool:** `forms/chromium-pool.ts` — singleton warm browser for SC-100 HTML-to-PDF rendering. Pre-warmed at server start; auto-relaunches on disconnect.
+    -   **pdftk:** Used by `pdftkFlatten` to flatten XFA/AcroForm fields. Fails fast with logging on any error — no silent fallback to unfilled PDF.
 -   **Readiness Score:** A metric (0-100) based on intake completeness (60pts), document submission (30pts), and prior demand letters (10pts).
 
 **System Design Choices:**
