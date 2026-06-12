@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { PDFDocument, PDFName, PDFString } from "pdf-lib";
+import { pdftkFlatten } from "../forms/acroform-filler";
 import { getOwnedCase, getUserId } from "../lib/owned-case";
 import { requireAuth } from "../middlewares/auth";
 import { db } from "@workspace/db";
@@ -104,7 +105,7 @@ async function buildSC104Pdf(
     }
   }
 
-  return pdfDoc.save();
+  return pdftkFlatten(Buffer.from(await pdfDoc.save()));
 }
 
 router.post("/cases/:id/forms/sc104", async (req, res): Promise<void> => {

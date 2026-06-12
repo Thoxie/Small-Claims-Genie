@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.pdftk
     pkgs.glib
     pkgs.cairo
     pkgs.pango

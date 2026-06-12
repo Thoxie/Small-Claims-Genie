@@ -1,20 +1,13 @@
 import { Router, type IRouter } from "express";
-import * as fs from "fs";
-import * as path from "path";
 import { getOwnedCase } from "../lib/owned-case";
 import { logger } from "../lib/logger";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { buildFormPdf, type FormConfig } from "../forms/form-renderer";
+import { buildSC100AcroformPdf } from "../forms/sc100-acroform";
+import { pdftkFlatten } from "../forms/acroform-filler";
 import {
-  ASSET_DIR, devOnly, resolveDownloadUser,
+  ASSET_DIR, resolveDownloadUser,
   today, formatDateDisplay, formatTimeDisplay,
 } from "./forms-common";
-
-const FORMS_DIR = path.join(ASSET_DIR, "forms");
-function loadFormConfig(filename: string): FormConfig {
-  return JSON.parse(fs.readFileSync(path.join(FORMS_DIR, filename), "utf8")) as FormConfig;
-}
-const SC100_CONFIG = loadFormConfig("sc100.json");
 
 const router: IRouter = Router();
 
@@ -246,27 +239,8 @@ async function buildSC100Pdf(
   caseData: Record<string, any>,
   signaturePngBytes?: Buffer
 ): Promise<Buffer> {
-  const pdfBytes = await buildFormPdf(
-    SC100_CONFIG,
-    caseData,
-    ASSET_DIR,
-    signaturePngBytes
-      ? async (pages, pdfDoc) => {
-          try {
-            const sigImage = await pdfDoc.embedPng(signaturePngBytes);
-            const page4 = pages[3];
-            const sigW = 240;
-            const sigH = 30;
-            const sigX = 320;
-            const sigY = 792 - 289 - sigH; // top-of-box at CSS y=289 → PDF bottom-origin
-            page4.drawImage(sigImage, { x: sigX, y: sigY, width: sigW, height: sigH });
-          } catch {
-            // Signature embedding failed — serve unsigned PDF rather than erroring
-          }
-        }
-      : undefined,
-  );
-  return Buffer.from(pdfBytes);
+  const pdfBytes = await buildSC100AcroformPdf(caseData, ASSET_DIR, signaturePngBytes);
+  return pdftkFlatten(Buffer.from(pdfBytes));
 }
 
 // ─── SC-100 routes ────────────────────────────────────────────────────────────
@@ -322,111 +296,6 @@ router.post("/cases/:id/forms/sc100/signed", async (req, res): Promise<void> => 
     req.log.error({ err }, "SC-100 signed PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate signed SC-100 PDF." });
   }
-});
-
-router.get("/forms/sc100/coordinate-viewer", devOnly, (_req, res): void => {
-  const LIFT = SC100_CONFIG.lift ?? 4.5;
-  const PH = 792;
-
-  const SAMPLE: Record<string, any> = {
-    plaintiffName: "Jane A. Doe", plaintiffPhone: "(619) 555-0101",
-    plaintiffAddress: "123 Main Street", plaintiffCity: "San Diego",
-    plaintiffState: "CA", plaintiffZip: "92101", plaintiffEmail: "jane.doe@email.com",
-    plaintiffMailingAddress: "P.O. Box 4400", plaintiffMailingCity: "San Diego",
-    plaintiffMailingState: "CA", plaintiffMailingZip: "92112",
-    secondPlaintiffName: "John B. Doe", secondPlaintiffPhone: "(619) 555-0202",
-    secondPlaintiffAddress: "123 Main Street", secondPlaintiffCity: "San Diego",
-    secondPlaintiffState: "CA", secondPlaintiffZip: "92101",
-    secondPlaintiffEmail: "john.doe@email.com",
-    defendantName: "ACME Auto Repair LLC", defendantPhone: "(619) 555-0303",
-    defendantAddress: "456 Commerce Blvd", defendantCity: "Chula Vista",
-    defendantState: "CA", defendantZip: "91911",
-    defendantIsBusinessOrEntity: true, defendantAgentName: "Robert Smith",
-    defendantAgentTitle: "Registered Agent", defendantAgentStreet: "789 Agent Row",
-    defendantAgentCity: "Chula Vista", defendantAgentState: "CA", defendantAgentZip: "91911",
-    claimAmount: 3750, claimDescription: "Defendant performed negligent brake repair on plaintiff's 2019 Honda Civic.",
-    howAmountCalculated: "Tow: $225. Rental: $325. Re-repair: $3,200. Total: $3,750.",
-    incidentDate: "01/15/2026", countyId: "san-diego",
-    courthouseName: "South County Division – Chula Vista",
-    courthouseAddress: "500 3rd Ave", courthouseCity: "Chula Vista", courthouseZip: "91910",
-    caseNumber: "24SC012345", venueBasis: "where_defendant_lives",
-    priorDemandMade: true, isAttyFeeDispute: false, isSuingPublicEntity: false,
-    filedMoreThan12Claims: false, declarationDate: "04/13/2026",
-  };
-  const data = enrichForSC100(SAMPLE);
-
-  const pageBlocks = [1, 2, 3, 4].map(pageNum => {
-    const bgAsset = SC100_CONFIG.backgroundAssets[pageNum - 1];
-    const fields = SC100_CONFIG.fields.filter(f => f.page === pageNum);
-
-    const overlays = fields.map(f => {
-      const liftedY = (f.y ?? 0) + LIFT;
-      const cssTop  = PH - liftedY;
-      const cssLeft = f.x ?? 0;
-      const size    = f.size ?? SC100_CONFIG.defaultSize ?? 9;
-
-      let displayVal = "";
-      let color = "#0033cc";
-
-      if (f.type === "text" || f.type === "wrapText") {
-        const src = f.source ?? "";
-        displayVal = src.includes("{{")
-          ? src.replace(/\{\{(\w+)\}\}/g, (_: string, k: string) => String(data[k] ?? ""))
-          : String(data[src] ?? f.fallback ?? `[${src}]`);
-        color = "#0033cc";
-      } else if (f.type === "xmark") {
-        displayVal = "✕";
-        color = "#cc0000";
-      } else if (f.type === "xmarkFromMap") {
-        if (f.map) {
-          const key = data[f.source ?? ""] ?? Object.keys(f.map)[0];
-          const coords = f.map[String(key)];
-          if (coords) {
-            const [mx, my] = coords;
-            const mCssTop  = PH - (my + LIFT);
-            const mCssLeft = mx;
-            return `<div style="position:absolute;left:${mCssLeft}px;top:${mCssTop}px;color:#cc0000;font-size:10px;font-weight:bold;z-index:10;" title="${f.id}">✕</div>
-              <div style="position:absolute;left:${mCssLeft}px;top:${mCssTop - 8}px;color:#555;font-size:5px;z-index:10;">${f.id}</div>`;
-          }
-        }
-        return "";
-      }
-
-      const truncated = displayVal.length > 35 ? displayVal.slice(0, 35) + "…" : displayVal;
-      return `
-        <div style="position:absolute;left:${cssLeft}px;top:${cssTop}px;color:${color};font-size:${size}px;font-family:Helvetica,Arial,sans-serif;white-space:nowrap;z-index:10;line-height:1;" title="${f.id}: ${displayVal}">${truncated}</div>
-        <div style="position:absolute;left:${cssLeft}px;top:${cssTop - 7}px;color:#888;font-size:5px;z-index:10;white-space:nowrap;">${f.id}</div>
-        <div style="position:absolute;left:${cssLeft - 3}px;top:${cssTop + size/2 - 1}px;width:6px;height:1px;background:#f00;z-index:11;"></div>
-        <div style="position:absolute;left:${cssLeft - 0.5}px;top:${cssTop + size/2 - 3}px;width:1px;height:7px;background:#f00;z-index:11;"></div>`;
-    }).join("");
-
-    return `
-      <div style="margin-bottom:40px;">
-        <h2 style="font-size:14px;font-family:sans-serif;margin:0 0 4px;">Page ${pageNum}</h2>
-        <div style="position:relative;width:612px;height:792px;border:1px solid #999;overflow:hidden;background:#fff;">
-          <img src="/form-assets/${bgAsset}" style="position:absolute;top:0;left:0;width:612px;height:792px;" />
-          ${overlays}
-        </div>
-      </div>`;
-  }).join("");
-
-  const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8">
-<title>SC-100 Coordinate Viewer</title>
-<style>
-  body{margin:24px;background:#e8e8e8;font-family:sans-serif;}
-  h1{font-size:18px;margin-bottom:4px;}
-  p{font-size:12px;color:#555;margin-bottom:20px;}
-</style>
-</head><body>
-<h1>SC-100 Live Coordinate Viewer</h1>
-<p>Blue = text fields &nbsp;|&nbsp; Red ✕ = checkboxes &nbsp;|&nbsp; Red crosshair = exact anchor point &nbsp;|&nbsp; Grey micro-label = field ID<br>
-Hover any element to see its field ID and value. Edit <code>assets/forms/sc100.json</code> and refresh to see changes instantly.</p>
-${pageBlocks}
-</body></html>`;
-
-  res.setHeader("Content-Type", "text/html");
-  res.send(html);
 });
 
 router.post("/cases/:id/forms/sc100/with-overrides", async (req, res): Promise<void> => {

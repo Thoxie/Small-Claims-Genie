@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { PDFDocument, PDFName, PDFString } from "pdf-lib";
+import { pdftkFlatten } from "../forms/acroform-filler";
 import { getOwnedCase } from "../lib/owned-case";
 import { CALIFORNIA_COUNTIES } from "./counties";
 import {
@@ -92,11 +93,11 @@ router.post("/cases/:id/forms/fw001", async (req, res): Promise<void> => {
     setField(form, "FW-001[0].Page2[0].pXCaption[0].PetitionerName1[0]", signerName);
     setField(form, "FW-001[0].Page2[0].pXCaption[0].CaseNumber[0]",      d.caseNumber || "");
 
-    const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await pdftkFlatten(Buffer.from(await pdfDoc.save()));
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="FW001-Case-${id}.pdf"`);
     res.setHeader("Content-Length", pdfBytes.length);
-    res.send(Buffer.from(pdfBytes));
+    res.send(pdfBytes);
   } catch (err: any) {
     req.log.error({ err }, "FW-001 PDF error");
     if (!res.headersSent) res.status(500).json({ error: "Failed to generate FW-001 PDF." });
