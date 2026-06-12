@@ -10,6 +10,7 @@ import { FormRegistry } from "../registry";
 import { pdftkFlatten } from "../acroform-filler";
 import { buildCourtInfoFormal } from "../enrichment";
 import { loadAsset } from "../../routes/forms-common";
+import { FW001_FIELDS } from "../field-names/fw001-fields";
 
 function setField(form: any, name: string, value: string) {
   try {
@@ -39,26 +40,28 @@ export async function buildFW001Pdf(d: CaseData): Promise<Buffer> {
   const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
   const form = pdfDoc.getForm();
 
-  setField(form, "FW-001[0].Page1[0].RightCaption[0].CourtInfo[0]",  courtInfo);
-  setField(form, "FW-001[0].Page1[0].RightCaption[0].CaseNumber[0]", d.caseNumber || "");
-  setField(form, "FW-001[0].Page1[0].RightCaption[0].CaseName[0]",   caseName);
+  const F = FW001_FIELDS;
 
-  setField(form, "FW-001[0].Page1[0].List1[0].item1[0].PetitionerName1[0]",      signerName);
-  setField(form, "FW-001[0].Page1[0].List1[0].item1[0].PetitionerStrAddress[0]", d.plaintiffAddress || "");
-  setField(form, "FW-001[0].Page1[0].List1[0].item1[0].PetitionerCity[0]",       d.plaintiffCity    || "");
-  setField(form, "FW-001[0].Page1[0].List1[0].item1[0].PetitionerState[0]",      d.plaintiffState   || "CA");
-  setField(form, "FW-001[0].Page1[0].List1[0].item1[0].PetitionerZip[0]",        d.plaintiffZip     || "");
-  setField(form, "FW-001[0].Page1[0].List1[0].item1[0].PetitionerTel[0]",        d.plaintiffPhone   || "");
+  setField(form, F.text.courtInfo,  courtInfo);
+  setField(form, F.text.caseNumber, d.caseNumber || "");
+  setField(form, F.text.caseName,   caseName);
 
-  if (d.plaintiffOccupation) setField(form, "FW-001[0].Page1[0].List2[0].item2[0].ApplicantJob[0]",  d.plaintiffOccupation);
-  if (d.plaintiffEmployer)   setField(form, "FW-001[0].Page1[0].List2[0].item2[0].EmployerName[0]",  d.plaintiffEmployer);
+  setField(form, F.text.petitionerName,    signerName);
+  setField(form, F.text.petitionerAddress, d.plaintiffAddress || "");
+  setField(form, F.text.petitionerCity,    d.plaintiffCity    || "");
+  setField(form, F.text.petitionerState,   d.plaintiffState   || "CA");
+  setField(form, F.text.petitionerZip,     d.plaintiffZip     || "");
+  setField(form, F.text.petitionerPhone,   d.plaintiffPhone   || "");
 
-  checkBox(form, "FW-001[0].Page1[0].List4[0].item4[0].WaiveSuperiorCrtFee[0]", true);
+  if (d.plaintiffOccupation) setField(form, F.text.petitionerJobTitle,     d.plaintiffOccupation);
+  if (d.plaintiffEmployer)   setField(form, F.text.petitionerEmployerName,  d.plaintiffEmployer);
 
-  setField(form, "FW-001[0].Page1[0].Sign[0].PetitionerName[0]", fullSignerName);
+  checkBox(form, F.checkboxes.waiveSuperiorCourtFee, true);
 
-  setField(form, "FW-001[0].Page2[0].pXCaption[0].PetitionerName1[0]", signerName);
-  setField(form, "FW-001[0].Page2[0].pXCaption[0].CaseNumber[0]",      d.caseNumber || "");
+  setField(form, F.text.signerName, fullSignerName);
+
+  setField(form, F.text.page2PetitionerName, signerName);
+  setField(form, F.text.page2CaseNumber,     d.caseNumber || "");
 
   return pdftkFlatten(Buffer.from(await pdfDoc.save()));
 }

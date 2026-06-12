@@ -3,15 +3,22 @@
  *
  * Runtime startup validator for XFA/AcroForm PDF field names.
  *
- * Runs `pdftk dump_data_fields_utf8` on each registered XFA form and compares
- * the actual PDF field names against the typed constants defined in
+ * Runs `pdftk dump_data_fields_utf8` on each registered form and compares the
+ * actual PDF field names against the typed constants defined in
  * `forms/field-names/`.  Any mismatch is logged as an error so developers
  * discover bad field names immediately on startup rather than silently
  * producing blank PDFs.
  *
- * Call `validateAllXfaForms()` once from `index.ts` after the server starts
+ * Covers both XFA forms (SC-103, SC-120, SC-150) and AcroForm/pdf-lib forms
+ * (SC-104, SC-105, SC-112A, FW-001) — pdftk's dump_data_fields_utf8 works on
+ * both PDF types.
+ *
+ * Call `validateAllForms()` once from `index.ts` after the server starts
  * listening.  All checks are async and non-blocking — they do not delay
  * request handling.
+ *
+ * @deprecated alias `validateAllXfaForms` kept for backward compatibility;
+ * prefer `validateAllForms` in new call sites.
  */
 
 import { execFile } from "child_process";
@@ -22,6 +29,10 @@ import { ASSET_DIR } from "../routes/forms-common";
 import { SC103_FIELDS } from "./field-names/sc103-fields";
 import { SC120_FIELDS } from "./field-names/sc120-fields";
 import { SC150_FIELDS } from "./field-names/sc150-fields";
+import { SC104_FIELDS } from "./field-names/sc104-fields";
+import { SC105_FIELDS } from "./field-names/sc105-fields";
+import { SC112A_FIELDS } from "./field-names/sc112a-fields";
+import { FW001_FIELDS } from "./field-names/fw001-fields";
 
 const execFileAsync = promisify(execFile);
 
@@ -95,15 +106,16 @@ function collectFieldNames(fields: {
   ];
 }
 
-// ─── Public entry point ───────────────────────────────────────────────────────
+// ─── Public entry points ──────────────────────────────────────────────────────
 
 /**
- * Validates all XFA form field name constants against their source PDFs.
- * Call once at server startup.  All checks run in parallel and do not block
- * request handling.
+ * Validates all form field name constants (XFA and AcroForm) against their
+ * source PDFs.  Call once at server startup.  All checks run in parallel and
+ * do not block request handling.
  */
-export function validateAllXfaForms(): void {
+export function validateAllForms(): void {
   const forms: Array<{ formId: string; pdf: string; fields: ReturnType<typeof collectFieldNames> }> = [
+    // XFA forms (pdftk fill_form)
     {
       formId: "SC-103",
       pdf: path.join(ASSET_DIR, "forms", "sc103_acroform.pdf"),
@@ -119,6 +131,27 @@ export function validateAllXfaForms(): void {
       pdf: path.join(ASSET_DIR, "forms", "sc150_acroform.pdf"),
       fields: collectFieldNames(SC150_FIELDS),
     },
+    // AcroForm forms (pdf-lib)
+    {
+      formId: "SC-104",
+      pdf: path.join(ASSET_DIR, "forms", "sc104_acroform.pdf"),
+      fields: collectFieldNames(SC104_FIELDS),
+    },
+    {
+      formId: "SC-105",
+      pdf: path.join(ASSET_DIR, "forms", "sc105_acroform.pdf"),
+      fields: collectFieldNames(SC105_FIELDS),
+    },
+    {
+      formId: "SC-112A",
+      pdf: path.join(ASSET_DIR, "forms", "sc112a_acroform.pdf"),
+      fields: collectFieldNames(SC112A_FIELDS),
+    },
+    {
+      formId: "FW-001",
+      pdf: path.join(ASSET_DIR, "forms", "fw001_acroform.pdf"),
+      fields: collectFieldNames(FW001_FIELDS),
+    },
   ];
 
   for (const { formId, pdf, fields } of forms) {
@@ -127,3 +160,6 @@ export function validateAllXfaForms(): void {
     });
   }
 }
+
+/** @deprecated Use {@link validateAllForms} instead. */
+export const validateAllXfaForms = validateAllForms;

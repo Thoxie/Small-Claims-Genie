@@ -10,6 +10,7 @@ import { FormRegistry } from "../registry";
 import { pdftkFlatten } from "../acroform-filler";
 import { buildCourtInfo, formatDate, formatTime } from "../enrichment";
 import { loadAsset } from "../../routes/forms-common";
+import { SC104_FIELDS } from "../field-names/sc104-fields";
 
 function setField(form: any, name: string, value: string) {
   try {
@@ -43,40 +44,42 @@ export async function buildSC104Pdf(
   const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
   const form = pdfDoc.getForm();
 
-  setField(form, "SC-104[0].Page1[0].RightCaption[0].CourtInfo[0]",  courtInfo);
-  setField(form, "SC-104[0].Page1[0].RightCaption[0].CaseNumber[0]", d.caseNumber || "");
-  setField(form, "SC-104[0].Page1[0].RightCaption[0].CaseName[0]",   caseName);
-  setField(form, "SC-104[0].Page1[0].RightCaption[0].Hearindate[0]", formatDate(d.hearingDate) || "");
-  setField(form, "SC-104[0].Page1[0].RightCaption[0].Time[0]",       formatTime(d.hearingTime) || "");
-  setField(form, "SC-104[0].Page1[0].RightCaption[0].Dept[0]",       d.hearingCourtroom || "");
+  const F = SC104_FIELDS;
+
+  setField(form, F.text.courtInfo,   courtInfo);
+  setField(form, F.text.caseNumber,  d.caseNumber || "");
+  setField(form, F.text.caseName,    caseName);
+  setField(form, F.text.hearingDate, formatDate(d.hearingDate) || "");
+  setField(form, F.text.hearingTime, formatTime(d.hearingTime) || "");
+  setField(form, F.text.dept,        d.hearingCourtroom || "");
 
   const isBusiness = !!d.defendantIsBusinessOrEntity;
   if (isBusiness) {
-    setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]",  "");
-    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", d.defendantName || "");
-    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]", "");
+    setField(form, F.text.servedIndividualName, "");
+    setField(form, F.text.servedBusinessName,   d.defendantName || "");
+    setField(form, F.text.servedBusinessRep,    "");
   } else {
-    setField(form, "SC-104[0].Page1[0].List1[0].Lia[0].FullName[0]",  d.defendantName || "");
-    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName1[0]", "");
-    setField(form, "SC-104[0].Page1[0].List1[0].Lib[0].FullName2[0]", "");
+    setField(form, F.text.servedIndividualName, d.defendantName || "");
+    setField(form, F.text.servedBusinessName,   "");
+    setField(form, F.text.servedBusinessRep,    "");
   }
 
-  checkBox(form, "SC-104[0].Page1[0].List3[0].Lia[0].Filed_cb[0]", true);
+  checkBox(form, F.checkboxes.filedAtSameTime, true);
   const otherDocs: string[] = [];
   if (d.mc030DeclarationTitle) otherDocs.push("MC-030, Declaration");
   if (otherDocs.length > 0) {
-    checkBox(form, "SC-104[0].Page1[0].List3[0].Lid[0].NotYet_cb[0]", true);
-    setField(form, "SC-104[0].Page1[0].List3[0].Lid[0].T1865[0]", otherDocs.join("; "));
+    checkBox(form, F.checkboxes.otherDocsIncluded, true);
+    setField(form, F.text.otherDocsList, otherDocs.join("; "));
   }
 
-  setField(form, "SC-104[0].Page2[0].PxCaption[0].CaseName[0]",   caseName);
-  setField(form, "SC-104[0].Page2[0].PxCaption[0].CaseNumber[0]", d.caseNumber || "");
+  setField(form, F.text.page2CaseName,   caseName);
+  setField(form, F.text.page2CaseNumber, d.caseNumber || "");
 
   if (serviceStreet) {
-    setField(form, "SC-104[0].Page2[0].List4[0].Lia[0].RestrainedStreet_ft2[0]", serviceStreet);
-    setField(form, "SC-104[0].Page2[0].List4[0].Lia[0].RestrainedCity_ft2[0]",   serviceCity);
-    setField(form, "SC-104[0].Page2[0].List4[0].Lia[0].RestrainedState_ft2[0]",  serviceState);
-    setField(form, "SC-104[0].Page2[0].List4[0].Lia[0].RestrainedZip_ft2[0]",    serviceZip);
+    setField(form, F.text.serviceStreet, serviceStreet);
+    setField(form, F.text.serviceCity,   serviceCity);
+    setField(form, F.text.serviceState,  serviceState);
+    setField(form, F.text.serviceZip,    serviceZip);
   }
 
   if (sigBytes) {

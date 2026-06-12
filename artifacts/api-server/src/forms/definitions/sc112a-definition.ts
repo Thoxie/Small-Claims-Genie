@@ -10,6 +10,7 @@ import { FormRegistry } from "../registry";
 import { today } from "../enrichment";
 import { loadAsset } from "../../routes/forms-common";
 import { pdftkFlatten } from "../acroform-filler";
+import { SC112A_FIELDS } from "../field-names/sc112a-fields";
 
 function sf(form: any, name: string, value: string) {
   try {
@@ -36,44 +37,46 @@ export async function buildSC112APdf(
   const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
   const form = pdfDoc.getForm();
 
-  sf(form, "SC-112A[0].Page1[0].Header[0].CaseNumber_ft[0]", d.caseNumber || "");
+  const F = SC112A_FIELDS;
 
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText01[0]", b.serverName    || "");
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText02[0]", b.serverPhone   || "");
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText03[0]", b.serverAddress || "");
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText04[0]", b.serverCity    || "");
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText05[0]", b.serverState   || "CA");
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText06[0]", b.serverZip     || "");
-  cb(form, "SC-112A[0].Page1[0].List1[0].Item1[0].CheckBox1[0]",  !!b.isRegisteredProcessServer);
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText07[0]", b.registrationCounty  || "");
-  sf(form, "SC-112A[0].Page1[0].List1[0].Item1[0].FillText08[0]", b.registrationNumber  || "");
+  sf(form, F.text.caseNumber, d.caseNumber || "");
 
-  const docChecks: Record<string, string> = {
-    sc105: "SC-112A[0].Page1[0].List2[0].Lia[0].CheckBox2[0]",
-    sc109: "SC-112A[0].Page1[0].List2[0].Lib[0].CheckBox3[0]",
-    sc114: "SC-112A[0].Page1[0].List2[0].Lic[0].CheckBox4[0]",
-    sc133: "SC-112A[0].Page1[0].List2[0].Lid[0].CheckBox5[0]",
-    sc150: "SC-112A[0].Page1[0].List2[0].Lie[0].CheckBox6[0]",
-    sc221: "SC-112A[0].Page1[0].List2[0].Lif[0].CheckBox7[0]",
-    other: "SC-112A[0].Page1[0].List2[0].Lig[0].CheckBox8[0]",
+  sf(form, F.text.serverName,         b.serverName    || "");
+  sf(form, F.text.serverPhone,        b.serverPhone   || "");
+  sf(form, F.text.serverAddress,      b.serverAddress || "");
+  sf(form, F.text.serverCity,         b.serverCity    || "");
+  sf(form, F.text.serverState,        b.serverState   || "CA");
+  sf(form, F.text.serverZip,          b.serverZip     || "");
+  cb(form, F.checkboxes.isRegisteredProcessServer, !!b.isRegisteredProcessServer);
+  sf(form, F.text.registrationCounty, b.registrationCounty || "");
+  sf(form, F.text.registrationNumber, b.registrationNumber || "");
+
+  const docCheckboxMap: Record<string, string> = {
+    sc105: F.checkboxes.docSC105,
+    sc109: F.checkboxes.docSC109,
+    sc114: F.checkboxes.docSC114,
+    sc133: F.checkboxes.docSC133,
+    sc150: F.checkboxes.docSC150,
+    sc221: F.checkboxes.docSC221,
+    other: F.checkboxes.docOther,
   };
   const docSel = b.documentServed as string | undefined;
-  Object.entries(docChecks).forEach(([key, field]) => cb(form, field, key === docSel));
-  if (docSel === "other") sf(form, "SC-112A[0].Page1[0].List2[0].Lig[0].FillText09[0]", b.documentServedOther || "");
+  Object.entries(docCheckboxMap).forEach(([key, field]) => cb(form, field, key === docSel));
+  if (docSel === "other") sf(form, F.text.documentServedOther, b.documentServedOther || "");
 
   const partyNameFields = [
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.11[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.12[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.13[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.14[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText10\\.1[0]",
+    F.text.partyName1,
+    F.text.partyName2,
+    F.text.partyName3,
+    F.text.partyName4,
+    F.text.partyName5,
   ];
   const partyAddrFields = [
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.11[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.12[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.13[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.14[0]",
-    "SC-112A[0].Page1[0].List3[0].Lib[0].Table[0].FillText11\\.1[0]",
+    F.text.partyAddr1,
+    F.text.partyAddr2,
+    F.text.partyAddr3,
+    F.text.partyAddr4,
+    F.text.partyAddr5,
   ];
   partyNameFields.forEach(field => sf(form, field, ""));
   partyAddrFields.forEach(field => sf(form, field, ""));
@@ -82,11 +85,11 @@ export async function buildSC112APdf(
     sf(form, partyAddrFields[i], party.address || "");
   });
 
-  sf(form, "SC-112A[0].Page1[0].List3[0].Lic[0].FillText12[0]", b.mailingDate || "");
-  sf(form, "SC-112A[0].Page1[0].List3[0].Lic[0].FillText13[0]", b.mailingCity || "");
+  sf(form, F.text.mailingDate, b.mailingDate || "");
+  sf(form, F.text.mailingCity, b.mailingCity || "");
 
-  sf(form, "SC-112A[0].Page1[0].Sign[0].FillText14[0]", b.signDate    || today());
-  sf(form, "SC-112A[0].Page1[0].Sign[0].FillText16[0]", b.serverName  || "");
+  sf(form, F.text.signDate,   b.signDate   || today());
+  sf(form, F.text.signerName, b.serverName || "");
 
   return pdftkFlatten(Buffer.from(await pdfDoc.save()));
 }
