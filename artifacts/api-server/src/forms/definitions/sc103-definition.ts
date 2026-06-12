@@ -23,13 +23,16 @@ import { ASSET_DIR } from "../../routes/forms-common";
 import { SC103_FIELDS } from "../field-names/sc103-fields";
 
 // SC-103 signature area coordinates (612×792 pt page, bottom-left origin).
-// The "I declare…" section occupies the bottom ~160pt of the page.
-// Signature PNG sits on the right side of the declaration line, above
-// "Type or print your name and title" (FillText10).
-const SIG_X = 315;
-const SIG_Y = 190;    // from page bottom — above "Sign your name" label and line
-const SIG_W = 230;
-const SIG_H = 28;
+// Calibrated from widget diagnostics on pdftk-filled output:
+//   FillText9  (Date)       x=88–214,  y=280–292
+//   FillText10 (Name/title) x=63–303,  y=250–262
+// Signature line is at the same row as the Date field, to the right of it.
+// "Sign your name" label sits at y≈263–279 (between the two fields).
+// Signature PNG sits on the right side of that declaration line.
+const SIG_X = 268;
+const SIG_Y = 278;    // sits on the signature line (same row as Date field, y=280–292)
+const SIG_W = 280;
+const SIG_H = 22;
 
 /** Overlay a signature PNG onto an already-pdftk-filled SC-103 buffer. */
 async function embedSignature(filledBuf: Buffer, sigBytes: Buffer): Promise<Buffer> {
