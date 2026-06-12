@@ -8,6 +8,7 @@
     "hello": "tsx ./src/hello.ts",
     "test:sc103-primary": "tsx ./src/test-sc103-primary.ts",
     "test:sc103-secondary": "tsx ./src/test-sc103-secondary.ts",
+    "test:mc030": "tsx ./src/test-mc030.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
