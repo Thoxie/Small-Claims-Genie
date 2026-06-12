@@ -7,6 +7,7 @@
  */
 
 import { CALIFORNIA_COUNTIES } from "../routes/counties";
+import type { CaseData } from "./types";
 
 // ─── Date / time ──────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export function nameWithTitle(name: string | null | undefined, title: string | n
  * Builds the multi-line court-info block for the upper-right caption.
  * Looks up the county from CALIFORNIA_COUNTIES; falls back to raw case fields.
  */
-export function buildCourtInfo(d: Record<string, any>): string {
+export function buildCourtInfo(d: CaseData): string {
   const county = CALIFORNIA_COUNTIES.find((c) => c.id === d.countyId);
   const lines: string[] = [];
   if (county) {
@@ -103,7 +104,7 @@ export function buildCourtInfo(d: Record<string, any>): string {
  * Builds the court-info block with "Superior Court of California, County of …"
  * prefix (used by FW-001 and similar forms).
  */
-export function buildCourtInfoFormal(d: Record<string, any>): string {
+export function buildCourtInfoFormal(d: CaseData): string {
   const county = CALIFORNIA_COUNTIES.find((c) => c.id === d.countyId);
   const lines: string[] = [];
   if (county) {

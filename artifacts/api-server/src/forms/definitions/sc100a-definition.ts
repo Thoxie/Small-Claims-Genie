@@ -7,7 +7,7 @@
  */
 
 import { PDFDocument, StandardFonts } from "pdf-lib";
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 import { today } from "../enrichment";
 import {
@@ -15,8 +15,8 @@ import {
 } from "../../routes/forms-common";
 
 export async function buildSC100APdf(
-  d: Record<string, any>,
-  b: Record<string, any>,
+  d: CaseData,
+  b: FormBody,
   sig1Bytes?: Buffer,
   sig2Bytes?: Buffer
 ): Promise<Buffer> {
@@ -61,11 +61,11 @@ export async function buildSC100APdf(
     v(p1.city,                96, 631);
     v(p1.state  || "CA",     299, 631);
     v(p1.zip,                372, 631);
-    if ("mailingStreet" in p1 && p1.mailingStreet) {
-      v(p1.mailingStreet,    195, 614);
-      v(p1.mailingCity,       96, 597);
-      v(p1.mailingState || "CA", 299, 597);
-      v(p1.mailingZip,       371, 597);
+    if (dbP1?.mailingStreet) {
+      v(dbP1.mailingStreet,    195, 614);
+      v(dbP1.mailingCity,       96, 597);
+      v(dbP1.mailingState || "CA", 299, 597);
+      v(dbP1.mailingZip,       371, 597);
     }
     if (d.additionalPlaintiffIsFictitious) xm(313, 586);
     else xm(352, 586);

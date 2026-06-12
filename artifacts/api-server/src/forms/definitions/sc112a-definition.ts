@@ -5,7 +5,7 @@
  */
 
 import { PDFDocument, PDFName, PDFString } from "pdf-lib";
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 import { today } from "../enrichment";
 import { loadAsset } from "../../routes/forms-common";
@@ -26,8 +26,8 @@ function cb(form: any, name: string, checked: boolean) {
 }
 
 export async function buildSC112APdf(
-  d: Record<string, any>,
-  b: Record<string, any>
+  d: CaseData,
+  b: FormBody
 ): Promise<Buffer> {
   const parties: { name: string; address: string }[] = b.partiesServed || [];
 

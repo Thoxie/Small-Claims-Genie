@@ -5,7 +5,7 @@
  */
 
 import { PDFDocument, PDFName, PDFString } from "pdf-lib";
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftkFlatten } from "../acroform-filler";
 import { buildCourtInfo, formatDate, formatTime } from "../enrichment";
@@ -27,8 +27,8 @@ function checkBox(form: any, name: string, checked: boolean) {
 }
 
 export async function buildSC104Pdf(
-  d: Record<string, any>,
-  b: Record<string, any>,
+  d: CaseData,
+  b: FormBody,
   sigBytes?: Buffer
 ): Promise<Buffer> {
   const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");

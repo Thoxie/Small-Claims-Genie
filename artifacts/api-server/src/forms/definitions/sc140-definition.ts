@@ -6,15 +6,15 @@
  */
 
 import { PDFDocument, StandardFonts } from "pdf-lib";
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 import {
   PW, PH, loadAsset, val, xmark,
 } from "../../routes/forms-common";
 
 export async function buildSC140Pdf(
-  d: Record<string, any>,
-  b: Record<string, any>
+  d: CaseData,
+  b: FormBody
 ): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);

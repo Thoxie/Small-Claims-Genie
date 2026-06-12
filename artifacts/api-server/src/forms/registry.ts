@@ -13,6 +13,9 @@
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+import type { CaseData, FormBody } from "./types";
+export type { CaseData, FormBody };
+
 export interface GenerateOptions {
   /** Raw PNG bytes of the signer's signature, if the signed variant is requested. */
   signatureBytes?: Buffer;
@@ -66,8 +69,8 @@ export interface FormDefinition {
   /** Rendering pipeline used by this form. */
   readonly renderingTechnique?: RenderingTechnique;
   generate(
-    data: Record<string, any>,
-    body: Record<string, any>,
+    data: CaseData,
+    body: FormBody,
     options?: GenerateOptions
   ): Promise<Buffer>;
 }

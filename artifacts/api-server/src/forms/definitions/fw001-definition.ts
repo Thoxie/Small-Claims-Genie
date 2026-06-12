@@ -5,7 +5,7 @@
  */
 
 import { PDFDocument, PDFName, PDFString } from "pdf-lib";
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, CaseData } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftkFlatten } from "../acroform-filler";
 import { buildCourtInfoFormal } from "../enrichment";
@@ -26,7 +26,7 @@ function checkBox(form: any, name: string, checked: boolean) {
   } catch { /* skip */ }
 }
 
-export async function buildFW001Pdf(d: Record<string, any>): Promise<Buffer> {
+export async function buildFW001Pdf(d: CaseData): Promise<Buffer> {
   const signerName  = (d.plaintiffIsBusiness && d.secondPlaintiffName)
     ? d.secondPlaintiffName
     : (d.plaintiffName || "");

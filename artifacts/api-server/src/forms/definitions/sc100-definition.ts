@@ -5,7 +5,7 @@
  * Enrichment (deterministic + AI) is applied inside generate().
  */
 
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, CaseData } from "../registry";
 import { FormRegistry } from "../registry";
 import { buildSC100AcroformPdf } from "../sc100-acroform";
 import { pdftkFlatten } from "../acroform-filler";
@@ -16,7 +16,7 @@ import { logger } from "../../lib/logger";
 
 // ─── Deterministic enrichment ─────────────────────────────────────────────────
 
-export function enrichForSC100(c: Record<string, any>): Record<string, any> {
+export function enrichForSC100(c: CaseData): CaseData {
   const e = { ...c };
 
   if (e.hearingDate) e.hearingDate = formatDate(e.hearingDate);
@@ -130,7 +130,7 @@ export function enrichForSC100(c: Record<string, any>): Record<string, any> {
 
 // ─── AI enrichment ────────────────────────────────────────────────────────────
 
-async function generateSC100ClaimSummary(c: Record<string, any>): Promise<string> {
+async function generateSC100ClaimSummary(c: CaseData): Promise<string> {
   const plaintiffName = String(c.plaintiffName || "Plaintiff");
   const defendantName = String(c.defendantName || "Defendant");
   const claimDesc     = String(c.claimDescription || "");
@@ -183,7 +183,7 @@ async function generateSC100ClaimSummary(c: Record<string, any>): Promise<string
   }
 }
 
-export async function aiEnrichForSC100(c: Record<string, any>): Promise<Record<string, any>> {
+export async function aiEnrichForSC100(c: CaseData): Promise<CaseData> {
   const needsFill = !c.howAmountCalculated || !c.venueBasis || c.isAttyFeeDispute == null || c.isSuingPublicEntity == null;
 
   const [filledFields, claimDescriptionForForm] = await Promise.all([

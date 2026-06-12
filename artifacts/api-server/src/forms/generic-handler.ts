@@ -12,6 +12,7 @@
 
 import type { RequestHandler } from "express";
 import { FormRegistry } from "./registry";
+import type { CaseData, FormBody } from "./types";
 import { getOwnedCase } from "../lib/owned-case";
 import { resolveDownloadUser } from "../routes/forms-common";
 
@@ -71,7 +72,7 @@ export function makeFormHandler(
       return;
     }
 
-    const body = (req.body as Record<string, any>) ?? {};
+    const body = (req.body as FormBody) ?? {};
 
     let signatureBytes: Buffer | undefined;
     if (opts.signed) {
@@ -87,7 +88,7 @@ export function makeFormHandler(
 
     try {
       const pdfBytes = await def.generate(
-        c as unknown as Record<string, any>,
+        c as CaseData,
         body,
         { signatureBytes, download: isAttachment }
       );

@@ -10,7 +10,7 @@
  */
 
 import * as path from "path";
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
 import { today } from "../enrichment";
@@ -32,8 +32,9 @@ const BIZ_TYPE_FIELDS: Record<string, { field: string; exportVal: string }> = {
   other:       { field: "SC-103[0].Page1[0].List2[0].item2[0].CheckBox6[5]", exportVal: "6" },
 };
 
-function bv(body: Record<string, any>, key: string, fallback: any): any {
-  return (body[key] != null && body[key] !== "") ? body[key] : fallback;
+function bv(body: FormBody, key: keyof FormBody, fallback: string | null | undefined): string {
+  const val = body[key];
+  return (val != null && val !== "") ? String(val) : (fallback ?? "");
 }
 
 // ─── Primary plaintiff (attached to SC-100 or SC-120) ─────────────────────────

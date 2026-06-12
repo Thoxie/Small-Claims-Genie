@@ -31,7 +31,7 @@ import {
   getDocumentBuffer,
   val, xmark, drawLineMixed,
 } from "../../routes/forms-common";
-import type { FormDefinition } from "../registry";
+import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 
 // ─── MC-030 exported constants (consumed by demand-letter.ts) ─────────────────
@@ -125,7 +125,7 @@ function applyExhibitOrder<T>(docs: T[], exhibitOrder: number[]): T[] {
 
 // ─── MC-030 AI declaration generator ─────────────────────────────────────────
 async function generateMC030Declaration(
-  d: Record<string, any>,
+  d: CaseData,
   exhibits?: Array<{ docIndex: number; name: string }>
 ): Promise<{ declarationTitle: string; declarationText: string; exhibitOrder: number[] }> {
   const plaintiffName = String(d.plaintiffName  || "Plaintiff");
@@ -228,8 +228,8 @@ function drawMC030Page(
   page: PDFPage,
   font: PDFFont,
   fontBold: PDFFont,
-  d: Record<string, any>,
-  b: Record<string, any>,
+  d: CaseData,
+  b: FormBody,
   declarationTitle: string,
   declarationText: string
 ) {
@@ -343,8 +343,8 @@ function checkOverflow(font: PDFFont, declarationText: string): boolean {
  */
 export async function generateMC030BasicPdf(
   id: number,
-  d: Record<string, any>,
-  b: Record<string, any>
+  d: CaseData,
+  b: FormBody
 ): Promise<Buffer> {
   let { declarationTitle, declarationText } = b as { declarationTitle?: string; declarationText?: string };
   if (!declarationTitle || !declarationText) {
@@ -382,8 +382,8 @@ export async function generateMC030BasicPdf(
  */
 export async function generateMC030SignedPdf(
   id: number,
-  d: Record<string, any>,
-  b: Record<string, any>,
+  d: CaseData,
+  b: FormBody,
   sigBytes: Buffer | undefined
 ): Promise<Buffer> {
   const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -482,8 +482,8 @@ export async function generateMC030SignedPdf(
  */
 export async function generateMC030WithExhibitsPdf(
   id: number,
-  d: Record<string, any>,
-  b: Record<string, any>
+  d: CaseData,
+  b: FormBody
 ): Promise<Buffer> {
   const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const exhibitIds: number[] = Array.isArray(b.exhibitDocIds)

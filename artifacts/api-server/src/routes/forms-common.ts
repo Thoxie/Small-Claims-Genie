@@ -11,6 +11,7 @@ import { ObjectStorageService } from "../lib/objectStorage";
 import { redeemDownloadToken } from "../lib/download-tokens";
 import { getUserId } from "../lib/owned-case";
 import type { Request, Response, NextFunction } from "express";
+import type { CaseData, FormBody } from "../forms/types";
 
 const execFileAsync = promisify(execFile);
 
@@ -196,8 +197,8 @@ export function addDeclarationContinuationPages(
   font: any,
   fontBold: any,
   fullText: string,
-  d: Record<string, any>,
-  b: Record<string, any>
+  d: CaseData,
+  b: FormBody
 ): void {
   const MARGIN   = 72;
   const CONTENTW = PW - MARGIN * 2;
@@ -236,9 +237,9 @@ export function addDeclarationContinuationPages(
       const hw = fontBold.widthOfTextAtSize(headerTitle, 13);
       page.drawText(headerTitle, { x: (PW - hw) / 2, y: PH - MARGIN, size: 13, font: fontBold, color: BLACK });
       page.drawLine({ start: { x: MARGIN, y: PH - MARGIN - 14 }, end: { x: PW - MARGIN, y: PH - MARGIN - 14 }, thickness: 0.5, color: BLACK });
-      const plaintiff = String(d.plaintiffName || b?.plaintiffName || "");
-      const defendant = String(d.defendantName || b?.defendantName || "");
-      const caseNo    = String(d.caseNumber    || b?.caseNumber    || "");
+      const plaintiff = String(d.plaintiffName || "");
+      const defendant = String(d.defendantName || "");
+      const caseNo    = String(d.caseNumber    || "");
       page.drawText(`${plaintiff} vs. ${defendant}`, { x: MARGIN, y: PH - MARGIN - 30, size: 10, font, color: BLACK });
       if (caseNo) {
         const cnText = `Case No.: ${caseNo}`;
