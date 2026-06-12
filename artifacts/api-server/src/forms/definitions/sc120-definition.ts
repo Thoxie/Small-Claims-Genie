@@ -11,6 +11,10 @@
  * - Page 1 (court order) is clerk-filled — we populate only the court caption.
  * - Page 2 contains plaintiff/defendant info and the counterclaim.
  * - Page 3 contains yes/no questions and the defendant signature.
+ *
+ * Field name strings live in `forms/field-names/sc120-fields.ts` as typed
+ * constants — use those instead of raw strings so TypeScript catches typos
+ * at compile time and editors provide autocomplete.
  */
 
 import * as path from "path";
@@ -19,6 +23,7 @@ import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
 import { buildCourtInfo, today } from "../enrichment";
 import { ASSET_DIR } from "../../routes/forms-common";
+import { SC120_FIELDS } from "../field-names/sc120-fields";
 
 const PDF_PATH = path.join(ASSET_DIR, "forms", "sc120_acroform.pdf");
 
@@ -41,100 +46,100 @@ const sc120Definition: FormDefinition = {
     return pdftk_fill_form(PDF_PATH, {
       text: {
         // Page 1 — court caption (clerk fills the order section)
-        "SC-120[0].Page1[0].rightcaption[0].CRT[0].CourtInfo[0]": buildCourtInfo(d),
-        "SC-120[0].Page1[0].rightcaption[0].CSN[0].CaseNumber[0]": String(d.caseNumber || ""),
-        "SC-120[0].Page1[0].rightcaption[0].CSN[0].CaseName[0]":   caseName,
+        [SC120_FIELDS.text.page1CourtInfo]:  buildCourtInfo(d),
+        [SC120_FIELDS.text.page1CaseNumber]: String(d.caseNumber || ""),
+        [SC120_FIELDS.text.page1CaseName]:   caseName,
 
         // Page 2 — header
-        "SC-120[0].Page2[0].Header[0].Defendants_ft[0]": String(d.defendantName || ""),
-        "SC-120[0].Page2[0].Header[0].CN[0].CaseNumber[0]": String(d.caseNumber || ""),
+        [SC120_FIELDS.text.page2DefendantName]: String(d.defendantName || ""),
+        [SC120_FIELDS.text.page2CaseNumber]:    String(d.caseNumber || ""),
 
-        // Page 2 — plaintiff (the original plaintiff, listed as "plaintiff" on the counterclaim)
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].FillText19[0]": String(d.plaintiffName || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].FillText7[0]":  String(d.plaintiffPhone || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffAdress[0]": String(d.plaintiffAddress || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffCity[0]":   String(d.plaintiffCity || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffState[0]":  String(d.plaintiffState || "CA"),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffZip[0]":    String(d.plaintiffZip || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffMailAdress[0]": String(d.plaintiffMailingAddress || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffMailCity[0]":   String(d.plaintiffMailingCity || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffMailState[0]":  String(d.plaintiffMailingState || ""),
-        "SC-120[0].Page2[0].List1[0].plaintiffInfo[0].PlaintiffMailZip[0]":    String(d.plaintiffMailingZip || ""),
+        // Page 2 — plaintiff (the original plaintiff, listed on the counterclaim)
+        [SC120_FIELDS.text.plaintiffName]:        String(d.plaintiffName || ""),
+        [SC120_FIELDS.text.plaintiffPhone]:        String(d.plaintiffPhone || ""),
+        [SC120_FIELDS.text.plaintiffAddress]:      String(d.plaintiffAddress || ""),
+        [SC120_FIELDS.text.plaintiffCity]:         String(d.plaintiffCity || ""),
+        [SC120_FIELDS.text.plaintiffState]:        String(d.plaintiffState || "CA"),
+        [SC120_FIELDS.text.plaintiffZip]:          String(d.plaintiffZip || ""),
+        [SC120_FIELDS.text.plaintiffMailAddress]:  String(d.plaintiffMailingAddress || ""),
+        [SC120_FIELDS.text.plaintiffMailCity]:     String(d.plaintiffMailingCity || ""),
+        [SC120_FIELDS.text.plaintiffMailState]:    String(d.plaintiffMailingState || ""),
+        [SC120_FIELDS.text.plaintiffMailZip]:      String(d.plaintiffMailingZip || ""),
 
         // Page 2 — second plaintiff (if present)
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2Name[0]":     String(d.secondPlaintiffName || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2Phone[0]":    String(d.secondPlaintiffPhone || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2Adress[0]":   String(d.secondPlaintiffAddress || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2City[0]":     String(d.secondPlaintiffCity || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2State[0]":    String(d.secondPlaintiffState || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2Zip[0]":      String(d.secondPlaintiffZip || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2MailAdress[0]": String(d.secondPlaintiffMailingAddress || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2MailCity[0]":   String(d.secondPlaintiffMailingCity || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2MailState[0]":  String(d.secondPlaintiffMailingState || ""),
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].Plaintiff2MailZip[0]":    String(d.secondPlaintiffMailingZip || ""),
+        [SC120_FIELDS.text.plaintiff2Name]:        String(d.secondPlaintiffName || ""),
+        [SC120_FIELDS.text.plaintiff2Phone]:       String(d.secondPlaintiffPhone || ""),
+        [SC120_FIELDS.text.plaintiff2Address]:     String(d.secondPlaintiffAddress || ""),
+        [SC120_FIELDS.text.plaintiff2City]:        String(d.secondPlaintiffCity || ""),
+        [SC120_FIELDS.text.plaintiff2State]:       String(d.secondPlaintiffState || ""),
+        [SC120_FIELDS.text.plaintiff2Zip]:         String(d.secondPlaintiffZip || ""),
+        [SC120_FIELDS.text.plaintiff2MailAddress]: String(d.secondPlaintiffMailingAddress || ""),
+        [SC120_FIELDS.text.plaintiff2MailCity]:    String(d.secondPlaintiffMailingCity || ""),
+        [SC120_FIELDS.text.plaintiff2MailState]:   String(d.secondPlaintiffMailingState || ""),
+        [SC120_FIELDS.text.plaintiff2MailZip]:     String(d.secondPlaintiffMailingZip || ""),
 
         // Page 2 — defendant (the person filing the counterclaim)
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefName[0]":      String(d.defendantName || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefPhone[0]":     String(d.defendantPhone || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefAddress[0]":   String(d.defendantAddress || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefCity[0]":      String(d.defendantCity || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefState[0]":     String(d.defendantState || "CA"),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefZip[0]":       String(d.defendantZip || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefMailAdress[0]": String(d.defendantMailingAddress || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefMailCity[0]":   String(d.defendantMailingCity || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefMailState[0]":  String(d.defendantMailingState || ""),
-        "SC-120[0].Page2[0].List2[0].defInfo[0].DefMailZip[0]":    String(d.defendantMailingZip || ""),
+        [SC120_FIELDS.text.defendantName]:        String(d.defendantName || ""),
+        [SC120_FIELDS.text.defendantPhone]:       String(d.defendantPhone || ""),
+        [SC120_FIELDS.text.defendantAddress]:     String(d.defendantAddress || ""),
+        [SC120_FIELDS.text.defendantCity]:        String(d.defendantCity || ""),
+        [SC120_FIELDS.text.defendantState]:       String(d.defendantState || "CA"),
+        [SC120_FIELDS.text.defendantZip]:         String(d.defendantZip || ""),
+        [SC120_FIELDS.text.defendantMailAddress]: String(d.defendantMailingAddress || ""),
+        [SC120_FIELDS.text.defendantMailCity]:    String(d.defendantMailingCity || ""),
+        [SC120_FIELDS.text.defendantMailState]:   String(d.defendantMailingState || ""),
+        [SC120_FIELDS.text.defendantMailZip]:     String(d.defendantMailingZip || ""),
 
         // Page 2 — second defendant (body-supplied; no schema field for a second defendant)
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2Name[0]":       String(body.def2Name || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2Phone[0]":      String(body.def2Phone || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2Address[0]":    String(body.def2Address || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2City[0]":       String(body.def2City || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2State[0]":      String(body.def2State || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2Zip[0]":        String(body.def2Zip || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2MailAdress[0]": String(body.def2MailingAddress || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2MailCity[0]":   String(body.def2MailingCity || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2MailState[0]":  String(body.def2MailingState || ""),
-        "SC-120[0].Page2[0].List2[0].NextDef[0].Def2MailZip[0]":    String(body.def2MailingZip || ""),
+        [SC120_FIELDS.text.def2Name]:        String(body.def2Name || ""),
+        [SC120_FIELDS.text.def2Phone]:       String(body.def2Phone || ""),
+        [SC120_FIELDS.text.def2Address]:     String(body.def2Address || ""),
+        [SC120_FIELDS.text.def2City]:        String(body.def2City || ""),
+        [SC120_FIELDS.text.def2State]:       String(body.def2State || ""),
+        [SC120_FIELDS.text.def2Zip]:         String(body.def2Zip || ""),
+        [SC120_FIELDS.text.def2MailAddress]: String(body.def2MailingAddress || ""),
+        [SC120_FIELDS.text.def2MailCity]:    String(body.def2MailingCity || ""),
+        [SC120_FIELDS.text.def2MailState]:   String(body.def2MailingState || ""),
+        [SC120_FIELDS.text.def2MailZip]:     String(body.def2MailingZip || ""),
 
         // Page 3 — public entity claim filing date (shown when suingPublicEntity is yes)
-        "SC-120[0].Page3[0].List6[0].item6[0].FillText71[0]": String(body.publicEntityClaimDate || ""),
+        [SC120_FIELDS.text.publicEntityClaimDate]: String(body.publicEntityClaimDate || ""),
 
         // Page 2 — counterclaim
-        "SC-120[0].Page2[0].List3[0].FillText63[0]":           body.counterClaimAmount ? Number(body.counterClaimAmount).toFixed(2) : "",
-        "SC-120[0].Page2[0].List3[0].Lia[0].FillText64[0]":   String(body.counterClaimReason || ""),
-        "SC-120[0].Page2[0].List3[0].Lib[0].FillText66[0]":   String(body.counterClaimDate || ""),
-        "SC-120[0].Page2[0].List3[0].Lic[0].FillText70[0]":   String(body.counterClaimHowCalculated || ""),
+        [SC120_FIELDS.text.counterClaimAmount]:        body.counterClaimAmount ? Number(body.counterClaimAmount).toFixed(2) : "",
+        [SC120_FIELDS.text.counterClaimReason]:        String(body.counterClaimReason || ""),
+        [SC120_FIELDS.text.counterClaimDate]:          String(body.counterClaimDate || ""),
+        [SC120_FIELDS.text.counterClaimHowCalculated]: String(body.counterClaimHowCalculated || ""),
 
         // Page 3 — header
-        "SC-120[0].Page3[0].Header[0].Defendants_ft[0]": String(d.defendantName || ""),
-        "SC-120[0].Page3[0].Header[0].CN[0].CaseNumber[0]": String(d.caseNumber || ""),
+        [SC120_FIELDS.text.page3DefendantName]: String(d.defendantName || ""),
+        [SC120_FIELDS.text.page3CaseNumber]:    String(d.caseNumber || ""),
 
         // Page 3 — signature
-        "SC-120[0].Page3[0].List10[0].Date1[0]":  String(body.signDate || today()),
-        "SC-120[0].Page3[0].List10[0].Field1[0]": String(d.defendantName || ""),
+        [SC120_FIELDS.text.signDate]:   String(body.signDate || today()),
+        [SC120_FIELDS.text.signerName]: String(d.defendantName || ""),
       },
       checkboxes: {
         // Page 2 — more than 2 plaintiffs indicator (StateOption: "CheckBox6")
-        "SC-120[0].Page2[0].List1[0].NextPlaintiff[0].CheckBox01[0]":
+        [SC120_FIELDS.checkboxes.moreThan2Plaintiffs]:
           body.moreThan2Plaintiffs ? "CheckBox6" : false,
 
         // Page 2 — more than 2 defendants indicator (StateOption: "1")
-        "SC-120[0].Page2[0].List2[0].NextDef[0].CheckBox03[0]":
+        [SC120_FIELDS.checkboxes.moreThan2Defendants]:
           body.moreThan2Defendants ? "1" : false,
 
         // Page 3 — yes/no questions
-        ...yn(body.priorDemand,       "SC-120[0].Page3[0].List4[0].item4[0].Ch1[0]", "SC-120[0].Page3[0].List4[0].item4[0].Ch1[1]"),
-        ...yn(body.attyFeeDispute,    "SC-120[0].Page3[0].List5[0].item5[0].Ch2[0]", "SC-120[0].Page3[0].List5[0].item5[0].Ch2[1]"),
-        ...yn(body.suingPublicEntity, "SC-120[0].Page3[0].List6[0].item6[0].Ch3[0]", "SC-120[0].Page3[0].List6[0].item6[0].Ch3[1]"),
-        ...yn(body.moreThan12,        "SC-120[0].Page3[0].List7[0].item7[0].Ch4[0]", "SC-120[0].Page3[0].List7[0].item7[0].Ch4[1]"),
+        ...yn(body.priorDemand,       SC120_FIELDS.checkboxes.priorDemandYes,       SC120_FIELDS.checkboxes.priorDemandNo),
+        ...yn(body.attyFeeDispute,    SC120_FIELDS.checkboxes.attyFeeDisputeYes,    SC120_FIELDS.checkboxes.attyFeeDisputeNo),
+        ...yn(body.suingPublicEntity, SC120_FIELDS.checkboxes.suingPublicEntityYes, SC120_FIELDS.checkboxes.suingPublicEntityNo),
+        ...yn(body.moreThan12,        SC120_FIELDS.checkboxes.moreThan12Yes,        SC120_FIELDS.checkboxes.moreThan12No),
 
         // Page 3 — arbitration completed (sub-checkbox under attyFeeDispute yes; StateOption: "1")
-        "SC-120[0].Page3[0].List5[0].item5[0].CheckBox09[0]":
+        [SC120_FIELDS.checkboxes.arbitrationCompleted]:
           body.arbitrationCompleted ? "1" : false,
 
         // Page 3 — public entity claim was filed on [date] (sub-checkbox under suingPublicEntity yes; StateOption: "1")
-        "SC-120[0].Page3[0].List6[0].item6[0].CheckBox11[0]":
+        [SC120_FIELDS.checkboxes.publicEntityClaimFiled]:
           (body.suingPublicEntity === true || body.suingPublicEntity === "true") && body.publicEntityClaimDate ? "1" : false,
       },
     });

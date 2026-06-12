@@ -4,6 +4,7 @@ import { startReminderScheduler } from "./lib/reminder-scheduler";
 import { startGenieConversionsCleanup } from "./lib/genie-conversions-cleanup";
 import { startPendingUploadCleanup } from "./lib/pending-upload-cleanup";
 import { warmupBrowser } from "./forms/chromium-pool";
+import { validateAllXfaForms } from "./forms/field-validator";
 import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./stripeClient";
 import { ensurePurchasesTable } from "./lib/purchases";
@@ -63,5 +64,6 @@ app.listen(port, (err) => {
   startGenieConversionsCleanup();
   startPendingUploadCleanup();
   warmupBrowser();
+  validateAllXfaForms();
   initStripe();
 });
