@@ -10,6 +10,7 @@ import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 import { buildCourtInfo, today } from "../enrichment";
 import { loadAsset } from "../../routes/forms-common";
+import { pdftkFlatten } from "../acroform-filler";
 
 function setField(form: any, name: string, value: string) {
   try {
@@ -64,7 +65,7 @@ export async function buildSC105Pdf(
   setField(form, "SC-105[0].Page2[0].RightCaption[0].CaseNumber[0]", d.caseNumber || "");
   setField(form, "SC-105[0].Page2[0].RightCaption[0].CaseName[0]",   caseName);
 
-  return Buffer.from(await pdfDoc.save());
+  return pdftkFlatten(Buffer.from(await pdfDoc.save()));
 }
 
 const sc105Definition: FormDefinition = {

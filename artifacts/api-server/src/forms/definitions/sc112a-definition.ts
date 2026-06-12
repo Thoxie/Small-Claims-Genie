@@ -9,6 +9,7 @@ import type { FormDefinition, CaseData, FormBody } from "../registry";
 import { FormRegistry } from "../registry";
 import { today } from "../enrichment";
 import { loadAsset } from "../../routes/forms-common";
+import { pdftkFlatten } from "../acroform-filler";
 
 function sf(form: any, name: string, value: string) {
   try {
@@ -87,7 +88,7 @@ export async function buildSC112APdf(
   sf(form, "SC-112A[0].Page1[0].Sign[0].FillText14[0]", b.signDate    || today());
   sf(form, "SC-112A[0].Page1[0].Sign[0].FillText16[0]", b.serverName  || "");
 
-  return Buffer.from(await pdfDoc.save());
+  return pdftkFlatten(Buffer.from(await pdfDoc.save()));
 }
 
 const sc112aDefinition: FormDefinition = {

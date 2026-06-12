@@ -1,4 +1,5 @@
 - [Document upload flow](document-upload-flow.md) — presigned URL flow bypasses Replit proxy; direct multipart upload gives 403 on large files
 - [iOS file input](ios-file-input.md) — display:none blocks .click() on iOS Safari; use opacity-0 positional hiding instead
 - [GitHub push method](github-push.md) — sandbox blocks git push --force after objects transfer; use GitHub API PATCH /git/refs/heads/main with force:true instead
-- [Form engine architecture](form-engine.md) — unified AcroForm registry; XFA forms need pdftk FDF fill not pdf-lib; overlay forms (PNG) kept for SC-100A/SC-140/MC-030
+- [Plaintiff-only system](plaintiff-only.md) — SC-120, SC-140 and any defendant-side forms are out of scope; never implement or surface them
+- [Form engine architecture](form-engine.md) — unified FormRegistry + makeFormHandler; all forms go through definitions/; acroform-filler.ts for pdftk flatten
