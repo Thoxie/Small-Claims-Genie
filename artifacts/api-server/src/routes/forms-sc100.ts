@@ -4,8 +4,7 @@ import * as path from "path";
 import { getOwnedCase } from "../lib/owned-case";
 import { logger } from "../lib/logger";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { type FormConfig } from "../forms/form-renderer";
-import { buildSC100AcroformPdf } from "../forms/sc100-acroform";
+import { buildFormPdf, type FormConfig } from "../forms/form-renderer";
 import {
   ASSET_DIR, devOnly, resolveDownloadUser,
   today, formatDateDisplay, formatTimeDisplay,
@@ -247,9 +246,27 @@ async function buildSC100Pdf(
   caseData: Record<string, any>,
   signaturePngBytes?: Buffer
 ): Promise<Buffer> {
-  // ── AcroForm path (active) ──────────────────────────────────────────────────
-  return buildSC100AcroformPdf(caseData, ASSET_DIR, signaturePngBytes);
-
+  const pdfBytes = await buildFormPdf(
+    SC100_CONFIG,
+    caseData,
+    ASSET_DIR,
+    signaturePngBytes
+      ? async (pages, pdfDoc) => {
+          try {
+            const sigImage = await pdfDoc.embedPng(signaturePngBytes);
+            const page4 = pages[3];
+            const sigW = 240;
+            const sigH = 30;
+            const sigX = 320;
+            const sigY = 792 - 289 - sigH; // top-of-box at CSS y=289 → PDF bottom-origin
+            page4.drawImage(sigImage, { x: sigX, y: sigY, width: sigW, height: sigH });
+          } catch {
+            // Signature embedding failed — serve unsigned PDF rather than erroring
+          }
+        }
+      : undefined,
+  );
+  return Buffer.from(pdfBytes);
 }
 
 // ─── SC-100 routes ────────────────────────────────────────────────────────────
