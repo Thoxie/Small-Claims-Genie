@@ -9,6 +9,7 @@
     "test:sc103-primary": "tsx ./src/test-sc103-primary.ts",
     "test:sc103-secondary": "tsx ./src/test-sc103-secondary.ts",
     "test:mc030": "tsx ./src/test-mc030.ts",
+    "test:mc030-ai": "tsx ./src/test-mc030-ai.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
