@@ -29,10 +29,10 @@ import { SC103_FIELDS } from "../field-names/sc103-fields";
 // Signature line is at the same row as the Date field, to the right of it.
 // "Sign your name" label sits at y≈263–279 (between the two fields).
 // Signature PNG sits on the right side of that declaration line.
-const SIG_X = 268;
-const SIG_Y = 278;    // sits on the signature line (same row as Date field, y=280–292)
-const SIG_W = 280;
-const SIG_H = 22;
+const SIG_X = 290;
+const SIG_Y = 260;    // fits inside gap between Date field (y=280) and Name field (y=262)
+const SIG_W = 255;
+const SIG_H = 18;
 
 /** Overlay a signature PNG onto an already-pdftk-filled SC-103 buffer. */
 async function embedSignature(filledBuf: Buffer, sigBytes: Buffer): Promise<Buffer> {
