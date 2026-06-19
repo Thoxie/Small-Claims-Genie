@@ -7,8 +7,9 @@ import {
   CheckCircle, MapPin, Camera, MessageSquare,
   FileCheck2, Shield, RefreshCw, Gavel, Clock,
   CalendarDays, UserCheck2, TrendingUp, Hourglass,
-  Download, Loader2,
+  Download, Loader2, AlertCircle, Info,
   Landmark, User, Building2, DollarSign, UserMinus,
+  Mail, Car, Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -68,7 +69,125 @@ function Section({ title, icon: Icon, children }: { title: string; icon?: Elemen
   );
 }
 
-// ─── Court forms download section (all forms) ─────────────────────────────────
+// ─── Shared filing summary left panel ─────────────────────────────────────────
+
+function FilingSummaryPanel({
+  c,
+  jurisdictionState,
+}: {
+  c: ExtendedCase | undefined;
+  jurisdictionState: "CA" | "FL";
+}) {
+  const stateAbbr = jurisdictionState;
+  return (
+    <div className="rounded-xl border bg-card p-5 space-y-6">
+      <div className="flex items-center gap-2 border-b pb-3">
+        <div className="h-7 w-7 rounded-md bg-[#0d6b5e]/10 flex items-center justify-center shrink-0">
+          <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+        </div>
+        <div>
+          <h2 className="text-sm font-bold text-foreground leading-tight">Filing Summary</h2>
+          <p className="text-[11px] text-muted-foreground leading-none mt-0.5">Your case details for court</p>
+        </div>
+      </div>
+
+      <Section title="Court" icon={Landmark}>
+        <InfoRow label="Court Name" value={c?.courthouseName ?? formatCourthouse(c?.courthouseId)} />
+        <InfoRow
+          label="Address"
+          value={
+            c?.courthouseAddress
+              ? `${c.courthouseAddress}, ${c.courthouseCity ?? ""}, ${stateAbbr} ${c.courthouseZip ?? ""}`.trim()
+              : null
+          }
+        />
+        <InfoRow label="Phone" value={c?.courthousePhone} />
+        <InfoRow label="County" value={formatCounty(c?.countyId)} />
+      </Section>
+
+      <Section title="Plaintiff (You)" icon={User}>
+        {c?.plaintiffIsBusiness ? (
+          <>
+            <InfoRow label="Business Name" value={c.plaintiffName} />
+            <InfoRow label="Individual Name" value={c.secondPlaintiffName} />
+            <InfoRow label="Title / Position" value={c.plaintiffTitle} />
+          </>
+        ) : (
+          <InfoRow label="Full Name" value={c?.plaintiffName} />
+        )}
+        <InfoRow label="Phone" value={c?.plaintiffPhone} />
+        <InfoRow label="Email" value={c?.plaintiffEmail} />
+        <InfoRow
+          label="Address"
+          value={buildAddress(c?.plaintiffAddress, c?.plaintiffCity, c?.plaintiffState, c?.plaintiffZip)}
+        />
+        {c?.plaintiffMailingAddress && (
+          <InfoRow
+            label="Mailing Address"
+            value={buildAddress(
+              c.plaintiffMailingAddress,
+              c.plaintiffMailingCity,
+              c.plaintiffMailingState,
+              c.plaintiffMailingZip,
+            )}
+          />
+        )}
+        {c?.hasAdditionalPlaintiff && c.additionalPlaintiffName && (
+          <InfoRow label="Additional Plaintiff" value={c.additionalPlaintiffName} />
+        )}
+      </Section>
+
+      {c?.plaintiffIsFictitious && c?.plaintiffDbaName && (
+        <Section title="DBA / Fictitious Business Name" icon={Building2}>
+          <InfoRow label="Business Name (DBA)" value={c.plaintiffDbaName} />
+          <InfoRow label="Business Type" value={c.plaintiffBusinessType} />
+          <InfoRow label="FBN Number" value={c.plaintiffFbnNumber} />
+          <InfoRow
+            label="Address"
+            value={buildAddress(c.plaintiffDbaAddress, c.plaintiffDbaCity, c.plaintiffDbaState, c.plaintiffDbaZip)}
+          />
+        </Section>
+      )}
+
+      <Section title="Defendant" icon={UserMinus}>
+        <InfoRow label="Name" value={c?.defendantName} />
+        {c?.defendantIsBusinessOrEntity && (
+          <>
+            <InfoRow label="Agent for Service" value={c.defendantAgentName} />
+            <InfoRow label="Agent Title" value={c.defendantAgentTitle} />
+            <InfoRow
+              label="Agent Address"
+              value={buildAddress(
+                c.defendantAgentStreet,
+                c.defendantAgentCity,
+                c.defendantAgentState,
+                c.defendantAgentZip,
+              )}
+            />
+          </>
+        )}
+        <InfoRow label="Phone" value={c?.defendantPhone} />
+        <InfoRow
+          label="Address"
+          value={buildAddress(c?.defendantAddress, c?.defendantCity, c?.defendantState, c?.defendantZip)}
+        />
+        {c?.defendantMailingAddress && (
+          <InfoRow label="Mailing Address" value={c.defendantMailingAddress} />
+        )}
+      </Section>
+
+      <Section title="Claim Details" icon={DollarSign}>
+        <InfoRow label="Claim Type" value={c?.claimType} />
+        <InfoRow
+          label="Amount Requested"
+          value={c?.claimAmount != null ? formatCurrency(c.claimAmount) : undefined}
+        />
+      </Section>
+    </div>
+  );
+}
+
+// ─── CA court forms download section ─────────────────────────────────────────
 
 type GeneratedForm = {
   id: string; number: string; name: string; desc: string;
@@ -207,7 +326,6 @@ function CourtFormsSection({
   ];
 
   const forms = allForms.filter((f) => f.show) as FormEntry[];
-
   const prefillReady = forms.filter((f) => f.type === "generated" && (f as GeneratedForm).ready).length;
 
   return (
@@ -286,9 +404,259 @@ function CourtFormsSection({
   );
 }
 
-// ─── Case info (AI E-Filing System tab body) ──────────────────────────────────
+// ─── FL court forms section ───────────────────────────────────────────────────
 
-function CaseInfoPanel({
+function FlCourtFormsSection({
+  c,
+  caseId,
+  getToken,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const downloadFlForm = async (endpoint: string, filename: string, stateId: string) => {
+    setDownloading(stateId);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: dlToken }),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const hasBasicInfo = !!c?.plaintiffName && !!c?.defendantName;
+  const countyId = c?.countyId ?? "";
+  const isMiamiDade = countyId === "fl-miami-dade";
+  const isVolusia = countyId === "fl-volusia";
+
+  const formLabel = isMiamiDade ? "CLK/CT. 333" : isVolusia ? "CL-219" : null;
+  const filingAddress = isMiamiDade
+    ? "73 W. Flagler St., Suite 133, Miami"
+    : isVolusia
+    ? "101 N. Alabama Ave., DeLand"
+    : "your county court clerk's office";
+  const endpoint = isMiamiDade ? "fl/clkct333" : isVolusia ? "fl/cl219-volusia" : "fl/statement-of-claim";
+  const filename = isMiamiDade
+    ? `Statement-of-Claim-Miami-Dade-Case-${caseId}.pdf`
+    : isVolusia
+    ? `Statement-of-Claim-Volusia-Case-${caseId}.pdf`
+    : `Florida-Statement-of-Claim-Case-${caseId}.pdf`;
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Court Form</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Pre-filled Florida Statement of Claim</p>
+      </div>
+
+      {/* Statement of Claim card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          {formLabel && (
+            <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+              {formLabel}
+            </span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Statement of Claim</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? `File at ${filingAddress}`
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadFlForm(endpoint, filename, endpoint)}
+          disabled={!hasBasicInfo || downloading === endpoint}
+          title={hasBasicInfo ? "Download Statement of Claim" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === endpoint ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === endpoint ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* Summons info card */}
+      <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
+        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-tight">Summons — Issued by the Court Clerk</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            In Florida, the Summons is prepared and issued by the court clerk after you file the Statement of Claim and pay the filing fee. You do not create the Summons yourself — the clerk will issue it and arrange service.
+          </p>
+        </div>
+      </div>
+
+      {/* Filing fees quick reference */}
+      <div className="rounded-xl border bg-amber-50 border-amber-200 px-4 py-3">
+        <p className="text-xs font-semibold text-amber-800 mb-1.5">FL Filing Fees (Fla. Stat. 34.041)</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+          {[
+            ["Under $100", "$55"],
+            ["$101 – $500", "$80"],
+            ["$501 – $2,500", "$175"],
+            ["Over $2,500", "$300"],
+          ].map(([range, fee]) => (
+            <div key={range} className="flex justify-between text-[11px] text-amber-900">
+              <span>{range}</span>
+              <span className="font-semibold">{fee}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-amber-700 mt-1.5">Additional fees apply for summons, sheriff service, and certified mail.</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── FL service options section ───────────────────────────────────────────────
+
+function FlServiceOptionsSection() {
+  const options = [
+    {
+      icon: Car,
+      title: "Sheriff Service",
+      badge: "Most Reliable",
+      badgeColor: "bg-[#0d6b5e]/10 text-[#0d6b5e]",
+      desc: "Request the county sheriff to personally deliver the Summons and Statement of Claim to the defendant. The sheriff's fee is recoverable if you win your case.",
+    },
+    {
+      icon: Mail,
+      title: "Certified Mail",
+      badge: "Cheapest Option",
+      badgeColor: "bg-blue-50 text-blue-700",
+      desc: "The court clerk mails the papers by certified mail. Service is only completed if the defendant signs — if they refuse or don't pick it up, service fails and you must try another method.",
+    },
+    {
+      icon: Briefcase,
+      title: "Process Server",
+      badge: "Fast & Flexible",
+      badgeColor: "bg-amber-50 text-amber-700",
+      desc: "A licensed, certified process server handles personal delivery. Must be a certified process server under Fla. Stat. 48.021. Their fee is recoverable if you win.",
+    },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Service of Process</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Proof of service must be filed at least 5 days before the pretrial conference
+        </p>
+      </div>
+      <div className="space-y-2">
+        {options.map(({ icon: Icon, title, badge, badgeColor, desc }) => (
+          <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── FL deadlines section ─────────────────────────────────────────────────────
+
+function FlDeadlinesSection() {
+  const deadlines = [
+    {
+      icon: CalendarDays,
+      title: "Pretrial Conference — within 50 days of filing",
+      desc: "The court schedules a pretrial conference within 50 days of filing. Both parties must appear. Mediation may be offered at this conference — come prepared with full authority to settle.",
+    },
+    {
+      icon: AlertCircle,
+      title: "Service deadline — 5 days before pretrial conference",
+      desc: "Proof of service must be filed with the court at least 5 days before the pretrial conference. If you are running short on time, contact the clerk immediately to discuss options.",
+    },
+    {
+      icon: Clock,
+      title: "Trial — within 60 days of pretrial conference",
+      desc: "If the case is not resolved at the pretrial conference, the court schedules trial within 60 days. Total timeline from filing to trial is typically under 4 months.",
+    },
+    {
+      icon: Shield,
+      title: "Post-judgment collection window",
+      desc: "A Florida judgment is valid for 20 years and can be enforced through wage garnishment, bank levy, writ of execution, and judgment lien certificate.",
+    },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Key FL Deadlines</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Timeline from filing to trial</p>
+      </div>
+      <div className="space-y-2">
+        {deadlines.map(({ icon: Icon, title, desc }) => (
+          <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground leading-tight mb-0.5">{title}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── FL E-Filing panel ────────────────────────────────────────────────────────
+
+function FlEFilingPanel({
   c,
   caseId,
   getToken,
@@ -300,110 +668,33 @@ function CaseInfoPanel({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* LEFT — Case info */}
-      <div className="rounded-xl border bg-card p-5 space-y-6">
-        <div className="flex items-center gap-2 border-b pb-3">
-          <div className="h-7 w-7 rounded-md bg-[#0d6b5e]/10 flex items-center justify-center shrink-0">
-            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-foreground leading-tight">Filing Summary</h2>
-            <p className="text-[11px] text-muted-foreground leading-none mt-0.5">Your case details for court</p>
-          </div>
-        </div>
+      <FilingSummaryPanel c={c} jurisdictionState="FL" />
 
-        <Section title="Court" icon={Landmark}>
-          <InfoRow label="Court Name" value={c?.courthouseName ?? formatCourthouse(c?.courthouseId)} />
-          <InfoRow
-            label="Address"
-            value={
-              c?.courthouseAddress
-                ? `${c.courthouseAddress}, ${c.courthouseCity ?? ""}, CA ${c.courthouseZip ?? ""}`.replace(/, CA $/, ", CA").trim()
-                : null
-            }
-          />
-          <InfoRow label="Phone" value={c?.courthousePhone} />
-          <InfoRow label="County" value={formatCounty(c?.countyId)} />
-        </Section>
-
-        <Section title="Plaintiff (You)" icon={User}>
-          {c?.plaintiffIsBusiness ? (
-            <>
-              <InfoRow label="Business Name" value={c.plaintiffName} />
-              <InfoRow label="Individual Name" value={c.secondPlaintiffName} />
-              <InfoRow label="Title / Position" value={c.plaintiffTitle} />
-            </>
-          ) : (
-            <InfoRow label="Full Name" value={c?.plaintiffName} />
-          )}
-          <InfoRow label="Phone" value={c?.plaintiffPhone} />
-          <InfoRow label="Email" value={c?.plaintiffEmail} />
-          <InfoRow
-            label="Address"
-            value={buildAddress(c?.plaintiffAddress, c?.plaintiffCity, c?.plaintiffState, c?.plaintiffZip)}
-          />
-          {c?.plaintiffMailingAddress && (
-            <InfoRow
-              label="Mailing Address"
-              value={buildAddress(
-                c.plaintiffMailingAddress,
-                c.plaintiffMailingCity,
-                c.plaintiffMailingState,
-                c.plaintiffMailingZip,
-              )}
-            />
-          )}
-          {c?.hasAdditionalPlaintiff && c.additionalPlaintiffName && (
-            <InfoRow label="Additional Plaintiff" value={c.additionalPlaintiffName} />
-          )}
-        </Section>
-
-        {c?.plaintiffIsFictitious && c?.plaintiffDbaName && (
-          <Section title="DBA / Fictitious Business Name" icon={Building2}>
-            <InfoRow label="Business Name (DBA)" value={c.plaintiffDbaName} />
-            <InfoRow label="Business Type" value={c.plaintiffBusinessType} />
-            <InfoRow label="FBN Number" value={c.plaintiffFbnNumber} />
-            <InfoRow
-              label="Address"
-              value={buildAddress(c.plaintiffDbaAddress, c.plaintiffDbaCity, c.plaintiffDbaState, c.plaintiffDbaZip)}
-            />
-          </Section>
-        )}
-
-        <Section title="Defendant" icon={UserMinus}>
-          <InfoRow label="Name" value={c?.defendantName} />
-          {c?.defendantIsBusinessOrEntity && (
-            <>
-              <InfoRow label="Agent for Service" value={c.defendantAgentName} />
-              <InfoRow label="Agent Title" value={c.defendantAgentTitle} />
-              <InfoRow
-                label="Agent Address"
-                value={buildAddress(
-                  c.defendantAgentStreet,
-                  c.defendantAgentCity,
-                  c.defendantAgentState,
-                  c.defendantAgentZip,
-                )}
-              />
-            </>
-          )}
-          <InfoRow label="Phone" value={c?.defendantPhone} />
-          <InfoRow
-            label="Address"
-            value={buildAddress(c?.defendantAddress, c?.defendantCity, c?.defendantState, c?.defendantZip)}
-          />
-          {c?.defendantMailingAddress && (
-            <InfoRow label="Mailing Address" value={c.defendantMailingAddress} />
-          )}
-        </Section>
-
-        <Section title="Claim Details" icon={DollarSign}>
-          <InfoRow label="Claim Type" value={c?.claimType} />
-          <InfoRow
-            label="Amount Requested"
-            value={c?.claimAmount != null ? formatCurrency(c.claimAmount) : undefined}
-          />
-        </Section>
+      {/* RIGHT — FL-specific content */}
+      <div className="space-y-6">
+        <FlCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
+        <FlServiceOptionsSection />
+        <FlDeadlinesSection />
       </div>
+    </div>
+  );
+}
+
+// ─── CA case info (AI E-Filing System tab body) ───────────────────────────────
+
+function CaEFilingPanel({
+  c,
+  caseId,
+  getToken,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {/* LEFT — Case info */}
+      <FilingSummaryPanel c={c} jurisdictionState="CA" />
 
       {/* RIGHT — Court Forms */}
       <div className="space-y-6">
@@ -424,7 +715,10 @@ function EFilingPanel({
   caseId: number;
   getToken: () => Promise<string | null>;
 }) {
-  return <CaseInfoPanel c={c} caseId={caseId} getToken={getToken} />;
+  if (c?.jurisdictionState === "FL") {
+    return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
+  }
+  return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
 }
 
 function ProcessServerPanel() {
@@ -532,8 +826,10 @@ function ProcessServerPanel() {
   );
 }
 
-function CollectPanel() {
-  const steps = [
+function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" }) {
+  const isFL = jurisdictionState === "FL";
+
+  const caSteps = [
     {
       icon: Gavel,
       title: "Obtain your judgment",
@@ -566,6 +862,43 @@ function CollectPanel() {
     },
   ];
 
+  const flSteps = [
+    {
+      icon: Gavel,
+      title: "Obtain your judgment",
+      desc: "After you win, the court enters a judgment in your favor. Get a certified copy from the clerk — you will need it for every collection step.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Fact Information Sheet (Form 7.343)",
+      desc: "File this form with the court to compel the defendant to disclose their bank accounts, employer, and assets. The court can sanction a defendant who refuses to cooperate.",
+    },
+    {
+      icon: FileCheck2,
+      title: "Wage garnishment",
+      desc: "File a Writ of Execution with the circuit court, then serve the defendant's employer. Florida law limits garnishment to 25% of disposable earnings — head of household exemptions may apply.",
+    },
+    {
+      icon: Shield,
+      title: "Bank levy (Writ of Execution)",
+      desc: "Direct the county sheriff to levy the defendant's bank account using a Writ of Execution. You must identify the bank and branch — gathered from the Fact Information Sheet.",
+    },
+    {
+      icon: FileCheck2,
+      title: "Judgment lien certificate",
+      desc: "File a Judgment Lien Certificate with the Florida Department of State to create a lien on the defendant's personal property. This can also be recorded as a lien on real estate in the county where the defendant owns property.",
+    },
+    {
+      icon: RefreshCw,
+      title: "Your judgment is valid for 20 years",
+      desc: "Florida judgments are valid for 20 years and can be renewed. Post-judgment interest accrues at the statutory rate set by Fla. Stat. 55.03 — check the current rate at the Florida Department of Financial Services.",
+    },
+  ];
+
+  const steps = isFL ? flSteps : caSteps;
+  const iconBg = "bg-amber-100";
+  const iconColor = "text-amber-700";
+
   return (
     <div className="space-y-8">
       {/* Hero */}
@@ -579,7 +912,7 @@ function CollectPanel() {
           </h2>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             A judgment in your favor is a powerful legal tool — but it does not automatically put money
-            in your pocket. California gives you several enforcement methods to collect what you are owed.
+            in your pocket. {isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
             Here is how to use them.
           </p>
         </div>
@@ -589,8 +922,8 @@ function CollectPanel() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {steps.map(({ icon: Icon, title, desc }) => (
           <div key={title} className="flex items-start gap-4 rounded-xl border bg-card px-4 py-4">
-            <div className="h-9 w-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-              <Icon className="h-[18px] w-[18px] text-amber-700" />
+            <div className={`h-9 w-9 rounded-lg ${iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
+              <Icon className={`h-[18px] w-[18px] ${iconColor}`} />
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
@@ -642,6 +975,8 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
 
   const { data: caseData } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const c = caseData as ExtendedCase | undefined;
+
+  const jurisdictionState: "CA" | "FL" = c?.jurisdictionState === "FL" ? "FL" : "CA";
 
   const handleStepClick = (stepN: number) => {
     if (stepN === 8) return;
@@ -700,7 +1035,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
             <EFilingPanel c={c} caseId={caseId} getToken={getToken} />
           )}
           {activeTab === "process_server" && <ProcessServerPanel />}
-          {activeTab === "collect" && <CollectPanel />}
+          {activeTab === "collect" && <CollectPanel jurisdictionState={jurisdictionState} />}
           {activeTab === "deadlines" && c && (
             <DeadlineCalculatorTab caseId={caseId} currentCase={c} />
           )}

@@ -35,7 +35,9 @@ function parseHearingDate(raw: string): Date | null {
   return isValid(d) ? d : null;
 }
 
-function getStatuteYears(claimType: string, _isBusiness: boolean): { years: number; note: string } {
+// ── California statute helpers ────────────────────────────────────────────────
+
+function getStatuteYearsCA(claimType: string, _isBusiness: boolean): { years: number; note: string } {
   switch (claimType) {
     case "Property Damage":
       return { years: 3, note: "CCP § 338 — 3-year limit for property damage claims" };
@@ -52,6 +54,30 @@ function getStatuteYears(claimType: string, _isBusiness: boolean): { years: numb
       return { years: 2, note: "CCP § 339 — 2-year default limit. Check if a written contract applies (4 years)" };
   }
 }
+
+// ── Florida statute helpers ───────────────────────────────────────────────────
+
+function getStatuteYearsFL(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Property Damage":
+      return { years: 4, note: "Fla. Stat. § 95.11(3)(a) — 4-year limit for property damage claims" };
+    case "Fraud":
+      return { years: 4, note: "Fla. Stat. § 95.11(3)(j) — 4-year limit for fraud claims" };
+    case "Security Deposit":
+      return { years: 5, note: "Fla. Stat. § 95.11(2)(b) — 5 years (written lease is a written contract)" };
+    case "Contract Dispute":
+      return { years: 5, note: "Fla. Stat. § 95.11(2)(b) — 5 years for written contracts; 4 years for oral contracts (§ 95.11(3)(k))" };
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 5, note: "Fla. Stat. § 95.11(2)(b) — 5 years if based on a written agreement; 4 years if oral only (§ 95.11(3)(k))" };
+    case "Personal Injury":
+      return { years: 2, note: "Fla. Stat. § 95.11(3)(a) — 2-year limit for personal injury claims" };
+    default:
+      return { years: 4, note: "Fla. Stat. § 95.11(3)(k) — 4-year default limit for unwritten obligations. Check if a written contract applies (5 years)" };
+  }
+}
+
+// ── Shared UI helpers ─────────────────────────────────────────────────────────
 
 function statusColor(s: Deadline["status"]) {
   switch (s) {
@@ -105,7 +131,7 @@ function daysLabel(date: Date | null, today: Date): string {
   return `${diff} days from now`;
 }
 
-function printDeadlines(deadlines: Deadline[], caseName: string, today: Date) {
+function printDeadlines(deadlines: Deadline[], caseName: string, today: Date, stateAbbr: string) {
   const rows = deadlines.map(d => {
     const dateStr = d.date ? format(d.date, "MMMM d, yyyy") : "—";
     const daysStr = d.date ? daysLabel(d.date, today) : "";
@@ -113,17 +139,229 @@ function printDeadlines(deadlines: Deadline[], caseName: string, today: Date) {
     return `<tr><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#111;font-size:13px">${d.label}</td><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111;font-size:13px">${dateStr}</td><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#666;font-size:12px">${daysStr}</td><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:11px">${statusLabel}</td></tr><tr><td colspan="4" style="padding:4px 12px 10px;color:#555;font-size:11px;border-bottom:1px solid #f3f4f6">${d.detail} <span style="color:#9ca3af">(${d.law})</span></td></tr>`;
   }).join("");
 
+  const courtLink = stateAbbr === "FL"
+    ? `Florida courts: <a href="https://www.flcourts.gov" target="_blank">flcourts.gov</a>`
+    : `California courts: <a href="https://www.courts.ca.gov" target="_blank">courts.ca.gov</a>`;
+
   const w = window.open("", "_blank");
   if (!w) return;
-  w.document.write(`<!DOCTYPE html><html><head><title>Deadline Calculator — ${caseName}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;color:#111;padding:0 20px}h1{color:#0d6b5e;font-size:22px;margin-bottom:4px}.sub{color:#666;font-size:13px;margin-bottom:28px}table{width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}th{background:#0d6b5e;color:white;padding:10px 12px;text-align:left;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}.footer{margin-top:24px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px}.print-btn{margin-top:24px;padding:10px 24px;background:#0d6b5e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer}@media print{.print-btn{display:none}}</style></head><body><h1>🗓️ Deadline Calculator</h1><p class="sub">${caseName} — Generated ${format(today, "MMMM d, yyyy")} via Small Claims Genie</p><table><thead><tr><th>Deadline</th><th>Date</th><th>Time Left</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">This calculator is for informational purposes only. Verify all deadlines with your court or an attorney. California courts: courts.ca.gov</div><button class="print-btn" onclick="window.print()">Print / Save as PDF</button><script>window.onload=function(){window.print()}</script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>Deadline Calculator — ${caseName}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;color:#111;padding:0 20px}h1{color:#0d6b5e;font-size:22px;margin-bottom:4px}.sub{color:#666;font-size:13px;margin-bottom:28px}table{width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}th{background:#0d6b5e;color:white;padding:10px 12px;text-align:left;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}.footer{margin-top:24px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px}.print-btn{margin-top:24px;padding:10px 24px;background:#0d6b5e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer}@media print{.print-btn{display:none}}</style></head><body><h1>🗓️ Deadline Calculator</h1><p class="sub">${caseName} — Generated ${format(today, "MMMM d, yyyy")} via Small Claims Genie</p><table><thead><tr><th>Deadline</th><th>Date</th><th>Time Left</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">This calculator is for informational purposes only. Verify all deadlines with your specific court or a licensed attorney. County-specific rules may apply. ${courtLink}</div><button class="print-btn" onclick="window.print()">Print / Save as PDF</button><script>window.onload=function(){window.print()}</script></body></html>`);
   w.document.close();
 }
 
+// ── Florida deadline builder ───────────────────────────────────────────────────
+
+function buildFlDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  filingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsFL(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: `Fla. Stat. § 95.11`,
+  });
+
+  // Pretrial conference — within 50 days of filing
+  const pretrial50 = filingDate ? addDays(filingDate, 50) : null;
+  list.push({
+    id: "pretrial",
+    category: "Pretrial Conference",
+    label: "Pretrial conference must be set by (50-day window)",
+    date: pretrial50,
+    status: pretrial50 ? getDeadlineStatus(pretrial50, today) : "missing",
+    detail: filingDate
+      ? `The court must schedule your pretrial conference within 50 days of filing (${format(filingDate, "MMMM d, yyyy")}). Both parties must appear. Mediation is commonly offered at this conference — bring full authority to settle.`
+      : "Enter your filing date to calculate this deadline. The pretrial conference must be set within 50 days of the date you file.",
+    law: "Fla. Sm. Cl. R. 7.090(a)",
+  });
+
+  // Service deadline — 5 days before pretrial conference
+  // If we have hearingDate as the trial date, we need the pretrial date.
+  // We'll use the hearing date as the trial date, and note pretrial is ≤60 days before trial.
+  // Best we can do: show service deadline relative to pretrial50 date.
+  const serviceDeadline = pretrial50 ? addDays(pretrial50, -5) : null;
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "File proof of service by (5 days before pretrial)",
+    date: serviceDeadline,
+    status: serviceDeadline ? getDeadlineStatus(serviceDeadline, today) : "missing",
+    detail: "Proof of service (Affidavit of Service) must be filed with the court clerk at least 5 days before the pretrial conference. Service may be completed by the county sheriff, certified process server, or certified mail (FL residents only).",
+    law: "Fla. Sm. Cl. R. 7.070",
+  });
+
+  // Trial — within 60 days of pretrial
+  // Use hearingDate as trial date if available; otherwise estimate from pretrial
+  const trialDate = hearingDate ?? (pretrial50 ? addDays(pretrial50, 60) : null);
+  const trialLabel = hearingDate ? "Trial / hearing date" : "Trial must be set by (60 days after pretrial)";
+  list.push({
+    id: "trial",
+    category: "Trial",
+    label: trialLabel,
+    date: trialDate,
+    status: hearingDate ? getDeadlineStatus(trialDate, today) : "info",
+    detail: hearingDate
+      ? `Your trial is scheduled for ${format(trialDate!, "MMMM d, yyyy")}. Arrive early, bring organized evidence, and prepare a short statement of your claim.`
+      : "Trial must be set within 60 days of the pretrial conference. Enter your hearing date in the Intake tab once you receive it from the court.",
+    law: "Fla. Sm. Cl. R. 7.090(a)",
+  });
+
+  // Appeal window
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window (if you lose)",
+    date: null,
+    status: "info",
+    detail: "If the judge rules against you, you have 30 days from the date of judgment to file a Notice of Appeal with the circuit court. Filing the appeal does not stop enforcement of the judgment unless the court grants a stay.",
+    law: "Fla. Sm. Cl. R. 7.180",
+  });
+
+  // Post-judgment collection
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: "Judgment valid for 20 years",
+    date: null,
+    status: "info",
+    detail: "Florida judgments are valid for 20 years. If the defendant does not pay, you can use wage garnishment, bank levy, writ of execution, or judgment lien certificate to collect. File the Fact Information Sheet (Form 7.343) to compel disclosure of the defendant's assets.",
+    law: "Fla. Stat. § 55.081",
+  });
+
+  return list;
+}
+
+// ── California deadline builder ───────────────────────────────────────────────
+
+function buildCaDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  isBusiness: boolean,
+  isSuingPublic: boolean,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+
+  if (isSuingPublic) {
+    const solDate = incidentDate ? addMonths(incidentDate, 6) : null;
+    const status = getDeadlineStatus(solDate, today);
+    list.push({
+      id: "govt-claim",
+      category: "Statute of Limitations",
+      label: "Government Tort Claim filing deadline",
+      date: solDate,
+      status: solDate ? status : "missing",
+      detail: "Before suing a government entity, you must first file a Government Tort Claim within 6 months of the incident. You have 6 months after rejection (or 2 years if no response) to then file your court case.",
+      law: "Gov. Code § 912.4",
+    });
+  } else {
+    const { years, note } = getStatuteYearsCA(claimType, isBusiness);
+    const solDate = incidentDate ? addYears(incidentDate, years) : null;
+    const status = getDeadlineStatus(solDate, today);
+    list.push({
+      id: "sol",
+      category: "Statute of Limitations",
+      label: `File your case by (${years}-year limit)`,
+      date: solDate,
+      status: solDate ? status : "missing",
+      detail: note,
+      law: years === 4 ? "CCP § 337" : years === 3 ? "CCP § 338" : "CCP § 339",
+    });
+  }
+
+  const serviceWindow = isSuingPublic ? 30 : 15;
+  const serviceNote = isSuingPublic
+    ? "Government entities must be served at least 30 days before the hearing."
+    : "Defendants within California must be served at least 15 days before the hearing date. If outside California, serve at least 20 days in advance.";
+  const serviceDeadline = hearingDate ? addDays(hearingDate, -serviceWindow) : null;
+  const serviceStatus = getDeadlineStatus(serviceDeadline, today);
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: `Serve the defendant by (last day)`,
+    date: serviceDeadline,
+    status: serviceDeadline ? serviceStatus : "missing",
+    detail: serviceNote,
+    law: "CCP § 116.340",
+  });
+
+  if (hearingDate) {
+    list.push({
+      id: "hearing-rule",
+      category: "Hearing Scheduling",
+      label: isBusiness ? "Business/entity 70-day rule" : "Individual 30-day rule",
+      date: hearingDate,
+      status: "info",
+      detail: isBusiness
+        ? `Because the defendant is a business or entity, the hearing must be scheduled at least 70 days after you file. Your hearing is set for ${format(hearingDate, "MMMM d, yyyy")}.`
+        : `For individual defendants, the hearing must be at least 30 days after filing. Your hearing is set for ${format(hearingDate, "MMMM d, yyyy")}.`,
+      law: isBusiness ? "CCP § 116.330(b)" : "CCP § 116.330(a)",
+    });
+  } else {
+    list.push({
+      id: "hearing-rule",
+      category: "Hearing Scheduling",
+      label: isBusiness ? "Business/entity 70-day rule" : "Individual 30-day rule",
+      date: null,
+      status: "missing",
+      detail: isBusiness
+        ? "Because the defendant is a business or entity, your hearing must be scheduled at least 70 days after you file. Enter your hearing date in the Intake tab to check compliance."
+        : "For individual defendants, the hearing must be at least 30 days after filing. Enter your hearing date in the Intake tab to see your full timeline.",
+      law: isBusiness ? "CCP § 116.330(b)" : "CCP § 116.330(a)",
+    });
+  }
+
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window (if you lose)",
+    date: null,
+    status: "info",
+    detail: "If the judge rules against you, you have 30 days from the date of judgment to file a Notice of Appeal (SC-140) with the court clerk. The appeal fee is typically $75–$225.",
+    law: "CCP § 116.710",
+  });
+
+  list.push({
+    id: "defendant-response",
+    category: "After the Hearing",
+    label: "Defendant's right to pay or respond",
+    date: null,
+    status: "info",
+    detail: "After you win, the defendant has 30 days to pay the judgment or request a payment hearing. If they don't pay, you can pursue wage garnishment or bank levies.",
+    law: "CCP § 116.810",
+  });
+
+  return list;
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
+
 export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const today = useMemo(() => new Date(), []);
+  const isFL = currentCase.jurisdictionState === "FL";
 
   const incidentDate = useMemo(() => parseIncidentDate(currentCase.incidentDate || ""), [currentCase.incidentDate]);
   const hearingDate = useMemo(() => parseHearingDate(currentCase.hearingDate || ""), [currentCase.hearingDate]);
+  // Use case createdAt as a proxy for filing date for FL pretrial window calculation
+  const filingDate = useMemo(() => {
+    if (!currentCase.createdAt) return null;
+    const d = parseISO(currentCase.createdAt);
+    return isValid(d) ? d : null;
+  }, [currentCase.createdAt]);
+
   const isBusiness = !!(currentCase.defendantIsBusinessOrEntity);
   const isSuingPublic = !!(currentCase.isSuingPublicEntity);
   const claimType = currentCase.claimType || "";
@@ -132,105 +370,19 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const caseName = `${plaintiffName} v. ${defendantName}`;
 
   const deadlines: Deadline[] = useMemo(() => {
-    const list: Deadline[] = [];
-
-    if (isSuingPublic) {
-      const solDate = incidentDate ? addMonths(incidentDate, 6) : null;
-      const status = getDeadlineStatus(solDate, today);
-      list.push({
-        id: "govt-claim",
-        category: "Statute of Limitations",
-        label: "Government Tort Claim filing deadline",
-        date: solDate,
-        status: solDate ? status : "missing",
-        detail: "Before suing a government entity, you must first file a Government Tort Claim within 6 months of the incident. You have 6 months after rejection (or 2 years if no response) to then file your court case.",
-        law: "Gov. Code § 912.4",
-      });
-    } else {
-      const { years, note } = getStatuteYears(claimType, isBusiness);
-      const solDate = incidentDate ? addYears(incidentDate, years) : null;
-      const status = getDeadlineStatus(solDate, today);
-      list.push({
-        id: "sol",
-        category: "Statute of Limitations",
-        label: `File your case by (${years}-year limit)`,
-        date: solDate,
-        status: solDate ? status : "missing",
-        detail: note,
-        law: years === 4 ? "CCP § 337" : years === 3 ? "CCP § 338" : "CCP § 339",
-      });
+    if (isFL) {
+      return buildFlDeadlines(incidentDate, hearingDate, filingDate, claimType, today);
     }
-
-    const serviceWindow = isSuingPublic ? 30 : 15;
-    const serviceNote = isSuingPublic
-      ? "Government entities must be served at least 30 days before the hearing."
-      : "Defendants within California must be served at least 15 days before the hearing date. If outside California, serve at least 20 days in advance.";
-    const serviceDeadline = hearingDate ? addDays(hearingDate, -serviceWindow) : null;
-    const serviceStatus = getDeadlineStatus(serviceDeadline, today);
-    list.push({
-      id: "service",
-      category: "Service of Process",
-      label: `Serve the defendant by (last day)`,
-      date: serviceDeadline,
-      status: serviceDeadline ? serviceStatus : "missing",
-      detail: serviceNote,
-      law: "CCP § 116.340",
-    });
-
-    if (hearingDate) {
-      const _minDaysAfterFiling = isBusiness ? 70 : 30;
-      list.push({
-        id: "hearing-rule",
-        category: "Hearing Scheduling",
-        label: isBusiness ? "Business/entity 70-day rule" : "Individual 30-day rule",
-        date: hearingDate,
-        status: "info",
-        detail: isBusiness
-          ? `Because the defendant is a business or entity, the hearing must be scheduled at least 70 days after you file. Your hearing is set for ${format(hearingDate, "MMMM d, yyyy")}.`
-          : `For individual defendants, the hearing must be at least 30 days after filing. Your hearing is set for ${format(hearingDate, "MMMM d, yyyy")}.`,
-        law: isBusiness ? "CCP § 116.330(b)" : "CCP § 116.330(a)",
-      });
-    } else {
-      list.push({
-        id: "hearing-rule",
-        category: "Hearing Scheduling",
-        label: isBusiness ? "Business/entity 70-day rule" : "Individual 30-day rule",
-        date: null,
-        status: "missing",
-        detail: isBusiness
-          ? "Because the defendant is a business or entity, your hearing must be scheduled at least 70 days after you file. Enter your hearing date in the Intake tab to check compliance."
-          : "For individual defendants, the hearing must be at least 30 days after filing. Enter your hearing date in the Intake tab to see your full timeline.",
-        law: isBusiness ? "CCP § 116.330(b)" : "CCP § 116.330(a)",
-      });
-    }
-
-    list.push({
-      id: "appeal",
-      category: "After the Hearing",
-      label: "Appeal window (if you lose)",
-      date: null,
-      status: "info",
-      detail: "If the judge rules against you, you have 30 days from the date of judgment to file a Notice of Appeal (SC-140) with the court clerk. The appeal fee is typically $75–$225.",
-      law: "CCP § 116.710",
-    });
-
-    list.push({
-      id: "defendant-response",
-      category: "After the Hearing",
-      label: "Defendant's right to pay or respond",
-      date: null,
-      status: "info",
-      detail: "After you win, the defendant has 30 days to pay the judgment or request a payment hearing. If they don't pay, you can pursue wage garnishment or bank levies.",
-      law: "CCP § 116.810",
-    });
-
-    return list;
-  }, [incidentDate, hearingDate, isBusiness, isSuingPublic, claimType, today]);
+    return buildCaDeadlines(incidentDate, hearingDate, isBusiness, isSuingPublic, claimType, today);
+  }, [isFL, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
 
   const categories = [...new Set(deadlines.map(d => d.category))];
 
   const urgentCount = deadlines.filter(d => d.status === "urgent" || d.status === "overdue").length;
   const missingCount = deadlines.filter(d => d.status === "missing").length;
+
+  const stateLabel = isFL ? "Florida" : "California";
+  const stateAbbr = isFL ? "FL" : "CA";
 
   return (
     <div className="px-6 pt-3 pb-6 space-y-6">
@@ -242,14 +394,14 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
             Deadline Calculator
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Every California small claims case has hard legal deadlines. Here are yours.
+            Every {stateLabel} small claims case has hard legal deadlines. Here are yours.
           </p>
         </div>
         <Button
           variant="outline"
           size="sm"
           className="gap-2 border-[#0d6b5e] text-[#0d6b5e] hover:bg-[#f0fffe] shrink-0"
-          onClick={() => printDeadlines(deadlines, caseName, today)}
+          onClick={() => printDeadlines(deadlines, caseName, today, stateAbbr)}
         >
           <Printer className="h-3.5 w-3.5" /> Print / Save PDF
         </Button>
@@ -281,16 +433,36 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
           </p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Hearing Date</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+            {isFL ? "Trial / Hearing Date" : "Hearing Date"}
+          </p>
           <p className="font-semibold text-foreground">
             {hearingDate ? format(hearingDate, "MMMM d, yyyy") : <span className="text-muted-foreground italic">Not scheduled</span>}
           </p>
         </div>
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Today</p>
-          <p className="font-semibold text-foreground">{format(today, "MMMM d, yyyy")}</p>
-        </div>
+        {isFL ? (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Case Created</p>
+            <p className="font-semibold text-foreground">
+              {filingDate ? format(filingDate, "MMMM d, yyyy") : <span className="text-muted-foreground italic">Unknown</span>}
+            </p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Today</p>
+            <p className="font-semibold text-foreground">{format(today, "MMMM d, yyyy")}</p>
+          </div>
+        )}
       </div>
+
+      {isFL && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+          <Info className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            <span className="font-semibold">Florida note:</span> The pretrial conference and service deadlines below are calculated using your case creation date as a proxy for your filing date. Once you receive your actual filing date from the court clerk, verify these dates match.
+          </p>
+        </div>
+      )}
 
       {categories.map(cat => (
         <div key={cat} className="space-y-2">
@@ -331,8 +503,12 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
       <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 flex items-start gap-3">
         <Info className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
         <p className="text-xs text-blue-700 leading-relaxed">
-          <span className="font-semibold">Disclaimer:</span> This calculator is for informational purposes only and does not constitute legal advice. Always verify deadlines with your specific court or a licensed attorney. County-specific rules may apply. California courts:{" "}
-          <a href="https://www.courts.ca.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">courts.ca.gov</a>
+          <span className="font-semibold">Disclaimer:</span> This calculator is for informational purposes only and does not constitute legal advice. Always verify deadlines with your specific court or a licensed attorney. County-specific rules may apply.{" "}
+          {isFL ? (
+            <a href="https://www.flcourts.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">flcourts.gov</a>
+          ) : (
+            <a href="https://www.courts.ca.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">courts.ca.gov</a>
+          )}
         </p>
       </div>
     </div>

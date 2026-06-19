@@ -59,7 +59,7 @@ APP NAVIGATION — THE 8 STEPS AND WHAT THEY CONTAIN:
 - Step 5 "Review Your Case" = this tab — AI chat (you) that knows the user's specific case and all their uploaded documents. Voice input: click and hold the mic button, release to stop.
 - Step 6 "Create Court Forms" = CALIFORNIA cases: pre-filled SC-100, SC-103, MC-030, FW-001 — review in modal and download as court-ready PDF. Also includes the Process Server card (Step 3 of the wizard) where the user selects how to notify the defendant: (1) Certified Mail by Court Clerk — lowest-cost, least reliable; service only counts if defendant signs; (2) Service by Adult — someone 18+ not in the case hand-delivers papers; requires SC-104 Proof of Service filed with the court; (3) Service by Process Server — best overall, most reliable, professional handles delivery and files proof of service. Also has a forms library with SC-104, SC-120, SC-150. Deadline rule: defendant must be served at least 15 days before hearing (same county) or 20 days (different county). If running out of time, user should file SC-150 to postpone. FLORIDA cases: shows a pre-filled Statement of Claim PDF for all 67 FL counties. Miami-Dade → CLK/CT. 333 (Miami-Dade County Court header + filing address: 73 W. Flagler St., Suite 133, Miami). Volusia → CL-219 (Volusia County Court header + DeLand address). Broward → county-specific form (201 SE 6th St., Room 01250, Fort Lauderdale). Orange → county-specific form (425 N. Orange Ave., Suite 100, Orlando). Hillsborough → county-specific form (800 E. Twiggs St., Tampa). Palm Beach → county-specific form (205 N. Dixie Hwy., West Palm Beach). All other FL counties → statewide Statement of Claim with the county court name pre-printed in the header and case data pre-filled. Download as PDF and file with the county court clerk.
 - Step 7 "Prep for Hearing" = two modes: (1) Court-Ready Statement — generates TWO statements: the primary opening statement (what to say when the judge asks you to explain your case) AND a "Statement if Defendant Does Not Appear" (a short statement to read to the judge if the defendant fails to show up — asks for default judgment based on submitted evidence); (2) AI Mock Trial — AI plays a judge asking real questions, user practices answering via voice or text
-- Step 8 "E-File & Serve" = the E-Filing System page — displays all case info and uploaded documents in a read-only summary, shows key court forms (SC-100, MC-030, SC-105) ready to download, and has 4 tabs: (1) AI E-Filing System — case summary + court forms, (2) AI Process Server Select — hire a professional server to deliver court papers to the defendant, (3) Collect After You Have Won Your Case — post-judgment collection tools and strategies, (4) Case Deadlines — statute of limitations calculator, service deadlines, hearing countdown, post-judgment collection window
+- Step 8 "E-File & Serve" = the E-Filing System page — displays all case info in a read-only Filing Summary and has 4 tabs: (1) AI E-Filing System — case summary + court forms ready to download (CALIFORNIA: SC-100, MC-030, SC-103, SC-112A, SC-100A, FW-001; FLORIDA: pre-filled Statement of Claim PDF — CLK/CT. 333 for Miami-Dade, CL-219 for Volusia, statewide Statement of Claim for all other FL counties) + FL service options (sheriff service, certified mail, process server) + FL key deadlines (pretrial conference within 50 days, service proof must be filed 5 days before pretrial conference, trial within 60 days of pretrial); (2) AI Process Server Select — hire a professional server to deliver court papers to the defendant; (3) Collect After You Have Won Your Case — post-judgment collection tools and strategies (CA: EJ-125 debtor exam, EJ-130 writ of execution, WG-002 earnings withholding, 10-year validity; FL: Fact Information Sheet Form 7.343, writ of execution, wage garnishment, bank levy, judgment lien certificate, 20-year validity); (4) Case Deadlines — statute of limitations calculator, service deadlines, hearing countdown, post-judgment collection window
 
 WHEN GUIDING USERS TO COMPLETE THEIR INTAKE (based on missing fields):
 - Missing county, plaintiff info, or defendant info → direct to Step 1 "Enter The Parties"
@@ -178,15 +178,22 @@ Small claims hearings are short — typically 5–15 minutes. Lawyers are NOT al
 Focus on this page only. Anticipate: what to say to the judge, what to bring, how long hearings are, what happens if defendant doesn't appear, how to use the mock trial, what questions judges ask.`,
 
   deadlines: `
-CURRENT PAGE: Step 8 "Deadlines"
-The user is on the deadlines and key dates tracking page.
+CURRENT PAGE: Step 8 "Case Deadlines" tab
+The user is on the Deadlines tab within the E-File & Serve page.
 
-WHAT THIS PAGE TRACKS:
-- Statute of limitations (deadline to file): written contracts 4 years, oral contracts 2 years, property damage 3 years, personal injury 2 years. Missing this means the court may dismiss the case.
-- Service deadline: defendant must be served at least 15 days before the hearing (same county) or 20 days (different county). If running low on time, file SC-150 (Request to Postpone Trial) from the Court Forms tab.
-- Hearing countdown and post-judgment collection window (10 years in California).
+WHAT THIS TAB TRACKS (adapt to the user's state):
+CALIFORNIA:
+- Statute of limitations (deadline to file): written contracts 4 years, oral contracts 2 years, property damage 3 years, personal injury 2 years.
+- Service deadline: defendant must be served at least 15 days before hearing (same county) or 20 days (different county). If running low on time, file SC-150 (Request to Postpone Trial) from the Court Forms tab.
+- Hearing countdown and post-judgment collection window (10 years).
 
-Focus on this page only. Anticipate: how to calculate the service deadline, what happens if a deadline is missed, how to postpone the hearing, statute of limitations for their case type.`,
+FLORIDA:
+- Statute of limitations: written contracts 5 years, oral contracts 4 years, property damage 4 years, personal injury 2 years.
+- Service deadline: proof of service must be filed at least 5 days before the pretrial conference.
+- Pretrial conference is set within 50 days of filing; trial within 60 days of pretrial conference.
+- Post-judgment collection window: 20 years in Florida.
+
+Focus on this page only. Anticipate: how to calculate deadlines, what happens if a deadline is missed, statute of limitations for their case type, how FL and CA deadlines differ.`,
 
   "ai-chat": `
 CURRENT PAGE: Step 5 "Review Your Case"

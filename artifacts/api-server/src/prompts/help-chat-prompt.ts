@@ -100,7 +100,7 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 - Step 5 "Review Your Case" — AI case advisor chat that knows the user's specific case and documents
 - Step 6 "Create Court Forms" — all court forms pre-filled and ready to download
 - Step 7 "Prep for Hearing" — Court-Ready Statement and AI Mock Trial
-- Step 8 "E-File & Serve" — E-Filing System with case summary, court form downloads (SC-100, MC-030, SC-105), process server selection, post-judgment collection guidance, and case deadlines
+- Step 8 "E-File & Serve" — E-Filing System with filing summary (court, parties, claim) and 4 tabs: (1) AI E-Filing System — court forms to download (CA: SC-100, MC-030, SC-103, SC-112A, SC-100A, FW-001; FL: Statement of Claim PDF pre-filled for all 67 FL counties — CLK/CT. 333 for Miami-Dade, CL-219 for Volusia, statewide form for all others) + FL service options (sheriff, certified mail, process server) + FL key deadlines; (2) AI Process Server Select — hire a licensed process server; (3) Collect After You Have Won — post-judgment collection tools (CA: debtor exam EJ-125, writ of execution EJ-130, WG-002 earnings withholding; FL: Fact Information Sheet Form 7.343, writ of execution, wage garnishment, bank levy, judgment lien certificate); (4) Case Deadlines — key dates and countdown timers
 
 ---
 
@@ -229,16 +229,24 @@ Small claims hearings are 5–15 minutes. Lawyers are NOT allowed (CA CCP §116.
 Anticipate: what to say to the judge, what to bring, how long hearings are, what happens if defendant does not appear, how to use the mock trial.`,
 
   deadlines: `
-CURRENT PAGE: Step 8 "E-File & Serve" — Deadlines tab
-The user is on the Deadlines tab within the E-File & Serve page. Focus answers on this tab only.
+CURRENT PAGE: Step 8 "E-File & Serve" — Case Deadlines tab
+The user is on the Case Deadlines tab within the E-File & Serve page. Focus answers on this tab only.
 
-KEY DEADLINES TRACKED:
+KEY DEADLINES TRACKED (adapt to the user's state):
+
+CALIFORNIA:
 - Statute of limitations (deadline to file): written contracts 4 years, oral contracts 2 years, property damage 3 years, personal injury 2 years.
 - Service deadline: defendant must be served at least 15 days before hearing (same county) or 20 days (different county).
   - If running low on time: file SC-150 (Request to Postpone Trial — used to reschedule the hearing date to allow more time for service or preparation) from the Court Forms tab.
-- Hearing countdown and post-judgment collection window (10 years in California).
+- Hearing countdown and post-judgment collection window (10 years).
 
-Anticipate: calculating service deadlines, what happens if a deadline is missed, how to postpone a hearing, statute of limitations for the user's case type.`,
+FLORIDA:
+- Statute of limitations: written contracts 5 years, oral contracts 4 years, property damage 4 years, personal injury 2 years.
+- Service deadline: proof of service must be filed at least 5 days before the pretrial conference.
+- Pretrial conference set within 50 days of filing; trial within 60 days of pretrial conference.
+- Post-judgment collection window: 20 years in Florida.
+
+Anticipate: calculating deadlines, what happens if a deadline is missed, how to postpone a hearing, statute of limitations for the user's case type, FL vs CA deadline differences.`,
 
   "ai-chat": `
 CURRENT PAGE: Step 5 "Review Your Case"
