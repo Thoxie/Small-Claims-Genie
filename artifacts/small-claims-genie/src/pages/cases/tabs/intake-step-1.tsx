@@ -248,10 +248,12 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
   return (
     <div className="px-4 pt-3 pb-4 space-y-4">
+      <div className="flex gap-4 items-start">
+        <div className="flex-1 min-w-0 space-y-4">
       <button
         type="button"
         onClick={() => setTutorialOpen(true)}
-        className="flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
+        className="sm:hidden flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
       >
         <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
         Watch Tutorial Video — Step 1
@@ -946,9 +948,37 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
         </form>
       </Form>
+        </div>
 
-      {/* ── Footer ── */}
-      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:px-6 py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8">
+        {/* Right: video tutorial card — desktop only */}
+        <div
+          onClick={() => setTutorialOpen(true)}
+          className="hidden sm:block cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+          title="Watch the tutorial for this step"
+        >
+          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
+                <Play className="w-[18px] h-[18px] text-white ml-1" fill="white" />
+              </div>
+              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
+            </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
+            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 1</div>
+          </div>
+          <div className="bg-background px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold">Entering the Parties</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Who is suing whom?</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Full-width footer — outside two-column layout so it spans both columns ── */}
+      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8">
         <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit({ ...form.getValues(), jurisdictionState })}>
           <Home className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Save &amp; Exit</span>
