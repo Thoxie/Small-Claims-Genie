@@ -1823,17 +1823,113 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
       {isDraftMode && <DraftModeBanner />}
 
-      {/* FL coming soon banner — replaces form wizard for Florida cases */}
+      {/* FL forms section */}
       {isFloridaCase && (
-        <div className="rounded-xl border-2 border-blue-200 bg-blue-50 px-6 py-8 text-center">
-          <div className="text-3xl mb-3">☀️</div>
-          <h3 className="text-lg font-bold text-blue-900 mb-2">Florida Court Forms — Coming Soon</h3>
-          <p className="text-sm text-blue-700 mb-4 max-w-md mx-auto">
-            Florida small claims forms (Statement of Claim and related filings) are being added to the platform. Check back soon — or use the AI Case Advisor in the Review tab to get guidance on what to file with your Florida county clerk.
-          </p>
-          <p className="text-xs text-blue-600 font-medium">
-            In the meantime, visit your county's clerk website to download the correct forms.
-          </p>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">☀️</span>
+            <h3 className="text-base font-bold text-foreground">Florida Court Forms</h3>
+          </div>
+
+          {/* Miami-Dade County forms */}
+          {currentCase.countyId === "fl-miami-dade" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                File with the Miami-Dade County Court Clerk — 73 W. Flagler St., Suite 133, Miami.
+              </p>
+
+              {/* CLK/CT. 333 — Statement of Claim */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                    <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">CLK/CT. 333</span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Initiates your small claims case. Pre-filled from your case details.
+                  </p>
+                  {downloadError && downloadingForm === "fl/clkct333" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/clkct333"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/clkct333",
+                      `Statement-of-Claim-Miami-Dade-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/clkct333" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Volusia County forms */}
+          {currentCase.countyId === "fl-volusia" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                File with the Volusia County Court Clerk — 101 N. Alabama Ave., DeLand.
+              </p>
+
+              {/* CL-219 — Statement of Claim */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                    <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">CL-219</span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Initiates your small claims case. Pre-filled from your case details.
+                  </p>
+                  {downloadError && downloadingForm === "fl/cl219-volusia" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/cl219-volusia"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/cl219-volusia",
+                      `Statement-of-Claim-Volusia-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/cl219-volusia" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Other FL counties — coming soon */}
+          {currentCase.countyId !== "fl-miami-dade" && currentCase.countyId !== "fl-volusia" && (
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 px-6 py-6 text-center">
+              <p className="text-sm text-blue-700 mb-1 font-semibold">Forms for this county are coming soon.</p>
+              <p className="text-xs text-blue-600">
+                Use the AI Case Advisor in the Review tab for guidance, or visit your county clerk's website to download forms directly.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

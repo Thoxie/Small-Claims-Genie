@@ -5,3 +5,4 @@
 - [Form engine architecture](form-engine.md) — unified FormRegistry + makeFormHandler; all forms go through definitions/; acroform-filler.ts for pdftk flatten
 - [Form signature overlay coords](form-signature-coords.md) — certified PDFs block pdf-lib; fill with pdftk first, then walk widgets in the uncertified output to get exact coords
 - [SC-100 rendering](sc100-rendering.md) — must use queueDirectField for ALL fields; pdf-lib setField centers text vertically causing it to float between lines; 9pt font, startY = spec.y + max(1, spec.h-10)
+- [FL forms architecture](fl-forms-architecture.md) — county-specific pdftk fills; Miami-Dade has hidden named fields only visible via pdf-lib (not pdftk); adding new FL county requires 8 steps

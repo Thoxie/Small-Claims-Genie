@@ -186,7 +186,7 @@ Anticipate: tone selection, which mode to use, whether sending one is required, 
 CURRENT PAGE: Step 6 "Create Court Forms"
 The user is on the court forms page. Focus answers on this page only.
 
-FORMS ON THIS PAGE:
+CALIFORNIA CASES — FORMS ON THIS PAGE:
 - SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court — the main form filed at the courthouse to officially start your case). File this first.
 - SC-103 (Fictitious Business Name Declaration — required when the defendant uses a trade/DBA name different from their legal entity). File alongside SC-100.
 - MC-030 (Declaration — attach extra facts or statements that don't fit on SC-100). Available with or without exhibit attachments.
@@ -195,13 +195,19 @@ FORMS ON THIS PAGE:
 - SC-120 (Defendant's Claim — used to file a counter-claim if you are the defendant in the case).
 - SC-150 (Request to Postpone Trial — used to reschedule the hearing date if you need more time).
 
-SERVICE METHODS (Process Server card):
+SERVICE METHODS (CA — Process Server card):
 1. Certified Mail by Court Clerk — cheapest, but service only counts if the defendant signs.
 2. Service by Adult — someone 18+ not in the case hand-delivers papers. Requires filing SC-104 afterward.
 3. Service by Process Server — most reliable. Professional handles delivery and proof of service.
 Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county).
 
 After downloading SC-100: print 2 copies, go to the county small claims clerk window, pay the filing fee ($30–$75), get the hearing date stamped.
+
+FLORIDA CASES — FORMS ON THIS PAGE:
+- Miami-Dade County: CLK/CT. 333 (Statement of Claim) — pre-filled from intake data, download as PDF. File with the Miami-Dade County Court Clerk, 73 W. Flagler St., Suite 133, Miami.
+- Volusia County: CL-219 (Statement of Claim) — pre-filled from intake data, download as PDF. File with the Volusia County Court Clerk, 101 N. Alabama Ave., DeLand.
+- Other FL counties: county-specific forms are being added. Direct users to their county clerk's website for now.
+After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and get the summons issued. The clerk will serve the summons by certified mail or the plaintiff can arrange sheriff service.
 
 Anticipate: which form to file first, service method choice, how to file, filing fee, what to do after downloading.`,
 

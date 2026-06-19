@@ -28,3 +28,7 @@ export * from "./sc150-definition";
 export * from "./sc100a-definition";
 export * from "./sc140-definition";
 export * from "./mc030-definition";
+
+// ─── Florida AcroForm fills (pdftk FDF) ───────────────────────────────────────
+export * from "./fl-clkct333-miami-dade-definition";
+export * from "./fl-cl219-volusia-definition";
