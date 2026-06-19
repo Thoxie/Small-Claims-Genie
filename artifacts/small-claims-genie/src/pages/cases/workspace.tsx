@@ -208,6 +208,13 @@ export default function CaseWorkspace({ caseIdParam }: { caseIdParam: string }) 
   const { data: currentCase, isLoading: caseLoading } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const { data: readiness } = useGetCaseReadiness(caseId, { query: { enabled: !!caseId } });
 
+  useEffect(() => {
+    if (currentCase) {
+      const state = (currentCase as ExtendedCase).jurisdictionState ?? "CA";
+      window.dispatchEvent(new CustomEvent("help-genie-jurisdiction", { detail: state }));
+    }
+  }, [currentCase]);
+
   // If the case doesn't exist or doesn't belong to the signed-in user,
   // the API returns nothing. Redirect immediately — never render a shell
   // that looks accessible to a URL someone pasted from another account.

@@ -15,11 +15,12 @@ router.post("/help", async (req, res): Promise<void> => {
     return;
   }
 
-  const { message, history = [], pageContext, isSignedIn } = req.body as {
+  const { message, history = [], pageContext, isSignedIn, jurisdictionState } = req.body as {
     message: string;
     history: Array<{ role: "user" | "assistant"; content: string }>;
     pageContext?: string;
     isSignedIn?: boolean;
+    jurisdictionState?: string;
   };
 
   if (!message || typeof message !== "string" || message.trim().length === 0) {
@@ -39,7 +40,10 @@ router.post("/help", async (req, res): Promise<void> => {
     const pageAddendum = pageContext && PAGE_CONTEXT_PROMPTS[pageContext]
       ? PAGE_CONTEXT_PROMPTS[pageContext] + SUGGESTIONS_INSTRUCTION
       : SUGGESTIONS_INSTRUCTION;
-    systemPrompt = HELP_BASE_PROMPT + "\n\n" + pageAddendum;
+    const stateNote = jurisdictionState && jurisdictionState !== "CA"
+      ? `\n\nUser's case jurisdiction: ${jurisdictionState === "FL" ? "Florida (FL)" : jurisdictionState}. Apply Florida-specific rules, limits, and procedures when answering questions about this case.`
+      : "";
+    systemPrompt = HELP_BASE_PROMPT + stateNote + "\n\n" + pageAddendum;
   }
 
   res.setHeader("Content-Type", "text/event-stream");

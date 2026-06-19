@@ -76,6 +76,7 @@ export function HelpGenieWidget() {
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const [pageContext, setPageContext] = useState<string | null>(null);
+  const [jurisdictionState, setJurisdictionState] = useState<string | null>(null);
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -104,6 +105,14 @@ export function HelpGenieWidget() {
     };
     window.addEventListener("help-genie-page-context", handleContext);
     return () => window.removeEventListener("help-genie-page-context", handleContext);
+  }, []);
+
+  useEffect(() => {
+    const handleJurisdiction = (e: Event) => {
+      setJurisdictionState((e as CustomEvent<string>).detail);
+    };
+    window.addEventListener("help-genie-jurisdiction", handleJurisdiction);
+    return () => window.removeEventListener("help-genie-jurisdiction", handleJurisdiction);
   }, []);
 
   useEffect(() => {
@@ -162,7 +171,7 @@ export function HelpGenieWidget() {
       const res = await fetch("/api/help", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, history, pageContext, isSignedIn: !!isSignedIn }),
+        body: JSON.stringify({ message: trimmed, history, pageContext, isSignedIn: !!isSignedIn, jurisdictionState }),
         signal: abortRef.current.signal,
       });
 

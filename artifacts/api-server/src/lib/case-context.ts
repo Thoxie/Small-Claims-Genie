@@ -46,6 +46,7 @@ export function buildCaseContext(
   }
 
   parts.push("\n-- COURT & FILING --");
+  parts.push(`Jurisdiction State: ${c.jurisdictionState ?? "CA"} (${(c.jurisdictionState ?? "CA") === "FL" ? "Florida" : "California"})`);
   parts.push(`Filing County: ${c.countyId || "[not selected]"}`);
   if (c.courthouseName) parts.push(`Courthouse: ${c.courthouseName}`);
   if (c.courthouseAddress) parts.push(`Courthouse Address: ${[c.courthouseAddress, c.courthouseCity, c.courthouseZip].filter(Boolean).join(", ")}`);
