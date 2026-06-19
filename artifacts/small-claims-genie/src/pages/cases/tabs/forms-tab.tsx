@@ -2024,38 +2024,65 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 File with the Orange County Clerk of Courts — 425 N. Orange Ave., Suite 100, Orlando.
               </p>
 
-              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
-                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+              {/* Statement of Claim (official county PDF) */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-snug">
+                      Initiates your small claims case. Pre-filled from your case details.
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
-                    Initiates your small claims case. Pre-filled with your case details and Orange County Court header.
-                  </p>
-                  {downloadError && downloadingForm === "fl/orange" && (
-                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
-                  )}
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/plain-soc-orange"}
+                    onClick={() =>
+                      downloadFormPost(
+                        "fl/plain-soc-orange",
+                        `Statement-of-Claim-Orange-Case-${caseId}.pdf`,
+                        {},
+                      )
+                    }
+                    className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/plain-soc-orange" ? (
+                      <span className="animate-spin">⏳</span>
+                    ) : (
+                      <Download className="h-3.5 w-3.5" />
+                    )}
+                    Download PDF
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/orange"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/orange",
-                      `Statement-of-Claim-Orange-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/orange" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                {downloadError && (downloadingForm === "fl/plain-soc-orange" || downloadingForm === "fl/orange") && (
+                  <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                )}
+                <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    Prefer the standard layout? Use the programmatic version.
+                  </p>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/orange"}
+                    onClick={() =>
+                      downloadFormPost(
+                        "fl/orange",
+                        `Statement-of-Claim-Orange-Case-${caseId}.pdf`,
+                        {},
+                      )
+                    }
+                    className="shrink-0 flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/orange" ? (
+                      <span className="animate-spin">⏳</span>
+                    ) : (
+                      <Download className="h-3 w-3" />
+                    )}
+                    Alternate version
+                  </button>
+                </div>
               </div>
 
               {/* Summons — clerk-issued */}
@@ -2070,38 +2097,65 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 File with the Hillsborough County Clerk of Courts — 800 E. Twiggs St., Tampa.
               </p>
 
-              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
-                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+              {/* Statement of Claim (official county PDF) */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-snug">
+                      Initiates your small claims case. Pre-filled from your case details.
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
-                    Initiates your small claims case. Pre-filled with your case details and Hillsborough County Court header.
-                  </p>
-                  {downloadError && downloadingForm === "fl/hillsborough" && (
-                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
-                  )}
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/soc-hillsborough"}
+                    onClick={() =>
+                      downloadFormPost(
+                        "fl/soc-hillsborough",
+                        `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`,
+                        {},
+                      )
+                    }
+                    className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/soc-hillsborough" ? (
+                      <span className="animate-spin">⏳</span>
+                    ) : (
+                      <Download className="h-3.5 w-3.5" />
+                    )}
+                    Download PDF
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/hillsborough"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/hillsborough",
-                      `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/hillsborough" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                {downloadError && (downloadingForm === "fl/soc-hillsborough" || downloadingForm === "fl/hillsborough") && (
+                  <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                )}
+                <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    Prefer the standard layout? Use the programmatic version.
+                  </p>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/hillsborough"}
+                    onClick={() =>
+                      downloadFormPost(
+                        "fl/hillsborough",
+                        `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`,
+                        {},
+                      )
+                    }
+                    className="shrink-0 flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/hillsborough" ? (
+                      <span className="animate-spin">⏳</span>
+                    ) : (
+                      <Download className="h-3 w-3" />
+                    )}
+                    Alternate version
+                  </button>
+                </div>
               </div>
 
               {/* Summons — clerk-issued */}
