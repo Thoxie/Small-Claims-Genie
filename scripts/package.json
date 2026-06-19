@@ -13,6 +13,8 @@
     "test:sc100": "tsx ./src/test-sc100.ts",
     "test:fl-county-forms": "tsx ./src/test-fl-county-forms.ts",
     "test:fl-county-forms-extended": "tsx ./src/test-fl-county-forms-extended.ts",
+    "test:fl-orange": "tsx ./src/test-fl-orange.ts",
+    "test:fl-hillsborough": "tsx ./src/test-fl-hillsborough.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
