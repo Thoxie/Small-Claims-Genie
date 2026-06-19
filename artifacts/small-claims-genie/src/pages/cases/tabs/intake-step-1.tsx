@@ -277,7 +277,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
           <div className="rounded-xl border bg-muted/20 p-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County &amp; Court</h3>
 
-              <div className="flex flex-wrap gap-3 items-end mb-3">
+              <div className="flex flex-wrap gap-3 items-start mb-3">
                 {/* State dropdown */}
                 <div className="w-[180px] shrink-0">
                   <p className="text-sm font-semibold mb-2">State <span className="text-destructive">*</span></p>
