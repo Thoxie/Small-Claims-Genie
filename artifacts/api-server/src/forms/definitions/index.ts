@@ -29,6 +29,8 @@ export * from "./sc100a-definition";
 export * from "./sc140-definition";
 export * from "./mc030-definition";
 
-// ─── Florida AcroForm fills (pdftk FDF) ───────────────────────────────────────
+// ─── Florida programmatic forms (pdf-lib, no template PDF) ────────────────────
+// Statewide form must be exported first — county-specific forms import from it
+export * from "./fl-statement-of-claim-definition";
 export * from "./fl-clkct333-miami-dade-definition";
 export * from "./fl-cl219-volusia-definition";

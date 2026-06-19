@@ -1818,6 +1818,24 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   // ── Render ─────────────────────────────────────────────────────────────────
   const isFloridaCase = currentCase.jurisdictionState === "FL";
 
+  /** Informational card explaining that the FL Summons is issued by the court clerk. */
+  function FlSummonsInfoCard() {
+    return (
+      <div className="rounded-xl border bg-card p-4 flex items-start gap-3">
+        <div className="shrink-0 mt-0.5 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">i</div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className="text-sm font-bold text-foreground">Summons</span>
+            <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Clerk-Issued</span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-snug">
+            In Florida, the Summons is prepared and issued by the court clerk after you file the Statement of Claim and pay the filing fee. You do not create the Summons yourself — the clerk will issue it and arrange service on the defendant.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-3 pb-4 md:pb-6 space-y-4 px-4 md:px-6">
 
@@ -1873,6 +1891,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   Download PDF
                 </button>
               </div>
+
+              {/* Summons — clerk-issued */}
+              <FlSummonsInfoCard />
             </div>
           )}
 
@@ -1918,16 +1939,56 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   Download PDF
                 </button>
               </div>
+
+              {/* Summons — clerk-issued */}
+              <FlSummonsInfoCard />
             </div>
           )}
 
-          {/* Other FL counties — coming soon */}
+          {/* All other FL counties — statewide Statement of Claim */}
           {currentCase.countyId !== "fl-miami-dade" && currentCase.countyId !== "fl-volusia" && (
-            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 px-6 py-6 text-center">
-              <p className="text-sm text-blue-700 mb-1 font-semibold">Forms for this county are coming soon.</p>
-              <p className="text-xs text-blue-600">
-                Use the AI Case Advisor in the Review tab for guidance, or visit your county clerk's website to download forms directly.
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                File with your county clerk. Check your county's clerk website for the filing address and any local instructions.
               </p>
+
+              {/* FL Statement of Claim — statewide form */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Initiates your small claims case. Pre-filled with your case details and county court header.
+                  </p>
+                  {downloadError && downloadingForm === "fl/statement-of-claim" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/statement-of-claim"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/statement-of-claim",
+                      `Florida-Statement-of-Claim-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/statement-of-claim" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+
+              {/* Summons — clerk-issued */}
+              <FlSummonsInfoCard />
             </div>
           )}
         </div>

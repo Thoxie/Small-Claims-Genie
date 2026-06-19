@@ -230,16 +230,22 @@ router.post("/cases/:id/forms/sc150", makeFormHandler("SC-150", (id) => `SC150-C
 router.post("/cases/:id/forms/fw001", makeFormHandler("FW-001", (id) => `FW001-Case-${id}.pdf`, { inline: true }));
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Florida forms — county-specific AcroForm fills via pdftk
+// Florida forms — programmatic pdf-lib generation (no template PDF required)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Miami-Dade County — CLK/CT. 333 Statement of Claim
+// Statewide FL Statement of Claim — works for all 67 FL counties
+router.post(
+  "/cases/:id/forms/fl/statement-of-claim",
+  makeFormHandler("FL-STATEMENT-OF-CLAIM", (id) => `Florida-Statement-of-Claim-Case-${id}.pdf`),
+);
+
+// Miami-Dade County — CLK/CT. 333 Statement of Claim (county-specific header + filing address)
 router.post(
   "/cases/:id/forms/fl/clkct333",
   makeFormHandler("CLK-CT-333", (id) => `Statement-of-Claim-Miami-Dade-Case-${id}.pdf`),
 );
 
-// Volusia County — CL-219 Statement of Claim
+// Volusia County — CL-219 Statement of Claim (county-specific header + filing address)
 router.post(
   "/cases/:id/forms/fl/cl219-volusia",
   makeFormHandler("CL-219-VOLUSIA", (id) => `Statement-of-Claim-Volusia-Case-${id}.pdf`),

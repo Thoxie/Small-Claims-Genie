@@ -204,10 +204,11 @@ Defendant must be served at least 15 days before the hearing (same county) or 20
 After downloading SC-100: print 2 copies, go to the county small claims clerk window, pay the filing fee ($30–$75), get the hearing date stamped.
 
 FLORIDA CASES — FORMS ON THIS PAGE:
-- Miami-Dade County: CLK/CT. 333 (Statement of Claim) — pre-filled from intake data, download as PDF. File with the Miami-Dade County Court Clerk, 73 W. Flagler St., Suite 133, Miami.
-- Volusia County: CL-219 (Statement of Claim) — pre-filled from intake data, download as PDF. File with the Volusia County Court Clerk, 101 N. Alabama Ave., DeLand.
-- Other FL counties: county-specific forms are being added. Direct users to their county clerk's website for now.
-After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and get the summons issued. The clerk will serve the summons by certified mail or the plaintiff can arrange sheriff service.
+All 67 FL counties now have a pre-filled Statement of Claim PDF available for download.
+- Miami-Dade County: CLK/CT. 333 (Statement of Claim) — county-specific header and filing address (73 W. Flagler St., Suite 133, Miami) printed on the form. Download and file with the Miami-Dade County Court Clerk.
+- Volusia County: CL-219 (Statement of Claim) — county-specific header and filing address (101 N. Alabama Ave., DeLand) printed on the form. Download and file with the Volusia County Court Clerk.
+- All other FL counties: Statewide Statement of Claim — county court name pre-printed in the header, case data pre-filled. Download and file with the county clerk. Check the county's clerk website (visible on the Counties page) for the exact filing window and any local instructions.
+After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and request that the clerk issue the summons. The clerk will serve the summons by certified mail or the plaintiff can arrange sheriff service.
 
 Anticipate: which form to file first, service method choice, how to file, filing fee, what to do after downloading.`,
 

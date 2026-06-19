@@ -1,66 +1,57 @@
 ---
 name: FL Forms Architecture
-description: County-specific FL small claims form definitions, PDF field mappings, and county IDs
+description: FL small claims form definitions — all programmatic (pdf-lib), no template PDFs required
 ---
 
 # FL Forms Architecture
 
-## Pattern
-FL forms follow the same FormRegistry + makeFormHandler pattern as CA forms, using pdftk FDF fill (renderingTechnique: "xfa-pdftk"). Each county has its own FormDefinition registered in `forms/definitions/index.ts`.
+## Pattern (UPDATED — no template PDFs)
 
-## Implemented forms
+FL forms are ALL programmatic pdf-lib forms (renderingTechnique: "png-overlay"). No template PDF assets are required. The `buildFLStatementOfClaim()` function in `fl-statement-of-claim-definition.ts` is the core renderer that takes optional `countyOverride` and `clerkAddressOverride` parameters to customize the county header and filing address.
 
-### Miami-Dade — CLK/CT. 333 Statement of Claim
+**Why:** FL court form PDFs are not downloadable from official county/state websites programmatically (URLs return HTML error pages). The programmatic approach generates professional-looking PDFs that include all required fields and can serve all 67 FL counties from a single code path.
+
+## Form Definitions
+
+### Statewide — FL-STATEMENT-OF-CLAIM
+- **Form ID:** `FL-STATEMENT-OF-CLAIM`
+- **Definition:** `forms/definitions/fl-statement-of-claim-definition.ts`
+- **Route:** POST `/api/cases/:id/forms/fl/statement-of-claim`
+- **Used for:** All FL counties except Miami-Dade and Volusia
+- **Renders:** County court header dynamically from `countyId` in case data
+
+### Miami-Dade — CLK-CT-333
 - **Form ID:** `CLK-CT-333`
 - **County ID:** `fl-miami-dade`
-- **PDF:** `src/assets/fl-forms/clk-ct-333.pdf`
 - **Definition:** `forms/definitions/fl-clkct333-miami-dade-definition.ts`
 - **Route:** POST `/api/cases/:id/forms/fl/clkct333`
+- **Renders:** Delegates to `buildFLStatementOfClaim()` with county="Miami-Dade" + filing address
 
-**Key field mapping (confirmed via pdf-lib inspection):**
-- `Plaintiff` (x=40, y=131, w=186) → plaintiffName (header)
-- `Defendant` → defendantName (header)
-- `Address` → defendant full address
-- `Phone` → defendantPhone
-- `Text1` (x=452, y=72) → plaintiffEmail (top right)
-- `Text7` (y=383), `Text8` (y=401), `Text9` (y=419) → description (3 lines ~90 chars each)
-- `Text10` (x=250, y=438, w=80) → claim amount ($X,XXX.00)
-- `Text11` (y=474) → plaintiffName (sworn statement "The Plaintiff, ___")
-- `Text12` (y=558), `Text14` (y=591), `Text15` (y=591), `Text16` (y=609) → signature section
-- Check Box1 = CIVIL (always true), Check Box4–10 = claim types, Check Box11 = additional facts
-
-**Why:** Miami-Dade uses positional field names (Text1-Text25). The named fields (Plaintiff, Defendant, Address, Phone) were only visible via pdf-lib inspection, NOT in pdftk dump_data_fields output. Always use pdf-lib to inspect Miami-Dade fields.
-
-### Volusia — CL-219 Statement of Claim
+### Volusia — CL-219-VOLUSIA
 - **Form ID:** `CL-219-VOLUSIA`
 - **County ID:** `fl-volusia`
-- **PDF:** `src/assets/fl-forms/cl-219-volusia.pdf`
 - **Definition:** `forms/definitions/fl-cl219-volusia-definition.ts`
 - **Route:** POST `/api/cases/:id/forms/fl/cl219-volusia`
-
-**Key field mapping (all descriptive names, from pdftk):**
-- `Plaintiff 1`, `Plaintiff 2`, `Defendant 1`, `Defendant 2`
-- `Plaintiffs Address 1` (street), `Plaintiffs Address 2` (city, state zip)
-- `Defendants Address 1`, `Defendants Address 2`
-- `Plaintiffs Telephone Number`, `Defendants Telephone Number`
-- `Brief Statement Explaining Reasons For Filing Case` (500 chars max)
-- `Continuation of Explanation for Filing Case` (next 500 chars)
-- `Requested Judgment Amount` ($X,XXX.00)
-- `Plaintiff or Plaintiffs Address 2`, `Plaintiff or Plaintiffs Telephone Number`
-- `Plaintiff Address` (signature section)
+- **Renders:** Delegates to `buildFLStatementOfClaim()` with county="Volusia" + filing address
 
 ## Adding a new FL county
-1. Get the county's PDF form (AcroForm preferred)
-2. Run: `pdftk <form.pdf> dump_data_fields` + pdf-lib inspection for named fields
-3. Copy PDF to `src/assets/fl-forms/<form-id>.pdf`
-4. Create `forms/definitions/fl-<formid>-<county>-definition.ts`
-5. Register in `forms/definitions/index.ts`
-6. Add POST route in `routes/forms-unified.ts`
-7. Update `forms-tab.tsx` FL section with new county ID check
-8. Update AI prompts in `prompts/chat-prompt.ts` and `prompts/help-chat-prompt.ts`
+
+If a county wants a distinct form in the future:
+1. Create `forms/definitions/fl-<id>-<county>-definition.ts` delegating to `buildFLStatementOfClaim()` with appropriate county and address overrides
+2. Register in `forms/definitions/index.ts` (after the statewide form export)
+3. Add POST route in `routes/forms-unified.ts`
+4. Add county ID check block in `forms-tab.tsx` FL section
+5. Update AI prompts in `prompts/chat-prompt.ts` and `prompts/help-chat-prompt.ts`
 
 ## Frontend routing (forms-tab.tsx)
+
 FL forms section shows based on `currentCase.countyId`:
-- `fl-miami-dade` → CLK/CT. 333 card
-- `fl-volusia` → CL-219 card
-- Any other FL county → "coming soon" message
+- `fl-miami-dade` → CLK/CT. 333 card (route: `fl/clkct333`)
+- `fl-volusia` → CL-219 card (route: `fl/cl219-volusia`)
+- Any other FL county → statewide Statement of Claim card (route: `fl/statement-of-claim`)
+
+## Counties data
+
+All 67 FL counties are in `artifacts/api-server/src/routes/counties.ts` as `FLORIDA_COUNTIES`.
+They are served at `/api/counties?state=FL` and displayed on the Counties page with a FL toggle.
+County IDs follow the pattern `fl-<name>` (e.g., `fl-miami-dade`, `fl-broward`, `fl-orange`).
