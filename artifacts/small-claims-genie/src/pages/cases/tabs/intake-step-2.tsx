@@ -347,69 +347,67 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
             </FormItem>
           )} />
 
-          {/* Option C outer wrapper — full-width when inline-expanded */}
-          <div className={descExpanded ? "flex flex-col gap-5" : "grid grid-cols-1 md:grid-cols-2 gap-5"}>
-            <FormField control={form.control} name="claimDescription" render={({ field }) => (
-              <FormItem className={descExpanded ? "col-span-2" : ""}>
-                <FormLabel className="flex items-center gap-2 flex-wrap">
-                  <span>What happened? <span className="text-destructive">*</span></span>
-                  <span className="text-xs font-normal text-muted-foreground">Describe why you're owed money</span>
-                  {saveStatus === "saving" && (
-                    <span className="flex items-center gap-1 text-[11px] font-normal text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" /> Saving…
-                    </span>
-                  )}
-                  {saveStatus === "saved" && (
-                    <span className="flex items-center gap-1 text-[11px] font-normal text-teal-600">
-                      <CheckCircle className="h-3 w-3" /> Saved
-                    </span>
-                  )}
-                  {saveStatus === "error" && (
-                    <span className="flex items-center gap-1 text-[11px] font-normal text-destructive">
-                      <CloudOff className="h-3 w-3" /> Save failed — check connection
-                    </span>
-                  )}
-                  {/* Option C — inline expand/collapse toggle */}
-                  <button
-                    type="button"
-                    onClick={() => setDescExpanded(v => !v)}
-                    className="ml-auto flex items-center gap-1 text-[11px] font-medium text-[#0d6b5e] hover:text-[#0a5449] hover:underline transition-colors"
-                    title={descExpanded ? "Collapse editor" : "Expand inline"}
-                  >
-                    {descExpanded ? <><Minimize2 className="h-3.5 w-3.5" /> Collapse</> : <><Maximize2 className="h-3.5 w-3.5" /> Expand</>}
-                  </button>
-                  {/* Full-screen button moved here so resize handle corner is unobstructed */}
-                  <button
-                    type="button"
-                    title="Open full-screen editor"
-                    onClick={() => { setDescModalValue(field.value || ""); setDescModalOpen(true); }}
-                    className="flex items-center gap-1 text-[11px] font-medium text-[#0d6b5e] hover:text-[#0a5449] hover:underline transition-colors"
-                  >
-                    <Maximize2 className="h-3.5 w-3.5" /> Full Screen
-                  </button>
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    className={`transition-all ${descExpanded ? "min-h-[400px]" : "min-h-[88px]"}`}
-                    placeholder="Briefly describe why the defendant owes you money…"
-                    {...field}
-                    ref={(el) => {
-                      descTextareaRef.current = el;
-                      if (typeof field.ref === "function") field.ref(el);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="howAmountCalculated" render={({ field }) => (
-              <FormItem>
-                <FormLabel>How did you calculate this amount? <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Textarea className="min-h-[88px]" placeholder="e.g. $500 unpaid rent + $100 late fee + $50 court costs" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-          </div>
+          {/* How did you calculate — compact, above What happened */}
+          <FormField control={form.control} name="howAmountCalculated" render={({ field }) => (
+            <FormItem>
+              <FormLabel>How did you calculate this amount? <span className="text-destructive">*</span></FormLabel>
+              <FormControl><Textarea className="min-h-[88px]" placeholder="e.g. $500 unpaid rent + $100 late fee + $50 court costs" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+
+          {/* What happened — full-width, tall */}
+          <FormField control={form.control} name="claimDescription" render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2 flex-wrap">
+                <span>What happened? <span className="text-destructive">*</span></span>
+                <span className="text-xs font-normal text-muted-foreground">Describe why you're owed money</span>
+                {saveStatus === "saving" && (
+                  <span className="flex items-center gap-1 text-[11px] font-normal text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+                  </span>
+                )}
+                {saveStatus === "saved" && (
+                  <span className="flex items-center gap-1 text-[11px] font-normal text-teal-600">
+                    <CheckCircle className="h-3 w-3" /> Saved
+                  </span>
+                )}
+                {saveStatus === "error" && (
+                  <span className="flex items-center gap-1 text-[11px] font-normal text-destructive">
+                    <CloudOff className="h-3 w-3" /> Save failed — check connection
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setDescExpanded(v => !v)}
+                  className="ml-auto flex items-center gap-1 text-[11px] font-medium text-[#0d6b5e] hover:text-[#0a5449] hover:underline transition-colors"
+                  title={descExpanded ? "Collapse editor" : "Expand inline"}
+                >
+                  {descExpanded ? <><Minimize2 className="h-3.5 w-3.5" /> Collapse</> : <><Maximize2 className="h-3.5 w-3.5" /> Expand</>}
+                </button>
+                <button
+                  type="button"
+                  title="Open full-screen editor"
+                  onClick={() => { setDescModalValue(field.value || ""); setDescModalOpen(true); }}
+                  className="flex items-center gap-1 text-[11px] font-medium text-[#0d6b5e] hover:text-[#0a5449] hover:underline transition-colors"
+                >
+                  <Maximize2 className="h-3.5 w-3.5" /> Full Screen
+                </button>
+              </FormLabel>
+              <FormControl>
+                <Textarea
+                  className={`transition-all ${descExpanded ? "min-h-[500px]" : "min-h-[240px]"}`}
+                  placeholder="Briefly describe why the defendant owes you money…"
+                  {...field}
+                  ref={(el) => {
+                    descTextareaRef.current = el;
+                    if (typeof field.ref === "function") field.ref(el);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
 
           <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4">
             <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
