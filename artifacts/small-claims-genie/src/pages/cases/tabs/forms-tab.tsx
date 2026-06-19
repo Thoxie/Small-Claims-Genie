@@ -1860,11 +1860,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
-                    <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">CLK/CT. 333</span>
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">CLK/CT. 333</span>
                     <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
+                  <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                     Initiates your small claims case. Pre-filled from your case details.
                   </p>
                   {downloadError && downloadingForm === "fl/clkct333" && (
@@ -1909,11 +1909,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-foreground">Statement of Claim</span>
-                      <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">CL-219</span>
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">CL-219</span>
                       <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-snug">
+                    <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                       Initiates your small claims case. Pre-filled from your case details.
                     </p>
                   </div>
@@ -1981,10 +1981,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
                     <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
+                  <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                     Initiates your small claims case. Pre-filled with your case details and Broward County Court header.
                   </p>
                   {downloadError && downloadingForm === "fl/broward" && (
@@ -2029,10 +2029,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-foreground">Statement of Claim</span>
                       <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-snug">
+                    <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                       Initiates your small claims case. Pre-filled from your case details.
                     </p>
                   </div>
@@ -2102,10 +2102,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-foreground">Statement of Claim</span>
                       <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-snug">
+                    <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                       Initiates your small claims case. Pre-filled from your case details.
                     </p>
                   </div>
@@ -2173,10 +2173,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
                     <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
+                  <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                     Initiates your small claims case. Pre-filled with your case details and Palm Beach County Court header.
                   </p>
                   {downloadError && downloadingForm === "fl/palm-beach" && (
@@ -2220,10 +2220,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
                     <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
+                  <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                     Initiates your small claims case. Pre-filled with your case details and county court header.
                   </p>
                   {downloadError && downloadingForm === "fl/statement-of-claim" && (
