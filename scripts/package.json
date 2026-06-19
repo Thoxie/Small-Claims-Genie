@@ -11,6 +11,7 @@
     "test:mc030": "tsx ./src/test-mc030.ts",
     "test:mc030-ai": "tsx ./src/test-mc030-ai.ts",
     "test:sc100": "tsx ./src/test-sc100.ts",
+    "test:fl-county-forms": "tsx ./src/test-fl-county-forms.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
