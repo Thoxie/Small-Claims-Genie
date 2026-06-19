@@ -141,9 +141,10 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
     : null;
 
   const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
+  const countyState = selectedCounty?.state ?? (initialData.jurisdictionState ?? "CA");
   const courtAddress = selectedCourthouse
-    ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, CA ${selectedCourthouse.zip}`
-    : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, CA ${selectedCounty.courthouseZip}` : "";
+    ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, ${countyState} ${selectedCourthouse.zip}`
+    : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, ${countyState} ${selectedCounty.courthouseZip}` : "";
   const courtPhone = selectedCourthouse?.phone ?? selectedCounty?.phone;
 
   const handleSubmit = (data: Record<string, unknown>) => {
@@ -269,13 +270,13 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
               <div className="flex flex-wrap gap-3 items-end mb-3">
                 <FormField control={form.control} name="countyId" render={({ field }) => (
                   <FormItem className="w-[280px] shrink-0">
-                    <FormLabel className="font-semibold">California County <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel className="font-semibold">{(initialData.jurisdictionState ?? "CA") === "FL" ? "Florida County" : "California County"} <span className="text-destructive">*</span></FormLabel>
                     <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-10 w-[280px]"><SelectValue placeholder="Select your county" /></SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-72 overflow-y-auto">
-                        {counties?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
+                        {counties?.filter((c) => (c as ExtendedCounty).state === (initialData.jurisdictionState ?? "CA")).map((c) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage />

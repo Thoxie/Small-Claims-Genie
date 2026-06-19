@@ -331,7 +331,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                     </FormControl>
                     {initialData.jurisdictionState === "FL"
                       ? <p className="text-xs text-muted-foreground">Florida small claims limit: $8,000</p>
-                      : <p className="text-xs text-muted-foreground">California limit: $12,500 for individuals · $5,000 for businesses</p>
+                      : <p className="text-xs text-muted-foreground">California limit: $12,500 for individuals · $6,250 for businesses</p>
                     }
                     <FormMessage />
                   </FormItem>
