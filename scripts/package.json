@@ -16,6 +16,8 @@
     "test:fl-orange": "tsx ./src/test-fl-orange.ts",
     "test:fl-hillsborough": "tsx ./src/test-fl-hillsborough.ts",
     "test:fl-cl219-volusia-pdf": "tsx ./src/test-fl-cl219-volusia-pdf.ts",
+    "test:fl-plain-soc-orange": "tsx ./src/test-fl-plain-soc-orange.ts",
+    "test:fl-soc-hillsborough": "tsx ./src/test-fl-soc-hillsborough.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
