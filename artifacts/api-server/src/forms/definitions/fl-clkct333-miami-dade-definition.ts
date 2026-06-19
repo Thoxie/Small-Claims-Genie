@@ -1,32 +1,149 @@
 /**
- * FL CLK/CT. 333 — Miami-Dade County Statement of Claim.
+ * FL CLK/CT. 333 — Miami-Dade County Statement of Claim (official county PDF).
  *
- * Generates a Miami-Dade-specific Statement of Claim programmatically
- * using pdf-lib (no template PDF required). The header and filing address
- * are customized for Miami-Dade County Court.
+ * Fills the official Miami-Dade CLK/CT. 333 AcroForm PDF using pdftk FDF fill.
  *
+ * Source PDF: assets/fl-forms/clkct333-miami-dade.pdf
+ * Form: CLK/CT. 333 Rev. 06/23
  * Filing: Miami-Dade County Court Clerk, 73 W. Flagler St., Suite 133, Miami, FL 33130
  * Phone: (305) 275-1155 | Website: https://www.miamidadeclerk.gov
+ *
+ * Key fields confirmed via pdftk dump_data_fields + filled sample:
+ *   Plaintiff     — plaintiff name (multiline, header)
+ *   Defendant     — defendant name (multiline, header)
+ *   Address       — defendant address
+ *   Phone         — defendant phone
+ *   Text14        — additional facts / claim description (large text area)
+ *   Text16        — judgment amount
+ *   Check Box6    — "Other (Explain)" claim type checkbox
+ *   Check Box1-5,11 — specific claim type checkboxes
+ *
+ * Note: Signature and notary fields are left blank — user must sign before filing.
  */
 
+import * as path from "path";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
+import { pdftk_fill_form } from "../pdftk-fdf";
+import { ASSET_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
-import { buildFLStatementOfClaim } from "./fl-statement-of-claim-definition";
+
+const PDF_PATH = path.join(ASSET_DIR, "fl-forms", "clkct333-miami-dade.pdf");
+
+function formatAmount(amount: number | null | undefined): string {
+  if (!amount) return "";
+  return amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function fullAddress(
+  street?: string | null,
+  city?: string | null,
+  state?: string | null,
+  zip?: string | null,
+): string {
+  const parts: string[] = [];
+  if (street) parts.push(street);
+  const cityLine: string[] = [];
+  if (city) cityLine.push(city);
+  if (state && zip) cityLine.push(`${state} ${zip}`);
+  else if (state) cityLine.push(state);
+  else if (zip) cityLine.push(zip);
+  if (cityLine.length) parts.push(cityLine.join(", "));
+  return parts.join("\n");
+}
+
+/**
+ * Map a claim description to the appropriate checkbox on the CLK/CT. 333.
+ * Returns the field name of the matching checkbox, defaulting to Check Box6 (Other).
+ */
+function claimTypeCheckbox(d: CaseData): string {
+  const desc = (d.claimDescription ?? "").toLowerCase();
+  const type = (d.claimType ?? "").toLowerCase();
+  if (type.includes("goods") || desc.includes("merchandise") || desc.includes("goods")) return "Check Box1";
+  if (type.includes("work") || desc.includes("labor") || desc.includes("work done") || desc.includes("materials")) return "Check Box2";
+  if (type.includes("loan") || desc.includes("money lent") || desc.includes("loan")) return "Check Box3";
+  if (type.includes("account") || desc.includes("account stated")) return "Check Box4";
+  if (type.includes("contract") || type.includes("written") || desc.includes("written instrument") || desc.includes("contract")) return "Check Box11";
+  if (type.includes("rent") || desc.includes("rent") || desc.includes("lease")) return "Check Box5";
+  return "Check Box6"; // Other (Explain)
+}
 
 const clkCt333Definition: FormDefinition = {
   state: "FL",
   formId: "CLK-CT-333",
-  renderingTechnique: "png-overlay",
+  assetPath: PDF_PATH,
+  renderingTechnique: "xfa-pdftk",
 
-  async generate(d: CaseData, body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
-    return buildFLStatementOfClaim(
-      d,
-      body,
-      opts,
-      "Miami-Dade",
-      "73 W. Flagler St., Suite 133, Miami, FL 33130"
-    );
+  async generate(d: CaseData, _body: FormBody, _opts?: GenerateOptions): Promise<Buffer> {
+    const defAddress = fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
+
+    const checkedBox = claimTypeCheckbox(d);
+
+    const text: Record<string, string> = {
+      // ── Parties ───────────────────────────────────────────────────────────
+      "Plaintiff": d.plaintiffName ?? "",
+      "Defendant": d.defendantName ?? "",
+
+      // ── Defendant address + phone ─────────────────────────────────────────
+      "Address": defAddress,
+      "Phone":   d.defendantPhone ?? "",
+
+      // ── Claim description (large text area) ───────────────────────────────
+      "Text14": d.claimDescription ?? "",
+
+      // ── Judgment amount ───────────────────────────────────────────────────
+      "Text16": formatAmount(d.claimAmount),
+
+      // ── Plaintiff name in oath line ───────────────────────────────────────
+      "Text8": d.plaintiffName ?? "",
+
+      // ── Leave court-use / signature / notary fields blank ─────────────────
+      "Text1":  "",
+      "Text2":  "",
+      "Text7":  "",
+      "Text9":  "",
+      "Text10": "",
+      "Text11": "",
+      "Text12": "",
+      "Text13": "",
+      "Text15": "",
+      "Text17": "",
+      "Text18": "",
+      "Text19": "",
+      "Text20": "",
+      "Text21": "",
+      "Text22": "",
+      "Text23": "",
+      "Text24": "",
+      "Text25": "",
+      "Text26": "",
+      "Text27": "",
+    };
+
+    const checkboxes: Record<string, boolean> = {
+      "Check Box1":  checkedBox === "Check Box1",
+      "Check Box2":  checkedBox === "Check Box2",
+      "Check Box3":  checkedBox === "Check Box3",
+      "Check Box4":  checkedBox === "Check Box4",
+      "Check Box11": checkedBox === "Check Box11",
+      "Check Box5":  checkedBox === "Check Box5",
+      "Check Box6":  checkedBox === "Check Box6",
+      // Remaining checkboxes (service type, oath options) left unchecked
+      "Check Box7":  false,
+      "Check Box8":  false,
+      "Check Box9":  false,
+      "Check Box10": false,
+      "Check Box12": false,
+      "Check Box13": false,
+      "Check Box14": false,
+      "Check Box15": false,
+      "Check Box16": false,
+    };
+
+    return pdftk_fill_form(PDF_PATH, { text, checkboxes });
   },
 };
 
