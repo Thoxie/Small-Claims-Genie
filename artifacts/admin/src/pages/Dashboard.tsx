@@ -13,6 +13,7 @@ import {
   fetchBeta,
   fetchGenieConversions,
   fetchTestCases,
+  fetchAdminClerkId,
   createTestCase,
   deleteTestCase,
   clearErrors,
@@ -1196,6 +1197,16 @@ function TestCasesTab() {
     queryFn: () => fetchCountiesForState(state),
   });
 
+  useQuery<string | null>({
+    queryKey: ["admin-clerk-id"],
+    queryFn: fetchAdminClerkId,
+    staleTime: Infinity,
+    select: (clerkId) => {
+      if (clerkId && !targetUserId) setTargetUserId(clerkId);
+      return clerkId;
+    },
+  });
+
   const { data: testCases = [], isLoading: listLoading } = useQuery<TestCaseRow[]>({
     queryKey: ["test-cases"],
     queryFn: fetchTestCases,
@@ -1232,9 +1243,7 @@ function TestCasesTab() {
     createMut.mutate({ state, countyId, targetUserId: targetUserId.trim() });
   }
 
-  const mainAppBase = window.location.hostname.includes("replit")
-    ? `https://${window.location.hostname.replace(/\/admin.*/, "")}`
-    : "";
+  const mainAppBase = window.location.origin;
 
   return (
     <div className="space-y-6">

@@ -615,7 +615,8 @@ function pick<T>(arr: T[]): T {
 
 function buildTestCaseData(state: string, countyId: string, userId: string) {
   const allCounties = state === "FL" ? FLORIDA_COUNTIES : CALIFORNIA_COUNTIES;
-  const county = allCounties.find((c) => c.id === countyId) ?? allCounties[0];
+  const county = allCounties.find((c) => c.id === countyId);
+  if (!county) return null;
   const cityName = county.courthouseCity;
   const stateAbbr = state === "FL" ? "FL" : "CA";
 
@@ -720,6 +721,10 @@ router.post("/admin/test-cases", async (req: Request, res: Response): Promise<vo
 
   try {
     const data = buildTestCaseData(state, countyId, targetUserId);
+    if (!data) {
+      res.status(400).json({ error: `County '${countyId}' not found for state '${state}'` });
+      return;
+    }
     const [inserted] = await db.insert(casesTable).values(data).returning();
     res.json(inserted);
   } catch (err) {
@@ -728,9 +733,38 @@ router.post("/admin/test-cases", async (req: Request, res: Response): Promise<vo
   }
 });
 
+// ── GET /admin/my-clerk-id ────────────────────────────────────────────────────
+router.get("/admin/my-clerk-id", async (_req: Request, res: Response): Promise<void> => {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) {
+    res.json({ clerkId: null });
+    return;
+  }
+  const secretKey = clerkSecretKey();
+  if (!secretKey) {
+    res.json({ clerkId: null });
+    return;
+  }
+  try {
+    const params = new URLSearchParams({ email_address: adminEmail, limit: "1" });
+    const clerkRes = await fetch(`https://api.clerk.com/v1/users?${params}`, {
+      headers: { Authorization: `Bearer ${secretKey}` },
+    });
+    if (!clerkRes.ok) {
+      res.json({ clerkId: null });
+      return;
+    }
+    const users = (await clerkRes.json()) as ClerkUser[];
+    res.json({ clerkId: users[0]?.id ?? null });
+  } catch {
+    res.json({ clerkId: null });
+  }
+});
+
 // ── DELETE /admin/test-cases/:id ──────────────────────────────────────────────
 router.delete("/admin/test-cases/:id", async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(rawId, 10);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid case ID" });
     return;

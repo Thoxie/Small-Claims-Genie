@@ -96,6 +96,11 @@ export async function fetchTestCases(): Promise<TestCaseRow[]> {
   return apiFetch<TestCaseRow[]>("/admin/test-cases");
 }
 
+export async function fetchAdminClerkId(): Promise<string | null> {
+  const result = await apiFetch<{ clerkId: string | null }>("/admin/my-clerk-id");
+  return result.clerkId;
+}
+
 export async function createTestCase(payload: {
   state: string;
   countyId: string;
