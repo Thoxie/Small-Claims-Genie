@@ -239,10 +239,16 @@ router.post(
   makeFormHandler("FL-STATEMENT-OF-CLAIM", (id) => `Florida-Statement-of-Claim-Case-${id}.pdf`),
 );
 
-// Miami-Dade County — CLK/CT. 333 Statement of Claim (county-specific header + filing address)
+// Miami-Dade County — CLK/CT. 333 Statement of Claim (official county PDF)
 router.post(
   "/cases/:id/forms/fl/clkct333",
   makeFormHandler("CLK-CT-333", (id) => `Statement-of-Claim-Miami-Dade-Case-${id}.pdf`),
+);
+
+// Miami-Dade County — CLK/CT. 423 Summons/Notice to Appear (official county PDF)
+router.post(
+  "/cases/:id/forms/fl/clkct423",
+  makeFormHandler("CLK-CT-423", (id) => `Summons-Miami-Dade-Case-${id}.pdf`),
 );
 
 // Volusia County — CL-219 Statement of Claim (county-specific header + filing address)
