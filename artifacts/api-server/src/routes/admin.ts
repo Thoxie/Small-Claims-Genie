@@ -1,6 +1,7 @@
 import { Router, type Request, type Response, type NextFunction, type RequestHandler } from "express";
 import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable } from "@workspace/db";
-import { sql, count, sum, eq, gte, desc, and, isNotNull } from "drizzle-orm";
+import { sql, count, sum, eq, gte, desc, and, isNotNull, like } from "drizzle-orm";
+import { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES } from "./counties";
 import { logger } from "../lib/logger";
 import { getErrors, clearErrors } from "../lib/errorLog";
 import { BETA_LIMIT } from "../lib/beta";
@@ -576,6 +577,187 @@ router.get("/admin/genie-conversions", async (_req: Request, res: Response): Pro
     .orderBy(desc(genieConversionsTable.createdAt))
     .limit(200);
   res.json(rows);
+});
+
+// ── Test Case seed data helpers ───────────────────────────────────────────────
+const CA_CLAIM_TYPES = ["Property Damage", "Breach of Contract", "Security Deposit", "Unpaid Wages", "Loan Repayment"];
+const FL_CLAIM_TYPES = ["Property Damage", "Breach of Contract", "Security Deposit", "Unpaid Wages", "Loan Repayment"];
+
+const CA_SAMPLE_DEFENDANTS = [
+  { name: "Pacific Properties LLC", address: "500 Commerce Dr", isBusinessOrEntity: true },
+  { name: "John Michael Turner", address: "1422 Maple Ave", isBusinessOrEntity: false },
+  { name: "Westside Auto Repair Inc", address: "8801 Industrial Blvd", isBusinessOrEntity: true },
+  { name: "Maria Elena Sanchez", address: "3311 Park Blvd", isBusinessOrEntity: false },
+];
+
+const FL_SAMPLE_DEFENDANTS = [
+  { name: "Sunshine Realty LLC", address: "200 Brickell Ave", isBusinessOrEntity: true },
+  { name: "James William Carter", address: "456 Palm Dr", isBusinessOrEntity: false },
+  { name: "Gulf Coast Auto Group Inc", address: "9900 US Highway 19", isBusinessOrEntity: true },
+  { name: "Ashley Nicole Brooks", address: "712 Beach Rd", isBusinessOrEntity: false },
+];
+
+const CA_DESCRIPTIONS = [
+  "Defendant failed to return my $2,500 security deposit after I vacated the premises on time and left the unit in excellent condition. Multiple written requests for return of the deposit have been ignored.",
+  "Defendant caused significant damage to my vehicle while it was parked in front of my residence. The vehicle sustained $2,500 in damages which defendant refuses to pay despite repeated requests.",
+  "Defendant borrowed $2,500 and agreed to repay within 30 days under a written agreement. Despite the due date having passed months ago, defendant has made no payment and stopped responding to communication.",
+];
+
+const FL_DESCRIPTIONS = [
+  "Defendant failed to return my $2,500 security deposit after I vacated the rental unit on time and in clean condition. Florida Statute 83.49 requires the deposit be returned within 15 days; defendant has not complied.",
+  "Defendant caused $2,500 in damage to my personal property and refuses to compensate me despite written demand. The damage is documented with photographs and repair estimates.",
+  "Defendant owes $2,500 under a written contract for services rendered. Despite completing all contracted work and submitting multiple invoices, defendant has not paid any amount owed.",
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function buildTestCaseData(state: string, countyId: string, userId: string) {
+  const allCounties = state === "FL" ? FLORIDA_COUNTIES : CALIFORNIA_COUNTIES;
+  const county = allCounties.find((c) => c.id === countyId) ?? allCounties[0];
+  const cityName = county.courthouseCity;
+  const stateAbbr = state === "FL" ? "FL" : "CA";
+
+  const defendants = state === "FL" ? FL_SAMPLE_DEFENDANTS : CA_SAMPLE_DEFENDANTS;
+  const defendant = pick(defendants);
+  const claimTypes = state === "FL" ? FL_CLAIM_TYPES : CA_CLAIM_TYPES;
+  const descriptions = state === "FL" ? FL_DESCRIPTIONS : CA_DESCRIPTIONS;
+
+  const incidentDate = new Date();
+  incidentDate.setMonth(incidentDate.getMonth() - 3);
+  const incidentDateStr = incidentDate.toISOString().slice(0, 10);
+
+  const priorDemandDate = new Date();
+  priorDemandDate.setMonth(priorDemandDate.getMonth() - 1);
+  const priorDemandDateStr = priorDemandDate.toISOString().slice(0, 10);
+
+  const countyDisplayName = county.name;
+  const title = `[TEST] ${countyDisplayName} ${stateAbbr} — ${pick(claimTypes)} QA Case`;
+
+  return {
+    userId,
+    title,
+    status: "draft" as const,
+    countyId: county.id,
+    jurisdictionState: stateAbbr,
+    claimAmount: 2500,
+    claimType: pick(claimTypes),
+    claimDescription: pick(descriptions),
+    incidentDate: incidentDateStr,
+    plaintiffName: "Alex Jordan Rivera",
+    plaintiffAddress: "123 Test Lane",
+    plaintiffCity: cityName,
+    plaintiffState: stateAbbr,
+    plaintiffZip: county.courthouseZip,
+    plaintiffPhone: "(555) 010-0001",
+    plaintiffEmail: "test-plaintiff@example.com",
+    defendantName: defendant.name,
+    defendantAddress: defendant.address,
+    defendantCity: cityName,
+    defendantState: stateAbbr,
+    defendantZip: county.courthouseZip,
+    defendantIsBusinessOrEntity: defendant.isBusinessOrEntity,
+    priorDemandMade: true,
+    priorDemandDate: priorDemandDateStr,
+    priorDemandMethod: "Email and certified mail",
+    priorDemandDescription: "Sent written demand letter requesting $2,500. Defendant did not respond within the required timeframe.",
+    howAmountCalculated: "Direct damages: $2,500 based on documented receipts and estimates.",
+    courthouseName: county.courthouseName,
+    courthouseAddress: county.courthouseAddress,
+    courthouseCity: county.courthouseCity,
+    courthouseZip: county.courthouseZip,
+    courthousePhone: county.phone,
+    venueReason: `The incident occurred in ${countyDisplayName} County.`,
+    venueBasis: "where_defendant_lives",
+    intakeStep: 5,
+    intakeComplete: true,
+    readinessScore: 62,
+  };
+}
+
+// ── GET /admin/test-cases ─────────────────────────────────────────────────────
+router.get("/admin/test-cases", async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const rows = await db
+      .select({
+        id: casesTable.id,
+        title: casesTable.title,
+        countyId: casesTable.countyId,
+        jurisdictionState: casesTable.jurisdictionState,
+        userId: casesTable.userId,
+        claimType: casesTable.claimType,
+        createdAt: casesTable.createdAt,
+      })
+      .from(casesTable)
+      .where(like(casesTable.title, "[TEST]%"))
+      .orderBy(desc(casesTable.createdAt))
+      .limit(20);
+    res.json(rows);
+  } catch (err) {
+    logger.error({ err }, "Admin test-cases list error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── POST /admin/test-cases ────────────────────────────────────────────────────
+router.post("/admin/test-cases", async (req: Request, res: Response): Promise<void> => {
+  const { state, countyId, targetUserId } = req.body as {
+    state?: string;
+    countyId?: string;
+    targetUserId?: string;
+  };
+
+  if (!state || !countyId || !targetUserId) {
+    res.status(400).json({ error: "state, countyId, and targetUserId are required" });
+    return;
+  }
+
+  if (state !== "CA" && state !== "FL") {
+    res.status(400).json({ error: "state must be CA or FL" });
+    return;
+  }
+
+  try {
+    const data = buildTestCaseData(state, countyId, targetUserId);
+    const [inserted] = await db.insert(casesTable).values(data).returning();
+    res.json(inserted);
+  } catch (err) {
+    logger.error({ err }, "Admin test-cases create error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── DELETE /admin/test-cases/:id ──────────────────────────────────────────────
+router.delete("/admin/test-cases/:id", async (req: Request, res: Response): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid case ID" });
+    return;
+  }
+  try {
+    const [existing] = await db
+      .select({ id: casesTable.id, title: casesTable.title })
+      .from(casesTable)
+      .where(eq(casesTable.id, id))
+      .limit(1);
+
+    if (!existing) {
+      res.status(404).json({ error: "Case not found" });
+      return;
+    }
+
+    if (!existing.title.startsWith("[TEST]")) {
+      res.status(403).json({ error: "Only [TEST] cases can be deleted via this endpoint" });
+      return;
+    }
+
+    await db.delete(casesTable).where(eq(casesTable.id, id));
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error({ err }, "Admin test-cases delete error");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ── GET/POST /admin/notifications ─────────────────────────────────────────────

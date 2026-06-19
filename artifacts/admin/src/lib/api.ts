@@ -92,6 +92,25 @@ export async function fetchGenieConversions(): Promise<GenieConversionRow[]> {
   return apiFetch<GenieConversionRow[]>("/admin/genie-conversions");
 }
 
+export async function fetchTestCases(): Promise<TestCaseRow[]> {
+  return apiFetch<TestCaseRow[]>("/admin/test-cases");
+}
+
+export async function createTestCase(payload: {
+  state: string;
+  countyId: string;
+  targetUserId: string;
+}): Promise<TestCaseRow> {
+  return apiFetch<TestCaseRow>("/admin/test-cases", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteTestCase(id: number): Promise<void> {
+  await apiFetch<{ ok: boolean }>(`/admin/test-cases/${id}`, { method: "DELETE" });
+}
+
 export async function validateCredentials(
   email: string,
   password: string
@@ -246,6 +265,16 @@ export interface ErrorEntry {
   method?: string;
   statusCode?: number;
   stack?: string;
+}
+
+export interface TestCaseRow {
+  id: number;
+  title: string;
+  countyId: string | null;
+  jurisdictionState: string;
+  userId: string | null;
+  claimType: string | null;
+  createdAt: string;
 }
 
 export interface StatusData {

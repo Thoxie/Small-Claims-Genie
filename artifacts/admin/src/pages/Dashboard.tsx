@@ -12,6 +12,9 @@ import {
   fetchStatus,
   fetchBeta,
   fetchGenieConversions,
+  fetchTestCases,
+  createTestCase,
+  deleteTestCase,
   clearErrors,
   setNotifications,
   clearStoredKey,
@@ -21,6 +24,7 @@ import {
   type StatusData,
   type BetaData,
   type GenieConversionRow,
+  type TestCaseRow,
 } from "@/lib/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,7 +69,17 @@ import {
   Cpu,
   UserCheck,
   ShieldCheck,
+  FlaskConical,
+  ExternalLink,
+  Plus,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const CHART_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
 
@@ -1159,6 +1173,224 @@ function GenieConversionsTab() {
   );
 }
 
+// ── Test Cases Tab ────────────────────────────────────────────────────────────
+type CountyOption = { id: string; name: string };
+
+async function fetchCountiesForState(state: string): Promise<CountyOption[]> {
+  const res = await fetch(`/api/counties?state=${state}`);
+  if (!res.ok) return [];
+  const data = (await res.json()) as Array<{ id: string; name: string }>;
+  return data.map((c) => ({ id: c.id, name: c.name }));
+}
+
+function TestCasesTab() {
+  const qc = useQueryClient();
+  const [state, setState] = useState<"CA" | "FL">("CA");
+  const [countyId, setCountyId] = useState("");
+  const [targetUserId, setTargetUserId] = useState("");
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSuccess, setCreateSuccess] = useState<number | null>(null);
+
+  const { data: counties = [], isLoading: countiesLoading } = useQuery<CountyOption[]>({
+    queryKey: ["counties", state],
+    queryFn: () => fetchCountiesForState(state),
+  });
+
+  const { data: testCases = [], isLoading: listLoading } = useQuery<TestCaseRow[]>({
+    queryKey: ["test-cases"],
+    queryFn: fetchTestCases,
+  });
+
+  const createMut = useMutation({
+    mutationFn: createTestCase,
+    onSuccess: (row) => {
+      setCreateSuccess(row.id);
+      setCreateError(null);
+      void qc.invalidateQueries({ queryKey: ["test-cases"] });
+    },
+    onError: (err: Error) => {
+      setCreateError(err.message);
+      setCreateSuccess(null);
+    },
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: deleteTestCase,
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["test-cases"] }),
+  });
+
+  function handleStateChange(newState: "CA" | "FL") {
+    setState(newState);
+    setCountyId("");
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!countyId || !targetUserId.trim()) return;
+    setCreateSuccess(null);
+    setCreateError(null);
+    createMut.mutate({ state, countyId, targetUserId: targetUserId.trim() });
+  }
+
+  const mainAppBase = window.location.hostname.includes("replit")
+    ? `https://${window.location.hostname.replace(/\/admin.*/, "")}`
+    : "";
+
+  return (
+    <div className="space-y-6">
+      {/* Create form */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <FlaskConical className="h-4 w-4 text-violet-500" />
+            Create Test Case
+          </CardTitle>
+          <p className="text-xs text-gray-500">
+            Creates a fully pre-filled QA case tagged [TEST] under the specified user account. Log in to the main app as that user to test forms, AI, and county-specific behavior.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* State */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-600">State</label>
+                <Select value={state} onValueChange={(v) => handleStateChange(v as "CA" | "FL")}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CA">California (CA)</SelectItem>
+                    <SelectItem value="FL">Florida (FL)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* County */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-600">County</label>
+                <Select
+                  value={countyId}
+                  onValueChange={setCountyId}
+                  disabled={countiesLoading || counties.length === 0}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder={countiesLoading ? "Loading…" : "Select county"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72 overflow-y-auto">
+                    {counties.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Target User ID */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-600">Target User ID (Clerk)</label>
+                <Input
+                  className="h-9 text-sm font-mono"
+                  placeholder="user_…"
+                  value={targetUserId}
+                  onChange={(e) => setTargetUserId(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-violet-600 hover:bg-violet-700 text-white"
+                disabled={!countyId || !targetUserId.trim() || createMut.isPending}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                {createMut.isPending ? "Creating…" : "Create Test Case"}
+              </Button>
+
+              {createSuccess && (
+                <span className="text-xs text-green-600 font-medium">
+                  ✓ Case #{createSuccess} created — open it in the main app below
+                </span>
+              )}
+              {createError && (
+                <span className="text-xs text-red-600">{createError}</span>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Recent test cases */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold text-gray-700">
+            Recent Test Cases{" "}
+            <span className="font-normal text-gray-400 text-xs">(last 20)</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {listLoading ? (
+            <LoadingSkeleton rows={3} cols={1} />
+          ) : testCases.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">No test cases yet. Create one above.</p>
+          ) : (
+            <div className="space-y-2">
+              {testCases.map((tc) => (
+                <div
+                  key={tc.id}
+                  className="flex items-center gap-3 rounded-lg border px-4 py-3 bg-white"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className="bg-violet-100 text-violet-700 text-xs shrink-0">
+                        {tc.jurisdictionState}
+                      </Badge>
+                      <span className="text-sm font-medium text-gray-800 truncate">{tc.title}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      ID #{tc.id}
+                      {tc.countyId && ` · ${tc.countyId}`}
+                      {tc.claimType && ` · ${tc.claimType}`}
+                      {` · Created ${fmtDateTime(tc.createdAt)}`}
+                    </p>
+                    {tc.userId && (
+                      <p className="text-xs text-gray-400 font-mono truncate" title={tc.userId}>
+                        {tc.userId}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={`${mainAppBase}/cases/${tc.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                    >
+                      Open <ExternalLink className="h-3 w-3" />
+                    </a>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => deleteMut.mutate(tc.id)}
+                      disabled={deleteMut.isPending}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 function LoadingSkeleton({ rows = 3, cols = 1 }: { rows?: number; cols?: number }) {
   return (
@@ -1234,6 +1466,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
             <TabsTrigger value="signups" className="text-xs sm:text-sm">Signups</TabsTrigger>
             <TabsTrigger value="status" className="text-xs sm:text-sm">Status</TabsTrigger>
             <TabsTrigger value="conversions" className="text-xs sm:text-sm">Conversions</TabsTrigger>
+            <TabsTrigger value="test-cases" className="text-xs sm:text-sm">🧪 Test Cases</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview"><OverviewTab /></TabsContent>
@@ -1245,6 +1478,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
           <TabsContent value="signups"><SignupsTab /></TabsContent>
           <TabsContent value="status"><StatusTab /></TabsContent>
           <TabsContent value="conversions"><GenieConversionsTab /></TabsContent>
+          <TabsContent value="test-cases"><TestCasesTab /></TabsContent>
         </Tabs>
       </div>
     </div>
