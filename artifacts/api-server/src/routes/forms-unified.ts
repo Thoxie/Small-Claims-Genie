@@ -251,6 +251,12 @@ router.post(
   makeFormHandler("CL-219-VOLUSIA", (id) => `Statement-of-Claim-Volusia-Case-${id}.pdf`),
 );
 
+// Volusia County — CL-219 Statement of Claim (alternate: actual county PDF)
+router.post(
+  "/cases/:id/forms/fl/cl219-volusia-pdf",
+  makeFormHandler("CL-219-VOLUSIA-PDF", (id) => `Statement-of-Claim-Volusia-Case-${id}.pdf`),
+);
+
 // Broward County — Statement of Claim (county-specific header + filing address)
 router.post(
   "/cases/:id/forms/fl/broward",
