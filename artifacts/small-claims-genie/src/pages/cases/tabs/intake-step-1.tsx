@@ -3,7 +3,7 @@ import { useListCounties } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Home, Play, X, ChevronRight, Sparkles } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -13,12 +13,6 @@ import { formatPhone, formatZip, DatePicker, intakeStep1Schema } from "./shared"
 
 import type { ExtendedCase, ExtendedCounty, Courthouse } from "@/lib/types";
 
-type JurisdictionState = "CA" | "FL";
-
-const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = [
-  { value: "CA", label: "California", flag: "🌴", sub: "Up to $12,500" },
-  { value: "FL", label: "Florida", flag: "☀️", sub: "Up to $8,000" },
-];
 
 interface Props {
   initialData: Partial<ExtendedCase>;
@@ -30,9 +24,6 @@ interface Props {
 }
 
 export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {
-  const [jurisdictionState, setJurisdictionState] = useState<JurisdictionState>(
-    (initialData.jurisdictionState as JurisdictionState) ?? "CA"
-  );
   const { data: counties } = useListCounties();
 
   const [plaintiffMailingDiffers, setPlaintiffMailingDiffers] = useState(
@@ -235,7 +226,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
     }
     onNext({
       ...data,
-      jurisdictionState,
+      jurisdictionState: selectedCounty?.state ?? "CA",
       courthouseName: courtName || null,
       courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
       courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
@@ -278,42 +269,29 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
           <div className="rounded-xl border bg-muted/20 p-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County &amp; Court</h3>
 
-              {/* State selector */}
-              <div className="mb-3">
-                <p className="text-sm font-semibold mb-2">Which state are you filing in?</p>
-                <div className="grid grid-cols-2 gap-2 max-w-xs">
-                  {STATE_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => {
-                        setJurisdictionState(opt.value);
-                        form.setValue("countyId", "");
-                        form.setValue("courthouseId", "");
-                      }}
-                      className={`flex flex-col items-center justify-center gap-0.5 px-3 py-2.5 rounded-lg border-2 transition-all text-sm ${
-                        jurisdictionState === opt.value
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-background hover:border-primary/50 text-foreground"
-                      }`}
-                    >
-                      <span className="text-lg">{opt.flag}</span>
-                      <span className="font-semibold text-xs">{opt.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="flex flex-wrap gap-3 items-end mb-3">
                 <FormField control={form.control} name="countyId" render={({ field }) => (
                   <FormItem className="w-[280px] shrink-0">
-                    <FormLabel className="font-semibold">{jurisdictionState === "FL" ? "Florida County" : "California County"} <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel className="font-semibold">Filing County <span className="text-destructive">*</span></FormLabel>
                     <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-10 w-[280px]"><SelectValue placeholder="Select your county" /></SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-72 overflow-y-auto">
-                        {counties?.filter((c) => (c as ExtendedCounty).state === jurisdictionState).map((c) => <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>)}
+                        {(["CA", "FL"] as const).map((state) => {
+                          const stateCounties = [...((counties ?? []) as ExtendedCounty[])]
+                            .filter((c) => c.state === state)
+                            .sort((a, b) => a.name.localeCompare(b.name));
+                          if (stateCounties.length === 0) return null;
+                          return (
+                            <SelectGroup key={state}>
+                              <SelectLabel>{state === "CA" ? "🌴 California" : "☀️ Florida"}</SelectLabel>
+                              {stateCounties.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>
+                              ))}
+                            </SelectGroup>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -979,7 +957,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
       {/* ── Full-width footer — outside two-column layout so it spans both columns ── */}
       <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8">
-        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit({ ...form.getValues(), jurisdictionState })}>
+        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit({ ...form.getValues(), jurisdictionState: selectedCounty?.state ?? "CA" })}>
           <Home className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Save &amp; Exit</span>
         </Button>
