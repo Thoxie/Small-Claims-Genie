@@ -6,30 +6,23 @@
  * variant (fl-cl219-volusia-definition.ts) remains available as a fallback.
  *
  * Source PDF: assets/fl-forms/cl-219-volusia.pdf
- * Field names confirmed via: python regex /T\s*\(([^)]+)\)/ scan
+ * Downloaded from: https://www.clerk.org/pdf/CL-0219-Statement-of-Claim.pdf
+ * Field names confirmed via: pdftk dump_data_fields
  *
- * Key fields:
- *   Plaintiff 1 / Plaintiff 2          — plaintiff name lines
- *   Defendant 1 / Defendant 2          — defendant name lines
- *   Plaintiffs Address 1               — plaintiff street address
- *   Plaintiffs Address 2               — plaintiff city, state zip
- *   Plaintiffs Telephone Number        — plaintiff phone
- *   Defendants Address 1               — defendant street address
- *   Defendants Address 2               — defendant city, state zip
- *   Defendants Telephone Number        — defendant phone
- *   Brief Statement Explaining Reasons For Filing Case  — claim description (first chunk)
- *   Continuation of Explanation for Filing Case         — claim description overflow
- *   Requested Judgment Amount          — dollar amount claimed
- *   Interest, Attorneys Fees and Costs — additional amounts (left blank)
- *   Case Number                        — blank (clerk assigns)
- *   Assigned Judge                     — blank
- *   Plaintiff or Plaintiffs Address    — plaintiff address (signature section)
- *   Plaintiff Address                  — plaintiff address (sworn section)
- *   Plaintiff or Plaintiffs Address 2  — city, state zip (signature section)
- *   Plaintiff or Plaintiffs Telephone Number — plaintiff phone (signature section)
- *   Plaintiff or Plaintiffs Attorney   — blank (self-represented)
- *   BY                                 — plaintiff name (signature line)
- *   Month / Day / Last 2 year numbers  — date of signing
+ * Key fields (as returned by pdftk dump_data_fields):
+ *   Plaintiffs                                               — plaintiff name (header)
+ *   Defendants                                               — defendant name (header)
+ *   Address                                                  — plaintiff full address
+ *   Address_2                                                — defendant full address
+ *   Telephone                                                — plaintiff phone
+ *   Telephone_2                                              — defendant phone
+ *   Plaintiffs_2                                             — plaintiff name (claim body)
+ *   sues                                                     — defendant name (claim body)
+ *   2 Give a brief statement explaining reasons for filing…  — claim description (primary)
+ *   any supporting documentation and additional pages…1-6    — claim description overflow lines
+ *   WHEREFORE Plaintiff requests judgment in the amount of   — claim amount
+ *   damages                                                  — additional damages (blank)
+ *   undefined / undefined_2 / undefined_3 / undefined_4     — court-use fields (blank)
  *
  * Filing: Volusia County Clerk of Courts, 101 N. Alabama Ave., DeLand, FL 32724
  */
@@ -56,37 +49,55 @@ function formatAmount(amount: number | null | undefined): string {
   );
 }
 
-function cityStateZip(
+function fullAddress(
+  street?: string | null,
   city?: string | null,
   state?: string | null,
   zip?: string | null,
 ): string {
-  const parts: string[] = [];
-  if (city) parts.push(city);
-  if (state && zip) parts.push(`${state} ${zip}`);
-  else if (state) parts.push(state);
-  else if (zip) parts.push(zip);
-  return parts.join(", ");
+  const line1 = street ?? "";
+  const cityPart = city ?? "";
+  const statePart = state ?? "";
+  const zipPart = zip ?? "";
+  const line2Parts: string[] = [];
+  if (cityPart) line2Parts.push(cityPart);
+  if (statePart && zipPart) line2Parts.push(`${statePart} ${zipPart}`);
+  else if (statePart) line2Parts.push(statePart);
+  else if (zipPart) line2Parts.push(zipPart);
+  const line2 = line2Parts.join(", ");
+  return [line1, line2].filter(Boolean).join("\n");
 }
 
 /**
- * Split a description string into two chunks at a word boundary.
- * The Volusia CL-219 has a primary field and a "Continuation" field.
+ * Split a description string into a primary field (first line) and up to six
+ * overflow continuation lines. The Volusia CL-219 has one primary description
+ * field and six "additional pages if needed" continuation fields.
  */
-function splitDescription(desc: string, primaryMax = 400): [string, string] {
-  if (!desc) return ["", ""];
-  if (desc.length <= primaryMax) return [desc, ""];
-  const cut = desc.lastIndexOf(" ", primaryMax);
-  const splitAt = cut > 0 ? cut : primaryMax;
-  return [desc.slice(0, splitAt).trim(), desc.slice(splitAt).trim()];
-}
+function splitDescription(desc: string): [string, string[]] {
+  if (!desc) return ["", []];
+  const primaryMax = 200;
+  if (desc.length <= primaryMax) return [desc, []];
 
-function signingDate(): { month: string; day: string; year2: string } {
-  const now = new Date();
-  const month = now.toLocaleString("en-US", { month: "long" });
-  const day = String(now.getDate());
-  const year2 = String(now.getFullYear()).slice(-2);
-  return { month, day, year2 };
+  const primaryCut = desc.lastIndexOf(" ", primaryMax);
+  const primaryEnd = primaryCut > 0 ? primaryCut : primaryMax;
+  const primary = desc.slice(0, primaryEnd).trim();
+  const rest = desc.slice(primaryEnd).trim();
+
+  // Split rest into ~200-char continuation chunks (at word boundaries)
+  const chunks: string[] = [];
+  let remaining = rest;
+  while (remaining.length > 0 && chunks.length < 6) {
+    if (remaining.length <= 200) {
+      chunks.push(remaining);
+      break;
+    }
+    const cut = remaining.lastIndexOf(" ", 200);
+    const end = cut > 0 ? cut : 200;
+    chunks.push(remaining.slice(0, end).trim());
+    remaining = remaining.slice(end).trim();
+  }
+
+  return [primary, chunks];
 }
 
 // ─── Form definition ──────────────────────────────────────────────────────────
@@ -98,48 +109,47 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
   renderingTechnique: "xfa-pdftk",
 
   async generate(d: CaseData, _body: FormBody, _opts?: GenerateOptions): Promise<Buffer> {
-    const pltCityStateZip = cityStateZip(d.plaintiffCity, d.plaintiffState, d.plaintiffZip);
-    const defCityStateZip = cityStateZip(d.defendantCity, d.defendantState, d.defendantZip);
-    const [primary, continuation] = splitDescription(d.claimDescription ?? "");
-    const { month, day, year2 } = signingDate();
+    const pltAddress = fullAddress(d.plaintiffAddress, d.plaintiffCity, d.plaintiffState, d.plaintiffZip);
+    const defAddress = fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
+    const [primary, continuations] = splitDescription(d.claimDescription ?? "");
 
     const text: Record<string, string> = {
-      // ── Plaintiff ─────────────────────────────────────────────────────────
-      "Plaintiff 1":                 d.plaintiffName ?? "",
-      "Plaintiff 2":                 d.plaintiffDbaName ?? "",
-      "Plaintiffs Address 1":        d.plaintiffAddress ?? "",
-      "Plaintiffs Address 2":        pltCityStateZip,
-      "Plaintiffs Telephone Number": d.plaintiffPhone ?? "",
+      // ── Header: parties ───────────────────────────────────────────────────
+      "Plaintiffs":  d.plaintiffName ?? "",
+      "Defendants":  d.defendantName ?? "",
 
-      // ── Defendant ─────────────────────────────────────────────────────────
-      "Defendant 1":                 d.defendantName ?? "",
-      "Defendant 2":                 "",
-      "Defendants Address 1":        d.defendantAddress ?? "",
-      "Defendants Address 2":        defCityStateZip,
-      "Defendants Telephone Number": d.defendantPhone ?? "",
+      // ── Addresses ─────────────────────────────────────────────────────────
+      "Address":   pltAddress,
+      "Address_2": defAddress,
 
-      // ── Claim ─────────────────────────────────────────────────────────────
-      "Brief Statement Explaining Reasons For Filing Case": primary,
-      "Continuation of Explanation for Filing Case":        continuation,
-      "Requested Judgment Amount":                          formatAmount(d.claimAmount),
-      "Interest, Attorneys Fees and Costs":                 "",
+      // ── Phone numbers ─────────────────────────────────────────────────────
+      "Telephone":   d.plaintiffPhone ?? "",
+      "Telephone_2": d.defendantPhone ?? "",
 
-      // ── Court use ─────────────────────────────────────────────────────────
-      "Case Number":    "",
-      "Assigned Judge": "",
+      // ── Body: "Plaintiffs [name] sues Defendants [name] for…" ─────────────
+      "Plaintiffs_2": d.plaintiffName ?? "",
+      "sues":         d.defendantName ?? "",
 
-      // ── Signature / sworn section ─────────────────────────────────────────
-      "Plaintiff or Plaintiffs Address":           d.plaintiffAddress ?? "",
-      "Plaintiff Address":                         d.plaintiffAddress ?? "",
-      "Plaintiff or Plaintiffs Address 2":         pltCityStateZip,
-      "Plaintiff or Plaintiffs Telephone Number":  d.plaintiffPhone ?? "",
-      "Plaintiff or Plaintiffs Attorney":          "",
-      "BY":                                        d.plaintiffName ?? "",
+      // ── Claim description ─────────────────────────────────────────────────
+      "2 Give a brief statement explaining reasons for filing this suit  what happened dates times place etc Attach":
+        primary,
+      "any supporting documentation and additional pages if needed 1": continuations[0] ?? "",
+      "any supporting documentation and additional pages if needed 2": continuations[1] ?? "",
+      "any supporting documentation and additional pages if needed 3": continuations[2] ?? "",
+      "any supporting documentation and additional pages if needed 4": continuations[3] ?? "",
+      "any supporting documentation and additional pages if needed 5": continuations[4] ?? "",
+      "any supporting documentation and additional pages if needed 6": continuations[5] ?? "",
 
-      // ── Date ──────────────────────────────────────────────────────────────
-      "Month":              month,
-      "Day":                day,
-      "Last 2 year numbers": year2,
+      // ── Claim amount ──────────────────────────────────────────────────────
+      "WHEREFORE Plaintiff requests judgment in the amount of": formatAmount(d.claimAmount),
+      "damages": "",
+
+      // ── Court-use / undefined fields — left blank ─────────────────────────
+      "STATEMENT OF CLAIM": "",
+      "undefined":   "",
+      "undefined_2": "",
+      "undefined_3": "",
+      "undefined_4": "",
     };
 
     return pdftk_fill_form(PDF_PATH, { text });
