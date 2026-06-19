@@ -71,14 +71,56 @@ If a county wants a distinct form in the future:
 4. Add county ID check block in `forms-tab.tsx` FL section (and add county ID to the statewide fallback exclusion list)
 5. Update AI prompts in `prompts/chat-prompt.ts` and `prompts/help-chat-prompt.ts`
 
+### Orange County — Plain Statement of Claim
+- **Form ID:** `PLAIN-SOC-ORANGE`
+- **County ID:** `fl-orange`
+- **PDF:** `src/assets/fl-forms/plain-statement-of-claim-orange.pdf`
+- **Definition:** `forms/definitions/fl-plain-soc-orange-definition.ts`
+- **Route:** POST `/api/cases/:id/forms/fl/plain-soc-orange`
+
+**Key field mapping (confirmed via pdftk dump_data_fields):**
+- `Name` → plaintiffName, `Street Address` → plaintiffAddress, `City State and Zip` → city/state/zip (single line), `Phone Number` → plaintiffPhone
+- `Name_2` → defendantName, `Street Address_2`, `City State and Zip_2`, `Phone Number_2`
+- `of interest court costs and attorney fees` → formatted claim amount ($X,XXX.XX)
+- `Plaintiffs` → plaintiffName in sworn-statement section
+- `Text1` → claimDescription
+- `Case Number` → left blank
+
+### Hillsborough County — Statement of Claim
+- **Form ID:** `SOC-HILLSBOROUGH`
+- **County ID:** `fl-hillsborough`
+- **PDF:** `src/assets/fl-forms/statement-of-claim-hillsborough.pdf`
+- **Definition:** `forms/definitions/fl-soc-hillsborough-definition.ts`
+- **Route:** POST `/api/cases/:id/forms/fl/soc-hillsborough`
+
+**Key field mapping (confirmed via pdftk dump_data_fields):**
+- `PlaintiffName1`/`PlaintiffName2`, `DefendantName1`/`DefendantName2`
+- Defendant: `DefAddress`, `DefCity`, `DefState`, `DefZipCode`, `DefPhone`
+- Checkboxes use `"On"` export value (NOT `"Yes"`): `GoodsCheckBox`, `WorkCheckBox`, `MoneyCheckBox`, `PMCheckBox`, `ASCheckBox`, `OtherCheckBox`, `AutoCheckBox`, `AttachCheckBox`
+- `Explanation1`–`Explanation4` → description split at ~200 chars/field
+- `Principal` and `Total` → formatted amount (no $ prefix); `Costs` and `Interest` → blank
+- `Plaintiff Address 1`–`Plaintiff Address 4`, `PlaintiffName4`, `TelephoneNumber`, `EmailAddresses`
+
+**Why "On" not "Yes":** Hillsborough form uses `FieldStateOption: On` not the AcroForm standard `FieldStateOption: Yes`. Must pass the string "On" explicitly.
+
+## Broward County — Form 633 (not downloadable, clerk only)
+- **County ID:** `fl-broward`
+- Their form download system (`browardclerk.org/clerkwebsite/bccoc2/filedownload.aspx`) returns HTML/JS pages, not PDFs. The form must be obtained in person from the Broward Clerk's office.
+- UI shows a card with a link to `browardclerk.org/Divisions/CountyCivil`.
+
+## Palm Beach County — Statement of Claim (not downloadable, sold in-person)
+- **County ID:** `fl-palm-beach`
+- Palm Beach sells forms from their Self-Service Center only; no public PDF download.
+- UI shows a card with a link to `mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims`.
+
 ## Frontend routing (forms-tab.tsx)
 
 FL forms section shows based on `currentCase.countyId`:
 - `fl-miami-dade` → CLK/CT. 333 card (route: `fl/clkct333`)
 - `fl-volusia` → CL-219 card (route: `fl/cl219-volusia`)
 - `fl-broward` → Broward county-specific card (route: `fl/broward`)
-- `fl-orange` → Orange county-specific card (route: `fl/orange`)
-- `fl-hillsborough` → Hillsborough county-specific card (route: `fl/hillsborough`)
+- `fl-orange` → Orange county-specific card (route: `fl/orange`); also `fl/plain-soc-orange` (alternate definition using actual county PDF)
+- `fl-hillsborough` → Hillsborough county-specific card (route: `fl/hillsborough`); also `fl/soc-hillsborough` (alternate definition using actual county PDF)
 - `fl-palm-beach` → Palm Beach county-specific card (route: `fl/palm-beach`)
 - Any other FL county → statewide Statement of Claim card (route: `fl/statement-of-claim`)
 

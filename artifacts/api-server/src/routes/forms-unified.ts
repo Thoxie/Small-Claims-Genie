@@ -275,4 +275,16 @@ router.post(
   makeFormHandler("FL-PALM-BEACH-SOC", (id) => `Statement-of-Claim-Palm-Beach-Case-${id}.pdf`),
 );
 
+// Orange County — Plain Statement of Claim (alternate: actual county PDF)
+router.post(
+  "/cases/:id/forms/fl/plain-soc-orange",
+  makeFormHandler("PLAIN-SOC-ORANGE", (id) => `Statement-of-Claim-Orange-Case-${id}.pdf`),
+);
+
+// Hillsborough County — Statement of Claim (alternate: actual county PDF)
+router.post(
+  "/cases/:id/forms/fl/soc-hillsborough",
+  makeFormHandler("SOC-HILLSBOROUGH", (id) => `Statement-of-Claim-Hillsborough-Case-${id}.pdf`),
+);
+
 export default router;
