@@ -205,8 +205,12 @@ After downloading SC-100: print 2 copies, go to the county small claims clerk wi
 
 FLORIDA CASES — FORMS ON THIS PAGE:
 All 67 FL counties now have a pre-filled Statement of Claim PDF available for download.
-- Miami-Dade County: CLK/CT. 333 (Statement of Claim) — county-specific header and filing address (73 W. Flagler St., Suite 133, Miami) printed on the form. Download and file with the Miami-Dade County Court Clerk.
-- Volusia County: CL-219 (Statement of Claim) — county-specific header and filing address (101 N. Alabama Ave., DeLand) printed on the form. Download and file with the Volusia County Court Clerk.
+- Miami-Dade County: CLK/CT. 333 — county-specific header and filing address (73 W. Flagler St., Suite 133, Miami) printed on the form. Download and file with the Miami-Dade County Court Clerk.
+- Volusia County: CL-219 — county-specific header and filing address (101 N. Alabama Ave., DeLand) printed on the form. Download and file with the Volusia County Court Clerk.
+- Broward County: Statement of Claim — county-specific header and filing address (201 SE 6th St., Room 01250, Fort Lauderdale) printed on the form. Download and file with the Broward County Clerk of Courts.
+- Orange County: Statement of Claim — county-specific header and filing address (425 N. Orange Ave., Suite 100, Orlando) printed on the form. Download and file with the Orange County Clerk of Courts.
+- Hillsborough County: Statement of Claim — county-specific header and filing address (800 E. Twiggs St., Tampa) printed on the form. Download and file with the Hillsborough County Clerk of Courts.
+- Palm Beach County: Statement of Claim — county-specific header and filing address (205 N. Dixie Hwy., West Palm Beach) printed on the form. Download and file with the Palm Beach County Clerk & Comptroller.
 - All other FL counties: Statewide Statement of Claim — county court name pre-printed in the header, case data pre-filled. Download and file with the county clerk. Check the county's clerk website (visible on the Counties page) for the exact filing window and any local instructions.
 After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and request that the clerk issue the summons. The clerk will serve the summons by certified mail or the plaintiff can arrange sheriff service.
 

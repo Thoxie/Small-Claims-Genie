@@ -1945,8 +1945,192 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             </div>
           )}
 
+          {/* Broward County forms */}
+          {currentCase.countyId === "fl-broward" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                File with the Broward County Clerk of Courts — 201 SE 6th St., Room 01250, Fort Lauderdale.
+              </p>
+
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Initiates your small claims case. Pre-filled with your case details and Broward County Court header.
+                  </p>
+                  {downloadError && downloadingForm === "fl/broward" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/broward"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/broward",
+                      `Statement-of-Claim-Broward-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/broward" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+
+              {/* Summons — clerk-issued */}
+              <FlSummonsInfoCard />
+            </div>
+          )}
+
+          {/* Orange County forms */}
+          {currentCase.countyId === "fl-orange" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                File with the Orange County Clerk of Courts — 425 N. Orange Ave., Suite 100, Orlando.
+              </p>
+
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Initiates your small claims case. Pre-filled with your case details and Orange County Court header.
+                  </p>
+                  {downloadError && downloadingForm === "fl/orange" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/orange"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/orange",
+                      `Statement-of-Claim-Orange-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/orange" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+
+              {/* Summons — clerk-issued */}
+              <FlSummonsInfoCard />
+            </div>
+          )}
+
+          {/* Hillsborough County forms */}
+          {currentCase.countyId === "fl-hillsborough" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                File with the Hillsborough County Clerk of Courts — 800 E. Twiggs St., Tampa.
+              </p>
+
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Initiates your small claims case. Pre-filled with your case details and Hillsborough County Court header.
+                  </p>
+                  {downloadError && downloadingForm === "fl/hillsborough" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/hillsborough"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/hillsborough",
+                      `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/hillsborough" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+
+              {/* Summons — clerk-issued */}
+              <FlSummonsInfoCard />
+            </div>
+          )}
+
+          {/* Palm Beach County forms */}
+          {currentCase.countyId === "fl-palm-beach" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                File with the Palm Beach County Clerk &amp; Comptroller — 205 N. Dixie Hwy., West Palm Beach.
+              </p>
+
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-bold text-foreground">Statement of Claim</span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Initiates your small claims case. Pre-filled with your case details and Palm Beach County Court header.
+                  </p>
+                  {downloadError && downloadingForm === "fl/palm-beach" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/palm-beach"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/palm-beach",
+                      `Statement-of-Claim-Palm-Beach-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/palm-beach" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+
+              {/* Summons — clerk-issued */}
+              <FlSummonsInfoCard />
+            </div>
+          )}
+
           {/* All other FL counties — statewide Statement of Claim */}
-          {currentCase.countyId !== "fl-miami-dade" && currentCase.countyId !== "fl-volusia" && (
+          {currentCase.countyId !== "fl-miami-dade" && currentCase.countyId !== "fl-volusia" && currentCase.countyId !== "fl-broward" && currentCase.countyId !== "fl-orange" && currentCase.countyId !== "fl-hillsborough" && currentCase.countyId !== "fl-palm-beach" && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 File with your county clerk. Check your county's clerk website for the filing address and any local instructions.

@@ -251,4 +251,28 @@ router.post(
   makeFormHandler("CL-219-VOLUSIA", (id) => `Statement-of-Claim-Volusia-Case-${id}.pdf`),
 );
 
+// Broward County — Statement of Claim (county-specific header + filing address)
+router.post(
+  "/cases/:id/forms/fl/broward",
+  makeFormHandler("FL-BROWARD-SOC", (id) => `Statement-of-Claim-Broward-Case-${id}.pdf`),
+);
+
+// Orange County — Statement of Claim (county-specific header + filing address)
+router.post(
+  "/cases/:id/forms/fl/orange",
+  makeFormHandler("FL-ORANGE-SOC", (id) => `Statement-of-Claim-Orange-Case-${id}.pdf`),
+);
+
+// Hillsborough County — Statement of Claim (county-specific header + filing address)
+router.post(
+  "/cases/:id/forms/fl/hillsborough",
+  makeFormHandler("FL-HILLSBOROUGH-SOC", (id) => `Statement-of-Claim-Hillsborough-Case-${id}.pdf`),
+);
+
+// Palm Beach County — Statement of Claim (county-specific header + filing address)
+router.post(
+  "/cases/:id/forms/fl/palm-beach",
+  makeFormHandler("FL-PALM-BEACH-SOC", (id) => `Statement-of-Claim-Palm-Beach-Case-${id}.pdf`),
+);
+
 export default router;
