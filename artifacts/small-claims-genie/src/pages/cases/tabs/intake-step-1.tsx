@@ -3,7 +3,7 @@ import { useListCounties } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Home, Play, X, ChevronRight, Sparkles } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -23,7 +23,15 @@ interface Props {
   onAiCheck?: () => void;
 }
 
+const STATE_OPTIONS = [
+  { value: "CA", label: "California" },
+  { value: "FL", label: "Florida" },
+];
+
 export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {
+  const [jurisdictionState, setJurisdictionState] = useState<string>(
+    (initialData.jurisdictionState as string) ?? "CA"
+  );
   const { data: counties } = useListCounties();
 
   const [plaintiffMailingDiffers, setPlaintiffMailingDiffers] = useState(
@@ -226,7 +234,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
     }
     onNext({
       ...data,
-      jurisdictionState: selectedCounty?.state ?? "CA",
+      jurisdictionState,
       courthouseName: courtName || null,
       courthouseAddress: selectedCourthouse?.address ?? selectedCounty?.courthouseAddress ?? null,
       courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
@@ -270,28 +278,43 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Filing County &amp; Court</h3>
 
               <div className="flex flex-wrap gap-3 items-end mb-3">
+                {/* State dropdown */}
+                <div className="w-[180px] shrink-0">
+                  <p className="text-sm font-semibold mb-2">State <span className="text-destructive">*</span></p>
+                  <Select
+                    value={jurisdictionState}
+                    onValueChange={(v) => {
+                      setJurisdictionState(v);
+                      form.setValue("countyId", "");
+                      form.setValue("courthouseId", "");
+                    }}
+                  >
+                    <SelectTrigger className="h-10 w-[180px]">
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATE_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* County dropdown — filtered by selected state */}
                 <FormField control={form.control} name="countyId" render={({ field }) => (
                   <FormItem className="w-[280px] shrink-0">
-                    <FormLabel className="font-semibold">Filing County <span className="text-destructive">*</span></FormLabel>
-                    <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value}>
+                    <FormLabel className="font-semibold">County <span className="text-destructive">*</span></FormLabel>
+                    <Select onValueChange={(v) => { field.onChange(v); form.setValue("courthouseId", ""); }} defaultValue={field.value} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-10 w-[280px]"><SelectValue placeholder="Select your county" /></SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-72 overflow-y-auto">
-                        {(["CA", "FL"] as const).map((state) => {
-                          const stateCounties = [...((counties ?? []) as ExtendedCounty[])]
-                            .filter((c) => c.state === state)
-                            .sort((a, b) => a.name.localeCompare(b.name));
-                          if (stateCounties.length === 0) return null;
-                          return (
-                            <SelectGroup key={state}>
-                              <SelectLabel>{state === "CA" ? "🌴 California" : "☀️ Florida"}</SelectLabel>
-                              {stateCounties.map((c) => (
-                                <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>
-                              ))}
-                            </SelectGroup>
-                          );
-                        })}
+                        {[...(counties ?? [])]
+                          .filter((c) => (c as ExtendedCounty).state === jurisdictionState)
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -957,7 +980,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
       {/* ── Full-width footer — outside two-column layout so it spans both columns ── */}
       <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8">
-        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit({ ...form.getValues(), jurisdictionState: selectedCounty?.state ?? "CA" })}>
+        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit({ ...form.getValues(), jurisdictionState })}>
           <Home className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Save &amp; Exit</span>
         </Button>
