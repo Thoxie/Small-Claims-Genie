@@ -12,6 +12,7 @@
     "test:mc030-ai": "tsx ./src/test-mc030-ai.ts",
     "test:sc100": "tsx ./src/test-sc100.ts",
     "test:fl-county-forms": "tsx ./src/test-fl-county-forms.ts",
+    "test:fl-county-forms-extended": "tsx ./src/test-fl-county-forms-extended.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
