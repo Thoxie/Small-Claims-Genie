@@ -103,15 +103,21 @@ If a county wants a distinct form in the future:
 
 **Why "On" not "Yes":** Hillsborough form uses `FieldStateOption: On` not the AcroForm standard `FieldStateOption: Yes`. Must pass the string "On" explicitly.
 
-## Broward County — Form 633 (not downloadable, clerk only)
+## Broward County — FL-BROWARD-SOC (downloadable programmatic form)
 - **County ID:** `fl-broward`
-- Their form download system (`browardclerk.org/clerkwebsite/bccoc2/filedownload.aspx`) returns HTML/JS pages, not PDFs. The form must be obtained in person from the Broward Clerk's office.
-- UI shows a card with a link to `browardclerk.org/Divisions/CountyCivil`.
+- **Definition:** `forms/definitions/fl-broward-definition.ts`
+- **Route:** POST `/api/cases/:id/forms/fl/broward`
+- **Filing address:** 201 SE 6th St., Room 01250, Fort Lauderdale, FL 33301
+- Delegates to `buildFLStatementOfClaim()` with county="Broward" and filing address.
+- UI shows a Download PDF button (not a link card).
 
-## Palm Beach County — Statement of Claim (not downloadable, sold in-person)
+## Palm Beach County — FL-PALM-BEACH-SOC (downloadable programmatic form)
 - **County ID:** `fl-palm-beach`
-- Palm Beach sells forms from their Self-Service Center only; no public PDF download.
-- UI shows a card with a link to `mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims`.
+- **Definition:** `forms/definitions/fl-palm-beach-definition.ts`
+- **Route:** POST `/api/cases/:id/forms/fl/palm-beach`
+- **Filing address:** 205 N. Dixie Hwy., West Palm Beach, FL 33401
+- Delegates to `buildFLStatementOfClaim()` with county="Palm Beach" and filing address.
+- UI shows a Download PDF button (not a link card).
 
 ## Frontend routing (forms-tab.tsx)
 
