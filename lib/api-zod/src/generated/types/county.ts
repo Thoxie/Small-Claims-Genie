@@ -5,10 +5,12 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
+import type { CountyState } from "./countyState";
 
 export interface County {
   id: string;
   name: string;
+  state: CountyState;
   courthouseName: string;
   courthouseAddress: string;
   courthouseCity: string;
@@ -18,5 +20,6 @@ export interface County {
   filingFeeOver5000?: number;
   phone?: string;
   website?: string;
+  clerkWebsite?: string;
   notes?: string;
 }

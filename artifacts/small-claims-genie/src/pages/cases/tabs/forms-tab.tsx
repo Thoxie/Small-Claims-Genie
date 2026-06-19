@@ -1816,10 +1816,29 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
+  const isFloridaCase = currentCase.jurisdictionState === "FL";
+
   return (
     <div className="pt-3 pb-4 md:pb-6 space-y-4 px-4 md:px-6">
 
       {isDraftMode && <DraftModeBanner />}
+
+      {/* FL coming soon banner — replaces form wizard for Florida cases */}
+      {isFloridaCase && (
+        <div className="rounded-xl border-2 border-blue-200 bg-blue-50 px-6 py-8 text-center">
+          <div className="text-3xl mb-3">☀️</div>
+          <h3 className="text-lg font-bold text-blue-900 mb-2">Florida Court Forms — Coming Soon</h3>
+          <p className="text-sm text-blue-700 mb-4 max-w-md mx-auto">
+            Florida small claims forms (Statement of Claim and related filings) are being added to the platform. Check back soon — or use the AI Case Advisor in the Review tab to get guidance on what to file with your Florida county clerk.
+          </p>
+          <p className="text-xs text-blue-600 font-medium">
+            In the meantime, visit your county's clerk website to download the correct forms.
+          </p>
+        </div>
+      )}
+
+      {/* CA form wizard — hidden for Florida cases */}
+      {!isFloridaCase && <>
 
       {/* Mobile tutorial trigger — hidden on desktop */}
       <button
@@ -2722,6 +2741,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           </div>
         </div>
       )}
+
+      </> /* end !isFloridaCase CA wizard */}
 
     </div>
   );

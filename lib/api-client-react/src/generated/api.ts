@@ -30,6 +30,7 @@ import type {
   GenerateOpenaiImageBody,
   GenerateOpenaiImageResponse,
   HealthStatus,
+  ListCountiesParams,
   OpenaiConversation,
   OpenaiConversationWithMessages,
   OpenaiError,
@@ -140,43 +141,59 @@ export function useHealthCheck<
 }
 
 /**
- * @summary List all 58 California counties with courthouse info
+ * @summary List counties with courthouse info, optionally filtered by state
  */
-export const getListCountiesUrl = () => {
-  return `/api/counties`;
+export const getListCountiesUrl = (params?: ListCountiesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/counties?${stringifiedParams}`
+    : `/api/counties`;
 };
 
 export const listCounties = async (
+  params?: ListCountiesParams,
   options?: RequestInit,
 ): Promise<County[]> => {
-  return customFetch<County[]>(getListCountiesUrl(), {
+  return customFetch<County[]>(getListCountiesUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getListCountiesQueryKey = () => {
-  return [`/api/counties`] as const;
+export const getListCountiesQueryKey = (params?: ListCountiesParams) => {
+  return [`/api/counties`, ...(params ? [params] : [])] as const;
 };
 
 export const getListCountiesQueryOptions = <
   TData = Awaited<ReturnType<typeof listCounties>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: OptionalQueryKey<
-    Awaited<ReturnType<typeof listCounties>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: ListCountiesParams,
+  options?: {
+    query?: OptionalQueryKey<
+      Awaited<ReturnType<typeof listCounties>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getListCountiesQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getListCountiesQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof listCounties>>> = ({
     signal,
-  }) => listCounties({ signal, ...requestOptions });
+  }) => listCounties(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof listCounties>>,
@@ -191,21 +208,24 @@ export type ListCountiesQueryResult = NonNullable<
 export type ListCountiesQueryError = ErrorType<unknown>;
 
 /**
- * @summary List all 58 California counties with courthouse info
+ * @summary List counties with courthouse info, optionally filtered by state
  */
 
 export function useListCounties<
   TData = Awaited<ReturnType<typeof listCounties>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: OptionalQueryKey<
-    Awaited<ReturnType<typeof listCounties>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getListCountiesQueryOptions(options);
+>(
+  params?: ListCountiesParams,
+  options?: {
+    query?: OptionalQueryKey<
+      Awaited<ReturnType<typeof listCounties>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCountiesQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

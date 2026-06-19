@@ -107,6 +107,7 @@ export const casesTable = pgTable("cases", {
   hadArbitration: boolean("had_arbitration").default(false),
   filedMoreThan12Claims: boolean("filed_more_than_12_claims").default(false),
   claimOver2500: boolean("claim_over_2500").default(false),
+  jurisdictionState: text("jurisdiction_state").notNull().default("CA"),
   intakeStep: integer("intake_step").default(1),
   intakeComplete: boolean("intake_complete").default(false),
   documentCount: integer("document_count").default(0),

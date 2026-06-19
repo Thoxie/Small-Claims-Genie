@@ -5,6 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
+import type { CaseJurisdictionState } from "./caseJurisdictionState";
 import type { CaseStatus } from "./caseStatus";
 
 export interface Case {
@@ -12,6 +13,7 @@ export interface Case {
   title: string;
   status: CaseStatus;
   countyId?: string;
+  jurisdictionState?: CaseJurisdictionState;
   claimAmount?: number;
   claimType?: string;
   plaintiffName?: string;

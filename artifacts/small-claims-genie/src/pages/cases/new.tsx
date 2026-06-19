@@ -16,16 +16,30 @@ const CLAIM_TYPES = [
   "Other",
 ];
 
+type JurisdictionState = "CA" | "FL";
+
+const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = [
+  { value: "CA", label: "California", flag: "🌴", sub: "Up to $12,500" },
+  { value: "FL", label: "Florida", flag: "☀️", sub: "Up to $8,000" },
+];
+
 export default function NewCase() {
   const [, setLocation] = useLocation();
-  const { data: counties } = useListCounties();
   const createCase = useCreateCase();
   const { toast } = useToast();
+
+  const [jurisdictionState, setJurisdictionState] = useState<JurisdictionState>("CA");
+  const { data: counties } = useListCounties({ state: jurisdictionState } as Parameters<typeof useListCounties>[0]);
 
   const [title, setTitle] = useState("");
   const [claimType, setClaimType] = useState("");
   const [countyId, setCountyId] = useState("");
   const [errors, setErrors] = useState<{ title?: string; claimType?: string; countyId?: string }>({});
+
+  const handleStateChange = (s: JurisdictionState) => {
+    setJurisdictionState(s);
+    setCountyId("");
+  };
 
   const handleSubmit = () => {
     const newErrors: { title?: string; claimType?: string; countyId?: string } = {};
@@ -41,7 +55,7 @@ export default function NewCase() {
     setErrors({});
 
     createCase.mutate(
-      { data: { title: title.trim(), claimType, countyId } },
+      { data: { title: title.trim(), claimType, countyId, jurisdictionState } },
       {
         onSuccess: (newCase) => {
           setLocation(`/cases/${newCase.id}`);
@@ -57,6 +71,11 @@ export default function NewCase() {
     );
   };
 
+  const countyLabel = jurisdictionState === "CA" ? "California County" : "Florida County";
+  const countyHint = jurisdictionState === "CA"
+    ? "Usually where the defendant lives or where the incident happened."
+    : "Usually where the defendant lives, where the contract was signed, or where the incident happened.";
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <Card className="border-2 shadow-lg">
@@ -67,6 +86,31 @@ export default function NewCase() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-8 space-y-8">
+
+          {/* State selector */}
+          <div>
+            <label className="text-base font-semibold block mb-2">
+              Which state are you filing in?
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {STATE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => handleStateChange(opt.value)}
+                  className={`flex flex-col items-center justify-center gap-1 px-4 py-4 rounded-lg border-2 transition-all ${
+                    jurisdictionState === opt.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background hover:border-primary/50 text-foreground"
+                  }`}
+                >
+                  <span className="text-2xl">{opt.flag}</span>
+                  <span className="font-semibold text-sm">{opt.label}</span>
+                  <span className="text-xs text-muted-foreground">{opt.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Case Title */}
           <div>
@@ -106,10 +150,10 @@ export default function NewCase() {
             {errors.claimType && <p className="text-sm text-destructive mt-1">{errors.claimType}</p>}
           </div>
 
-          {/* County — required */}
+          {/* County */}
           <div>
             <label className="text-base font-semibold block mb-2">
-              California County <span className="text-red-500">*</span>
+              {countyLabel} <span className="text-red-500">*</span>
             </label>
             <select
               className={`w-full h-14 px-3 rounded-md border bg-background text-base ${errors.countyId ? "border-red-500" : "border-input"}`}
@@ -123,9 +167,7 @@ export default function NewCase() {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-muted-foreground mt-1">
-              Usually where the defendant lives or where the incident happened.
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">{countyHint}</p>
             {errors.countyId && <p className="text-sm text-destructive mt-1">{errors.countyId}</p>}
           </div>
 

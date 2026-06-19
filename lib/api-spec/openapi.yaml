@@ -40,7 +40,15 @@ paths:
     get:
       operationId: listCounties
       tags: [counties]
-      summary: List all 58 California counties with courthouse info
+      summary: List counties with courthouse info, optionally filtered by state
+      parameters:
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [CA, FL]
+          description: Filter by jurisdiction state (CA or FL). Returns all if omitted.
       responses:
         "200":
           description: List of counties
@@ -629,6 +637,9 @@ components:
           type: string
         name:
           type: string
+        state:
+          type: string
+          enum: [CA, FL]
         courthouseName:
           type: string
         courthouseAddress:
@@ -647,11 +658,14 @@ components:
           type: string
         website:
           type: string
+        clerkWebsite:
+          type: string
         notes:
           type: string
       required:
         - id
         - name
+        - state
         - courthouseName
         - courthouseAddress
         - courthouseCity
@@ -669,6 +683,9 @@ components:
           enum: [draft, intake_complete, documents_uploaded, ready_to_file, filed]
         countyId:
           type: string
+        jurisdictionState:
+          type: string
+          enum: [CA, FL]
         claimAmount:
           type: number
         claimType:
@@ -928,6 +945,9 @@ components:
           type: string
         countyId:
           type: string
+        jurisdictionState:
+          type: string
+          enum: [CA, FL]
       required:
         - title
 
@@ -940,6 +960,9 @@ components:
           type: string
         countyId:
           type: string
+        jurisdictionState:
+          type: string
+          enum: [CA, FL]
         claimAmount:
           type: number
         claimType:

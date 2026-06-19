@@ -5,11 +5,13 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdateCaseBodyJurisdictionState } from "./updateCaseBodyJurisdictionState";
 
 export interface UpdateCaseBody {
   title?: string;
   status?: string;
   countyId?: string;
+  jurisdictionState?: UpdateCaseBodyJurisdictionState;
   claimAmount?: number;
   claimType?: string;
   plaintiffName?: string;

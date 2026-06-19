@@ -12,13 +12,16 @@ const countiesSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   "url": "https://smallclaimsgenie.com/counties",
-  "name": "All 58 California Small Claims Court Counties",
-  "description": "Find your California county courthouse, filing fees, limits, and contact information for all 58 California small claims courts.",
+  "name": "California & Florida Small Claims Court Counties",
+  "description": "Find your county courthouse, filing fees, limits, and contact information for California and Florida small claims courts.",
   "isPartOf": { "@id": "https://smallclaimsgenie.com/#website" },
 };
 
+type StateTab = "CA" | "FL";
+
 export default function Counties() {
-  const { data: counties, isLoading, isError } = useListCounties();
+  const [selectedState, setSelectedState] = useState<StateTab>("CA");
+  const { data: counties, isLoading, isError } = useListCounties({ state: selectedState } as Parameters<typeof useListCounties>[0]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredCounties = useMemo(() => {
@@ -33,23 +36,56 @@ export default function Counties() {
     );
   }, [counties, searchTerm]);
 
+  const headingText = selectedState === "CA"
+    ? "All 58 California Counties"
+    : "All 67 Florida Counties";
+  const subtitleText = selectedState === "CA"
+    ? (i18n.counties.subtitle || "Find your courthouse, filing fees, and contact info for all 58 California small claims courts.")
+    : "Find your courthouse, filing fees, and contact info for all 67 Florida small claims courts.";
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <Helmet>
-        <title>All 58 California Small Claims Court Counties — Small Claims Genie</title>
-        <meta name="description" content="Find your California county courthouse, filing fees, limits, and contact information for all 58 California small claims courts." />
+        <title>California & Florida Small Claims Court Counties — Small Claims Genie</title>
+        <meta name="description" content="Find your county courthouse, filing fees, limits, and contact information for California and Florida small claims courts." />
         <link rel="canonical" href="https://smallclaimsgenie.com/counties" />
         <meta property="og:url" content="https://smallclaimsgenie.com/counties" />
-        <meta property="og:title" content="All 58 California Small Claims Court Counties — Small Claims Genie" />
-        <meta property="og:description" content="Find your California county courthouse, filing fees, limits, and contact information for all 58 California small claims courts." />
+        <meta property="og:title" content="California & Florida Small Claims Court Counties — Small Claims Genie" />
+        <meta property="og:description" content="Find your county courthouse, filing fees, limits, and contact information for California and Florida small claims courts." />
         <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
         <script type="application/ld+json">{JSON.stringify(countiesSchema)}</script>
       </Helmet>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{i18n.counties.title || "California Counties"}</h1>
-        <p className="text-muted-foreground text-lg mb-6">
-          {i18n.counties.subtitle}
+        <h1 className="text-3xl font-bold tracking-tight mb-2">{headingText}</h1>
+        <p className="text-muted-foreground text-lg mb-4">
+          {subtitleText}
         </p>
+
+        {/* State toggle */}
+        <div className="flex gap-2 mb-5">
+          <button
+            type="button"
+            onClick={() => { setSelectedState("CA"); setSearchTerm(""); }}
+            className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 font-semibold text-sm transition-all ${
+              selectedState === "CA"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-foreground hover:border-primary/50"
+            }`}
+          >
+            🌴 California
+          </button>
+          <button
+            type="button"
+            onClick={() => { setSelectedState("FL"); setSearchTerm(""); }}
+            className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 font-semibold text-sm transition-all ${
+              selectedState === "FL"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-foreground hover:border-primary/50"
+            }`}
+          >
+            ☀️ Florida
+          </button>
+        </div>
         
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -101,7 +137,7 @@ export default function Counties() {
                     <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
                     <span>
                       {county.courthouseAddress}<br />
-                      {county.courthouseCity}, CA {county.courthouseZip}
+                      {county.courthouseCity}, {county.state} {county.courthouseZip}
                     </span>
                   </div>
                   
@@ -114,37 +150,52 @@ export default function Counties() {
                     </div>
                   )}
                   
-                  {county.website && (
+                  {(county.website || county.clerkWebsite) && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Globe className="h-4 w-4 shrink-0" />
                       <a 
-                        href={county.website} 
+                        href={county.website || county.clerkWebsite} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="hover:text-primary hover:underline truncate"
                       >
-                        Court Website
+                        {county.state === "FL" ? "Clerk Website" : "Court Website"}
                       </a>
                     </div>
                   )}
                 </div>
 
                 <div className="bg-muted/50 rounded-md p-3 text-sm">
-                  <h4 className="font-semibold mb-2">{i18n.counties.filingFees || "Filing Fees"}</h4>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">{i18n.counties.under1500 || "Under $1.5k"}</div>
-                      <div className="font-medium">${county.filingFeeUnder1500 || 30}</div>
-                    </div>
-                    <div className="border-x border-border/50">
-                      <div className="text-xs text-muted-foreground mb-1">{i18n.counties.upTo5000 || "$1.5k-$5k"}</div>
-                      <div className="font-medium">${county.filingFee1500to5000 || 50}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">{i18n.counties.over5000 || "Over $5k"}</div>
-                      <div className="font-medium">${county.filingFeeOver5000 || 75}</div>
-                    </div>
-                  </div>
+                  {selectedState === "CA" ? (
+                    <>
+                      <h4 className="font-semibold mb-2">{i18n.counties.filingFees || "Filing Fees"}</h4>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">{i18n.counties.under1500 || "Under $1.5k"}</div>
+                          <div className="font-medium">${county.filingFeeUnder1500 || 30}</div>
+                        </div>
+                        <div className="border-x border-border/50">
+                          <div className="text-xs text-muted-foreground mb-1">{i18n.counties.upTo5000 || "$1.5k–$5k"}</div>
+                          <div className="font-medium">${county.filingFee1500to5000 || 50}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">{i18n.counties.over5000 || "Over $5k"}</div>
+                          <div className="font-medium">${county.filingFeeOver5000 || 75}</div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h4 className="font-semibold mb-2">Filing Fees (Fla. Stat. 34.041)</h4>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Under $100</span><span className="font-medium">$55</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">$101–$500</span><span className="font-medium">$80</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">$501–$2,500</span><span className="font-medium">$175</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Over $2,500</span><span className="font-medium">$300</span></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">+ summons, service, and e-filing fees</p>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -9,9 +9,17 @@ export interface HealthStatus {
   status: string;
 }
 
+export type CountyState = (typeof CountyState)[keyof typeof CountyState];
+
+export const CountyState = {
+  CA: "CA",
+  FL: "FL",
+} as const;
+
 export interface County {
   id: string;
   name: string;
+  state: CountyState;
   courthouseName: string;
   courthouseAddress: string;
   courthouseCity: string;
@@ -21,6 +29,7 @@ export interface County {
   filingFeeOver5000?: number;
   phone?: string;
   website?: string;
+  clerkWebsite?: string;
   notes?: string;
 }
 
@@ -34,11 +43,20 @@ export const CaseStatus = {
   filed: "filed",
 } as const;
 
+export type CaseJurisdictionState =
+  (typeof CaseJurisdictionState)[keyof typeof CaseJurisdictionState];
+
+export const CaseJurisdictionState = {
+  CA: "CA",
+  FL: "FL",
+} as const;
+
 export interface Case {
   id: number;
   title: string;
   status: CaseStatus;
   countyId?: string;
+  jurisdictionState?: CaseJurisdictionState;
   claimAmount?: number;
   claimType?: string;
   plaintiffName?: string;
@@ -199,16 +217,34 @@ export type CaseWithDetails = Case & {
   chatMessages?: ChatMessage[];
 };
 
+export type CreateCaseBodyJurisdictionState =
+  (typeof CreateCaseBodyJurisdictionState)[keyof typeof CreateCaseBodyJurisdictionState];
+
+export const CreateCaseBodyJurisdictionState = {
+  CA: "CA",
+  FL: "FL",
+} as const;
+
 export interface CreateCaseBody {
   title: string;
   claimType?: string;
   countyId?: string;
+  jurisdictionState?: CreateCaseBodyJurisdictionState;
 }
+
+export type UpdateCaseBodyJurisdictionState =
+  (typeof UpdateCaseBodyJurisdictionState)[keyof typeof UpdateCaseBodyJurisdictionState];
+
+export const UpdateCaseBodyJurisdictionState = {
+  CA: "CA",
+  FL: "FL",
+} as const;
 
 export interface UpdateCaseBody {
   title?: string;
   status?: string;
   countyId?: string;
+  jurisdictionState?: UpdateCaseBodyJurisdictionState;
   claimAmount?: number;
   claimType?: string;
   plaintiffName?: string;
@@ -443,6 +479,21 @@ export interface GenerateOpenaiImageResponse {
 export interface OpenaiError {
   error: string;
 }
+
+export type ListCountiesParams = {
+  /**
+   * Filter by jurisdiction state (CA or FL). Returns all if omitted.
+   */
+  state?: ListCountiesState;
+};
+
+export type ListCountiesState =
+  (typeof ListCountiesState)[keyof typeof ListCountiesState];
+
+export const ListCountiesState = {
+  CA: "CA",
+  FL: "FL",
+} as const;
 
 export type UploadDocumentBody = {
   file: Blob;

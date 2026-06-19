@@ -141,6 +141,7 @@ router.post("/cases", async (req, res): Promise<void> => {
       title: parsed.data.title,
       claimType: parsed.data.claimType ?? null,
       countyId: parsed.data.countyId ?? null,
+      jurisdictionState: (parsed.data as { jurisdictionState?: string }).jurisdictionState ?? "CA",
       status: "draft",
     })
     .returning();
