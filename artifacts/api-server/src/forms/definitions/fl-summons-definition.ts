@@ -23,7 +23,6 @@ const PW = 612;
 const PH = 792;
 const BLACK = rgb(0, 0, 0);
 const GRAY  = rgb(0.5, 0.5, 0.5);
-const LIGHT = rgb(0.92, 0.92, 0.92);
 const AMBER = rgb(0.75, 0.45, 0.0);
 
 const ML = 54;
@@ -76,19 +75,6 @@ function wrapText(
     curY -= size + lineGap;
   }
   return curY;
-}
-
-function fmtAddr(
-  street?: string | null,
-  city?: string | null,
-  state?: string | null,
-  zip?: string | null
-): string {
-  const parts: string[] = [];
-  if (street) parts.push(street);
-  const csz = [city, state && zip ? `${state} ${zip}` : (state ?? zip)].filter(Boolean).join(", ");
-  if (csz) parts.push(csz);
-  return parts.join(", ");
 }
 
 function countyDisplay(countyId?: string | null): string {

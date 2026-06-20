@@ -1818,24 +1818,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   // ── Render ─────────────────────────────────────────────────────────────────
   const isFloridaCase = currentCase.jurisdictionState === "FL";
 
-  /** Informational card explaining that the FL Summons is issued by the court clerk. */
-  function FlSummonsInfoCard() {
-    return (
-      <div className="rounded-xl border bg-card p-4 flex items-start gap-3">
-        <div className="shrink-0 mt-0.5 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">i</div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-sm font-bold text-foreground">Summons</span>
-            <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Clerk-Issued</span>
-          </div>
-          <p className="text-xs text-muted-foreground leading-snug">
-            In Florida, the Summons is prepared and issued by the court clerk after you file the Statement of Claim and pay the filing fee. You do not create the Summons yourself — the clerk will issue it and arrange service on the defendant.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="pt-3 pb-4 md:pb-6 space-y-4 px-4 md:px-6">
 
