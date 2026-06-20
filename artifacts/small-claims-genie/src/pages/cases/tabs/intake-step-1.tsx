@@ -279,8 +279,8 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
               <div className="flex flex-wrap gap-3 items-start mb-3">
                 {/* State dropdown */}
-                <div className="w-[180px] shrink-0">
-                  <p className="text-sm font-semibold mb-2">State <span className="text-destructive">*</span></p>
+                <div className="w-[180px] shrink-0 space-y-2">
+                  <label className="text-sm font-medium leading-none">State <span className="text-destructive">*</span></label>
                   <Select
                     value={jurisdictionState}
                     onValueChange={(v) => {
