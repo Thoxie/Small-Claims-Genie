@@ -1999,8 +1999,41 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </div>
               </div>
 
-              {/* Summons — clerk-issued */}
-              <FlSummonsInfoCard />
+              {/* Form 7.322 — Summons/Notice to Appear (Volusia) */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
+                  </div>
+                  <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                    Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.
+                  </p>
+                  {downloadError && downloadingForm === "fl/volusia-summons" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/volusia-summons"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/volusia-summons",
+                      `Summons-Volusia-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/volusia-summons" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
             </div>
           )}
 
@@ -2045,8 +2078,41 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </button>
               </div>
 
-              {/* Summons — clerk-issued */}
-              <FlSummonsInfoCard />
+              {/* Form 7.322 — Summons/Notice to Appear (Broward) */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
+                  </div>
+                  <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                    Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.
+                  </p>
+                  {downloadError && downloadingForm === "fl/broward-summons" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/broward-summons"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/broward-summons",
+                      `Summons-Broward-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/broward-summons" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
             </div>
           )}
 
@@ -2118,8 +2184,41 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </div>
               </div>
 
-              {/* Summons — clerk-issued */}
-              <FlSummonsInfoCard />
+              {/* Form 7.322 — Summons/Notice to Appear (Orange) */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
+                  </div>
+                  <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                    Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.
+                  </p>
+                  {downloadError && downloadingForm === "fl/orange-summons" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/orange-summons"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/orange-summons",
+                      `Summons-Orange-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/orange-summons" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
             </div>
           )}
 
@@ -2191,8 +2290,41 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </div>
               </div>
 
-              {/* Summons — clerk-issued */}
-              <FlSummonsInfoCard />
+              {/* Form 7.322 — Summons/Notice to Appear (Hillsborough) */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
+                  </div>
+                  <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                    Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.
+                  </p>
+                  {downloadError && downloadingForm === "fl/hillsborough-summons" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/hillsborough-summons"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/hillsborough-summons",
+                      `Summons-Hillsborough-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/hillsborough-summons" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
             </div>
           )}
 
@@ -2237,8 +2369,41 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </button>
               </div>
 
-              {/* Summons — clerk-issued */}
-              <FlSummonsInfoCard />
+              {/* Form 7.322 — Summons/Notice to Appear (Palm Beach) */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
+                  </div>
+                  <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                    Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.
+                  </p>
+                  {downloadError && downloadingForm === "fl/palm-beach-summons" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/palm-beach-summons"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/palm-beach-summons",
+                      `Summons-Palm-Beach-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/palm-beach-summons" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
             </div>
           )}
 
@@ -2284,8 +2449,41 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </button>
               </div>
 
-              {/* Summons — clerk-issued */}
-              <FlSummonsInfoCard />
+              {/* Form 7.322 — Summons/Notice to Appear (statewide) */}
+              <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
+                  </div>
+                  <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                    Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.
+                  </p>
+                  {downloadError && downloadingForm === "fl/summons" && (
+                    <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={downloadingForm === "fl/summons"}
+                  onClick={() =>
+                    downloadFormPost(
+                      "fl/summons",
+                      `Florida-Summons-Case-${caseId}.pdf`,
+                      {},
+                    )
+                  }
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                  {downloadingForm === "fl/summons" ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download PDF
+                </button>
+              </div>
             </div>
           )}
         </div>

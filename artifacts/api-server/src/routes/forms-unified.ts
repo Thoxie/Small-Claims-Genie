@@ -299,4 +299,44 @@ router.post(
   makeFormHandler("SOC-HILLSBOROUGH", (id) => `Statement-of-Claim-Hillsborough-Case-${id}.pdf`),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Florida summons — Form 7.322 (programmatic, all counties)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Volusia County — Form 7.322 Summons
+router.post(
+  "/cases/:id/forms/fl/volusia-summons",
+  makeFormHandler("FL-VOLUSIA-SUMMONS", (id) => `Summons-Volusia-Case-${id}.pdf`),
+);
+
+// Broward County — Form 7.322 Summons
+router.post(
+  "/cases/:id/forms/fl/broward-summons",
+  makeFormHandler("FL-BROWARD-SUMMONS", (id) => `Summons-Broward-Case-${id}.pdf`),
+);
+
+// Orange County — Form 7.322 Summons
+router.post(
+  "/cases/:id/forms/fl/orange-summons",
+  makeFormHandler("FL-ORANGE-SUMMONS", (id) => `Summons-Orange-Case-${id}.pdf`),
+);
+
+// Hillsborough County — Form 7.322 Summons
+router.post(
+  "/cases/:id/forms/fl/hillsborough-summons",
+  makeFormHandler("FL-HILLSBOROUGH-SUMMONS", (id) => `Summons-Hillsborough-Case-${id}.pdf`),
+);
+
+// Palm Beach County — Form 7.322 Summons
+router.post(
+  "/cases/:id/forms/fl/palm-beach-summons",
+  makeFormHandler("FL-PALM-BEACH-SUMMONS", (id) => `Summons-Palm-Beach-Case-${id}.pdf`),
+);
+
+// Statewide FL Summons — for other FL counties not listed above
+router.post(
+  "/cases/:id/forms/fl/summons",
+  makeFormHandler("FL-SUMMONS", (id) => `Florida-Summons-Case-${id}.pdf`),
+);
+
 export default router;
