@@ -161,8 +161,9 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
         const sigImg = await filled.embedPng(opts.signatureBytes);
         // "Plaintiff's Signature" label is on page 1, right-aligned at x=342, pdf-lib y=104–120.
         // The blank rule sits just above the label at pdf-lib y≈120–132.
-        // x=342, y=120, h=28 places the image from y=120 (label top) up to y=148, spanning the blank.
-        pg.drawImage(sigImg, { x: 342, y: 120, width: 180, height: 28, opacity: 1 });
+        // Visually confirmed (2026-06-21): x=342, y=120, h=20 places the image centered on the
+        // blank rule without extending into the "Plaintiff or Plaintiff's Attorney Printed Name" area.
+        pg.drawImage(sigImg, { x: 342, y: 120, width: 180, height: 20, opacity: 1 });
         return Buffer.from(await filled.save({ updateFieldAppearances: false }));
       } catch { /* ignore — return plain fill */ }
     }

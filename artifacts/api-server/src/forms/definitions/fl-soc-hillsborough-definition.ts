@@ -147,6 +147,8 @@ const socHillsboroughDefinition: FormDefinition = {
         // "Signature of Plaintiff(s)" label on page 2: x=346, pdf-lib y=582–598.
         // The blank signature rule is at the same row as "Plaintiff Address:" (pdf-lib y≈596–612).
         // x=346, y=582, h=36 places the image from y=582 (label bottom) up to y=618 (spanning the blank).
+        // Visually confirmed correct (2026-06-21): sig lands above "Signature of Plaintiff(s)" label
+        // on page 2; page-2 routing via pages[1] confirmed working.
         const pg = pages[1] ?? pages[0]!;
         const sigImg = await filled.embedPng(opts.signatureBytes);
         pg.drawImage(sigImg, { x: 346, y: 582, width: 180, height: 36, opacity: 1 });

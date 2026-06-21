@@ -153,6 +153,8 @@ const clkCt333Definition: FormDefinition = {
         // "Signature" label (vs. "Attorney/Plaintiff" printed name) is at x=323, pdf-lib y=235–248.
         // The blank line above the label sits at pdf-lib y≈252–268.
         // x=323, y=235, h=36 places the image from y=235 (label bottom) up to y=271 (spanning the blank).
+        // Visually confirmed correct (2026-06-21): sig lands cleanly on the signature blank line
+        // in the middle (Signature) column of the three-column row.
         pg.drawImage(sigImg, { x: 323, y: 235, width: 130, height: 36, opacity: 1 });
         return Buffer.from(await filled.save({ updateFieldAppearances: false }));
       } catch { /* ignore — return plain fill */ }
