@@ -3262,19 +3262,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         onSkipSign={() => { setSc103bSigModalOpen(false); downloadSignedSC103B(); }}
       />
 
-      <SignaturePadModal
-        open={!!flSigModal}
-        onClose={() => setFlSigModal(null)}
-        formTitle="FL Court Form"
-        disclaimer="By signing, you certify that the information in this form is true and correct to the best of your knowledge."
-        onSign={(dataUrl) => {
-          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename, dataUrl);
-        }}
-        onSkipSign={() => {
-          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename);
-        }}
-      />
-
       {/* Guide Dialog */}
       <Dialog open={!!guideDialogFormId} onOpenChange={(open) => { if (!open) setGuideDialogFormId(null); }}>
         <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
@@ -3431,6 +3418,19 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       )}
 
       </> /* end !isFloridaCase CA wizard */}
+
+      <SignaturePadModal
+        open={!!flSigModal}
+        onClose={() => setFlSigModal(null)}
+        formTitle="FL Court Form"
+        disclaimer="By signing, you certify that the information in this form is true and correct to the best of your knowledge."
+        onSign={(dataUrl) => {
+          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename, dataUrl);
+        }}
+        onSkipSign={() => {
+          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename);
+        }}
+      />
 
     </div>
   );
