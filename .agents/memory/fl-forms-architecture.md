@@ -5,11 +5,14 @@ description: FL small claims form definitions — all programmatic (pdf-lib), no
 
 # FL Forms Architecture
 
-## Pattern (UPDATED — no template PDFs)
+## Pattern (UPDATED — no template PDFs, all programmatic)
 
-FL forms are ALL programmatic pdf-lib forms (renderingTechnique: "png-overlay"). No template PDF assets are required. The `buildFLStatementOfClaim()` function in `fl-statement-of-claim-definition.ts` is the core renderer that takes optional `countyOverride` and `clerkAddressOverride` parameters to customize the county header and filing address.
+FL forms are ALL programmatic pdf-lib forms (renderingTechnique: "png-overlay"). No template PDF assets are required.
+- Statement of Claim forms: `buildFLStatementOfClaim()` in `fl-statement-of-claim-definition.ts`
+- Summons forms: `buildFLSummons()` in `fl-summons-definition.ts`
+Both accept optional `countyOverride` and `clerkAddressOverride` parameters.
 
-**Why:** FL court form PDFs are not downloadable from official county/state websites programmatically (URLs return HTML error pages). The programmatic approach generates professional-looking PDFs that include all required fields and can serve all 67 FL counties from a single code path.
+**Why:** FL court form PDFs are not downloadable from official county/state websites programmatically (URLs return HTML error pages). The programmatic approach generates professional-looking PDFs that include all required fields and can serve all 67 FL counties from a single code path. This applies to ALL FL forms including Miami-Dade's CLK/CT. 423 summons — confirmed that www.miamidadeclerk.gov returns HTML for all PDF URL patterns tried.
 
 ## Form Definitions
 
