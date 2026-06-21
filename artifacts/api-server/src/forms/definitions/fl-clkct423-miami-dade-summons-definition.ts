@@ -25,7 +25,6 @@
  */
 
 import * as path from "path";
-import { PDFDocument } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -40,7 +39,7 @@ const clkCt423Definition: FormDefinition = {
   assetPath: PDF_PATH,
   renderingTechnique: "xfa-pdftk",
 
-  async generate(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
+  async generate(d: CaseData, _body: FormBody, _opts?: GenerateOptions): Promise<Buffer> {
     const defStreet = d.defendantAddress ?? "";
     const defCityStateZip = [d.defendantCity, d.defendantState, d.defendantZip]
       .filter(Boolean)
@@ -104,15 +103,9 @@ const clkCt423Definition: FormDefinition = {
     };
 
     const buf = await pdftk_fill_form(PDF_PATH, { text, checkboxes });
-    if (opts?.signatureBytes) {
-      try {
-        const filled = await PDFDocument.load(buf);
-        const [pg] = filled.getPages();
-        const sigImg = await filled.embedPng(opts.signatureBytes);
-        pg.drawImage(sigImg, { x: 72, y: 85, width: 180, height: 36, opacity: 1 });
-        return Buffer.from(await filled.save({ updateFieldAppearances: false }));
-      } catch { /* ignore — return plain fill */ }
-    }
+    // CLK/CT. 423 is a court-issued summons. The "FILED BY" section (pre-filled with plaintiff
+    // name, address, phone) is not a signature field — the only signature line on the form is
+    // the deputy clerk's, which the court completes. No plaintiff signature overlay is applied.
     return buf;
   },
 };

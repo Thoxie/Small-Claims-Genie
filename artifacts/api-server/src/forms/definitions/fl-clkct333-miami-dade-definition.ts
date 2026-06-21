@@ -150,7 +150,10 @@ const clkCt333Definition: FormDefinition = {
         const filled = await PDFDocument.load(buf);
         const [pg] = filled.getPages();
         const sigImg = await filled.embedPng(opts.signatureBytes);
-        pg.drawImage(sigImg, { x: 100, y: 148, width: 180, height: 36, opacity: 1 });
+        // "Signature" label (vs. "Attorney/Plaintiff" printed name) is at x=323, pdf-lib y=235–248.
+        // The blank line above the label sits at pdf-lib y≈252–268.
+        // x=323, y=235, h=36 places the image from y=235 (label bottom) up to y=271 (spanning the blank).
+        pg.drawImage(sigImg, { x: 323, y: 235, width: 130, height: 36, opacity: 1 });
         return Buffer.from(await filled.save({ updateFieldAppearances: false }));
       } catch { /* ignore — return plain fill */ }
     }

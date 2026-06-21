@@ -101,7 +101,11 @@ const plainSocOrangeDefinition: FormDefinition = {
         const filled = await PDFDocument.load(buf);
         const [pg] = filled.getPages();
         const sigImg = await filled.embedPng(opts.signatureBytes);
-        pg.drawImage(sigImg, { x: 72, y: 95, width: 180, height: 36, opacity: 1 });
+        // The signature area is right-aligned on this 1-page form.
+        // "Plaintiff(s)" / "(Sign here)" labels: xMin=378, pdf-lib y=57–68 (bottom/top of label).
+        // The blank line `___` is just above the "Plaintiff(s)" label at pdf-lib y≈68–82.
+        // x=378, y=68, h=28 places the image from y=68 (label top) up to y=96, spanning the blank.
+        pg.drawImage(sigImg, { x: 378, y: 68, width: 150, height: 28, opacity: 1 });
         return Buffer.from(await filled.save({ updateFieldAppearances: false }));
       } catch { /* ignore — return plain fill */ }
     }

@@ -142,9 +142,14 @@ const socHillsboroughDefinition: FormDefinition = {
     if (opts?.signatureBytes) {
       try {
         const filled = await PDFDocument.load(buf);
-        const [pg] = filled.getPages();
+        const pages = filled.getPages();
+        // The Hillsborough SOC is a 2-page PDF. The signature section is on PAGE 2 (index 1).
+        // "Signature of Plaintiff(s)" label on page 2: x=346, pdf-lib y=582–598.
+        // The blank signature rule is at the same row as "Plaintiff Address:" (pdf-lib y≈596–612).
+        // x=346, y=582, h=36 places the image from y=582 (label bottom) up to y=618 (spanning the blank).
+        const pg = pages[1] ?? pages[0]!;
         const sigImg = await filled.embedPng(opts.signatureBytes);
-        pg.drawImage(sigImg, { x: 72, y: 140, width: 180, height: 36, opacity: 1 });
+        pg.drawImage(sigImg, { x: 346, y: 582, width: 180, height: 36, opacity: 1 });
         return Buffer.from(await filled.save({ updateFieldAppearances: false }));
       } catch { /* ignore — return plain fill */ }
     }
