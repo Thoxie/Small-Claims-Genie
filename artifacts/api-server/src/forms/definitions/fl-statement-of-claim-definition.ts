@@ -144,13 +144,14 @@ function claimTypeLabel(ct?: string | null): string {
 export async function buildFLStatementOfClaim(
   d: CaseData,
   _body: FormBody,
-  _opts?: GenerateOptions,
+  opts?: GenerateOptions,
   countyOverride?: string,
   clerkAddressOverride?: string
 ): Promise<Buffer> {
   const doc  = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  let sigLineY = 0;
 
   const page  = doc.addPage([PW, PH]);
   const countyName = countyOverride ?? countyDisplay((d as any).countyId);
@@ -336,7 +337,8 @@ export async function buildFLStatementOfClaim(
   y = wrapText(page, font, verificationText, MARGIN_L, y, MARGIN_R - MARGIN_L, 8, 3);
   y -= 14;
 
-  // Signature line
+  // Signature line — capture Y for signature image overlay
+  sigLineY = y;
   drawLine(page, MARGIN_L, y, MARGIN_L + 200, y, 0.5);
   txt(page, font, "Date: _______________", MARGIN_L + 220, y + 2, 9);
   y -= 4;
@@ -360,6 +362,14 @@ export async function buildFLStatementOfClaim(
     "Florida Small Claims — Claim limit: $8,000 (exclusive of costs, interest, and attorney's fees) — Fla. Stat. §34.011";
   const flNoteW = font.widthOfTextAtSize(flNote, 7);
   txt(page, font, flNote, (PW - flNoteW) / 2, y, 7, GRAY);
+
+  // ── Signature image overlay ──────────────────────────────────────────────────
+  if (opts?.signatureBytes && sigLineY > 0) {
+    try {
+      const sigImg = await doc.embedPng(opts.signatureBytes);
+      page.drawImage(sigImg, { x: MARGIN_L, y: sigLineY, width: 180, height: 36, opacity: 1 });
+    } catch { /* ignore invalid image data */ }
+  }
 
   return Buffer.from(await doc.save());
 }

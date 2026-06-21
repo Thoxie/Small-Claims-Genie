@@ -23,6 +23,7 @@
  */
 
 import * as path from "path";
+import { PDFDocument } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -64,7 +65,7 @@ const plainSocOrangeDefinition: FormDefinition = {
   assetPath: PDF_PATH,
   renderingTechnique: "xfa-pdftk",
 
-  async generate(d: CaseData, _body: FormBody, _opts?: GenerateOptions): Promise<Buffer> {
+  async generate(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     const pltCityStateZip = cityStateZip(d.plaintiffCity, d.plaintiffState, d.plaintiffZip);
     const defCityStateZip = cityStateZip(d.defendantCity, d.defendantState, d.defendantZip);
 
@@ -94,7 +95,17 @@ const plainSocOrangeDefinition: FormDefinition = {
       "Text1": d.claimDescription ?? "",
     };
 
-    return pdftk_fill_form(PDF_PATH, { text });
+    const buf = await pdftk_fill_form(PDF_PATH, { text });
+    if (opts?.signatureBytes) {
+      try {
+        const filled = await PDFDocument.load(buf);
+        const [pg] = filled.getPages();
+        const sigImg = await filled.embedPng(opts.signatureBytes);
+        pg.drawImage(sigImg, { x: 72, y: 95, width: 180, height: 36, opacity: 1 });
+        return Buffer.from(await filled.save({ updateFieldAppearances: false }));
+      } catch { /* ignore — return plain fill */ }
+    }
+    return buf;
   },
 };
 

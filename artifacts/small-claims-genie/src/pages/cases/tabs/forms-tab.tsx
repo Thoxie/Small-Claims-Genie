@@ -565,6 +565,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sc103SigModalOpen, setSc103SigModalOpen] = useState(false);
   const [sc103bSigModalOpen, setSc103bSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
+  const [flSigModal, setFlSigModal] = useState<{ endpoint: string; filename: string } | null>(null);
 
 
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
@@ -711,6 +712,29 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 
   // ── Download utilities ─────────────────────────────────────────────────────
+  async function downloadSignedFLForm(endpoint: string, filename: string, signatureDataUrl?: string) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    const formKey = signatureDataUrl ? `${endpoint}/signed` : endpoint;
+    setDownloadingForm(formKey); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const apiEndpoint = signatureDataUrl ? `${endpoint}/signed` : endpoint;
+      const body: Record<string, unknown> = { token };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${apiEndpoint}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError(err.error || "Failed to generate PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setFlSigModal(null);
+    } catch { setDownloadError("Download failed — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
   async function downloadFormPost(endpoint: string, filename: string, body: Record<string, unknown>) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download and save court forms." }); return; }
     setDownloadingForm(endpoint); setDownloadError(null);
@@ -1853,25 +1877,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/clkct333"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/clkct333",
-                      `Statement-of-Claim-Miami-Dade-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/clkct333" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/clkct333/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/clkct333", filename: `Statement-of-Claim-Miami-Dade-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/clkct333/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/clkct333"}
+                    onClick={() => downloadSignedFLForm("fl/clkct333", `Statement-of-Claim-Miami-Dade-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/clkct333" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
 
               {/* CLK/CT. 423 — Summons/Notice to Appear */}
@@ -1889,25 +1914,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/clkct423"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/clkct423",
-                      `Summons-Miami-Dade-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/clkct423" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/clkct423/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/clkct423", filename: `Summons-Miami-Dade-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/clkct423/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/clkct423"}
+                    onClick={() => downloadSignedFLForm("fl/clkct423", `Summons-Miami-Dade-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/clkct423" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1932,25 +1958,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       Initiates your small claims case. Pre-filled from your case details.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled={downloadingForm === "fl/cl219-volusia-pdf"}
-                    onClick={() =>
-                      downloadFormPost(
-                        "fl/cl219-volusia-pdf",
-                        `Statement-of-Claim-Volusia-Case-${caseId}.pdf`,
-                        {},
-                      )
-                    }
-                    className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                  >
-                    {downloadingForm === "fl/cl219-volusia-pdf" ? (
-                      <span className="animate-spin">⏳</span>
-                    ) : (
-                      <Download className="h-3.5 w-3.5" />
-                    )}
-                    Download PDF
-                  </button>
+                  <div className="shrink-0 flex flex-col items-end gap-1.5">
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/cl219-volusia-pdf/signed"}
+                      onClick={() => setFlSigModal({ endpoint: "fl/cl219-volusia-pdf", filename: `Statement-of-Claim-Volusia-Case-${caseId}.pdf` })}
+                      className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                    >
+                      {downloadingForm === "fl/cl219-volusia-pdf/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                      Sign & Download
+                    </button>
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/cl219-volusia-pdf"}
+                      onClick={() => downloadSignedFLForm("fl/cl219-volusia-pdf", `Statement-of-Claim-Volusia-Case-${caseId}.pdf`)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                    >
+                      {downloadingForm === "fl/cl219-volusia-pdf" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                      Skip signing
+                    </button>
+                  </div>
                 </div>
                 {downloadError && (downloadingForm === "fl/cl219-volusia-pdf" || downloadingForm === "fl/cl219-volusia") && (
                   <p className="mt-1 text-xs text-destructive">{downloadError}</p>
@@ -1959,25 +1986,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <p className="text-xs text-muted-foreground">
                     Prefer the standard layout? Use the programmatic version.
                   </p>
-                  <button
-                    type="button"
-                    disabled={downloadingForm === "fl/cl219-volusia"}
-                    onClick={() =>
-                      downloadFormPost(
-                        "fl/cl219-volusia",
-                        `Statement-of-Claim-Volusia-Case-${caseId}.pdf`,
-                        {},
-                      )
-                    }
-                    className="shrink-0 flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
-                  >
-                    {downloadingForm === "fl/cl219-volusia" ? (
-                      <span className="animate-spin">⏳</span>
-                    ) : (
-                      <Download className="h-3 w-3" />
-                    )}
-                    Alternate version
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/cl219-volusia/signed"}
+                      onClick={() => setFlSigModal({ endpoint: "fl/cl219-volusia", filename: `Statement-of-Claim-Volusia-Case-${caseId}.pdf` })}
+                      className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
+                    >
+                      {downloadingForm === "fl/cl219-volusia/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
+                      Sign alternate
+                    </button>
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/cl219-volusia"}
+                      onClick={() => downloadSignedFLForm("fl/cl219-volusia", `Statement-of-Claim-Volusia-Case-${caseId}.pdf`)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                    >
+                      {downloadingForm === "fl/cl219-volusia" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                      Skip
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1996,25 +2024,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/volusia-summons"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/volusia-summons",
-                      `Summons-Volusia-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/volusia-summons" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/volusia-summons/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/volusia-summons", filename: `Summons-Volusia-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/volusia-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/volusia-summons"}
+                    onClick={() => downloadSignedFLForm("fl/volusia-summons", `Summons-Volusia-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/volusia-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -2039,25 +2068,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/broward"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/broward",
-                      `Statement-of-Claim-Broward-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/broward" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/broward/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/broward", filename: `Statement-of-Claim-Broward-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/broward/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/broward"}
+                    onClick={() => downloadSignedFLForm("fl/broward", `Statement-of-Claim-Broward-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/broward" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
 
               {/* Form 7.322 — Summons/Notice to Appear (Broward) */}
@@ -2075,25 +2105,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/broward-summons"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/broward-summons",
-                      `Summons-Broward-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/broward-summons" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/broward-summons/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/broward-summons", filename: `Summons-Broward-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/broward-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/broward-summons"}
+                    onClick={() => downloadSignedFLForm("fl/broward-summons", `Summons-Broward-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/broward-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -2117,25 +2148,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       Initiates your small claims case. Pre-filled from your case details.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled={downloadingForm === "fl/plain-soc-orange"}
-                    onClick={() =>
-                      downloadFormPost(
-                        "fl/plain-soc-orange",
-                        `Statement-of-Claim-Orange-Case-${caseId}.pdf`,
-                        {},
-                      )
-                    }
-                    className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                  >
-                    {downloadingForm === "fl/plain-soc-orange" ? (
-                      <span className="animate-spin">⏳</span>
-                    ) : (
-                      <Download className="h-3.5 w-3.5" />
-                    )}
-                    Download PDF
-                  </button>
+                  <div className="shrink-0 flex flex-col items-end gap-1.5">
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/plain-soc-orange/signed"}
+                      onClick={() => setFlSigModal({ endpoint: "fl/plain-soc-orange", filename: `Statement-of-Claim-Orange-Case-${caseId}.pdf` })}
+                      className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                    >
+                      {downloadingForm === "fl/plain-soc-orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                      Sign & Download
+                    </button>
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/plain-soc-orange"}
+                      onClick={() => downloadSignedFLForm("fl/plain-soc-orange", `Statement-of-Claim-Orange-Case-${caseId}.pdf`)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                    >
+                      {downloadingForm === "fl/plain-soc-orange" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                      Skip signing
+                    </button>
+                  </div>
                 </div>
                 {downloadError && (downloadingForm === "fl/plain-soc-orange" || downloadingForm === "fl/orange") && (
                   <p className="mt-1 text-xs text-destructive">{downloadError}</p>
@@ -2144,25 +2176,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <p className="text-xs text-muted-foreground">
                     Prefer the standard layout? Use the programmatic version.
                   </p>
-                  <button
-                    type="button"
-                    disabled={downloadingForm === "fl/orange"}
-                    onClick={() =>
-                      downloadFormPost(
-                        "fl/orange",
-                        `Statement-of-Claim-Orange-Case-${caseId}.pdf`,
-                        {},
-                      )
-                    }
-                    className="shrink-0 flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
-                  >
-                    {downloadingForm === "fl/orange" ? (
-                      <span className="animate-spin">⏳</span>
-                    ) : (
-                      <Download className="h-3 w-3" />
-                    )}
-                    Alternate version
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/orange/signed"}
+                      onClick={() => setFlSigModal({ endpoint: "fl/orange", filename: `Statement-of-Claim-Orange-Case-${caseId}.pdf` })}
+                      className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
+                    >
+                      {downloadingForm === "fl/orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
+                      Sign alternate
+                    </button>
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/orange"}
+                      onClick={() => downloadSignedFLForm("fl/orange", `Statement-of-Claim-Orange-Case-${caseId}.pdf`)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                    >
+                      {downloadingForm === "fl/orange" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                      Skip
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -2181,25 +2214,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/orange-summons"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/orange-summons",
-                      `Summons-Orange-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/orange-summons" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/orange-summons/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/orange-summons", filename: `Summons-Orange-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/orange-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/orange-summons"}
+                    onClick={() => downloadSignedFLForm("fl/orange-summons", `Summons-Orange-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/orange-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -2223,25 +2257,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       Initiates your small claims case. Pre-filled from your case details.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled={downloadingForm === "fl/soc-hillsborough"}
-                    onClick={() =>
-                      downloadFormPost(
-                        "fl/soc-hillsborough",
-                        `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`,
-                        {},
-                      )
-                    }
-                    className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                  >
-                    {downloadingForm === "fl/soc-hillsborough" ? (
-                      <span className="animate-spin">⏳</span>
-                    ) : (
-                      <Download className="h-3.5 w-3.5" />
-                    )}
-                    Download PDF
-                  </button>
+                  <div className="shrink-0 flex flex-col items-end gap-1.5">
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/soc-hillsborough/signed"}
+                      onClick={() => setFlSigModal({ endpoint: "fl/soc-hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf` })}
+                      className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                    >
+                      {downloadingForm === "fl/soc-hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                      Sign & Download
+                    </button>
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/soc-hillsborough"}
+                      onClick={() => downloadSignedFLForm("fl/soc-hillsborough", `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                    >
+                      {downloadingForm === "fl/soc-hillsborough" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                      Skip signing
+                    </button>
+                  </div>
                 </div>
                 {downloadError && (downloadingForm === "fl/soc-hillsborough" || downloadingForm === "fl/hillsborough") && (
                   <p className="mt-1 text-xs text-destructive">{downloadError}</p>
@@ -2250,25 +2285,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <p className="text-xs text-muted-foreground">
                     Prefer the standard layout? Use the programmatic version.
                   </p>
-                  <button
-                    type="button"
-                    disabled={downloadingForm === "fl/hillsborough"}
-                    onClick={() =>
-                      downloadFormPost(
-                        "fl/hillsborough",
-                        `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`,
-                        {},
-                      )
-                    }
-                    className="shrink-0 flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
-                  >
-                    {downloadingForm === "fl/hillsborough" ? (
-                      <span className="animate-spin">⏳</span>
-                    ) : (
-                      <Download className="h-3 w-3" />
-                    )}
-                    Alternate version
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/hillsborough/signed"}
+                      onClick={() => setFlSigModal({ endpoint: "fl/hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf` })}
+                      className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
+                    >
+                      {downloadingForm === "fl/hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
+                      Sign alternate
+                    </button>
+                    <button
+                      type="button"
+                      disabled={downloadingForm === "fl/hillsborough"}
+                      onClick={() => downloadSignedFLForm("fl/hillsborough", `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf`)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                    >
+                      {downloadingForm === "fl/hillsborough" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                      Skip
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -2287,25 +2323,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/hillsborough-summons"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/hillsborough-summons",
-                      `Summons-Hillsborough-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/hillsborough-summons" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/hillsborough-summons/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/hillsborough-summons", filename: `Summons-Hillsborough-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/hillsborough-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/hillsborough-summons"}
+                    onClick={() => downloadSignedFLForm("fl/hillsborough-summons", `Summons-Hillsborough-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/hillsborough-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -2330,25 +2367,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/palm-beach"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/palm-beach",
-                      `Statement-of-Claim-Palm-Beach-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/palm-beach" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/palm-beach/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/palm-beach", filename: `Statement-of-Claim-Palm-Beach-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/palm-beach/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/palm-beach"}
+                    onClick={() => downloadSignedFLForm("fl/palm-beach", `Statement-of-Claim-Palm-Beach-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/palm-beach" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
 
               {/* Form 7.322 — Summons/Notice to Appear (Palm Beach) */}
@@ -2366,25 +2404,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/palm-beach-summons"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/palm-beach-summons",
-                      `Summons-Palm-Beach-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/palm-beach-summons" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/palm-beach-summons/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/palm-beach-summons", filename: `Summons-Palm-Beach-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/palm-beach-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/palm-beach-summons"}
+                    onClick={() => downloadSignedFLForm("fl/palm-beach-summons", `Summons-Palm-Beach-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/palm-beach-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -2410,25 +2449,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/statement-of-claim"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/statement-of-claim",
-                      `Florida-Statement-of-Claim-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/statement-of-claim" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/statement-of-claim/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/statement-of-claim", filename: `Florida-Statement-of-Claim-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/statement-of-claim/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/statement-of-claim"}
+                    onClick={() => downloadSignedFLForm("fl/statement-of-claim", `Florida-Statement-of-Claim-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/statement-of-claim" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
 
               {/* Form 7.322 — Summons/Notice to Appear (statewide) */}
@@ -2446,25 +2486,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="mt-1 text-xs text-destructive">{downloadError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled={downloadingForm === "fl/summons"}
-                  onClick={() =>
-                    downloadFormPost(
-                      "fl/summons",
-                      `Florida-Summons-Case-${caseId}.pdf`,
-                      {},
-                    )
-                  }
-                  className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                >
-                  {downloadingForm === "fl/summons" ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Download className="h-3.5 w-3.5" />
-                  )}
-                  Download PDF
-                </button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/summons/signed"}
+                    onClick={() => setFlSigModal({ endpoint: "fl/summons", filename: `Florida-Summons-Case-${caseId}.pdf` })}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                  >
+                    {downloadingForm === "fl/summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign & Download
+                  </button>
+                  <button
+                    type="button"
+                    disabled={downloadingForm === "fl/summons"}
+                    onClick={() => downloadSignedFLForm("fl/summons", `Florida-Summons-Case-${caseId}.pdf`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                  >
+                    {downloadingForm === "fl/summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -3219,6 +3260,19 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         disclaimer="By signing, the additional plaintiff declares under penalty of perjury under the laws of the State of California that the foregoing is true and correct."
         onSign={(dataUrl) => { setSc103bSigModalOpen(false); downloadSignedSC103B(dataUrl); }}
         onSkipSign={() => { setSc103bSigModalOpen(false); downloadSignedSC103B(); }}
+      />
+
+      <SignaturePadModal
+        open={!!flSigModal}
+        onClose={() => setFlSigModal(null)}
+        formTitle="FL Court Form"
+        disclaimer="By signing, you certify that the information in this form is true and correct to the best of your knowledge."
+        onSign={(dataUrl) => {
+          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename, dataUrl);
+        }}
+        onSkipSign={() => {
+          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename);
+        }}
       />
 
       {/* Guide Dialog */}

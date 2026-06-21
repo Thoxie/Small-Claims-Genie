@@ -91,13 +91,14 @@ function countyDisplay(countyId?: string | null): string {
 export async function buildFLSummons(
   d: CaseData,
   _body: FormBody,
-  _opts?: GenerateOptions,
+  opts?: GenerateOptions,
   countyOverride?: string,
   clerkAddressOverride?: string
 ): Promise<Buffer> {
   const doc  = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  let sigLineY = 0;
 
   const page = doc.addPage([PW, PH]);
   const countyName = countyOverride ?? countyDisplay((d as any).countyId);
@@ -274,6 +275,16 @@ export async function buildFLSummons(
   txt(page, font, dpLabel, MR - font.widthOfTextAtSize(dpLabel, 7.5), y, 7.5, GRAY);
   y -= 14;
 
+  // ── Plaintiff prepared-by / signature line ───────────────────────────────────
+  y -= 6;
+  txt(page, bold, "Prepared and filed by (Plaintiff):", ML, y, 8);
+  sigLineY = y - 1;
+  drawLine(page, ML + 178, sigLineY, ML + 360, sigLineY, 0.5);
+  txt(page, font, "Date: ___________", ML + 368, y, 7.5);
+  y -= 7;
+  txt(page, font, "Plaintiff Signature", ML + 178, y, 7, GRAY);
+  y -= 12;
+
   // ── ADA notice ───────────────────────────────────────────────────────────────
   drawLine(page, ML, y, MR, y, 0.3, GRAY);
   y -= 9;
@@ -284,6 +295,14 @@ export async function buildFLSummons(
     "this notice if the time before the scheduled appearance is less than 7 days.";
   y = wrapText(page, font, ada, ML, y, TW, 6.5, 2);
   void y;
+
+  // ── Signature image overlay ──────────────────────────────────────────────────
+  if (opts?.signatureBytes && sigLineY > 0) {
+    try {
+      const sigImg = await doc.embedPng(opts.signatureBytes);
+      page.drawImage(sigImg, { x: ML + 178, y: sigLineY, width: 160, height: 32, opacity: 1 });
+    } catch { /* ignore invalid image data */ }
+  }
 
   return Buffer.from(await doc.save());
 }

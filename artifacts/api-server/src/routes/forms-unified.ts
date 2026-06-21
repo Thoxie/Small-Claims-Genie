@@ -339,4 +339,93 @@ router.post(
   makeFormHandler("FL-SUMMONS", (id) => `Florida-Summons-Case-${id}.pdf`),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Florida — Signed variants (signature image embedded via pdf-lib overlay)
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.post(
+  "/cases/:id/forms/fl/statement-of-claim/signed",
+  makeFormHandler("FL-STATEMENT-OF-CLAIM", (id) => `Florida-Statement-of-Claim-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/clkct333/signed",
+  makeFormHandler("CLK-CT-333", (id) => `Statement-of-Claim-Miami-Dade-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/clkct423/signed",
+  makeFormHandler("CLK-CT-423", (id) => `Summons-Miami-Dade-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/cl219-volusia/signed",
+  makeFormHandler("CL-219-VOLUSIA", (id) => `Statement-of-Claim-Volusia-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/cl219-volusia-pdf/signed",
+  makeFormHandler("CL-219-VOLUSIA-PDF", (id) => `Statement-of-Claim-Volusia-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/broward/signed",
+  makeFormHandler("FL-BROWARD-SOC", (id) => `Statement-of-Claim-Broward-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/orange/signed",
+  makeFormHandler("FL-ORANGE-SOC", (id) => `Statement-of-Claim-Orange-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/hillsborough/signed",
+  makeFormHandler("FL-HILLSBOROUGH-SOC", (id) => `Statement-of-Claim-Hillsborough-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/palm-beach/signed",
+  makeFormHandler("FL-PALM-BEACH-SOC", (id) => `Statement-of-Claim-Palm-Beach-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/plain-soc-orange/signed",
+  makeFormHandler("PLAIN-SOC-ORANGE", (id) => `Statement-of-Claim-Orange-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/soc-hillsborough/signed",
+  makeFormHandler("SOC-HILLSBOROUGH", (id) => `Statement-of-Claim-Hillsborough-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/volusia-summons/signed",
+  makeFormHandler("FL-VOLUSIA-SUMMONS", (id) => `Summons-Volusia-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/broward-summons/signed",
+  makeFormHandler("FL-BROWARD-SUMMONS", (id) => `Summons-Broward-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/orange-summons/signed",
+  makeFormHandler("FL-ORANGE-SUMMONS", (id) => `Summons-Orange-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/hillsborough-summons/signed",
+  makeFormHandler("FL-HILLSBOROUGH-SUMMONS", (id) => `Summons-Hillsborough-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/palm-beach-summons/signed",
+  makeFormHandler("FL-PALM-BEACH-SUMMONS", (id) => `Summons-Palm-Beach-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/fl/summons/signed",
+  makeFormHandler("FL-SUMMONS", (id) => `Florida-Summons-Case-${id}-signed.pdf`, { signed: true }),
+);
+
 export default router;
