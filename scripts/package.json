@@ -18,6 +18,10 @@
     "test:fl-cl219-volusia-pdf": "tsx ./src/test-fl-cl219-volusia-pdf.ts",
     "test:fl-plain-soc-orange": "tsx ./src/test-fl-plain-soc-orange.ts",
     "test:fl-soc-hillsborough": "tsx ./src/test-fl-soc-hillsborough.ts",
+    "test:fl-clkct333-signed": "tsx ./src/test-fl-clkct333-signed.ts",
+    "test:fl-cl219-volusia-signed": "tsx ./src/test-fl-cl219-volusia-signed.ts",
+    "test:fl-plain-soc-orange-signed": "tsx ./src/test-fl-plain-soc-orange-signed.ts",
+    "test:fl-soc-hillsborough-signed": "tsx ./src/test-fl-soc-hillsborough-signed.ts",
     "check:fl-sig-placement": "tsx ./src/check-fl-sig-placement.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
