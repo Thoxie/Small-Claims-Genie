@@ -717,6 +717,33 @@ const TX_FEE_SCHEDULE = [
   { range: "$10,001 – $20,000", fee: "$321" },
 ];
 
+const CA_COLLECT_STEPS = [
+  { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the court enters a judgment in your favor. Get a certified copy from the clerk — you'll need it for every enforcement step." },
+  { icon: "trending-up" as const, title: "Locate the defendant's assets", body: "File a Judgment Debtor Examination (EJ-125) to compel the defendant to disclose bank accounts, employer, and property. Courts schedule within 30–45 days." },
+  { icon: "file-text" as const, title: "Wage garnishment", body: "File a Writ of Execution (EJ-130), then serve the employer with an Earnings Withholding Order (WG-002). Up to 25% of disposable earnings per pay period." },
+  { icon: "shield" as const, title: "Bank levy", body: "Use the same Writ of Execution to direct the sheriff to levy the defendant's bank account. Identify the bank and branch from the debtor examination." },
+  { icon: "clock" as const, title: "Your judgment earns interest", body: "California judgments accrue interest at 10% per year from entry. Every dollar of unpaid principal continues to grow until collected." },
+  { icon: "refresh-cw" as const, title: "Renew before 10 years", body: "Small claims judgments are valid for 10 years. File an Application for Renewal of Judgment (EJ-190) before expiration to keep your collection rights alive." },
+];
+
+const FL_COLLECT_STEPS = [
+  { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the court enters a judgment in your favor. Get a certified copy from the clerk — you'll need it for every collection step." },
+  { icon: "trending-up" as const, title: "Fact Information Sheet (Form 7.343)", body: "File this form to compel the defendant to disclose bank accounts, employer, and assets. The court can sanction a defendant who refuses to cooperate." },
+  { icon: "file-text" as const, title: "Wage garnishment", body: "File a Writ of Execution with the circuit court, then serve the defendant's employer. Florida limits garnishment to 25% of disposable earnings." },
+  { icon: "shield" as const, title: "Bank levy", body: "Direct the county sheriff to levy the defendant's bank account using a Writ of Execution. Identify the bank from the Fact Information Sheet." },
+  { icon: "file-text" as const, title: "Judgment lien certificate", body: "File a Judgment Lien Certificate with the Florida Dept. of State to create a lien on the defendant's personal property and real estate." },
+  { icon: "refresh-cw" as const, title: "Valid for 20 years", body: "Florida judgments are valid for 20 years and can be renewed. Post-judgment interest accrues at the statutory rate under Fla. Stat. 55.03." },
+];
+
+const TX_COLLECT_STEPS = [
+  { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the court enters a judgment. Get a certified copy from the Justice of the Peace court clerk — you'll need it for every collection step." },
+  { icon: "trending-up" as const, title: "Locate the defendant's assets", body: "Request a post-judgment deposition or written interrogatories to compel the defendant to disclose bank accounts, employer, and property." },
+  { icon: "shield" as const, title: "Writ of Execution", body: "Direct the constable or sheriff to seize non-exempt personal property or levy a bank account. Identify the bank and branch from interrogatories." },
+  { icon: "file-text" as const, title: "Abstract of Judgment", body: "Record an Abstract of Judgment with the county clerk to create a lien on any real estate the defendant owns in that county — now or in the future." },
+  { icon: "clock" as const, title: "Post-judgment interest", body: "Texas judgments earn interest at the rate set by Tex. Fin. Code § 304.003 from the date of judgment. Check the current rate with the court clerk." },
+  { icon: "refresh-cw" as const, title: "Valid for 10 years", body: "Texas judgments are dormant after 10 years but can be revived by filing a scire facias motion before expiration. Keep your certified copy and act early." },
+];
+
 function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDetails }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -726,6 +753,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
   const baseUrl = getBaseUrl();
 
   const isTX = caseData.jurisdictionState === "TX";
+  const isFL = caseData.jurisdictionState === "FL";
   const FORMS = isTX ? TX_FORMS : CA_FORMS;
 
   const downloadForm = async (formKey: string, formPath: string, method: "GET" | "POST" = "GET") => {
@@ -838,6 +866,29 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
             </Text>
           </View>
         )}
+
+        {/* ── Collect After You Win ─────────────────────────────────────── */}
+        <Text style={[styles.tabSectionTitle, { color: colors.foreground, marginTop: 8 }]}>
+          Collect After You Win
+        </Text>
+        <Text style={[styles.tabNote, { color: colors.mutedForeground, marginBottom: 4 }]}>
+          {isTX
+            ? "Winning is only step one. Here's how to enforce your Texas judgment and actually collect."
+            : isFL
+            ? "Winning is only step one. Here's how to enforce your Florida judgment and actually collect."
+            : "Winning is only step one. Here's how to enforce your California judgment and actually collect."}
+        </Text>
+        {(isTX ? TX_COLLECT_STEPS : isFL ? FL_COLLECT_STEPS : CA_COLLECT_STEPS).map((step) => (
+          <View key={step.title} style={[styles.collectCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.collectIcon, { backgroundColor: "#fef3c7" }]}>
+              <Feather name={step.icon} size={16} color="#d97706" />
+            </View>
+            <View style={styles.collectContent}>
+              <Text style={[styles.collectTitle, { color: colors.foreground }]}>{step.title}</Text>
+              <Text style={[styles.collectBody, { color: colors.mutedForeground }]}>{step.body}</Text>
+            </View>
+          </View>
+        ))}
       </ScrollView>
 
       <Modal
@@ -2135,4 +2186,10 @@ const styles = StyleSheet.create({
   txFeeRange: { fontSize: 12, fontFamily: "PlusJakartaSans_400Regular" },
   txFeeAmt: { fontSize: 12, fontFamily: "PlusJakartaSans_600SemiBold", fontWeight: "600" },
   txFeeNote: { fontSize: 11, fontFamily: "PlusJakartaSans_400Regular", marginTop: 4 },
+
+  collectCard: { flexDirection: "row", alignItems: "flex-start", gap: 12, padding: 14, borderRadius: 10, borderWidth: 1 },
+  collectIcon: { width: 36, height: 36, borderRadius: 8, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  collectContent: { flex: 1, gap: 3 },
+  collectTitle: { fontSize: 14, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold" },
+  collectBody: { fontSize: 12, fontFamily: "PlusJakartaSans_400Regular", lineHeight: 18 },
 });
