@@ -168,12 +168,16 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
       const doc = await PDFDocument.load(buf);
       const helv = await doc.embedFont(StandardFonts.Helvetica);
       const [pg] = doc.getPages();
-      // Date goes in the left column of the signature row (x=54, pdf-lib y=126), to the left of
-      // the "Plaintiff's Signature" blank at x=342.
-      pg.drawText(`Date: ${todayStr}`, { x: 54, y: 126, size: 9, font: helv });
+      // Date field: right side of the form, below the "Plaintiff's Signature" blank rule.
+      // Layout (pdf-lib y, bottom-left origin, page height=792):
+      //   undefined_4 AcroForm blank ("Plaintiff or Plaintiff's Attorney Printed Name"): y=157–177
+      //   "Plaintiff's Signature" blank rule drawn at: y=120–140
+      //   "Plaintiff's Signature" printed label: ~y=107–118
+      //   "Date" blank rule: ~y=92–106  ← date text drawn here
+      //   "Date" printed label: ~y=79–91
+      pg.drawText(todayStr, { x: 342, y: 96, size: 9, font: helv });
       if (opts?.signatureBytes) {
-        // "Plaintiff's Signature" label is on page 1, right-aligned at x=342, pdf-lib y=104–120.
-        // The blank rule sits just above the label at pdf-lib y≈120–132.
+        // "Plaintiff's Signature" blank rule: x=342, pdf-lib y=120–140.
         // Visually confirmed (2026-06-21): x=342, y=120, h=20 places the image centered on the
         // blank rule without extending into the "Plaintiff or Plaintiff's Attorney Printed Name" area.
         const sigImg = await doc.embedPng(opts.signatureBytes);
