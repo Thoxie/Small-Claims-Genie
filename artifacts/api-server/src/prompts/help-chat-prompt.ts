@@ -44,6 +44,7 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 - Service: court issues a citation served by constable or sheriff. Trial is set 20–45 days after service
 - After winning: abstract of judgment (property lien), writ of execution (non-exempt personal property), bank levy. Wages are EXEMPT from garnishment in Texas. Judgment valid 10 years, renewable
 - TX exemptions are broad: wages, homestead, personal property up to $100K individual / $200K family are exempt
+- TEXAS DTPA (Tex. Bus. & Com. Code § 17.41 et seq.): applies to consumer transactions involving business deception/false advertising/fraud. Up to 3x economic damages for knowing violations. Mandatory 60-day pre-suit written notice required (§ 17.505) before filing — the Demand Letter tab generates this notice. Does not apply to purely private disputes between individuals.
 
 ## COMMON CASE TYPES & VIABILITY SIGNALS
 **Security deposit:** CA — strong if landlord missed 21-day return deadline (CA Civil Code §1950.5); up to 2x deposit in bad faith. FL — landlord has 15 days (early termination) or 30 days (lease end) to return or object; up to 2x deposit for bad faith.

@@ -143,7 +143,7 @@ Target: 4 tight body paragraphs. ONE PAGE ONLY — this is a hard limit. If cont
 
 Paragraph 1 — Opening (2 sentences max): The purpose of this letter and the amount owed. No names in the body — the sender is identified only in the signature block.
 Paragraph 2 — Facts (3-4 sentences max): The actual events using the claim description. Specific dates, what happened, what was not done. Do not insert the demand dollar amount here — that belongs in Paragraph 3.
-Paragraph 3 — Demand (2-3 sentences): State the exact "Amount Sought" value as the demand. Clear deadline (14 days from today). No hedging.
+Paragraph 3 — Demand (2-3 sentences): State the exact "Amount Sought" value as the demand. Clear deadline (see state-specific rules below). No hedging.
 Paragraph 4 — Consequences (2 sentences max): What happens if they don't pay. Must use "court action against you" language — NOT "small claims action." Reference court costs added on top.
 
 FORMAT:
@@ -153,7 +153,23 @@ FORMAT:
 - Defendant address missing → use "[Defendant Address]"
 - RE: line must include the exact "Amount Sought" value
 - Sign off with plaintiff name or "[Your Name]" if not provided
-- Response deadline: exactly 14 calendar days from today`;
+${state === "TX" ? `
+═══ TEXAS-SPECIFIC DEMAND LETTER RULES ═══
+NOTICE PERIOD — DEFAULT: Use 14 calendar days from today as the response deadline for standard contract, property damage, and unpaid debt claims.
+
+DTPA (Deceptive Trade Practices) CLAIMS — MANDATORY 60-DAY NOTICE:
+- If the claim description or case context indicates a consumer transaction involving deceptive, misleading, or unconscionable conduct by a business (e.g., defective product sold by a retailer, false advertising, contractor fraud, misleading service representations), this may qualify under the Texas Deceptive Trade Practices Act (DTPA), Tex. Bus. & Com. Code § 17.41 et seq.
+- Under DTPA § 17.505, a consumer MUST give written notice at least 60 days before filing suit, or risk losing the right to recover attorney fees and economic damages multiplier.
+- When the claim facts suggest a DTPA-eligible dispute: use a 60-day response deadline AND include language such as: "This letter also serves as the written notice required under Texas Business & Commerce Code § 17.505. You have 60 days from the date of this letter to tender a written settlement offer before I may file suit under the Texas Deceptive Trade Practices Act."
+- For purely private disputes between individuals (landlord-tenant deposit, car accident between two private parties, unpaid personal loan) where no business deception is alleged, DTPA does not apply — use the standard 14-day deadline.
+
+TEXAS LAW REFERENCES (use only when applicable):
+- Contract/debt: "pursuant to Texas law"
+- Security deposit (residential lease): Tex. Prop. Code § 92.109 — landlord liable for 3x the wrongfully withheld amount plus attorney fees
+- Defective goods/services (consumer): Texas DTPA — up to 3x economic damages for knowing violations
+- Property damage: Tex. Civ. Prac. & Rem. Code § 16.003 (2-year SOL)
+
+COURT REFERENCE: "Justice of the Peace Court" or "[County] County Justice of the Peace Court, [Precinct], Texas"` : `- Response deadline: exactly 14 calendar days from today`}`;
 }
 
 /** @deprecated use buildDemandLetterSystemPrompt(state) instead */

@@ -41,6 +41,7 @@ Critical rules:
 - TX court forms: the app generates a pre-filled TX Small Claims Petition (PDF) for ALL 254 TX counties, downloadable from the Court Forms tab. Download, print, and file with the JP court clerk in the correct precinct. The petition includes party info, claim description, prior demand, and venue basis
 - After winning: abstract of judgment (files the judgment in the property records), writ of execution (seizure of non-exempt personal property), garnishment of bank accounts (not wages in TX — wages are exempt). Judgment valid for 10 years, renewable
 - Texas exemptions are very broad: wages, homestead, personal property up to $100K (individual) / $200K (family) are exempt. Collection in TX can be difficult against judgment-proof defendants
+- TEXAS DTPA (Deceptive Trade Practices Act, Tex. Bus. & Com. Code § 17.41 et seq.): Applies to consumer transactions where a business engages in false, misleading, or deceptive acts. Allows up to 3x economic damages for knowing violations plus attorney fees. CRITICAL PRE-SUIT REQUIREMENT: Consumer must send a written demand notice at least 60 days before filing suit (§ 17.505) — if skipped, the consumer loses the right to treble damages and attorney fees. The Demand Letter tab generates this written notice automatically. Does NOT apply to private disputes between individuals with no business deception element.
 
 ### FLORIDA CASES (jurisdictionState = "FL")
 - Small claims limit (2026): $8,000 or less (exclusive of costs, interest, and attorneys' fees)

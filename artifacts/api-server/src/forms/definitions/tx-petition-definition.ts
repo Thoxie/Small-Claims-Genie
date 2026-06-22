@@ -342,12 +342,10 @@ export async function buildTXPetition(
   y -= 14;
 
   // Signature line
-  if (opts?.signatureBytes && (d as any).signatureDataUrl) {
+  if (opts?.signatureBytes) {
     try {
-      const raw = ((d as any).signatureDataUrl as string).replace(/^data:image\/\w+;base64,/, "");
-      const sigBytes = Uint8Array.from(Buffer.from(raw, "base64"));
-      const sigImg = await doc.embedPng(sigBytes).catch(() => null)
-        ?? await doc.embedJpg(sigBytes).catch(() => null);
+      const sigImg = await doc.embedPng(opts.signatureBytes).catch(() => null)
+        ?? await doc.embedJpg(opts.signatureBytes).catch(() => null);
       if (sigImg) {
         page.drawImage(sigImg, { x: ML, y: y - 24, width: 180, height: 28 });
       }
