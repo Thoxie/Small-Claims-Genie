@@ -22,7 +22,7 @@
  */
 
 import * as path from "path";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -145,20 +145,25 @@ const clkCt333Definition: FormDefinition = {
     };
 
     const buf = await pdftk_fill_form(PDF_PATH, { text, checkboxes });
-    if (opts?.signatureBytes) {
-      try {
-        const filled = await PDFDocument.load(buf);
-        const [pg] = filled.getPages();
-        const sigImg = await filled.embedPng(opts.signatureBytes);
+    try {
+      const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+      const doc = await PDFDocument.load(buf);
+      const helv = await doc.embedFont(StandardFonts.Helvetica);
+      const [pg] = doc.getPages();
+      // Date goes in the left column of the three-column verification row (x=54), at the same
+      // vertical midpoint as the Signature column (pdf-lib y=244).
+      pg.drawText(`Date: ${todayStr}`, { x: 54, y: 244, size: 9, font: helv });
+      if (opts?.signatureBytes) {
         // "Signature" label (vs. "Attorney/Plaintiff" printed name) is at x=323, pdf-lib y=235–248.
         // The blank line above the label sits at pdf-lib y≈252–268.
         // x=323, y=235, h=36 places the image from y=235 (label bottom) up to y=271 (spanning the blank).
         // Visually confirmed correct (2026-06-21): sig lands cleanly on the signature blank line
         // in the middle (Signature) column of the three-column row.
+        const sigImg = await doc.embedPng(opts.signatureBytes);
         pg.drawImage(sigImg, { x: 323, y: 235, width: 130, height: 36, opacity: 1 });
-        return Buffer.from(await filled.save({ updateFieldAppearances: false }));
-      } catch { /* ignore — return plain fill */ }
-    }
+      }
+      return Buffer.from(await doc.save({ updateFieldAppearances: false }));
+    } catch { /* ignore — return plain fill */ }
     return buf;
   },
 };

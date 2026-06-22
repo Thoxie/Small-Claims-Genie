@@ -20,7 +20,7 @@
  */
 
 import * as path from "path";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -139,22 +139,28 @@ const socHillsboroughDefinition: FormDefinition = {
     };
 
     const buf = await pdftk_fill_form(PDF_PATH, { text, checkboxes });
-    if (opts?.signatureBytes) {
-      try {
-        const filled = await PDFDocument.load(buf);
-        const pages = filled.getPages();
-        // The Hillsborough SOC is a 2-page PDF. The signature section is on PAGE 2 (index 1).
+    try {
+      const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+      const doc = await PDFDocument.load(buf);
+      const helv = await doc.embedFont(StandardFonts.Helvetica);
+      // The Hillsborough SOC is a 2-page PDF. The signature section is on PAGE 2 (index 1).
+      const pages = doc.getPages();
+      const pg = pages[1] ?? pages[0]!;
+      // Date goes in the left portion of the signature row on page 2 (x=54, pdf-lib y=598),
+      // to the left of the "Signature of Plaintiff(s)" blank at x=346.
+      // The Hillsborough SOC has no printed date field in the signature section.
+      pg.drawText(`Date: ${todayStr}`, { x: 54, y: 598, size: 9, font: helv });
+      if (opts?.signatureBytes) {
         // "Signature of Plaintiff(s)" label on page 2: x=346, pdf-lib y=582–598.
         // The blank signature rule is at the same row as "Plaintiff Address:" (pdf-lib y≈596–612).
         // x=346, y=582, h=36 places the image from y=582 (label bottom) up to y=618 (spanning the blank).
         // Visually confirmed correct (2026-06-21): sig lands above "Signature of Plaintiff(s)" label
         // on page 2; page-2 routing via pages[1] confirmed working.
-        const pg = pages[1] ?? pages[0]!;
-        const sigImg = await filled.embedPng(opts.signatureBytes);
+        const sigImg = await doc.embedPng(opts.signatureBytes);
         pg.drawImage(sigImg, { x: 346, y: 582, width: 180, height: 36, opacity: 1 });
-        return Buffer.from(await filled.save({ updateFieldAppearances: false }));
-      } catch { /* ignore — return plain fill */ }
-    }
+      }
+      return Buffer.from(await doc.save({ updateFieldAppearances: false }));
+    } catch { /* ignore — return plain fill */ }
     return buf;
   },
 };

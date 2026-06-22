@@ -28,7 +28,7 @@
  */
 
 import * as path from "path";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -154,19 +154,24 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
     };
 
     const buf = await pdftk_fill_form(PDF_PATH, { text });
-    if (opts?.signatureBytes) {
-      try {
-        const filled = await PDFDocument.load(buf);
-        const [pg] = filled.getPages();
-        const sigImg = await filled.embedPng(opts.signatureBytes);
+    try {
+      const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+      const doc = await PDFDocument.load(buf);
+      const helv = await doc.embedFont(StandardFonts.Helvetica);
+      const [pg] = doc.getPages();
+      // Date goes in the left column of the signature row (x=54, pdf-lib y=126), to the left of
+      // the "Plaintiff's Signature" blank at x=342.
+      pg.drawText(`Date: ${todayStr}`, { x: 54, y: 126, size: 9, font: helv });
+      if (opts?.signatureBytes) {
         // "Plaintiff's Signature" label is on page 1, right-aligned at x=342, pdf-lib y=104–120.
         // The blank rule sits just above the label at pdf-lib y≈120–132.
         // Visually confirmed (2026-06-21): x=342, y=120, h=20 places the image centered on the
         // blank rule without extending into the "Plaintiff or Plaintiff's Attorney Printed Name" area.
+        const sigImg = await doc.embedPng(opts.signatureBytes);
         pg.drawImage(sigImg, { x: 342, y: 120, width: 180, height: 20, opacity: 1 });
-        return Buffer.from(await filled.save({ updateFieldAppearances: false }));
-      } catch { /* ignore — return plain fill */ }
-    }
+      }
+      return Buffer.from(await doc.save({ updateFieldAppearances: false }));
+    } catch { /* ignore — return plain fill */ }
     return buf;
   },
 };

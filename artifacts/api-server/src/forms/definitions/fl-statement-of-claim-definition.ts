@@ -340,7 +340,7 @@ export async function buildFLStatementOfClaim(
   // Signature line — capture Y for signature image overlay
   sigLineY = y;
   drawLine(page, MARGIN_L, y, MARGIN_L + 200, y, 0.5);
-  txt(page, font, "Date: _______________", MARGIN_L + 220, y + 2, 9);
+  txt(page, font, `Date: ${new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}`, MARGIN_L + 220, y + 2, 9);
   y -= 4;
   txt(page, font, "Plaintiff Signature", MARGIN_L, y, 7.5, GRAY);
   y -= 14;

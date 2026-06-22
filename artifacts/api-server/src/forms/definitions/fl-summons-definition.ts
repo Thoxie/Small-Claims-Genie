@@ -280,7 +280,7 @@ export async function buildFLSummons(
   txt(page, bold, "Prepared and filed by (Plaintiff):", ML, y, 8);
   sigLineY = y - 1;
   drawLine(page, ML + 178, sigLineY, ML + 360, sigLineY, 0.5);
-  txt(page, font, "Date: ___________", ML + 368, y, 7.5);
+  txt(page, font, `Date: ${new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}`, ML + 368, y, 7.5);
   y -= 7;
   txt(page, font, "Plaintiff Signature", ML + 178, y, 7, GRAY);
   y -= 12;

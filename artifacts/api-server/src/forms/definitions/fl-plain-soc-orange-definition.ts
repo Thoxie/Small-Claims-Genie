@@ -23,7 +23,7 @@
  */
 
 import * as path from "path";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -96,21 +96,26 @@ const plainSocOrangeDefinition: FormDefinition = {
     };
 
     const buf = await pdftk_fill_form(PDF_PATH, { text });
-    if (opts?.signatureBytes) {
-      try {
-        const filled = await PDFDocument.load(buf);
-        const [pg] = filled.getPages();
-        const sigImg = await filled.embedPng(opts.signatureBytes);
+    try {
+      const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+      const doc = await PDFDocument.load(buf);
+      const helv = await doc.embedFont(StandardFonts.Helvetica);
+      const [pg] = doc.getPages();
+      // Date goes in the left portion of the signature row (x=54, pdf-lib y=78), to the left of
+      // the right-aligned signature blank at x=378. The Orange plain SOC has no printed date field.
+      pg.drawText(`Date: ${todayStr}`, { x: 54, y: 78, size: 9, font: helv });
+      if (opts?.signatureBytes) {
         // The signature area is right-aligned on this 1-page form.
         // "Plaintiff(s)" / "(Sign here)" labels: xMin=378, pdf-lib y=57–68 (bottom/top of label).
         // The blank line `___` is just above the "Plaintiff(s)" label at pdf-lib y≈68–82.
         // x=378, y=68, h=28 places the image from y=68 (label top) up to y=96, spanning the blank.
         // Visually confirmed correct (2026-06-21): sig lands on the right-side blank signature line,
         // above the "Plaintiff(s) / (Sign here)" labels.
+        const sigImg = await doc.embedPng(opts.signatureBytes);
         pg.drawImage(sigImg, { x: 378, y: 68, width: 150, height: 28, opacity: 1 });
-        return Buffer.from(await filled.save({ updateFieldAppearances: false }));
-      } catch { /* ignore — return plain fill */ }
-    }
+      }
+      return Buffer.from(await doc.save({ updateFieldAppearances: false }));
+    } catch { /* ignore — return plain fill */ }
     return buf;
   },
 };
