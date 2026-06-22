@@ -234,6 +234,16 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
     if (data.secondPlaintiffBusinessType !== "other") {
       data.secondPlaintiffBusinessTypeOther = "";
     }
+    if (jurisdictionState !== "CA") {
+      delete data.plaintiffFbnCounty;
+      delete data.plaintiffFbnNumber;
+      delete data.plaintiffFbnExpiry;
+      delete data.plaintiffFbnSignDate;
+      delete data.secondPlaintiffFbnCounty;
+      delete data.secondPlaintiffFbnNumber;
+      delete data.secondPlaintiffFbnExpiry;
+      delete data.secondPlaintiffFbnSignDate;
+    }
     onNext({
       ...data,
       jurisdictionState,
