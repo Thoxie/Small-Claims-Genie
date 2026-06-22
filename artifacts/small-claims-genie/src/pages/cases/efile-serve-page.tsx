@@ -814,6 +814,61 @@ function TxCourtFormsSection({
   );
 }
 
+// ─── TX service of process section ───────────────────────────────────────────
+
+function TxServiceSection() {
+  const options = [
+    {
+      icon: Car,
+      title: "Constable Service",
+      badge: "Most Common",
+      badgeColor: "bg-[#0d6b5e]/10 text-[#0d6b5e]",
+      desc: "After you file, the JP court issues a citation that is served by the precinct constable or county sheriff. You do not arrange service yourself — the court handles it as part of the filing process.",
+    },
+    {
+      icon: Briefcase,
+      title: "Sheriff Service",
+      badge: "Also Available",
+      badgeColor: "bg-amber-50 text-amber-700",
+      desc: "In some precincts the county sheriff serves the citation instead of the constable. The clerk will tell you which officer handles service for your precinct. The service fee is set by Tex. Gov't Code § 118.131.",
+    },
+    {
+      icon: Info,
+      title: "No Private Process Server Needed",
+      badge: "TX Only",
+      badgeColor: "bg-blue-50 text-blue-700",
+      desc: "Unlike California, Texas Justice of the Peace courts do not allow private process servers for the initial citation. Service is exclusively through the court's constable or sheriff — you pay the service fee at the clerk's window when you file.",
+    },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Service of Process</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          The court issues and serves the citation — you don't arrange it
+        </p>
+      </div>
+      <div className="space-y-2">
+        {options.map(({ icon: Icon, title, badge, badgeColor, desc }) => (
+          <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── CA case info (AI E-Filing System tab body) ───────────────────────────────
 
 function CaEFilingPanel({
@@ -857,6 +912,7 @@ function TxEFilingPanel({
       {/* RIGHT — TX-specific content */}
       <div className="space-y-6">
         <TxCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
+        <TxServiceSection />
       </div>
     </div>
   );
