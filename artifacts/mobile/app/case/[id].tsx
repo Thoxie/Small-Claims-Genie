@@ -717,6 +717,13 @@ const TX_FEE_SCHEDULE = [
   { range: "$10,001 – $20,000", fee: "$321" },
 ];
 
+const FL_FEE_SCHEDULE = [
+  { range: "Under $100", fee: "$55" },
+  { range: "$101 – $500", fee: "$80" },
+  { range: "$501 – $2,500", fee: "$175" },
+  { range: "Over $2,500", fee: "$300" },
+];
+
 const CA_COLLECT_STEPS = [
   { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the court enters a judgment in your favor. Get a certified copy from the clerk — you'll need it for every enforcement step." },
   { icon: "trending-up" as const, title: "Locate the defendant's assets", body: "File a Judgment Debtor Examination (EJ-125) to compel the defendant to disclose bank accounts, employer, and property. Courts schedule within 30–45 days." },
@@ -754,7 +761,31 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
 
   const isTX = caseData.jurisdictionState === "TX";
   const isFL = caseData.jurisdictionState === "FL";
-  const FORMS = isTX ? TX_FORMS : CA_FORMS;
+
+  const countyId = caseData.countyId ?? "";
+  const isMiamiDade = countyId === "fl-miami-dade";
+  const isVolusia = countyId === "fl-volusia";
+  const flFormPath = isMiamiDade ? "fl/clkct333" : isVolusia ? "fl/cl219-volusia" : "fl/statement-of-claim";
+  const flFormLabel = isMiamiDade ? "CLK/CT. 333" : isVolusia ? "CL-219" : null;
+  const flFilingAddress = isMiamiDade
+    ? "73 W. Flagler St., Suite 133, Miami"
+    : isVolusia
+    ? "101 N. Alabama Ave., DeLand"
+    : "your county court clerk's office";
+
+  const flFormKey = isMiamiDade ? "fl-clkct333" : isVolusia ? "fl-cl219-volusia" : "fl-statement-of-claim";
+
+  const FL_FORMS = [
+    {
+      key: flFormKey,
+      label: flFormLabel ? `Statement of Claim (${flFormLabel})` : "Statement of Claim",
+      desc: `Florida Statement of Claim — file this first to start your case. File at ${flFilingAddress}.`,
+      path: flFormPath,
+      method: "POST" as const,
+    },
+  ];
+
+  const FORMS = isTX ? TX_FORMS : isFL ? FL_FORMS : CA_FORMS;
 
   const downloadForm = async (formKey: string, formPath: string, method: "GET" | "POST" = "GET") => {
     setReviewForm(null);
@@ -855,6 +886,27 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
               ))}
               <Text style={[styles.txFeeNote, { color: colors.mutedForeground }]}>
                 Claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs)
+              </Text>
+            </View>
+          </>
+        ) : isFL ? (
+          <>
+            <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+              <Feather name="info" size={14} color={colors.mutedForeground} />
+              <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
+                In Florida, the Summons is prepared and issued by the court clerk after you file the Statement of Claim and pay the filing fee. You do not create the Summons yourself.
+              </Text>
+            </View>
+            <View style={[styles.txFeeCard, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}>
+              <Text style={[styles.txFeeTitle, { color: "#92400e" }]}>FL Filing Fees (Fla. Stat. 34.041)</Text>
+              {FL_FEE_SCHEDULE.map((row) => (
+                <View key={row.range} style={styles.txFeeRow}>
+                  <Text style={[styles.txFeeRange, { color: "#b45309" }]}>{row.range}</Text>
+                  <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>{row.fee}</Text>
+                </View>
+              ))}
+              <Text style={[styles.txFeeNote, { color: "#b45309" }]}>
+                Additional fees apply for summons, sheriff service, and certified mail.
               </Text>
             </View>
           </>
