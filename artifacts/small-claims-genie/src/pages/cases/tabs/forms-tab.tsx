@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Paperclip, Sparkles, Package, Eye, Play, X, ChevronRight, Maximize2, ExternalLink } from "lucide-react";
+import { Download, Info, Loader2, PenLine, RotateCcw, FileText, CheckCircle2, AlertTriangle, Paperclip, Sparkles, Package, Eye, Play, X, ChevronRight, Maximize2, ExternalLink, UserCheck } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
@@ -599,7 +599,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [sc103SigModalOpen, setSc103SigModalOpen] = useState(false);
   const [sc103bSigModalOpen, setSc103bSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
-  const [flSigModal, setFlSigModal] = useState<{ endpoint: string; filename: string } | null>(null);
+  const [flSigModal, setFlSigModal] = useState<{ endpoint: string; filename: string; title?: string } | null>(null);
+  const [txServiceMethod, setTxServiceMethod] = useState<string>("");
+  const [flServiceMethod, setFlServiceMethod] = useState<string>("");
 
 
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
@@ -767,6 +769,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       setFlSigModal(null);
     } catch { setDownloadError("Download failed — please try again."); }
     finally { setDownloadingForm(null); }
+  }
+
+  function openFlSigModal(modal: { endpoint: string; filename: string; title?: string }) {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    setFlSigModal(modal);
   }
 
   async function downloadFormPost(endpoint: string, filename: string, body: Record<string, unknown>) {
@@ -1916,7 +1923,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/clkct333/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/clkct333", filename: `Statement-of-Claim-Miami-Dade-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/clkct333", filename: `Statement-of-Claim-Miami-Dade-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/clkct333/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -1953,7 +1960,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/clkct423/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/clkct423", filename: `Summons-Miami-Dade-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/clkct423", filename: `Summons-Miami-Dade-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/clkct423/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -1997,7 +2004,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <button
                       type="button"
                       disabled={downloadingForm === "fl/cl219-volusia-pdf/signed"}
-                      onClick={() => setFlSigModal({ endpoint: "fl/cl219-volusia-pdf", filename: `Statement-of-Claim-Volusia-Case-${caseId}.pdf` })}
+                      onClick={() => openFlSigModal({ endpoint: "fl/cl219-volusia-pdf", filename: `Statement-of-Claim-Volusia-Case-${caseId}.pdf` })}
                       className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                     >
                       {downloadingForm === "fl/cl219-volusia-pdf/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2025,7 +2032,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <button
                       type="button"
                       disabled={downloadingForm === "fl/cl219-volusia/signed"}
-                      onClick={() => setFlSigModal({ endpoint: "fl/cl219-volusia", filename: `Statement-of-Claim-Volusia-Case-${caseId}.pdf` })}
+                      onClick={() => openFlSigModal({ endpoint: "fl/cl219-volusia", filename: `Statement-of-Claim-Volusia-Case-${caseId}.pdf` })}
                       className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
                     >
                       {downloadingForm === "fl/cl219-volusia/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
@@ -2063,7 +2070,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/volusia-summons/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/volusia-summons", filename: `Summons-Volusia-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/volusia-summons", filename: `Summons-Volusia-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/volusia-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2107,7 +2114,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/broward/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/broward", filename: `Statement-of-Claim-Broward-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/broward", filename: `Statement-of-Claim-Broward-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/broward/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2144,7 +2151,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/broward-summons/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/broward-summons", filename: `Summons-Broward-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/broward-summons", filename: `Summons-Broward-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/broward-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2187,7 +2194,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <button
                       type="button"
                       disabled={downloadingForm === "fl/plain-soc-orange/signed"}
-                      onClick={() => setFlSigModal({ endpoint: "fl/plain-soc-orange", filename: `Statement-of-Claim-Orange-Case-${caseId}.pdf` })}
+                      onClick={() => openFlSigModal({ endpoint: "fl/plain-soc-orange", filename: `Statement-of-Claim-Orange-Case-${caseId}.pdf` })}
                       className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                     >
                       {downloadingForm === "fl/plain-soc-orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2215,7 +2222,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <button
                       type="button"
                       disabled={downloadingForm === "fl/orange/signed"}
-                      onClick={() => setFlSigModal({ endpoint: "fl/orange", filename: `Statement-of-Claim-Orange-Case-${caseId}.pdf` })}
+                      onClick={() => openFlSigModal({ endpoint: "fl/orange", filename: `Statement-of-Claim-Orange-Case-${caseId}.pdf` })}
                       className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
                     >
                       {downloadingForm === "fl/orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
@@ -2253,7 +2260,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/orange-summons/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/orange-summons", filename: `Summons-Orange-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/orange-summons", filename: `Summons-Orange-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/orange-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2296,7 +2303,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <button
                       type="button"
                       disabled={downloadingForm === "fl/soc-hillsborough/signed"}
-                      onClick={() => setFlSigModal({ endpoint: "fl/soc-hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf` })}
+                      onClick={() => openFlSigModal({ endpoint: "fl/soc-hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf` })}
                       className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                     >
                       {downloadingForm === "fl/soc-hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2324,7 +2331,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <button
                       type="button"
                       disabled={downloadingForm === "fl/hillsborough/signed"}
-                      onClick={() => setFlSigModal({ endpoint: "fl/hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf` })}
+                      onClick={() => openFlSigModal({ endpoint: "fl/hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${caseId}.pdf` })}
                       className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
                     >
                       {downloadingForm === "fl/hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
@@ -2362,7 +2369,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/hillsborough-summons/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/hillsborough-summons", filename: `Summons-Hillsborough-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/hillsborough-summons", filename: `Summons-Hillsborough-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/hillsborough-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2406,7 +2413,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/palm-beach/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/palm-beach", filename: `Statement-of-Claim-Palm-Beach-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/palm-beach", filename: `Statement-of-Claim-Palm-Beach-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/palm-beach/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2443,7 +2450,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/palm-beach-summons/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/palm-beach-summons", filename: `Summons-Palm-Beach-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/palm-beach-summons", filename: `Summons-Palm-Beach-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/palm-beach-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2488,7 +2495,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/statement-of-claim/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/statement-of-claim", filename: `Florida-Statement-of-Claim-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/statement-of-claim", filename: `Florida-Statement-of-Claim-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/statement-of-claim/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2525,7 +2532,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <button
                     type="button"
                     disabled={downloadingForm === "fl/summons/signed"}
-                    onClick={() => setFlSigModal({ endpoint: "fl/summons", filename: `Florida-Summons-Case-${caseId}.pdf` })}
+                    onClick={() => openFlSigModal({ endpoint: "fl/summons", filename: `Florida-Summons-Case-${caseId}.pdf` })}
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                   >
                     {downloadingForm === "fl/summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
@@ -2544,6 +2551,125 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </div>
             </div>
           )}
+
+          {/* ── Service of Process — Florida ─────────────────────────────────── */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
+              <h4 className="text-sm font-bold text-foreground">Serving the Defendant</h4>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              After the clerk signs and stamps your summons, you must have it served on the defendant. The defendant must be served at least <strong>7 days before the hearing</strong> (Fla. Sm. Cl. R. 7.070). Choose the method that works best for your situation.
+            </p>
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+              <RadioGroup value={flServiceMethod} onValueChange={setFlServiceMethod} className="gap-0">
+
+                {/* Option 1 — Certified Process Server */}
+                <label
+                  className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}
+                  onClick={(e) => { if (flServiceMethod === "process_server") { e.preventDefault(); setFlServiceMethod(""); } }}
+                >
+                  <RadioGroupItem value="process_server" id="fl-serve-ps" className="mt-0.5 shrink-0" />
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 w-fit">Recommended — Most Reliable</span>
+                    <p className="text-sm text-foreground leading-relaxed">
+                      <span className="font-bold">Certified Process Server</span> — A certified process server (licensed under Fla. Stat. § 48.27) personally serves the summons and Statement of Claim on the defendant. Best option if the defendant may avoid service or your hearing date is approaching. Fees may be recoverable if you win.
+                    </p>
+                  </div>
+                </label>
+                {flServiceMethod === "process_server" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">How It Works</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">After the clerk issues and stamps your summons, bring or mail it to a certified process server. The server locates the defendant, personally delivers the summons and Statement of Claim, and files a Return of Service directly with the court.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Be Ready to Provide</p>
+                        <ul className="text-xs text-blue-800 leading-relaxed space-y-1 mt-1">
+                          <li>• The clerk-issued, signed summons and a copy of your Statement of Claim.</li>
+                          <li>• The defendant's full legal name and best address for service.</li>
+                          <li>• Any additional details: work address, business hours, vehicle description, or photo.</li>
+                          <li>• Your contact information and any hearing date concerns.</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
+                      <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">Service must be completed at least <strong>7 days before the hearing</strong>. Process server fees may be recovered if you win your case.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 2 — Sheriff Service */}
+                <label
+                  className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}
+                  onClick={(e) => { if (flServiceMethod === "sheriff") { e.preventDefault(); setFlServiceMethod(""); } }}
+                >
+                  <RadioGroupItem value="sheriff" id="fl-serve-sheriff" className="mt-0.5 shrink-0" />
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <span className="font-semibold">Sheriff Service</span> — Contact your county sheriff's civil division to request service. The sheriff serves the defendant and files a Return of Service with the court. More affordable than a private process server, but may take longer to complete.
+                  </p>
+                </label>
+                {flServiceMethod === "sheriff" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">How to Request Sheriff Service</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">After the clerk issues your summons, contact the civil division of your county sheriff's office. Bring or mail the clerk-issued summons, a copy of the Statement of Claim, the defendant's address, and the service fee (varies by county, typically $40–$100).</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Check Status Early</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Contact the sheriff's office 10–14 days after submission to confirm service was completed. If the defendant cannot be found, you may need to provide an updated address or switch to a certified process server.</p>
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
+                      <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">Service must be completed at least <strong>7 days before the hearing</strong>. Allow extra time — sheriff service can take 1–3 weeks depending on the county.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 3 — Certified Mail */}
+                <label
+                  className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}
+                  onClick={(e) => { if (flServiceMethod === "certified_mail") { e.preventDefault(); setFlServiceMethod(""); } }}
+                >
+                  <RadioGroupItem value="certified_mail" id="fl-serve-mail" className="mt-0.5 shrink-0" />
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <span className="font-semibold">Certified Mail — Least Reliable.</span> In some Florida counties the clerk can send the summons by certified mail at your request. Service only counts if the defendant signs for it.
+                  </p>
+                </label>
+                {flServiceMethod === "certified_mail" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Is Only Complete If the Defendant Signs</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">If the defendant refuses, ignores, or does not sign for the certified mail, service fails and your hearing may be postponed. Your case is not dismissed — you can switch to a different service method.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">If Certified Mail Fails</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Switch to a certified process server or sheriff service right away. A failed mail attempt does not reset your hearing deadline — contact the clerk to request a continuance if the date is too close.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </RadioGroup>
+            </div>
+          </div>
         </div>
       )}
 
@@ -2582,10 +2708,128 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <Button
                 size="sm"
                 className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white"
-                onClick={() => setFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${caseId}-signed.pdf` })}
+                onClick={() => openFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${caseId}-signed.pdf` })}
               >
                 <PenLine className="h-3.5 w-3.5" /> Sign &amp; Download
               </Button>
+            </div>
+          </div>
+
+          {/* ── Service of Process — Texas ──────────────────────────────────── */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
+              <h4 className="text-sm font-bold text-foreground">Serving the Defendant</h4>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              After you file and pay the filing fee, the court prepares a Citation (summons). The defendant must be served at least <strong>10 days before the hearing</strong> (Tex. R. Civ. P. 536). Choose the method that best fits your situation.
+            </p>
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+              <RadioGroup value={txServiceMethod} onValueChange={setTxServiceMethod} className="gap-0">
+
+                {/* Option 1 — Private Process Server */}
+                <label
+                  className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${txServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}
+                  onClick={(e) => { if (txServiceMethod === "process_server") { e.preventDefault(); setTxServiceMethod(""); } }}
+                >
+                  <RadioGroupItem value="process_server" id="tx-serve-ps" className="mt-0.5 shrink-0" />
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 w-fit">Recommended — Most Reliable</span>
+                    <p className="text-sm text-foreground leading-relaxed">
+                      <span className="font-bold">Private Process Server</span> — A licensed Texas process server picks up the citation from the clerk and personally serves the defendant. More expensive but most reliable if the defendant may avoid service. Fees are recoverable if you win.
+                    </p>
+                  </div>
+                </label>
+                {txServiceMethod === "process_server" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">How It Works</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">After filing, ask the clerk to prepare the Citation. A licensed process server picks it up from the court, locates and personally serves the defendant, and files a Return of Service directly with the court when complete.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Be Ready to Provide</p>
+                        <ul className="text-xs text-blue-800 leading-relaxed space-y-1 mt-1">
+                          <li>• The defendant's full legal name and best address for service.</li>
+                          <li>• Any additional details: work address, business hours, vehicle description, or photo.</li>
+                          <li>• Your contact information and any hearing date concerns.</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
+                      <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">The defendant must be served at least <strong>10 days before the hearing</strong>. Service fees are typically recoverable if you win your case.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 2 — Constable / Sheriff */}
+                <label
+                  className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${txServiceMethod === "constable_sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}
+                  onClick={(e) => { if (txServiceMethod === "constable_sheriff") { e.preventDefault(); setTxServiceMethod(""); } }}
+                >
+                  <RadioGroupItem value="constable_sheriff" id="tx-serve-constable" className="mt-0.5 shrink-0" />
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <span className="font-semibold">Constable / Sheriff Service</span> — Standard option. Request constable or sheriff service at the clerk's window when you file. The court forwards the citation to the constable's or sheriff's office, which attempts service and files a Return of Service when complete.
+                  </p>
+                </label>
+                {txServiceMethod === "constable_sheriff" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">At the Filing Window</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Tell the clerk you want constable or sheriff service. There is usually a small service fee (around $75–$100 depending on the county). The constable will attempt service at the defendant's address on file.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Check Your Case Status</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Follow up with the clerk 10–14 days after filing to confirm the Return of Service has been filed. If service was unsuccessful, you may need to switch to a private process server or provide an updated address.</p>
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
+                      <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">The defendant must be served at least <strong>10 days before the hearing</strong>. If service cannot be completed in time, contact the clerk to request a continuance.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 3 — Certified Mail */}
+                <label
+                  className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${txServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}
+                  onClick={(e) => { if (txServiceMethod === "certified_mail") { e.preventDefault(); setTxServiceMethod(""); } }}
+                >
+                  <RadioGroupItem value="certified_mail" id="tx-serve-mail" className="mt-0.5 shrink-0" />
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <span className="font-semibold">Certified Mail — Least Reliable.</span> Available in some Texas JP courts. The clerk sends the citation by certified mail. Service only counts if the defendant personally signs for it.
+                  </p>
+                </label>
+                {txServiceMethod === "certified_mail" && (
+                  <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+                    <div className="flex gap-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Requires a Signed Receipt</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Service is only complete if the defendant personally signs the certified mail receipt. If they refuse delivery, don't sign, or the mail is returned unclaimed, service fails and the deadline does not restart.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">If Certified Mail Fails</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Switch to constable/sheriff service or a private process server right away. Contact the clerk to request a continuance if the hearing date is too close.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </RadioGroup>
             </div>
           </div>
 
@@ -3537,7 +3781,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       <SignaturePadModal
         open={!!flSigModal}
         onClose={() => setFlSigModal(null)}
-        formTitle="FL Court Form"
+        formTitle={flSigModal?.title ?? "Court Form"}
         disclaimer="By signing, you certify that the information in this form is true and correct to the best of your knowledge."
         onSign={(dataUrl) => {
           if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename, dataUrl);
