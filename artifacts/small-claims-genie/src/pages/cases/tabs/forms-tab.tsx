@@ -1841,6 +1841,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
   // ── Render ─────────────────────────────────────────────────────────────────
   const isFloridaCase = currentCase.jurisdictionState === "FL";
+  const isTexasCase = currentCase.jurisdictionState === "TX";
 
   return (
     <div className="pt-3 pb-4 md:pb-6 space-y-4 px-4 md:px-6">
@@ -2512,8 +2513,78 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         </div>
       )}
 
-      {/* CA form wizard — hidden for Florida cases */}
-      {!isFloridaCase && <>
+      {/* TX forms section */}
+      {isTexasCase && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⭐</span>
+            <h3 className="text-base font-bold text-foreground">Texas Court Forms</h3>
+          </div>
+
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            File with the Justice of the Peace court in the precinct where the defendant lives or where the transaction occurred. The petition below is pre-filled with your case information.
+          </p>
+
+          {/* TX Petition card */}
+          <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+              </div>
+              <p className="text-sm font-semibold text-foreground">Texas Small Claims Petition</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Pre-filled petition to open your case in Texas JP court. File this with the justice court clerk in your precinct.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8 text-xs"
+                onClick={() => downloadSignedFLForm(`/api/cases/${caseId}/forms/tx/petition`, `TX-Small-Claims-Petition-Case-${caseId}.pdf`)}
+              >
+                <Download className="h-3.5 w-3.5" /> Download
+              </Button>
+              <Button
+                size="sm"
+                className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white"
+                onClick={() => setFlSigModal({ endpoint: `/api/cases/${caseId}/forms/tx/petition`, filename: `TX-Small-Claims-Petition-Case-${caseId}-signed.pdf` })}
+              >
+                <PenLine className="h-3.5 w-3.5" /> Sign &amp; Download
+              </Button>
+            </div>
+          </div>
+
+          {/* Filing steps */}
+          <div className="rounded-xl border bg-card p-4 space-y-2">
+            <p className="text-sm font-semibold text-foreground">Filing in Texas — Next Steps</p>
+            <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside leading-relaxed">
+              <li>Print the petition and bring it to the Justice of the Peace court in the correct precinct.</li>
+              <li>File in the precinct where the defendant lives, or where the contract or incident occurred.</li>
+              <li>Pay the filing fee at the clerk's window (see fee schedule below). Ask about fee waivers if needed.</li>
+              <li>The court will issue a citation (summons) served by constable or sheriff.</li>
+              <li>Your trial date will be set — typically 20–45 days after service.</li>
+            </ol>
+          </div>
+
+          {/* Fee schedule */}
+          <div className="rounded-xl border bg-muted/30 p-4">
+            <p className="text-xs font-semibold text-foreground mb-2">Texas Filing Fees — Tex. Gov't Code § 118.121</p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+              <span className="text-muted-foreground">$0 – $200</span><span className="font-medium text-foreground">$46</span>
+              <span className="text-muted-foreground">$201 – $500</span><span className="font-medium text-foreground">$71</span>
+              <span className="text-muted-foreground">$501 – $1,000</span><span className="font-medium text-foreground">$121</span>
+              <span className="text-muted-foreground">$1,001 – $5,000</span><span className="font-medium text-foreground">$221</span>
+              <span className="text-muted-foreground">$5,001 – $10,000</span><span className="font-medium text-foreground">$271</span>
+              <span className="text-muted-foreground">$10,001 – $20,000</span><span className="font-medium text-foreground">$321</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs)</p>
+          </div>
+        </div>
+      )}
+
+      {/* CA form wizard — hidden for Florida and Texas cases */}
+      {!isFloridaCase && !isTexasCase && <>
 
       {/* Mobile tutorial trigger — hidden on desktop */}
       <button

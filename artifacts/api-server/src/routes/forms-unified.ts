@@ -428,4 +428,19 @@ router.post(
   makeFormHandler("FL-SUMMONS", (id) => `Florida-Summons-Case-${id}-signed.pdf`, { signed: true }),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Texas forms — programmatic pdf-lib generation (no template PDF required)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// TX Small Claims Petition — works for all 254 TX counties
+router.post(
+  "/cases/:id/forms/tx/petition",
+  makeFormHandler("TX-PETITION", (id) => `TX-Small-Claims-Petition-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/tx/petition/signed",
+  makeFormHandler("TX-PETITION", (id) => `TX-Small-Claims-Petition-Case-${id}-signed.pdf`, { signed: true }),
+);
+
 export default router;

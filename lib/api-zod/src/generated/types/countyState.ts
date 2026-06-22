@@ -11,4 +11,5 @@ export type CountyState = (typeof CountyState)[keyof typeof CountyState];
 export const CountyState = {
   CA: "CA",
   FL: "FL",
+  TX: "TX",
 } as const;

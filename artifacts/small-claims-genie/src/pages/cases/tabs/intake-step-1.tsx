@@ -26,6 +26,7 @@ interface Props {
 const STATE_OPTIONS = [
   { value: "CA", label: "California" },
   { value: "FL", label: "Florida" },
+  { value: "TX", label: "Texas" },
 ];
 
 export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {

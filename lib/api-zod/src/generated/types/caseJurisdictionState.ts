@@ -12,4 +12,5 @@ export type CaseJurisdictionState =
 export const CaseJurisdictionState = {
   CA: "CA",
   FL: "FL",
+  TX: "TX",
 } as const;

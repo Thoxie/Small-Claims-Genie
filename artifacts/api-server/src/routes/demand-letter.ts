@@ -29,6 +29,7 @@ function buildLetterContext(
   docs: typeof documentsTable.$inferSelect[],
 ): string {
   const parts: string[] = [];
+  const jsState = caseRecord.jurisdictionState ?? "CA";
 
   parts.push(`=== CASE FACTS ===`);
   parts.push(`Case Title: ${caseRecord.title}`);
@@ -41,7 +42,7 @@ function buildLetterContext(
     parts.push(`Filing County: ${caseRecord.countyId} County`);
   }
   if (caseRecord.courthouseAddress && caseRecord.courthouseCity) {
-    parts.push(`Court Address: ${caseRecord.courthouseAddress}, ${caseRecord.courthouseCity}, CA ${caseRecord.courthouseZip ?? ""}`);
+    parts.push(`Court Address: ${caseRecord.courthouseAddress}, ${caseRecord.courthouseCity}, ${jsState} ${caseRecord.courthouseZip ?? ""}`);
   }
   if (caseRecord.caseNumber) parts.push(`Case Number: ${caseRecord.caseNumber}`);
 
@@ -57,7 +58,7 @@ function buildLetterContext(
     if (isBiz && caseRecord.secondPlaintiffName) parts.push(`Plaintiff Individual Representative: ${caseRecord.secondPlaintiffName}${caseRecord.plaintiffTitle ? `, ${caseRecord.plaintiffTitle}` : ""}`);
   }
   if (caseRecord.plaintiffAddress && caseRecord.plaintiffCity) {
-    parts.push(`Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`);
+    parts.push(`Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? jsState} ${caseRecord.plaintiffZip ?? ""}`);
   }
   if (caseRecord.plaintiffEmail)  parts.push(`Plaintiff Email: ${caseRecord.plaintiffEmail}`);
   if (caseRecord.plaintiffPhone)  parts.push(`Plaintiff Phone: ${caseRecord.plaintiffPhone}`);
@@ -69,12 +70,12 @@ function buildLetterContext(
     if (isBizDef && caseRecord.defendantAgentName) {
       parts.push(`Defendant Registered Agent: ${caseRecord.defendantAgentName}${caseRecord.defendantAgentTitle ? `, ${caseRecord.defendantAgentTitle}` : ""}`);
       if (caseRecord.defendantAgentStreet && caseRecord.defendantAgentCity) {
-        parts.push(`Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? "CA"} ${caseRecord.defendantAgentZip ?? ""}`);
+        parts.push(`Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? jsState} ${caseRecord.defendantAgentZip ?? ""}`);
       }
     }
   }
   if (caseRecord.defendantAddress && caseRecord.defendantCity) {
-    parts.push(`Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`);
+    parts.push(`Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity}, ${caseRecord.defendantState ?? jsState} ${caseRecord.defendantZip ?? ""}`);
   }
   if (caseRecord.defendantPhone) parts.push(`Defendant Phone: ${caseRecord.defendantPhone}`);
 
