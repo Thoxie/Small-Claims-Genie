@@ -113,7 +113,7 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 - Step 5 "Review Your Case" — AI case advisor chat that knows the user's specific case and documents
 - Step 6 "Create Court Forms" — all court forms pre-filled and ready to download
 - Step 7 "Prep for Hearing" — Court-Ready Statement and AI Mock Trial
-- Step 8 "E-File & Serve" — E-Filing System with filing summary (court, parties, claim) and 4 tabs: (1) AI E-Filing System — court forms to download (CA: SC-100, MC-030, SC-103, SC-112A, SC-100A, FW-001; FL: Statement of Claim PDF pre-filled for all 67 FL counties — CLK/CT. 333 for Miami-Dade, CL-219 for Volusia, statewide form for all others) + FL service options (sheriff, certified mail, process server) + FL key deadlines; (2) AI Process Server Select — hire a licensed process server; (3) Collect After You Have Won — post-judgment collection tools (CA: debtor exam EJ-125, writ of execution EJ-130, WG-002 earnings withholding; FL: Fact Information Sheet Form 7.343, writ of execution, wage garnishment, bank levy, judgment lien certificate); (4) Case Deadlines — key dates and countdown timers
+- Step 8 "E-File & Serve" — E-Filing System with filing summary (court, parties, claim) and 4 tabs: (1) AI E-Filing System — court forms to download (CA: SC-100, MC-030, SC-103, SC-112A, SC-100A, FW-001; FL: Statement of Claim PDF pre-filled for all 67 FL counties — CLK/CT. 333 for Miami-Dade, CL-219 for Volusia, statewide form for all others; TX: TX Small Claims Petition pre-filled for all 254 TX counties — download, print, and file with the JP court clerk; court issues citation served by constable/sheriff; trial set 20–45 days after service) + state-specific service options and key deadlines; (2) AI Process Server Select — hire a licensed process server; (3) Collect After You Have Won — post-judgment collection tools (CA: debtor exam EJ-125, writ of execution EJ-130, WG-002 earnings withholding; FL: Fact Information Sheet Form 7.343, writ of execution, wage garnishment, bank levy, judgment lien certificate; TX: abstract of judgment, writ of execution, bank levy — wages are exempt in TX); (4) Case Deadlines — key dates and countdown timers
 
 ---
 
@@ -227,6 +227,17 @@ All 67 FL counties now have a pre-filled Statement of Claim PDF available for do
 - All other FL counties: Statewide Statement of Claim — county court name pre-printed in the header, case data pre-filled. Download and file with the county clerk. Check the county's clerk website (visible on the Counties page) for the exact filing window and any local instructions.
 After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and request that the clerk issue the summons. The clerk will serve the summons by certified mail or the plaintiff can arrange sheriff service.
 
+TEXAS CASES — FORMS ON THIS PAGE:
+- TX Small Claims (JP court) claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs) — Tex. Gov't Code § 27.031.
+- TX Small Claims Petition — pre-filled for all 254 TX counties. Download and print, then file with the Justice of the Peace (JP) court clerk in the correct precinct. The petition is pre-filled with party info, claim description, prior demand, and venue basis.
+
+TX FILING STEPS:
+1. Download and print the TX Small Claims Petition from this page.
+2. Go to the JP court clerk in the correct precinct (file where the defendant resides, where the contract was to be performed, or where the incident occurred).
+3. Pay the filing fee (§ 118.121): ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321. Fee waivers available — ask the clerk for an affidavit of inability to pay.
+4. The court issues a citation served by constable or sheriff on the defendant — the plaintiff does not arrange service in Texas.
+5. Trial is typically set 20–45 days after service. The court mails the hearing date to both parties.
+
 Anticipate: which form to file first, service method choice, how to file, filing fee, what to do after downloading.`,
 
   "hearing-prep": `
@@ -259,7 +270,13 @@ FLORIDA:
 - Pretrial conference set within 50 days of filing; trial within 60 days of pretrial conference.
 - Post-judgment collection window: 20 years in Florida.
 
-Anticipate: calculating deadlines, what happens if a deadline is missed, how to postpone a hearing, statute of limitations for the user's case type, FL vs CA deadline differences.`,
+TEXAS:
+- Statute of limitations: written contracts 4 years, oral contracts 4 years, property damage 2 years, personal injury 2 years (Tex. Civ. Prac. & Rem. Code § 16.003–16.004).
+- Service: the court issues a citation served by constable or sheriff — plaintiff does not arrange service. Trial is typically set 20–45 days after service.
+- DTPA pre-suit notice: if the claim involves a deceptive trade practice, a written demand notice must be sent at least 60 days before filing (Tex. Bus. & Com. Code § 17.505) — the Demand Letter tab generates this notice.
+- Post-judgment collection window: 10 years in Texas (renewable).
+
+Anticipate: calculating deadlines, what happens if a deadline is missed, how to postpone a hearing, statute of limitations for the user's case type, TX/FL/CA deadline differences.`,
 
   "ai-chat": `
 CURRENT PAGE: Step 5 "Review Your Case"

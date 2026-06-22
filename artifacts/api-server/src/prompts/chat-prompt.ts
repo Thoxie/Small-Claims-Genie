@@ -178,6 +178,18 @@ Defendant must be served at least 15 days before hearing (same county) or 20 day
 
 After downloading SC-100: print 2 copies, go to the county small claims clerk window, pay the filing fee ($30–$75), and get the hearing date stamped.
 
+TEXAS CASES — FORMS ON THIS PAGE:
+- TX Small Claims (JP court) claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs) — Tex. Gov't Code § 27.031.
+- TX Small Claims Petition — pre-filled for all 254 TX counties. Download and print, then file with the Justice of the Peace (JP) court clerk in the correct precinct. The petition includes party info, claim description, prior demand, and venue basis.
+- There are no separate state-supplied TX court forms required — the JP court uses its own local forms once the petition is filed.
+
+TX FILING STEPS:
+1. Download and print the TX Small Claims Petition from this page.
+2. Take it to the JP court clerk in the correct precinct (file where the defendant resides, where the contract was to be performed, or where the incident occurred).
+3. Pay the filing fee (§ 118.121): ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321. Fee waivers available — ask the clerk for an affidavit of inability to pay.
+4. The court issues a citation served by constable or sheriff on the defendant (plaintiff does not arrange service in TX).
+5. Trial is typically set 20–45 days after service. The court mails the hearing date to both parties.
+
 Focus on this page only. Anticipate: which form to file first, how to file, service method choice, filing fee, what to do after downloading.`,
 
   "hearing-prep": `
@@ -208,7 +220,13 @@ FLORIDA:
 - Pretrial conference is set within 50 days of filing; trial within 60 days of pretrial conference.
 - Post-judgment collection window: 20 years in Florida.
 
-Focus on this page only. Anticipate: how to calculate deadlines, what happens if a deadline is missed, statute of limitations for their case type, how FL and CA deadlines differ.`,
+TEXAS:
+- Statute of limitations: written contracts 4 years, oral contracts 4 years, property damage 2 years, personal injury 2 years (Tex. Civ. Prac. & Rem. Code § 16.003–16.004).
+- Service: the court issues a citation served by constable or sheriff — plaintiff does not arrange service. Trial is typically set 20–45 days after service.
+- DTPA pre-suit notice: if the claim involves a deceptive trade practice, a written demand notice must be sent at least 60 days before filing (Tex. Bus. & Com. Code § 17.505) — the Demand Letter tab generates this notice.
+- Post-judgment collection window: 10 years in Texas (renewable).
+
+Focus on this page only. Anticipate: how to calculate deadlines, what happens if a deadline is missed, statute of limitations for their case type, how TX/FL/CA deadlines differ.`,
 
   "ai-chat": `
 CURRENT PAGE: Step 5 "Review Your Case"
