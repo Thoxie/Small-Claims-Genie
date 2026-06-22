@@ -19,6 +19,7 @@ import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import type { CaseData } from "../types";
+import { TEXAS_COUNTIES } from "../../routes/counties";
 
 const PW = 612;
 const PH = 792;
@@ -133,8 +134,13 @@ export async function buildTXPetition(
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
   const page = doc.addPage([PW, PH]);
-  const county = countyDisplay((d as any).countyId);
+  const countyId: string = (d as any).countyId ?? "";
+  const county = countyDisplay(countyId);
   const courthouseName: string = (d as any).courthouseName ?? "";
+  const txCountyRecord = TEXAS_COUNTIES.find((c) => c.id === countyId);
+  const courthouseAddress: string = txCountyRecord
+    ? `${txCountyRecord.courthouseAddress}, ${txCountyRecord.courthouseCity}, TX ${txCountyRecord.courthouseZip}`
+    : "";
 
   let y = PH - 36;
 
@@ -163,6 +169,11 @@ export async function buildTXPetition(
   y -= 13;
   txt(page, font, courtLine2, (PW - cl2w) / 2, y, 8.5, GRAY);
   y -= 11;
+  if (courthouseAddress) {
+    const cl3w = font.widthOfTextAtSize(courthouseAddress, 7.5);
+    txt(page, font, courthouseAddress, (PW - cl3w) / 2, y, 7.5, GRAY);
+    y -= 10;
+  }
   line(page, ML, y, MR, y, 1, DKBLU);
   y -= 10;
 

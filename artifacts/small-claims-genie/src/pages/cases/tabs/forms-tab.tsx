@@ -13,6 +13,40 @@ import { useToast } from "@/hooks/use-toast";
 import { DraftModeBanner } from "@/components/draft-overlay";
 import { sc104FieldsToBody } from "./sc104-utils";
 
+// ─── TX JP Precinct 1 Place 1 lookup (top 30 counties by population) ─────────
+const TX_JP_PRECINCTS: Record<string, { address: string; city: string; zip: string }> = {
+  "tx-harris":     { address: "1310 Prairie St",          city: "Houston",        zip: "77002" },
+  "tx-dallas":     { address: "600 Commerce St",           city: "Dallas",         zip: "75202" },
+  "tx-tarrant":    { address: "200 Taylor St",             city: "Fort Worth",     zip: "76196" },
+  "tx-bexar":      { address: "100 Dolorosa St",           city: "San Antonio",    zip: "78205" },
+  "tx-travis":     { address: "5501 Airport Blvd",         city: "Austin",         zip: "78751" },
+  "tx-collin":     { address: "2100 Bloomdale Rd",         city: "McKinney",       zip: "75071" },
+  "tx-hidalgo":    { address: "2812 S Bus 281",            city: "Edinburg",       zip: "78539" },
+  "tx-el-paso":    { address: "500 E San Antonio Ave",     city: "El Paso",        zip: "79901" },
+  "tx-denton":     { address: "1450 E McKinney St",        city: "Denton",         zip: "76209" },
+  "tx-fort-bend":  { address: "1422 Eugene Heimann Cir",   city: "Richmond",       zip: "77469" },
+  "tx-montgomery": { address: "210 W Davis St",            city: "Conroe",         zip: "77301" },
+  "tx-williamson": { address: "405 MLK St",                city: "Georgetown",     zip: "78626" },
+  "tx-cameron":    { address: "974 E Harrison St",         city: "Brownsville",    zip: "78520" },
+  "tx-nueces":     { address: "901 Leopard St",            city: "Corpus Christi", zip: "78401" },
+  "tx-galveston":  { address: "722 Moody Ave",             city: "Galveston",      zip: "77550" },
+  "tx-bell":       { address: "550 E 2nd Ave",             city: "Belton",         zip: "76513" },
+  "tx-webb":       { address: "1110 Victoria St",          city: "Laredo",         zip: "78040" },
+  "tx-hays":       { address: "712 S Stagecoach Trail",    city: "San Marcos",     zip: "78666" },
+  "tx-lubbock":    { address: "904 Broadway St",           city: "Lubbock",        zip: "79401" },
+  "tx-jefferson":  { address: "1149 Pearl St",             city: "Beaumont",       zip: "77701" },
+  "tx-brazoria":   { address: "111 E Locust St",           city: "Angleton",       zip: "77515" },
+  "tx-smith":      { address: "100 N Broadway Ave",        city: "Tyler",          zip: "75702" },
+  "tx-mclennan":   { address: "501 Washington Ave",        city: "Waco",           zip: "76701" },
+  "tx-brazos":     { address: "300 E 26th St",             city: "Bryan",          zip: "77803" },
+  "tx-comal":      { address: "150 N Seguin Ave",          city: "New Braunfels",  zip: "78130" },
+  "tx-guadalupe":  { address: "211 W Court St",            city: "Seguin",         zip: "78155" },
+  "tx-parker":     { address: "1112 Santa Fe Dr",          city: "Weatherford",    zip: "76086" },
+  "tx-grayson":    { address: "100 W Houston St",          city: "Sherman",        zip: "75090" },
+  "tx-gregg":      { address: "101 E Methvin St",          city: "Longview",       zip: "75601" },
+  "tx-ector":      { address: "300 N Grant Ave",           city: "Odessa",         zip: "79761" },
+};
+
 // ─── Forms Catalog ────────────────────────────────────────────────────────────
 const FORMS_CATALOG = [
   // ── 1. Primary filing form ────────────────────────────────────────────────
@@ -2558,6 +2592,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
           {/* Filing steps */}
           <div className="rounded-xl border bg-card p-4 space-y-2">
             <p className="text-sm font-semibold text-foreground">Filing in Texas — Next Steps</p>
+            {(() => {
+              const countyId = currentCase.countyId ?? "";
+              const precinct = TX_JP_PRECINCTS[countyId];
+              return precinct ? (
+                <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2.5 mb-1">
+                  <p className="text-xs font-semibold text-emerald-800 mb-0.5">Your JP Court — Precinct 1, Place 1</p>
+                  <p className="text-xs text-emerald-700">{precinct.address}, {precinct.city}, TX {precinct.zip}</p>
+                </div>
+              ) : null;
+            })()}
             <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside leading-relaxed">
               <li>Print the petition and bring it to the Justice of the Peace court in the correct precinct.</li>
               <li>File in the precinct where the defendant lives, or where the contract or incident occurred.</li>
