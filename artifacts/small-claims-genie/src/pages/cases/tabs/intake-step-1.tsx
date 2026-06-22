@@ -151,7 +151,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
     : null;
 
   const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
-  const countyState = selectedCounty?.state ?? (initialData.jurisdictionState ?? "CA");
+  const countyState = selectedCounty?.state ?? jurisdictionState;
   const isCA = countyState === "CA";
   const courtAddress = selectedCourthouse
     ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, ${countyState} ${selectedCourthouse.zip}`
