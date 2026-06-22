@@ -77,6 +77,7 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
     defendantCity: caseData.defendantCity ?? "",
     defendantState: caseData.defendantState ?? "CA",
     defendantZip: caseData.defendantZip ?? "",
+    jurisdictionState: caseData.jurisdictionState ?? "CA",
     claimType: caseData.claimType ?? "",
     claimAmount: caseData.claimAmount != null ? String(caseData.claimAmount) : "",
     claimDescription: caseData.claimDescription ?? "",
@@ -89,6 +90,23 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
   });
 
   const onSaveStep = async (isLastStep = false, silent = false) => {
+    if (isLastStep || step === 2) {
+      const amt = Number(form.claimAmount);
+      if (form.jurisdictionState === "TX" && form.claimAmount && amt > 20000) {
+        Alert.alert(
+          "Claim Amount Too High",
+          "Texas small claims court has a $20,000 limit. Please reduce your claim amount or file in district court instead.",
+        );
+        return;
+      }
+      if (form.jurisdictionState === "FL" && form.claimAmount && amt > 8000) {
+        Alert.alert(
+          "Claim Amount Too High",
+          "Florida small claims court has an $8,000 limit. Please reduce your claim amount or file in county court instead.",
+        );
+        return;
+      }
+    }
     setSaving(true);
     try {
       await save.mutateAsync({
@@ -97,6 +115,7 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
           data: {
             ...form,
             claimAmount: form.claimAmount ? Number(form.claimAmount) : undefined,
+            jurisdictionState: form.jurisdictionState as "CA" | "FL" | "TX",
           },
         },
       });
@@ -205,6 +224,32 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
             <View style={{ flex: 1 }}><Field label="ZIP" placeholder="90001" valueKey="defendantZip" keyboardType="numeric" /></View>
           </View>
 
+          <Section title="FILING STATE" />
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginBottom: 6 }]}>
+            Which state are you filing in?
+          </Text>
+          <View style={[styles.statePickerRow]}>
+            {([
+              { value: "CA", label: "California (CA)" },
+              { value: "FL", label: "Florida (FL)" },
+              { value: "TX", label: "Texas (TX)" },
+            ] as const).map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
+                style={[
+                  styles.statePill,
+                  { borderColor: form.jurisdictionState === opt.value ? colors.primary : colors.border,
+                    backgroundColor: form.jurisdictionState === opt.value ? colors.primary : colors.secondary },
+                ]}
+                onPress={() => setForm((prev) => ({ ...prev, jurisdictionState: opt.value }))}
+              >
+                <Text style={[styles.statePillText, { color: form.jurisdictionState === opt.value ? colors.primaryForeground : colors.foreground }]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           <TouchableOpacity
             style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 }]}
             onPress={() => onSaveStep(false)}
@@ -230,6 +275,30 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
           <Section title="CLAIM DETAILS" />
           <Field label="Claim Type" placeholder="e.g. Security Deposit, Contract Dispute" valueKey="claimType" />
           <Field label="Amount Sought ($)" placeholder="e.g. 5000" valueKey="claimAmount" keyboardType="numeric" />
+          {(() => {
+            const amt = Number(form.claimAmount);
+            if (form.jurisdictionState === "TX" && amt > 20000) {
+              return (
+                <View style={[styles.claimLimitWarn, { backgroundColor: "#fef3c7", borderColor: "#f59e0b" }]}>
+                  <Feather name="alert-triangle" size={14} color="#b45309" />
+                  <Text style={[styles.claimLimitWarnText, { color: "#b45309" }]}>
+                    Texas small claims limit is $20,000. Claims above this must be filed in district court.
+                  </Text>
+                </View>
+              );
+            }
+            if (form.jurisdictionState === "FL" && amt > 8000) {
+              return (
+                <View style={[styles.claimLimitWarn, { backgroundColor: "#fef3c7", borderColor: "#f59e0b" }]}>
+                  <Feather name="alert-triangle" size={14} color="#b45309" />
+                  <Text style={[styles.claimLimitWarnText, { color: "#b45309" }]}>
+                    Florida small claims limit is $8,000. Claims above this must be filed in county court.
+                  </Text>
+                </View>
+              );
+            }
+            return null;
+          })()}
           <Field label="Incident Date" placeholder="YYYY-MM-DD" valueKey="incidentDate" />
           <Field
             label="Describe Your Claim"
@@ -627,33 +696,51 @@ function DemandLetterTab({ caseId }: { caseId: number }) {
 
 // ─── Court Forms Tab ──────────────────────────────────────────────────────────
 
-const FORMS = [
-  { key: "sc100", label: "SC-100", desc: "Plaintiff's Claim and ORDER to Go to Small Claims Court — file this first to start your case", path: "sc100" },
-  { key: "sc103", label: "SC-103", desc: "Fictitious Business Name Declaration — required if defendant uses a DBA (trade name)", path: "sc103" },
-  { key: "mc030", label: "MC-030", desc: "Declaration — attach extra facts or a supporting statement that doesn't fit on SC-100", path: "mc030" },
-  { key: "sc104", label: "SC-104", desc: "Proof of Service — file after defendant is personally served by an adult", path: "sc104" },
-  { key: "sc105", label: "SC-105", desc: "Amendment — correct or update information on a form already filed with the court", path: "sc105" },
-] as const;
+const CA_FORMS = [
+  { key: "sc100", label: "SC-100", desc: "Plaintiff's Claim and ORDER to Go to Small Claims Court — file this first to start your case", path: "sc100", method: "GET" as const },
+  { key: "sc103", label: "SC-103", desc: "Fictitious Business Name Declaration — required if defendant uses a DBA (trade name)", path: "sc103", method: "GET" as const },
+  { key: "mc030", label: "MC-030", desc: "Declaration — attach extra facts or a supporting statement that doesn't fit on SC-100", path: "mc030", method: "GET" as const },
+  { key: "sc104", label: "SC-104", desc: "Proof of Service — file after defendant is personally served by an adult", path: "sc104", method: "GET" as const },
+  { key: "sc105", label: "SC-105", desc: "Amendment — correct or update information on a form already filed with the court", path: "sc105", method: "GET" as const },
+];
 
-function CourtFormsTab({ caseId }: { caseId: number }) {
+const TX_FORMS = [
+  { key: "tx-petition", label: "TX Petition", desc: "Texas Small Claims Petition — file this with the Justice of the Peace court to start your case", path: "tx/petition", method: "POST" as const },
+];
+
+const TX_FEE_SCHEDULE = [
+  { range: "$0 – $200", fee: "$46" },
+  { range: "$201 – $500", fee: "$71" },
+  { range: "$501 – $1,000", fee: "$121" },
+  { range: "$1,001 – $5,000", fee: "$221" },
+  { range: "$5,001 – $10,000", fee: "$271" },
+  { range: "$10,001 – $20,000", fee: "$321" },
+];
+
+function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDetails }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { getToken } = useAuth();
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [reviewForm, setReviewForm] = useState<typeof FORMS[number] | null>(null);
+  const [reviewForm, setReviewForm] = useState<{ key: string; label: string; desc: string; path: string; method: "GET" | "POST" } | null>(null);
   const baseUrl = getBaseUrl();
-  const { data: caseData } = useGetCase(caseId);
 
-  const downloadForm = async (formKey: string, formPath: string) => {
+  const isTX = caseData.jurisdictionState === "TX";
+  const FORMS = isTX ? TX_FORMS : CA_FORMS;
+
+  const downloadForm = async (formKey: string, formPath: string, method: "GET" | "POST" = "GET") => {
     setReviewForm(null);
     setDownloading(formKey);
     try {
       const token = await getToken();
-      const url = formPath === "sc100"
-        ? `${baseUrl}/api/cases/${caseId}/forms/sc100`
-        : `${baseUrl}/api/cases/${caseId}/forms/${formPath}`;
+      const url = `${baseUrl}/api/cases/${caseId}/forms/${formPath}`;
       const response = await fetch(url, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        method,
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(method === "POST" ? { "Content-Type": "application/json" } : {}),
+        },
+        ...(method === "POST" ? { body: JSON.stringify({}) } : {}),
       });
       if (!response.ok) throw new Error("Download failed");
       const blob = await response.blob();
@@ -696,6 +783,7 @@ function CourtFormsTab({ caseId }: { caseId: number }) {
         <Text style={[styles.tabNote, { color: colors.mutedForeground }]}>
           Forms are pre-filled with your case information. Tap the download icon to review before generating.
         </Text>
+
         {FORMS.map((form) => (
           <View key={form.key} style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.formCardLeft}>
@@ -721,12 +809,35 @@ function CourtFormsTab({ caseId }: { caseId: number }) {
           </View>
         ))}
 
-        <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-          <Feather name="info" size={14} color={colors.mutedForeground} />
-          <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
-            The SC-100 is required to file. Submit it in person at your county courthouse clerk's office along with the filing fee.
-          </Text>
-        </View>
+        {isTX ? (
+          <>
+            <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+              <Feather name="info" size={14} color={colors.mutedForeground} />
+              <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
+                File the TX Petition with the Justice of the Peace court in the precinct where the defendant lives or where the incident occurred.
+              </Text>
+            </View>
+            <View style={[styles.txFeeCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.txFeeTitle, { color: colors.foreground }]}>Texas Filing Fees — Tex. Gov't Code § 118.121</Text>
+              {TX_FEE_SCHEDULE.map((row) => (
+                <View key={row.range} style={styles.txFeeRow}>
+                  <Text style={[styles.txFeeRange, { color: colors.mutedForeground }]}>{row.range}</Text>
+                  <Text style={[styles.txFeeAmt, { color: colors.foreground }]}>{row.fee}</Text>
+                </View>
+              ))}
+              <Text style={[styles.txFeeNote, { color: colors.mutedForeground }]}>
+                Claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs)
+              </Text>
+            </View>
+          </>
+        ) : (
+          <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+            <Feather name="info" size={14} color={colors.mutedForeground} />
+            <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
+              The SC-100 is required to file. Submit it in person at your county courthouse clerk's office along with the filing fee.
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       <Modal
@@ -772,7 +883,7 @@ function CourtFormsTab({ caseId }: { caseId: number }) {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.reviewDownloadBtn, { backgroundColor: colors.primary, opacity: downloading === reviewForm?.key ? 0.7 : 1 }]}
-              onPress={() => reviewForm && downloadForm(reviewForm.key, reviewForm.path)}
+              onPress={() => reviewForm && downloadForm(reviewForm.key, reviewForm.path, reviewForm.method)}
               disabled={!!downloading}
             >
               {downloading === reviewForm?.key
@@ -1051,7 +1162,7 @@ function HearingPrepTab({ caseData, caseId }: { caseData: CaseWithDetails; caseI
 
 // ─── Deadlines Tab ────────────────────────────────────────────────────────────
 
-const DEFAULT_CHECKLIST = [
+const CA_CHECKLIST = [
   { id: "1", label: "Complete intake form", done: false },
   { id: "2", label: "Upload all evidence documents", done: false },
   { id: "3", label: "Send demand letter to defendant", done: false },
@@ -1064,10 +1175,24 @@ const DEFAULT_CHECKLIST = [
   { id: "10", label: "Arrive 30 minutes early on hearing day", done: false },
 ];
 
+const TX_CHECKLIST = [
+  { id: "1", label: "Complete intake form", done: false },
+  { id: "2", label: "Upload all evidence documents", done: false },
+  { id: "3", label: "Send demand letter to defendant", done: false },
+  { id: "4", label: "Download and review TX Petition", done: false },
+  { id: "5", label: "File TX Petition at Justice of the Peace court", done: false },
+  { id: "6", label: "Pay filing fee at clerk's window (see fee schedule)", done: false },
+  { id: "7", label: "Court issues citation — served by constable or sheriff", done: false },
+  { id: "8", label: "Prepare opening statement (2-3 min)", done: false },
+  { id: "9", label: "Organize evidence copies (3 sets)", done: false },
+  { id: "10", label: "Arrive 30 minutes early on hearing day", done: false },
+];
+
 function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId: number }) {
   const colors = useColors();
   const { getToken } = useAuth();
   const baseUrl = getBaseUrl();
+  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : CA_CHECKLIST;
   const [checklist, setChecklist] = useState(DEFAULT_CHECKLIST);
   const [dateInput, setDateInput] = useState(caseData.hearingDate ? String(caseData.hearingDate) : "");
   const [savingDate, setSavingDate] = useState(false);
@@ -1709,7 +1834,7 @@ export default function CaseWorkspace() {
         )}
         {activeTab === "documents" && <DocumentsTab caseId={caseId} />}
         {activeTab === "demand-letter" && <DemandLetterTab caseId={caseId} />}
-        {activeTab === "court-forms" && <CourtFormsTab caseId={caseId} />}
+        {activeTab === "court-forms" && <CourtFormsTab caseId={caseId} caseData={caseData} />}
         {activeTab === "hearing-prep" && <HearingPrepTab caseData={caseData} caseId={caseId} />}
         {activeTab === "deadlines" && <DeadlinesTab caseData={caseData} caseId={caseId} />}
         {activeTab === "ai-chat" && (
@@ -1996,4 +2121,18 @@ const styles = StyleSheet.create({
   reviewCancelText: { fontSize: 15, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold" },
   reviewDownloadBtn: { flex: 2, height: 50, borderRadius: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   reviewDownloadText: { fontSize: 15, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold", color: "#fff" },
+
+  statePickerRow: { flexDirection: "column", gap: 8, marginBottom: 8 },
+  statePill: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1.5, alignItems: "center" },
+  statePillText: { fontSize: 14, fontFamily: "PlusJakartaSans_600SemiBold", fontWeight: "600" },
+
+  claimLimitWarn: { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 4, marginBottom: 4 },
+  claimLimitWarnText: { flex: 1, fontSize: 12, fontFamily: "PlusJakartaSans_400Regular", lineHeight: 17 },
+
+  txFeeCard: { padding: 14, borderRadius: 12, borderWidth: 1, marginTop: 8, gap: 8 },
+  txFeeTitle: { fontSize: 12, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold", marginBottom: 4 },
+  txFeeRow: { flexDirection: "row", justifyContent: "space-between" },
+  txFeeRange: { fontSize: 12, fontFamily: "PlusJakartaSans_400Regular" },
+  txFeeAmt: { fontSize: 12, fontFamily: "PlusJakartaSans_600SemiBold", fontWeight: "600" },
+  txFeeNote: { fontSize: 11, fontFamily: "PlusJakartaSans_400Regular", marginTop: 4 },
 });
