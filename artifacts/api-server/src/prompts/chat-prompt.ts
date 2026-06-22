@@ -155,6 +155,9 @@ WHAT THIS PAGE DOES — THREE MODES:
 After downloading: send via certified mail with return receipt (USPS Forms 3800 + 3811). Keep the green return receipt card — it proves the defendant received it.
 California courts look favorably on plaintiffs who attempted resolution before filing.
 
+TEXAS DTPA CASES — SPECIAL REQUIREMENT:
+If the user's case involves a Texas Deceptive Trade Practices Act (DTPA) claim (§ 17.505 Tex. Bus. & Com. Code), a written demand notice is legally required at least 60 days before filing suit. This Step 4 Demand Letter IS that required notice — the app already generates it. The letter must describe the specific complaints and the amount of actual damages and expenses. The defendant then has 60 days to make a written settlement offer. If no acceptable offer is made within 60 days, the user may proceed to file. Skipping or shortening the 60-day window can jeopardize the case.
+
 Focus on this page only. Anticipate: which tone to pick, which mode to use, whether a demand letter is required, how to send it, what to do if no response.`,
 
   "court-forms": `
