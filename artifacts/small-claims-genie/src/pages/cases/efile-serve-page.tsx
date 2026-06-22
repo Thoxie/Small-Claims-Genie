@@ -865,6 +865,22 @@ function TxServiceSection() {
           </div>
         ))}
       </div>
+
+      {/* If service fails — alias citation guidance */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+        <RefreshCw className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-amber-900 leading-tight mb-1">If the Defendant Can't Be Located or Refuses Service</p>
+          <ol className="text-xs text-amber-800 space-y-1.5 list-decimal list-inside leading-relaxed">
+            <li><span className="font-medium">Clerk notification:</span> The constable or sheriff files a return showing the attempted service. The court clerk will notify you that service was unsuccessful.</li>
+            <li><span className="font-medium">Request an alias citation:</span> Go back to the clerk's window and ask for an alias citation — a new citation issued to try service again. There is typically a small re-issuance fee.</li>
+            <li><span className="font-medium">Re-service timeline:</span> The alias citation goes back to the constable or sheriff for another service attempt. Once served, your 20–45 day trial window restarts from the new service date.</li>
+          </ol>
+          <p className="text-[11px] text-amber-700 mt-2 leading-relaxed">
+            If the defendant remains impossible to locate, ask the clerk about substitute service or posting — additional steps that require a court order under Tex. R. Civ. P. 106.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
