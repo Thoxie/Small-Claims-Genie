@@ -357,7 +357,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
             </div>
 
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
             {/* ── Plaintiff ── */}
             <div className="rounded-xl border p-5 space-y-4">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Your Information (Plaintiff)</h3>
@@ -464,8 +464,161 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                 </div>
               )} />
 
-              {plaintiffIsFictitious && (
-                <div className="rounded-lg border border-dashed border-amber-300/60 p-4 space-y-3 bg-amber-50/30">
+
+              {/* Additional plaintiff toggle */}
+              <FormField control={form.control} name="hasAdditionalPlaintiff" render={({ field }) => (
+                <div className="flex items-center space-x-2 pt-1">
+                  <Checkbox
+                    id="additional-plaintiff-toggle"
+                    checked={!!field.value}
+                    onCheckedChange={(v) => {
+                      field.onChange(!!v);
+                      if (!v) setAdditionalPlaintiffMailingDiffers(false);
+                    }}
+                  />
+                  <label htmlFor="additional-plaintiff-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                    There is an additional plaintiff (requires SC-100A)
+                  </label>
+                </div>
+              )} />
+
+
+            </div>
+
+            {/* ── Defendant ── */}
+            <div className="rounded-xl border p-5 space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Defendant Information</h3>
+              <FormField control={form.control} name="defendantIsBusinessOrEntity" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <FormLabel className="font-normal cursor-pointer">I am suing a business or public entity</FormLabel>
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="defendantName" render={({ field }) => (
+                <FormItem><FormLabel>{isBusiness ? "Business Name" : "Full Name"} <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+
+              {/* Agent for service (business/entity defendants) */}
+              {isBusiness && (
+                <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Agent for Service of Process</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField control={form.control} name="defendantAgentName" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Agent Name (if known)</FormLabel>
+                        <FormControl><Input {...field} placeholder="e.g. John Smith" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="defendantAgentTitle" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Job Title (if known)</FormLabel>
+                        <FormControl><Input {...field} placeholder="e.g. CEO, Registered Agent" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="agent-address-toggle"
+                      checked={agentAddressExpanded}
+                      onCheckedChange={(v) => setAgentAddressExpanded(!!v)}
+                    />
+                    <label htmlFor="agent-address-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                      Agent's address differs from business address
+                    </label>
+                  </div>
+                  {agentAddressExpanded && (
+                    <div className="space-y-2">
+                      <FormField control={form.control} name="defendantAgentStreet" render={({ field }) => (
+                        <FormItem><FormLabel>Agent Street Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <div className="grid grid-cols-5 gap-2">
+                        <FormField control={form.control} name="defendantAgentCity" render={({ field }) => (
+                          <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="defendantAgentState" render={({ field }) => (
+                          <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="defendantAgentZip" render={({ field }) => (
+                          <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} maxLength={5} onChange={(e) => field.onChange(formatZip(e.target.value))} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <FormField control={form.control} name="defendantPhone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl><Input {...field} placeholder="(555) 555-5555" value={field.value} onChange={(e) => field.onChange(formatPhone(e.target.value))} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="defendantAddress" render={({ field }) => (
+                <FormItem><FormLabel>Street Address <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <div className="grid grid-cols-5 gap-2">
+                <FormField control={form.control} name="defendantCity" render={({ field }) => (
+                  <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="defendantState" render={({ field }) => (
+                  <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="defendantZip" render={({ field }) => (
+                  <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} maxLength={5} onChange={(e) => field.onChange(formatZip(e.target.value))} /></FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+
+              {/* Defendant mailing address toggle */}
+              <div className="flex items-center space-x-2 pt-1">
+                <Checkbox
+                  id="defendant-mailing-toggle"
+                  checked={defendantMailingDiffers}
+                  onCheckedChange={(v) => setDefendantMailingDiffers(!!v)}
+                />
+                <label htmlFor="defendant-mailing-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
+                  Defendant's mailing address is different
+                </label>
+              </div>
+              {defendantMailingDiffers && (
+                <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Defendant Mailing Address</p>
+                  <FormField control={form.control} name="defendantMailingAddress" render={({ field }) => (
+                    <FormItem><FormLabel>Street</FormLabel><FormControl><Input {...field} placeholder="P.O. Box or different street" /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-5 gap-2">
+                    <FormField control={form.control} name="defendantMailingCity" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="defendantMailingState" render={({ field }) => (
+                      <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="defendantMailingZip" render={({ field }) => (
+                      <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} maxLength={5} onChange={(e) => field.onChange(formatZip(e.target.value))} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                </div>
+              )}
+
+              {/* More than 2 defendants total */}
+              <FormField control={form.control} name="moreThanTwoDefendants" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
+                  <FormControl><Checkbox checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div>
+                    <FormLabel className="font-normal cursor-pointer">There are more than 2 defendants total</FormLabel>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">If yes, fill out and attach another SC-100A</p>
+                  </div>
+                </FormItem>
+              )} />
+            </div>
+          </div>
+
+          {/* ── DBA / Fictitious Business Name — full width, shown when checked ── */}
+
+          {plaintiffIsFictitious && (
+            <div className="rounded-xl border border-dashed border-amber-300/60 p-5 space-y-3 bg-amber-50/30">
                   <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Business Information — SC-103</p>
 
                   <FormField control={form.control} name="plaintiffDbaName" render={({ field }) => (
@@ -474,7 +627,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                       <FormControl><Input {...field} placeholder="Fictitious / DBA name" /></FormControl>
                       <FormMessage />
                     </FormItem>
-                  )} />
+              )} />
 
                   <FormField control={form.control} name="plaintiffDbaAddress" render={({ field }) => (
                     <FormItem>
@@ -584,25 +737,10 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                 </div>
               )}
 
-              {/* Additional plaintiff toggle */}
-              <FormField control={form.control} name="hasAdditionalPlaintiff" render={({ field }) => (
-                <div className="flex items-center space-x-2 pt-1">
-                  <Checkbox
-                    id="additional-plaintiff-toggle"
-                    checked={!!field.value}
-                    onCheckedChange={(v) => {
-                      field.onChange(!!v);
-                      if (!v) setAdditionalPlaintiffMailingDiffers(false);
-                    }}
-                  />
-                  <label htmlFor="additional-plaintiff-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
-                    There is an additional plaintiff (requires SC-100A)
-                  </label>
-                </div>
-              )} />
+          {/* ── Additional Plaintiff — full width, shown when checked ── */}
 
-              {hasAdditionalPlaintiff && (
-                <div className="rounded-lg border border-dashed border-[#14b8a6]/40 p-4 space-y-3 bg-[#f0fffe]/50">
+          {hasAdditionalPlaintiff && (
+            <div className="rounded-xl border border-dashed border-[#14b8a6]/40 p-5 space-y-3 bg-[#f0fffe]/50">
                   <p className="text-xs font-semibold text-[#0d6b5e] uppercase tracking-wide">Additional Plaintiff — SC-100A</p>
                   <FormField control={form.control} name="additionalPlaintiffName" render={({ field }) => (
                     <FormItem>
@@ -610,7 +748,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                       <FormControl><Input {...field} placeholder="Full legal name" /></FormControl>
                       <FormMessage />
                     </FormItem>
-                  )} />
+              )} />
                   <div className="grid grid-cols-2 gap-3">
                     <FormField control={form.control} name="secondPlaintiffPhone" render={({ field }) => (
                       <FormItem>
@@ -815,138 +953,6 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                   )}
                 </div>
               )}
-
-            </div>
-
-            {/* ── Defendant ── */}
-            <div className="rounded-xl border p-5 space-y-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Defendant Information</h3>
-              <FormField control={form.control} name="defendantIsBusinessOrEntity" render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
-                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                  <FormLabel className="font-normal cursor-pointer">I am suing a business or public entity</FormLabel>
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="defendantName" render={({ field }) => (
-                <FormItem><FormLabel>{isBusiness ? "Business Name" : "Full Name"} <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-
-              {/* Agent for service (business/entity defendants) */}
-              {isBusiness && (
-                <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Agent for Service of Process</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField control={form.control} name="defendantAgentName" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Agent Name (if known)</FormLabel>
-                        <FormControl><Input {...field} placeholder="e.g. John Smith" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="defendantAgentTitle" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Job Title (if known)</FormLabel>
-                        <FormControl><Input {...field} placeholder="e.g. CEO, Registered Agent" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="agent-address-toggle"
-                      checked={agentAddressExpanded}
-                      onCheckedChange={(v) => setAgentAddressExpanded(!!v)}
-                    />
-                    <label htmlFor="agent-address-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
-                      Agent's address differs from business address
-                    </label>
-                  </div>
-                  {agentAddressExpanded && (
-                    <div className="space-y-2">
-                      <FormField control={form.control} name="defendantAgentStreet" render={({ field }) => (
-                        <FormItem><FormLabel>Agent Street Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                      <div className="grid grid-cols-5 gap-2">
-                        <FormField control={form.control} name="defendantAgentCity" render={({ field }) => (
-                          <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={form.control} name="defendantAgentState" render={({ field }) => (
-                          <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={form.control} name="defendantAgentZip" render={({ field }) => (
-                          <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} maxLength={5} onChange={(e) => field.onChange(formatZip(e.target.value))} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <FormField control={form.control} name="defendantPhone" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl><Input {...field} placeholder="(555) 555-5555" value={field.value} onChange={(e) => field.onChange(formatPhone(e.target.value))} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="defendantAddress" render={({ field }) => (
-                <FormItem><FormLabel>Street Address <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <div className="grid grid-cols-5 gap-2">
-                <FormField control={form.control} name="defendantCity" render={({ field }) => (
-                  <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="defendantState" render={({ field }) => (
-                  <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="defendantZip" render={({ field }) => (
-                  <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} maxLength={5} onChange={(e) => field.onChange(formatZip(e.target.value))} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-
-              {/* Defendant mailing address toggle */}
-              <div className="flex items-center space-x-2 pt-1">
-                <Checkbox
-                  id="defendant-mailing-toggle"
-                  checked={defendantMailingDiffers}
-                  onCheckedChange={(v) => setDefendantMailingDiffers(!!v)}
-                />
-                <label htmlFor="defendant-mailing-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
-                  Defendant's mailing address is different
-                </label>
-              </div>
-              {defendantMailingDiffers && (
-                <div className="rounded-lg border border-dashed p-3 space-y-3 bg-muted/10">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Defendant Mailing Address</p>
-                  <FormField control={form.control} name="defendantMailingAddress" render={({ field }) => (
-                    <FormItem><FormLabel>Street</FormLabel><FormControl><Input {...field} placeholder="P.O. Box or different street" /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <div className="grid grid-cols-5 gap-2">
-                    <FormField control={form.control} name="defendantMailingCity" render={({ field }) => (
-                      <FormItem className="col-span-2"><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="defendantMailingState" render={({ field }) => (
-                      <FormItem className="col-span-1"><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="defendantMailingZip" render={({ field }) => (
-                      <FormItem className="col-span-2"><FormLabel>ZIP</FormLabel><FormControl><Input {...field} maxLength={5} onChange={(e) => field.onChange(formatZip(e.target.value))} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                </div>
-              )}
-
-              {/* More than 2 defendants total */}
-              <FormField control={form.control} name="moreThanTwoDefendants" render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 bg-muted/20">
-                  <FormControl><Checkbox checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
-                  <div>
-                    <FormLabel className="font-normal cursor-pointer">There are more than 2 defendants total</FormLabel>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">If yes, fill out and attach another SC-100A</p>
-                  </div>
-                </FormItem>
-              )} />
-            </div>
-          </div>
 
         </form>
       </Form>
