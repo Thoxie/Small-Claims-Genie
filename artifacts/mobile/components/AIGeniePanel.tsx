@@ -33,6 +33,7 @@ interface Props {
   caseId: number;
   caseTitle?: string;
   pageContext?: string;
+  jurisdictionState?: "CA" | "FL" | "TX";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }
 
@@ -176,7 +177,7 @@ function parseSuggestions(content: string): { displayText: string; suggestions: 
   return { displayText, suggestions };
 }
 
-export function AIGeniePanel({ caseId, caseTitle, pageContext, onNavigateToTab }: Props) {
+export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState, onNavigateToTab }: Props) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { getToken } = useAuth();
@@ -195,7 +196,26 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, onNavigateToTab }
 
   const baseUrl = getBaseUrl();
 
-  const helpContent = pageContext ? (PAGE_HELP[pageContext] ?? DEFAULT_HELP) : DEFAULT_HELP;
+  const countyBullet =
+    jurisdictionState === "FL"
+      ? "Select your Florida county where you plan to file."
+      : jurisdictionState === "TX"
+      ? "Select your Texas county and Justice of the Peace precinct."
+      : "Select the California county where you plan to file.";
+
+  const resolvedPageHelp: Record<string, { title: string; bullets: string[] }> = {
+    ...PAGE_HELP,
+    intake: {
+      ...PAGE_HELP.intake,
+      bullets: [
+        PAGE_HELP.intake.bullets[0],
+        PAGE_HELP.intake.bullets[1],
+        countyBullet,
+      ],
+    },
+  };
+
+  const helpContent = pageContext ? (resolvedPageHelp[pageContext] ?? DEFAULT_HELP) : DEFAULT_HELP;
   const initialChips = pageContext ? (PAGE_INITIAL_CHIPS[pageContext] ?? DEFAULT_CHIPS) : DEFAULT_CHIPS;
 
   const onFabPress = useCallback(() => {

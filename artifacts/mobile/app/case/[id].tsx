@@ -2003,6 +2003,7 @@ export default function CaseWorkspace() {
           caseId={caseId}
           caseTitle={caseData.title ?? ""}
           pageContext={activeTab}
+          jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX") ?? "CA"}
           onNavigateToTab={(tab, question) => {
             const validTabs = TABS.map((t) => t.key);
             if (validTabs.includes(tab)) {
