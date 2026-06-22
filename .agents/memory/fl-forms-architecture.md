@@ -49,11 +49,21 @@ All pdftk forms follow this pattern:
    - Plain SOC Orange: x=54, y=78 (left of right-aligned sig at x=378)
    - SOC Hillsborough (page 2): x=54, y=598 (left of sig at x=346)
 
-## Signature overlay coords (pdftk forms, visually confirmed 2026-06-21)
+## Signature overlay coords (pdftk forms, visually confirmed 2026-06-21/22)
 - CLK/CT.333: x=323, y=235, width=130, height=36 (middle column)
-- CL-219 Volusia PDF: x=342, y=120, width=180, height=20
+- CL-219 Volusia PDF page 1 ("Plaintiff's Signature"): x=342, y=120, width=180, height=20
+- CL-219 Volusia PDF page 2 ("Signature of Plaintiff(s)"): x=295, y=640, width=180, height=25
+  — page 2 has NO AcroForm fields; "Signature of Plaintiff(s)" is a printed blank at y≈641 from bottom
 - Plain SOC Orange: x=378, y=68, width=150, height=28
 - SOC Hillsborough (page 2): x=346, y=582, width=180, height=36
+
+## CL-219 Volusia caption field naming quirk
+The two caption fields at y=631 have misleading pdf-lib-generated names:
+- `STATEMENT OF CLAIM` (x=31, y=631) = plaintiff name (LEFT of "Sues")
+- `undefined` (x=337, y=631) = defendant name (RIGHT of "Sues")
+These were previously left blank as "court-use" fields. They must be filled with plaintiffName / defendantName.
+Also: `undefined_2` (x=28, y=590) and `undefined_3` (x=334, y=590) are secondary party name lines — leave blank unless there are multiple parties.
+All 22 AcroForm fields in the CL-219 Volusia form are on page 1. Page 2 and 3 are print-only.
 
 ## Form IDs and Routes
 

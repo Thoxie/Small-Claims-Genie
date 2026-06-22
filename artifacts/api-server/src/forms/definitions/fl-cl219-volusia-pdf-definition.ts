@@ -10,8 +10,11 @@
  * Field names confirmed via: pdftk dump_data_fields
  *
  * Key fields (as returned by pdftk dump_data_fields):
- *   Plaintiffs                                               — plaintiff name (header)
- *   Defendants                                               — defendant name (header)
+ *   STATEMENT OF CLAIM                                       — plaintiff name (caption, LEFT of "Sues") ← widget at x=31, y=631
+ *   undefined                                                — defendant name (caption, RIGHT of "Sues") ← widget at x=337, y=631
+ *   undefined_2 / undefined_3                               — additional party name lines (blank)
+ *   Plaintiffs                                               — plaintiff name (body "Plaintiff(s), …")
+ *   Defendants                                               — defendant name (body "Defendant(s) …")
  *   Address                                                  — plaintiff full address
  *   Address_2                                                — defendant full address
  *   Telephone                                                — plaintiff phone
@@ -22,7 +25,10 @@
  *   any supporting documentation and additional pages…1-6    — claim description overflow lines
  *   WHEREFORE Plaintiff requests judgment in the amount of   — claim amount
  *   damages                                                  — additional damages (blank)
- *   undefined / undefined_2 / undefined_3 / undefined_4     — court-use fields (blank)
+ *   undefined_4                                              — page 1 "Plaintiff's Signature" blank (drawn via pdf-lib)
+ *
+ * NOTE: All 22 AcroForm fields are on page 1. Page 2's "Signature of Plaintiff(s)" is
+ * a non-fillable printed line — drawn via pdf-lib overlay on pages[1] at x=295, y=640.
  *
  * Filing: Volusia County Clerk of Courts, 101 N. Alabama Ave., DeLand, FL 32724
  */
@@ -145,12 +151,15 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
       "WHEREFORE Plaintiff requests judgment in the amount of": formatAmount(d.claimAmount),
       "damages": "",
 
-      // ── Court-use / undefined fields — left blank ─────────────────────────
-      "STATEMENT OF CLAIM": "",
-      "undefined":   "",
-      "undefined_2": "",
-      "undefined_3": "",
-      "undefined_4": "",
+      // ── Caption: party names on either side of "Sues" (top of page 1) ───
+      // These fields sit at y=631 in the case caption header.
+      // pdf-lib widget names are misleading — STATEMENT OF CLAIM = LEFT (plaintiff),
+      // undefined = RIGHT (defendant). Confirmed via pdf-lib widget rect dump.
+      "STATEMENT OF CLAIM": d.plaintiffName ?? "",
+      "undefined":          d.defendantName ?? "",
+      "undefined_2": "",   // second plaintiff line (blank)
+      "undefined_3": "",   // second defendant line (blank)
+      "undefined_4": "",   // court use (blank)
     };
 
     const buf = await pdftk_fill_form(PDF_PATH, { text });
@@ -169,6 +178,15 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
         // blank rule without extending into the "Plaintiff or Plaintiff's Attorney Printed Name" area.
         const sigImg = await doc.embedPng(opts.signatureBytes);
         pg.drawImage(sigImg, { x: 342, y: 120, width: 180, height: 20, opacity: 1 });
+
+        // Page 2: "Signature of Plaintiff(s)" in the sworn statement section.
+        // This is a non-AcroForm printed line — there are no fillable fields on page 2.
+        // Coordinates: x=295, y=640, w=180, h=25 places the image on the blank rule
+        // just above the "Signature of Plaintiff(s)" label (estimated y≈628 from bottom).
+        const pg2 = doc.getPages()[1];
+        if (pg2) {
+          pg2.drawImage(sigImg, { x: 295, y: 640, width: 180, height: 25, opacity: 1 });
+        }
       }
       return Buffer.from(await doc.save({ updateFieldAppearances: false }));
     } catch { /* ignore — return plain fill */ }

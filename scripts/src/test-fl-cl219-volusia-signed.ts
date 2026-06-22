@@ -16,7 +16,8 @@
  *     expected coordinates on the correct page (pixel-level placement check)
  *   - Cleans up test cases in the database afterwards
  *
- * Signature coords (pdf-lib, y from bottom): x=342, y=120, w=180, h=20, page=1
+ * Signature coords page 1 (pdf-lib, y from bottom): x=342, y=120, w=180, h=20
+ * Signature coords page 2 (pdf-lib, y from bottom): x=295, y=640, w=180, h=25
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";
@@ -44,6 +45,13 @@ const SIG_X    = 342;
 const SIG_Y    = 120;
 const SIG_W    = 180;
 const SIG_H    = 20;
+
+// Page 2: "Signature of Plaintiff(s)" in the sworn statement section
+const SIG2_PAGE = 2;
+const SIG2_X    = 295;
+const SIG2_Y    = 640;
+const SIG2_W    = 180;
+const SIG2_H    = 25;
 
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:80";
 
@@ -260,8 +268,11 @@ async function run() {
       console.log("  ⚠ pdftotext unavailable — text-layer assertions skipped");
     }
 
-    console.log("Checking signature pixel placement…");
-    await assertSignaturePlaced(pdfBuf, SIG_PAGE, SIG_X, SIG_Y, SIG_W, SIG_H, "CL-219-VOLUSIA");
+    console.log("Checking signature pixel placement (page 1)…");
+    await assertSignaturePlaced(pdfBuf, SIG_PAGE, SIG_X, SIG_Y, SIG_W, SIG_H, "CL-219-VOLUSIA pg1");
+
+    console.log("Checking signature pixel placement (page 2 — sworn statement)…");
+    await assertSignaturePlaced(pdfBuf, SIG2_PAGE, SIG2_X, SIG2_Y, SIG2_W, SIG2_H, "CL-219-VOLUSIA pg2");
 
     console.log("\n✅ All assertions passed — FL Volusia CL-219 signed PDF is correct.");
 
