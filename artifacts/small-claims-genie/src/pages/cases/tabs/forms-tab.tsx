@@ -771,9 +771,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     finally { setDownloadingForm(null); }
   }
 
+  function deriveFlSigTitle(endpoint: string): string {
+    if (endpoint === "tx/petition") return "Texas Small Claims Petition";
+    if (endpoint.includes("summons") || endpoint === "fl/clkct423") return "Summons / Notice to Appear";
+    return "Statement of Claim";
+  }
+
   function openFlSigModal(modal: { endpoint: string; filename: string; title?: string }) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
-    setFlSigModal(modal);
+    setFlSigModal({ ...modal, title: modal.title ?? deriveFlSigTitle(modal.endpoint) });
   }
 
   async function downloadFormPost(endpoint: string, filename: string, body: Record<string, unknown>) {
