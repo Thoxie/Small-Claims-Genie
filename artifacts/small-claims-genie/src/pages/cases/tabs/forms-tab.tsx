@@ -2541,14 +2541,14 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 variant="outline"
                 size="sm"
                 className="gap-1.5 h-8 text-xs"
-                onClick={() => downloadSignedFLForm(`/api/cases/${caseId}/forms/tx/petition`, `TX-Small-Claims-Petition-Case-${caseId}.pdf`)}
+                onClick={() => downloadSignedFLForm("tx/petition", `TX-Small-Claims-Petition-Case-${caseId}.pdf`)}
               >
                 <Download className="h-3.5 w-3.5" /> Download
               </Button>
               <Button
                 size="sm"
                 className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white"
-                onClick={() => setFlSigModal({ endpoint: `/api/cases/${caseId}/forms/tx/petition`, filename: `TX-Small-Claims-Petition-Case-${caseId}-signed.pdf` })}
+                onClick={() => setFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${caseId}-signed.pdf` })}
               >
                 <PenLine className="h-3.5 w-3.5" /> Sign &amp; Download
               </Button>

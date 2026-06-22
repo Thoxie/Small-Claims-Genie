@@ -8,7 +8,7 @@ import { logger } from "../lib/logger";
 import { checkAiRateLimit } from "../lib/rate-limiter";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { stripMC030Wrappers, measureMC030BodyLines, MC030_MAX_LINES } from "./forms";
-import { VALID_TONES, type DemandLetterTone, TONE_INSTRUCTIONS, SYSTEM_PROMPT } from "../prompts/demand-letter-prompt";
+import { VALID_TONES, type DemandLetterTone, TONE_INSTRUCTIONS, buildDemandLetterSystemPrompt } from "../prompts/demand-letter-prompt";
 
 const router: IRouter = Router();
 
@@ -165,6 +165,7 @@ router.post("/cases/:id/demand-letter", async (req, res): Promise<void> => {
 
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
   if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+  const jsState = caseRecord.jurisdictionState ?? "CA";
 
   const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
   const context = buildLetterContext(caseRecord, docs);
@@ -184,7 +185,7 @@ router.post("/cases/:id/demand-letter", async (req, res): Promise<void> => {
     : "\n\n⚠️ WARNING: No claim description was provided. Do your best with the information available but note the letter may be incomplete.\n";
 
   const messages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
+    { role: "system" as const, content: buildDemandLetterSystemPrompt(jsState) },
     {
       role: "user" as const,
       content: `Today's date is ${today}.\n\nTone instruction: ${toneInstruction}\n\n${context}${claimDescriptionHighlight}\nWrite the demand letter now. Remember: use the actual claim description above — never replace it with generic filler.`,
@@ -701,20 +702,24 @@ const SETTLEMENT_TONES: Record<string, string> = {
 - End: "I hope we can resolve this matter without the need for a court hearing."`,
 };
 
-const SETTLEMENT_SYSTEM = `You are a professional legal document writer helping a California small claims plaintiff write a settlement negotiation letter.
+function buildSettlementSystem(state: string): string {
+  const stateFullName = state === "TX" ? "Texas" : state === "FL" ? "Florida" : "California";
+  const courtRef = state === "TX" ? "a Justice of the Peace court hearing" : state === "FL" ? "a county court hearing" : "a small claims hearing";
+  return `You are a professional legal document writer helping a ${stateFullName} small claims plaintiff write a settlement negotiation letter.
 
 RULES:
 - Output ONLY the letter text — no commentary, no markdown, no preamble
 - Standard business letter format: Sender block → Date → Recipient block → RE: line → Body → Signature block
 - 3–4 paragraphs. Plain English. No legal jargon. ONE PAGE — hard limit.
 - NEVER open with "I, [Name]" or introduce the sender by name in the body. The sender's name belongs only in the signature block.
-- Paragraph 1: State that a dispute exists and that this letter proposes resolution without a hearing — no sender name in the body.
+- Paragraph 1: State that a dispute exists and that this letter proposes resolution without ${courtRef} — no sender name in the body.
 - Paragraph 2: Brief factual summary — what happened, what is owed. Reference the original claim amount, then frame the settlement amount as a practical offer.
 - Paragraph 3: The settlement offer — state the exact settlement amount, any installment terms, and the response deadline.
 - Paragraph 4: Consequences and close — what happens if they don't respond. Reference hearing date if known.
 - RE: line must include "Settlement Offer — $[settlement amount]"
 - Never use the word "mock," "sample," or "hypothetical."
 - Never invent facts. Use only what is provided.`;
+}
 
 // GET — load saved settlement letter
 router.get("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
@@ -747,6 +752,7 @@ router.post("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
 
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
   if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+  const jsState = (caseRecord as any).jurisdictionState ?? "CA";
 
   const {
     tone = "firm",
@@ -781,7 +787,7 @@ router.post("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
       ? `Plaintiff Representative: ${caseRecord.secondPlaintiffName}${caseRecord.plaintiffTitle ? `, ${caseRecord.plaintiffTitle}` : ""}`
       : "",
     caseRecord.plaintiffAddress && caseRecord.plaintiffCity
-      ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`
+      ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity}, ${caseRecord.plaintiffState ?? jsState} ${caseRecord.plaintiffZip ?? ""}`
       : "",
     caseRecord.plaintiffEmail ? `Plaintiff Email: ${caseRecord.plaintiffEmail}` : "",
     caseRecord.plaintiffPhone ? `Plaintiff Phone: ${caseRecord.plaintiffPhone}` : "",
@@ -791,10 +797,10 @@ router.post("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
       ? `Defendant Registered Agent: ${caseRecord.defendantAgentName}${caseRecord.defendantAgentTitle ? `, ${caseRecord.defendantAgentTitle}` : ""}`
       : "",
     caseRecord.defendantIsBusinessOrEntity && caseRecord.defendantAgentStreet && caseRecord.defendantAgentCity
-      ? `Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? "CA"} ${caseRecord.defendantAgentZip ?? ""}`
+      ? `Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? jsState} ${caseRecord.defendantAgentZip ?? ""}`
       : "",
     caseRecord.defendantAddress && caseRecord.defendantCity
-      ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`
+      ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity}, ${caseRecord.defendantState ?? jsState} ${caseRecord.defendantZip ?? ""}`
       : "",
     caseRecord.defendantPhone ? `Defendant Phone: ${caseRecord.defendantPhone}` : "",
     // Court
@@ -836,7 +842,7 @@ router.post("/cases/:id/settlement-letter", async (req, res): Promise<void> => {
     model: "gpt-5.2",
     max_completion_tokens: 2048,
     messages: [
-      { role: "system", content: SETTLEMENT_SYSTEM },
+      { role: "system", content: buildSettlementSystem(jsState) },
       { role: "user", content: `Today's date: ${todayStr}\n\n${toneInstruction}\n\n${parts.join("\n")}\n\nWrite the settlement offer letter now.` },
     ],
     stream: true,
@@ -937,9 +943,12 @@ router.post("/cases/:id/settlement-letter/pdf", async (req, res): Promise<void> 
 
 // ─── SETTLEMENT AGREEMENT ────────────────────────────────────────────────────
 
-const AGREEMENT_SYSTEM = `You are an expert California civil attorney drafting a Settlement Agreement and Mutual Release. 
-Write a complete, professional settlement agreement that could be signed by both parties to resolve a California small claims dispute.
+function buildAgreementSystem(state: string): string {
+  const stateFullName = state === "TX" ? "Texas" : state === "FL" ? "Florida" : "California";
+  return `You are an expert ${stateFullName} civil attorney drafting a Settlement Agreement and Mutual Release.
+Write a complete, professional settlement agreement that could be signed by both parties to resolve a ${stateFullName} small claims dispute.
 Use formal legal language appropriate for a binding agreement. The document must be thorough but readable.`;
+}
 
 // GET — load saved agreement
 router.get("/cases/:id/settlement-agreement", async (req, res): Promise<void> => {
@@ -968,6 +977,8 @@ router.post("/cases/:id/settlement-agreement", async (req, res): Promise<void> =
   if (!ownedCase) { res.status(404).json({ error: "Case not found" }); return; }
   const [caseRecord] = await db.select().from(casesTable).where(eq(casesTable.id, id));
   if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+  const jsState = (caseRecord as any).jurisdictionState ?? "CA";
+  const jsStateFullName = jsState === "TX" ? "Texas" : jsState === "FL" ? "Florida" : "California";
 
   const {
     settlementAmount,
@@ -1006,7 +1017,7 @@ router.post("/cases/:id/settlement-agreement", async (req, res): Promise<void> =
       ? `Plaintiff Representative: ${caseRecord.secondPlaintiffName}${caseRecord.plaintiffTitle ? `, ${caseRecord.plaintiffTitle}` : ""}`
       : "",
     caseRecord.plaintiffAddress
-      ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity ?? ""}, ${caseRecord.plaintiffState ?? "CA"} ${caseRecord.plaintiffZip ?? ""}`.trim()
+      ? `Plaintiff Address: ${caseRecord.plaintiffAddress}, ${caseRecord.plaintiffCity ?? ""}, ${caseRecord.plaintiffState ?? jsState} ${caseRecord.plaintiffZip ?? ""}`.trim()
       : "",
     caseRecord.plaintiffEmail ? `Plaintiff Email: ${caseRecord.plaintiffEmail}` : "",
     caseRecord.plaintiffPhone ? `Plaintiff Phone: ${caseRecord.plaintiffPhone}` : "",
@@ -1016,21 +1027,21 @@ router.post("/cases/:id/settlement-agreement", async (req, res): Promise<void> =
       ? `Defendant Registered Agent: ${caseRecord.defendantAgentName}${caseRecord.defendantAgentTitle ? `, ${caseRecord.defendantAgentTitle}` : ""}`
       : "",
     caseRecord.defendantIsBusinessOrEntity && caseRecord.defendantAgentStreet && caseRecord.defendantAgentCity
-      ? `Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? "CA"} ${caseRecord.defendantAgentZip ?? ""}`
+      ? `Agent Address: ${caseRecord.defendantAgentStreet}, ${caseRecord.defendantAgentCity}, ${caseRecord.defendantAgentState ?? jsState} ${caseRecord.defendantAgentZip ?? ""}`
       : "",
     caseRecord.defendantAddress
-      ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity ?? ""}, ${caseRecord.defendantState ?? "CA"} ${caseRecord.defendantZip ?? ""}`.trim()
+      ? `Defendant Address: ${caseRecord.defendantAddress}, ${caseRecord.defendantCity ?? ""}, ${caseRecord.defendantState ?? jsState} ${caseRecord.defendantZip ?? ""}`.trim()
       : "",
     caseRecord.defendantPhone ? `Defendant Phone: ${caseRecord.defendantPhone}` : "",
     `\n=== CASE DETAILS ===`,
     caseRecord.caseNumber
       ? `Case Number: ${caseRecord.caseNumber}`
-      : "Case: Filed in California Small Claims Court (case number to be inserted if applicable)",
+      : `Case: Filed in ${jsStateFullName} ${jsState === "TX" ? "Justice of the Peace Court" : "Small Claims Court"} (case number to be inserted if applicable)`,
     caseRecord.courthouseName
       ? `Court: ${caseRecord.courthouseName}`
-      : caseRecord.countyId ? `Court: ${caseRecord.countyId} County Small Claims Court` : "",
+      : caseRecord.countyId ? `Court: ${caseRecord.countyId} County ${jsState === "TX" ? "Justice of the Peace Court" : "Small Claims Court"}` : "",
     caseRecord.courthouseAddress && caseRecord.courthouseCity
-      ? `Court Address: ${caseRecord.courthouseAddress}, ${caseRecord.courthouseCity}, CA ${caseRecord.courthouseZip ?? ""}`
+      ? `Court Address: ${caseRecord.courthouseAddress}, ${caseRecord.courthouseCity}, ${jsState} ${caseRecord.courthouseZip ?? ""}`
       : "",
     caseRecord.claimType ? `Claim Type: ${caseRecord.claimType}` : "",
     caseRecord.incidentDate ? `Incident Date: ${caseRecord.incidentDate}` : "",
@@ -1049,7 +1060,7 @@ router.post("/cases/:id/settlement-agreement", async (req, res): Promise<void> =
     `\nToday's Date: ${todayStr}`,
   ].filter(Boolean).join("\n");
 
-  const prompt = `Draft a complete SETTLEMENT AGREEMENT AND MUTUAL RELEASE for this California small claims dispute.
+  const prompt = `Draft a complete SETTLEMENT AGREEMENT AND MUTUAL RELEASE for this ${jsStateFullName} small claims dispute.
 
 ${contextParts}
 
@@ -1062,7 +1073,7 @@ The agreement must include these sections in order:
 6. DISMISSAL: Plaintiff agrees to dismiss/withdraw the case with prejudice upon receipt of payment
 7. NO ADMISSION OF LIABILITY: Standard clause
 8. ENTIRE AGREEMENT: Merger clause
-${includeConfidentiality ? "9. CONFIDENTIALITY: Both parties agree to keep terms confidential\n10." : "9."} GOVERNING LAW: California
+${includeConfidentiality ? "9. CONFIDENTIALITY: Both parties agree to keep terms confidential\n10." : "9."} GOVERNING LAW: ${jsStateFullName}
 ${includeConfidentiality ? "11." : "10."} COUNTERPARTS: Agreement may be signed in counterparts
 SIGNATURE BLOCK: Full signature lines for both parties with printed name, date, and address lines
 
@@ -1077,7 +1088,7 @@ Use [BLANK] for any fields the parties must fill in at signing. Be complete and 
     model: "gpt-5.2",
     max_completion_tokens: 4096,
     messages: [
-      { role: "system", content: AGREEMENT_SYSTEM },
+      { role: "system", content: buildAgreementSystem(jsState) },
       { role: "user", content: prompt },
     ],
     stream: true,
