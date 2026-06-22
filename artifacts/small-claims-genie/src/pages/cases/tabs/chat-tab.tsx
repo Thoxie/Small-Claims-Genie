@@ -137,6 +137,46 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
   pageContext?: string;
   onTypingChange?: (isTyping: boolean) => void;
 }) {
+  const jurisdictionState = currentCase?.jurisdictionState ?? "CA";
+  const pageInstructions: Record<string, { title: string; steps: string[] }> = {
+    ...PAGE_INSTRUCTIONS,
+    'demand-letter': {
+      title: 'Demand Letter',
+      steps: [
+        'Choose a letter type:',
+        jurisdictionState === 'CA'
+          ? '— Demand Letter — Required by California law. Send it and wait 30 days before you can file in court.'
+          : '— Demand Letter — A formal written demand. Many courts and legal guides recommend sending one before filing.',
+        '— Settlement Offer Letter — If the other party wants to settle, use this to propose your payment terms.',
+        '— Settlement Agreement — Once both parties agree, the system auto-drafts a binding contract. Download, sign, and send.',
+        'Select a tone (firm, professional, or urgent) and click Generate.',
+        'Review the letter, edit if needed, and download as PDF.',
+      ],
+    },
+    'forms': {
+      title: 'Court Forms',
+      steps: jurisdictionState === 'FL'
+        ? [
+            'Select the form for your Florida county — your Statement of Claim is pre-filled from your case intake.',
+            'Review the pre-filled information and edit any field if needed.',
+            'Download the completed form as a PDF.',
+            'File at your county courthouse, or submit online if your court allows it.',
+          ]
+        : jurisdictionState === 'TX'
+        ? [
+            'Select the form you need — the Justice of the Peace Petition is pre-filled from your intake.',
+            'Review the pre-filled information and edit any field if needed.',
+            'Download the completed form as a PDF.',
+            'File at your local Justice of the Peace court.',
+          ]
+        : [
+            'Select the form you need — SC-100 to file your claim, SC-105 for defendants, MC-030 for declarations.',
+            'Review the pre-filled information pulled from your intake.',
+            'Download the completed form as a PDF.',
+            'Print and file at your county courthouse, or submit online if your county allows it.',
+          ],
+    },
+  };
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const sessionKey = `chat_cleared_${caseId}`;
   const [cleared, setCleared] = useState(() => !!sessionStorage.getItem(`chat_cleared_${caseId}`));
@@ -400,7 +440,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
       <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
         {messages.length === 0 && (
           <div className="flex flex-col gap-4 py-6 px-2 max-w-lg mx-auto w-full">
-            {pageContext && PAGE_INSTRUCTIONS[pageContext] && (
+            {pageContext && pageInstructions[pageContext] && (
               <div>
                 <button
                   type="button"
@@ -413,13 +453,13 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
                 </button>
                 {howToOpen && (
                   <div className="mt-1.5 rounded-xl border border-[#a8e6df] bg-[#f0fffe] px-4 py-3.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0d6b5e]/60 mb-2">{PAGE_INSTRUCTIONS[pageContext].title}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0d6b5e]/60 mb-2">{pageInstructions[pageContext].title}</p>
                     <div className="space-y-1.5">
-                      {PAGE_INSTRUCTIONS[pageContext].steps.map((step, i) => {
+                      {pageInstructions[pageContext].steps.map((step, i) => {
                         if (step.startsWith('—')) return (
                           <p key={i} className="text-[12px] leading-relaxed text-[#0d6b5e]/70 pl-4">{step.slice(2)}</p>
                         );
-                        const num = PAGE_INSTRUCTIONS[pageContext].steps.slice(0, i + 1).filter((s: string) => !s.startsWith('—')).length;
+                        const num = pageInstructions[pageContext].steps.slice(0, i + 1).filter((s: string) => !s.startsWith('—')).length;
                         return (
                           <div key={i} className="flex gap-2 text-[13px] leading-relaxed text-[#0d6b5e]">
                             <span className="font-semibold shrink-0">{num}.</span>
@@ -647,7 +687,7 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
           <div className="flex-1 overflow-y-auto p-6 space-y-4 max-w-4xl w-full mx-auto" ref={expandedScrollRef}>
             {messages.length === 0 && (
               <div className="flex flex-col gap-4 py-8 px-2 max-w-lg mx-auto w-full">
-                {pageContext && PAGE_INSTRUCTIONS[pageContext] && (
+                {pageContext && pageInstructions[pageContext] && (
                   <div>
                     <button
                       type="button"
@@ -660,13 +700,13 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
                     </button>
                     {howToOpen && (
                       <div className="mt-1.5 rounded-xl border border-[#a8e6df] bg-[#f0fffe] px-4 py-3.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0d6b5e]/60 mb-2">{PAGE_INSTRUCTIONS[pageContext].title}</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0d6b5e]/60 mb-2">{pageInstructions[pageContext].title}</p>
                         <div className="space-y-1.5">
-                          {PAGE_INSTRUCTIONS[pageContext].steps.map((step, i) => {
+                          {pageInstructions[pageContext].steps.map((step, i) => {
                             if (step.startsWith('—')) return (
                               <p key={i} className="text-[12px] leading-relaxed text-[#0d6b5e]/70 pl-4">{step.slice(2)}</p>
                             );
-                            const num = PAGE_INSTRUCTIONS[pageContext].steps.slice(0, i + 1).filter((s: string) => !s.startsWith('—')).length;
+                            const num = pageInstructions[pageContext].steps.slice(0, i + 1).filter((s: string) => !s.startsWith('—')).length;
                             return (
                               <div key={i} className="flex gap-2 text-[13px] leading-relaxed text-[#0d6b5e]">
                                 <span className="font-semibold shrink-0">{num}.</span>

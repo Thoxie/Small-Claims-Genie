@@ -77,6 +77,29 @@ function getStatuteYearsFL(claimType: string): { years: number; note: string } {
   }
 }
 
+
+// ── Texas statute helpers ─────────────────────────────────────────────────────
+
+function getStatuteYearsTX(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Property Damage":
+      return { years: 2, note: "Tex. Civ. Prac. & Rem. Code § 16.003 — 2-year limit for property damage claims" };
+    case "Personal Injury":
+      return { years: 2, note: "Tex. Civ. Prac. & Rem. Code § 16.003 — 2-year limit for personal injury claims" };
+    case "Fraud":
+      return { years: 4, note: "Tex. Civ. Prac. & Rem. Code § 16.004 — 4-year limit for fraud claims" };
+    case "Security Deposit":
+      return { years: 4, note: "Tex. Civ. Prac. & Rem. Code § 16.004 — 4-year limit (written lease is a written contract)" };
+    case "Contract Dispute":
+      return { years: 4, note: "Tex. Civ. Prac. & Rem. Code § 16.004 — 4 years for written contracts; 2 years for oral contracts (§ 16.003)" };
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 4, note: "Tex. Civ. Prac. & Rem. Code § 16.004 — 4 years if based on a written agreement; 2 years if oral only (§ 16.003)" };
+    default:
+      return { years: 4, note: "Tex. Civ. Prac. & Rem. Code § 16.004 — 4-year default limit. Check if an oral contract applies (2 years under § 16.003)" };
+  }
+}
+
 // ── Shared UI helpers ─────────────────────────────────────────────────────────
 
 function statusColor(s: Deadline["status"]) {
@@ -141,6 +164,8 @@ function printDeadlines(deadlines: Deadline[], caseName: string, today: Date, st
 
   const courtLink = stateAbbr === "FL"
     ? `Florida courts: <a href="https://www.flcourts.gov" target="_blank">flcourts.gov</a>`
+    : stateAbbr === "TX"
+    ? `Texas courts: <a href="https://www.txcourts.gov" target="_blank">txcourts.gov</a>`
     : `California courts: <a href="https://www.courts.ca.gov" target="_blank">courts.ca.gov</a>`;
 
   const w = window.open("", "_blank");
@@ -238,6 +263,89 @@ function buildFlDeadlines(
     status: "info",
     detail: "Florida judgments are valid for 20 years. If the defendant does not pay, you can use wage garnishment, bank levy, writ of execution, or judgment lien certificate to collect. File the Fact Information Sheet (Form 7.343) to compel disclosure of the defendant's assets.",
     law: "Fla. Stat. § 55.081",
+  });
+
+  return list;
+}
+
+// ── Texas deadline builder ───────────────────────────────────────────────────
+
+function buildTxDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsTX(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: years === 2 ? "Tex. Civ. Prac. & Rem. Code § 16.003" : "Tex. Civ. Prac. & Rem. Code § 16.004",
+  });
+
+  // Service deadline — at least 6 days before the hearing
+  const serviceDeadline = hearingDate ? addDays(hearingDate, -6) : null;
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "Serve the defendant by (6 days before hearing)",
+    date: serviceDeadline,
+    status: serviceDeadline ? getDeadlineStatus(serviceDeadline, today) : "missing",
+    detail: "In Texas JP court, the defendant must be served at least 6 days before the hearing date. Service is typically completed by a constable or private process server. Once served, the defendant must file an answer by 10 a.m. on the Monday next following 10 days after service.",
+    law: "Tex. R. Civ. P. 506.4(b)",
+  });
+
+  // Hearing date
+  if (hearingDate) {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date",
+      date: hearingDate,
+      status: getDeadlineStatus(hearingDate, today),
+      detail: `Your hearing is scheduled for ${format(hearingDate, "MMMM d, yyyy")}. Arrive early, bring all originals of your evidence, and prepare a brief statement. The JP judge will allow both sides to speak.`,
+      law: "Tex. R. Civ. P. 506.4",
+    });
+  } else {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date (not yet entered)",
+      date: null,
+      status: "missing",
+      detail: "Enter your hearing date in the Intake tab once the court schedules it. JP courts in Texas typically schedule hearings 20–45 days after the petition is filed.",
+      law: "Tex. R. Civ. P. 506.4",
+    });
+  }
+
+  // Appeal window — 21 days from judgment
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window (if you lose)",
+    date: null,
+    status: "info",
+    detail: "If the JP judge rules against you, you have 21 days from the date of judgment to file a notice of appeal to the county court at law. The appeal is a de novo (fresh) trial. You must pay the filing fee or request a fee waiver.",
+    law: "Tex. R. Civ. P. 506.1",
+  });
+
+  // Judgment enforcement
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: "Judgment valid for 10 years",
+    date: null,
+    status: "info",
+    detail: "Texas judgments are valid for 10 years and can be renewed. If the defendant does not pay voluntarily, you may use a writ of execution, wage garnishment (for child support only in TX — general wage garnishment is not available), or abstract of judgment to place a lien on real property.",
+    law: "Tex. Civ. Prac. & Rem. Code § 34.001",
   });
 
   return list;
@@ -352,6 +460,7 @@ function buildCaDeadlines(
 export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const today = useMemo(() => new Date(), []);
   const isFL = currentCase.jurisdictionState === "FL";
+  const isTX = currentCase.jurisdictionState === "TX";
 
   const incidentDate = useMemo(() => parseIncidentDate(currentCase.incidentDate || ""), [currentCase.incidentDate]);
   const hearingDate = useMemo(() => parseHearingDate(currentCase.hearingDate || ""), [currentCase.hearingDate]);
@@ -373,16 +482,19 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
     if (isFL) {
       return buildFlDeadlines(incidentDate, hearingDate, filingDate, claimType, today);
     }
+    if (isTX) {
+      return buildTxDeadlines(incidentDate, hearingDate, claimType, today);
+    }
     return buildCaDeadlines(incidentDate, hearingDate, isBusiness, isSuingPublic, claimType, today);
-  }, [isFL, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
+  }, [isFL, isTX, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
 
   const categories = [...new Set(deadlines.map(d => d.category))];
 
   const urgentCount = deadlines.filter(d => d.status === "urgent" || d.status === "overdue").length;
   const missingCount = deadlines.filter(d => d.status === "missing").length;
 
-  const stateLabel = isFL ? "Florida" : "California";
-  const stateAbbr = isFL ? "FL" : "CA";
+  const stateLabel = isFL ? "Florida" : isTX ? "Texas" : "California";
+  const stateAbbr = isFL ? "FL" : isTX ? "TX" : "CA";
 
   return (
     <div className="px-6 pt-3 pb-6 space-y-6">

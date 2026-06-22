@@ -152,6 +152,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
   const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
   const countyState = selectedCounty?.state ?? (initialData.jurisdictionState ?? "CA");
+  const isCA = countyState === "CA";
   const courtAddress = selectedCourthouse
     ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, ${countyState} ${selectedCourthouse.zip}`
     : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, ${countyState} ${selectedCounty.courthouseZip}` : "";
@@ -459,7 +460,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                     onCheckedChange={(v) => field.onChange(!!v)}
                   />
                   <label htmlFor="plaintiff-dba-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
-                    I operate under a fictitious business name (DBA) — requires SC-103
+                    I operate under a fictitious business name (DBA){isCA ? " — requires SC-103" : ""}
                   </label>
                 </div>
               )} />
@@ -477,7 +478,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                     }}
                   />
                   <label htmlFor="additional-plaintiff-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
-                    There is an additional plaintiff (requires SC-100A)
+                    {isCA ? "There is an additional plaintiff (requires SC-100A)" : "There is an additional plaintiff"}
                   </label>
                 </div>
               )} />
@@ -608,7 +609,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                   <FormControl><Checkbox checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
                   <div>
                     <FormLabel className="font-normal cursor-pointer">There are more than 2 defendants total</FormLabel>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">If yes, fill out and attach another SC-100A</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{isCA ? "If yes, fill out and attach another SC-100A" : "If yes, check your court's requirements for additional defendants"}</p>
                   </div>
                 </FormItem>
               )} />
@@ -619,7 +620,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
           {plaintiffIsFictitious && (
             <div className="rounded-xl border border-dashed border-amber-300/60 p-5 space-y-3 bg-amber-50/30">
-                  <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Business Information — SC-103</p>
+                  <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Business Information{isCA ? " — SC-103" : ""}</p>
 
                   <FormField control={form.control} name="plaintiffDbaName" render={({ field }) => (
                     <FormItem>
@@ -700,6 +701,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                     )} />
                   )}
 
+                  {isCA && (<>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-1">Fictitious Business Name Statement</p>
 
                   <FormField control={form.control} name="plaintiffFbnCounty" render={({ field }) => (
@@ -734,6 +736,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                       </FormItem>
                     )} />
                   </div>
+                  </>)}
                 </div>
               )}
 
@@ -741,7 +744,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
 
           {hasAdditionalPlaintiff && (
             <div className="rounded-xl border border-dashed border-[#14b8a6]/40 p-5 space-y-3 bg-[#f0fffe]/50">
-                  <p className="text-xs font-semibold text-[#0d6b5e] uppercase tracking-wide">Additional Plaintiff — SC-100A</p>
+                  <p className="text-xs font-semibold text-[#0d6b5e] uppercase tracking-wide">Additional Plaintiff{isCA ? " — SC-100A" : ""}</p>
                   <FormField control={form.control} name="additionalPlaintiffName" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Full Name <span className="text-destructive">*</span></FormLabel>
@@ -819,14 +822,14 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                         }}
                       />
                       <label htmlFor="second-plaintiff-dba-toggle" className="text-sm text-muted-foreground cursor-pointer select-none">
-                        This plaintiff does business under a fictitious name (DBA) — requires SC-103
+                        This plaintiff does business under a fictitious name (DBA){isCA ? " — requires SC-103" : ""}
                       </label>
                     </div>
                   )} />
 
                   {additionalPlaintiffIsFictitious && (
                     <div className="rounded-lg border border-dashed border-amber-300/60 p-4 space-y-3 bg-amber-50/30">
-                      <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Business Information — SC-103</p>
+                      <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Business Information{isCA ? " — SC-103" : ""}</p>
 
                       <FormField control={form.control} name="secondPlaintiffDbaName" render={({ field }) => (
                         <FormItem>
@@ -907,6 +910,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                         )} />
                       )}
 
+                      {isCA && (<>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-1">Fictitious Business Name Statement</p>
 
                       <FormField control={form.control} name="secondPlaintiffFbnCounty" render={({ field }) => (
@@ -941,6 +945,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                           </FormItem>
                         )} />
                       </div>
+                      </>)}
 
                       <FormField control={form.control} name="secondPlaintiffTitle" render={({ field }) => (
                         <FormItem>
