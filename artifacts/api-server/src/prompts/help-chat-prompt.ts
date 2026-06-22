@@ -124,19 +124,19 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 
 **"What is an agent for service of process?"** The official person designated to receive legal papers on behalf of a business. Look up a company's registered agent at bizfileonline.sos.ca.gov.
 
-**"What is a DBA / fictitious business name?"** "Doing business as" — when a business operates under a name different from its legal registered name. If the defendant uses a DBA, check that box and also file SC-103 (Fictitious Business Name Declaration — required when the defendant uses a trade name different from their legal entity name). If the additional (secondary) plaintiff also operates under a DBA, check that box in Step 1 "Enter The Parties" to expand the DBA fields — a separate SC-103 for Plaintiff 2 will appear on the Forms page (labelled "Fictitious Name — Plaintiff 2") and must be filed alongside SC-100 just like the primary plaintiff's SC-103.
+**"What is a DBA / fictitious business name?"** "Doing business as" — when a business operates under a name different from its legal registered name. If the defendant uses a DBA, check that box. For CALIFORNIA cases: also file SC-103 (Fictitious Business Name Declaration — required when the defendant uses a trade name different from their legal entity name). If the additional (secondary) plaintiff also operates under a DBA, check that box in Step 1 "Enter The Parties" to expand the DBA fields — a separate SC-103 for Plaintiff 2 will appear on the Forms page (labelled "Fictitious Name — Plaintiff 2") and must be filed alongside SC-100 just like the primary plaintiff's SC-103. For FLORIDA and TEXAS cases: there is no separate DBA declaration form — the DBA is entered directly on the court petition/claim form.
 
 **"What counts as a prior demand?"** Any time you formally asked the defendant to pay or fix the problem before filing: a letter, email, text, or verbal request documented in writing.
 
-**"What is service of process?"** Formal legal delivery of court papers to the defendant, required before the hearing. Options: certified mail (by court clerk), personal service by an adult (requires SC-104), or a professional process server. Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county).
+**"What is service of process?"** Formal legal delivery of court papers to the defendant, required before the hearing. For CALIFORNIA: options are certified mail (by court clerk), personal service by an adult (requires SC-104 Proof of Service), or a professional process server. Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county). For FLORIDA: service by sheriff, certified process server, or certified mail (FL residents only); proof of service must be filed at least 5 days before the pretrial conference. For TEXAS: plaintiff does not arrange service — the court issues a citation after filing, and the constable or sheriff serves the defendant within ~3 business days.
 
-**"What is the filing fee?"** California small claims filing fees (2026): $30–$75 depending on claim amount. If you cannot afford the fee, file FW-001 (Application for Waiver of Court Fees and Costs — used to request the court waive your filing fees based on financial hardship).
+**"What is the filing fee?"** Filing fees vary by state. CALIFORNIA: $30–$75 depending on claim amount; fee waiver available via FW-001 (Application for Waiver of Court Fees and Costs). FLORIDA: under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300; fee waivers available — ask the clerk. TEXAS: ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321 (Tex. Gov't Code § 118.121); fee waiver available via affidavit of inability to pay.
 
-**"How do I calculate my claim amount?"** Add up your documented actual losses — what you paid and did not get, or what was damaged or stolen. Do NOT add pain and suffering — California small claims covers economic damages only.
+**"How do I calculate my claim amount?"** Add up your documented actual losses — what you paid and did not get, or what was damaged or stolen. Do NOT add pain and suffering — small claims court (in all three states: CA, FL, TX) covers economic damages only. Note: CALIFORNIA limit is $12,500 for individuals; FLORIDA limit is $8,000; TEXAS JP court limit is $20,000.
 
 **"What if the defendant doesn't show up?"** The court may issue a default judgment in your favor. Use the "Statement if Defendant Does Not Appear" generated in Step 7 (Prep for Hearing).
 
-**"What if I win but they don't pay?"** You can enforce the judgment through wage garnishment, bank levies, or property liens. You have 10 years to collect a judgment in California.`;
+**"What if I win but they don't pay?"** You can enforce the judgment through garnishment, bank levies, or property liens. Collection window and options differ by state: CALIFORNIA — wage garnishment, bank levy, property lien (EJ-130 writ of execution), 10 years to collect. FLORIDA — wage garnishment, bank levy, judgment lien certificate, Fact Information Sheet (Form 7.343), 20-year collection window. TEXAS — bank levy, abstract of judgment (property lien), writ of execution; note that wages are EXEMPT from garnishment in Texas. TX judgment valid 10 years, renewable.`;
 
 export const PAGE_CONTEXT_PROMPTS: Record<string, string> = {
   intake: `
@@ -148,8 +148,10 @@ WHAT THIS PAGE COLLECTS:
 - Defendant: full legal name, address, whether individual or business. If a business: registered agent for service (look up at bizfileonline.sos.ca.gov).
 - County and courthouse selection.
 
-FORM POPULATED BY THIS PAGE:
-- SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court — the main form filed at the courthouse to officially start your case). Party information auto-fills Sections 1 and 2.
+FORM POPULATED BY THIS PAGE (state-dependent):
+- CALIFORNIA: SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court — the main form filed at the courthouse). Party information auto-fills Sections 1 and 2. Do NOT reference SC-100 for FL or TX cases.
+- FLORIDA: Statement of Claim — the pre-filled county-specific PDF downloadable from the Court Forms tab (Step 6). Party info populates the plaintiff/defendant sections.
+- TEXAS: TX Small Claims Petition — the pre-filled JP court petition downloadable from the Court Forms tab (Step 6). Party info populates the petitioner/respondent sections.
 
 Anticipate: which county to choose, finding the defendant's address or registered agent, what to enter for a business defendant, what DBA means.`,
 
@@ -166,8 +168,10 @@ WHAT THIS PAGE COLLECTS:
 - Venue basis: why you are filing in this county.
 - Eligibility questions: suing a public entity? attorney fee dispute? filing frequency.
 
-FORM POPULATED BY THIS PAGE:
-- SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court — the main filing form). The claim description and prior demand fields auto-fill Sections 3 and 4 of SC-100.
+FORM POPULATED BY THIS PAGE (state-dependent):
+- CALIFORNIA: SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court). The claim description and prior demand fields auto-fill Sections 3 and 4. Do NOT reference SC-100 for FL or TX cases.
+- FLORIDA: Statement of Claim — the claim description, incident date, and amount auto-fill the FL court form fields.
+- TEXAS: TX Small Claims Petition — the claim description, prior demand, and venue basis auto-fill the TX JP court petition fields.
 
 Anticipate: claim type selection, how to calculate the amount, what the AI writing assistant does, what counts as a prior demand, what venue means.`,
 
@@ -257,7 +261,12 @@ TWO MODES:
 1. Court-Ready Statement — generates two documents: (a) an opening statement for when the judge first asks you to explain your case, and (b) a "Statement if Defendant Does Not Appear" — a short statement requesting default judgment if the defendant fails to show up. Both are editable and printable.
 2. AI Mock Trial — the AI plays a small claims judge and asks real questions. User practices answering by voice or text.
 
-Small claims hearings are 5–15 minutes. Lawyers are NOT allowed (CA CCP §116.530). Be organized, speak clearly, bring numbered exhibits.
+Small claims hearings are 5–15 minutes. Be organized, speak clearly, bring numbered exhibits.
+
+LAWYER RULES BY STATE (apply to the user's jurisdiction):
+- CALIFORNIA: Lawyers are NOT allowed at small claims hearings (CA CCP §116.530). Do NOT suggest the user hire an attorney for the hearing.
+- FLORIDA: Attorneys are permitted but not required at small claims hearings.
+- TEXAS: Attorneys are permitted at JP court hearings; self-represented parties are common and welcomed.
 
 Anticipate: what to say to the judge, what to bring, how long hearings are, what happens if defendant does not appear, how to use the mock trial.`,
 
