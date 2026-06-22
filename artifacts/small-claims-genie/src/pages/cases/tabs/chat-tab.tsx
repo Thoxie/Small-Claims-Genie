@@ -140,6 +140,20 @@ export function ChatTab({ caseId, isDraftMode = false, currentCase, autoMessage,
   const jurisdictionState = currentCase?.jurisdictionState ?? "CA";
   const pageInstructions: Record<string, { title: string; steps: string[] }> = {
     ...PAGE_INSTRUCTIONS,
+    'intake-1': {
+      title: 'Your Information',
+      steps: [
+        'Enter your full name and contact details.',
+        jurisdictionState === 'FL'
+          ? 'Select your Florida county where you plan to file.'
+          : jurisdictionState === 'TX'
+          ? 'Select your Texas county and Justice of the Peace precinct.'
+          : 'Select the California county where you plan to file.',
+        'Describe what happened in plain English — who owes you what and why.',
+        'Enter the total amount you are claiming.',
+        'Click Save & Continue when done.',
+      ],
+    },
     'demand-letter': {
       title: 'Demand Letter',
       steps: [
