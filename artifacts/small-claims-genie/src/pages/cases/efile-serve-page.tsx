@@ -76,7 +76,7 @@ function FilingSummaryPanel({
   jurisdictionState,
 }: {
   c: ExtendedCase | undefined;
-  jurisdictionState: "CA" | "FL";
+  jurisdictionState: "CA" | "FL" | "TX";
 }) {
   const stateAbbr = jurisdictionState;
   return (
@@ -680,6 +680,140 @@ function FlEFilingPanel({
   );
 }
 
+// ─── TX court forms section ───────────────────────────────────────────────────
+
+function TxCourtFormsSection({
+  c,
+  caseId,
+  getToken,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const downloadTxForm = async (endpoint: string, stateId: string) => {
+    setDownloading(stateId);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: dlToken }),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const hasBasicInfo = !!c?.plaintiffName && !!c?.defendantName;
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Court Form</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Pre-filled Texas Small Claims Petition</p>
+      </div>
+
+      {/* TX Petition card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            TX Petition
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Texas Small Claims Petition</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "File with the Justice of the Peace court clerk in your precinct"
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadTxForm("tx/petition", "tx-petition")}
+          disabled={!hasBasicInfo || downloading === "tx-petition"}
+          title={hasBasicInfo ? "Download TX Petition" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "tx-petition" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "tx-petition" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* Filing steps */}
+      <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
+        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-tight mb-1.5">Filing in Texas — Next Steps</p>
+          <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside leading-relaxed">
+            <li>Print the petition and bring it to the Justice of the Peace court in the correct precinct.</li>
+            <li>File in the precinct where the defendant lives, or where the contract or incident occurred.</li>
+            <li>Pay the filing fee at the clerk's window (see fee schedule below). Ask about fee waivers if needed.</li>
+            <li>The court will issue a citation (summons) served by constable or sheriff.</li>
+            <li>Your trial date will be set — typically 20–45 days after service.</li>
+          </ol>
+        </div>
+      </div>
+
+      {/* Filing fees quick reference */}
+      <div className="rounded-xl border bg-amber-50 border-amber-200 px-4 py-3">
+        <p className="text-xs font-semibold text-amber-800 mb-1.5">TX Filing Fees — Tex. Gov't Code § 118.121</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+          {[
+            ["$0 – $200", "$46"],
+            ["$201 – $500", "$71"],
+            ["$501 – $1,000", "$121"],
+            ["$1,001 – $5,000", "$221"],
+            ["$5,001 – $10,000", "$271"],
+            ["$10,001 – $20,000", "$321"],
+          ].map(([range, fee]) => (
+            <div key={range} className="flex justify-between text-[11px] text-amber-900">
+              <span>{range}</span>
+              <span className="font-semibold">{fee}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-amber-700 mt-1.5">Claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs)</p>
+      </div>
+    </div>
+  );
+}
+
 // ─── CA case info (AI E-Filing System tab body) ───────────────────────────────
 
 function CaEFilingPanel({
@@ -704,6 +838,30 @@ function CaEFilingPanel({
   );
 }
 
+// ─── TX case info (AI E-Filing System tab body) ───────────────────────────────
+
+function TxEFilingPanel({
+  c,
+  caseId,
+  getToken,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {/* LEFT — Case info */}
+      <FilingSummaryPanel c={c} jurisdictionState="TX" />
+
+      {/* RIGHT — TX-specific content */}
+      <div className="space-y-6">
+        <TxCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
+      </div>
+    </div>
+  );
+}
+
 // ─── Tab content panels ───────────────────────────────────────────────────────
 
 function EFilingPanel({
@@ -717,6 +875,9 @@ function EFilingPanel({
 }) {
   if (c?.jurisdictionState === "FL") {
     return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
+  }
+  if (c?.jurisdictionState === "TX") {
+    return <TxEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
   }
   return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
 }
@@ -826,8 +987,9 @@ function ProcessServerPanel() {
   );
 }
 
-function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" }) {
+function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" }) {
   const isFL = jurisdictionState === "FL";
+  const isTX = jurisdictionState === "TX";
 
   const caSteps = [
     {
@@ -895,7 +1057,40 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" })
     },
   ];
 
-  const steps = isFL ? flSteps : caSteps;
+  const txSteps = [
+    {
+      icon: Gavel,
+      title: "Obtain your judgment",
+      desc: "After you win, the court enters a judgment in your favor. Get a certified copy from the Justice of the Peace court clerk — you will need it for every collection step.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Locate the defendant's assets",
+      desc: "You can request a post-judgment deposition or written interrogatories to compel the defendant to disclose bank accounts, employer, and property. The court can sanction a defendant who refuses to cooperate.",
+    },
+    {
+      icon: Shield,
+      title: "Writ of Execution (personal property & bank accounts)",
+      desc: "Direct the constable or sheriff to seize the defendant's non-exempt personal property or levy a bank account using a Writ of Execution. You must identify the bank and branch.",
+    },
+    {
+      icon: FileCheck2,
+      title: "Abstract of Judgment (real property lien)",
+      desc: "Record an Abstract of Judgment with the county clerk's real property records to create a lien on any real estate the defendant owns in that county — now or in the future.",
+    },
+    {
+      icon: Clock,
+      title: "Post-judgment interest",
+      desc: "Texas judgments earn interest at the rate set by Tex. Fin. Code § 304.003 from the date of judgment. The rate is published quarterly — check with the clerk or the Office of Consumer Credit Commissioner.",
+    },
+    {
+      icon: RefreshCw,
+      title: "Your judgment is valid for 10 years",
+      desc: "Texas judgments are dormant after 10 years, but you can revive them by filing a scire facias motion before expiration. Keep your certified copy and act before the deadline.",
+    },
+  ];
+
+  const steps = isTX ? txSteps : isFL ? flSteps : caSteps;
   const iconBg = "bg-amber-100";
   const iconColor = "text-amber-700";
 
@@ -912,7 +1107,7 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" })
           </h2>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             A judgment in your favor is a powerful legal tool — but it does not automatically put money
-            in your pocket. {isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
+            in your pocket. {isTX ? "Texas" : isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
             Here is how to use them.
           </p>
         </div>
@@ -976,7 +1171,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
   const { data: caseData } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const c = caseData as ExtendedCase | undefined;
 
-  const jurisdictionState: "CA" | "FL" = c?.jurisdictionState === "FL" ? "FL" : "CA";
+  const jurisdictionState: "CA" | "FL" | "TX" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : "CA";
 
   const handleStepClick = (stepN: number) => {
     if (stepN === 8) return;
