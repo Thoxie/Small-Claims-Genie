@@ -41,7 +41,7 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 - Fee waivers available: file an affidavit of inability to pay with the clerk
 - Statute of limitations: written and oral contracts 4 years; property damage and personal injury 2 years
 - Venue: file in the precinct where the defendant resides, where the contract was performed, or where the incident occurred
-- Service: court issues a citation served by constable or sheriff. Trial is set 20–45 days after service
+- Service timeline: after filing, the court issues a citation the same day or next business day. The constable or sheriff typically serves the defendant within ~3 business days. Trial is then set 20–45 days after service. Total from filing to trial: typically 25–50 days. The court mails the hearing date to both parties
 - After winning: abstract of judgment (property lien), writ of execution (non-exempt personal property), bank levy. Wages are EXEMPT from garnishment in Texas. Judgment valid 10 years, renewable
 - TX exemptions are broad: wages, homestead, personal property up to $100K individual / $200K family are exempt
 - TEXAS DTPA (Tex. Bus. & Com. Code § 17.41 et seq.): applies to consumer transactions involving business deception/false advertising/fraud. Up to 3x economic damages for knowing violations. Mandatory 60-day pre-suit written notice required (§ 17.505) before filing — the Demand Letter tab generates this notice. Does not apply to purely private disputes between individuals.
@@ -113,7 +113,7 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 - Step 5 "Review Your Case" — AI case advisor chat that knows the user's specific case and documents
 - Step 6 "Create Court Forms" — all court forms pre-filled and ready to download
 - Step 7 "Prep for Hearing" — Court-Ready Statement and AI Mock Trial
-- Step 8 "E-File & Serve" — E-Filing System with filing summary (court, parties, claim) and 4 tabs: (1) AI E-Filing System — court forms to download (CA: SC-100, MC-030, SC-103, SC-112A, SC-100A, FW-001; FL: Statement of Claim PDF pre-filled for all 67 FL counties — CLK/CT. 333 for Miami-Dade, CL-219 for Volusia, statewide form for all others; TX: TX Small Claims Petition pre-filled for all 254 TX counties — download, print, and file with the JP court clerk; court issues citation served by constable/sheriff; trial set 20–45 days after service) + state-specific service options and key deadlines; (2) AI Process Server Select — hire a licensed process server; (3) Collect After You Have Won — post-judgment collection tools (CA: debtor exam EJ-125, writ of execution EJ-130, WG-002 earnings withholding; FL: Fact Information Sheet Form 7.343, writ of execution, wage garnishment, bank levy, judgment lien certificate; TX: abstract of judgment, writ of execution, bank levy — wages are exempt in TX); (4) Case Deadlines — key dates and countdown timers
+- Step 8 "E-File & Serve" — E-Filing System with filing summary (court, parties, claim) and 4 tabs: (1) AI E-Filing System — court forms to download (CA: SC-100, MC-030, SC-103, SC-112A, SC-100A, FW-001; FL: Statement of Claim PDF pre-filled for all 67 FL counties — CLK/CT. 333 for Miami-Dade, CL-219 for Volusia, statewide form for all others; TX: TX Small Claims Petition pre-filled for all 254 TX counties — download, print, and file with the JP court clerk; court issues citation same day or next business day; constable/sheriff serves within ~3 days; trial set 20–45 days after service (~25–50 days total from filing to trial)) + state-specific service options and key deadlines; (2) AI Process Server Select — hire a licensed process server; (3) Collect After You Have Won — post-judgment collection tools (CA: debtor exam EJ-125, writ of execution EJ-130, WG-002 earnings withholding; FL: Fact Information Sheet Form 7.343, writ of execution, wage garnishment, bank levy, judgment lien certificate; TX: abstract of judgment, writ of execution, bank levy — wages are exempt in TX); (4) Case Deadlines — key dates and countdown timers
 
 ---
 
@@ -238,8 +238,8 @@ TX FILING STEPS:
 1. Download and print the TX Small Claims Petition from this page.
 2. Go to the JP court clerk in the correct precinct (file where the defendant resides, where the contract was to be performed, or where the incident occurred).
 3. Pay the filing fee (§ 118.121): ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321. Fee waivers available — ask the clerk for an affidavit of inability to pay.
-4. The court issues a citation served by constable or sheriff on the defendant — the plaintiff does not arrange service in Texas.
-5. Trial is typically set 20–45 days after service. The court mails the hearing date to both parties.
+4. The court issues a citation the same day or next business day after filing. The constable or sheriff serves the defendant — plaintiff does not arrange service in Texas.
+5. Service typically happens within ~3 business days. Trial is then set 20–45 days after service. Total from filing to trial: typically 25–50 days. The court mails the hearing date to both parties.
 
 Anticipate: which form to file first, service method choice, how to file, filing fee, what to do after downloading.`,
 
@@ -275,7 +275,7 @@ FLORIDA:
 
 TEXAS:
 - Statute of limitations: written contracts 4 years, oral contracts 4 years, property damage 2 years, personal injury 2 years (Tex. Civ. Prac. & Rem. Code § 16.003–16.004).
-- Service: the court issues a citation served by constable or sheriff — plaintiff does not arrange service. Trial is typically set 20–45 days after service.
+- Service timeline: the court issues a citation the same day or next business day after filing. The constable or sheriff serves the defendant (~3 business days) — plaintiff does not arrange service. Trial is then set 20–45 days after service. Total: typically 25–50 days from filing to trial.
 - DTPA pre-suit notice: if the claim involves a deceptive trade practice, a written demand notice must be sent at least 60 days before filing (Tex. Bus. & Com. Code § 17.505) — the Demand Letter tab generates this notice.
 - Post-judgment collection window: 10 years in Texas (renewable).
 
