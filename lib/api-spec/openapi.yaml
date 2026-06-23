@@ -662,6 +662,17 @@ components:
           type: string
         notes:
           type: string
+        certifiedMailAvailable:
+          type: boolean
+        certifiedMailFee:
+          type: string
+          nullable: true
+        sheriffServiceFee:
+          type: string
+          nullable: true
+        serviceRequestFormUrl:
+          type: string
+          nullable: true
       required:
         - id
         - name

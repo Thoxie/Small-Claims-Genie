@@ -22,4 +22,8 @@ export interface County {
   website?: string;
   clerkWebsite?: string;
   notes?: string;
+  certifiedMailAvailable?: boolean;
+  certifiedMailFee?: string | null;
+  sheriffServiceFee?: string | null;
+  serviceRequestFormUrl?: string | null;
 }

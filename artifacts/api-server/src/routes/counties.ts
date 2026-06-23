@@ -436,18 +436,74 @@ export const TEXAS_COUNTIES = [
   { id: "tx-zapata", name: "Zapata", state: "TX", courthouseName: "Justice of the Peace, Precinct 1 Place 1", courthouseAddress: "604A Delmar St", courthouseCity: "Zapata", courthouseZip: "78076", phone: "(956) 765-9165", filingFeeUnder1500: TX_F1, filingFee1500to5000: TX_F2, filingFeeOver5000: TX_F3, notes: TX_FEE_NOTE },
   { id: "tx-zavala", name: "Zavala", state: "TX", courthouseName: "Justice of the Peace, Precinct 1 Place 1", courthouseAddress: "P O Box 508", courthouseCity: "Batesville", courthouseZip: "78829", phone: "(830) 376-4609", filingFeeUnder1500: TX_F1, filingFee1500to5000: TX_F2, filingFeeOver5000: TX_F3, notes: TX_FEE_NOTE },
 ];
+// ─── Service-of-process metadata ──────────────────────────────────────────────
+// Per CCP §116.340 (CA) and Fla. Stat. §34.041 / §48.021 (FL).
+// Statewide defaults apply to all counties; county-specific overrides take precedence.
+
+const CA_SERVICE_DEFAULTS = {
+  certifiedMailAvailable: true,
+  certifiedMailFee: "$15" as string | null,
+  sheriffServiceFee: "$40" as string | null,
+  serviceRequestFormUrl: null as string | null,
+};
+
+const CA_SERVICE_OVERRIDES: Record<string, Partial<typeof CA_SERVICE_DEFAULTS>> = {
+  "los-angeles":     { sheriffServiceFee: "$65" },
+  "san-francisco":   { sheriffServiceFee: "$50" },
+  "san-diego":       { sheriffServiceFee: "$45" },
+  "orange":          { sheriffServiceFee: "$45" },
+  "riverside":       { sheriffServiceFee: "$45" },
+  "san-bernardino":  { sheriffServiceFee: "$45" },
+  "sacramento":      { sheriffServiceFee: "$45" },
+  "santa-clara":     { sheriffServiceFee: "$45" },
+  "alameda":         { sheriffServiceFee: "$45" },
+  "contra-costa":    { sheriffServiceFee: "$45" },
+  "ventura":         { sheriffServiceFee: "$45" },
+};
+
+const FL_SERVICE_DEFAULTS = {
+  certifiedMailAvailable: true,
+  certifiedMailFee: "included with filing fee" as string | null,
+  sheriffServiceFee: "$40" as string | null,
+  serviceRequestFormUrl: null as string | null,
+};
+
+const FL_SERVICE_OVERRIDES: Record<string, Partial<typeof FL_SERVICE_DEFAULTS>> = {
+  "fl-miami-dade":   { sheriffServiceFee: "$50" },
+  "fl-broward":      { sheriffServiceFee: "$45" },
+  "fl-palm-beach":   { sheriffServiceFee: "$50" },
+  "fl-orange":       { sheriffServiceFee: "$45" },
+  "fl-hillsborough": { sheriffServiceFee: "$45" },
+  "fl-pinellas":     { sheriffServiceFee: "$45" },
+  "fl-duval":        { sheriffServiceFee: "$45" },
+  "fl-sarasota":     { sheriffServiceFee: "$45" },
+  "fl-seminole":     { sheriffServiceFee: "$45" },
+  "fl-volusia":      { sheriffServiceFee: "$45" },
+};
+
+function enrichCaCounty<T extends { id: string }>(c: T) {
+  return { ...c, ...CA_SERVICE_DEFAULTS, ...(CA_SERVICE_OVERRIDES[c.id] ?? {}) };
+}
+function enrichFlCounty<T extends { id: string }>(c: T) {
+  return { ...c, ...FL_SERVICE_DEFAULTS, ...(FL_SERVICE_OVERRIDES[c.id] ?? {}) };
+}
+
 const ALL_COUNTIES = [...CALIFORNIA_COUNTIES, ...FLORIDA_COUNTIES, ...TEXAS_COUNTIES];
 
 router.get("/counties", (req, res): void => {
   const { state } = req.query;
   if (state === "CA") {
-    res.json(CALIFORNIA_COUNTIES);
+    res.json(CALIFORNIA_COUNTIES.map(enrichCaCounty));
   } else if (state === "FL") {
-    res.json(FLORIDA_COUNTIES);
+    res.json(FLORIDA_COUNTIES.map(enrichFlCounty));
   } else if (state === "TX") {
     res.json(TEXAS_COUNTIES);
   } else {
-    res.json(ALL_COUNTIES);
+    res.json([
+      ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
+      ...FLORIDA_COUNTIES.map(enrichFlCounty),
+      ...TEXAS_COUNTIES,
+    ]);
   }
 });
 

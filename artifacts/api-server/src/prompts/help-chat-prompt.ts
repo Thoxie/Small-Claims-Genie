@@ -221,10 +221,11 @@ CALIFORNIA CASES — FORMS ON THIS PAGE:
 - SC-120 (Defendant's Claim — used to file a counter-claim if you are the defendant in the case).
 - SC-150 (Request to Postpone Trial — used to reschedule the hearing date if you need more time).
 
-SERVICE METHODS (CA — Process Server card):
-1. Certified Mail by Court Clerk — cheapest, but service only counts if the defendant signs.
-2. Service by Adult — someone 18+ not in the case hand-delivers papers. Requires filing SC-104 afterward.
-3. Service by Process Server — most reliable. Professional handles delivery and proof of service.
+SERVICE METHODS (CA — CCP §116.340 — shown in E-File & Serve tab, Service of Process section):
+1. Certified Mail by Court Clerk — available in all CA counties; fee is county-specific (typically $15). Service only counts if the defendant signs. SC-112A (Proof of Service by Mail) is the form filed after this method. A download button for SC-112A appears directly in the certified mail flow on that page.
+2. Service by Adult — any adult 18+ who is NOT a party hand-delivers the papers. The server completes SC-104 (Proof of Service) which is filed with the court. A download button for SC-104 appears directly in the adult service flow on that page.
+3. Sheriff/Marshal Service — arranged through the county sheriff or marshal's office. Fee is county-specific (typically $40–$65). Fee recoverable if plaintiff wins.
+4. Registered Process Server — licensed server arranges personal delivery. Most reliable. Fee recoverable if plaintiff wins.
 Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county).
 
 After downloading SC-100: print 2 copies, go to the county small claims clerk window, pay the filing fee ($30–$75), get the hearing date stamped.
@@ -238,7 +239,7 @@ All 67 FL counties now have a pre-filled Statement of Claim PDF available for do
 - Hillsborough County: Statement of Claim — county-specific header and filing address (800 E. Twiggs St., Tampa) printed on the form. Download and file with the Hillsborough County Clerk of Courts.
 - Palm Beach County: Statement of Claim — county-specific header and filing address (205 N. Dixie Hwy., West Palm Beach) printed on the form. Download and file with the Palm Beach County Clerk & Comptroller.
 - All other FL counties: Statewide Statement of Claim — county court name pre-printed in the header, case data pre-filled. Download and file with the county clerk. Check the county's clerk website (visible on the Counties page) for the exact filing window and any local instructions.
-After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and request that the clerk issue the summons. The clerk will serve the summons by certified mail or the plaintiff can arrange sheriff service.
+After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and request that the clerk issue the summons. The clerk can serve by certified mail (available in all FL counties; fee is county-specific — typically included with filing fee or a small additional charge) or the plaintiff can arrange sheriff service (fee is county-specific, typically $40–$50; recoverable if plaintiff wins). A licensed process server under Fla. Stat. §48.021 is also an option. The E-File & Serve tab shows the actual fee for the user's specific county, and if the county has a downloadable service request form, a "Download Request Form" button appears next to that service method.
 
 TEXAS CASES — FORMS ON THIS PAGE:
 - TX Small Claims (JP court) claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs) — Tex. Gov't Code § 27.031.

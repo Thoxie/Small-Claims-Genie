@@ -1,6 +1,6 @@
-import { useState, type ElementType } from "react";
+import { useState, type ElementType, type ReactNode } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { useGetCase } from "@workspace/api-client-react";
+import { useGetCase, useListCounties, type County } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 import {
   ArrowLeft, ExternalLink,
@@ -552,21 +552,51 @@ function FlCourtFormsSection({
 
 // ─── FL service options section ───────────────────────────────────────────────
 
-function FlServiceOptionsSection() {
-  const options = [
+function FlServiceOptionsSection({
+  certifiedMailAvailable,
+  certifiedMailFee,
+  sheriffServiceFee,
+  serviceRequestFormUrl,
+}: {
+  certifiedMailAvailable: boolean;
+  certifiedMailFee: string | null | undefined;
+  sheriffServiceFee: string | null | undefined;
+  serviceRequestFormUrl: string | null | undefined;
+}) {
+  type OptionDef = {
+    icon: ElementType;
+    title: string;
+    badge: string;
+    badgeColor: string;
+    desc: string;
+    show: boolean;
+    extra?: ReactNode;
+  };
+
+  const options: OptionDef[] = [
     {
       icon: Car,
       title: "Sheriff Service",
-      badge: "Most Reliable",
+      badge: sheriffServiceFee ? `Most Reliable — ${sheriffServiceFee}` : "Most Reliable",
       badgeColor: "bg-[#0d6b5e]/10 text-[#0d6b5e]",
       desc: "Request the county sheriff to personally deliver the Summons and Statement of Claim to the defendant. The sheriff's fee is recoverable if you win your case.",
+      show: true,
+      extra: serviceRequestFormUrl ? (
+        <a href={serviceRequestFormUrl} target="_blank" rel="noopener noreferrer">
+          <Button size="sm" variant="outline" className="mt-2 h-7 text-xs gap-1.5">
+            <Download className="h-3 w-3" />
+            Download Request Form
+          </Button>
+        </a>
+      ) : undefined,
     },
     {
       icon: Mail,
       title: "Certified Mail",
-      badge: "Cheapest Option",
+      badge: certifiedMailFee ? `Cheapest — ${certifiedMailFee}` : "Cheapest Option",
       badgeColor: "bg-blue-50 text-blue-700",
       desc: "The court clerk mails the papers by certified mail. Service is only completed if the defendant signs — if they refuse or don't pick it up, service fails and you must try another method.",
+      show: certifiedMailAvailable,
     },
     {
       icon: Briefcase,
@@ -574,6 +604,7 @@ function FlServiceOptionsSection() {
       badge: "Fast & Flexible",
       badgeColor: "bg-amber-50 text-amber-700",
       desc: "A licensed, certified process server handles personal delivery. Must be a certified process server under Fla. Stat. 48.021. Their fee is recoverable if you win.",
+      show: true,
     },
   ];
 
@@ -586,7 +617,7 @@ function FlServiceOptionsSection() {
         </p>
       </div>
       <div className="space-y-2">
-        {options.map(({ icon: Icon, title, badge, badgeColor, desc }) => (
+        {options.filter((o) => o.show).map(({ icon: Icon, title, badge, badgeColor, desc, extra }) => (
           <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
             <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
               <Icon className="h-4 w-4 text-[#0d6b5e]" />
@@ -597,6 +628,7 @@ function FlServiceOptionsSection() {
                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              {extra}
             </div>
           </div>
         ))}
@@ -665,6 +697,9 @@ function FlEFilingPanel({
   caseId: number;
   getToken: () => Promise<string | null>;
 }) {
+  const { data: counties } = useListCounties({ state: "FL" });
+  const countyData = counties?.find((co: County) => co.id === c?.countyId);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* LEFT — Case info */}
@@ -673,7 +708,12 @@ function FlEFilingPanel({
       {/* RIGHT — FL-specific content */}
       <div className="space-y-6">
         <FlCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
-        <FlServiceOptionsSection />
+        <FlServiceOptionsSection
+          certifiedMailAvailable={countyData?.certifiedMailAvailable ?? true}
+          certifiedMailFee={countyData?.certifiedMailFee ?? null}
+          sheriffServiceFee={countyData?.sheriffServiceFee ?? null}
+          serviceRequestFormUrl={countyData?.serviceRequestFormUrl ?? null}
+        />
         <FlDeadlinesSection />
       </div>
     </div>
@@ -934,6 +974,174 @@ function TxDeadlinesSection() {
   );
 }
 
+// ─── CA service of process section ───────────────────────────────────────────
+
+function CaServiceSection({
+  c,
+  caseId,
+  getToken,
+  certifiedMailAvailable,
+  certifiedMailFee,
+  sheriffServiceFee,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+  certifiedMailAvailable: boolean;
+  certifiedMailFee: string | null | undefined;
+  sheriffServiceFee: string | null | undefined;
+}) {
+  const { toast } = useToast();
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const hasBasicInfo = !!c?.plaintiffName && !!c?.defendantName;
+
+  const downloadServiceForm = async (endpoint: string) => {
+    setDownloading(endpoint);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: dlToken }),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Service of Process</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Defendant must be served at least 15 days before hearing (same county) or 20 days (different county)
+        </p>
+      </div>
+      <div className="space-y-2">
+        {/* Certified Mail by Court Clerk */}
+        {certifiedMailAvailable && (
+          <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Mail className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                <p className="text-sm font-semibold text-foreground leading-tight">Certified Mail by Court Clerk</p>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-blue-50 text-blue-700">
+                  {certifiedMailFee ? `Cheapest — ${certifiedMailFee}` : "Cheapest Option"}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                The court clerk mails the papers. Service only counts if the defendant signs — if they refuse or don't pick it up, service fails and you must use another method.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 h-7 text-xs gap-1.5"
+                disabled={!hasBasicInfo || downloading === "sc112a"}
+                onClick={() => downloadServiceForm("sc112a")}
+              >
+                {downloading === "sc112a" ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Download className="h-3 w-3" />
+                )}
+                SC-112A Proof of Service by Mail
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Service by Adult */}
+        <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+          <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+            <User className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+              <p className="text-sm font-semibold text-foreground leading-tight">Service by Adult</p>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-amber-50 text-amber-700">Free</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Any adult 18+ who is NOT a party to the case hand-delivers the papers to the defendant. File SC-104 (Proof of Service) with the court after delivery is completed.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-2 h-7 text-xs gap-1.5"
+              disabled={!hasBasicInfo || downloading === "sc104"}
+              onClick={() => downloadServiceForm("sc104")}
+            >
+              {downloading === "sc104" ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Download className="h-3 w-3" />
+              )}
+              SC-104 Proof of Service
+            </Button>
+          </div>
+        </div>
+
+        {/* Sheriff/Marshal Service */}
+        <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+          <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+            <Car className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+              <p className="text-sm font-semibold text-foreground leading-tight">Sheriff/Marshal Service</p>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-[#0d6b5e]/10 text-[#0d6b5e]">
+                {sheriffServiceFee ? `${sheriffServiceFee} — Recoverable` : "Fee Recoverable"}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Arrange service through the county sheriff or marshal's office. The fee is recoverable if you win your case.
+            </p>
+          </div>
+        </div>
+
+        {/* Registered Process Server */}
+        <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+          <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+            <Briefcase className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+              <p className="text-sm font-semibold text-foreground leading-tight">Registered Process Server</p>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-[#0d6b5e]/10 text-[#0d6b5e]">Most Reliable</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              A licensed process server arranges personal delivery. Most reliable method. Their fee is recoverable if you win.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── CA case info (AI E-Filing System tab body) ───────────────────────────────
 
 function CaEFilingPanel({
@@ -945,14 +1153,25 @@ function CaEFilingPanel({
   caseId: number;
   getToken: () => Promise<string | null>;
 }) {
+  const { data: counties } = useListCounties({ state: "CA" });
+  const countyData = counties?.find((co: County) => co.id === c?.countyId);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* LEFT — Case info */}
       <FilingSummaryPanel c={c} jurisdictionState="CA" />
 
-      {/* RIGHT — Court Forms */}
+      {/* RIGHT — Court Forms + Service of Process */}
       <div className="space-y-6">
         <CourtFormsSection c={c} caseId={caseId} getToken={getToken} />
+        <CaServiceSection
+          c={c}
+          caseId={caseId}
+          getToken={getToken}
+          certifiedMailAvailable={countyData?.certifiedMailAvailable ?? true}
+          certifiedMailFee={countyData?.certifiedMailFee ?? "$15"}
+          sheriffServiceFee={countyData?.sheriffServiceFee ?? "$40"}
+        />
       </div>
     </div>
   );
