@@ -316,7 +316,7 @@ export async function buildTXPetition(
 
   const hasDemand = d.priorDemandMade === true;
   txt(page, bold, "Written demand sent to defendant before filing?", ML, y, 8.5);
-  txt(page, bold, hasDemand ? "✓ Yes" : "No", ML + 258, y, 8.5, hasDemand ? rgb(0.1, 0.5, 0.2) : GRAY);
+  txt(page, bold, hasDemand ? "[X] Yes" : "No", ML + 258, y, 8.5, hasDemand ? rgb(0.1, 0.5, 0.2) : GRAY);
   y -= 11;
 
   if (hasDemand && d.priorDemandDescription) {
