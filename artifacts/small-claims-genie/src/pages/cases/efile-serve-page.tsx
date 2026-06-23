@@ -1159,9 +1159,6 @@ function IlEFilingPanel({
   getToken: () => Promise<string | null>;
   onProcessServerClick: () => void;
 }) {
-  const { data: counties } = useListCounties({ state: "IL" });
-  const countyData = counties?.find((co: County) => co.id === c?.countyId);
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* LEFT — Case info */}
