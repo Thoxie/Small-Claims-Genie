@@ -546,6 +546,7 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
         onClose={() => setHelpGenieVisible(false)}
         initialMessage={helpGenieQuestion}
         pageContext={pageContext}
+        jurisdictionState={jurisdictionState}
         onNavigateToTab={(tab, question) => {
           setHelpGenieVisible(false);
           onNavigateToTab?.(tab, question);

@@ -1553,10 +1553,12 @@ const CHAT_REDIRECT_LABELS: Record<string, string> = {
 function AIChatTab({
   caseId,
   initialMessage,
+  jurisdictionState,
   onNavigateToTab,
 }: {
   caseId: number;
   initialMessage?: string;
+  jurisdictionState?: "CA" | "FL" | "TX";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }) {
   const colors = useColors();
@@ -1864,6 +1866,7 @@ function AIChatTab({
       onClose={() => setHelpGenieVisible(false)}
       initialMessage={helpGenieQuestion}
       pageContext="ai-chat"
+      jurisdictionState={jurisdictionState}
       onNavigateToTab={(tab, question) => {
         setHelpGenieVisible(false);
         onNavigateToTab?.(tab, question);
@@ -1984,6 +1987,7 @@ export default function CaseWorkspace() {
             caseId={caseId}
             initialMessage={pendingAiMessage}
             key={pendingAiMessage ?? "default"}
+            jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX") ?? "CA"}
             onNavigateToTab={(tab, question) => {
               const validTabs = TABS.map((t) => t.key);
               if (validTabs.includes(tab)) {

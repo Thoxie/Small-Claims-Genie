@@ -70,15 +70,22 @@ const HG_REDIRECT_LABELS: Record<string, string> = {
   "case-advisor": "Go to Case Advisor",
 };
 
+function getCourtLabel(state?: "CA" | "FL" | "TX"): string {
+  if (state === "FL") return "Florida small claims court";
+  if (state === "TX") return "Texas Justice of the Peace court";
+  return "California small claims court";
+}
+
 interface Props {
   visible: boolean;
   onClose: () => void;
   initialMessage?: string;
   pageContext?: string;
+  jurisdictionState?: "CA" | "FL" | "TX";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }
 
-export function HelpGenieSheet({ visible, onClose, initialMessage, pageContext, onNavigateToTab }: Props) {
+export function HelpGenieSheet({ visible, onClose, initialMessage, pageContext, jurisdictionState, onNavigateToTab }: Props) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { getToken } = useAuth();
@@ -250,7 +257,7 @@ export function HelpGenieSheet({ visible, onClose, initialMessage, pageContext, 
                   Ask me how to use the app
                 </Text>
                 <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-                  I can help with uploading documents, using any feature, or understanding how California small claims court works.
+                  I can help with uploading documents, using any feature, or understanding how {getCourtLabel(jurisdictionState)} works.
                 </Text>
               </View>
             }
