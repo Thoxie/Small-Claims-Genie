@@ -622,7 +622,7 @@ export const UpdateCaseBody = zod.object({
   mc030DeclarationTitle: zod.string().optional(),
   mc030DeclarationText: zod.string().optional(),
   mc030ExhibitDocIds: zod.array(zod.number()).optional(),
-  notifyMethod: zod.string().optional(),
+  notifyMethod: zod.string().nullish(),
   statementText: zod.string().optional(),
   noShowStatementText: zod.string().optional(),
 });

@@ -1,4 +1,4 @@
-import { useState, type ElementType, type ReactNode } from "react";
+import { useState, useEffect, type ElementType, type ReactNode } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useGetCase, useListCounties, type County } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
@@ -561,6 +561,8 @@ function FlServiceOptionsSection({
   sheriffOfficeUrl,
   serviceRequestFormUrl,
   onProcessServerClick,
+  serviceMethod,
+  onSelectService,
 }: {
   certifiedMailAvailable: boolean;
   certifiedMailFee: string | null | undefined;
@@ -570,8 +572,11 @@ function FlServiceOptionsSection({
   sheriffOfficeUrl: string | null | undefined;
   serviceRequestFormUrl: string | null | undefined;
   onProcessServerClick: () => void;
+  serviceMethod: string | null | undefined;
+  onSelectService: (method: string) => void;
 }) {
   type OptionDef = {
+    key: string;
     icon: ElementType;
     title: string;
     badge: string;
@@ -601,6 +606,7 @@ function FlServiceOptionsSection({
 
   const options: OptionDef[] = [
     {
+      key: "sheriff",
       icon: Car,
       title: "Sheriff Service",
       badge: sheriffServiceFee ? `Most Reliable — ${sheriffServiceFee}` : "Most Reliable",
@@ -622,6 +628,7 @@ function FlServiceOptionsSection({
       ),
     },
     {
+      key: "certified_mail",
       icon: Mail,
       title: "Certified Mail",
       badge: certifiedMailFee ? `Cheapest — ${certifiedMailFee}` : "Cheapest Option",
@@ -630,6 +637,7 @@ function FlServiceOptionsSection({
       show: certifiedMailAvailable,
     },
     {
+      key: "process_server",
       icon: Briefcase,
       title: "Process Server",
       badge: "Fast & Flexible",
@@ -658,22 +666,41 @@ function FlServiceOptionsSection({
         </p>
       </div>
       <div className="space-y-2">
-        {options.filter((o) => o.show).map(({ icon: Icon, title, badge, badgeColor, desc, extra }) => (
-          <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
-            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
-              <Icon className="h-4 w-4 text-[#0d6b5e]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
+        {options.filter((o) => o.show).map(({ key, icon: Icon, title, badge, badgeColor, desc, extra }) => {
+          const selected = serviceMethod === key;
+          return (
+            <div
+              key={title}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selected}
+              onClick={() => onSelectService(key)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService(key); }}
+              className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${selected ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
+            >
+              {selected && (
+                <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
+              )}
+              <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+                <Icon className="h-4 w-4 text-[#0d6b5e]" />
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
-              {extra}
+              <div className="flex-1 min-w-0 pr-5">
+                <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                  <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                {extra}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+      {serviceMethod && (
+        <p className="text-[11px] text-[#0d6b5e] font-medium px-1">
+          ✓ Service method saved
+        </p>
+      )}
     </div>
   );
 }
@@ -734,11 +761,15 @@ function FlEFilingPanel({
   caseId,
   getToken,
   onProcessServerClick,
+  serviceMethod,
+  onSelectService,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
   onProcessServerClick: () => void;
+  serviceMethod: string | null | undefined;
+  onSelectService: (method: string) => void;
 }) {
   const { data: counties } = useListCounties({ state: "FL" });
   const countyData = counties?.find((co: County) => co.id === c?.countyId);
@@ -760,6 +791,8 @@ function FlEFilingPanel({
           sheriffOfficeUrl={countyData?.sheriffOfficeUrl ?? null}
           serviceRequestFormUrl={countyData?.serviceRequestFormUrl ?? null}
           onProcessServerClick={onProcessServerClick}
+          serviceMethod={serviceMethod}
+          onSelectService={onSelectService}
         />
         <FlDeadlinesSection />
       </div>
@@ -1091,9 +1124,16 @@ function TxCourtFormsSection({
 
 // ─── TX service of process section ───────────────────────────────────────────
 
-function TxServiceSection() {
-  const options = [
+function TxServiceSection({
+  serviceMethod,
+  onSelectService,
+}: {
+  serviceMethod: string | null | undefined;
+  onSelectService: (method: string) => void;
+}) {
+  const selectableOptions = [
     {
+      key: "constable",
       icon: Car,
       title: "Constable Service",
       badge: "Most Common",
@@ -1101,18 +1141,12 @@ function TxServiceSection() {
       desc: "After you file, the JP court issues a citation that is served by the precinct constable or county sheriff. You do not arrange service yourself — the court handles it as part of the filing process.",
     },
     {
+      key: "sheriff",
       icon: Briefcase,
       title: "Sheriff Service",
       badge: "Also Available",
       badgeColor: "bg-amber-50 text-amber-700",
       desc: "In some precincts the county sheriff serves the citation instead of the constable. The clerk will tell you which officer handles service for your precinct. The service fee is set by Tex. Gov't Code § 118.131.",
-    },
-    {
-      icon: Info,
-      title: "No Private Process Server Needed",
-      badge: "TX Only",
-      badgeColor: "bg-blue-50 text-blue-700",
-      desc: "Unlike California, Texas Justice of the Peace courts do not allow private process servers for the initial citation. Service is exclusively through the court's constable or sheriff — you pay the service fee at the clerk's window when you file.",
     },
   ];
 
@@ -1121,25 +1155,56 @@ function TxServiceSection() {
       <div>
         <h2 className="text-sm font-bold text-foreground">Service of Process</h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          The court issues and serves the citation — you don't arrange it
+          The court issues and serves the citation — tap to mark which officer served your defendant
         </p>
       </div>
       <div className="space-y-2">
-        {options.map(({ icon: Icon, title, badge, badgeColor, desc }) => (
-          <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
-            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
-              <Icon className="h-4 w-4 text-[#0d6b5e]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
+        {selectableOptions.map(({ key, icon: Icon, title, badge, badgeColor, desc }) => {
+          const selected = serviceMethod === key;
+          return (
+            <div
+              key={title}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selected}
+              onClick={() => onSelectService(key)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService(key); }}
+              className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${selected ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
+            >
+              {selected && (
+                <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
+              )}
+              <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+                <Icon className="h-4 w-4 text-[#0d6b5e]" />
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              <div className="flex-1 min-w-0 pr-5">
+                <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                  <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
             </div>
+          );
+        })}
+        <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+          <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+            <Info className="h-4 w-4 text-[#0d6b5e]" />
           </div>
-        ))}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+              <p className="text-sm font-semibold text-foreground leading-tight">No Private Process Server Needed</p>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-blue-50 text-blue-700">TX Only</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">Unlike California, Texas Justice of the Peace courts do not allow private process servers for the initial citation. Service is exclusively through the court's constable or sheriff — you pay the service fee at the clerk's window when you file.</p>
+          </div>
+        </div>
       </div>
+      {serviceMethod && (
+        <p className="text-[11px] text-[#0d6b5e] font-medium px-1">
+          ✓ Service method saved
+        </p>
+      )}
 
       {/* If service fails — alias citation guidance */}
       <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
@@ -1221,6 +1286,8 @@ function CaServiceSection({
   sheriffOfficeAddress,
   sheriffOfficePhone,
   sheriffOfficeUrl,
+  serviceMethod,
+  onSelectService,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
@@ -1231,6 +1298,8 @@ function CaServiceSection({
   sheriffOfficeAddress: string | null | undefined;
   sheriffOfficePhone: string | null | undefined;
   sheriffOfficeUrl: string | null | undefined;
+  serviceMethod: string | null | undefined;
+  onSelectService: (method: string) => void;
 }) {
   const { toast } = useToast();
   const [downloading, setDownloading] = useState<string | null>(null);
@@ -1283,11 +1352,21 @@ function CaServiceSection({
       <div className="space-y-2">
         {/* Certified Mail by Court Clerk */}
         {certifiedMailAvailable && (
-          <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+          <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={serviceMethod === "certified_mail"}
+            onClick={() => onSelectService("certified_mail")}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("certified_mail"); }}
+            className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "certified_mail" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
+          >
+            {serviceMethod === "certified_mail" && (
+              <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
+            )}
             <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
               <Mail className="h-4 w-4 text-[#0d6b5e]" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 pr-5">
               <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                 <p className="text-sm font-semibold text-foreground leading-tight">Certified Mail by Court Clerk</p>
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-blue-50 text-blue-700">
@@ -1302,7 +1381,7 @@ function CaServiceSection({
                 variant="outline"
                 className="mt-2 h-7 text-xs gap-1.5"
                 disabled={!hasBasicInfo || downloading === "sc112a"}
-                onClick={() => downloadServiceForm("sc112a")}
+                onClick={(e) => { e.stopPropagation(); downloadServiceForm("sc112a"); }}
               >
                 {downloading === "sc112a" ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -1316,11 +1395,21 @@ function CaServiceSection({
         )}
 
         {/* Service by Adult */}
-        <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+        <div
+          role="button"
+          tabIndex={0}
+          aria-pressed={serviceMethod === "adult_service"}
+          onClick={() => onSelectService("adult_service")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("adult_service"); }}
+          className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "adult_service" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
+        >
+          {serviceMethod === "adult_service" && (
+            <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
+          )}
           <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
             <User className="h-4 w-4 text-[#0d6b5e]" />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pr-5">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
               <p className="text-sm font-semibold text-foreground leading-tight">Service by Adult</p>
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-amber-50 text-amber-700">Free</span>
@@ -1333,7 +1422,7 @@ function CaServiceSection({
               variant="outline"
               className="mt-2 h-7 text-xs gap-1.5"
               disabled={!hasBasicInfo || downloading === "sc104"}
-              onClick={() => downloadServiceForm("sc104")}
+              onClick={(e) => { e.stopPropagation(); downloadServiceForm("sc104"); }}
             >
               {downloading === "sc104" ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -1346,11 +1435,21 @@ function CaServiceSection({
         </div>
 
         {/* Sheriff/Marshal Service */}
-        <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+        <div
+          role="button"
+          tabIndex={0}
+          aria-pressed={serviceMethod === "sheriff"}
+          onClick={() => onSelectService("sheriff")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("sheriff"); }}
+          className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "sheriff" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
+        >
+          {serviceMethod === "sheriff" && (
+            <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
+          )}
           <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
             <Car className="h-4 w-4 text-[#0d6b5e]" />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pr-5">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
               <p className="text-sm font-semibold text-foreground leading-tight">Sheriff/Marshal Service</p>
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-[#0d6b5e]/10 text-[#0d6b5e]">
@@ -1381,11 +1480,21 @@ function CaServiceSection({
         </div>
 
         {/* Registered Process Server */}
-        <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+        <div
+          role="button"
+          tabIndex={0}
+          aria-pressed={serviceMethod === "process_server"}
+          onClick={() => onSelectService("process_server")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("process_server"); }}
+          className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "process_server" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
+        >
+          {serviceMethod === "process_server" && (
+            <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
+          )}
           <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
             <Briefcase className="h-4 w-4 text-[#0d6b5e]" />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pr-5">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
               <p className="text-sm font-semibold text-foreground leading-tight">Registered Process Server</p>
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-[#0d6b5e]/10 text-[#0d6b5e]">Most Reliable</span>
@@ -1396,6 +1505,11 @@ function CaServiceSection({
           </div>
         </div>
       </div>
+      {serviceMethod && (
+        <p className="text-[11px] text-[#0d6b5e] font-medium px-1">
+          ✓ Service method saved
+        </p>
+      )}
     </div>
   );
 }
@@ -1406,10 +1520,14 @@ function CaEFilingPanel({
   c,
   caseId,
   getToken,
+  serviceMethod,
+  onSelectService,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
+  serviceMethod: string | null | undefined;
+  onSelectService: (method: string) => void;
 }) {
   const { data: counties } = useListCounties({ state: "CA" });
   const countyData = counties?.find((co: County) => co.id === c?.countyId);
@@ -1432,6 +1550,8 @@ function CaEFilingPanel({
           sheriffOfficeAddress={countyData?.sheriffOfficeAddress ?? null}
           sheriffOfficePhone={countyData?.sheriffOfficePhone ?? null}
           sheriffOfficeUrl={countyData?.sheriffOfficeUrl ?? null}
+          serviceMethod={serviceMethod}
+          onSelectService={onSelectService}
         />
       </div>
     </div>
@@ -1444,10 +1564,14 @@ function TxEFilingPanel({
   c,
   caseId,
   getToken,
+  serviceMethod,
+  onSelectService,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
+  serviceMethod: string | null | undefined;
+  onSelectService: (method: string) => void;
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -1457,7 +1581,7 @@ function TxEFilingPanel({
       {/* RIGHT — TX-specific content */}
       <div className="space-y-6">
         <TxCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
-        <TxServiceSection />
+        <TxServiceSection serviceMethod={serviceMethod} onSelectService={onSelectService} />
         <TxDeadlinesSection />
       </div>
     </div>
@@ -1471,22 +1595,26 @@ function EFilingPanel({
   caseId,
   getToken,
   onProcessServerClick,
+  serviceMethod,
+  onSelectService,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
   onProcessServerClick: () => void;
+  serviceMethod: string | null | undefined;
+  onSelectService: (method: string) => void;
 }) {
   if (c?.jurisdictionState === "FL") {
-    return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} />;
+    return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
   }
   if (c?.jurisdictionState === "TX") {
-    return <TxEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
+    return <TxEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
   }
   if ((c?.jurisdictionState as string) === "IL") {
     return <IlEFilingPanel c={c} onProcessServerClick={onProcessServerClick} />;
   }
-  return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
+  return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
 }
 
 function ProcessServerPanel() {
@@ -1774,11 +1902,41 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
   const [, navigate] = useLocation();
   const { getToken } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>("efile");
+  const [serviceMethod, setServiceMethod] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const { data: caseData } = useGetCase(caseId, { query: { enabled: !!caseId } });
+  const { data: caseData, refetch: refetchCase } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const c = caseData as ExtendedCase | undefined;
 
   const jurisdictionState: "CA" | "FL" | "TX" | "IL" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : (c?.jurisdictionState as string) === "IL" ? "IL" : "CA";
+
+  // Sync local state from case data once loaded (only initialises — does not override in-flight changes)
+  const [serviceMethodInitialised, setServiceMethodInitialised] = useState(false);
+  useEffect(() => {
+    if (!serviceMethodInitialised && c !== undefined) {
+      setServiceMethod(c.notifyMethod ?? null);
+      setServiceMethodInitialised(true);
+    }
+  }, [c, serviceMethodInitialised]);
+
+  const saveServiceMethod = async (method: string) => {
+    const newValue = serviceMethod === method ? null : method;
+    const previous = serviceMethod;
+    setServiceMethod(newValue);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ notifyMethod: newValue }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      void refetchCase();
+    } catch {
+      toast({ title: "Could not save service method", description: "Please try again.", variant: "destructive" });
+      setServiceMethod(previous);
+    }
+  };
 
   const handleStepClick = (stepN: number) => {
     if (stepN === 8) return;
@@ -1834,7 +1992,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
         {/* ── Content ── */}
         <div className="max-w-5xl mx-auto px-4 py-6">
           {activeTab === "efile" && (
-            <EFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={() => setActiveTab("process_server")} />
+            <EFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={() => setActiveTab("process_server")} serviceMethod={serviceMethod} onSelectService={saveServiceMethod} />
           )}
           {activeTab === "process_server" && <ProcessServerPanel />}
           {activeTab === "collect" && <CollectPanel jurisdictionState={jurisdictionState} />}

@@ -188,6 +188,7 @@ CA SERVICE METHODS (CCP §116.340 — shown on E-File & Serve tab, Service of Pr
 2. Service by Adult — any adult 18+ who is NOT a party to the case hand-delivers the papers to the defendant. The server completes SC-104 (Proof of Service) which is filed with the court. Download button for SC-104 appears directly in the adult service flow.
 3. Sheriff/Marshal Service — arranged through the county sheriff or marshal's office. Fee is county-specific (typically $40–$65). The sheriff's fee is recoverable if the plaintiff wins.
 4. Registered Process Server — licensed process server arranges personal delivery. Most reliable option. Fee recoverable if plaintiff wins.
+Users can tap any CA service method card to mark it as their chosen method — the card highlights with a teal border and checkmark and the app saves the selection. Tapping again deselects it. This recorded selection appears in the case context for AI reference.
 Defendant must be served at least 15 days before hearing (same county) or 20 days (different county). If running low on time, file SC-150 (Request to Postpone Trial) to get more time.
 
 After downloading SC-100: print 2 copies, go to the county small claims clerk window, pay the filing fee ($30–$75), and get the hearing date stamped.
@@ -207,7 +208,7 @@ FL FILING STEPS:
 2. File it with the county court clerk and pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300). Fee waivers available — ask the clerk.
 3. Request the clerk issue the summons. The clerk can serve by certified mail (available in all FL counties; fee is county-specific — typically included with filing fee or a small additional charge) or the plaintiff can arrange sheriff service (fee is county-specific, typically $40–$50; recoverable if plaintiff wins). A licensed process server under Fla. Stat. §48.021 is also an option.
 4. Proof of service must be filed at least 5 days before the pretrial conference.
-Note: the E-File & Serve tab shows the actual fee for the user's specific county. If the county has a downloadable service request form, a "Download Request Form" button appears next to that service method.
+Note: the E-File & Serve tab shows the actual fee for the user's specific county. If the county has a downloadable service request form, a "Download Request Form" button appears next to that service method. Users can tap a FL service option card (sheriff, certified mail, or process server) to mark it as their chosen method — the card highlights and the selection is saved. Tapping again deselects it.
 
 ### TEXAS CASES — FORMS ON THIS PAGE:
 - TX Small Claims Petition — pre-filled for all 254 TX counties. Download and print, then file with the Justice of the Peace (JP) court clerk in the correct precinct. The petition includes party info, claim description, prior demand, and venue basis. Claim limit: $20,000 (Tex. Gov't Code § 27.031).
@@ -216,7 +217,7 @@ TX FILING STEPS:
 1. Download and print the TX Small Claims Petition from this page.
 2. Take it to the JP court clerk in the correct precinct (file where the defendant resides, where the contract was to be performed, or where the incident occurred).
 3. Pay the filing fee (§ 118.121): ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321. Fee waivers available — ask the clerk for an affidavit of inability to pay.
-4. The court issues a citation the same day or next business day after filing. The constable or sheriff serves the defendant — plaintiff does not arrange service in TX.
+4. The court issues a citation the same day or next business day after filing. The constable or sheriff serves the defendant — plaintiff does not arrange service in TX. Users can tap the Constable or Sheriff card on the E-File & Serve page to mark which method the court used for their case; the selection is highlighted and saved. Tapping again deselects it.
 5. Service typically happens within ~3 business days. Trial is then set 20–45 days after service. Total time from filing to trial: typically 25–50 days. The court mails the hearing date to both parties.
 
 Focus on this page only. Anticipate: which form to file first, how to file, service method choice, filing fee, what to do after downloading.`,

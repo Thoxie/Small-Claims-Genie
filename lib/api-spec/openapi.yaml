@@ -1200,6 +1200,7 @@ components:
             type: integer
         notifyMethod:
           type: string
+          nullable: true
         statementText:
           type: string
         noShowStatementText:

@@ -118,7 +118,7 @@ export interface UpdateCaseBody {
   mc030DeclarationTitle?: string;
   mc030DeclarationText?: string;
   mc030ExhibitDocIds?: number[];
-  notifyMethod?: string;
+  notifyMethod?: string | null;
   statementText?: string;
   noShowStatementText?: string;
 }

@@ -46,8 +46,20 @@ export function buildCaseContext(
   }
 
   parts.push("\n-- COURT & FILING --");
-  parts.push(`Jurisdiction State: ${c.jurisdictionState ?? "CA"} (${(c.jurisdictionState ?? "CA") === "FL" ? "Florida" : "California"})`);
+  parts.push(`Jurisdiction State: ${c.jurisdictionState ?? "CA"} (${(c.jurisdictionState ?? "CA") === "FL" ? "Florida" : (c.jurisdictionState ?? "CA") === "TX" ? "Texas" : "California"})`);
   parts.push(`Filing County: ${c.countyId || "[not selected]"}`);
+  if (c.notifyMethod) {
+    const methodLabel: Record<string, string> = {
+      certified_mail: "Certified Mail by Court Clerk",
+      adult_service: "Service by Adult (18+, non-party)",
+      sheriff: "Sheriff / Marshal Service",
+      process_server: "Registered Process Server",
+      constable: "Constable Service (TX)",
+    };
+    parts.push(`Selected Service Method: ${methodLabel[c.notifyMethod] ?? c.notifyMethod} — the user has already chosen this method; reference it when giving service deadline reminders or advice`);
+  } else {
+    parts.push("Selected Service Method: [not yet chosen — user has not selected a service method on the E-File & Serve tab]");
+  }
   if (c.courthouseName) parts.push(`Courthouse: ${c.courthouseName}`);
   if (c.courthouseAddress) parts.push(`Courthouse Address: ${[c.courthouseAddress, c.courthouseCity, c.courthouseZip].filter(Boolean).join(", ")}`);
   if (c.courthousePhone) parts.push(`Courthouse Phone: ${c.courthousePhone}`);
