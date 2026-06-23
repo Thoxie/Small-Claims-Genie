@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { ExtendedCase } from "@/lib/types";
 import { DeadlineCalculatorTab } from "@/pages/cases/tabs/deadline-calculator-tab";
 import { WorkspaceLayout } from "@/components/workspace-layout";
+import { SignaturePadModal } from "@/pages/cases/tabs/forms-tab";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -426,7 +427,48 @@ function FlCourtFormsSection({
   getToken: () => Promise<string | null>;
 }) {
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [feeWaiverSignOpen, setFeeWaiverSignOpen] = useState(false);
   const { toast } = useToast();
+
+  const downloadFlFeeWaiver = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "fl/fee-waiver/signed" : "fl/fee-waiver";
+    setDownloading("fl/fee-waiver");
+    setFeeWaiverSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const downloadFlForm = async (endpoint: string, filename: string, stateId: string) => {
     setDownloading(stateId);
@@ -590,14 +632,23 @@ function FlCourtFormsSection({
           variant="ghost"
           size="sm"
           className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
-          onClick={() => downloadFlForm("fl/fee-waiver", `FL-Fee-Waiver-Case-${caseId}.pdf`, "fl/fee-waiver")}
+          onClick={() => setFeeWaiverSignOpen(true)}
           disabled={!hasBasicInfo || downloading === "fl/fee-waiver"}
-          title={hasBasicInfo ? "Download Fee Waiver Application" : "Complete Step 1 (parties info) to enable"}
+          title={hasBasicInfo ? "Sign &amp; Download Fee Waiver Application" : "Complete Step 1 (parties info) to enable"}
         >
           {downloading === "fl/fee-waiver" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
           {downloading === "fl/fee-waiver" ? "Generating…" : "Download"}
         </Button>
       </div>
+
+      <SignaturePadModal
+        open={feeWaiverSignOpen}
+        onClose={() => setFeeWaiverSignOpen(false)}
+        onSign={(dataUrl) => downloadFlFeeWaiver(dataUrl)}
+        onSkipSign={() => downloadFlFeeWaiver()}
+        formTitle="FL Fee Waiver Application"
+        disclaimer="By signing, you declare under penalty of perjury under the laws of the State of Florida that the information on your Fee Waiver Application is true and correct."
+      />
 
       {/* Summons info card */}
       <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
@@ -1067,11 +1118,52 @@ function IlCourtFormsSection({
   getToken: () => Promise<string | null>;
 }) {
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [feeWaiverSignOpen, setFeeWaiverSignOpen] = useState(false);
   const { toast } = useToast();
   const countyId = c?.countyId ?? "";
   const countyClerk = IL_CLERK_URLS[countyId] ?? null;
   const { data: ilCounties } = useListCounties({ state: "IL" });
   const countyData = ilCounties?.find((co: County) => co.id === countyId);
+
+  const downloadIlFeeWaiver = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "il/fee-waiver/signed" : "il/fee-waiver";
+    setDownloading("il-fee-waiver");
+    setFeeWaiverSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const downloadIlForm = async (endpoint: string, stateId: string) => {
     setDownloading(stateId);
@@ -1184,12 +1276,6 @@ function IlCourtFormsSection({
             label: "Proof of Service",
             desc: "Completed by the server after serving the defendant — file with the clerk",
           },
-          {
-            id: "il-fee-waiver",
-            endpoint: "il/fee-waiver",
-            label: "Application for Waiver of Court Fees",
-            desc: "File with the complaint if you cannot afford the filing fee",
-          },
         ] as const
       ).map(({ id, endpoint, label, desc }) => (
         <div
@@ -1229,7 +1315,49 @@ function IlCourtFormsSection({
         </div>
       ))}
 
-      {/* Filing info */}
+      {/* IL Fee Waiver card — rendered separately to support sign-before-download */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            IL Form
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Application for Waiver of Court Fees</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo ? "File with the complaint if you cannot afford the filing fee" : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => setFeeWaiverSignOpen(true)}
+          disabled={!hasBasicInfo || downloading === "il-fee-waiver"}
+          title={hasBasicInfo ? "Sign & Download IL Fee Waiver" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "il-fee-waiver" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "il-fee-waiver" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      <SignaturePadModal
+        open={feeWaiverSignOpen}
+        onClose={() => setFeeWaiverSignOpen(false)}
+        onSign={(dataUrl) => downloadIlFeeWaiver(dataUrl)}
+        onSkipSign={() => downloadIlFeeWaiver()}
+        formTitle="IL Fee Waiver Application"
+        disclaimer="By signing, you declare that the information in your Application for Waiver of Court Fees is true and correct to the best of your knowledge."
+      />
+
       <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
         <div className="min-w-0">
@@ -1324,7 +1452,48 @@ function TxCourtFormsSection({
   getToken: () => Promise<string | null>;
 }) {
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [feeWaiverSignOpen, setFeeWaiverSignOpen] = useState(false);
   const { toast } = useToast();
+
+  const downloadTxFeeWaiver = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "tx/fee-waiver/signed" : "tx/fee-waiver";
+    setDownloading("tx-fee-waiver");
+    setFeeWaiverSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const downloadTxForm = async (endpoint: string, stateId: string) => {
     setDownloading(stateId);
@@ -1506,14 +1675,23 @@ function TxCourtFormsSection({
           variant="ghost"
           size="sm"
           className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
-          onClick={() => downloadTxForm("tx/fee-waiver", "tx-fee-waiver")}
+          onClick={() => setFeeWaiverSignOpen(true)}
           disabled={!hasBasicInfo || downloading === "tx-fee-waiver"}
-          title={hasBasicInfo ? "Download TX Fee Waiver" : "Complete Step 1 (parties info) to enable"}
+          title={hasBasicInfo ? "Sign & Download TX Fee Waiver" : "Complete Step 1 (parties info) to enable"}
         >
           {downloading === "tx-fee-waiver" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
           {downloading === "tx-fee-waiver" ? "Generating…" : "Download"}
         </Button>
       </div>
+
+      <SignaturePadModal
+        open={feeWaiverSignOpen}
+        onClose={() => setFeeWaiverSignOpen(false)}
+        onSign={(dataUrl) => downloadTxFeeWaiver(dataUrl)}
+        onSkipSign={() => downloadTxFeeWaiver()}
+        formTitle="TX Fee Waiver (Rule 145)"
+        disclaimer="By signing, you declare that the information in your Affidavit of Inability to Pay is true and correct to the best of your knowledge."
+      />
 
       {/* Filing steps */}
       <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
