@@ -7,3 +7,4 @@
 - [SC-100 rendering](sc100-rendering.md) — must use queueDirectField for ALL fields; pdf-lib setField centers text vertically causing it to float between lines; 9pt font, startY = spec.y + max(1, spec.h-10)
 - [FL forms architecture](fl-forms-architecture.md) — county-specific pdftk fills; Miami-Dade has hidden named fields only visible via pdf-lib (not pdftk); adding new FL county requires 8 steps
 - [Production startup crash](prod-startup-crash.md) — pg emits unhandled error events at boot; crashes process in <1s unless global handlers exist in index.ts
+- [PDF signed-size guarantee](pdf-signed-size-guarantee.md) — pdf-lib re-save compresses pdftk output; run both unsigned and signed through pdf-lib with same options so the image bytes added for signed make it larger

@@ -1,305 +1,108 @@
 /**
- * IL Application for Waiver of Court Fees — programmatic pdf-lib generation.
+ * IL Application for Waiver of Court Fees (Civil) — official IL Supreme Court form
  *
- * Produces an Illinois Application for Waiver of Court Fees matching the
- * statewide format (FW-F 401.1 / 735 ILCS 5/5-105).
- * Pre-fills applicant (plaintiff) name and address; financial sections left
- * blank for the applicant to complete.
+ * Fills the official Illinois Supreme Court "Application for Waiver of Court Fees (Civil)"
+ * (ATJ 601.9, 735 ILCS 5/5-105) using pdftk FDF fill, then post-processes with pdf-lib
+ * to embed the optional signature image on the last page.
  *
- * Rendering technique: png-overlay (programmatic pdf-lib, no template PDF).
+ * Template PDF: assets/il-forms/il-fee-waiver-civil.pdf
+ * Source: https://ilcourtsaudio.blob.core.windows.net/antilles-resources/resources/
+ *         52beec8c-25fc-4d0f-bc56-82a93b68d395/FW-CIV%20Application.pdf
+ *
+ * Key AcroForm fields (pdftk dump_data_fields + pdf-lib inspection confirmed):
+ *   "1 - County"                       PDFDropdown  (page 0)
+ *   "2 - Plaintiff/Petitioner or In RE" PDFTextField (page 0)
+ *   "3 - Defendant/Respondent"          PDFTextField (page 0)
+ *   "4 - Case Number"                   PDFTextField (page 0)
+ *   "6 - Your Name"                     PDFTextField (page 0, section 1B Name)
+ *
+ *   Signature page (page 3, index 3):
+ *   "Last - Signature"    x=96.98, y=550.09, w=196.93, h=14.4
+ *   "Last - Print Name"   x=355.39, y=550.48, w=209.34, h=14.4
+ *   "Last - Telephone"    x=106.81, y=507.92, w=137.79, h=14.4
+ *   "Last - Email"        x=359.91, y=508.05, w=204.02, h=14.4
+ *   "Last - Street Address" x=73.82, y=487.21, w=489.56, h=14.4
+ *
+ * Legal basis: 735 ILCS 5/5-105; Illinois Supreme Court Rule 298; ATJ 601.9 (08/25)
  */
 
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import type { PDFPage, PDFFont } from "pdf-lib";
+import * as path from "path";
+import { PDFDocument } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
+import { pdftk_fill_form } from "../pdftk-fdf";
+import { ASSET_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
-import { ILLINOIS_COUNTIES } from "../../routes/counties";
-
-const PW = 612;
-const PH = 792;
-const BLACK  = rgb(0, 0, 0);
-const NAVY   = rgb(0.05, 0.15, 0.35);
-const GRAY   = rgb(0.45, 0.45, 0.45);
-const LIGHT  = rgb(0.93, 0.93, 0.93);
-const DKBLU  = rgb(0.1, 0.25, 0.55);
-const AMBER  = rgb(0.6, 0.4, 0.0);
-const AMBERLT = rgb(1.0, 0.97, 0.88);
-
-const ML = 54;
-const MR = PW - 54;
-const CW = MR - ML;
-
-function line(page: PDFPage, x1: number, y1: number, x2: number, y2: number, t = 0.5, color = BLACK) {
-  page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: t, color });
-}
-
-function rect(page: PDFPage, x: number, y: number, w: number, h: number, fill = LIGHT, borderColor = LIGHT, bw = 0) {
-  page.drawRectangle({ x, y, width: w, height: h, color: fill, borderColor, borderWidth: bw });
-}
-
-function txt(page: PDFPage, font: PDFFont, text: string | null | undefined, x: number, y: number, size = 9, color = BLACK) {
-  if (!text) return;
-  page.drawText(String(text), { x, y, size, font, color });
-}
-
-function wrap(page: PDFPage, font: PDFFont, text: string, x: number, y: number, maxW: number, size = 9, gap = 4): number {
-  const words = text.replace(/\r/g, "").split(/\s+/).filter(Boolean);
-  let cur = "";
-  let cy = y;
-  for (const w of words) {
-    const candidate = cur ? `${cur} ${w}` : w;
-    if (font.widthOfTextAtSize(candidate, size) > maxW && cur) {
-      txt(page, font, cur, x, cy, size);
-      cy -= size + gap;
-      cur = w;
-    } else {
-      cur = candidate;
-    }
-  }
-  if (cur) { txt(page, font, cur, x, cy, size); cy -= size + gap; }
-  return cy;
-}
-
-function checkbox(page: PDFPage, font: PDFFont, x: number, y: number, label: string, size = 8.5) {
-  page.drawRectangle({ x, y: y - 1, width: 9, height: 9, borderColor: BLACK, borderWidth: 0.8, color: rgb(1, 1, 1) });
-  txt(page, font, label, x + 13, y + 1, size);
-}
+const PDF_PATH = path.join(ASSET_DIR, "il-forms", "il-fee-waiver-civil.pdf");
 
 function countyDisplay(countyId?: string | null): string {
   if (!countyId) return "";
-  return countyId.replace(/^il-/, "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  return countyId
+    .replace(/^il-/, "")
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
-export async function buildILFeeWaiver(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
-  const doc  = await PDFDocument.create();
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+export async function buildILFeeWaiver(
+  d: CaseData,
+  _body: FormBody,
+  opts?: GenerateOptions,
+): Promise<Buffer> {
+  const countyId: string = (d as any).countyId ?? "";
+  const county = countyDisplay(countyId);
 
-  const page = doc.addPage([PW, PH]);
+  const pltAddr = d.plaintiffAddress ?? "";
+  const cityStateZip = [d.plaintiffCity, "IL", d.plaintiffZip].filter(Boolean).join(", ");
+  const fullAddr = [pltAddr, cityStateZip].filter(Boolean).join(", ");
 
-  const county = countyDisplay((d as any).countyId);
-  const countyRecord = ILLINOIS_COUNTIES.find((c: any) => c.id === (d as any).countyId);
-  const courtName = (d as any).courthouseName ?? countyRecord?.courthouseName ?? `Circuit Court of ${county} County`;
-  const genDate = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+  const filled = await pdftk_fill_form(PDF_PATH, {
+    text: {
+      // Page 0: case caption
+      "1 - County":                         county,
+      "2 - Plaintiff/Petitioner or In RE":   d.plaintiffName ?? "",
+      "3 - Defendant/Respondent":            d.defendantName ?? "",
+      "4 - Case Number":                     d.caseNumber ?? "",
 
-  let y = PH - 36;
+      // Section 1: Applicant basic information
+      "6 - Your Name":                       d.plaintiffName ?? "",
 
-  // ── Navy header bar ──────────────────────────────────────────────────────────
-  page.drawRectangle({ x: 0, y: PH - 48, width: PW, height: 48, color: NAVY });
-  const h1 = "APPLICATION FOR WAIVER OF COURT FEES";
-  const h2 = "State of Illinois — Circuit Court  •  735 ILCS 5/5-105";
-  const h1w = bold.widthOfTextAtSize(h1, 12);
-  const h2w = font.widthOfTextAtSize(h2, 8);
-  txt(page, bold, h1, (PW - h1w) / 2, PH - 18, 12, rgb(1, 1, 1));
-  txt(page, font, h2, (PW - h2w) / 2, PH - 34, 8, rgb(0.75, 0.82, 0.95));
+      // Last page: signature block
+      "Last - Print Name":                   d.plaintiffName ?? "",
+      "Last - Telephone":                    d.plaintiffPhone ?? "",
+      "Last - Email":                        d.plaintiffEmail ?? "",
+      "Last - Street Address":               fullAddr,
+      // Check "completing for myself" by default
+      "Last - Completing this form myself checkbox": "Yes",
+    },
+  });
 
-  y = PH - 64;
-
-  // ── Court identifier ─────────────────────────────────────────────────────────
-  const courtLine = county ? `IN THE CIRCUIT COURT OF ${county.toUpperCase()} COUNTY, ILLINOIS` : "IN THE CIRCUIT COURT, ____________ COUNTY, ILLINOIS";
-  const clw = bold.widthOfTextAtSize(courtLine, 9.5);
-  txt(page, bold, courtLine, (PW - clw) / 2, y, 9.5, DKBLU);
-  y -= 11;
-  const ctw = font.widthOfTextAtSize(courtName, 8.5);
-  txt(page, font, courtName, (PW - ctw) / 2, y, 8.5, GRAY);
-  y -= 10;
-  line(page, ML, y, MR, y, 1, DKBLU);
-  y -= 12;
-
-  // ── Case info ────────────────────────────────────────────────────────────────
-  txt(page, bold, "CASE NO.:", ML, y, 8.5);
-  if ((d as any).caseNumber) {
-    txt(page, font, (d as any).caseNumber, ML + 62, y, 8.5);
-  } else {
-    line(page, ML + 62, y - 2, ML + 220, y - 2, 0.5, GRAY);
-  }
-  const genLabelW = font.widthOfTextAtSize(`Prepared: ${genDate}`, 8);
-  txt(page, font, `Prepared: ${genDate}`, MR - genLabelW, y, 8, GRAY);
-  y -= 10;
-  line(page, ML, y, MR, y, 0.5);
-  y -= 14;
-
-  // ── Instruction box ──────────────────────────────────────────────────────────
-  rect(page, ML, y - 28, CW, 32, AMBERLT, AMBER, 0.8);
-  y -= 4;
-  const instrText =
-    "If you cannot afford to pay the court fees, you may ask the court to waive them. " +
-    "Complete this form honestly and completely. Providing false information is a crime. " +
-    "Attach proof of your income or public benefits if available.";
-  y = wrap(page, font, instrText, ML + 6, y, CW - 12, 8, 3.5);
-  y -= 14;
-
-  // ── Applicant information ────────────────────────────────────────────────────
-  rect(page, ML, y - 2, MR - ML, 13, LIGHT);
-  txt(page, bold, "APPLICANT INFORMATION", ML + 4, y + 1, 9);
-  y -= 16;
-
-  txt(page, bold, "Full Name (Applicant):", ML, y, 8.5);
-  const plaintiffName = (d as any).plaintiffName ?? "";
-  if (plaintiffName) {
-    txt(page, font, plaintiffName, ML + 136, y, 8.5);
-  } else {
-    line(page, ML + 136, y - 2, MR, y - 2, 0.5);
-  }
-  y -= 13;
-
-  txt(page, bold, "Street Address:", ML, y, 8.5);
-  const pAddr = (d as any).plaintiffAddress ?? "";
-  if (pAddr) {
-    txt(page, font, pAddr, ML + 90, y, 8.5);
-  } else {
-    line(page, ML + 90, y - 2, MR, y - 2, 0.5);
-  }
-  y -= 13;
-
-  txt(page, bold, "City, State, ZIP:", ML, y, 8.5);
-  const cityStateZip = [(d as any).plaintiffCity, "IL", (d as any).plaintiffZip].filter(Boolean).join(", ");
-  if (cityStateZip) {
-    txt(page, font, cityStateZip, ML + 104, y, 8.5);
-  } else {
-    line(page, ML + 104, y - 2, MR, y - 2, 0.5);
-  }
-  y -= 13;
-
-  txt(page, bold, "Phone:", ML, y, 8.5);
-  const phone = (d as any).plaintiffPhone ?? "";
-  if (phone) {
-    txt(page, font, phone, ML + 44, y, 8.5);
-  } else {
-    line(page, ML + 44, y - 2, ML + 200, y - 2, 0.5);
-  }
-
-  txt(page, bold, "Email:", ML + 220, y, 8.5);
-  const email = (d as any).plaintiffEmail ?? "";
-  if (email) {
-    txt(page, font, email, ML + 258, y, 8.5);
-  } else {
-    line(page, ML + 258, y - 2, MR, y - 2, 0.5);
-  }
-  y -= 14;
-
-  line(page, ML, y, MR, y, 0.5);
-  y -= 14;
-
-  // ── Basis for waiver ─────────────────────────────────────────────────────────
-  rect(page, ML, y - 2, MR - ML, 13, LIGHT);
-  txt(page, bold, "BASIS FOR WAIVER (check all that apply)", ML + 4, y + 1, 9);
-  y -= 16;
-
-  const bases = [
-    "I receive public benefits (SNAP, Medicaid, SSI, General Assistance, TANF, or similar).",
-    "My annual gross income is at or below 125% of the Federal Poverty Level for my household size.",
-    "I am a veteran receiving VA pension or compensation.",
-    "Other: I am unable to pay court fees without being unable to provide for myself or my family.",
-  ];
-
-  for (const basis of bases) {
-    checkbox(page, font, ML, y, basis, 8.5);
-    y -= 14;
-  }
-
-  line(page, ML, y, MR, y, 0.5);
-  y -= 14;
-
-  // ── Income information ───────────────────────────────────────────────────────
-  rect(page, ML, y - 2, MR - ML, 13, LIGHT);
-  txt(page, bold, "INCOME AND HOUSEHOLD INFORMATION", ML + 4, y + 1, 9);
-  y -= 16;
-
-  txt(page, bold, "Number of people in household:", ML, y, 8.5);
-  line(page, ML + 188, y - 2, ML + 230, y - 2, 0.5);
-  txt(page, bold, "Annual gross income: $", ML + 250, y, 8.5);
-  line(page, ML + 370, y - 2, MR, y - 2, 0.5);
-  y -= 14;
-
-  txt(page, bold, "Source(s) of income:", ML, y, 8.5);
-  line(page, ML + 118, y - 2, MR, y - 2, 0.5);
-  y -= 14;
-
-  txt(page, bold, "Monthly take-home pay: $", ML, y, 8.5);
-  line(page, ML + 148, y - 2, ML + 240, y - 2, 0.5);
-  txt(page, bold, "Other monthly income: $", ML + 260, y, 8.5);
-  line(page, ML + 400, y - 2, MR, y - 2, 0.5);
-  y -= 14;
-
-  txt(page, bold, "Monthly housing cost: $", ML, y, 8.5);
-  line(page, ML + 140, y - 2, ML + 230, y - 2, 0.5);
-  txt(page, bold, "Monthly utilities: $", ML + 250, y, 8.5);
-  line(page, ML + 360, y - 2, MR, y - 2, 0.5);
-  y -= 14;
-
-  txt(page, bold, "Public benefits program(s) received:", ML, y, 8.5);
-  line(page, ML + 220, y - 2, MR, y - 2, 0.5);
-  y -= 14;
-
-  line(page, ML, y, MR, y, 0.5);
-  y -= 14;
-
-  // ── Certification and signature ───────────────────────────────────────────────
-  rect(page, ML, y - 2, MR - ML, 13, LIGHT);
-  txt(page, bold, "CERTIFICATION", ML + 4, y + 1, 9);
-  y -= 16;
-
-  const certText =
-    "Under penalty of perjury as provided by law pursuant to Section 1-109 of the Code of Civil Procedure, " +
-    "I certify that the information I have provided in this application is true and correct, and that I am " +
-    "unable to pay the court fees required to pursue my case.";
-  y = wrap(page, font, certText, ML, y, CW, 8.5, 4.5);
-  y -= 14;
+  // Both unsigned and signed run through pdf-lib with the same settings so
+  // they share the same compression baseline.  The signed variant then adds
+  // the signature image on top, guaranteeing signed > unsigned.
+  const doc = await PDFDocument.load(filled, { ignoreEncryption: true });
 
   if (opts?.signatureBytes) {
+    // "Last - Signature" widget: page 3 (index 3), x=96.98, y=550.09, w=196.93, h=14.4
+    const sigPage = doc.getPage(3);
     try {
-      const sigImg = await doc.embedPng(opts.signatureBytes).catch(() => null)
-        ?? await doc.embedJpg(opts.signatureBytes).catch(() => null);
+      const sigImg =
+        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, { x: ML, y: y - 24, width: 180, height: 28 });
+        sigPage.drawImage(sigImg, { x: 97, y: 550, width: 180, height: 18, opacity: 1 });
       }
     } catch { /* ignore */ }
   }
 
-  line(page, ML, y - 2, ML + 220, y - 2, 0.5);
-  txt(page, font, "Applicant Signature", ML, y - 12, 7.5, GRAY);
-  if (plaintiffName) txt(page, font, plaintiffName, ML, y + 4, 8);
-
-  txt(page, bold, "Date:", MR - 130, y - 2, 8.5);
-  line(page, MR - 96, y - 2, MR, y - 2, 0.5);
-  y -= 28;
-
-  line(page, ML, y, MR, y, 0.7, GRAY);
-  y -= 14;
-
-  // ── Court order section ───────────────────────────────────────────────────────
-  rect(page, ML, y - 2, MR - ML, 13, LIGHT);
-  txt(page, bold, "COURT ORDER — FOR COURT USE ONLY", ML + 4, y + 1, 9, GRAY);
-  y -= 16;
-
-  checkbox(page, font, ML, y, "Application GRANTED — Filing fees waived.", 8.5);
-  y -= 13;
-  checkbox(page, font, ML, y, "Application DENIED — Reason:", 8.5);
-  line(page, ML + 165, y - 2, MR, y - 2, 0.5);
-  y -= 18;
-
-  line(page, ML, y - 2, ML + 200, y - 2, 0.5);
-  txt(page, font, "Judge's Signature", ML, y - 12, 7.5, GRAY);
-  txt(page, bold, "Date:", MR - 130, y - 2, 8.5);
-  line(page, MR - 96, y - 2, MR, y - 2, 0.5);
-
-  // ── Footer ───────────────────────────────────────────────────────────────────
-  line(page, ML, 38, MR, 38, 0.5, GRAY);
-  txt(page, font, "Generated by Small Claims Genie  •  IL Application for Waiver of Court Fees  •  735 ILCS 5/5-105", ML, 25, 7.5, GRAY);
-  const noteW = font.widthOfTextAtSize("File with the circuit court clerk along with your Small Claims Complaint", 7.5);
-  txt(page, font, "File with the circuit court clerk along with your Small Claims Complaint", MR - noteW, 25, 7.5, GRAY);
-
-  const pdfBytes = await doc.save();
-  return Buffer.from(pdfBytes);
+  return Buffer.from(await doc.save({ updateFieldAppearances: false, useObjectStreams: false }));
 }
 
 const ilFeeWaiverDefinition: FormDefinition = {
   state: "IL",
   formId: "IL-FEE-WAIVER",
-  renderingTechnique: "png-overlay",
-
+  assetPath: PDF_PATH,
+  renderingTechnique: "xfa-pdftk",
   async generate(d: CaseData, b: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     return buildILFeeWaiver(d, b, opts);
   },
