@@ -895,6 +895,42 @@ function IlDeadlinesSection() {
   );
 }
 
+// ─── IL court forms section ───────────────────────────────────────────────────
+
+function IlCourtFormsSection() {
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Court Forms</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Illinois small claims forms by county</p>
+      </div>
+
+      <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm">
+        <div className="h-9 w-9 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+          <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-tight mb-1">
+            Forms from the Circuit Court Clerk
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Illinois small claims forms vary by county and circuit court. Pick up the required forms at your local circuit court clerk's office, or check your court's website. There is no single statewide form.
+          </p>
+          <a
+            href="https://www.illinoiscourts.gov/courts/circuit-court/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#0d6b5e] hover:underline"
+          >
+            Find your Illinois circuit court
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IL E-Filing panel ────────────────────────────────────────────────────────
 
 function IlEFilingPanel({
@@ -911,6 +947,7 @@ function IlEFilingPanel({
 
       {/* RIGHT — IL-specific content */}
       <div className="space-y-6">
+        <IlCourtFormsSection />
         <IlServiceOptionsSection onProcessServerClick={onProcessServerClick} />
         <IlDeadlinesSection />
       </div>
