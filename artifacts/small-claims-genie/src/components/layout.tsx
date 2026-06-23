@@ -12,7 +12,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/types-of-cases", label: "Types of Cases" },
-  { href: "/free-trial", label: "Free Trial" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },
   { href: "/resources", label: "Resources" },
 ];
@@ -71,28 +71,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop center nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(link => {
-              const isFreeTrial = link.href === "/free-trial";
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={
-                    isFreeTrial
-                      ? `inline-flex items-center px-3 py-1.5 rounded-full text-sm font-black transition-colors border ${
-                          isActive(link.href)
-                            ? "bg-amber-200 border-amber-400 text-amber-800"
-                            : "bg-amber-100 border-amber-300 text-amber-700 hover:bg-amber-200 hover:border-amber-400"
-                        }`
-                      : `inline-flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${
-                          isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
-                        }`
-                  }
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+            {NAV_LINKS.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-primary hover:bg-primary/5 ${
+                  isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
           {/* Right side actions */}
