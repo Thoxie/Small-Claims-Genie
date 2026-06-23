@@ -76,7 +76,7 @@ function FilingSummaryPanel({
   jurisdictionState,
 }: {
   c: ExtendedCase | undefined;
-  jurisdictionState: "CA" | "FL" | "TX";
+  jurisdictionState: "CA" | "FL" | "TX" | "IL";
 }) {
   const stateAbbr = jurisdictionState;
   return (
@@ -557,11 +557,13 @@ function FlServiceOptionsSection({
   certifiedMailFee,
   sheriffServiceFee,
   serviceRequestFormUrl,
+  onProcessServerClick,
 }: {
   certifiedMailAvailable: boolean;
   certifiedMailFee: string | null | undefined;
   sheriffServiceFee: string | null | undefined;
   serviceRequestFormUrl: string | null | undefined;
+  onProcessServerClick: () => void;
 }) {
   type OptionDef = {
     icon: ElementType;
@@ -605,6 +607,16 @@ function FlServiceOptionsSection({
       badgeColor: "bg-amber-50 text-amber-700",
       desc: "A licensed, certified process server handles personal delivery. Must be a certified process server under Fla. Stat. 48.021. Their fee is recoverable if you win.",
       show: true,
+      extra: (
+        <Button
+          size="sm"
+          variant="outline"
+          className="mt-2 h-7 text-xs gap-1.5"
+          onClick={onProcessServerClick}
+        >
+          Use a Process Server →
+        </Button>
+      ),
     },
   ];
 
@@ -692,10 +704,12 @@ function FlEFilingPanel({
   c,
   caseId,
   getToken,
+  onProcessServerClick,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
+  onProcessServerClick: () => void;
 }) {
   const { data: counties } = useListCounties({ state: "FL" });
   const countyData = counties?.find((co: County) => co.id === c?.countyId);
@@ -713,8 +727,160 @@ function FlEFilingPanel({
           certifiedMailFee={countyData?.certifiedMailFee ?? null}
           sheriffServiceFee={countyData?.sheriffServiceFee ?? null}
           serviceRequestFormUrl={countyData?.serviceRequestFormUrl ?? null}
+          onProcessServerClick={onProcessServerClick}
         />
         <FlDeadlinesSection />
+      </div>
+    </div>
+  );
+}
+
+// ─── IL service options section ───────────────────────────────────────────────
+
+function IlServiceOptionsSection({
+  onProcessServerClick,
+}: {
+  onProcessServerClick: () => void;
+}) {
+  type OptionDef = {
+    icon: ElementType;
+    title: string;
+    badge: string;
+    badgeColor: string;
+    desc: string;
+    extra?: ReactNode;
+  };
+
+  const options: OptionDef[] = [
+    {
+      icon: Car,
+      title: "Sheriff Service",
+      badge: "Most Reliable",
+      badgeColor: "bg-[#0d6b5e]/10 text-[#0d6b5e]",
+      desc: "The county sheriff personally delivers the summons and complaint to the defendant. Service is complete upon personal delivery or substitute service at the defendant's usual place of abode. The sheriff's fee is recoverable if you win your case.",
+    },
+    {
+      icon: Mail,
+      title: "Certified Mail",
+      badge: "Cheapest Option",
+      badgeColor: "bg-blue-50 text-blue-700",
+      desc: "The court clerk sends the summons by certified mail, return receipt requested. Service is complete only if the defendant signs — if they refuse or the mail is unclaimed, you must use a different method.",
+    },
+    {
+      icon: Briefcase,
+      title: "Process Server",
+      badge: "Fast & Flexible",
+      badgeColor: "bg-amber-50 text-amber-700",
+      desc: "A licensed Illinois process server handles personal delivery. Must be a person 18 or older who is not a party to the case. Service must be completed at least 3 days before the return date. Their fee is recoverable if you win.",
+      extra: (
+        <Button
+          size="sm"
+          variant="outline"
+          className="mt-2 h-7 text-xs gap-1.5"
+          onClick={onProcessServerClick}
+        >
+          Use a Process Server →
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Service of Process</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Defendant must be served at least 3 days before the return date
+        </p>
+      </div>
+      <div className="space-y-2">
+        {options.map(({ icon: Icon, title, badge, badgeColor, desc, extra }) => (
+          <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                <p className="text-sm font-semibold text-foreground leading-tight">{title}</p>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${badgeColor}`}>{badge}</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              {extra}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── IL deadlines section ─────────────────────────────────────────────────────
+
+function IlDeadlinesSection() {
+  const deadlines = [
+    {
+      icon: CalendarDays,
+      title: "Return date — 14 to 40 days after filing",
+      desc: "The court clerk sets a return date when you file. Under 735 ILCS 5/2-204, the return date is typically 14 to 40 days after the summons is issued. The defendant must appear on or before this date.",
+    },
+    {
+      icon: AlertCircle,
+      title: "Service deadline — 3 days before return date",
+      desc: "The defendant must be served at least 3 days before the return date. If service cannot be completed in time, contact the clerk to request a new return date.",
+    },
+    {
+      icon: Clock,
+      title: "Trial date set — at or after the return date",
+      desc: "If the defendant appears and disputes the claim, the court schedules a trial. Small claims trials in Illinois are typically set within 60–90 days of the return date depending on the county's docket.",
+    },
+    {
+      icon: Shield,
+      title: "Judgment enforceable for 7 years (renewable)",
+      desc: "An Illinois small claims judgment is valid for 7 years from the date of entry and may be renewed for additional 7-year periods before expiration (735 ILCS 5/12-108).",
+    },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Key IL Deadlines</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Timeline from filing to trial</p>
+      </div>
+      <div className="space-y-2">
+        {deadlines.map(({ icon: Icon, title, desc }) => (
+          <div key={title} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3">
+            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground leading-tight mb-0.5">{title}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── IL E-Filing panel ────────────────────────────────────────────────────────
+
+function IlEFilingPanel({
+  c,
+  onProcessServerClick,
+}: {
+  c: ExtendedCase | undefined;
+  onProcessServerClick: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {/* LEFT — Case info */}
+      <FilingSummaryPanel c={c} jurisdictionState="IL" />
+
+      {/* RIGHT — IL-specific content */}
+      <div className="space-y-6">
+        <IlServiceOptionsSection onProcessServerClick={onProcessServerClick} />
+        <IlDeadlinesSection />
       </div>
     </div>
   );
@@ -1209,16 +1375,21 @@ function EFilingPanel({
   c,
   caseId,
   getToken,
+  onProcessServerClick,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
+  onProcessServerClick: () => void;
 }) {
   if (c?.jurisdictionState === "FL") {
-    return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
+    return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} />;
   }
   if (c?.jurisdictionState === "TX") {
     return <TxEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
+  }
+  if ((c?.jurisdictionState as string) === "IL") {
+    return <IlEFilingPanel c={c} onProcessServerClick={onProcessServerClick} />;
   }
   return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
 }
@@ -1328,7 +1499,7 @@ function ProcessServerPanel() {
   );
 }
 
-function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" }) {
+function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" | "IL" }) {
   const isFL = jurisdictionState === "FL";
   const isTX = jurisdictionState === "TX";
 
@@ -1512,7 +1683,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
   const { data: caseData } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const c = caseData as ExtendedCase | undefined;
 
-  const jurisdictionState: "CA" | "FL" | "TX" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : "CA";
+  const jurisdictionState: "CA" | "FL" | "TX" | "IL" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : (c?.jurisdictionState as string) === "IL" ? "IL" : "CA";
 
   const handleStepClick = (stepN: number) => {
     if (stepN === 8) return;
@@ -1568,7 +1739,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
         {/* ── Content ── */}
         <div className="max-w-5xl mx-auto px-4 py-6">
           {activeTab === "efile" && (
-            <EFilingPanel c={c} caseId={caseId} getToken={getToken} />
+            <EFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={() => setActiveTab("process_server")} />
           )}
           {activeTab === "process_server" && <ProcessServerPanel />}
           {activeTab === "collect" && <CollectPanel jurisdictionState={jurisdictionState} />}
