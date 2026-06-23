@@ -886,8 +886,16 @@ function FlEFilingPanel({
 
 function IlServiceOptionsSection({
   onProcessServerClick,
+  sheriffServiceFee,
+  sheriffOfficeAddress,
+  sheriffOfficePhone,
+  sheriffOfficeUrl,
 }: {
   onProcessServerClick: () => void;
+  sheriffServiceFee?: string | null;
+  sheriffOfficeAddress?: string | null;
+  sheriffOfficePhone?: string | null;
+  sheriffOfficeUrl?: string | null;
 }) {
   type OptionDef = {
     icon: ElementType;
@@ -898,13 +906,32 @@ function IlServiceOptionsSection({
     extra?: ReactNode;
   };
 
+  const sheriffContactBlock = (sheriffOfficeAddress || sheriffOfficePhone || sheriffOfficeUrl) ? (
+    <div className="mt-1.5 space-y-0.5">
+      {sheriffOfficeAddress && (
+        <p className="text-[11px] text-muted-foreground">📍 {sheriffOfficeAddress}</p>
+      )}
+      {sheriffOfficePhone && (
+        <p className="text-[11px] text-muted-foreground">
+          📞 <a href={`tel:${sheriffOfficePhone.replace(/\D/g, "")}`} className="underline underline-offset-2">{sheriffOfficePhone}</a>
+        </p>
+      )}
+      {sheriffOfficeUrl && (
+        <p className="text-[11px] text-muted-foreground">
+          🔗 <a href={sheriffOfficeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{sheriffOfficeUrl.replace(/^https?:\/\//, "")}</a>
+        </p>
+      )}
+    </div>
+  ) : null;
+
   const options: OptionDef[] = [
     {
       icon: Car,
       title: "Sheriff Service",
-      badge: "Most Reliable",
+      badge: sheriffServiceFee ? `Most Reliable — ${sheriffServiceFee}` : "Most Reliable",
       badgeColor: "bg-[#0d6b5e]/10 text-[#0d6b5e]",
       desc: "The county sheriff personally delivers the summons and complaint to the defendant. Service is complete upon personal delivery or substitute service at the defendant's usual place of abode. The sheriff's fee is recoverable if you win your case.",
+      extra: sheriffContactBlock,
     },
     {
       icon: Mail,
@@ -1261,6 +1288,9 @@ function IlEFilingPanel({
   getToken: () => Promise<string | null>;
   onProcessServerClick: () => void;
 }) {
+  const { data: ilCounties } = useListCounties({ state: "IL" });
+  const countyData = ilCounties?.find((co: County) => co.id === c?.countyId);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* LEFT — Case info */}
@@ -1269,7 +1299,13 @@ function IlEFilingPanel({
       {/* RIGHT — IL-specific content */}
       <div className="space-y-6">
         <IlCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
-        <IlServiceOptionsSection onProcessServerClick={onProcessServerClick} />
+        <IlServiceOptionsSection
+          onProcessServerClick={onProcessServerClick}
+          sheriffServiceFee={countyData?.sheriffServiceFee ?? null}
+          sheriffOfficeAddress={countyData?.sheriffOfficeAddress ?? null}
+          sheriffOfficePhone={countyData?.sheriffOfficePhone ?? null}
+          sheriffOfficeUrl={countyData?.sheriffOfficeUrl ?? null}
+        />
         <IlDeadlinesSection />
       </div>
     </div>

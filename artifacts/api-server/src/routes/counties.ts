@@ -505,11 +505,39 @@ const FL_SERVICE_OVERRIDES: Record<string, Partial<typeof FL_SERVICE_DEFAULTS>> 
   "fl-volusia":      { sheriffServiceFee: "$45", sheriffOfficeAddress: "123 W Indiana Ave, DeLand, FL 32720", sheriffOfficePhone: "(386) 736-5961", sheriffOfficeUrl: "https://www.vcso.us" },
 };
 
+const IL_SERVICE_DEFAULTS = {
+  sheriffServiceFee: "$60" as string | null,
+  sheriffOfficeAddress: null as string | null,
+  sheriffOfficePhone: null as string | null,
+  sheriffOfficeUrl: null as string | null,
+};
+
+const IL_SERVICE_OVERRIDES: Record<string, Partial<typeof IL_SERVICE_DEFAULTS>> = {
+  "il-cook":        { sheriffServiceFee: "$60", sheriffOfficeAddress: "69 W Washington St, Chicago, IL 60602",        sheriffOfficePhone: "(312) 603-6444", sheriffOfficeUrl: "https://www.cookcountysheriff.org" },
+  "il-dupage":      { sheriffServiceFee: "$60", sheriffOfficeAddress: "501 N County Farm Rd, Wheaton, IL 60187",      sheriffOfficePhone: "(630) 407-2400", sheriffOfficeUrl: "https://www.dupagesheriff.org" },
+  "il-lake":        { sheriffServiceFee: "$60", sheriffOfficeAddress: "25 S Martin Luther King Jr Ave, Waukegan, IL 60085", sheriffOfficePhone: "(847) 377-4000", sheriffOfficeUrl: "https://www.lakecountyil.gov/sheriff" },
+  "il-will":        { sheriffServiceFee: "$60", sheriffOfficeAddress: "16 W Washington St, Joliet, IL 60432",         sheriffOfficePhone: "(815) 727-8895", sheriffOfficeUrl: "https://www.willcosheriff.org" },
+  "il-kane":        { sheriffServiceFee: "$60", sheriffOfficeAddress: "37W755 IL Route 38, St. Charles, IL 60175",    sheriffOfficePhone: "(630) 232-8400", sheriffOfficeUrl: "https://www.kcsheriff.com" },
+  "il-winnebago":   { sheriffServiceFee: "$60", sheriffOfficeAddress: "650 W State St, Rockford, IL 61102",           sheriffOfficePhone: "(815) 319-6000", sheriffOfficeUrl: "https://www.winnebagoil.gov/sheriff" },
+  "il-mchenry":     { sheriffServiceFee: "$60", sheriffOfficeAddress: "2200 N Seminary Ave, Woodstock, IL 60098",     sheriffOfficePhone: "(815) 338-2144", sheriffOfficeUrl: "https://www.mchenrycountysheriff.com" },
+  "il-kendall":     { sheriffServiceFee: "$60", sheriffOfficeAddress: "1102 Cornell Ln, Yorkville, IL 60560",         sheriffOfficePhone: "(630) 553-7500", sheriffOfficeUrl: "https://www.kendalltx.org" },
+  "il-champaign":   { sheriffServiceFee: "$60", sheriffOfficeAddress: "204 E Main St, Urbana, IL 61801",              sheriffOfficePhone: "(217) 384-1204", sheriffOfficeUrl: "https://www.co.champaign.il.us/sheriff" },
+  "il-sangamon":    { sheriffServiceFee: "$60", sheriffOfficeAddress: "2 Public Square, Springfield, IL 62701",       sheriffOfficePhone: "(217) 753-6840", sheriffOfficeUrl: "https://www.sangamoncountysheriff.com" },
+  "il-peoria":      { sheriffServiceFee: "$60", sheriffOfficeAddress: "600 Fulton St, Peoria, IL 61602",              sheriffOfficePhone: "(309) 494-9700", sheriffOfficeUrl: "https://www.peoriacountysheriff.org" },
+  "il-madison":     { sheriffServiceFee: "$60", sheriffOfficeAddress: "405 Randle St, Edwardsville, IL 62025",        sheriffOfficePhone: "(618) 692-6950", sheriffOfficeUrl: "https://www.madisoncountysheriff.com" },
+  "il-st-clair":    { sheriffServiceFee: "$60", sheriffOfficeAddress: "15 Public Square, Belleville, IL 62220",       sheriffOfficePhone: "(618) 825-2027", sheriffOfficeUrl: "https://www.co.st-clair.il.us/departments/sheriff" },
+  "il-mclean":      { sheriffServiceFee: "$60", sheriffOfficeAddress: "104 W Front St, Bloomington, IL 61701",        sheriffOfficePhone: "(309) 888-5100", sheriffOfficeUrl: "https://www.mcleancountysheriff.org" },
+  "il-rock-island": { sheriffServiceFee: "$60", sheriffOfficeAddress: "1317 3rd Ave, Rock Island, IL 61201",          sheriffOfficePhone: "(309) 786-5658", sheriffOfficeUrl: "https://www.rockislandcountysheriff.org" },
+};
+
 function enrichCaCounty<T extends { id: string }>(c: T) {
   return { ...c, ...CA_SERVICE_DEFAULTS, ...(CA_SERVICE_OVERRIDES[c.id] ?? {}) };
 }
 function enrichFlCounty<T extends { id: string }>(c: T) {
   return { ...c, ...FL_SERVICE_DEFAULTS, ...(FL_SERVICE_OVERRIDES[c.id] ?? {}) };
+}
+function enrichIlCounty<T extends { id: string }>(c: T) {
+  return { ...c, ...IL_SERVICE_DEFAULTS, ...(IL_SERVICE_OVERRIDES[c.id] ?? {}) };
 }
 
 router.get("/counties", (req, res): void => {
@@ -519,14 +547,14 @@ router.get("/counties", (req, res): void => {
   } else if (state === "FL") {
     res.json(FLORIDA_COUNTIES.map(enrichFlCounty));
   } else if (state === "IL") {
-    res.json(ILLINOIS_COUNTIES);
+    res.json(ILLINOIS_COUNTIES.map(enrichIlCounty));
   } else if (state === "TX") {
     res.json(TEXAS_COUNTIES);
   } else {
     res.json([
       ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
       ...FLORIDA_COUNTIES.map(enrichFlCounty),
-      ...ILLINOIS_COUNTIES,
+      ...ILLINOIS_COUNTIES.map(enrichIlCounty),
       ...TEXAS_COUNTIES,
     ]);
   }
