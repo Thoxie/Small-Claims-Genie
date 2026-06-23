@@ -527,6 +527,78 @@ function FlCourtFormsSection({
         </Button>
       </div>
 
+      {/* Proof of Service card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            7.340
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Proof of Service</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "File after serving the defendant — complete service details by hand"
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadFlForm("fl/proof-of-service", `FL-Proof-of-Service-Case-${caseId}.pdf`, "fl/proof-of-service")}
+          disabled={!hasBasicInfo || downloading === "fl/proof-of-service"}
+          title={hasBasicInfo ? "Download Proof of Service" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "fl/proof-of-service" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "fl/proof-of-service" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* Fee Waiver card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            §57.082
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Fee Waiver Application</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "Application for Determination of Civil Indigent Status — complete financial info by hand"
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadFlForm("fl/fee-waiver", `FL-Fee-Waiver-Case-${caseId}.pdf`, "fl/fee-waiver")}
+          disabled={!hasBasicInfo || downloading === "fl/fee-waiver"}
+          title={hasBasicInfo ? "Download Fee Waiver Application" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "fl/fee-waiver" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "fl/fee-waiver" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
       {/* Summons info card */}
       <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />

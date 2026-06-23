@@ -40,6 +40,8 @@
     "test:il-summons": "tsx ./src/test-il-summons.ts",
     "test:il-proof-of-service": "tsx ./src/test-il-proof-of-service.ts",
     "test:il-fee-waiver": "tsx ./src/test-il-fee-waiver.ts",
+    "test:fl-proof-of-service": "tsx ./src/test-fl-proof-of-service.ts",
+    "test:fl-fee-waiver": "tsx ./src/test-fl-fee-waiver.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

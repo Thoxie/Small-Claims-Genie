@@ -482,4 +482,30 @@ router.post(
   makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Florida — Proof of Service and Fee Waiver
+// ─────────────────────────────────────────────────────────────────────────────
+
+// FL Proof of Service — Form 7.340 (programmatic pdf-lib)
+router.post(
+  "/cases/:id/forms/fl/proof-of-service",
+  makeFormHandler("FL-PROOF-OF-SERVICE", (id) => `FL-Proof-of-Service-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/fl/proof-of-service/signed",
+  makeFormHandler("FL-PROOF-OF-SERVICE", (id) => `FL-Proof-of-Service-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// FL Application for Determination of Civil Indigent Status (fee waiver)
+router.post(
+  "/cases/:id/forms/fl/fee-waiver",
+  makeFormHandler("FL-FEE-WAIVER", (id) => `FL-Fee-Waiver-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/fl/fee-waiver/signed",
+  makeFormHandler("FL-FEE-WAIVER", (id) => `FL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
+);
+
 export default router;
