@@ -522,15 +522,12 @@ router.get("/counties", (req, res): void => {
     res.json(ILLINOIS_COUNTIES);
   } else if (state === "TX") {
     res.json(TEXAS_COUNTIES);
-  } else if (state === "IL") {
-    res.json(ILLINOIS_COUNTIES);
   } else {
     res.json([
       ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
       ...FLORIDA_COUNTIES.map(enrichFlCounty),
       ...ILLINOIS_COUNTIES,
       ...TEXAS_COUNTIES,
-      ...ILLINOIS_COUNTIES,
     ]);
   }
 });
