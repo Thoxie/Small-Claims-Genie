@@ -84,8 +84,8 @@ export default function ProfileScreen() {
             <View style={styles.row}>
               <Feather name="shield" size={18} color={colors.mutedForeground} />
               <View style={styles.rowContent}>
-                <Text style={[styles.rowLabel, { color: colors.foreground }]}>California Small Claims</Text>
-                <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>Up to $12,500</Text>
+                <Text style={[styles.rowLabel, { color: colors.foreground }]}>Small Claims Court</Text>
+                <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>CA · FL · TX</Text>
               </View>
             </View>
           </View>

@@ -203,6 +203,41 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
       ? "Select your Texas county and Justice of the Peace precinct."
       : "Select the California county where you plan to file.";
 
+  const courtFormsFilingBullet =
+    jurisdictionState === "FL"
+      ? "Download your Statement of Claim (the main filing form) first — this starts your case officially."
+      : jurisdictionState === "TX"
+      ? "Download your TX Petition (the main filing form) first — this starts your case officially."
+      : "Download your SC-100 (the main filing form) first — this starts your case officially.";
+
+  const courtFormsServiceBullet =
+    jurisdictionState === "FL"
+      ? "Defendant must be served at least 10 days before the hearing (15 days for out-of-county service)."
+      : jurisdictionState === "TX"
+      ? "Defendant must be served at least 10 days before the hearing."
+      : "Defendant must be served at least 15 days before the hearing (20 days if different county).";
+
+  const deadlinesServiceBullet =
+    jurisdictionState === "FL"
+      ? "Check your service deadline — defendant must be served at least 10 days before the hearing."
+      : jurisdictionState === "TX"
+      ? "Check your service deadline — defendant must be served at least 10 days before the hearing."
+      : "Check your service deadline — defendant must be served 15 days before hearing (20 if out-of-county).";
+
+  const deadlinesPostponeBullet =
+    jurisdictionState === "FL"
+      ? "If you're running out of time, contact the court clerk to request a continuance."
+      : jurisdictionState === "TX"
+      ? "If you're running out of time, contact the Justice of the Peace court clerk to request a continuance."
+      : "If you're running out of time, download SC-150 from Court Forms to postpone your hearing.";
+
+  const courtFormsFilingChip =
+    jurisdictionState === "FL"
+      ? "How do I file my Statement of Claim?"
+      : jurisdictionState === "TX"
+      ? "How do I file my TX Petition?"
+      : "How do I file the SC-100?";
+
   const resolvedPageHelp: Record<string, { title: string; bullets: string[] }> = {
     ...PAGE_HELP,
     intake: {
@@ -213,10 +248,31 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
         countyBullet,
       ],
     },
+    "court-forms": {
+      ...PAGE_HELP["court-forms"],
+      bullets: [
+        courtFormsFilingBullet,
+        PAGE_HELP["court-forms"].bullets[1],
+        courtFormsServiceBullet,
+      ],
+    },
+    deadlines: {
+      ...PAGE_HELP.deadlines,
+      bullets: [
+        deadlinesServiceBullet,
+        deadlinesPostponeBullet,
+        PAGE_HELP.deadlines.bullets[2],
+      ],
+    },
+  };
+
+  const resolvedInitialChips: Record<string, string[]> = {
+    ...PAGE_INITIAL_CHIPS,
+    "court-forms": [courtFormsFilingChip, PAGE_INITIAL_CHIPS["court-forms"][1], PAGE_INITIAL_CHIPS["court-forms"][2]],
   };
 
   const helpContent = pageContext ? (resolvedPageHelp[pageContext] ?? DEFAULT_HELP) : DEFAULT_HELP;
-  const initialChips = pageContext ? (PAGE_INITIAL_CHIPS[pageContext] ?? DEFAULT_CHIPS) : DEFAULT_CHIPS;
+  const initialChips = pageContext ? (resolvedInitialChips[pageContext] ?? DEFAULT_CHIPS) : DEFAULT_CHIPS;
 
   const onFabPress = useCallback(() => {
     Animated.sequence([

@@ -1291,11 +1291,24 @@ const TX_CHECKLIST = [
   { id: "10", label: "Arrive 30 minutes early on hearing day", done: false },
 ];
 
+const FL_CHECKLIST = [
+  { id: "1", label: "Complete intake form", done: false },
+  { id: "2", label: "Upload all evidence documents", done: false },
+  { id: "3", label: "Send demand letter to defendant", done: false },
+  { id: "4", label: "Download and review Statement of Claim", done: false },
+  { id: "5", label: "File Statement of Claim at county court clerk", done: false },
+  { id: "6", label: "Pay filing fee at clerk's window (see fee schedule)", done: false },
+  { id: "7", label: "Court issues summons — served by sheriff or process server", done: false },
+  { id: "8", label: "Prepare opening statement (2-3 min)", done: false },
+  { id: "9", label: "Organize evidence copies (3 sets)", done: false },
+  { id: "10", label: "Arrive 30 minutes early on hearing day", done: false },
+];
+
 function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId: number }) {
   const colors = useColors();
   const { getToken } = useAuth();
   const baseUrl = getBaseUrl();
-  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : CA_CHECKLIST;
+  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : caseData.jurisdictionState === "FL" ? FL_CHECKLIST : CA_CHECKLIST;
   const [checklist, setChecklist] = useState(DEFAULT_CHECKLIST);
   const [dateInput, setDateInput] = useState(caseData.hearingDate ? String(caseData.hearingDate) : "");
   const [savingDate, setSavingDate] = useState(false);
@@ -1309,6 +1322,7 @@ function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId:
   const pct = Math.round((done / checklist.length) * 100);
 
   const isTX = caseData.jurisdictionState === "TX";
+  const isFL = caseData.jurisdictionState === "FL";
   const hearingDate = caseData.hearingDate ? new Date(String(caseData.hearingDate) + "T12:00:00") : null;
   const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
@@ -1423,6 +1437,40 @@ function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId:
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Trial date</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.foreground }]}>
+                    {fmt(hearingDate)}{caseData.hearingTime ? ` at ${caseData.hearingTime}` : ""}
+                  </Text>
+                </View>
+              </View>
+            </>
+          ) : isFL ? (
+            <>
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: colors.tealLight }]}>
+                  <Feather name="send" size={13} color={colors.teal} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Serve defendant — same county</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.teal }]}>By {fmt(addDays(hearingDate, -10))}</Text>
+                </View>
+              </View>
+              <View style={[styles.deadlineLine, { backgroundColor: colors.border }]} />
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: colors.tealLight }]}>
+                  <Feather name="send" size={13} color={colors.teal} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Serve defendant — out of county</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.teal }]}>By {fmt(addDays(hearingDate, -15))}</Text>
+                </View>
+              </View>
+              <View style={[styles.deadlineLine, { backgroundColor: colors.border }]} />
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: "#fef3c7" }]}>
+                  <Feather name="calendar" size={13} color="#d97706" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Hearing</Text>
                   <Text style={[styles.deadlineItemDate, { color: colors.foreground }]}>
                     {fmt(hearingDate)}{caseData.hearingTime ? ` at ${caseData.hearingTime}` : ""}
                   </Text>
