@@ -16,6 +16,7 @@ export const CountyState = {
   FL: "FL",
   IL: "IL",
   TX: "TX",
+  IL: "IL",
 } as const;
 
 export interface County {
@@ -29,6 +30,7 @@ export interface County {
   filingFeeUnder1500?: number;
   filingFee1500to5000?: number;
   filingFeeOver5000?: number;
+  filingFeeUnder10000?: number;
   phone?: string;
   website?: string;
   clerkWebsite?: string;
@@ -510,6 +512,7 @@ export const ListCountiesState = {
   FL: "FL",
   IL: "IL",
   TX: "TX",
+  IL: "IL",
 } as const;
 
 export type UploadDocumentBody = {

@@ -5,7 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { SaveIntakeBodyData } from "./saveIntakeBodyData";
+import type { SaveIntakeBodyData } from './saveIntakeBodyData';
 
 export interface SaveIntakeBody {
   step?: number;

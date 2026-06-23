@@ -5,7 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { ChatMessageRole } from "./chatMessageRole";
+import type { ChatMessageRole } from './chatMessageRole';
 
 export interface ChatMessage {
   id: number;

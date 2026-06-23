@@ -5,7 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { CountyState } from "./countyState";
+import type { CountyState } from './countyState';
 
 export interface County {
   id: string;
@@ -18,6 +18,7 @@ export interface County {
   filingFeeUnder1500?: number;
   filingFee1500to5000?: number;
   filingFeeOver5000?: number;
+  filingFeeUnder10000?: number;
   phone?: string;
   website?: string;
   clerkWebsite?: string;

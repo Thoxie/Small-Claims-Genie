@@ -5,8 +5,8 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { Case } from "./case";
-import type { CaseStatsByStatus } from "./caseStatsByStatus";
+import type { Case } from './case';
+import type { CaseStatsByStatus } from './caseStatsByStatus';
 
 export interface CaseStats {
   total: number;

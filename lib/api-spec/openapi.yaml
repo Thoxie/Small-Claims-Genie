@@ -654,6 +654,8 @@ components:
           type: number
         filingFeeOver5000:
           type: number
+        filingFeeUnder10000:
+          type: number
         phone:
           type: string
         website:

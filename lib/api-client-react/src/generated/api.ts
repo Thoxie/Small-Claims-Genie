@@ -48,17 +48,6 @@ import type {
 import { customFetch } from "../custom-fetch";
 import type { ErrorType, BodyType } from "../custom-fetch";
 
-/** Makes `queryKey` optional so callers don't have to repeat it — the
- *  generated `get*QueryOptions` helpers already provide a default. */
-type OptionalQueryKey<
-  TQueryFnData,
-  TError,
-  TData,
-> = Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> & {
-  queryKey?: QueryKey;
-};
-
-
 type AwaitedInput<T> = PromiseLike<T> | T;
 
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
@@ -89,7 +78,7 @@ export const getHealthCheckQueryOptions = <
   TData = Awaited<ReturnType<typeof healthCheck>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<
+  query?: UseQueryOptions<
     Awaited<ReturnType<typeof healthCheck>>,
     TError,
     TData
@@ -124,7 +113,7 @@ export function useHealthCheck<
   TData = Awaited<ReturnType<typeof healthCheck>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<
+  query?: UseQueryOptions<
     Awaited<ReturnType<typeof healthCheck>>,
     TError,
     TData
@@ -179,7 +168,7 @@ export const getListCountiesQueryOptions = <
 >(
   params?: ListCountiesParams,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof listCounties>>,
       TError,
       TData
@@ -217,7 +206,7 @@ export function useListCounties<
 >(
   params?: ListCountiesParams,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof listCounties>>,
       TError,
       TData
@@ -256,7 +245,7 @@ export const getListCasesQueryOptions = <
   TData = Awaited<ReturnType<typeof listCases>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<Awaited<ReturnType<typeof listCases>>, TError, TData>;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listCases>>, TError, TData>;
   request?: SecondParameter<typeof customFetch>;
 }) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
@@ -287,7 +276,7 @@ export function useListCases<
   TData = Awaited<ReturnType<typeof listCases>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<Awaited<ReturnType<typeof listCases>>, TError, TData>;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listCases>>, TError, TData>;
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getListCasesQueryOptions(options);
@@ -409,7 +398,7 @@ export const getGetCaseStatsQueryOptions = <
   TData = Awaited<ReturnType<typeof getCaseStats>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<
+  query?: UseQueryOptions<
     Awaited<ReturnType<typeof getCaseStats>>,
     TError,
     TData
@@ -444,7 +433,7 @@ export function useGetCaseStats<
   TData = Awaited<ReturnType<typeof getCaseStats>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<
+  query?: UseQueryOptions<
     Awaited<ReturnType<typeof getCaseStats>>,
     TError,
     TData
@@ -487,7 +476,7 @@ export const getGetCaseQueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<Awaited<ReturnType<typeof getCase>>, TError, TData>;
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getCase>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
   },
 ) => {
@@ -524,7 +513,7 @@ export function useGetCase<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<Awaited<ReturnType<typeof getCase>>, TError, TData>;
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getCase>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
@@ -822,7 +811,7 @@ export const getGetCaseReadinessQueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof getCaseReadiness>>,
       TError,
       TData
@@ -865,7 +854,7 @@ export function useGetCaseReadiness<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof getCaseReadiness>>,
       TError,
       TData
@@ -909,7 +898,7 @@ export const getListDocumentsQueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof listDocuments>>,
       TError,
       TData
@@ -952,7 +941,7 @@ export function useListDocuments<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof listDocuments>>,
       TError,
       TData
@@ -1261,7 +1250,7 @@ export const getGetChatHistoryQueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof getChatHistory>>,
       TError,
       TData
@@ -1304,7 +1293,7 @@ export function useGetChatHistory<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof getChatHistory>>,
       TError,
       TData
@@ -1519,7 +1508,7 @@ export const getGenerateSc100QueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof generateSc100>>,
       TError,
       TData
@@ -1562,7 +1551,7 @@ export function useGenerateSc100<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof generateSc100>>,
       TError,
       TData
@@ -1606,7 +1595,7 @@ export const getPreviewSc100DataQueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof previewSc100Data>>,
       TError,
       TData
@@ -1649,7 +1638,7 @@ export function usePreviewSc100Data<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof previewSc100Data>>,
       TError,
       TData
@@ -1690,7 +1679,7 @@ export const getListOpenaiConversationsQueryOptions = <
   TData = Awaited<ReturnType<typeof listOpenaiConversations>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<
+  query?: UseQueryOptions<
     Awaited<ReturnType<typeof listOpenaiConversations>>,
     TError,
     TData
@@ -1726,7 +1715,7 @@ export function useListOpenaiConversations<
   TData = Awaited<ReturnType<typeof listOpenaiConversations>>,
   TError = ErrorType<unknown>,
 >(options?: {
-  query?: OptionalQueryKey<
+  query?: UseQueryOptions<
     Awaited<ReturnType<typeof listOpenaiConversations>>,
     TError,
     TData
@@ -1859,7 +1848,7 @@ export const getGetOpenaiConversationQueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof getOpenaiConversation>>,
       TError,
       TData
@@ -1903,7 +1892,7 @@ export function useGetOpenaiConversation<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof getOpenaiConversation>>,
       TError,
       TData
@@ -2031,7 +2020,7 @@ export const getListOpenaiMessagesQueryOptions = <
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof listOpenaiMessages>>,
       TError,
       TData
@@ -2074,7 +2063,7 @@ export function useListOpenaiMessages<
 >(
   id: number,
   options?: {
-    query?: OptionalQueryKey<
+    query?: UseQueryOptions<
       Awaited<ReturnType<typeof listOpenaiMessages>>,
       TError,
       TData

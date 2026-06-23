@@ -5,9 +5,9 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { Case } from "./case";
-import type { ChatMessage } from "./chatMessage";
-import type { Document } from "./document";
+import type { Case } from './case';
+import type { ChatMessage } from './chatMessage';
+import type { Document } from './document';
 
 export type CaseWithDetails = Case & {
   documents?: Document[];

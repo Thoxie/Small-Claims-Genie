@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListCountiesState =
-  (typeof ListCountiesState)[keyof typeof ListCountiesState];
+export type ListCountiesState = typeof ListCountiesState[keyof typeof ListCountiesState];
+
 
 export const ListCountiesState = {
   CA: "CA",

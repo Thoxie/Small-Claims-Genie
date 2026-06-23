@@ -1017,13 +1017,13 @@ function IlCourtFormsSection({
   const city = countyData?.courthouseCity;
   const zip = countyData?.courthouseZip;
   const phone = countyData?.phone ?? c?.courthousePhone;
-  const website = countyData?.website ?? countyClerk?.url;
+  const website = countyData?.clerkWebsite ?? countyClerk?.url;
   const fullAddress = [address, city ? `${city}, IL` : null, zip].filter(Boolean).join(" ");
 
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-sm font-bold text-foreground">Court Forms</h2>
+        <h2 className="text-sm font-bold text-foreground">Court Forms &amp; Filing</h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">Illinois small claims forms by county</p>
       </div>
 
@@ -1159,6 +1159,9 @@ function IlEFilingPanel({
   getToken: () => Promise<string | null>;
   onProcessServerClick: () => void;
 }) {
+  const { data: counties } = useListCounties({ state: "IL" });
+  const countyData = counties?.find((co: County) => co.id === c?.countyId);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* LEFT — Case info */}

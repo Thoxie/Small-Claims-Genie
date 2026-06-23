@@ -6,12 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CaseStatus = (typeof CaseStatus)[keyof typeof CaseStatus];
+export type CaseStatus = typeof CaseStatus[keyof typeof CaseStatus];
+
 
 export const CaseStatus = {
-  draft: "draft",
-  intake_complete: "intake_complete",
-  documents_uploaded: "documents_uploaded",
-  ready_to_file: "ready_to_file",
-  filed: "filed",
+  draft: 'draft',
+  intake_complete: 'intake_complete',
+  documents_uploaded: 'documents_uploaded',
+  ready_to_file: 'ready_to_file',
+  filed: 'filed',
 } as const;

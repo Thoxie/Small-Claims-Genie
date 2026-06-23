@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GenerateOpenaiImageBodySize =
-  (typeof GenerateOpenaiImageBodySize)[keyof typeof GenerateOpenaiImageBodySize];
+export type GenerateOpenaiImageBodySize = typeof GenerateOpenaiImageBodySize[keyof typeof GenerateOpenaiImageBodySize];
+
 
 export const GenerateOpenaiImageBodySize = {
-  "1024x1024": "1024x1024",
-  "512x512": "512x512",
-  "256x256": "256x256",
+  '1024x1024': '1024x1024',
+  '512x512': '512x512',
+  '256x256': '256x256',
 } as const;
