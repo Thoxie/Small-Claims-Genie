@@ -971,7 +971,7 @@ function IlCourtFormsSection({
   const { toast } = useToast();
   const countyId = c?.countyId ?? "";
   const countyClerk = IL_CLERK_URLS[countyId] ?? null;
-  const { data: ilCounties } = useListCounties({ state: "IL" } as unknown as Parameters<typeof useListCounties>[0]);
+  const { data: ilCounties } = useListCounties({ state: "IL" });
   const countyData = ilCounties?.find((co: County) => co.id === countyId);
 
   const downloadIlForm = async (endpoint: string, stateId: string) => {

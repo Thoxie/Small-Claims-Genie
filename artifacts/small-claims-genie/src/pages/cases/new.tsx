@@ -30,7 +30,7 @@ export default function NewCase() {
   const { toast } = useToast();
 
   const [jurisdictionState, setJurisdictionState] = useState<JurisdictionState>("CA");
-  const { data: counties } = useListCounties({ state: jurisdictionState } as Parameters<typeof useListCounties>[0]);
+  const { data: counties } = useListCounties({ state: jurisdictionState });
 
   const [title, setTitle] = useState("");
   const [claimType, setClaimType] = useState("");
