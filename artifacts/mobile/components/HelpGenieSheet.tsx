@@ -70,9 +70,10 @@ const HG_REDIRECT_LABELS: Record<string, string> = {
   "case-advisor": "Go to Case Advisor",
 };
 
-function getCourtLabel(state?: "CA" | "FL" | "TX"): string {
+function getCourtLabel(state?: "CA" | "FL" | "TX" | "IL"): string {
   if (state === "FL") return "Florida small claims court";
   if (state === "TX") return "Texas Justice of the Peace court";
+  if (state === "IL") return "Illinois small claims court";
   return "California small claims court";
 }
 
@@ -81,7 +82,7 @@ interface Props {
   onClose: () => void;
   initialMessage?: string;
   pageContext?: string;
-  jurisdictionState?: "CA" | "FL" | "TX";
+  jurisdictionState?: "CA" | "FL" | "TX" | "IL";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }
 

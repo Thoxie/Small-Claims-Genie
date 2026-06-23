@@ -115,7 +115,7 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
           data: {
             ...form,
             claimAmount: form.claimAmount ? Number(form.claimAmount) : undefined,
-            jurisdictionState: form.jurisdictionState as "CA" | "FL" | "TX",
+            jurisdictionState: form.jurisdictionState as "CA" | "FL" | "TX" | "IL",
           },
         },
       });
@@ -724,6 +724,19 @@ const FL_FEE_SCHEDULE = [
   { range: "Over $2,500", fee: "$300" },
 ];
 
+const IL_FORMS = [
+  { key: "il-smc-complaint", label: "Small Claims Complaint", desc: "Illinois Supreme Court statewide form — file with the circuit court clerk", path: "il/smc-complaint", method: "POST" as const },
+  { key: "il-summons", label: "Small Claims Summons", desc: "Served on the defendant with a copy of the complaint — clerk stamps and returns to you", path: "il/summons", method: "POST" as const },
+  { key: "il-proof-of-service", label: "Proof of Service", desc: "Completed by the server after serving the defendant — file with the clerk", path: "il/proof-of-service", method: "POST" as const },
+  { key: "il-fee-waiver", label: "Application for Waiver of Court Fees", desc: "File with the complaint if you cannot afford the filing fee", path: "il/fee-waiver", method: "POST" as const },
+];
+
+const IL_FEE_SCHEDULE = [
+  { range: "$0 – $500", fee: "$30" },
+  { range: "$501 – $2,500", fee: "$50" },
+  { range: "$2,501 – $10,000", fee: "$75" },
+];
+
 const CA_COLLECT_STEPS = [
   { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the court enters a judgment in your favor. Get a certified copy from the clerk — you'll need it for every enforcement step." },
   { icon: "trending-up" as const, title: "Locate the defendant's assets", body: "File a Judgment Debtor Examination (EJ-125) to compel the defendant to disclose bank accounts, employer, and property. Courts schedule within 30–45 days." },
@@ -751,6 +764,15 @@ const TX_COLLECT_STEPS = [
   { icon: "refresh-cw" as const, title: "Valid for 10 years", body: "Texas judgments are dormant after 10 years but can be revived by filing a scire facias motion before expiration. Keep your certified copy and act early." },
 ];
 
+const IL_COLLECT_STEPS = [
+  { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the court enters a judgment in your favor. Get a certified copy from the circuit court clerk — you'll need it for every collection step." },
+  { icon: "trending-up" as const, title: "Citation to Discover Assets (735 ILCS 5/2-1402)", body: "File a Citation to Discover Assets with the circuit court to compel the defendant to appear and disclose their bank accounts, employer, and property under oath. The court can hold a non-complying defendant in contempt." },
+  { icon: "file-text" as const, title: "Wage Deduction Order", body: "After serving a citation on the defendant's employer, the court issues a Wage Deduction Order directing the employer to withhold a portion of the defendant's wages each pay period and pay it to you (735 ILCS 5/12-801 et seq.)." },
+  { icon: "shield" as const, title: "Bank Account Citation (Non-Wage Garnishment)", body: "Serve a citation directly on the defendant's bank to freeze and turn over funds in the account. You must identify the bank and branch — information gathered during the Citation to Discover Assets hearing." },
+  { icon: "map-pin" as const, title: "Judgment Lien on Real Estate", body: "Record a certified copy of the judgment with the recorder of deeds in any Illinois county where the defendant owns real property to create a judgment lien (735 ILCS 5/12-101)." },
+  { icon: "refresh-cw" as const, title: "Valid for 7 years — renew before expiration", body: "An Illinois judgment is enforceable for 7 years from entry and can be renewed for additional 7-year periods before expiration (735 ILCS 5/12-108). Post-judgment interest accrues at 9% per year." },
+];
+
 function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDetails }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -761,6 +783,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
 
   const isTX = caseData.jurisdictionState === "TX";
   const isFL = caseData.jurisdictionState === "FL";
+  const isIL = caseData.jurisdictionState === "IL";
 
   const countyId = caseData.countyId ?? "";
   const isMiamiDade = countyId === "fl-miami-dade";
@@ -785,7 +808,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
     },
   ];
 
-  const FORMS = isTX ? TX_FORMS : isFL ? FL_FORMS : CA_FORMS;
+  const FORMS = isTX ? TX_FORMS : isFL ? FL_FORMS : isIL ? IL_FORMS : CA_FORMS;
 
   const downloadForm = async (formKey: string, formPath: string, method: "GET" | "POST" = "GET") => {
     setReviewForm(null);
@@ -910,6 +933,27 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
               </Text>
             </View>
           </>
+        ) : isIL ? (
+          <>
+            <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+              <Feather name="info" size={14} color={colors.mutedForeground} />
+              <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
+                File the complaint at the circuit court clerk in the county where the defendant lives or the dispute occurred. Pay the filing fee at the clerk's window — ask about a fee waiver if needed. The clerk will issue a summons; you arrange service at least 3 days before the return date.
+              </Text>
+            </View>
+            <View style={[styles.txFeeCard, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}>
+              <Text style={[styles.txFeeTitle, { color: "#92400e" }]}>IL Filing Fees — 735 ILCS 5/2-212</Text>
+              {IL_FEE_SCHEDULE.map((row) => (
+                <View key={row.range} style={styles.txFeeRow}>
+                  <Text style={[styles.txFeeRange, { color: "#b45309" }]}>{row.range}</Text>
+                  <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>{row.fee}</Text>
+                </View>
+              ))}
+              <Text style={[styles.txFeeNote, { color: "#b45309" }]}>
+                Claim limit: $10,000 (735 ILCS 5/2-209)
+              </Text>
+            </View>
+          </>
         ) : (
           <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
             <Feather name="info" size={14} color={colors.mutedForeground} />
@@ -928,9 +972,11 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
             ? "Winning is only step one. Here's how to enforce your Texas judgment and actually collect."
             : isFL
             ? "Winning is only step one. Here's how to enforce your Florida judgment and actually collect."
+            : isIL
+            ? "Winning is only step one. Here's how to enforce your Illinois judgment and actually collect."
             : "Winning is only step one. Here's how to enforce your California judgment and actually collect."}
         </Text>
-        {(isTX ? TX_COLLECT_STEPS : isFL ? FL_COLLECT_STEPS : CA_COLLECT_STEPS).map((step) => (
+        {(isTX ? TX_COLLECT_STEPS : isFL ? FL_COLLECT_STEPS : isIL ? IL_COLLECT_STEPS : CA_COLLECT_STEPS).map((step) => (
           <View key={step.title} style={[styles.collectCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.collectIcon, { backgroundColor: "#fef3c7" }]}>
               <Feather name={step.icon} size={16} color="#d97706" />
@@ -1304,11 +1350,25 @@ const FL_CHECKLIST = [
   { id: "10", label: "Arrive 30 minutes early on hearing day", done: false },
 ];
 
+const IL_CHECKLIST = [
+  { id: "1", label: "Complete intake form", done: false },
+  { id: "2", label: "Upload all evidence documents", done: false },
+  { id: "3", label: "Send demand letter to defendant", done: false },
+  { id: "4", label: "Download and review Small Claims Complaint", done: false },
+  { id: "5", label: "File complaint at circuit court clerk's office", done: false },
+  { id: "6", label: "Pay filing fee (or request fee waiver)", done: false },
+  { id: "7", label: "Clerk stamps summons — arrange service on defendant", done: false },
+  { id: "8", label: "Serve defendant at least 3 days before return date", done: false },
+  { id: "9", label: "Prepare opening statement (2-3 min)", done: false },
+  { id: "10", label: "Organize evidence copies (3 sets)", done: false },
+  { id: "11", label: "Arrive 30 minutes early on hearing day", done: false },
+];
+
 function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId: number }) {
   const colors = useColors();
   const { getToken } = useAuth();
   const baseUrl = getBaseUrl();
-  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : caseData.jurisdictionState === "FL" ? FL_CHECKLIST : CA_CHECKLIST;
+  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : caseData.jurisdictionState === "FL" ? FL_CHECKLIST : caseData.jurisdictionState === "IL" ? IL_CHECKLIST : CA_CHECKLIST;
   const [checklist, setChecklist] = useState(DEFAULT_CHECKLIST);
   const [dateInput, setDateInput] = useState(caseData.hearingDate ? String(caseData.hearingDate) : "");
   const [savingDate, setSavingDate] = useState(false);
@@ -1323,6 +1383,7 @@ function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId:
 
   const isTX = caseData.jurisdictionState === "TX";
   const isFL = caseData.jurisdictionState === "FL";
+  const isIL = caseData.jurisdictionState === "IL";
   const hearingDate = caseData.hearingDate ? new Date(String(caseData.hearingDate) + "T12:00:00") : null;
   const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
@@ -1477,6 +1538,30 @@ function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId:
                 </View>
               </View>
             </>
+          ) : isIL ? (
+            <>
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: colors.tealLight }]}>
+                  <Feather name="send" size={13} color={colors.teal} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Serve defendant (at least 3 days before return date)</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.teal }]}>By {fmt(addDays(hearingDate, -3))}</Text>
+                </View>
+              </View>
+              <View style={[styles.deadlineLine, { backgroundColor: colors.border }]} />
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: "#fef3c7" }]}>
+                  <Feather name="calendar" size={13} color="#d97706" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Return date (defendant must appear)</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.foreground }]}>
+                    {fmt(hearingDate)}{caseData.hearingTime ? ` at ${caseData.hearingTime}` : ""}
+                  </Text>
+                </View>
+              </View>
+            </>
           ) : (
             <>
               <View style={styles.deadlineRow}>
@@ -1606,7 +1691,7 @@ function AIChatTab({
 }: {
   caseId: number;
   initialMessage?: string;
-  jurisdictionState?: "CA" | "FL" | "TX";
+  jurisdictionState?: "CA" | "FL" | "TX" | "IL";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }) {
   const colors = useColors();
@@ -2035,7 +2120,7 @@ export default function CaseWorkspace() {
             caseId={caseId}
             initialMessage={pendingAiMessage}
             key={pendingAiMessage ?? "default"}
-            jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX") ?? "CA"}
+            jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL") ?? "CA"}
             onNavigateToTab={(tab, question) => {
               const validTabs = TABS.map((t) => t.key);
               if (validTabs.includes(tab)) {
@@ -2055,7 +2140,7 @@ export default function CaseWorkspace() {
           caseId={caseId}
           caseTitle={caseData.title ?? ""}
           pageContext={activeTab}
-          jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX") ?? "CA"}
+          jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL") ?? "CA"}
           onNavigateToTab={(tab, question) => {
             const validTabs = TABS.map((t) => t.key);
             if (validTabs.includes(tab)) {

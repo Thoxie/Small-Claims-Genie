@@ -33,7 +33,7 @@ interface Props {
   caseId: number;
   caseTitle?: string;
   pageContext?: string;
-  jurisdictionState?: "CA" | "FL" | "TX";
+  jurisdictionState?: "CA" | "FL" | "TX" | "IL";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }
 
