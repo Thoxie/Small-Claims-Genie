@@ -35,6 +35,9 @@ export interface County {
   certifiedMailAvailable?: boolean;
   certifiedMailFee?: string | null;
   sheriffServiceFee?: string | null;
+  sheriffOfficeAddress?: string | null;
+  sheriffOfficePhone?: string | null;
+  sheriffOfficeUrl?: string | null;
   serviceRequestFormUrl?: string | null;
 }
 

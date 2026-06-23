@@ -44,6 +44,9 @@ export const ListCountiesResponseItem = zod.object({
   certifiedMailAvailable: zod.boolean().optional(),
   certifiedMailFee: zod.string().nullish(),
   sheriffServiceFee: zod.string().nullish(),
+  sheriffOfficeAddress: zod.string().nullish(),
+  sheriffOfficePhone: zod.string().nullish(),
+  sheriffOfficeUrl: zod.string().nullish(),
   serviceRequestFormUrl: zod.string().nullish(),
 });
 export const ListCountiesResponse = zod.array(ListCountiesResponseItem);

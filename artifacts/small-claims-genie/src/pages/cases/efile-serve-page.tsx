@@ -556,12 +556,18 @@ function FlServiceOptionsSection({
   certifiedMailAvailable,
   certifiedMailFee,
   sheriffServiceFee,
+  sheriffOfficeAddress,
+  sheriffOfficePhone,
+  sheriffOfficeUrl,
   serviceRequestFormUrl,
   onProcessServerClick,
 }: {
   certifiedMailAvailable: boolean;
   certifiedMailFee: string | null | undefined;
   sheriffServiceFee: string | null | undefined;
+  sheriffOfficeAddress: string | null | undefined;
+  sheriffOfficePhone: string | null | undefined;
+  sheriffOfficeUrl: string | null | undefined;
   serviceRequestFormUrl: string | null | undefined;
   onProcessServerClick: () => void;
 }) {
@@ -575,6 +581,24 @@ function FlServiceOptionsSection({
     extra?: ReactNode;
   };
 
+  const sheriffContactBlock = (sheriffOfficeAddress || sheriffOfficePhone || sheriffOfficeUrl) ? (
+    <div className="mt-2 rounded-lg bg-muted/50 px-3 py-2 space-y-0.5">
+      {sheriffOfficeAddress && (
+        <p className="text-[11px] text-muted-foreground">📍 {sheriffOfficeAddress}</p>
+      )}
+      {sheriffOfficePhone && (
+        <p className="text-[11px] text-muted-foreground">
+          📞 <a href={`tel:${sheriffOfficePhone.replace(/\D/g, "")}`} className="underline underline-offset-2">{sheriffOfficePhone}</a>
+        </p>
+      )}
+      {sheriffOfficeUrl && (
+        <p className="text-[11px] text-muted-foreground">
+          🔗 <a href={sheriffOfficeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{sheriffOfficeUrl.replace(/^https?:\/\//, "")}</a>
+        </p>
+      )}
+    </div>
+  ) : null;
+
   const options: OptionDef[] = [
     {
       icon: Car,
@@ -583,14 +607,19 @@ function FlServiceOptionsSection({
       badgeColor: "bg-[#0d6b5e]/10 text-[#0d6b5e]",
       desc: "Request the county sheriff to personally deliver the Summons and Statement of Claim to the defendant. The sheriff's fee is recoverable if you win your case.",
       show: true,
-      extra: serviceRequestFormUrl ? (
-        <a href={serviceRequestFormUrl} target="_blank" rel="noopener noreferrer">
-          <Button size="sm" variant="outline" className="mt-2 h-7 text-xs gap-1.5">
-            <Download className="h-3 w-3" />
-            Download Request Form
-          </Button>
-        </a>
-      ) : undefined,
+      extra: (
+        <>
+          {sheriffContactBlock}
+          {serviceRequestFormUrl && (
+            <a href={serviceRequestFormUrl} target="_blank" rel="noopener noreferrer">
+              <Button size="sm" variant="outline" className="mt-2 h-7 text-xs gap-1.5">
+                <Download className="h-3 w-3" />
+                Download Request Form
+              </Button>
+            </a>
+          )}
+        </>
+      ),
     },
     {
       icon: Mail,
@@ -726,6 +755,9 @@ function FlEFilingPanel({
           certifiedMailAvailable={countyData?.certifiedMailAvailable ?? true}
           certifiedMailFee={countyData?.certifiedMailFee ?? null}
           sheriffServiceFee={countyData?.sheriffServiceFee ?? null}
+          sheriffOfficeAddress={countyData?.sheriffOfficeAddress ?? null}
+          sheriffOfficePhone={countyData?.sheriffOfficePhone ?? null}
+          sheriffOfficeUrl={countyData?.sheriffOfficeUrl ?? null}
           serviceRequestFormUrl={countyData?.serviceRequestFormUrl ?? null}
           onProcessServerClick={onProcessServerClick}
         />
@@ -1149,6 +1181,9 @@ function CaServiceSection({
   certifiedMailAvailable,
   certifiedMailFee,
   sheriffServiceFee,
+  sheriffOfficeAddress,
+  sheriffOfficePhone,
+  sheriffOfficeUrl,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
@@ -1156,6 +1191,9 @@ function CaServiceSection({
   certifiedMailAvailable: boolean;
   certifiedMailFee: string | null | undefined;
   sheriffServiceFee: string | null | undefined;
+  sheriffOfficeAddress: string | null | undefined;
+  sheriffOfficePhone: string | null | undefined;
+  sheriffOfficeUrl: string | null | undefined;
 }) {
   const { toast } = useToast();
   const [downloading, setDownloading] = useState<string | null>(null);
@@ -1285,6 +1323,23 @@ function CaServiceSection({
             <p className="text-xs text-muted-foreground leading-relaxed">
               Arrange service through the county sheriff or marshal's office. The fee is recoverable if you win your case.
             </p>
+            {(sheriffOfficeAddress || sheriffOfficePhone || sheriffOfficeUrl) && (
+              <div className="mt-2 rounded-lg bg-muted/50 px-3 py-2 space-y-0.5">
+                {sheriffOfficeAddress && (
+                  <p className="text-[11px] text-muted-foreground">📍 {sheriffOfficeAddress}</p>
+                )}
+                {sheriffOfficePhone && (
+                  <p className="text-[11px] text-muted-foreground">
+                    📞 <a href={`tel:${sheriffOfficePhone.replace(/\D/g, "")}`} className="underline underline-offset-2">{sheriffOfficePhone}</a>
+                  </p>
+                )}
+                {sheriffOfficeUrl && (
+                  <p className="text-[11px] text-muted-foreground">
+                    🔗 <a href={sheriffOfficeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{sheriffOfficeUrl.replace(/^https?:\/\//, "")}</a>
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1337,6 +1392,9 @@ function CaEFilingPanel({
           certifiedMailAvailable={countyData?.certifiedMailAvailable ?? true}
           certifiedMailFee={countyData?.certifiedMailFee ?? "$15"}
           sheriffServiceFee={countyData?.sheriffServiceFee ?? "$40"}
+          sheriffOfficeAddress={countyData?.sheriffOfficeAddress ?? null}
+          sheriffOfficePhone={countyData?.sheriffOfficePhone ?? null}
+          sheriffOfficeUrl={countyData?.sheriffOfficeUrl ?? null}
         />
       </div>
     </div>

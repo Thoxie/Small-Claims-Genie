@@ -670,6 +670,15 @@ components:
         sheriffServiceFee:
           type: string
           nullable: true
+        sheriffOfficeAddress:
+          type: string
+          nullable: true
+        sheriffOfficePhone:
+          type: string
+          nullable: true
+        sheriffOfficeUrl:
+          type: string
+          nullable: true
         serviceRequestFormUrl:
           type: string
           nullable: true

@@ -444,41 +444,47 @@ const CA_SERVICE_DEFAULTS = {
   certifiedMailAvailable: true,
   certifiedMailFee: "$15" as string | null,
   sheriffServiceFee: "$40" as string | null,
+  sheriffOfficeAddress: null as string | null,
+  sheriffOfficePhone: null as string | null,
+  sheriffOfficeUrl: null as string | null,
   serviceRequestFormUrl: null as string | null,
 };
 
 const CA_SERVICE_OVERRIDES: Record<string, Partial<typeof CA_SERVICE_DEFAULTS>> = {
-  "los-angeles":     { sheriffServiceFee: "$65" },
-  "san-francisco":   { sheriffServiceFee: "$50" },
-  "san-diego":       { sheriffServiceFee: "$45" },
-  "orange":          { sheriffServiceFee: "$45" },
-  "riverside":       { sheriffServiceFee: "$45" },
-  "san-bernardino":  { sheriffServiceFee: "$45" },
-  "sacramento":      { sheriffServiceFee: "$45" },
-  "santa-clara":     { sheriffServiceFee: "$45" },
-  "alameda":         { sheriffServiceFee: "$45" },
-  "contra-costa":    { sheriffServiceFee: "$45" },
-  "ventura":         { sheriffServiceFee: "$45" },
+  "los-angeles":    { sheriffServiceFee: "$65", sheriffOfficeAddress: "4700 Ramona Blvd, Monterey Park, CA 91754", sheriffOfficePhone: "(323) 526-5000", sheriffOfficeUrl: "https://lasd.org" },
+  "san-francisco":  { sheriffServiceFee: "$50", sheriffOfficeAddress: "1 Dr. Carlton B. Goodlett Pl, Rm 456, San Francisco, CA 94102", sheriffOfficePhone: "(415) 554-7225", sheriffOfficeUrl: "https://sfgov.org/sheriff" },
+  "san-diego":      { sheriffServiceFee: "$45", sheriffOfficeAddress: "9621 Ridgehaven Ct, San Diego, CA 92123", sheriffOfficePhone: "(858) 974-2222", sheriffOfficeUrl: "https://www.sdsheriff.gov" },
+  "orange":         { sheriffServiceFee: "$45", sheriffOfficeAddress: "550 N Flower St, Santa Ana, CA 92703", sheriffOfficePhone: "(714) 647-7000", sheriffOfficeUrl: "https://www.ocsheriff.gov" },
+  "riverside":      { sheriffServiceFee: "$45", sheriffOfficeAddress: "4095 Lemon St, Riverside, CA 92501", sheriffOfficePhone: "(951) 955-2400", sheriffOfficeUrl: "https://www.riversidesheriff.org" },
+  "san-bernardino": { sheriffServiceFee: "$45", sheriffOfficeAddress: "655 E 3rd St, San Bernardino, CA 92415", sheriffOfficePhone: "(909) 387-3545", sheriffOfficeUrl: "https://www.sbcounty.gov/sheriff" },
+  "sacramento":     { sheriffServiceFee: "$45", sheriffOfficeAddress: "711 G St, Sacramento, CA 95814", sheriffOfficePhone: "(916) 874-5115", sheriffOfficeUrl: "https://www.sacsheriff.com" },
+  "santa-clara":    { sheriffServiceFee: "$45", sheriffOfficeAddress: "55 W Younger Ave, San Jose, CA 95110", sheriffOfficePhone: "(408) 808-4400", sheriffOfficeUrl: "https://www.sccgov.org/sheriff" },
+  "alameda":        { sheriffServiceFee: "$45", sheriffOfficeAddress: "1401 Lakeside Dr, Oakland, CA 94612", sheriffOfficePhone: "(510) 272-6878", sheriffOfficeUrl: "https://www.alamedacountysheriff.org" },
+  "contra-costa":   { sheriffServiceFee: "$45", sheriffOfficeAddress: "651 Pine St, Martinez, CA 94553", sheriffOfficePhone: "(925) 335-1500", sheriffOfficeUrl: "https://www.cocosheriff.org" },
+  "ventura":        { sheriffServiceFee: "$45", sheriffOfficeAddress: "800 S Victoria Ave, Ventura, CA 93009", sheriffOfficePhone: "(805) 654-2380", sheriffOfficeUrl: "https://www.venturasheriff.org" },
 };
 
 const FL_SERVICE_DEFAULTS = {
   certifiedMailAvailable: true,
   certifiedMailFee: "included with filing fee" as string | null,
   sheriffServiceFee: "$40" as string | null,
+  sheriffOfficeAddress: null as string | null,
+  sheriffOfficePhone: null as string | null,
+  sheriffOfficeUrl: null as string | null,
   serviceRequestFormUrl: null as string | null,
 };
 
 const FL_SERVICE_OVERRIDES: Record<string, Partial<typeof FL_SERVICE_DEFAULTS>> = {
-  "fl-miami-dade":   { sheriffServiceFee: "$50" },
-  "fl-broward":      { sheriffServiceFee: "$45" },
-  "fl-palm-beach":   { sheriffServiceFee: "$50" },
-  "fl-orange":       { sheriffServiceFee: "$45" },
-  "fl-hillsborough": { sheriffServiceFee: "$45" },
-  "fl-pinellas":     { sheriffServiceFee: "$45" },
-  "fl-duval":        { sheriffServiceFee: "$45" },
-  "fl-sarasota":     { sheriffServiceFee: "$45" },
-  "fl-seminole":     { sheriffServiceFee: "$45" },
-  "fl-volusia":      { sheriffServiceFee: "$45" },
+  "fl-miami-dade":   { sheriffServiceFee: "$50", sheriffOfficeAddress: "3505 NW 107th Ave, Doral, FL 33178", sheriffOfficePhone: "(305) 471-2002", sheriffOfficeUrl: "https://www.miamisheriff.org" },
+  "fl-broward":      { sheriffServiceFee: "$45", sheriffOfficeAddress: "2601 W Broward Blvd, Fort Lauderdale, FL 33312", sheriffOfficePhone: "(954) 831-8901", sheriffOfficeUrl: "https://www.sheriff.org" },
+  "fl-palm-beach":   { sheriffServiceFee: "$50", sheriffOfficeAddress: "3228 Gun Club Rd, West Palm Beach, FL 33406", sheriffOfficePhone: "(561) 688-3000", sheriffOfficeUrl: "https://www.pbso.org" },
+  "fl-orange":       { sheriffServiceFee: "$45", sheriffOfficeAddress: "2450 W 33rd St, Orlando, FL 32839", sheriffOfficePhone: "(407) 254-7000", sheriffOfficeUrl: "https://www.ocfl.net/sheriff" },
+  "fl-hillsborough": { sheriffServiceFee: "$45", sheriffOfficeAddress: "2008 E 8th Ave, Tampa, FL 33605", sheriffOfficePhone: "(813) 247-8200", sheriffOfficeUrl: "https://www.hcso.tampa.fl.us" },
+  "fl-pinellas":     { sheriffServiceFee: "$45", sheriffOfficeAddress: "10750 Ulmerton Rd, Largo, FL 33778", sheriffOfficePhone: "(727) 582-6200", sheriffOfficeUrl: "https://www.pcsoweb.com" },
+  "fl-duval":        { sheriffServiceFee: "$45", sheriffOfficeAddress: "501 E Bay St, Jacksonville, FL 32202", sheriffOfficePhone: "(904) 630-0500", sheriffOfficeUrl: "https://www.jaxsheriff.org" },
+  "fl-sarasota":     { sheriffServiceFee: "$45", sheriffOfficeAddress: "2071 Ringling Blvd, Sarasota, FL 34237", sheriffOfficePhone: "(941) 861-4500", sheriffOfficeUrl: "https://www.sarasotasheriff.org" },
+  "fl-seminole":     { sheriffServiceFee: "$45", sheriffOfficeAddress: "100 Eslinger Way, Sanford, FL 32773", sheriffOfficePhone: "(407) 665-6600", sheriffOfficeUrl: "https://www.seminolesheriff.org" },
+  "fl-volusia":      { sheriffServiceFee: "$45", sheriffOfficeAddress: "123 W Indiana Ave, DeLand, FL 32720", sheriffOfficePhone: "(386) 736-5961", sheriffOfficeUrl: "https://www.vcso.us" },
 };
 
 function enrichCaCounty<T extends { id: string }>(c: T) {
@@ -487,8 +493,6 @@ function enrichCaCounty<T extends { id: string }>(c: T) {
 function enrichFlCounty<T extends { id: string }>(c: T) {
   return { ...c, ...FL_SERVICE_DEFAULTS, ...(FL_SERVICE_OVERRIDES[c.id] ?? {}) };
 }
-
-const ALL_COUNTIES = [...CALIFORNIA_COUNTIES, ...FLORIDA_COUNTIES, ...TEXAS_COUNTIES];
 
 router.get("/counties", (req, res): void => {
   const { state } = req.query;
