@@ -11,6 +11,7 @@ const API = import.meta.env.BASE_URL.replace(/\/$/, "");
 interface Case {
   id: number;
   title: string;
+  jurisdictionState: string | null;
   plaintiffName: string | null;
   defendantName: string | null;
   claimAmount: number | null;
@@ -18,6 +19,7 @@ interface Case {
   claimDescription: string | null;
   incidentDate: string | null;
   countyId: string | null;
+  courthouseName: string | null;
   intakeComplete: boolean;
   readinessScore: number | null;
   plaintiffAddress: string | null;
@@ -187,9 +189,31 @@ export default function SC100Generator() {
     );
   }
 
+  const isNonCACase = selectedCase.jurisdictionState === "FL" || selectedCase.jurisdictionState === "TX";
   const county = selectedCase.countyId?.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()) ?? "";
+  const courtDisplayName = selectedCase.courthouseName ?? (county ? `${county} County Superior Court — Small Claims Division` : null);
   const plaintiffAddr = [selectedCase.plaintiffAddress, selectedCase.plaintiffCity, selectedCase.plaintiffState, selectedCase.plaintiffZip].filter(Boolean).join(", ");
   const defendantAddr = [selectedCase.defendantAddress, selectedCase.defendantCity, selectedCase.defendantState, selectedCase.defendantZip].filter(Boolean).join(", ");
+
+  if (isNonCACase) {
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-16 text-center">
+        <FileText className="h-12 w-12 text-teal-500 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-gray-800 mb-2">SC-100 is a California Form</h2>
+        <p className="text-gray-500 mb-4">
+          SC-100 is a Judicial Council of California form used to file in California small claims court.
+          Your {selectedCase.jurisdictionState === "FL" ? "Florida" : "Texas"} court forms are available in your case workspace under the{" "}
+          <strong>Court Forms</strong> tab.
+        </p>
+        <a
+          href={`/cases/${selectedCase.id}#forms`}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          Go to Court Forms
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -270,7 +294,7 @@ export default function SC100Generator() {
 
         <Section title="Court Information">
           <FieldRow label="County" value={county} />
-          <FieldRow label="Court" value={county ? `${county} County Superior Court — Small Claims Division` : null} />
+          <FieldRow label="Court" value={courtDisplayName} />
         </Section>
 
         <Section title="Plaintiff (You)">

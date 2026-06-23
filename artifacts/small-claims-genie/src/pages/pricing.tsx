@@ -804,7 +804,7 @@ export default function Pricing() {
         </div>
 
         <p className="mt-6 text-center text-[12px] text-[#8a96a8] max-w-md">
-          All plans include AI chat, document uploads, all 58 California counties, and email reminders.
+          All plans include AI chat, document uploads, all California and Florida counties, and email reminders.
         </p>
 
         <div className="mt-8 w-full max-w-xl mx-auto border-2 border-[#a8e6df] rounded-2xl px-8 py-7 text-center bg-[#f0fffe]">

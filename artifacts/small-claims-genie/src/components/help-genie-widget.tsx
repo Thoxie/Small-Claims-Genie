@@ -52,7 +52,7 @@ const HG_REDIRECT_LABELS: Record<string, string> = {
 
 const SUGGESTED = [
   { q: "Do I have a strong enough case for small claims court?", icon: "⚖️" },
-  { q: "How much can I sue for in California?", icon: "💰" },
+  { q: "How much can I sue for in small claims court?", icon: "💰" },
   { q: "What evidence do I need to win my case?", icon: "📋" },
   { q: "I'm being sued — what are my options?", icon: "🔍" },
   { q: "What happens at a small claims hearing?", icon: "🏛️" },

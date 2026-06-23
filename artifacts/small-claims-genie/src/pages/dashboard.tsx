@@ -123,14 +123,19 @@ function CaseView({ c }: { c: Case }) {
   const savedDate  = formatDate(c.updatedAt);
   const countyName = countyDisplayName(c.countyId);
 
+  const stateAbbr = c.jurisdictionState ?? "CA";
+  const courtTypeName =
+    stateAbbr === "FL" ? "County Court — Small Claims" :
+    stateAbbr === "TX" ? "Justice of the Peace Court — Small Claims" :
+    "Superior Court — Small Claims";
   const courtName      = c.courthouseName
-    ?? (countyName ? `${countyName} Superior Court — Small Claims` : null);
+    ?? (countyName ? `${countyName} ${courtTypeName}` : null);
   const courtNameShort = shortCourtName(courtName);
 
   const courtAddress = [
     c.courthouseAddress,
     c.courthouseCity,
-    c.courthouseZip ? `CA ${c.courthouseZip}` : null,
+    c.courthouseZip ? `${stateAbbr} ${c.courthouseZip}` : null,
   ].filter(Boolean).join(", ") || null;
 
   const heading = plaintiff && defendant
@@ -249,7 +254,11 @@ function CaseView({ c }: { c: Case }) {
             Filing Overview
           </h4>
           <SnapRow label="Venue"               value={countyName} />
-          <SnapRow label="Claim Limit"         value="Within California small claims limit" />
+          <SnapRow label="Claim Limit"         value={
+            stateAbbr === "FL" ? "Within Florida small claims limit" :
+            stateAbbr === "TX" ? "Within Texas small claims limit" :
+            "Within California small claims limit"
+          } />
           <SnapRow label="Court Identified"    value={courtName ? "Yes" : "No"} />
           <SnapRow label="Parties Identified"  value={plaintiff && defendant ? "Yes" : "Incomplete"} />
           <SnapRow label="Evidence Documents"  value={c.documentCount != null ? `${c.documentCount} uploaded` : "None uploaded"} />

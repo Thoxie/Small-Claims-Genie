@@ -51,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Announcement bar ── */}
       <div className="w-full bg-amber-50 border-b border-amber-100 py-1.5 text-center">
         <p className="text-[13px] font-medium text-amber-800 tracking-wide">
-          California Small Claims Now&nbsp;—&nbsp;49 States Coming Soon
+          California&nbsp;· Florida&nbsp;· Texas &mdash; More States Coming Soon
         </p>
       </div>
 
