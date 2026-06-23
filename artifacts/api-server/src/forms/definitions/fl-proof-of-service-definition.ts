@@ -195,7 +195,6 @@ export async function buildFLProofOfService(
   dotLine(page, font, "City, State, ZIP:", ML, y, MR);
   y -= 15;
 
-  const defNamePrefill = defName || "________________________";
   txt(page, font, `Name of person served (if not defendant, state relationship):`, ML, y + 1, 8.5);
   y -= 12;
   drawLine(page, ML, y - 1, MR, y - 1, 0.5, GRAY);
