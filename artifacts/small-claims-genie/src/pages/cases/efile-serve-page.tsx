@@ -961,6 +961,16 @@ const IL_CLERK_URLS: Record<string, { name: string; url: string }> = {
 function IlCourtFormsSection({ c }: { c: ExtendedCase | undefined }) {
   const countyId = c?.countyId ?? "";
   const countyClerk = IL_CLERK_URLS[countyId] ?? null;
+  const { data: ilCounties } = useListCounties({ state: "IL" } as unknown as Parameters<typeof useListCounties>[0]);
+  const countyData = ilCounties?.find((co: County) => co.id === countyId);
+
+  const courtName = countyData?.courthouseName ?? c?.courthouseName;
+  const address = countyData?.courthouseAddress;
+  const city = countyData?.courthouseCity;
+  const zip = countyData?.courthouseZip;
+  const phone = countyData?.phone ?? c?.courthousePhone;
+  const website = countyData?.website ?? countyClerk?.url;
+  const fullAddress = [address, city ? `${city}, IL` : null, zip].filter(Boolean).join(" ");
 
   return (
     <div className="space-y-3">
@@ -969,6 +979,44 @@ function IlCourtFormsSection({ c }: { c: ExtendedCase | undefined }) {
         <p className="text-[11px] text-muted-foreground mt-0.5">Illinois small claims forms by county</p>
       </div>
 
+      {/* Courthouse info block */}
+      {(courtName || fullAddress || phone || website) && (
+        <div className="rounded-xl border bg-card px-4 py-3 space-y-2 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Landmark className="h-4 w-4 text-[#0d6b5e] shrink-0" />
+            <p className="text-sm font-semibold text-foreground leading-tight">
+              {courtName ?? "Circuit Court"}
+            </p>
+          </div>
+          {fullAddress && (
+            <div className="flex items-start gap-2">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-snug">{fullAddress}</p>
+            </div>
+          )}
+          {phone && (
+            <div className="flex items-center gap-2">
+              <div className="h-3.5 w-3.5 shrink-0 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-muted-foreground"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.57a16 16 0 0 0 6.29 6.29l.94-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </div>
+              <p className="text-xs text-muted-foreground">{phone}</p>
+            </div>
+          )}
+          {website && (
+            <a
+              href={website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#0d6b5e] hover:underline pl-0.5"
+            >
+              Court website
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Forms card */}
       <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm">
         <div className="h-9 w-9 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
           <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
