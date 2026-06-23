@@ -12,5 +12,6 @@ export type ListCountiesState =
 export const ListCountiesState = {
   CA: "CA",
   FL: "FL",
+  IL: "IL",
   TX: "TX",
 } as const;

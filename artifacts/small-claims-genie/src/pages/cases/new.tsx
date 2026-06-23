@@ -16,11 +16,12 @@ const CLAIM_TYPES = [
   "Other",
 ];
 
-type JurisdictionState = "CA" | "FL";
+type JurisdictionState = "CA" | "FL" | "IL";
 
 const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = [
   { value: "CA", label: "California", flag: "🌴", sub: "Up to $12,500" },
   { value: "FL", label: "Florida", flag: "☀️", sub: "Up to $8,000" },
+  { value: "IL", label: "Illinois", flag: "🌽", sub: "Up to $10,000" },
 ];
 
 export default function NewCase() {
@@ -71,10 +72,14 @@ export default function NewCase() {
     );
   };
 
-  const countyLabel = jurisdictionState === "CA" ? "California County" : "Florida County";
-  const countyHint = jurisdictionState === "CA"
-    ? "Usually where the defendant lives or where the incident happened."
-    : "Usually where the defendant lives, where the contract was signed, or where the incident happened.";
+  const countyLabel =
+    jurisdictionState === "CA" ? "California County" :
+    jurisdictionState === "IL" ? "Illinois County" :
+    "Florida County";
+  const countyHint =
+    jurisdictionState === "CA"
+      ? "Usually where the defendant lives or where the incident happened."
+      : "Usually where the defendant lives, where the contract was signed, or where the incident happened.";
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
@@ -92,7 +97,7 @@ export default function NewCase() {
             <label className="text-base font-semibold block mb-2">
               Which state are you filing in?
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {STATE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}

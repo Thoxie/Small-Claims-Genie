@@ -464,6 +464,24 @@ const CA_SERVICE_OVERRIDES: Record<string, Partial<typeof CA_SERVICE_DEFAULTS>> 
   "ventura":        { sheriffServiceFee: "$45", sheriffOfficeAddress: "800 S Victoria Ave, Ventura, CA 93009", sheriffOfficePhone: "(805) 654-2380", sheriffOfficeUrl: "https://www.venturasheriff.org" },
 };
 
+export const ILLINOIS_COUNTIES = [
+  { id: "il-cook",       name: "Cook",        state: "IL", courthouseName: "Cook County Circuit Court - Richard J. Daley Center", courthouseAddress: "50 W Washington St", courthouseCity: "Chicago", courthouseZip: "60602", phone: "(312) 603-5030", website: "https://www.cookcountyclerkofcourt.org" },
+  { id: "il-dupage",     name: "DuPage",      state: "IL", courthouseName: "DuPage County Circuit Court", courthouseAddress: "505 N County Farm Rd", courthouseCity: "Wheaton", courthouseZip: "60187", phone: "(630) 407-8700", website: "https://www.dupagecounty.gov/courts/circuit_clerk/" },
+  { id: "il-lake",       name: "Lake",        state: "IL", courthouseName: "Lake County Circuit Court", courthouseAddress: "18 N County St", courthouseCity: "Waukegan", courthouseZip: "60085", phone: "(847) 377-3380", website: "https://www.19thcircuitcourt.state.il.us/1028/Clerk-of-Court" },
+  { id: "il-will",       name: "Will",        state: "IL", courthouseName: "Will County Circuit Court", courthouseAddress: "14 W Jefferson St", courthouseCity: "Joliet", courthouseZip: "60432", phone: "(815) 727-8592", website: "https://willcountyclerk.gov" },
+  { id: "il-kane",       name: "Kane",        state: "IL", courthouseName: "Kane County Circuit Court", courthouseAddress: "37W777 Il Route 38", courthouseCity: "St. Charles", courthouseZip: "60175", phone: "(630) 232-3413", website: "https://www.kanecountyclerkofcourt.org" },
+  { id: "il-winnebago",  name: "Winnebago",   state: "IL", courthouseName: "Winnebago County Circuit Court", courthouseAddress: "400 W State St", courthouseCity: "Rockford", courthouseZip: "61101", phone: "(815) 319-4600", website: "https://www.win17th.com/clerk/" },
+  { id: "il-mchenry",    name: "McHenry",     state: "IL", courthouseName: "McHenry County Circuit Court", courthouseAddress: "2200 N Seminary Ave", courthouseCity: "Woodstock", courthouseZip: "60098", phone: "(815) 334-4190", website: "https://www.co.mchenry.il.us/county-government/departments-j-z/p-r/circuit-court-clerk" },
+  { id: "il-champaign",  name: "Champaign",   state: "IL", courthouseName: "Champaign County Circuit Court", courthouseAddress: "101 E Main St", courthouseCity: "Urbana", courthouseZip: "61801", phone: "(217) 384-3725", website: "https://www.co.champaign.il.us/circuitclerk/" },
+  { id: "il-sangamon",   name: "Sangamon",    state: "IL", courthouseName: "Sangamon County Circuit Court", courthouseAddress: "200 S 9th St", courthouseCity: "Springfield", courthouseZip: "62701", phone: "(217) 753-6674", website: "https://sangamoncountycircuitclerk.com" },
+  { id: "il-peoria",     name: "Peoria",      state: "IL", courthouseName: "Peoria County Circuit Court", courthouseAddress: "324 Main St", courthouseCity: "Peoria", courthouseZip: "61602", phone: "(309) 672-6989", website: "https://www.peoriacounty.org/circuit-clerk" },
+  { id: "il-kendall",    name: "Kendall",     state: "IL", courthouseName: "Kendall County Circuit Court", courthouseAddress: "807 W John St", courthouseCity: "Yorkville", courthouseZip: "60560", phone: "(630) 553-4183", website: "https://www.co.kendall.il.us/government/departments/circuit-clerk" },
+  { id: "il-madison",    name: "Madison",     state: "IL", courthouseName: "Madison County Circuit Court", courthouseAddress: "155 N Main St", courthouseCity: "Edwardsville", courthouseZip: "62025", phone: "(618) 692-7040", website: "https://www.co.madison.il.us/government/departments/circuit_clerk/" },
+  { id: "il-st-clair",   name: "St. Clair",   state: "IL", courthouseName: "St. Clair County Circuit Court", courthouseAddress: "10 Public Square", courthouseCity: "Belleville", courthouseZip: "62220", phone: "(618) 277-6600", website: "https://www.co.st-clair.il.us/departments/circuit-clerk" },
+  { id: "il-mclean",     name: "McLean",      state: "IL", courthouseName: "McLean County Circuit Court", courthouseAddress: "104 W Front St", courthouseCity: "Bloomington", courthouseZip: "61701", phone: "(309) 888-5301", website: "https://www.mcleancountyil.gov/171/Circuit-Clerk" },
+  { id: "il-rock-island",name: "Rock Island", state: "IL", courthouseName: "Rock Island County Circuit Court", courthouseAddress: "210 15th St", courthouseCity: "Rock Island", courthouseZip: "61201", phone: "(309) 786-4451", website: "https://www.rockislandcounty.org/circuitclerk/" },
+];
+
 const FL_SERVICE_DEFAULTS = {
   certifiedMailAvailable: true,
   certifiedMailFee: "included with filing fee" as string | null,
@@ -500,12 +518,15 @@ router.get("/counties", (req, res): void => {
     res.json(CALIFORNIA_COUNTIES.map(enrichCaCounty));
   } else if (state === "FL") {
     res.json(FLORIDA_COUNTIES.map(enrichFlCounty));
+  } else if (state === "IL") {
+    res.json(ILLINOIS_COUNTIES);
   } else if (state === "TX") {
     res.json(TEXAS_COUNTIES);
   } else {
     res.json([
       ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
       ...FLORIDA_COUNTIES.map(enrichFlCounty),
+      ...ILLINOIS_COUNTIES,
       ...TEXAS_COUNTIES,
     ]);
   }

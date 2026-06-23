@@ -12,5 +12,6 @@ export type CreateCaseBodyJurisdictionState =
 export const CreateCaseBodyJurisdictionState = {
   CA: "CA",
   FL: "FL",
+  IL: "IL",
   TX: "TX",
 } as const;
