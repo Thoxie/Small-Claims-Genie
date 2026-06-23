@@ -454,14 +454,10 @@ router.post(
 );
 
 // IL Small Claims Summons (programmatic pdf-lib)
+// Summons is issued and stamped by the circuit court clerk — no user-signed variant.
 router.post(
   "/cases/:id/forms/il/summons",
   makeFormHandler("IL-SUMMONS", (id) => `IL-Small-Claims-Summons-Case-${id}.pdf`),
-);
-
-router.post(
-  "/cases/:id/forms/il/summons/signed",
-  makeFormHandler("IL-SUMMONS", (id) => `IL-Small-Claims-Summons-Case-${id}-signed.pdf`, { signed: true }),
 );
 
 // IL Proof of Service (programmatic pdf-lib)

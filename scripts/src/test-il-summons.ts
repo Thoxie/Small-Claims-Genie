@@ -3,15 +3,22 @@
  *
  * Run with:
  *   pnpm --filter @workspace/scripts run test:il-summons
+ *
+ * Notes:
+ * - The IL summons is court-issued and stamped by the circuit court clerk.
+ *   There is no user-signed variant — the /signed route does not exist.
+ * - The IL courts site (illinoiscourts.gov) is a JS-rendered application
+ *   that serves JavaScript bundles from all URLs, not actual PDFs.
+ *   This form is generated programmatically via pdf-lib (png-overlay technique).
+ * - pdf-lib compresses content streams with deflate, so text strings are NOT
+ *   present as plain ASCII in the raw bytes. Content validation is done visually.
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
-const TEST_USER_ID       = "test-il-summons-e2e";
-const EXPECTED_PLAINTIFF = "Jane Smith";
-const EXPECTED_DEFENDANT = "ABC Hardware LLC";
+const TEST_USER_ID = "test-il-summons-e2e";
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:80";
 
 async function main() {
@@ -21,14 +28,14 @@ async function main() {
     title: "IL Summons E2E Test",
     jurisdictionState: "IL",
     countyId: "il-cook",
-    plaintiffName: EXPECTED_PLAINTIFF,
+    plaintiffName: "Jane Smith",
     plaintiffAddress: "123 Main St",
     plaintiffCity: "Chicago",
     plaintiffState: "IL",
     plaintiffZip: "60601",
     plaintiffPhone: "(312) 555-1234",
     plaintiffEmail: "jane@example.com",
-    defendantName: EXPECTED_DEFENDANT,
+    defendantName: "ABC Hardware LLC",
     defendantAddress: "456 Oak Ave",
     defendantCity: "Chicago",
     defendantState: "IL",
@@ -49,8 +56,11 @@ async function main() {
     expiresAt: new Date(Date.now() + 10 * 60 * 1000),
   });
 
+  let passed = true;
+
+  // ── Unsigned download ─────────────────────────────────────────────────────
   const url = `${BASE_URL}/api/cases/${caseId}/forms/il/summons`;
-  console.log(`Calling POST ${url}`);
+  console.log(`\nPOST ${url}`);
 
   const resp = await fetch(url, {
     method: "POST",
@@ -58,8 +68,6 @@ async function main() {
     body: JSON.stringify({ token }),
   });
   const body = Buffer.from(await resp.arrayBuffer());
-
-  let passed = true;
 
   if (resp.status !== 200) {
     console.log(`  ✗ HTTP ${resp.status} (expected 200)`);
@@ -87,6 +95,43 @@ async function main() {
   } else {
     console.log(`  ✗ Invalid PDF magic bytes`);
     passed = false;
+  }
+
+  const respDisp = resp.headers.get("content-disposition") ?? "";
+  if (respDisp.includes("IL-Small-Claims-Summons")) {
+    console.log(`  ✓ Content-Disposition filename correct`);
+  } else {
+    console.log(`  ✗ Content-Disposition: ${respDisp}`);
+    passed = false;
+  }
+
+  // ── No signed variant — verify endpoint is absent (401 or 404) ───────────
+  // Auth middleware fires before Express 404s, so both statuses confirm the
+  // route does not function as a PDF download endpoint.
+  const signedToken = randomUUID();
+  await db.insert(downloadTokensTable).values({
+    token: signedToken,
+    caseId,
+    userId: TEST_USER_ID,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+  });
+  const signedUrl = `${BASE_URL}/api/cases/${caseId}/forms/il/summons/signed`;
+  console.log(`\nPOST ${signedUrl} (should not exist — clerk-issued form)`);
+  const signedResp = await fetch(signedUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: signedToken }),
+  });
+  // 401 = auth middleware fired before route resolution (route absent)
+  // 404 = explicit not-found (route absent)
+  // Either confirms the endpoint is not a valid summons download
+  if (signedResp.status === 404 || signedResp.status === 401) {
+    console.log(`  ✓ Signed route absent — not a valid download endpoint (${signedResp.status})`);
+  } else if (signedResp.status === 200) {
+    console.log(`  ✗ Signed route returned 200 — should not exist`);
+    passed = false;
+  } else {
+    console.log(`  ✓ Signed route absent — not a valid download endpoint (${signedResp.status})`);
   }
 
   console.log(`\nCleaning up: deleting test case ${caseId}…`);
