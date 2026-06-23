@@ -154,6 +154,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
   const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
   const countyState = selectedCounty?.state ?? jurisdictionState;
   const isCA = countyState === "CA";
+  const isTX = countyState === "TX";
   const isIL = countyState === "IL";
   const courtAddress = selectedCourthouse
     ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, ${countyState} ${selectedCourthouse.zip}`
@@ -366,6 +367,11 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                 {isIL && selectedCounty.filingFeeUnder10000 != null && (
                   <span className="text-muted-foreground">
                     Filing fee: <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder10000}</span> (claims up to $10,000)
+                  </span>
+                )}
+                {(isCA || isTX) && selectedCounty.filingFeeUnder1500 != null && (
+                  <span className="text-muted-foreground">
+                    Filing fee: <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder1500}</span> (≤$1,500) · <span className="font-medium text-foreground">${selectedCounty.filingFee1500to5000}</span> ($1,500–$5,000) · <span className="font-medium text-foreground">${selectedCounty.filingFeeOver5000}</span> (&gt;$5,000)
                   </span>
                 )}
               </div>

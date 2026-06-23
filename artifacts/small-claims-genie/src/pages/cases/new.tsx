@@ -16,12 +16,13 @@ const CLAIM_TYPES = [
   "Other",
 ];
 
-type JurisdictionState = "CA" | "FL" | "IL";
+type JurisdictionState = "CA" | "FL" | "IL" | "TX";
 
 const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = [
   { value: "CA", label: "California", flag: "🌴", sub: "Up to $12,500" },
   { value: "FL", label: "Florida", flag: "☀️", sub: "Up to $8,000" },
   { value: "IL", label: "Illinois", flag: "🌽", sub: "Up to $10,000" },
+  { value: "TX", label: "Texas", flag: "⭐", sub: "Up to $20,000" },
 ];
 
 export default function NewCase() {
@@ -77,6 +78,7 @@ export default function NewCase() {
   const countyLabel =
     jurisdictionState === "CA" ? "California County" :
     jurisdictionState === "IL" ? "Illinois County" :
+    jurisdictionState === "TX" ? "Texas County" :
     "Florida County";
   const countyHint =
     jurisdictionState === "CA"
@@ -99,7 +101,7 @@ export default function NewCase() {
             <label className="text-base font-semibold block mb-2">
               Which state are you filing in?
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {STATE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -178,6 +180,14 @@ export default function NewCase() {
             {jurisdictionState === "IL" && selectedCounty?.filingFeeUnder10000 != null && (
               <p className="text-sm text-muted-foreground mt-1">
                 Filing fee: <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder10000}</span> (up to $10,000 · may vary by claim amount)
+              </p>
+            )}
+            {(selectedCounty?.state === "CA" || selectedCounty?.state === "TX") && selectedCounty.filingFeeUnder1500 != null && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Filing fee:{" "}
+                <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder1500}</span> (≤$1,500){" "}
+                · <span className="font-medium text-foreground">${selectedCounty.filingFee1500to5000}</span> ($1,500–$5,000){" "}
+                · <span className="font-medium text-foreground">${selectedCounty.filingFeeOver5000}</span> (&gt;$5,000)
               </p>
             )}
             {errors.countyId && <p className="text-sm text-destructive mt-1">{errors.countyId}</p>}
