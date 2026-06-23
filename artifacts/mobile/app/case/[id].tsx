@@ -29,6 +29,7 @@ import {
   CaseWithDetails,
   useDeleteDocument,
   useGetCase,
+  useListCounties,
   useListDocuments,
   useSaveIntakeProgress,
 } from "@workspace/api-client-react";
@@ -785,6 +786,14 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
   const isFL = caseData.jurisdictionState === "FL";
   const isIL = caseData.jurisdictionState === "IL";
 
+  const { data: ilCounties } = useListCounties(
+    { state: "IL" },
+    { query: { enabled: isIL } },
+  );
+  const ilCounty = isIL && caseData.countyId
+    ? ilCounties?.find((c) => c.id === caseData.countyId)
+    : undefined;
+
   const countyId = caseData.countyId ?? "";
   const isMiamiDade = countyId === "fl-miami-dade";
   const isVolusia = countyId === "fl-volusia";
@@ -943,12 +952,19 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
             </View>
             <View style={[styles.txFeeCard, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}>
               <Text style={[styles.txFeeTitle, { color: "#92400e" }]}>IL Filing Fees — 735 ILCS 5/2-212</Text>
-              {IL_FEE_SCHEDULE.map((row) => (
-                <View key={row.range} style={styles.txFeeRow}>
-                  <Text style={[styles.txFeeRange, { color: "#b45309" }]}>{row.range}</Text>
-                  <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>{row.fee}</Text>
+              {ilCounty?.filingFeeUnder10000 != null ? (
+                <View style={styles.txFeeRow}>
+                  <Text style={[styles.txFeeRange, { color: "#b45309" }]}>Filing fee:</Text>
+                  <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>${ilCounty.filingFeeUnder10000.toLocaleString("en-US")} (claims up to $10,000)</Text>
                 </View>
-              ))}
+              ) : (
+                IL_FEE_SCHEDULE.map((row) => (
+                  <View key={row.range} style={styles.txFeeRow}>
+                    <Text style={[styles.txFeeRange, { color: "#b45309" }]}>{row.range}</Text>
+                    <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>{row.fee}</Text>
+                  </View>
+                ))
+              )}
               <Text style={[styles.txFeeNote, { color: "#b45309" }]}>
                 Claim limit: $10,000 (735 ILCS 5/2-209)
               </Text>
