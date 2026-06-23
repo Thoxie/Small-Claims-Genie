@@ -9,6 +9,18 @@ import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./stripeClient";
 import { ensurePurchasesTable } from "./lib/purchases";
 
+// Prevent transient DB / network errors from crashing the process during the
+// startup probe window. The pg library emits unhandled 'error' events on pool
+// connections (e.g. SSL parse failures, auth timeouts) that Node converts to
+// uncaught exceptions if nothing handles them. Catching here keeps the HTTP
+// server alive so the health probe can pass even when the first DB attempt fails.
+process.on("uncaughtException", (err) => {
+  logger.error({ err }, "Uncaught exception — server continuing");
+});
+process.on("unhandledRejection", (reason) => {
+  logger.error({ reason }, "Unhandled promise rejection — server continuing");
+});
+
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
