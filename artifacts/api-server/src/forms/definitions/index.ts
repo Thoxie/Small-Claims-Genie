@@ -31,6 +31,9 @@ export * from "./mc030-definition";
 
 // ─── Texas programmatic forms (pdf-lib, no template PDF) ─────────────────────
 export * from "./tx-petition-definition";
+export * from "./tx-citation-definition";
+export * from "./tx-return-of-service-definition";
+export * from "./tx-fee-waiver-definition";
 
 // ─── Illinois forms ───────────────────────────────────────────────────────────
 export * from "./il-smc-complaint-definition";

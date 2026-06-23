@@ -1331,8 +1331,8 @@ function TxCourtFormsSection({
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-sm font-bold text-foreground">Court Form</h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Pre-filled Texas Small Claims Petition</p>
+        <h2 className="text-sm font-bold text-foreground">Court Forms</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Pre-filled Texas Small Claims forms</p>
       </div>
 
       {/* TX Petition card */}
@@ -1368,6 +1368,114 @@ function TxCourtFormsSection({
         >
           {downloading === "tx-petition" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
           {downloading === "tx-petition" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* TX Citation card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            Citation
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">TX Citation (Summons)</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "Issued by clerk — served by constable or sheriff (Tex. R. Civ. P. 502.5)"
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadTxForm("tx/citation", "tx-citation")}
+          disabled={!hasBasicInfo || downloading === "tx-citation"}
+          title={hasBasicInfo ? "Download TX Citation" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "tx-citation" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "tx-citation" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* TX Return of Service card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            Return
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">TX Return of Service</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "Filed by constable/sheriff after serving the defendant (Tex. R. Civ. P. 107)"
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadTxForm("tx/return-of-service", "tx-return-of-service")}
+          disabled={!hasBasicInfo || downloading === "tx-return-of-service"}
+          title={hasBasicInfo ? "Download TX Return of Service" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "tx-return-of-service" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "tx-return-of-service" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* TX Fee Waiver card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            Fee Waiver
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">TX Fee Waiver (Rule 145)</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "Affidavit of Inability to Pay — waives all filing and service fees"
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadTxForm("tx/fee-waiver", "tx-fee-waiver")}
+          disabled={!hasBasicInfo || downloading === "tx-fee-waiver"}
+          title={hasBasicInfo ? "Download TX Fee Waiver" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "tx-fee-waiver" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "tx-fee-waiver" ? "Generating…" : "Download"}
         </Button>
       </div>
 

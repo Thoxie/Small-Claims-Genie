@@ -42,6 +42,9 @@
     "test:il-fee-waiver": "tsx ./src/test-il-fee-waiver.ts",
     "test:fl-proof-of-service": "tsx ./src/test-fl-proof-of-service.ts",
     "test:fl-fee-waiver": "tsx ./src/test-fl-fee-waiver.ts",
+    "test:tx-citation": "tsx ./src/test-tx-citation.ts",
+    "test:tx-return-of-service": "tsx ./src/test-tx-return-of-service.ts",
+    "test:tx-fee-waiver": "tsx ./src/test-tx-fee-waiver.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

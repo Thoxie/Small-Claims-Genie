@@ -443,6 +443,39 @@ router.post(
   makeFormHandler("TX-PETITION", (id) => `TX-Small-Claims-Petition-Case-${id}-signed.pdf`, { signed: true }),
 );
 
+// TX Citation — issued by clerk after petition filing (Tex. R. Civ. P. 502.5)
+router.post(
+  "/cases/:id/forms/tx/citation",
+  makeFormHandler("TX-CITATION", (id) => `TX-Citation-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/tx/citation/signed",
+  makeFormHandler("TX-CITATION", (id) => `TX-Citation-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// TX Return of Service — filed after defendant is served (Tex. R. Civ. P. 502.6 & 107)
+router.post(
+  "/cases/:id/forms/tx/return-of-service",
+  makeFormHandler("TX-RETURN-OF-SERVICE", (id) => `TX-Return-of-Service-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/tx/return-of-service/signed",
+  makeFormHandler("TX-RETURN-OF-SERVICE", (id) => `TX-Return-of-Service-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// TX Fee Waiver — Affidavit of Inability to Pay (Tex. R. Civ. P. 145)
+router.post(
+  "/cases/:id/forms/tx/fee-waiver",
+  makeFormHandler("TX-FEE-WAIVER", (id) => `TX-Fee-Waiver-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/tx/fee-waiver/signed",
+  makeFormHandler("TX-FEE-WAIVER", (id) => `TX-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Illinois forms — statewide, all 102 counties
 // ─────────────────────────────────────────────────────────────────────────────
