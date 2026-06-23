@@ -37,6 +37,9 @@
     "test:fl-palm-beach-summons-signed": "tsx ./src/test-fl-palm-beach-summons-signed.ts",
     "check:fl-sig-placement": "tsx ./src/check-fl-sig-placement.ts",
     "test:il-smc-complaint": "tsx ./src/test-il-smc-complaint.ts",
+    "test:il-summons": "tsx ./src/test-il-summons.ts",
+    "test:il-proof-of-service": "tsx ./src/test-il-proof-of-service.ts",
+    "test:il-fee-waiver": "tsx ./src/test-il-fee-waiver.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

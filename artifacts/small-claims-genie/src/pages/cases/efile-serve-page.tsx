@@ -1064,41 +1064,71 @@ function IlCourtFormsSection({
         </div>
       )}
 
-      {/* IL Complaint download card */}
-      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
-        <div className="shrink-0 flex flex-col items-center gap-0.5">
-          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
-            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
-          </div>
-          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
-            IL Form
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium text-foreground truncate">Small Claims Complaint</p>
-            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
-              AI Pre-filled
+      {/* IL form cards */}
+      {(
+        [
+          {
+            id: "il-smc-complaint",
+            endpoint: "il/smc-complaint",
+            label: "Small Claims Complaint",
+            desc: "Illinois Supreme Court statewide form — file with the circuit court clerk",
+          },
+          {
+            id: "il-summons",
+            endpoint: "il/summons",
+            label: "Small Claims Summons",
+            desc: "Served on the defendant with a copy of the complaint — clerk stamps and returns to you",
+          },
+          {
+            id: "il-proof-of-service",
+            endpoint: "il/proof-of-service",
+            label: "Proof of Service",
+            desc: "Completed by the server after serving the defendant — file with the clerk",
+          },
+          {
+            id: "il-fee-waiver",
+            endpoint: "il/fee-waiver",
+            label: "Application for Waiver of Court Fees",
+            desc: "File with the complaint if you cannot afford the filing fee",
+          },
+        ] as const
+      ).map(({ id, endpoint, label, desc }) => (
+        <div
+          key={id}
+          className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}
+        >
+          <div className="shrink-0 flex flex-col items-center gap-0.5">
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+              <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+              IL Form
             </span>
           </div>
-          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
-            {hasBasicInfo
-              ? "Illinois Supreme Court statewide form — file with the circuit court clerk"
-              : "Complete Step 1 (parties info) to enable"}
-          </p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-medium text-foreground truncate">{label}</p>
+              <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+                AI Pre-filled
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+              {hasBasicInfo ? desc : "Complete Step 1 (parties info) to enable"}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+            onClick={() => downloadIlForm(endpoint, id)}
+            disabled={!hasBasicInfo || downloading === id}
+            title={hasBasicInfo ? `Download ${label}` : "Complete Step 1 (parties info) to enable"}
+          >
+            {downloading === id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            {downloading === id ? "Generating…" : "Download"}
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
-          onClick={() => downloadIlForm("il/smc-complaint", "il-smc-complaint")}
-          disabled={!hasBasicInfo || downloading === "il-smc-complaint"}
-          title={hasBasicInfo ? "Download IL Small Claims Complaint" : "Complete Step 1 (parties info) to enable"}
-        >
-          {downloading === "il-smc-complaint" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-          {downloading === "il-smc-complaint" ? "Generating…" : "Download"}
-        </Button>
-      </div>
+      ))}
 
       {/* Filing info */}
       <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">

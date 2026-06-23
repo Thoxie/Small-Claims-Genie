@@ -444,12 +444,46 @@ router.post(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Illinois forms — AcroForm fill via pdftk (statewide, all 102 counties)
+// Illinois forms — statewide, all 102 counties
 // ─────────────────────────────────────────────────────────────────────────────
 
+// IL Small Claims Complaint (pdftk FDF fill)
 router.post(
   "/cases/:id/forms/il/smc-complaint",
   makeFormHandler("IL-SMC-COMPLAINT", (id) => `IL-Small-Claims-Complaint-Case-${id}.pdf`),
+);
+
+// IL Small Claims Summons (programmatic pdf-lib)
+router.post(
+  "/cases/:id/forms/il/summons",
+  makeFormHandler("IL-SUMMONS", (id) => `IL-Small-Claims-Summons-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/il/summons/signed",
+  makeFormHandler("IL-SUMMONS", (id) => `IL-Small-Claims-Summons-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// IL Proof of Service (programmatic pdf-lib)
+router.post(
+  "/cases/:id/forms/il/proof-of-service",
+  makeFormHandler("IL-PROOF-OF-SERVICE", (id) => `IL-Proof-of-Service-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/il/proof-of-service/signed",
+  makeFormHandler("IL-PROOF-OF-SERVICE", (id) => `IL-Proof-of-Service-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// IL Application for Waiver of Court Fees (programmatic pdf-lib)
+router.post(
+  "/cases/:id/forms/il/fee-waiver",
+  makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/il/fee-waiver/signed",
+  makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
 );
 
 export default router;
