@@ -16,7 +16,6 @@ export const CountyState = {
   FL: "FL",
   IL: "IL",
   TX: "TX",
-  IL: "IL",
 } as const;
 
 export interface County {
@@ -512,7 +511,6 @@ export const ListCountiesState = {
   FL: "FL",
   IL: "IL",
   TX: "TX",
-  IL: "IL",
 } as const;
 
 export type UploadDocumentBody = {
