@@ -155,7 +155,6 @@ const ilSmcComplaintDefinition: FormDefinition = {
   renderingTechnique: "xfa-pdftk",
 
   async generate(d: import("../types").CaseData, _body: FormBody, _opts?: GenerateOptions): Promise<Buffer> {
-    const plaintiffAddr = fmtAddr(d.plaintiffAddress, d.plaintiffCity, d.plaintiffState, d.plaintiffZip);
     const defendantAddr = fmtAddr(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
 
     // Build the claim narrative for section 3 (reason lines).
