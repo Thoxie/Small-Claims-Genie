@@ -930,7 +930,28 @@ function IlDeadlinesSection() {
 
 // ─── IL court forms section ───────────────────────────────────────────────────
 
-function IlCourtFormsSection() {
+const IL_CLERK_URLS: Record<string, { name: string; url: string }> = {
+  "il-cook":       { name: "Cook County",       url: "https://www.cookcountyclerkofcourt.org" },
+  "il-dupage":     { name: "DuPage County",     url: "https://www.dupagecounty.gov/courts/circuit_clerk/" },
+  "il-lake":       { name: "Lake County",       url: "https://www.19thcircuitcourt.state.il.us/1028/Clerk-of-Court" },
+  "il-will":       { name: "Will County",       url: "https://willcountyclerk.gov" },
+  "il-kane":       { name: "Kane County",       url: "https://www.kanecountyclerkofcourt.org" },
+  "il-winnebago":  { name: "Winnebago County",  url: "https://www.win17th.com/clerk/" },
+  "il-mchenry":    { name: "McHenry County",    url: "https://www.co.mchenry.il.us/county-government/departments-j-z/p-r/circuit-court-clerk" },
+  "il-kendall":    { name: "Kendall County",    url: "https://www.co.kendall.il.us/government/departments/circuit-clerk" },
+  "il-champaign":  { name: "Champaign County",  url: "https://www.co.champaign.il.us/circuitclerk/" },
+  "il-sangamon":   { name: "Sangamon County",   url: "https://sangamoncountycircuitclerk.com" },
+  "il-peoria":     { name: "Peoria County",     url: "https://www.peoriacounty.org/circuit-clerk" },
+  "il-madison":    { name: "Madison County",    url: "https://www.co.madison.il.us/government/departments/circuit_clerk/" },
+  "il-st-clair":   { name: "St. Clair County",  url: "https://www.co.st-clair.il.us/departments/circuit-clerk" },
+  "il-mclean":     { name: "McLean County",     url: "https://www.mcleancountyil.gov/171/Circuit-Clerk" },
+  "il-rock-island":{ name: "Rock Island County",url: "https://www.rockislandcounty.org/circuitclerk/" },
+};
+
+function IlCourtFormsSection({ c }: { c: ExtendedCase | undefined }) {
+  const countyId = c?.countyId ?? "";
+  const countyClerk = IL_CLERK_URLS[countyId] ?? null;
+
   return (
     <div className="space-y-3">
       <div>
@@ -949,15 +970,27 @@ function IlCourtFormsSection() {
           <p className="text-xs text-muted-foreground leading-relaxed">
             Illinois small claims forms vary by county and circuit court. Pick up the required forms at your local circuit court clerk's office, or check your court's website. There is no single statewide form.
           </p>
-          <a
-            href="https://www.illinoiscourts.gov/courts/circuit-court/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#0d6b5e] hover:underline"
-          >
-            Find your Illinois circuit court
-            <ExternalLink className="h-3 w-3" />
-          </a>
+          {countyClerk ? (
+            <a
+              href={countyClerk.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#0d6b5e] hover:underline"
+            >
+              {countyClerk.name} Circuit Court Clerk
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          ) : (
+            <a
+              href="https://www.illinoiscourts.gov/courts/circuit-court/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#0d6b5e] hover:underline"
+            >
+              Find your Illinois circuit court
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -980,7 +1013,7 @@ function IlEFilingPanel({
 
       {/* RIGHT — IL-specific content */}
       <div className="space-y-6">
-        <IlCourtFormsSection />
+        <IlCourtFormsSection c={c} />
         <IlServiceOptionsSection onProcessServerClick={onProcessServerClick} />
         <IlDeadlinesSection />
       </div>
