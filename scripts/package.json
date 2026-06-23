@@ -36,6 +36,7 @@
     "test:fl-hillsborough-summons-signed": "tsx ./src/test-fl-hillsborough-summons-signed.ts",
     "test:fl-palm-beach-summons-signed": "tsx ./src/test-fl-palm-beach-summons-signed.ts",
     "check:fl-sig-placement": "tsx ./src/check-fl-sig-placement.ts",
+    "test:il-smc-complaint": "tsx ./src/test-il-smc-complaint.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

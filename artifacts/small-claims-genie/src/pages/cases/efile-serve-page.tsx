@@ -958,11 +958,59 @@ const IL_CLERK_URLS: Record<string, { name: string; url: string }> = {
   "il-rock-island":{ name: "Rock Island County",url: "https://www.rockislandcounty.org/circuitclerk/" },
 };
 
-function IlCourtFormsSection({ c }: { c: ExtendedCase | undefined }) {
+function IlCourtFormsSection({
+  c,
+  caseId,
+  getToken,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const { toast } = useToast();
   const countyId = c?.countyId ?? "";
   const countyClerk = IL_CLERK_URLS[countyId] ?? null;
   const { data: ilCounties } = useListCounties({ state: "IL" } as unknown as Parameters<typeof useListCounties>[0]);
   const countyData = ilCounties?.find((co: County) => co.id === countyId);
+
+  const downloadIlForm = async (endpoint: string, stateId: string) => {
+    setDownloading(stateId);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: dlToken }),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const hasBasicInfo = !!c?.plaintiffName && !!c?.defendantName;
 
   const courtName = countyData?.courthouseName ?? c?.courthouseName;
   const address = countyData?.courthouseAddress;
@@ -1016,19 +1064,54 @@ function IlCourtFormsSection({ c }: { c: ExtendedCase | undefined }) {
         </div>
       )}
 
-      {/* Forms card */}
-      <div className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm">
-        <div className="h-9 w-9 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
-          <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+      {/* IL Complaint download card */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            IL Form
+          </span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground leading-tight mb-1">
-            Forms from the Circuit Court Clerk
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Small Claims Complaint</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "Illinois Supreme Court statewide form — file with the circuit court clerk"
+              : "Complete Step 1 (parties info) to enable"}
           </p>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Illinois small claims forms vary by county and circuit court. Pick up the required forms at your local circuit court clerk's office, or check your court's website. There is no single statewide form.
-          </p>
-          {countyClerk ? (
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadIlForm("il/smc-complaint", "il-smc-complaint")}
+          disabled={!hasBasicInfo || downloading === "il-smc-complaint"}
+          title={hasBasicInfo ? "Download IL Small Claims Complaint" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "il-smc-complaint" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "il-smc-complaint" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* Filing info */}
+      <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
+        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-tight mb-1.5">Filing in Illinois — Next Steps</p>
+          <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside leading-relaxed">
+            <li>Print the complaint and bring it to the circuit court clerk in the county where the defendant lives or the dispute occurred.</li>
+            <li>Pay the filing fee at the clerk's window (see amounts below). Ask about a fee waiver if needed.</li>
+            <li>The clerk will issue a summons — you are responsible for arranging service on the defendant.</li>
+            <li>Serve the defendant via sheriff, certified mail through the clerk, or a licensed process server at least 3 days before the return date.</li>
+          </ol>
+          {countyClerk && (
             <a
               href={countyClerk.url}
               target="_blank"
@@ -1038,18 +1121,26 @@ function IlCourtFormsSection({ c }: { c: ExtendedCase | undefined }) {
               {countyClerk.name} Circuit Court Clerk
               <ExternalLink className="h-3 w-3" />
             </a>
-          ) : (
-            <a
-              href="https://www.illinoiscourts.gov/courts/circuit-court/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#0d6b5e] hover:underline"
-            >
-              Find your Illinois circuit court
-              <ExternalLink className="h-3 w-3" />
-            </a>
           )}
         </div>
+      </div>
+
+      {/* Filing fees */}
+      <div className="rounded-xl border bg-amber-50 border-amber-200 px-4 py-3">
+        <p className="text-xs font-semibold text-amber-800 mb-1.5">IL Filing Fees — 735 ILCS 5/2-212</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+          {[
+            ["$0 – $500",           "$30"],
+            ["$501 – $2,500",       "$50"],
+            ["$2,501 – $10,000",    "$75"],
+          ].map(([range, fee]) => (
+            <div key={range} className="flex justify-between text-[11px] text-amber-900">
+              <span>{range}</span>
+              <span className="font-semibold">{fee}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-amber-700 mt-1.5">Claim limit: $10,000 (735 ILCS 5/2-209)</p>
       </div>
     </div>
   );
@@ -1059,9 +1150,13 @@ function IlCourtFormsSection({ c }: { c: ExtendedCase | undefined }) {
 
 function IlEFilingPanel({
   c,
+  caseId,
+  getToken,
   onProcessServerClick,
 }: {
   c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
   onProcessServerClick: () => void;
 }) {
   return (
@@ -1071,7 +1166,7 @@ function IlEFilingPanel({
 
       {/* RIGHT — IL-specific content */}
       <div className="space-y-6">
-        <IlCourtFormsSection c={c} />
+        <IlCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
         <IlServiceOptionsSection onProcessServerClick={onProcessServerClick} />
         <IlDeadlinesSection />
       </div>
@@ -1703,7 +1798,7 @@ function EFilingPanel({
     return <TxEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
   }
   if ((c?.jurisdictionState as string) === "IL") {
-    return <IlEFilingPanel c={c} onProcessServerClick={onProcessServerClick} />;
+    return <IlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} />;
   }
   return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
 }

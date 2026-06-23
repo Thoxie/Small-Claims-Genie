@@ -443,4 +443,13 @@ router.post(
   makeFormHandler("TX-PETITION", (id) => `TX-Small-Claims-Petition-Case-${id}-signed.pdf`, { signed: true }),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Illinois forms — AcroForm fill via pdftk (statewide, all 102 counties)
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.post(
+  "/cases/:id/forms/il/smc-complaint",
+  makeFormHandler("IL-SMC-COMPLAINT", (id) => `IL-Small-Claims-Complaint-Case-${id}.pdf`),
+);
+
 export default router;

@@ -32,6 +32,9 @@ export * from "./mc030-definition";
 // ─── Texas programmatic forms (pdf-lib, no template PDF) ─────────────────────
 export * from "./tx-petition-definition";
 
+// ─── Illinois AcroForm fills (pdftk FDF) ─────────────────────────────────────
+export * from "./il-smc-complaint-definition";
+
 // ─── Florida programmatic forms (pdf-lib, no template PDF) ────────────────────
 // Statewide form must be exported first — county-specific forms import from it
 export * from "./fl-statement-of-claim-definition";
