@@ -5,7 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { DocumentOcrStatus } from './documentOcrStatus';
+import type { DocumentOcrStatus } from "./documentOcrStatus";
 
 export interface Document {
   id: number;

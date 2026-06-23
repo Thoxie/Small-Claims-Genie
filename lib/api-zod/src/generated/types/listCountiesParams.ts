@@ -5,7 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { ListCountiesState } from './listCountiesState';
+import type { ListCountiesState } from "./listCountiesState";
 
 export type ListCountiesParams = {
   /**

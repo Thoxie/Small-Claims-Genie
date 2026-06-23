@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CaseJurisdictionState = typeof CaseJurisdictionState[keyof typeof CaseJurisdictionState];
-
+export type CaseJurisdictionState =
+  (typeof CaseJurisdictionState)[keyof typeof CaseJurisdictionState];
 
 export const CaseJurisdictionState = {
   CA: "CA",

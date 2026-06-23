@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CreateCaseBodyJurisdictionState = typeof CreateCaseBodyJurisdictionState[keyof typeof CreateCaseBodyJurisdictionState];
-
+export type CreateCaseBodyJurisdictionState =
+  (typeof CreateCaseBodyJurisdictionState)[keyof typeof CreateCaseBodyJurisdictionState];
 
 export const CreateCaseBodyJurisdictionState = {
   CA: "CA",

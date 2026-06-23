@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type DocumentOcrStatus = typeof DocumentOcrStatus[keyof typeof DocumentOcrStatus];
-
+export type DocumentOcrStatus =
+  (typeof DocumentOcrStatus)[keyof typeof DocumentOcrStatus];
 
 export const DocumentOcrStatus = {
-  pending: 'pending',
-  processing: 'processing',
-  complete: 'complete',
-  failed: 'failed',
+  pending: "pending",
+  processing: "processing",
+  complete: "complete",
+  failed: "failed",
 } as const;

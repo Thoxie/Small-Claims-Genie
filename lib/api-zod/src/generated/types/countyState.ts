@@ -6,8 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CountyState = typeof CountyState[keyof typeof CountyState];
-
+export type CountyState = (typeof CountyState)[keyof typeof CountyState];
 
 export const CountyState = {
   CA: "CA",

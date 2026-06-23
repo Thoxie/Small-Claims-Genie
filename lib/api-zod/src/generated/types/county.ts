@@ -5,7 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
-import type { CountyState } from './countyState';
+import type { CountyState } from "./countyState";
 
 export interface County {
   id: string;
