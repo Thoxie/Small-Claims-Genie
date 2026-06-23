@@ -2121,6 +2121,7 @@ function ProcessServerPanel() {
 function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" | "IL" }) {
   const isFL = jurisdictionState === "FL";
   const isTX = jurisdictionState === "TX";
+  const isIL = jurisdictionState === "IL";
 
   const caSteps = [
     {
@@ -2221,7 +2222,40 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | 
     },
   ];
 
-  const steps = isTX ? txSteps : isFL ? flSteps : caSteps;
+  const ilSteps = [
+    {
+      icon: Gavel,
+      title: "Obtain your judgment",
+      desc: "After you win, the court enters a judgment in your favor. Get a certified copy from the circuit court clerk — you will need it for every collection step.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Citation to Discover Assets (735 ILCS 5/2-1402)",
+      desc: "File a Citation to Discover Assets with the circuit court to compel the defendant to appear and disclose their bank accounts, employer, and property under oath. The court can hold a non-complying defendant in contempt.",
+    },
+    {
+      icon: FileCheck2,
+      title: "Wage Deduction Order",
+      desc: "After serving a citation on the defendant's employer, the court issues a Wage Deduction Order directing the employer to withhold a portion of the defendant's wages each pay period and pay it to you (735 ILCS 5/12-801 et seq.).",
+    },
+    {
+      icon: Shield,
+      title: "Bank Account Citation (Non-Wage Garnishment)",
+      desc: "Serve a citation directly on the defendant's bank to freeze and turn over funds in the account. You must identify the bank and branch — information gathered during the Citation to Discover Assets hearing.",
+    },
+    {
+      icon: FileCheck2,
+      title: "Judgment Lien on Real Estate",
+      desc: "Record a certified copy of the judgment with the recorder of deeds in any Illinois county where the defendant owns real property to create a judgment lien (735 ILCS 5/12-101). The lien attaches to all non-exempt real estate the defendant owns or later acquires in that county.",
+    },
+    {
+      icon: RefreshCw,
+      title: "Judgment valid for 7 years — renewable",
+      desc: "An Illinois judgment is enforceable for 7 years from entry and can be renewed for additional 7-year periods before expiration (735 ILCS 5/12-108). Post-judgment interest accrues at 9% per year (735 ILCS 5/2-1303).",
+    },
+  ];
+
+  const steps = isIL ? ilSteps : isTX ? txSteps : isFL ? flSteps : caSteps;
   const iconBg = "bg-amber-100";
   const iconColor = "text-amber-700";
 
@@ -2238,7 +2272,7 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | 
           </h2>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             A judgment in your favor is a powerful legal tool — but it does not automatically put money
-            in your pocket. {isTX ? "Texas" : isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
+            in your pocket. {isIL ? "Illinois" : isTX ? "Texas" : isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
             Here is how to use them.
           </p>
         </div>
