@@ -72,6 +72,8 @@ export default function NewCase() {
     );
   };
 
+  const selectedCounty = counties?.find((c) => c.id === countyId);
+
   const countyLabel =
     jurisdictionState === "CA" ? "California County" :
     jurisdictionState === "IL" ? "Illinois County" :
@@ -173,6 +175,11 @@ export default function NewCase() {
               ))}
             </select>
             <p className="text-sm text-muted-foreground mt-1">{countyHint}</p>
+            {jurisdictionState === "IL" && selectedCounty?.filingFeeUnder10000 != null && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Filing fee: <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder10000}</span> (up to $10,000 · may vary by claim amount)
+              </p>
+            )}
             {errors.countyId && <p className="text-sm text-destructive mt-1">{errors.countyId}</p>}
           </div>
 

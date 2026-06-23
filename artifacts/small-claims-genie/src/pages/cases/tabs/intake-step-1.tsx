@@ -154,6 +154,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
   const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
   const countyState = selectedCounty?.state ?? jurisdictionState;
   const isCA = countyState === "CA";
+  const isIL = countyState === "IL";
   const courtAddress = selectedCourthouse
     ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, ${countyState} ${selectedCourthouse.zip}`
     : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, ${countyState} ${selectedCounty.courthouseZip}` : "";
@@ -361,6 +362,11 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                   <a href={selectedCounty.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium inline-flex items-center gap-0.5">
                     Court website ↗
                   </a>
+                )}
+                {isIL && selectedCounty.filingFeeUnder10000 != null && (
+                  <span className="text-muted-foreground">
+                    Filing fee: <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder10000}</span> (claims up to $10,000)
+                  </span>
                 )}
               </div>
             )}
