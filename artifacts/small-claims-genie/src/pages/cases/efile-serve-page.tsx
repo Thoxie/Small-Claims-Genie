@@ -103,6 +103,16 @@ function FilingSummaryPanel({
         />
         <InfoRow label="Phone" value={c?.courthousePhone} />
         <InfoRow label="County" value={formatCounty(c?.countyId)} />
+        <InfoRow
+          label="Service Method"
+          value={c?.notifyMethod ? ({
+            certified_mail: "Certified Mail by Court Clerk",
+            adult_service: "Service by Adult (18+, non-party)",
+            sheriff: "Sheriff / Marshal Service",
+            process_server: "Registered Process Server",
+            constable: "Constable Service",
+          } as Record<string, string>)[c.notifyMethod] ?? c.notifyMethod : undefined}
+        />
       </Section>
 
       <Section title="Plaintiff (You)" icon={User}>
