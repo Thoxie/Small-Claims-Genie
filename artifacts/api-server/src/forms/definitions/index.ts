@@ -40,6 +40,7 @@ export * from "./il-smc-complaint-definition";
 export * from "./il-summons-definition";
 export * from "./il-proof-of-service-definition";
 export * from "./il-fee-waiver-definition";
+export * from "./il-letter-to-sheriff-definition";
 
 // ─── Florida programmatic forms (pdf-lib, no template PDF) ────────────────────
 // Statewide form must be exported first — county-specific forms import from it

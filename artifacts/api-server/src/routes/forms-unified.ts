@@ -522,6 +522,13 @@ router.post(
   makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
 );
 
+// IL Letter to the Sheriff — CS-L 706.1 (pdftk FDF fill)
+// The plaintiff signature is a typed name per form instructions; no image variant needed.
+router.post(
+  "/cases/:id/forms/il/letter-to-sheriff",
+  makeFormHandler("IL-LETTER-TO-SHERIFF", (id) => `IL-Letter-to-Sheriff-Case-${id}.pdf`),
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Florida — Proof of Service and Fee Waiver
 // ─────────────────────────────────────────────────────────────────────────────

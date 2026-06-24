@@ -540,6 +540,20 @@ function enrichIlCounty<T extends { id: string }>(c: T) {
   return { ...c, ...IL_SERVICE_DEFAULTS, ...(IL_SERVICE_OVERRIDES[c.id] ?? {}) };
 }
 
+/**
+ * Returns the sheriff's office mailing address for an IL county ID,
+ * split into two lines for use on the Letter to the Sheriff form.
+ * Returns null if the address is unknown for that county.
+ */
+export function getIlSheriffAddress(countyId: string | null | undefined): { line1: string; line2: string } | null {
+  if (!countyId) return null;
+  const addr = IL_SERVICE_OVERRIDES[countyId]?.sheriffOfficeAddress;
+  if (!addr) return null;
+  const commaIdx = addr.indexOf(",");
+  if (commaIdx === -1) return { line1: addr, line2: "" };
+  return { line1: addr.slice(0, commaIdx).trim(), line2: addr.slice(commaIdx + 1).trim() };
+}
+
 router.get("/counties", (req, res): void => {
   const { state } = req.query;
   if (state === "CA") {
