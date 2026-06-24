@@ -2396,7 +2396,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <h4 className="text-sm font-bold text-foreground">Serving the Defendant</h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                After the clerk signs and stamps your summons, you must have it served on the defendant. The defendant must be served at least <strong>7 days before the hearing</strong> (Fla. Sm. Cl. R. 7.070). Choose the method that works best for your situation.
+                After the clerk signs and stamps your summons, you must have it served on the defendant before the pretrial conference date shown on the summons. You have up to <strong>120 days from filing</strong> to complete service before the court may dismiss your case (Fla. R. Civ. P. 1.070). Serve early — sheriff and certified mail service can take weeks. Choose the method that works best for your situation.
               </p>
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
                 <RadioGroup value={flServiceMethod} onValueChange={setFlServiceMethod} className="gap-0">
@@ -2443,7 +2443,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       </div>
                       <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
                         <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
-                        <p className="text-xs text-blue-800 leading-relaxed">Service must be completed at least <strong>7 days before the hearing</strong>. Process server fees may be recovered if you win your case.</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Service must be completed before the pretrial conference date on the summons. You have 120 days from filing before the court may dismiss for lack of service. Process server fees may be recovered if you win.</p>
                       </div>
                     </div>
                   )}
@@ -2472,7 +2472,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       </div>
                       <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
                         <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
-                        <p className="text-xs text-blue-800 leading-relaxed">Service must be completed at least <strong>7 days before the hearing</strong>. Allow extra time — sheriff service can take 1–3 weeks depending on the county.</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Service must be completed before the pretrial conference date on the summons. Allow extra time — sheriff service can take 1–3 weeks depending on the county. You have 120 days from filing before the court may dismiss.</p>
                       </div>
                     </div>
                   )}
@@ -2480,7 +2480,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (flServiceMethod === "certified_mail") { e.preventDefault(); setFlServiceMethod(""); } }}>
                     <RadioGroupItem value="certified_mail" id="fl-serve-mail" className="mt-0.5 shrink-0" />
                     <p className="text-sm text-foreground leading-relaxed">
-                      <span className="font-semibold">Certified Mail — Least Reliable.</span> In some Florida counties the clerk can send the summons by certified mail at your request. Service only counts if the defendant signs for it.
+                      <span className="font-semibold">Certified Mail — Least Reliable.</span> Available for <strong>Florida residents only</strong> (Fla. Sm. Cl. R. 7.070). The clerk sends the summons and Statement of Claim by certified mail. Service is valid only if the defendant — or someone authorized to receive mail at their residence or business — signs the return receipt. Not valid for out-of-state defendants.
                     </p>
                   </label>
                   {flServiceMethod === "certified_mail" && (
@@ -2688,7 +2688,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <h4 className="text-sm font-bold text-foreground">Serving the Defendant</h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                After you file and pay the filing fee, the court prepares a Citation (summons). The defendant must be served at least <strong>10 days before the hearing</strong> (Tex. R. Civ. P. 536). Choose the method that best fits your situation.
+                After you file and pay the filing fee, the clerk issues a Citation (summons) for you to have served on the defendant. Once served, the defendant has <strong>14 days to file an answer</strong> (TRCP Rule 502). The court then schedules trial <strong>20–45 days after service</strong> (TRCP Rule 503). Serve as early as possible — the hearing date is not set until after the answer period closes.
               </p>
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
                 <RadioGroup value={txServiceMethod} onValueChange={setTxServiceMethod} className="gap-0">
@@ -2733,8 +2733,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         </div>
                       </div>
                       <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
-                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
-                        <p className="text-xs text-blue-800 leading-relaxed">The defendant must be served at least <strong>10 days before the hearing</strong>. Service fees are typically recoverable if you win your case.</p>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Timing</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Once the defendant is served, they have <strong>14 days to file an answer</strong>. The court schedules trial 20–45 days after service. Serve early so there is time to resolve service issues before your case is heard. Service fees are typically recoverable if you win.</p>
                       </div>
                     </div>
                   )}
@@ -2762,8 +2762,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         </div>
                       </div>
                       <div className="rounded-lg bg-blue-100 border border-blue-200 px-3 py-2.5">
-                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Deadline</p>
-                        <p className="text-xs text-blue-800 leading-relaxed">The defendant must be served at least <strong>10 days before the hearing</strong>. If service cannot be completed in time, contact the clerk to request a continuance.</p>
+                        <p className="text-xs font-semibold text-blue-900 mb-0.5">Timing</p>
+                        <p className="text-xs text-blue-800 leading-relaxed">Once the defendant is served, they have <strong>14 days to file an answer</strong>. The court then schedules trial 20–45 days after service. Serve early — if service fails, you will need to make another attempt before the court can proceed.</p>
                       </div>
                     </div>
                   )}
@@ -2779,15 +2779,15 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                       <div className="flex gap-2.5">
                         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Service Requires a Signed Receipt</p>
-                          <p className="text-xs text-blue-800 leading-relaxed">Service is only complete if the defendant personally signs the certified mail receipt. If they refuse delivery, don't sign, or the mail is returned unclaimed, service fails and the deadline does not restart.</p>
+                          <p className="text-xs font-semibold text-blue-900 mb-0.5">Return Receipt Required (TRCP Rule 501)</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">Must be sent restricted delivery. Service is complete only upon the court receiving a signed or electronic return receipt. If the defendant refuses or does not accept delivery, service fails.</p>
                         </div>
                       </div>
                       <div className="flex gap-2.5">
                         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                         <div>
                           <p className="text-xs font-semibold text-blue-900 mb-0.5">If Certified Mail Fails</p>
-                          <p className="text-xs text-blue-800 leading-relaxed">Switch to constable/sheriff service or a private process server right away. Contact the clerk to request a continuance if the hearing date is too close.</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">Switch to constable/sheriff service or a certified process server right away. The answer deadline does not restart — serve early to leave time for a second attempt if needed.</p>
                         </div>
                       </div>
                     </div>
@@ -2940,7 +2940,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </div>
               </div>
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
-                <p className="text-xs text-amber-800 leading-relaxed"><strong>Important:</strong> The defendant must be served at least <strong>3 days before the return date</strong> (735 ILCS 5/2-203). The process server must be at least 18 years old and not a party to the case.</p>
+                <p className="text-xs text-amber-800 leading-relaxed"><strong>Important:</strong> The clerk sets the return date <strong>21–40 days after the summons is issued</strong>. The defendant must be served at least <strong>3 days before that return date</strong>. The process server must be at least 18 years old and not a party to the case.</p>
               </div>
             </div>
           )}
@@ -2953,7 +2953,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <h4 className="text-sm font-bold text-foreground">Serving the Defendant</h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                After the clerk issues the summons, you must have it served on the defendant. Illinois requires service at least <strong>3 days before the return date</strong> (735 ILCS 5/2-203). The process server must be at least 18 years old and not a party to the case.
+                After the clerk issues the summons, you must have it served on the defendant. The clerk sets a return date <strong>21–40 days after the summons is issued</strong>. Illinois requires service at least <strong>3 days before the return date</strong>. The process server must be at least 18 years old and not a party to the case.
               </p>
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
                 <RadioGroup value={ilServiceMethod} onValueChange={setIlServiceMethod} className="gap-0">
@@ -2983,7 +2983,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                         <div>
                           <p className="text-xs font-semibold text-blue-900 mb-0.5">How It Works</p>
-                          <p className="text-xs text-blue-800 leading-relaxed">After the clerk issues the summons, give it to a licensed process server along with a copy of the complaint. The server personally delivers both documents to the defendant and files a Proof of Service with the court.</p>
+                          <p className="text-xs text-blue-800 leading-relaxed">After the clerk issues the summons, give it to a <strong>licensed private detective / process server</strong> along with a copy of the complaint (735 ILCS 5/2-202). A licensed server can serve without court appointment in all Illinois counties (including Cook County as of January 1, 2025). The server personally delivers both documents to the defendant and files a Proof of Service with the court.</p>
                         </div>
                       </div>
                       <div className="flex gap-2.5">
