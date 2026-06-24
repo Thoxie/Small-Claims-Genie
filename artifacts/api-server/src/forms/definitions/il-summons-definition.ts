@@ -71,7 +71,7 @@ function countyDisplay(countyId?: string | null): string {
   return countyId.replace(/^il-/, "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
-export async function buildILSummons(d: CaseData, _body: FormBody, _opts?: GenerateOptions): Promise<Buffer> {
+export async function buildILSummons(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
   const doc  = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -269,6 +269,31 @@ export async function buildILSummons(d: CaseData, _body: FormBody, _opts?: Gener
     y = wrap(page, font, line_, ML, y, CW, 8, 3.5);
     y -= 3;
   }
+
+  // ── Plaintiff signature area ─────────────────────────────────────────────────
+  line(page, ML, y, MR, y, 0.5);
+  y -= 12;
+  rect(page, ML, y - 2, MR - ML, 13, LIGHT);
+  txt(page, bold, "PLAINTIFF'S SIGNATURE", ML + 4, y + 1, 9);
+  y -= 16;
+  const certTxt = "I certify that the information in this summons and complaint is true and correct to the best of my knowledge.";
+  y = wrap(page, font, certTxt, ML, y, CW, 8, 4);
+  y -= 12;
+
+  if (opts?.signatureBytes) {
+    try {
+      const sigImg = await doc.embedPng(opts.signatureBytes).catch(() => null)
+        ?? await doc.embedJpg(opts.signatureBytes).catch(() => null);
+      if (sigImg) {
+        page.drawImage(sigImg, { x: ML, y: y - 24, width: 180, height: 28 });
+      }
+    } catch { /* ignore */ }
+  }
+
+  line(page, ML, y - 2, ML + 200, y - 2, 0.5);
+  txt(page, font, "Plaintiff's Signature", ML, y - 12, 7.5, GRAY);
+  txt(page, bold, "Date:", MR - 120, y - 2, 8.5);
+  line(page, MR - 90, y - 2, MR, y - 2, 0.5);
 
   // ── Footer ───────────────────────────────────────────────────────────────────
   line(page, ML, 38, MR, 38, 0.5, GRAY);

@@ -831,6 +831,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       if (endpoint === "tx/citation") return "Texas Citation";
       if (endpoint === "tx/return-of-service") return "Texas Return of Service";
       if (endpoint === "tx/fee-waiver") return "TX Fee Waiver";
+      if (endpoint === "il/smc-complaint") return "Illinois Small Claims Complaint";
+      if (endpoint === "il/summons") return "Illinois Small Claims Summons";
       if (endpoint === "il/proof-of-service") return "Illinois Proof of Service";
       if (endpoint === "il/fee-waiver") return "IL Fee Waiver";
       if (endpoint.startsWith("il/")) return "Illinois Small Claims Form";
@@ -2922,12 +2924,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   </div>
                   <p className="text-base font-bold leading-snug text-foreground">Small Claims Complaint</p>
                   <p className="text-xs text-muted-foreground leading-snug mt-0.5">Illinois Supreme Court uniform form — accepted at every Illinois Circuit Court. Pre-filled from your case details.</p>
-                  {downloadError && downloadingForm === "il/smc-complaint" && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                  {downloadError && (downloadingForm === "il/smc-complaint" || downloadingForm === "il/smc-complaint/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "il/smc-complaint"} onClick={() => downloadSignedFLForm("il/smc-complaint", `IL-Small-Claims-Complaint-Case-${caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "il/smc-complaint" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
-                    Download
+                  <button type="button" disabled={downloadingForm === "il/smc-complaint/signed"} onClick={() => openFlSigModal({ endpoint: "il/smc-complaint", filename: `IL-Small-Claims-Complaint-Signed-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "il/smc-complaint/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign &amp; Download
+                  </button>
+                  <button type="button" disabled={downloadingForm === "il/smc-complaint"} onClick={() => downloadSignedFLForm("il/smc-complaint", `IL-Small-Claims-Complaint-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                    {downloadingForm === "il/smc-complaint" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
                   </button>
                 </div>
               </div>
@@ -2957,12 +2963,16 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   </div>
                   <p className="text-base font-bold leading-snug text-foreground">Summons — Small Claims</p>
                   <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk when you file your Complaint — the clerk assigns the return date and signs it.</p>
-                  {downloadError && downloadingForm === "il/summons" && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                  {downloadError && (downloadingForm === "il/summons" || downloadingForm === "il/summons/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "il/summons"} onClick={() => downloadSignedFLForm("il/summons", `IL-Summons-Case-${caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "il/summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
-                    Download
+                  <button type="button" disabled={downloadingForm === "il/summons/signed"} onClick={() => openFlSigModal({ endpoint: "il/summons", filename: `IL-Summons-Signed-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "il/summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign &amp; Download
+                  </button>
+                  <button type="button" disabled={downloadingForm === "il/summons"} onClick={() => downloadSignedFLForm("il/summons", `IL-Summons-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                    {downloadingForm === "il/summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
                   </button>
                 </div>
               </div>

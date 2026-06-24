@@ -13,6 +13,7 @@
  */
 
 import * as path from "path";
+import { PDFDocument } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -154,7 +155,7 @@ const ilSmcComplaintDefinition: FormDefinition = {
   assetPath: PDF_PATH,
   renderingTechnique: "xfa-pdftk",
 
-  async generate(d: import("../types").CaseData, _body: FormBody, _opts?: GenerateOptions): Promise<Buffer> {
+  async generate(d: import("../types").CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     const defendantAddr = fmtAddr(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
 
     // Build the claim narrative for section 3 (reason lines).
@@ -209,7 +210,24 @@ const ilSmcComplaintDefinition: FormDefinition = {
       },
     });
 
-    return filledBuf;
+    // Both unsigned and signed run through pdf-lib so they share the same
+    // compression baseline. The signed variant adds the signature image on top.
+    const doc = await PDFDocument.load(filledBuf, { ignoreEncryption: true });
+
+    if (opts?.signatureBytes) {
+      // Plaintiff signature line is near the bottom of the first page.
+      const page = doc.getPage(0);
+      try {
+        const sigImg =
+          (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+          (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+        if (sigImg) {
+          page.drawImage(sigImg, { x: 97, y: 110, width: 200, height: 22, opacity: 1 });
+        }
+      } catch { /* ignore */ }
+    }
+
+    return Buffer.from(await doc.save({ updateFieldAppearances: false, useObjectStreams: false }));
   },
 };
 
