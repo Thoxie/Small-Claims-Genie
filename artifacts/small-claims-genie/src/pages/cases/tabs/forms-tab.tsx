@@ -2610,24 +2610,25 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Your name, address, and case information are pre-filled from your intake. The form opens in a new tab — fill in the eligibility and financial details directly in the PDF, then save it to your computer. File it with the clerk before or at the same time as your Statement of Claim.
+                Your name, address, and case information are pre-filled from your intake. Download the form, complete the financial eligibility section, sign it, and file it with the clerk before or at the same time as your Statement of Claim.
               </p>
-              {downloadError && downloadingForm === "fl/fee-waiver" && <p className="text-xs text-destructive">{downloadError}</p>}
-              <button
-                type="button"
-                onClick={openFlFeeWaiverInNewTab}
-                disabled={downloadingForm === "fl/fee-waiver"}
-                className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
-              >
-                <span className="flex items-center gap-2">
-                  {downloadingForm === "fl/fee-waiver" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-                  Open Fee Waiver PDF
-                </span>
-                <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
-                  Opens in a new tab
-                  <ChevronRight className="h-4 w-4" />
-                </span>
-              </button>
+              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Application for Civil Indigent Status</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
+                  {downloadError && (downloadingForm === "fl/fee-waiver" || downloadingForm === "fl/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button type="button" disabled={downloadingForm === "fl/fee-waiver/signed"} onClick={() => openFlSigModal({ endpoint: "fl/fee-waiver", filename: `FL-Fee-Waiver-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "fl/fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign &amp; Download
+                  </button>
+                  <button type="button" disabled={downloadingForm === "fl/fee-waiver"} onClick={() => downloadSignedFLForm("fl/fee-waiver", `FL-Fee-Waiver-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                    {downloadingForm === "fl/fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
+              </div>
               <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
                 <p className="text-xs text-amber-800 leading-relaxed">
                   <span className="font-semibold">This form is confidential.</span> The court will not give it to the other party. False statements on a fee waiver form are a criminal offense. File it at the clerk's window before or at the same time as your Statement of Claim.
@@ -2916,24 +2917,25 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Your name, address, and case information are pre-filled from your intake. The form opens in a new tab — fill in the eligibility and financial details directly in the PDF, then save it to your computer. File it with the clerk at the same time as your petition.
+                Your name, address, and case information are pre-filled from your intake. Download the form, complete the financial eligibility section, sign it, and file it with the clerk at the same time as your petition.
               </p>
-              {downloadError && downloadingForm === "tx/fee-waiver" && <p className="text-xs text-destructive">{downloadError}</p>}
-              <button
-                type="button"
-                onClick={openTxFeeWaiverInNewTab}
-                disabled={downloadingForm === "tx/fee-waiver"}
-                className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
-              >
-                <span className="flex items-center gap-2">
-                  {downloadingForm === "tx/fee-waiver" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-                  Open Fee Waiver PDF
-                </span>
-                <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
-                  Opens in a new tab
-                  <ChevronRight className="h-4 w-4" />
-                </span>
-              </button>
+              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Affidavit of Inability to Pay</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
+                  {downloadError && (downloadingForm === "tx/fee-waiver" || downloadingForm === "tx/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button type="button" disabled={downloadingForm === "tx/fee-waiver/signed"} onClick={() => openFlSigModal({ endpoint: "tx/fee-waiver", filename: `TX-Fee-Waiver-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "tx/fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign &amp; Download
+                  </button>
+                  <button type="button" disabled={downloadingForm === "tx/fee-waiver"} onClick={() => downloadSignedFLForm("tx/fee-waiver", `TX-Fee-Waiver-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                    {downloadingForm === "tx/fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
+              </div>
               <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
                 <p className="text-xs text-amber-800 leading-relaxed">
                   <span className="font-semibold">This form is confidential.</span> The court will not give it to the other party. False statements on a fee waiver form are a criminal offense. File it at the clerk's window at the same time as your petition.
@@ -3179,24 +3181,25 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Your name, address, and case information are pre-filled from your intake. The form opens in a new tab — fill in the eligibility and financial details directly in the PDF, then save it to your computer. File it with the clerk at the same time as your Complaint.
+                Your name, address, and case information are pre-filled from your intake. Download the form, complete the financial eligibility section, sign it, and file it with the clerk at the same time as your Complaint.
               </p>
-              {downloadError && downloadingForm === "il/fee-waiver" && <p className="text-xs text-destructive">{downloadError}</p>}
-              <button
-                type="button"
-                onClick={openIlFeeWaiverInNewTab}
-                disabled={downloadingForm === "il/fee-waiver"}
-                className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
-              >
-                <span className="flex items-center gap-2">
-                  {downloadingForm === "il/fee-waiver" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-                  Open Fee Waiver PDF
-                </span>
-                <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
-                  Opens in a new tab
-                  <ChevronRight className="h-4 w-4" />
-                </span>
-              </button>
+              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Application for Waiver of Court Fees</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
+                  {downloadError && (downloadingForm === "il/fee-waiver" || downloadingForm === "il/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button type="button" disabled={downloadingForm === "il/fee-waiver/signed"} onClick={() => openFlSigModal({ endpoint: "il/fee-waiver", filename: `IL-Fee-Waiver-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "il/fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                    Sign &amp; Download
+                  </button>
+                  <button type="button" disabled={downloadingForm === "il/fee-waiver"} onClick={() => downloadSignedFLForm("il/fee-waiver", `IL-Fee-Waiver-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                    {downloadingForm === "il/fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                    Skip signing
+                  </button>
+                </div>
+              </div>
               <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
                 <p className="text-xs text-amber-800 leading-relaxed">
                   <span className="font-semibold">This form is confidential.</span> The court will not give it to the other party. False statements on a fee waiver form are a criminal offense. File it at the clerk's window at the same time as your Complaint.
