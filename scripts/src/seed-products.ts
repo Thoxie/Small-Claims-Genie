@@ -12,25 +12,25 @@ const PRODUCTS = [
   {
     name: "Personal Case (up to $5,000)",
     description: "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims up to $5,000.",
-    amount: 7900, // $79.00
+    amount: 3900, // $39.00
     metadata: { plan: "personal_low" },
   },
   {
     name: "Personal Case ($5,000 and above)",
     description: "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims of $5,000 or more.",
-    amount: 9900, // $99.00
+    amount: 5900, // $59.00
     metadata: { plan: "personal_high" },
   },
   {
     name: "Business Case (up to $5,000)",
     description: "For any case involving a business on either side — individual suing a business or vice versa. Claims up to $5,000.",
-    amount: 9900, // $99.00
+    amount: 5900, // $59.00
     metadata: { plan: "business_low" },
   },
   {
     name: "Business Case ($5,000 and above)",
     description: "For any case involving a business on either side — individual suing a business or vice versa. Claims of $5,000 or more.",
-    amount: 10900, // $109.00
+    amount: 7900, // $79.00
     metadata: { plan: "business_high" },
   },
   {
@@ -42,13 +42,13 @@ const PRODUCTS = [
   {
     name: "Post-Judgment Collection (up to $5,000)",
     description: "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments up to $5,000.",
-    amount: 8900, // $89.00
+    amount: 6900, // $69.00
     metadata: { plan: "collection_low" },
   },
   {
     name: "Post-Judgment Collection ($5,000 and above)",
     description: "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments of $5,000 or more.",
-    amount: 10900, // $109.00
+    amount: 9900, // $99.00
     metadata: { plan: "collection_high" },
   },
 ];

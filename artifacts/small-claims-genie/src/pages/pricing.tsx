@@ -319,13 +319,13 @@ const _PLAN_KEYS = {
 type PlanKey = (typeof _PLAN_KEYS)[keyof typeof _PLAN_KEYS];
 
 const PLAN_PRICES: Record<PlanKey, number> = {
-  personal_low: 79,
-  personal_high: 99,
-  business_low: 99,
-  business_high: 109,
+  personal_low: 39,
+  personal_high: 59,
+  business_low: 59,
+  business_high: 79,
   paralegal: 159,
-  collection_low: 89,
-  collection_high: 109,
+  collection_low: 69,
+  collection_high: 99,
 };
 
 async function startCheckout(
@@ -469,8 +469,8 @@ function PersonalCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         {([
-          { key: "personal_low" as PlanKey, price: "$79", label: "Up to $5,000" },
-          { key: "personal_high" as PlanKey, price: "$99", label: "$5,000+" },
+          { key: "personal_low" as PlanKey, price: "$39", label: "Up to $5,000" },
+          { key: "personal_high" as PlanKey, price: "$59", label: "$5,000+" },
         ]).map(({ key, price, label }) => (
           <button
             key={key}
@@ -533,8 +533,8 @@ function BusinessCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null; 
 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         {([
-          { key: "business_low" as PlanKey, price: "$99", label: "Up to $5,000" },
-          { key: "business_high" as PlanKey, price: "$109", label: "$5,000+" },
+          { key: "business_low" as PlanKey, price: "$59", label: "Up to $5,000" },
+          { key: "business_high" as PlanKey, price: "$79", label: "$5,000+" },
         ]).map(({ key, price, label }) => (
           <button
             key={key}
@@ -667,8 +667,8 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
 
       <div className="mb-4 grid grid-cols-2 gap-3 h-[90px]">
         {([
-          { key: "collection_low" as PlanKey, price: "$89", label: "Up to $5,000" },
-          { key: "collection_high" as PlanKey, price: "$109", label: "$5,000+" },
+          { key: "collection_low" as PlanKey, price: "$69", label: "Up to $5,000" },
+          { key: "collection_high" as PlanKey, price: "$99", label: "$5,000+" },
         ]).map(({ key, price, label }) => (
           <button
             key={key}

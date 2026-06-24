@@ -20,61 +20,25 @@ stripePublicRouter.get("/stripe/config", async (_req, res) => {
   }
 });
 
+// In-memory cache for Stripe products — avoids hammering the Stripe API on
+// every pricing page visit while ensuring prices are always current.
+// TTL is short (60s) so price changes are reflected quickly without a deploy.
+let productsCache: { products: any[]; expiresAt: number } | null = null;
+const PRODUCTS_CACHE_TTL_MS = 60_000;
+
 // List all active products with their prices.
+// Always reads from Stripe API directly so prices are never stale (e.g. after
+// a price update in the Stripe dashboard). Falls back to DB cache if Stripe
+// is unreachable.
 stripePublicRouter.get("/stripe/products", async (_req, res) => {
   try {
-    const result = await db.execute(sql`
-      WITH latest_products AS (
-        SELECT DISTINCT ON (metadata->>'plan') id
-        FROM stripe.products
-        WHERE active = true AND metadata->>'plan' IS NOT NULL
-        ORDER BY metadata->>'plan', created DESC
-      )
-      SELECT
-        p.id AS product_id,
-        p.name AS product_name,
-        p.description AS product_description,
-        p.metadata AS product_metadata,
-        pr.id AS price_id,
-        pr.unit_amount,
-        pr.currency,
-        pr.active AS price_active
-      FROM stripe.products p
-      JOIN latest_products lp ON lp.id = p.id
-      LEFT JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
-      WHERE p.active = true
-      ORDER BY pr.unit_amount ASC NULLS LAST
-    `);
-
-    const map = new Map<string, any>();
-    for (const row of result.rows as any[]) {
-      if (!map.has(row.product_id)) {
-        map.set(row.product_id, {
-          id: row.product_id,
-          name: row.product_name,
-          description: row.product_description,
-          metadata: row.product_metadata ?? {},
-          prices: [],
-        });
-      }
-      if (row.price_id) {
-        map.get(row.product_id).prices.push({
-          id: row.price_id,
-          unit_amount: row.unit_amount,
-          currency: row.currency,
-        });
-      }
-    }
-
-    const dbProducts = Array.from(map.values());
-
-    if (dbProducts.length > 0) {
-      res.json({ products: dbProducts });
+    // Serve from in-memory cache if still fresh
+    if (productsCache && Date.now() < productsCache.expiresAt) {
+      res.json({ products: productsCache.products });
       return;
     }
 
-    // DB empty — backfill hasn't run yet. Fall back to Stripe API directly.
-    logger.warn("stripe.products table empty — falling back to Stripe API");
+    // Fetch live from Stripe
     const stripe = await getUncachableStripeClient();
     const [stripeProducts, stripePrices] = await Promise.all([
       stripe.products.list({ active: true, limit: 100 }),
@@ -92,7 +56,7 @@ stripePublicRouter.get("/stripe/products", async (_req, res) => {
       });
     }
 
-    const fallbackProducts = stripeProducts.data
+    const products = stripeProducts.data
       .filter((p) => p.metadata?.plan)
       .map((p) => ({
         id: p.id,
@@ -104,10 +68,58 @@ stripePublicRouter.get("/stripe/products", async (_req, res) => {
         ),
       }));
 
-    res.json({ products: fallbackProducts });
-  } catch (err) {
-    logger.error({ err }, "stripe/products error");
-    res.status(500).json({ error: "Failed to load products" });
+    productsCache = { products, expiresAt: Date.now() + PRODUCTS_CACHE_TTL_MS };
+    res.json({ products });
+  } catch (stripeErr) {
+    // Stripe unreachable — fall back to DB so the pricing page still loads
+    logger.warn({ err: stripeErr }, "stripe/products: Stripe API failed, falling back to DB");
+    try {
+      const result = await db.execute(sql`
+        WITH latest_products AS (
+          SELECT DISTINCT ON (metadata->>'plan') id
+          FROM stripe.products
+          WHERE active = true AND metadata->>'plan' IS NOT NULL
+          ORDER BY metadata->>'plan', created DESC
+        )
+        SELECT
+          p.id AS product_id,
+          p.name AS product_name,
+          p.description AS product_description,
+          p.metadata AS product_metadata,
+          pr.id AS price_id,
+          pr.unit_amount,
+          pr.currency
+        FROM stripe.products p
+        JOIN latest_products lp ON lp.id = p.id
+        LEFT JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
+        WHERE p.active = true
+        ORDER BY pr.unit_amount ASC NULLS LAST
+      `);
+
+      const map = new Map<string, any>();
+      for (const row of result.rows as any[]) {
+        if (!map.has(row.product_id)) {
+          map.set(row.product_id, {
+            id: row.product_id,
+            name: row.product_name,
+            description: row.product_description,
+            metadata: row.product_metadata ?? {},
+            prices: [],
+          });
+        }
+        if (row.price_id) {
+          map.get(row.product_id).prices.push({
+            id: row.price_id,
+            unit_amount: row.unit_amount,
+            currency: row.currency,
+          });
+        }
+      }
+      res.json({ products: Array.from(map.values()) });
+    } catch (dbErr) {
+      logger.error({ err: dbErr }, "stripe/products: DB fallback also failed");
+      res.status(500).json({ error: "Failed to load products" });
+    }
   }
 });
 
