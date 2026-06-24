@@ -465,6 +465,13 @@ router.post(
   makeFormHandler("TX-RETURN-OF-SERVICE", (id) => `TX-Return-of-Service-Case-${id}-signed.pdf`, { signed: true }),
 );
 
+// TX Denton County Request for Service of Process / Citation
+// inline: true so the browser opens the PDF for user to fill JP precinct # and review before filing
+router.post(
+  "/cases/:id/forms/tx/denton-citation-request",
+  makeFormHandler("TX-DENTON-CITATION-REQUEST", (id) => `TX-Denton-Citation-Request-Case-${id}.pdf`, { inline: true }),
+);
+
 // TX Fee Waiver — Affidavit of Inability to Pay (Tex. R. Civ. P. 145)
 // inline: true so the browser opens the PDF for the user to fill financial sections before saving
 router.post(
