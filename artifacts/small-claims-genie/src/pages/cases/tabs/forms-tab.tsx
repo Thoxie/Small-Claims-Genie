@@ -52,21 +52,18 @@ const TX_JP_PRECINCTS: Record<string, { address: string; city: string; zip: stri
   const FL_WIZARD_STEPS = [
     { id: "fl-claim",      number: "Claim",      shortLabel: "Statement of Claim",  status: "required" as const },
     { id: "fl-summons",    number: "Summons",    shortLabel: "Summons / Notice",    status: "required" as const },
-    { id: "fl-proof",      number: "Proof",      shortLabel: "Proof of Service",    status: "required" as const },
     { id: "fl-service",    number: "Service",    shortLabel: "Serve Defendant",     status: "required" as const },
     { id: "fl-fee-waiver", number: "Fee Waiver", shortLabel: "Fee Waiver",          status: "optional" as const },
   ];
   const TX_WIZARD_STEPS = [
     { id: "tx-petition",   number: "Petition",   shortLabel: "TX Petition",         status: "required" as const },
     { id: "tx-citation",   number: "Citation",   shortLabel: "Citation",            status: "required" as const },
-    { id: "tx-return",     number: "Return",     shortLabel: "Return of Service",   status: "required" as const },
     { id: "tx-service",    number: "Service",    shortLabel: "Serve Defendant",     status: "required" as const },
     { id: "tx-fee-waiver", number: "Fee Waiver", shortLabel: "Fee Waiver",          status: "optional" as const },
   ];
   const IL_WIZARD_STEPS = [
     { id: "il-complaint",  number: "Complaint",  shortLabel: "SMC Complaint",       status: "required" as const },
     { id: "il-summons",    number: "Summons",    shortLabel: "IL Summons",          status: "required" as const },
-    { id: "il-proof",      number: "Proof",      shortLabel: "Proof of Service",    status: "required" as const },
     { id: "il-service",    number: "Service",    shortLabel: "Serve Defendant",     status: "required" as const },
     { id: "il-fee-waiver", number: "Fee Waiver", shortLabel: "Fee Waiver",          status: "optional" as const },
   ];
@@ -2391,42 +2388,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             </div>
           )}
 
-          {/* ── Step 2: Proof of Service ────────────────────────────────────────── */}
+          {/* ── Step 2: Serve Defendant ─────────────────────────────────────────── */}
           {flWizardIndex === 2 && (
-            <div className="rounded-xl border bg-card p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[#0d6b5e]" />
-                <h4 className="text-sm font-bold text-foreground">Proof of Service</h4>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                After the defendant is served, file this Florida Proof of Service (Form 7.340) with the court clerk at least 5 days before the pretrial conference. It certifies that the defendant received the summons and Statement of Claim.
-              </p>
-              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.340</span>
-                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required after service</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Florida Proof of Service</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Completed by the process server or sheriff after service is made. File with the clerk.</p>
-                  {downloadError && (downloadingForm === "fl/proof-of-service" || downloadingForm === "fl/proof-of-service/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
-                </div>
-                <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "fl/proof-of-service/signed"} onClick={() => openFlSigModal({ endpoint: "fl/proof-of-service", filename: `FL-Proof-of-Service-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "fl/proof-of-service/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={downloadingForm === "fl/proof-of-service"} onClick={() => downloadSignedFLForm("fl/proof-of-service", `FL-Proof-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {downloadingForm === "fl/proof-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 3: Service of Process ─────────────────────────────────────── */}
-          {flWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -2541,11 +2504,28 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
                 </RadioGroup>
               </div>
+              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.340</span>
+                    <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Proof of Service</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Florida Proof of Service</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Give this blank form to your process server. They complete and sign it after serving the defendant, then file it with the clerk at least 5 days before the pretrial conference.</p>
+                  {downloadError && downloadingForm === "fl/proof-of-service" && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                </div>
+                <div className="shrink-0">
+                  <button type="button" disabled={downloadingForm === "fl/proof-of-service"} onClick={() => downloadSignedFLForm("fl/proof-of-service", `FL-Proof-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "fl/proof-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
+                    Download
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* ── Step 4: Fee Waiver (optional) ──────────────────────────────────── */}
-          {flWizardIndex === 4 && (
+          {/* ── Step 3: Fee Waiver (optional) ──────────────────────────────────── */}
+          {flWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
@@ -2700,41 +2680,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             </div>
           )}
 
-          {/* ── Step 2: Return of Service ──────────────────────────────────────── */}
+          {/* ── Step 2: Serve Defendant ─────────────────────────────────────────── */}
           {txWizardIndex === 2 && (
-            <div className="rounded-xl border bg-card p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[#0d6b5e]" />
-                <h4 className="text-sm font-bold text-foreground">Return of Service</h4>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                After the defendant is served, the process server or constable completes and files a Return of Service with the court. This form is pre-filled for your case — provide it to your process server or constable when they pick up the citation.
-              </p>
-              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Completed by Process Server</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Texas Return of Service</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">The process server or constable fills out and files this with the court after serving the defendant. Must be filed before the hearing.</p>
-                  {downloadError && (downloadingForm === "tx/return-of-service" || downloadingForm === "tx/return-of-service/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
-                </div>
-                <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "tx/return-of-service/signed"} onClick={() => openFlSigModal({ endpoint: "tx/return-of-service", filename: `TX-Return-of-Service-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "tx/return-of-service/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={downloadingForm === "tx/return-of-service"} onClick={() => downloadSignedFLForm("tx/return-of-service", `TX-Return-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {downloadingForm === "tx/return-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 3: Service of Process ─────────────────────────────────────── */}
-          {txWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -2848,11 +2795,27 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
                 </RadioGroup>
               </div>
+              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Return of Service</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Texas Return of Service</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Give this blank form to your process server or constable. They complete and file it with the court after serving the defendant.</p>
+                  {downloadError && downloadingForm === "tx/return-of-service" && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                </div>
+                <div className="shrink-0">
+                  <button type="button" disabled={downloadingForm === "tx/return-of-service"} onClick={() => downloadSignedFLForm("tx/return-of-service", `TX-Return-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "tx/return-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
+                    Download
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* ── Step 4: Fee Waiver (optional) ──────────────────────────────────── */}
-          {txWizardIndex === 4 && (
+          {/* ── Step 3: Fee Waiver (optional) ──────────────────────────────────── */}
+          {txWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
@@ -2982,41 +2945,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             </div>
           )}
 
-          {/* ── Step 2: Proof of Service ────────────────────────────────────────── */}
+          {/* ── Step 2: Serve Defendant ─────────────────────────────────────────── */}
           {ilWizardIndex === 2 && (
-            <div className="rounded-xl border bg-card p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[#0d6b5e]" />
-                <h4 className="text-sm font-bold text-foreground">Proof of Service</h4>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                After the defendant is served, file this Proof of Service with the court clerk before the return date. It confirms to the court that the defendant received the summons and complaint.
-              </p>
-              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required after service</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Illinois Proof of Service</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Completed by the process server after the defendant is served. File with the Circuit Court clerk before the return date.</p>
-                  {downloadError && (downloadingForm === "il/proof-of-service" || downloadingForm === "il/proof-of-service/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
-                </div>
-                <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "il/proof-of-service/signed"} onClick={() => openFlSigModal({ endpoint: "il/proof-of-service", filename: `IL-Proof-of-Service-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "il/proof-of-service/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={downloadingForm === "il/proof-of-service"} onClick={() => downloadSignedFLForm("il/proof-of-service", `IL-Proof-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {downloadingForm === "il/proof-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 3: Service of Process ─────────────────────────────────────── */}
-          {ilWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -3120,11 +3050,27 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
                 </RadioGroup>
               </div>
+              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Proof of Service</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Illinois Proof of Service</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Give this blank form to your process server. They complete and sign it after serving the defendant, then file it with the Circuit Court clerk before the return date.</p>
+                  {downloadError && downloadingForm === "il/proof-of-service" && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                </div>
+                <div className="shrink-0">
+                  <button type="button" disabled={downloadingForm === "il/proof-of-service"} onClick={() => downloadSignedFLForm("il/proof-of-service", `IL-Proof-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "il/proof-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
+                    Download
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* ── Step 4: Fee Waiver (optional) ──────────────────────────────────── */}
-          {ilWizardIndex === 4 && (
+          {/* ── Step 3: Fee Waiver (optional) ──────────────────────────────────── */}
+          {ilWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
