@@ -2469,6 +2469,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     </p>
                   </label>
                   {flServiceMethod === "sheriff" && (
+                    <>
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
                         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
@@ -2489,6 +2490,24 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                         <p className="text-xs text-blue-800 leading-relaxed">Service must be completed before the pretrial conference date on the summons. Allow extra time — sheriff service can take 1–3 weeks depending on the county. You have 120 days from filing before the court may dismiss.</p>
                       </div>
                     </div>
+                    <div className="mx-3 mb-2 rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.340</span>
+                          <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Return of Service</span>
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">Florida Return of Service</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">After the sheriff serves the defendant, they complete and file this Return of Service with the court. Download a copy to keep for your records and to confirm service was completed before your pretrial conference.</p>
+                        {downloadError && downloadingForm === "fl/proof-of-service" && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                      </div>
+                      <div className="shrink-0">
+                        <button type="button" disabled={downloadingForm === "fl/proof-of-service"} onClick={() => downloadSignedFLForm("fl/proof-of-service", `FL-Return-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                          {downloadingForm === "fl/proof-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                    </>
                   )}
 
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (flServiceMethod === "certified_mail") { e.preventDefault(); setFlServiceMethod(""); } }}>
