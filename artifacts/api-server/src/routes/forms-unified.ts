@@ -466,14 +466,15 @@ router.post(
 );
 
 // TX Fee Waiver — Affidavit of Inability to Pay (Tex. R. Civ. P. 145)
+// inline: true so the browser opens the PDF for the user to fill financial sections before saving
 router.post(
   "/cases/:id/forms/tx/fee-waiver",
-  makeFormHandler("TX-FEE-WAIVER", (id) => `TX-Fee-Waiver-Case-${id}.pdf`),
+  makeFormHandler("TX-FEE-WAIVER", (id) => `TX-Fee-Waiver-Case-${id}.pdf`, { inline: true }),
 );
 
 router.post(
   "/cases/:id/forms/tx/fee-waiver/signed",
-  makeFormHandler("TX-FEE-WAIVER", (id) => `TX-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
+  makeFormHandler("TX-FEE-WAIVER", (id) => `TX-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true, inline: true }),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -511,22 +512,22 @@ router.post(
   makeFormHandler("IL-PROOF-OF-SERVICE", (id) => `IL-Proof-of-Service-Case-${id}-signed.pdf`, { signed: true }),
 );
 
-// IL Application for Waiver of Court Fees (programmatic pdf-lib)
+// IL Application for Waiver of Court Fees — inline so browser opens for user to fill financial sections
 router.post(
   "/cases/:id/forms/il/fee-waiver",
-  makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}.pdf`),
+  makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}.pdf`, { inline: true }),
 );
 
 router.post(
   "/cases/:id/forms/il/fee-waiver/signed",
-  makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
+  makeFormHandler("IL-FEE-WAIVER", (id) => `IL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true, inline: true }),
 );
 
 // IL Letter to the Sheriff — CS-L 706.1 (pdftk FDF fill)
-// The plaintiff signature is a typed name per form instructions; no image variant needed.
+// inline: true so the browser opens the PDF for review before printing/saving
 router.post(
   "/cases/:id/forms/il/letter-to-sheriff",
-  makeFormHandler("IL-LETTER-TO-SHERIFF", (id) => `IL-Letter-to-Sheriff-Case-${id}.pdf`),
+  makeFormHandler("IL-LETTER-TO-SHERIFF", (id) => `IL-Letter-to-Sheriff-Case-${id}.pdf`, { inline: true }),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -545,14 +546,15 @@ router.post(
 );
 
 // FL Application for Determination of Civil Indigent Status (fee waiver)
+// inline: true so the browser opens the PDF for user to fill financial sections before saving
 router.post(
   "/cases/:id/forms/fl/fee-waiver",
-  makeFormHandler("FL-FEE-WAIVER", (id) => `FL-Fee-Waiver-Case-${id}.pdf`),
+  makeFormHandler("FL-FEE-WAIVER", (id) => `FL-Fee-Waiver-Case-${id}.pdf`, { inline: true }),
 );
 
 router.post(
   "/cases/:id/forms/fl/fee-waiver/signed",
-  makeFormHandler("FL-FEE-WAIVER", (id) => `FL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
+  makeFormHandler("FL-FEE-WAIVER", (id) => `FL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true, inline: true }),
 );
 
 export default router;

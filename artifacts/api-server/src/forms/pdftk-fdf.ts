@@ -84,22 +84,26 @@ export function generateFdf(fields: FdfFields): string {
   ].join("\n");
 }
 
-// ─── pdftk fill + flatten ─────────────────────────────────────────────────────
+// ─── pdftk fill ───────────────────────────────────────────────────────────────
 
 /**
- * Fills a PDF form using pdftk fill_form and then flattens it.
+ * Fills a PDF form using pdftk fill_form.
  *
  * @param pdfPath   Absolute path to the template PDF
  * @param fields    Text field values and checkbox states
- * @returns         Flattened PDF buffer
+ * @param options   flatten (default true) — set false to keep fields interactive
+ * @returns         Filled PDF buffer
  */
 export async function pdftk_fill_form(
   pdfPath: string,
-  fields: FdfFields
+  fields: FdfFields,
+  options?: { flatten?: boolean }
 ): Promise<Buffer> {
   const id = crypto.randomBytes(8).toString("hex");
   const fdfPath = path.join(os.tmpdir(), `scg-${id}.fdf`);
   const outPath = path.join(os.tmpdir(), `scg-${id}-out.pdf`);
+
+  const shouldFlatten = options?.flatten ?? true;
 
   try {
     const fdf = generateFdf(fields);
@@ -107,7 +111,9 @@ export async function pdftk_fill_form(
 
     await execFileAsync(
       "pdftk",
-      [pdfPath, "fill_form", fdfPath, "output", outPath, "flatten"],
+      shouldFlatten
+        ? [pdfPath, "fill_form", fdfPath, "output", outPath, "flatten"]
+        : [pdfPath, "fill_form", fdfPath, "output", outPath],
       { timeout: 30_000 }
     );
 

@@ -75,7 +75,7 @@ export async function buildILFeeWaiver(
       // Check "completing for myself" by default
       "Last - Completing this form myself checkbox": "Yes",
     },
-  });
+  }, { flatten: false });
 
   // Both unsigned and signed run through pdf-lib with the same settings so
   // they share the same compression baseline.  The signed variant then adds

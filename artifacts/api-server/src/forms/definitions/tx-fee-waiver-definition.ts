@@ -78,7 +78,7 @@ export async function buildTXFeeWaiver(
       "Today":                          today,
       "Your printed name":              d.plaintiffName ?? "",
     },
-  });
+  }, { flatten: false });
 
   // Both unsigned and signed run through pdf-lib with the same settings so
   // they share the same compression baseline.  The signed variant then adds
