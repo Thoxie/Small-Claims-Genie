@@ -956,6 +956,66 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     finally { setDownloadingForm(null); }
   }
 
+  async function openFlFeeWaiverInNewTab() {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    const win = window.open("", "_blank");
+    if (!win) { toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." }); return; }
+    setDownloadingForm("fl/fee-waiver"); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const res = await fetch(`/api/cases/${caseId}/forms/fl/fee-waiver`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
+      if (!res.ok) { win.close(); setDownloadError("Failed to generate FL fee waiver PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      win.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { win.close(); setDownloadError("Failed to open FL fee waiver PDF — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
+  async function openTxFeeWaiverInNewTab() {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    const win = window.open("", "_blank");
+    if (!win) { toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." }); return; }
+    setDownloadingForm("tx/fee-waiver"); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const res = await fetch(`/api/cases/${caseId}/forms/tx/fee-waiver`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
+      if (!res.ok) { win.close(); setDownloadError("Failed to generate TX fee waiver PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      win.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { win.close(); setDownloadError("Failed to open TX fee waiver PDF — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
+  async function openIlFeeWaiverInNewTab() {
+    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+    const win = window.open("", "_blank");
+    if (!win) { toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." }); return; }
+    setDownloadingForm("il/fee-waiver"); setDownloadError(null);
+    try {
+      const clerkToken = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
+      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
+      const { token } = await tokenRes.json();
+      const res = await fetch(`/api/cases/${caseId}/forms/il/fee-waiver`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
+      if (!res.ok) { win.close(); setDownloadError("Failed to generate IL fee waiver PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      win.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { win.close(); setDownloadError("Failed to open IL fee waiver PDF — please try again."); }
+    finally { setDownloadingForm(null); }
+  }
+
   async function downloadSignedSC100A(signatureDataUrl?: string) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
     setDownloadingForm("sc100a"); setDownloadError(null);
@@ -2438,7 +2498,17 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (flServiceMethod === "process_server") { e.preventDefault(); setFlServiceMethod(""); } }}>
                     <RadioGroupItem value="process_server" id="fl-serve-ps" className="mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 w-fit">Recommended — Most Reliable</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5">Recommended — Most Reliable</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/cases/${caseId}/efile`); }}
+                          className="shrink-0 flex items-center gap-2 rounded-lg border-2 border-black bg-amber-500 hover:bg-amber-400 text-black px-3.5 py-1.5 text-center transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4 shrink-0" />
+                          <span className="text-sm font-bold leading-tight">e-File and/or Service by Process Server</span>
+                        </button>
+                      </div>
                       <p className="text-sm text-foreground leading-relaxed">
                         <span className="font-bold">Certified Process Server</span> — A certified process server (licensed under Fla. Stat. § 48.27) personally serves the summons and Statement of Claim on the defendant. Best option if the defendant may avoid service or your hearing date is approaching. Fees may be recoverable if you win.
                       </p>
@@ -2537,29 +2607,31 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
                 <h4 className="text-sm font-bold text-foreground">Fee Waiver — Application for Civil Indigent Status</h4>
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                If paying the filing fee would be a financial hardship, you may qualify for a waiver. File this application before or at the same time as your Statement of Claim. The clerk will review your income and determine eligibility.
+                Your name, address, and case information are pre-filled from your intake. The form opens in a new tab — fill in the eligibility and financial details directly in the PDF, then save it to your computer. File it with the clerk before or at the same time as your Statement of Claim.
               </p>
-              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Application for Determination of Civil Indigent Status</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Pre-filled from your case details. File with the clerk along with your Statement of Claim.</p>
-                  {downloadError && (downloadingForm === "fl/fee-waiver" || downloadingForm === "fl/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
-                </div>
-                <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "fl/fee-waiver/signed"} onClick={() => openFlSigModal({ endpoint: "fl/fee-waiver", filename: `FL-Fee-Waiver-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "fl/fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={downloadingForm === "fl/fee-waiver"} onClick={() => downloadSignedFLForm("fl/fee-waiver", `FL-Fee-Waiver-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {downloadingForm === "fl/fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
-                  </button>
-                </div>
+              {downloadError && downloadingForm === "fl/fee-waiver" && <p className="text-xs text-destructive">{downloadError}</p>}
+              <button
+                type="button"
+                onClick={openFlFeeWaiverInNewTab}
+                disabled={downloadingForm === "fl/fee-waiver"}
+                className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  {downloadingForm === "fl/fee-waiver" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  Open Fee Waiver PDF
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
+                  Opens in a new tab
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              </button>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <span className="font-semibold">This form is confidential.</span> The court will not give it to the other party. False statements on a fee waiver form are a criminal offense. File it at the clerk's window before or at the same time as your Statement of Claim.
+                </p>
               </div>
             </div>
           )}
@@ -2733,7 +2805,17 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${txServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (txServiceMethod === "process_server") { e.preventDefault(); setTxServiceMethod(""); } }}>
                     <RadioGroupItem value="process_server" id="tx-serve-ps" className="mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 w-fit">Recommended — Most Reliable</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5">Recommended — Most Reliable</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/cases/${caseId}/efile`); }}
+                          className="shrink-0 flex items-center gap-2 rounded-lg border-2 border-black bg-amber-500 hover:bg-amber-400 text-black px-3.5 py-1.5 text-center transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4 shrink-0" />
+                          <span className="text-sm font-bold leading-tight">e-File and/or Service by Process Server</span>
+                        </button>
+                      </div>
                       <p className="text-sm text-foreground leading-relaxed">
                         <span className="font-bold">Private Process Server</span> — A licensed Texas process server picks up the citation from the clerk and personally serves the defendant. More expensive but most reliable if the defendant may avoid service. Fees are recoverable if you win.
                       </p>
@@ -2831,29 +2913,31 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
                 <h4 className="text-sm font-bold text-foreground">Fee Waiver — Affidavit of Inability to Pay</h4>
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                If you cannot afford the filing fee, you may file an Affidavit of Inability to Pay. File this with your petition. The court will review your financial situation and may waive or defer the fee.
+                Your name, address, and case information are pre-filled from your intake. The form opens in a new tab — fill in the eligibility and financial details directly in the PDF, then save it to your computer. File it with the clerk at the same time as your petition.
               </p>
-              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">TX Fee Waiver — Affidavit of Inability to Pay</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details. File with your petition at the clerk's window.</p>
-                  {downloadError && (downloadingForm === "tx/fee-waiver" || downloadingForm === "tx/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
-                </div>
-                <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "tx/fee-waiver/signed"} onClick={() => openFlSigModal({ endpoint: "tx/fee-waiver", filename: `TX-Fee-Waiver-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "tx/fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={downloadingForm === "tx/fee-waiver"} onClick={() => downloadSignedFLForm("tx/fee-waiver", `TX-Fee-Waiver-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {downloadingForm === "tx/fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
-                  </button>
-                </div>
+              {downloadError && downloadingForm === "tx/fee-waiver" && <p className="text-xs text-destructive">{downloadError}</p>}
+              <button
+                type="button"
+                onClick={openTxFeeWaiverInNewTab}
+                disabled={downloadingForm === "tx/fee-waiver"}
+                className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  {downloadingForm === "tx/fee-waiver" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  Open Fee Waiver PDF
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
+                  Opens in a new tab
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              </button>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <span className="font-semibold">This form is confidential.</span> The court will not give it to the other party. False statements on a fee waiver form are a criminal offense. File it at the clerk's window at the same time as your petition.
+                </p>
               </div>
             </div>
           )}
@@ -2994,7 +3078,17 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ilServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ilServiceMethod === "process_server") { e.preventDefault(); setIlServiceMethod(""); } }}>
                     <RadioGroupItem value="process_server" id="il-serve-ps" className="mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 w-fit">Recommended — Most Reliable</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5">Recommended — Most Reliable</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/cases/${caseId}/efile`); }}
+                          className="shrink-0 flex items-center gap-2 rounded-lg border-2 border-black bg-amber-500 hover:bg-amber-400 text-black px-3.5 py-1.5 text-center transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4 shrink-0" />
+                          <span className="text-sm font-bold leading-tight">e-File and/or Service by Process Server</span>
+                        </button>
+                      </div>
                       <p className="text-sm text-foreground leading-relaxed">
                         <span className="font-bold">Private Process Server</span> — A licensed Illinois process server personally delivers the summons and complaint to the defendant. Best option if the defendant may avoid service. Fees may be recoverable if you win.
                       </p>
@@ -3082,29 +3176,31 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
                 <h4 className="text-sm font-bold text-foreground">Fee Waiver — Application for Waiver of Court Fees</h4>
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                If paying the filing fee would be a financial hardship, you may qualify for a fee waiver. File this application with your Complaint. The clerk will review your income and determine eligibility.
+                Your name, address, and case information are pre-filled from your intake. The form opens in a new tab — fill in the eligibility and financial details directly in the PDF, then save it to your computer. File it with the clerk at the same time as your Complaint.
               </p>
-              <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Illinois Application for Waiver of Court Fees</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details. File with the Circuit Court clerk along with your Complaint.</p>
-                  {downloadError && (downloadingForm === "il/fee-waiver" || downloadingForm === "il/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
-                </div>
-                <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "il/fee-waiver/signed"} onClick={() => openFlSigModal({ endpoint: "il/fee-waiver", filename: `IL-Fee-Waiver-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "il/fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={downloadingForm === "il/fee-waiver"} onClick={() => downloadSignedFLForm("il/fee-waiver", `IL-Fee-Waiver-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {downloadingForm === "il/fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
-                  </button>
-                </div>
+              {downloadError && downloadingForm === "il/fee-waiver" && <p className="text-xs text-destructive">{downloadError}</p>}
+              <button
+                type="button"
+                onClick={openIlFeeWaiverInNewTab}
+                disabled={downloadingForm === "il/fee-waiver"}
+                className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  {downloadingForm === "il/fee-waiver" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  Open Fee Waiver PDF
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
+                  Opens in a new tab
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              </button>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <span className="font-semibold">This form is confidential.</span> The court will not give it to the other party. False statements on a fee waiver form are a criminal offense. File it at the clerk's window at the same time as your Complaint.
+                </p>
               </div>
             </div>
           )}
