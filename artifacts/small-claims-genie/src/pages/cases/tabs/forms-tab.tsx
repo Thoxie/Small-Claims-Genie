@@ -2209,6 +2209,20 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 </div>
               )}
 
+              {/* Filing fee recoverability notice — always visible in FL step 0 */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+                <p className="text-xs font-semibold text-blue-900 mb-0.5">Florida Filing Fees — Fla. Stat. § 28.241</p>
+                <p className="text-xs font-bold text-blue-900 mb-1">Filing fees are recoverable as court costs when you win your case — Fla. Stat. § 57.041.</p>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-2">
+                  <span className="text-blue-700">$0 – $100</span><span className="font-medium text-blue-900">$55</span>
+                  <span className="text-blue-700">$101 – $500</span><span className="font-medium text-blue-900">$80</span>
+                  <span className="text-blue-700">$501 – $2,500</span><span className="font-medium text-blue-900">$175</span>
+                  <span className="text-blue-700">$2,501 – $5,000</span><span className="font-medium text-blue-900">$300</span>
+                  <span className="text-blue-700">$5,001 – $8,000</span><span className="font-medium text-blue-900">$395</span>
+                </div>
+                <p className="text-xs text-blue-800">Claim limit: $8,000. Fees may vary slightly by county — confirm with your clerk. A fee waiver is available if you cannot afford the filing fee (see the Fee Waiver step).</p>
+              </div>
+
             </div>
           )}
 
