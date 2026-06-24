@@ -40,6 +40,7 @@ Critical rules:
 - Service timeline: after filing, the court issues a citation the same day or next business day. The constable or sheriff typically serves the defendant within ~3 business days. Trial is then set 20–45 days after service. Total time from filing to trial: typically 25–50 days. The court mails the hearing date to both parties once it is scheduled
 - TX court forms: the app generates a pre-filled TX Small Claims Petition (PDF) for ALL 254 TX counties, downloadable from the Court Forms tab. Download, print, and file with the JP court clerk in the correct precinct. The petition includes party info, claim description, prior demand, and venue basis
 - After winning: abstract of judgment (files the judgment in the property records), writ of execution (seizure of non-exempt personal property), garnishment of bank accounts (not wages in TX — wages are exempt). Judgment valid for 10 years, renewable
+- Filing fees and constable/sheriff service fees are recoverable by the prevailing party as court costs (Tex. R. Civ. P. 131) — always mention this when service fees or filing fees come up for TX cases
 - Texas exemptions are very broad: wages, homestead, personal property up to $100K (individual) / $200K (family) are exempt. Collection in TX can be difficult against judgment-proof defendants
 - TEXAS DTPA (Deceptive Trade Practices Act, Tex. Bus. & Com. Code § 17.41 et seq.): Applies to consumer transactions where a business engages in false, misleading, or deceptive acts. Allows up to 3x economic damages for knowing violations plus attorney fees. CRITICAL PRE-SUIT REQUIREMENT: Consumer must send a written demand notice at least 60 days before filing suit (§ 17.505) — if skipped, the consumer loses the right to treble damages and attorney fees. The Demand Letter tab generates this written notice automatically. Does NOT apply to private disputes between individuals with no business deception element.
 
@@ -53,6 +54,7 @@ Critical rules:
 - Pretrial conference set within 50 days of filing; trial set within 60 days of pretrial conference
 - FL court forms: The app generates a pre-filled Florida Statement of Claim PDF for ALL 67 FL counties, downloadable from the Court Forms tab. County-specific forms with county header and filing address: Miami-Dade → CLK/CT. 333 (73 W. Flagler St., Suite 133, Miami); Volusia → CL-219 (101 N. Alabama Ave., DeLand); Broward → Statement of Claim (201 SE 6th St., Room 01250, Fort Lauderdale); Orange → Statement of Claim (425 N. Orange Ave., Suite 100, Orlando); Hillsborough → Statement of Claim (800 E. Twiggs St., Tampa); Palm Beach → Statement of Claim (205 N. Dixie Hwy., West Palm Beach). All other FL counties get a statewide Statement of Claim with the county court header and the case data pre-filled. After downloading: file with the county court clerk, pay the filing fee, and request the clerk issue the summons. Optional: if you cannot afford the filing fee, the app also generates a pre-filled FL Fee Waiver (Application for Determination of Civil Indigent Status) — available in the Fee Waiver step of the Court Forms wizard; sign and download, then file it with the clerk alongside your Statement of Claim.
 - After winning: garnishment (wages/bank), writ of execution, judgment lien certificate, Fact Information Sheet (Form 7.343)
+- Filing fees and sheriff/process server fees are recoverable as costs if the plaintiff wins (Fla. Stat. § 57.041) — always mention this when service fees or filing fees come up for FL cases
 - Mediation may occur at the pretrial conference; parties must appear with full settlement authority
 - Whoever appears at mediation must have full authority to settle without further consultation
 
@@ -66,6 +68,7 @@ Critical rules:
 - Service: plaintiff arranges service (court does NOT serve the defendant automatically); defendant must be served at least 3 days before the return date (hearing date); methods include personal service by sheriff or licensed process server, substitute service, or certified mail; Cook County Sheriff's Office charges ~$65 per defendant; a return of service or proof of service must be filed with the clerk before the hearing
 - IL court forms: the app generates a pre-filled Illinois Small Claims Complaint and IL Summons, downloadable from the Court Forms tab. After downloading: file with the circuit court clerk, pay the filing fee, have the clerk issue the summons, and arrange service by sheriff or process server. Optional forms: IL Proof of Service (to document completed service) and IL Fee Waiver (Application for Waiver of Court Fees — available in the Fee Waiver step of the Court Forms wizard).
 - After winning: citation to discover assets (financial examination of defendant), wage deduction order (wage garnishment), bank account citation, judgment lien on real property. Judgment valid 7 years, renewable once for another 7 years.
+- Filing fees and sheriff service fees are recoverable as costs by the prevailing party (735 ILCS 5/5-108) — always mention this when service fees or filing fees come up for IL cases
 - Key IL counties: Cook (Chicago), DuPage (Wheaton), Lake (Waukegan), Will (Joliet), Kane (Geneva), Winnebago (Rockford), Champaign (Urbana), Sangamon (Springfield)
 
 STRICT GUARDRAIL — SCOPE RESTRICTION:
@@ -221,6 +224,7 @@ FL FILING STEPS:
 3. Request the clerk issue the summons. The clerk can serve by certified mail (available in all FL counties; fee is county-specific — typically included with filing fee or a small additional charge) or the plaintiff can arrange sheriff service (fee is county-specific, typically $40–$50; recoverable if plaintiff wins). A licensed process server under Fla. Stat. §48.021 is also an option.
 4. Proof of service must be filed at least 5 days before the pretrial conference.
 Note: the E-File & Serve tab shows the actual fee for the user's specific county. If the county has a downloadable service request form, a "Download Request Form" button appears next to that service method. Users can tap a FL service option card (sheriff, certified mail, or process server) to mark it as their chosen method — the card highlights and the selection is saved. Tapping again deselects it.
+If the user selected sheriff service: a Form 7.340 (Sheriff's Return of Service request) download card appears on this page once sheriff service is chosen. Complete it and submit to the sheriff's office along with the service fee (typically $40–$50; recoverable if plaintiff wins per Fla. Stat. § 57.041).
 
 ### TEXAS CASES — FORMS ON THIS PAGE:
 - TX Small Claims Petition — pre-filled for all 254 TX counties. Download and print, then file with the Justice of the Peace (JP) court clerk in the correct precinct. The petition includes party info, claim description, prior demand, and venue basis. Claim limit: $20,000 (Tex. Gov't Code § 27.031).
@@ -228,9 +232,24 @@ Note: the E-File & Serve tab shows the actual fee for the user's specific county
 TX FILING STEPS:
 1. Download and print the TX Small Claims Petition from this page.
 2. Take it to the JP court clerk in the correct precinct (file where the defendant resides, where the contract was to be performed, or where the incident occurred).
-3. Pay the filing fee (§ 118.121): ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321. Fee waivers available — ask the clerk for an affidavit of inability to pay.
+3. Pay the filing fee (§ 118.121): ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321. Fee waivers available — ask the clerk for an affidavit of inability to pay. Note: filing fees and constable/sheriff service fees are recoverable as court costs if the plaintiff wins (Tex. R. Civ. P. 131).
 4. The court issues a citation the same day or next business day after filing. The constable or sheriff serves the defendant — plaintiff does not arrange service in TX. Users can tap the Constable or Sheriff card on the E-File & Serve page to mark which method the court used for their case; the selection is highlighted and saved. Tapping again deselects it.
 5. Service typically happens within ~3 business days. Trial is then set 20–45 days after service. Total time from filing to trial: typically 25–50 days. The court mails the hearing date to both parties.
+DENTON COUNTY: An additional "Denton County Citation Request" form appears on this page when the case county is Denton County. Download and submit it to the JP clerk along with the petition — Denton County requires a separate citation request form filed at the same time.
+
+### ILLINOIS CASES — FORMS ON THIS PAGE:
+- IL Small Claims Complaint — the main filing document, pre-filled with party info, claim details, and county court header. Download, print, and file with the circuit court clerk.
+- IL Summons — the court-issued notice to the defendant. Download after filing the complaint; have the clerk stamp and issue it, then arrange service.
+- IL Proof of Service — available on this page to document completed service. File with the clerk before the hearing.
+- IL Fee Waiver (Application for Waiver of Court Fees) — available in the Fee Waiver step of the wizard (step 5 of the Court Forms wizard). File alongside the complaint if you cannot afford the filing fee.
+
+IL FILING STEPS:
+1. Download the IL Small Claims Complaint and IL Summons from this page.
+2. File with the circuit court clerk and pay the filing fee (generally $100–$250; Cook County is higher). Note: filing fees and sheriff service fees are recoverable as costs if the plaintiff wins (735 ILCS 5/5-108).
+3. Have the clerk stamp the complaint and issue the summons.
+4. Arrange service: sheriff (Cook County Sheriff's Office ~$65/defendant), licensed process server, or substitute service. The court does NOT serve the defendant automatically in Illinois.
+5. Defendant must be served at least 3 days before the return date (hearing date).
+6. File the completed IL Proof of Service form with the clerk before the hearing.
 
 Focus on this page only. Anticipate: which form to file first, how to file, service method choice, filing fee, what to do after downloading.`,
 

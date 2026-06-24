@@ -46,6 +46,8 @@
     "test:tx-return-of-service": "tsx ./src/test-tx-return-of-service.ts",
     "test:tx-petition": "tsx ./src/test-tx-petition.ts",
     "test:tx-fee-waiver": "tsx ./src/test-tx-fee-waiver.ts",
+    "test:tx-petition-signed": "tsx ./src/test-tx-petition-signed.ts",
+    "test:il-smc-complaint-signed": "tsx ./src/test-il-smc-complaint-signed.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

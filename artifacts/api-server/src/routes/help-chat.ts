@@ -40,7 +40,7 @@ router.post("/help", async (req, res): Promise<void> => {
     const pageAddendum = pageContext && PAGE_CONTEXT_PROMPTS[pageContext]
       ? PAGE_CONTEXT_PROMPTS[pageContext] + SUGGESTIONS_INSTRUCTION
       : SUGGESTIONS_INSTRUCTION;
-    const stateName = jurisdictionState === "FL" ? "Florida" : jurisdictionState === "TX" ? "Texas" : jurisdictionState;
+    const stateName = jurisdictionState === "FL" ? "Florida" : jurisdictionState === "TX" ? "Texas" : jurisdictionState === "IL" ? "Illinois" : jurisdictionState;
     const stateNote = jurisdictionState && jurisdictionState !== "CA"
       ? `\n\nUser's case jurisdiction: ${stateName} (${jurisdictionState}). Apply ${stateName}-specific rules, limits, and procedures when answering questions about this case.`
       : "";
