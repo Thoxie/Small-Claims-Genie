@@ -2633,7 +2633,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
 
               {/* Fee schedule */}
               <div className="rounded-xl border bg-muted/30 p-4">
-                <p className="text-xs font-semibold text-foreground mb-2">Texas Filing Fees — Tex. Gov't Code § 118.121</p>
+                <p className="text-xs font-semibold text-foreground mb-1">Texas Filing Fees — Tex. Gov't Code § 118.121</p>
+                <p className="text-xs font-bold text-emerald-700 mb-2">Filing fees are recoverable as court costs when you win your case — Tex. R. Civ. P. 131.</p>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
                   <span className="text-muted-foreground">$0 – $200</span><span className="font-medium text-foreground">$46</span>
                   <span className="text-muted-foreground">$201 – $500</span><span className="font-medium text-foreground">$71</span>
@@ -2927,6 +2928,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               </div>
               <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
                 <p className="text-xs font-semibold text-blue-900 mb-1">Illinois Filing Fees</p>
+                <p className="text-xs font-bold text-blue-900 mb-1">Filing fees are recoverable as court costs when you win your case — 735 ILCS 5/5-108.</p>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-2">
                   <span className="text-blue-700">$0 – $250</span><span className="font-medium text-blue-900">$54</span>
                   <span className="text-blue-700">$251 – $1,000</span><span className="font-medium text-blue-900">$77</span>
