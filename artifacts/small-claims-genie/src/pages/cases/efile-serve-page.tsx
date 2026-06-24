@@ -428,7 +428,48 @@ function FlCourtFormsSection({
 }) {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [feeWaiverSignOpen, setFeeWaiverSignOpen] = useState(false);
+  const [proofSignOpen, setProofSignOpen] = useState(false);
   const { toast } = useToast();
+
+  const downloadFlProofOfService = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "fl/proof-of-service/signed" : "fl/proof-of-service";
+    setDownloading("fl/proof-of-service");
+    setProofSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const downloadFlFeeWaiver = async (signatureDataUrl?: string) => {
     const endpoint = signatureDataUrl ? "fl/fee-waiver/signed" : "fl/fee-waiver";
@@ -596,14 +637,23 @@ function FlCourtFormsSection({
           variant="ghost"
           size="sm"
           className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
-          onClick={() => downloadFlForm("fl/proof-of-service", `FL-Proof-of-Service-Case-${caseId}.pdf`, "fl/proof-of-service")}
+          onClick={() => setProofSignOpen(true)}
           disabled={!hasBasicInfo || downloading === "fl/proof-of-service"}
-          title={hasBasicInfo ? "Download Proof of Service" : "Complete Step 1 (parties info) to enable"}
+          title={hasBasicInfo ? "Sign & Download Proof of Service" : "Complete Step 1 (parties info) to enable"}
         >
           {downloading === "fl/proof-of-service" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
           {downloading === "fl/proof-of-service" ? "Generating…" : "Download"}
         </Button>
       </div>
+
+      <SignaturePadModal
+        open={proofSignOpen}
+        onClose={() => setProofSignOpen(false)}
+        onSign={(dataUrl) => downloadFlProofOfService(dataUrl)}
+        onSkipSign={() => downloadFlProofOfService()}
+        formTitle="FL Proof of Service"
+        disclaimer="By signing, you declare under penalty of perjury under the laws of the State of Florida that the information on your Proof of Service is true and correct."
+      />
 
       {/* Fee Waiver card */}
       <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
@@ -1119,11 +1169,52 @@ function IlCourtFormsSection({
 }) {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [feeWaiverSignOpen, setFeeWaiverSignOpen] = useState(false);
+  const [proofSignOpen, setProofSignOpen] = useState(false);
   const { toast } = useToast();
   const countyId = c?.countyId ?? "";
   const countyClerk = IL_CLERK_URLS[countyId] ?? null;
   const { data: ilCounties } = useListCounties({ state: "IL" });
   const countyData = ilCounties?.find((co: County) => co.id === countyId);
+
+  const downloadIlProofOfService = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "il/proof-of-service/signed" : "il/proof-of-service";
+    setDownloading("il-proof-of-service");
+    setProofSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const downloadIlFeeWaiver = async (signatureDataUrl?: string) => {
     const endpoint = signatureDataUrl ? "il/fee-waiver/signed" : "il/fee-waiver";
@@ -1270,12 +1361,6 @@ function IlCourtFormsSection({
             label: "Small Claims Summons",
             desc: "Served on the defendant with a copy of the complaint — clerk stamps and returns to you",
           },
-          {
-            id: "il-proof-of-service",
-            endpoint: "il/proof-of-service",
-            label: "Proof of Service",
-            desc: "Completed by the server after serving the defendant — file with the clerk",
-          },
         ] as const
       ).map(({ id, endpoint, label, desc }) => (
         <div
@@ -1314,6 +1399,51 @@ function IlCourtFormsSection({
           </Button>
         </div>
       ))}
+
+      {/* IL Proof of Service card — rendered separately to support sign-before-download */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            IL Form
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Proof of Service</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo
+              ? "Completed by the server after serving the defendant — file with the clerk"
+              : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => setProofSignOpen(true)}
+          disabled={!hasBasicInfo || downloading === "il-proof-of-service"}
+          title={hasBasicInfo ? "Sign & Download Proof of Service" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "il-proof-of-service" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "il-proof-of-service" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      <SignaturePadModal
+        open={proofSignOpen}
+        onClose={() => setProofSignOpen(false)}
+        onSign={(dataUrl) => downloadIlProofOfService(dataUrl)}
+        onSkipSign={() => downloadIlProofOfService()}
+        formTitle="IL Proof of Service"
+        disclaimer="By signing, you declare that the information on your Proof of Service is true and correct to the best of your knowledge."
+      />
 
       {/* IL Fee Waiver card — rendered separately to support sign-before-download */}
       <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
@@ -1453,7 +1583,48 @@ function TxCourtFormsSection({
 }) {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [feeWaiverSignOpen, setFeeWaiverSignOpen] = useState(false);
+  const [returnSignOpen, setReturnSignOpen] = useState(false);
   const { toast } = useToast();
+
+  const downloadTxReturnOfService = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "tx/return-of-service/signed" : "tx/return-of-service";
+    setDownloading("tx-return-of-service");
+    setReturnSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const downloadTxFeeWaiver = async (signatureDataUrl?: string) => {
     const endpoint = signatureDataUrl ? "tx/fee-waiver/signed" : "tx/fee-waiver";
@@ -1639,14 +1810,23 @@ function TxCourtFormsSection({
           variant="ghost"
           size="sm"
           className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
-          onClick={() => downloadTxForm("tx/return-of-service", "tx-return-of-service")}
+          onClick={() => setReturnSignOpen(true)}
           disabled={!hasBasicInfo || downloading === "tx-return-of-service"}
-          title={hasBasicInfo ? "Download TX Return of Service" : "Complete Step 1 (parties info) to enable"}
+          title={hasBasicInfo ? "Sign & Download TX Return of Service" : "Complete Step 1 (parties info) to enable"}
         >
           {downloading === "tx-return-of-service" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
           {downloading === "tx-return-of-service" ? "Generating…" : "Download"}
         </Button>
       </div>
+
+      <SignaturePadModal
+        open={returnSignOpen}
+        onClose={() => setReturnSignOpen(false)}
+        onSign={(dataUrl) => downloadTxReturnOfService(dataUrl)}
+        onSkipSign={() => downloadTxReturnOfService()}
+        formTitle="TX Return of Service"
+        disclaimer="By signing, you declare under penalty of perjury that the information on your Return of Service is true and correct to the best of your knowledge."
+      />
 
       {/* TX Fee Waiver card */}
       <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
