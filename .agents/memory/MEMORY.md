@@ -8,3 +8,4 @@
 - [FL forms architecture](fl-forms-architecture.md) — county-specific pdftk fills; Miami-Dade has hidden named fields only visible via pdf-lib (not pdftk); adding new FL county requires 8 steps
 - [Production startup crash](prod-startup-crash.md) — pg emits unhandled error events at boot; crashes process in <1s unless global handlers exist in index.ts
 - [PDF signed-size guarantee](pdf-signed-size-guarantee.md) — pdf-lib re-save compresses pdftk output; run both unsigned and signed through pdf-lib with same options so the image bytes added for signed make it larger
+- [Stripe connection](stripe-connection.md) — app uses STRIPE_SECRET_KEY secret directly; never call proposeIntegration for Stripe; verify by hitting /api/stripe/products
