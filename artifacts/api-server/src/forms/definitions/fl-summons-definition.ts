@@ -116,7 +116,19 @@ export async function buildFLSummons(
   txt(page, bold, h2, (PW - bold.widthOfTextAtSize(h2, 9)) / 2, y, 9);
   y -= 12;
   txt(page, bold, h3, (PW - bold.widthOfTextAtSize(h3, 9)) / 2, y, 9);
-  y -= 9;
+  y -= 10;
+
+  // Courthouse address (centered, gray)
+  const courthouseAddrLine = [
+    d.courthouseAddress,
+    d.courthouseCity ? `${d.courthouseCity}, FL` : null,
+    d.courthouseZip,
+  ].filter(Boolean).join(" ");
+  if (courthouseAddrLine) {
+    txt(page, font, courthouseAddrLine, (PW - font.widthOfTextAtSize(courthouseAddrLine, 8)) / 2, y, 8, GRAY);
+    y -= 9;
+  }
+
   const formRef = "Form 7.322 — Fla. Sm. Cl. R. 7.060 (eff. January 1, 2026)";
   txt(page, font, formRef, (PW - font.widthOfTextAtSize(formRef, 6.5)) / 2, y, 6.5, GRAY);
   y -= 9;

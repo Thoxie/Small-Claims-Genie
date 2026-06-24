@@ -113,7 +113,19 @@ export async function buildFLProofOfService(
     ? `IN THE COUNTY COURT, ${countyName.toUpperCase()} COUNTY, FLORIDA — SMALL CLAIMS DIVISION`
     : "IN THE COUNTY COURT, ____________ COUNTY, FLORIDA — SMALL CLAIMS DIVISION";
   txt(page, bold, courtLine, (PW - bold.widthOfTextAtSize(courtLine, 8)) / 2, y, 8, DKGRN);
-  y -= 11;
+  y -= 10;
+
+  // Courthouse address (centered, below court name)
+  const courthouseAddrLine = [
+    (d as any).courthouseAddress,
+    (d as any).courthouseCity ? `${(d as any).courthouseCity}, FL` : null,
+    (d as any).courthouseZip,
+  ].filter(Boolean).join(" ");
+  if (courthouseAddrLine) {
+    txt(page, font, courthouseAddrLine, (PW - font.widthOfTextAtSize(courthouseAddrLine, 7.5)) / 2, y, 7.5, DKGRN);
+    y -= 9;
+  }
+
   drawLine(page, ML, y, MR, y, 1.0, DKGRN);
   y -= 13;
 

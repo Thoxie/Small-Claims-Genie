@@ -79,6 +79,11 @@ export async function buildILProofOfService(d: CaseData, _body: FormBody, opts?:
   const county = countyDisplay((d as any).countyId);
   const countyRecord = ILLINOIS_COUNTIES.find((c: any) => c.id === (d as any).countyId);
   const courtName = (d as any).courthouseName ?? countyRecord?.courthouseName ?? `Circuit Court of ${county} County`;
+  const courtAddress = countyRecord?.courthouseAddress
+    ? `${countyRecord.courthouseAddress}, ${countyRecord.courthouseCity ?? ""}, IL ${countyRecord.courthouseZip ?? ""}`.trim()
+    : ((d as any).courthouseAddress
+      ? `${(d as any).courthouseAddress}, ${(d as any).courthouseCity ?? ""}, IL`.trim()
+      : "");
 
   let y = PH - 36;
 
@@ -113,6 +118,11 @@ export async function buildILProofOfService(d: CaseData, _body: FormBody, opts?:
   txt(page, bold, "Court:", ML, y, 8.5);
   txt(page, font, courtName, ML + 40, y, 8.5);
   y -= 10;
+  if (courtAddress) {
+    txt(page, bold, "Address:", ML, y, 8.5);
+    txt(page, font, courtAddress, ML + 56, y, 8.5);
+    y -= 10;
+  }
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 

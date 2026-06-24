@@ -172,7 +172,21 @@ export async function buildFLStatementOfClaim(
   txt(page, bold, title2, (PW - t2w) / 2, y, 10);
   y -= 15;
   txt(page, bold, title3, (PW - t3w) / 2, y, 11);
-  y -= 18;
+  y -= 13;
+
+  // Courthouse address (centered, gray)
+  const courthouseAddrLine = [
+    d.courthouseAddress,
+    d.courthouseCity ? `${d.courthouseCity}, FL` : null,
+    d.courthouseZip,
+  ].filter(Boolean).join(" ");
+  if (courthouseAddrLine) {
+    const caw = font.widthOfTextAtSize(courthouseAddrLine, 8);
+    txt(page, font, courthouseAddrLine, (PW - caw) / 2, y, 8, GRAY);
+    y -= 11;
+  } else {
+    y -= 5;
+  }
 
   // horizontal rule
   drawLine(page, MARGIN_L, y, MARGIN_R, y, 1.2);
