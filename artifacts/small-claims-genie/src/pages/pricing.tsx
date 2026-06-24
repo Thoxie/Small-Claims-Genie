@@ -25,6 +25,7 @@ function TermsAndSignUpModal({
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailTaken, setEmailTaken] = useState(false);
 
   const canProceed = acceptedTerms && acceptedPayment;
   const canSubmitForm = canProceed && email.trim().length > 0 && email.trim() === confirmEmail.trim() && password.length >= 8;
@@ -33,13 +34,19 @@ function TermsAndSignUpModal({
     if (!canSubmitForm || !signUp) return;
     setLoading(true);
     setError("");
+    setEmailTaken(false);
     try {
       await signUp.create({ emailAddress: email, password });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: any) {
+      const code = err?.errors?.[0]?.code ?? "";
       const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || err?.message || "Sign-up failed. Please try again.";
-      setError(msg);
+      if (code === "form_identifier_exists" || msg.toLowerCase().includes("taken") || msg.toLowerCase().includes("already")) {
+        setEmailTaken(true);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -252,15 +259,36 @@ function TermsAndSignUpModal({
           </div>
         </div>
 
+        {emailTaken && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+            <p className="text-[13px] font-bold text-amber-800 mb-2">An account with that email already exists.</p>
+            <Link
+              href="/sign-in"
+              className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[14px] font-black min-h-[44px] px-5 transition-colors"
+            >
+              Sign in to your existing account →
+            </Link>
+            <button
+              type="button"
+              onClick={() => { setEmailTaken(false); setEmail(""); setConfirmEmail(""); setPassword(""); }}
+              className="w-full text-center text-[12px] text-[#5a6478] hover:text-[#20304f] mt-2 transition-colors"
+            >
+              Use a different email instead
+            </button>
+          </div>
+        )}
+
         {error && <p className="text-[12px] text-red-600 bg-red-50 rounded-xl px-3 py-2 mb-4 text-center">{error}</p>}
 
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmitForm || loading}
-          className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed mb-4"
-        >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account & Continue to Payment"}
-        </button>
+        {!emailTaken && (
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmitForm || loading}
+            className="flex items-center justify-center w-full rounded-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white text-[15px] font-black min-h-[52px] px-5 shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed mb-4"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account & Continue to Payment"}
+          </button>
+        )}
 
         <p className="text-center text-[12px] text-[#5a6478]">
           Already have an account?{" "}
