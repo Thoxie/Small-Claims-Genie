@@ -956,65 +956,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     finally { setDownloadingForm(null); }
   }
 
-  async function openFlFeeWaiverInNewTab() {
-    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
-    const win = window.open("", "_blank");
-    if (!win) { toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." }); return; }
-    setDownloadingForm("fl/fee-waiver"); setDownloadError(null);
-    try {
-      const clerkToken = await getToken();
-      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
-      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
-      const { token } = await tokenRes.json();
-      const res = await fetch(`/api/cases/${caseId}/forms/fl/fee-waiver`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
-      if (!res.ok) { win.close(); setDownloadError("Failed to generate FL fee waiver PDF — please try again."); return; }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      win.location.href = url;
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch { win.close(); setDownloadError("Failed to open FL fee waiver PDF — please try again."); }
-    finally { setDownloadingForm(null); }
-  }
-
-  async function openTxFeeWaiverInNewTab() {
-    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
-    const win = window.open("", "_blank");
-    if (!win) { toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." }); return; }
-    setDownloadingForm("tx/fee-waiver"); setDownloadError(null);
-    try {
-      const clerkToken = await getToken();
-      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
-      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
-      const { token } = await tokenRes.json();
-      const res = await fetch(`/api/cases/${caseId}/forms/tx/fee-waiver`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
-      if (!res.ok) { win.close(); setDownloadError("Failed to generate TX fee waiver PDF — please try again."); return; }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      win.location.href = url;
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch { win.close(); setDownloadError("Failed to open TX fee waiver PDF — please try again."); }
-    finally { setDownloadingForm(null); }
-  }
-
-  async function openIlFeeWaiverInNewTab() {
-    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
-    const win = window.open("", "_blank");
-    if (!win) { toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." }); return; }
-    setDownloadingForm("il/fee-waiver"); setDownloadError(null);
-    try {
-      const clerkToken = await getToken();
-      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, { method: "POST", headers: { Authorization: `Bearer ${clerkToken}` } });
-      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
-      const { token } = await tokenRes.json();
-      const res = await fetch(`/api/cases/${caseId}/forms/il/fee-waiver`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
-      if (!res.ok) { win.close(); setDownloadError("Failed to generate IL fee waiver PDF — please try again."); return; }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      win.location.href = url;
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch { win.close(); setDownloadError("Failed to open IL fee waiver PDF — please try again."); }
-    finally { setDownloadingForm(null); }
-  }
 
   async function downloadSignedSC100A(signatureDataUrl?: string) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
