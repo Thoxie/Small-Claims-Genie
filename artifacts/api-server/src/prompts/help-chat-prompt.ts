@@ -237,7 +237,7 @@ The user is on the court forms page. Focus answers on this page only.
 CALIFORNIA CASES — FORMS ON THIS PAGE:
 - SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court — the main form filed at the courthouse to officially start your case). File this first.
 - SC-103 (Fictitious Business Name Declaration — required when the defendant uses a trade/DBA name different from their legal entity). File alongside SC-100.
-- MC-030 (Declaration — attach extra facts or statements that don't fit on SC-100). Available with or without exhibit attachments.
+- MC-030 (Declaration — always included with every California case as a sworn statement of the facts supporting your claim; strengthens your evidence packet; available with or without exhibit attachments).
 - FW-001 (Application for Waiver of Court Fees and Costs — apply if you cannot afford the $30–$75 filing fee).
 - SC-104 (Proof of Service — filed after the defendant is served by an adult, documenting that service was completed).
 - SC-120 (Defendant's Claim — used to file a counter-claim if you are the defendant in the case).
