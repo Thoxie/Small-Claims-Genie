@@ -2871,6 +2871,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">Affidavit of Inability to Pay</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Editable fields require Adobe Acrobat.</p>
                   {downloadError && (downloadingForm === "tx/fee-waiver" || downloadingForm === "tx/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
@@ -3150,6 +3151,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">Application for Waiver of Court Fees</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Editable fields require Adobe Acrobat.</p>
                   {downloadError && (downloadingForm === "il/fee-waiver" || downloadingForm === "il/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">

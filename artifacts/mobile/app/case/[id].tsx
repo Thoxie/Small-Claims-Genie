@@ -729,7 +729,7 @@ const IL_FORMS = [
   { key: "il-smc-complaint", label: "Small Claims Complaint", desc: "Illinois Supreme Court statewide form — file with the circuit court clerk", path: "il/smc-complaint", method: "POST" as const },
   { key: "il-summons", label: "Small Claims Summons", desc: "Served on the defendant with a copy of the complaint — clerk stamps and returns to you", path: "il/summons", method: "POST" as const },
   { key: "il-proof-of-service", label: "Proof of Service", desc: "Completed by the server after serving the defendant — file with the clerk", path: "il/proof-of-service", method: "POST" as const },
-  { key: "il-fee-waiver", label: "Application for Waiver of Court Fees", desc: "File with the complaint if you cannot afford the filing fee", path: "il/fee-waiver", method: "POST" as const },
+  { key: "il-fee-waiver", label: "Application for Waiver of Court Fees", desc: "File with the complaint if you cannot afford the filing fee", path: "il/fee-waiver", method: "POST" as const, note: "Editable fields require Adobe Acrobat." },
 ];
 
 const IL_FEE_SCHEDULE = [
@@ -884,6 +884,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
               <View style={styles.formInfo}>
                 <Text style={[styles.formName, { color: colors.foreground }]}>{form.label}</Text>
                 <Text style={[styles.formDesc, { color: colors.mutedForeground }]}>{form.desc}</Text>
+                {(form as { note?: string }).note ? <Text style={[styles.formDesc, { color: colors.mutedForeground, marginTop: 2 }]}>{(form as { note?: string }).note}</Text> : null}
               </View>
             </View>
             <TouchableOpacity
