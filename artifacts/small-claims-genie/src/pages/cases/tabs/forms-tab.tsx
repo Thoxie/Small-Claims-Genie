@@ -595,6 +595,10 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [fw001BlobUrl, setFw001BlobUrl] = useState<string | null>(null);
   const [fw001Loading, setFw001Loading] = useState(false);
+  useEffect(() => {
+    return () => { if (fw001BlobUrl) URL.revokeObjectURL(fw001BlobUrl); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
