@@ -27,7 +27,8 @@ function checkBox(form: any, name: string, checked: boolean) {
   } catch { /* skip */ }
 }
 
-export async function buildFW001Pdf(d: CaseData): Promise<Buffer> {
+function fillIntakeFields(form: any, d: CaseData): void {
+  const F = FW001_FIELDS;
   const signerName  = (d.plaintiffIsBusiness && d.secondPlaintiffName)
     ? d.secondPlaintiffName
     : (d.plaintiffName || "");
@@ -35,12 +36,6 @@ export async function buildFW001Pdf(d: CaseData): Promise<Buffer> {
   const fullSignerName = signerName + (signerTitle ? `, ${signerTitle}` : "");
   const caseName = [d.plaintiffName, d.defendantName].filter(Boolean).join(" v. ");
   const courtInfo = buildCourtInfoFormal(d);
-
-  const acroBytes = loadAsset("forms/fw001_acroform.pdf");
-  const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
-  const form = pdfDoc.getForm();
-
-  const F = FW001_FIELDS;
 
   setField(form, F.text.courtInfo,  courtInfo);
   setField(form, F.text.caseNumber, d.caseNumber || "");
@@ -59,11 +54,27 @@ export async function buildFW001Pdf(d: CaseData): Promise<Buffer> {
   checkBox(form, F.checkboxes.waiveSuperiorCourtFee, true);
 
   setField(form, F.text.signerName, fullSignerName);
-
   setField(form, F.text.page2PetitionerName, signerName);
   setField(form, F.text.page2CaseNumber,     d.caseNumber || "");
+}
 
+export async function buildFW001Pdf(d: CaseData): Promise<Buffer> {
+  const acroBytes = loadAsset("forms/fw001_acroform.pdf");
+  const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
+  fillIntakeFields(pdfDoc.getForm(), d);
   return pdftkFlatten(Buffer.from(await pdfDoc.save()));
+}
+
+/**
+ * Returns the FW-001 with intake fields pre-filled but NOT flattened.
+ * All AcroForm fields remain interactive — the user fills the rest in
+ * the browser's native PDF viewer.
+ */
+export async function buildFW001PdfInteractive(d: CaseData): Promise<Buffer> {
+  const acroBytes = loadAsset("forms/fw001_acroform.pdf");
+  const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
+  fillIntakeFields(pdfDoc.getForm(), d);
+  return Buffer.from(await pdfDoc.save());
 }
 
 const fw001Definition: FormDefinition = {

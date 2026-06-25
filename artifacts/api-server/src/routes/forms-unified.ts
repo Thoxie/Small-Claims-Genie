@@ -26,7 +26,8 @@ import { getOwnedCase, getUserId } from "../lib/owned-case";
 import { checkAiRateLimit } from "../lib/rate-limiter";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { makeFormHandler } from "../forms/generic-handler";
-import { formatDateDisplay } from "./forms-common";
+import { formatDateDisplay, resolveDownloadUser } from "./forms-common";
+import { buildFW001PdfInteractive } from "../forms/definitions/fw001-definition";
 
 // ─── Side-effect: register every form definition with FormRegistry ─────────────
 import "../forms/definitions/index";
@@ -228,6 +229,38 @@ router.post("/cases/:id/forms/sc150", makeFormHandler("SC-150", (id) => `SC150-C
 // ─────────────────────────────────────────────────────────────────────────────
 
 router.post("/cases/:id/forms/fw001", makeFormHandler("FW-001", (id) => `FW001-Case-${id}.pdf`, { inline: true }));
+
+// Interactive (pre-filled, NOT flattened) — served inline for the browser's
+// native PDF viewer.  Supports Bearer auth AND ?token= query param (single-use
+// download token) so the frontend can both embed it in an <iframe> via a blob
+// URL (fetch + Bearer) and open it in a new tab (download token).
+// ?download=1 switches to attachment disposition for the "open in new tab" flow.
+router.get("/cases/:id/forms/fw001/interactive", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const userId = await resolveDownloadUser(req, res, id);
+  if (!userId) return;
+
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+
+  try {
+    const pdfBytes = await buildFW001PdfInteractive(c as unknown as Parameters<typeof buildFW001PdfInteractive>[0]);
+    const isDownload = req.query.download === "1";
+    const disposition = isDownload
+      ? `attachment; filename="FW001-Case-${id}.pdf"`
+      : "inline";
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", disposition);
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.send(pdfBytes);
+  } catch (err: any) {
+    req.log.error({ err }, "FW-001 interactive PDF error");
+    res.status(500).json({ error: "Failed to generate FW-001 interactive PDF." });
+  }
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Florida forms — programmatic pdf-lib generation (no template PDF required)

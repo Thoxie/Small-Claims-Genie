@@ -593,6 +593,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [modalFormId, setModalFormId] = useState<string | null>(null);
   const [modalInitialValues, setModalInitialValues] = useState<Record<string, string>>({});
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
+  const [fw001BlobUrl, setFw001BlobUrl] = useState<string | null>(null);
+  const [fw001Loading, setFw001Loading] = useState(false);
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [mc030SigModalOpen, setMc030SigModalOpen] = useState(false);
   const [sc104SigModalOpen, setSc104SigModalOpen] = useState(false);
@@ -1285,11 +1287,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         requestingPartyRole: "plaintiff",
         currentTrialDate: cc.hearingDate || "",
       };
-      case "fw001": return {
-        // Name, address, job, employer, phone, and court info all come from the DB on the server.
-        // Pre-seed today's date so the Signature group field is hidden in the modal.
-        signDate: new Date().toISOString().split("T")[0],
-      };
       default: return {};
     }
   }
@@ -1823,19 +1820,80 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Your name, address, and case information are pre-filled from your intake. Answer the eligibility questions, add any financial details, then download your completed PDF.
+              Your name, address, and case information are pre-filled from your intake. Fill in the remaining fields directly on the form, then use the save button in the PDF viewer to download your completed copy.
             </p>
             {commonWarnings}
 
-            <Button
-              size="sm"
-              className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
-              onClick={() => { setModalInitialValues(getInitialValues("fw001")); setModalFormId("fw001"); }}
-              disabled={downloadingForm === "fw001"}
-            >
-              {downloadingForm === "fw001" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-              Fill Out &amp; Download FW-001
-            </Button>
+            {!fw001BlobUrl && (
+              <Button
+                size="sm"
+                className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
+                disabled={fw001Loading}
+                onClick={async () => {
+                  if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+                  setFw001Loading(true);
+                  try {
+                    const clerkToken = await getToken();
+                    const res = await fetch(`/api/cases/${caseId}/forms/fw001/interactive`, {
+                      headers: { Authorization: `Bearer ${clerkToken}` },
+                    });
+                    if (!res.ok) { toast({ title: "Error", description: "Could not load FW-001 — please try again." }); return; }
+                    const blob = await res.blob();
+                    setFw001BlobUrl(URL.createObjectURL(blob));
+                  } catch {
+                    toast({ title: "Error", description: "Could not load FW-001 — please try again." });
+                  } finally {
+                    setFw001Loading(false);
+                  }
+                }}
+              >
+                {fw001Loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                Open FW-001 to Fill Out
+              </Button>
+            )}
+
+            {fw001BlobUrl && (
+              <div className="space-y-2">
+                <iframe
+                  src={fw001BlobUrl}
+                  title="FW-001 Request to Waive Court Fees"
+                  className="w-full rounded border border-border"
+                  style={{ height: "880px", minHeight: "600px" }}
+                />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Fill in the fields above, then click the <span className="font-medium">save / download icon</span> inside the PDF viewer to save your completed form.
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 h-8 text-xs px-3"
+                    onClick={async () => {
+                      if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
+                      const clerkToken = await getToken();
+                      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${clerkToken}` },
+                      });
+                      if (!tokenRes.ok) { toast({ title: "Error", description: "Could not generate download link." }); return; }
+                      const { token } = await tokenRes.json() as { token: string };
+                      window.open(`/api/cases/${caseId}/forms/fw001/interactive?token=${token}&download=1`, "_blank");
+                    }}
+                  >
+                    <FileText className="h-3 w-3" />
+                    Download Blank (Pre-filled) Copy
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1.5 h-8 text-xs px-3 text-muted-foreground"
+                    onClick={() => { URL.revokeObjectURL(fw001BlobUrl); setFw001BlobUrl(null); }}
+                  >
+                    Close Viewer
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
               <p className="text-xs text-amber-800 leading-relaxed">
