@@ -231,28 +231,22 @@ router.post("/cases/:id/forms/sc150", makeFormHandler("SC-150", (id) => `SC150-C
 router.post("/cases/:id/forms/fw001", makeFormHandler("FW-001", (id) => `FW001-Case-${id}.pdf`, { inline: true }));
 
 // Interactive (pre-filled, NOT flattened) — served inline for the browser's
-// native PDF viewer.  Supports Bearer auth AND ?token= query param (single-use
-// download token) so the frontend can both embed it in an <iframe> via a blob
-// URL (fetch + Bearer) and open it in a new tab (download token).
-// ?download=1 switches to attachment disposition for the "open in new tab" flow.
-router.get("/cases/:id/forms/fw001/interactive", async (req, res): Promise<void> => {
+// native PDF viewer.  The frontend fetches this with Authorization: Bearer,
+// converts the response to a blob URL, and sets that as the iframe src.
+router.get("/cases/:id/forms/fw001/interactive", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
-  const userId = await resolveDownloadUser(req, res, id);
-  if (!userId) return;
+  const userId = getUserId(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const c = await getOwnedCase(id, userId);
   if (!c) { res.status(404).json({ error: "Case not found" }); return; }
 
   try {
     const pdfBytes = await buildFW001PdfInteractive(c as unknown as Parameters<typeof buildFW001PdfInteractive>[0]);
-    const isDownload = req.query.download === "1";
-    const disposition = isDownload
-      ? `attachment; filename="FW001-Case-${id}.pdf"`
-      : "inline";
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", disposition);
+    res.setHeader("Content-Disposition", "inline");
     res.setHeader("Content-Length", pdfBytes.length);
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.send(pdfBytes);

@@ -1874,18 +1874,26 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     className="gap-1.5 h-8 text-xs px-3"
                     onClick={async () => {
                       if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
-                      const clerkToken = await getToken();
-                      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
-                        method: "POST",
-                        headers: { Authorization: `Bearer ${clerkToken}` },
-                      });
-                      if (!tokenRes.ok) { toast({ title: "Error", description: "Could not generate download link." }); return; }
-                      const { token } = await tokenRes.json() as { token: string };
-                      window.open(`/api/cases/${caseId}/forms/fw001/interactive?token=${token}&download=1`, "_blank");
+                      try {
+                        const clerkToken = await getToken();
+                        const dlRes = await fetch(`/api/cases/${caseId}/forms/fw001/interactive`, {
+                          headers: { Authorization: `Bearer ${clerkToken}` },
+                        });
+                        if (!dlRes.ok) { toast({ title: "Error", description: "Could not download FW-001." }); return; }
+                        const blob = await dlRes.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `FW001-Case-${caseId}.pdf`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      } catch {
+                        toast({ title: "Error", description: "Could not download FW-001." });
+                      }
                     }}
                   >
                     <FileText className="h-3 w-3" />
-                    Download Blank (Pre-filled) Copy
+                    Download Pre-filled Copy
                   </Button>
                   <Button
                     size="sm"
