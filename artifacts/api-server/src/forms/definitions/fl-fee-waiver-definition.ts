@@ -24,7 +24,6 @@ import * as fs from "fs";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
-import { pdftkFlatten } from "../acroform-filler";
 import type { CaseData } from "../types";
 import { ASSET_DIR } from "../../routes/forms-common";
 
@@ -124,10 +123,7 @@ export async function buildFLFeeWaiver(
     draw(fullAddr.slice(0, 90), 130, 189, 8.5);
   }
 
-  // Flatten via pdftk so the output is a completely inert PDF — no widget
-  // annotations, no interactive elements, no viewer annotation toolbar.
-  const pdfBytes = Buffer.from(await doc.save({ updateFieldAppearances: false }));
-  return pdftkFlatten(pdfBytes);
+  return Buffer.from(await doc.save({ updateFieldAppearances: false }));
 }
 
 const flFeeWaiverDefinition: FormDefinition = {
