@@ -1,10 +1,14 @@
 import { Router, type Request, type Response, type NextFunction, type RequestHandler } from "express";
+import { Readable } from "stream";
 import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable, documentsTable } from "@workspace/db";
 import { sql, count, sum, eq, gte, lt, desc, and, isNotNull, like } from "drizzle-orm";
 import { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES } from "./counties";
 import { logger } from "../lib/logger";
 import { getErrors, clearErrors } from "../lib/errorLog";
 import { BETA_LIMIT } from "../lib/beta";
+import { ObjectStorageService } from "../lib/objectStorage";
+
+const objectStorage = new ObjectStorageService();
 
 const router = Router();
 
@@ -907,7 +911,6 @@ router.get("/admin/cases/:caseId", async (req: Request, res: Response): Promise<
     res.json({
       ...caseRow,
       hasDemandLetter: !!caseRow.demandLetterText,
-      demandLetterText: undefined,
       // intake fields stripped — only needed for sub-score computation above
       venueBasis: undefined,
       hasAdditionalPlaintiff: undefined,
@@ -921,6 +924,61 @@ router.get("/admin/cases/:caseId", async (req: Request, res: Response): Promise<
     });
   } catch (err) {
     logger.error({ err }, "Admin case detail error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/documents/:docId/file ─────────────────────────────────────────
+router.get("/admin/documents/:docId/file", async (req: Request, res: Response): Promise<void> => {
+  const docId = parseInt(req.params.docId as string, 10);
+  if (isNaN(docId)) {
+    res.status(400).json({ error: "Invalid document ID" });
+    return;
+  }
+  const download = req.query.download === "1";
+  try {
+    const [doc] = await db
+      .select({
+        id: documentsTable.id,
+        originalName: documentsTable.originalName,
+        mimeType: documentsTable.mimeType,
+        storageObjectPath: documentsTable.storageObjectPath,
+        fileData: documentsTable.fileData,
+      })
+      .from(documentsTable)
+      .where(eq(documentsTable.id, docId))
+      .limit(1);
+
+    if (!doc) {
+      res.status(404).json({ error: "Document not found" });
+      return;
+    }
+
+    const mime = doc.mimeType ?? "application/octet-stream";
+    const safeName = doc.originalName ?? `document-${docId}`;
+    const disposition = download
+      ? `attachment; filename="${safeName}"`
+      : `inline; filename="${safeName}"`;
+
+    res.setHeader("Content-Type", mime);
+    res.setHeader("Content-Disposition", disposition);
+
+    if (doc.storageObjectPath) {
+      const objectFile = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
+      const gcsRes = await objectStorage.downloadObject(objectFile);
+      if (!gcsRes.body) {
+        res.status(500).json({ error: "Empty response from storage" });
+        return;
+      }
+      Readable.fromWeb(gcsRes.body as import("stream/web").ReadableStream<Uint8Array>).pipe(res);
+    } else if (doc.fileData) {
+      const buffer = Buffer.from(doc.fileData, "base64");
+      res.send(buffer);
+    } else {
+      res.status(404).json({ error: "File data not found" });
+    }
+  } catch (err) {
+    logger.error({ err, docId }, "Admin document file error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

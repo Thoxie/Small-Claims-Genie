@@ -120,6 +120,21 @@ export async function fetchCaseDetail(caseId: number): Promise<CaseDetail> {
   return apiFetch<CaseDetail>(`/admin/cases/${caseId}`);
 }
 
+export async function fetchAdminDocumentBlob(
+  docId: number,
+  download = false
+): Promise<{ blob: Blob; filename: string }> {
+  const key = getStoredKey();
+  const url = `${API_BASE}/admin/documents/${docId}/file${download ? "?download=1" : ""}`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${key}` } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition") ?? "";
+  const match = cd.match(/filename="([^"]+)"/);
+  const filename = match?.[1] ?? `document-${docId}`;
+  return { blob, filename };
+}
+
 export async function fetchHearings(): Promise<HearingRow[]> {
   return apiFetch<HearingRow[]>("/admin/hearings");
 }
@@ -400,6 +415,7 @@ export interface CaseDetail {
   intakeComplete: boolean | null;
   documentCount: number | null;
   hasDemandLetter: boolean;
+  demandLetterText: string | null;
   intakeScore: number;
   docScore: number;
   demandScore: number;

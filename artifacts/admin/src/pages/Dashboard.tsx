@@ -15,6 +15,7 @@ import {
   fetchTestCases,
   fetchAdminClerkId,
   fetchCaseDetail,
+  fetchAdminDocumentBlob,
   fetchHearings,
   fetchStuckCases,
   grantBeta,
@@ -273,6 +274,47 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
     enabled: caseId !== null,
   });
 
+  const [docLoading, setDocLoading] = useState<Set<string>>(new Set());
+  const [demandOpen, setDemandOpen] = useState(false);
+
+  const openDoc = async (docId: number) => {
+    const key = `view-${docId}`;
+    setDocLoading((s) => new Set(s).add(key));
+    try {
+      const { blob, filename } = await fetchAdminDocumentBlob(docId, false);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.download = "";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      alert(`Could not open document ${docId}.`);
+    } finally {
+      setDocLoading((s) => { const n = new Set(s); n.delete(key); return n; });
+    }
+  };
+
+  const downloadDoc = async (docId: number, filename: string) => {
+    const key = `dl-${docId}`;
+    setDocLoading((s) => new Set(s).add(key));
+    try {
+      const { blob, filename: serverName } = await fetchAdminDocumentBlob(docId, true);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = serverName || filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      alert(`Could not download document ${docId}.`);
+    } finally {
+      setDocLoading((s) => { const n = new Set(s); n.delete(key); return n; });
+    }
+  };
+
   const mainAppBase = window.location.origin.replace(/\/admin.*$/, "");
 
   return (
@@ -412,28 +454,76 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
               ) : (
                 <div className="space-y-1.5">
                   {data.documents.map((doc) => (
-                    <div key={doc.id} className="flex items-start justify-between gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{doc.originalName}</p>
-                        {doc.label && <p className="text-xs text-gray-500">{doc.label}</p>}
-                        <p className="text-xs text-gray-400">{fmtDateTime(doc.createdAt)}</p>
+                    <div key={doc.id} className="bg-gray-50 rounded-lg px-3 py-2 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-800 truncate">{doc.originalName}</p>
+                          {doc.label && <p className="text-xs text-gray-500">{doc.label}</p>}
+                          <p className="text-xs text-gray-400">{fmtDateTime(doc.createdAt)}</p>
+                        </div>
+                        <Badge
+                          className={`text-xs shrink-0 ${
+                            doc.ocrStatus === "done"
+                              ? "bg-green-100 text-green-700"
+                              : doc.ocrStatus === "failed"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          OCR: {doc.ocrStatus}
+                        </Badge>
                       </div>
-                      <Badge
-                        className={`text-xs shrink-0 ${
-                          doc.ocrStatus === "done"
-                            ? "bg-green-100 text-green-700"
-                            : doc.ocrStatus === "failed"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        OCR: {doc.ocrStatus}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs gap-1 px-2"
+                          disabled={docLoading.has(`view-${doc.id}`)}
+                          onClick={() => openDoc(doc.id)}
+                        >
+                          <Eye className="h-3 w-3" />
+                          {docLoading.has(`view-${doc.id}`) ? "Opening…" : "View"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs gap-1 px-2"
+                          disabled={docLoading.has(`dl-${doc.id}`)}
+                          onClick={() => downloadDoc(doc.id, doc.originalName)}
+                        >
+                          <Download className="h-3 w-3" />
+                          {docLoading.has(`dl-${doc.id}`) ? "Downloading…" : "Download"}
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
+
+            {/* Demand Letter */}
+            {data.demandLetterText && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between border-b pb-1">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Demand Letter
+                  </h4>
+                  <button
+                    onClick={() => setDemandOpen((v) => !v)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    {demandOpen ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {demandOpen && (
+                  <div className="bg-gray-50 rounded-lg p-3 max-h-72 overflow-y-auto">
+                    <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                      {data.demandLetterText}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Meta */}
             <div className="pt-2 border-t text-xs text-gray-400 space-y-0.5">
