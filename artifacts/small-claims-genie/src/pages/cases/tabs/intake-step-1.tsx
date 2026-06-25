@@ -639,7 +639,8 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
             </div>
           </div>
 
-          {/* ── DBA / Fictitious Business Name — full width, shown when checked ── */}
+          {/* ── Business Information + Additional Plaintiff — side by side on large screens ── */}
+          <div className={`grid grid-cols-1 gap-4${plaintiffIsFictitious && hasAdditionalPlaintiff ? " lg:grid-cols-2" : ""}`}>
 
           {plaintiffIsFictitious && (
             <div className="rounded-xl border border-dashed border-amber-300/60 p-5 space-y-3 bg-amber-50/30">
@@ -981,6 +982,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                   )}
                 </div>
               )}
+          </div>
 
         </form>
       </Form>
