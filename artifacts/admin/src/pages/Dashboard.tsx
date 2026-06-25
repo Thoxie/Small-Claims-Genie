@@ -30,6 +30,7 @@ import {
   type ErrorEntry,
   type StatusData,
   type BetaData,
+  type BetaRow,
   type HearingRow,
   type StuckCaseRow,
   type GenieConversionRow,
@@ -90,6 +91,7 @@ import {
   UserPlus,
   UserMinus,
   XCircle,
+  Download,
 } from "lucide-react";
 import {
   Sheet,
@@ -1106,6 +1108,50 @@ function SystemTab() {
 }
 
 // ── Beta Tab ──────────────────────────────────────────────────────────────────
+function exportBetaCSV(betaRows: BetaRow[], users: UserRow[]) {
+  const userMap = new Map(users.map((u) => [u.userId, u]));
+
+  const headers = ["Email", "User ID", "Claimed Date", "Case Count", "Avg Readiness Score", "Next Hearing Date"];
+
+  const rows = betaRows.map((r) => {
+    const user = userMap.get(r.userId);
+    const cases = user?.cases ?? [];
+    const caseCount = cases.length;
+
+    const scores = cases.map((c) => c.readinessScore ?? 0);
+    const avgReadiness = caseCount > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / caseCount) : "";
+
+    const now = Date.now();
+    const upcomingHearings = cases
+      .filter((c) => c.hearingDate && new Date(c.hearingDate).getTime() >= now)
+      .map((c) => c.hearingDate as string)
+      .sort();
+    const nextHearing = upcomingHearings[0] ?? "";
+
+    return [
+      r.email ?? "",
+      r.userId,
+      r.claimedAt ? new Date(r.claimedAt).toISOString().slice(0, 10) : "",
+      String(caseCount),
+      String(avgReadiness),
+      nextHearing ? new Date(nextHearing).toISOString().slice(0, 10) : "",
+    ];
+  });
+
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const csvContent = [headers.map(escape).join(","), ...rows.map((r) => r.map(escape).join(","))].join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `beta-testers-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => void }) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery<BetaData>({ queryKey: ["beta"], queryFn: fetchBeta });
@@ -1131,6 +1177,7 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
     onError: () => setRevoking(null),
   });
 
+  const { data: users = [], isLoading: usersLoading } = useQuery<UserRow[]>({ queryKey: ["users"], queryFn: fetchUsers });
   if (isLoading || !data) return <LoadingSkeleton rows={2} cols={1} />;
   const slotsRemaining = Math.max(0, data.limit - data.total);
 
@@ -1197,7 +1244,21 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
       {/* Beta tester list */}
       <Card className="shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-gray-700">Beta Testers ({data.total})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-semibold text-gray-700">Beta Testers ({data.total})</CardTitle>
+            {data.rows.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => exportBetaCSV(data.rows, users)}
+                disabled={usersLoading}
+              >
+                <Download className="h-3.5 w-3.5 mr-1" />
+                {usersLoading ? "Loading…" : "Export CSV"}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           {data.rows.length === 0 ? (
