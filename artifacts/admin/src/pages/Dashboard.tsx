@@ -15,6 +15,10 @@ import {
   fetchTestCases,
   fetchAdminClerkId,
   fetchCaseDetail,
+  fetchHearings,
+  fetchStuckCases,
+  grantBeta,
+  revokeBeta,
   createTestCase,
   deleteTestCase,
   clearErrors,
@@ -26,6 +30,8 @@ import {
   type ErrorEntry,
   type StatusData,
   type BetaData,
+  type HearingRow,
+  type StuckCaseRow,
   type GenieConversionRow,
   type TestCaseRow,
 } from "@/lib/api";
@@ -80,6 +86,10 @@ import {
   Mail,
   MapPin,
   Phone,
+  Clock,
+  UserPlus,
+  UserMinus,
+  XCircle,
 } from "lucide-react";
 import {
   Sheet,
@@ -920,9 +930,33 @@ function SystemTab() {
 
 // ── Beta Tab ──────────────────────────────────────────────────────────────────
 function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => void }) {
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery<BetaData>({ queryKey: ["beta"], queryFn: fetchBeta });
+  const [grantUserId, setGrantUserId] = useState("");
+  const [grantEmail, setGrantEmail] = useState("");
+  const [revoking, setRevoking] = useState<string | null>(null);
+
+  const grantMutation = useMutation({
+    mutationFn: () => grantBeta(grantUserId.trim(), grantEmail.trim() || null),
+    onSuccess: (updated) => {
+      qc.setQueryData<BetaData>(["beta"], updated);
+      setGrantUserId("");
+      setGrantEmail("");
+    },
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (userId: string) => revokeBeta(userId),
+    onSuccess: (updated) => {
+      qc.setQueryData<BetaData>(["beta"], updated);
+      setRevoking(null);
+    },
+    onError: () => setRevoking(null),
+  });
+
   if (isLoading || !data) return <LoadingSkeleton rows={2} cols={1} />;
   const slotsRemaining = Math.max(0, data.limit - data.total);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -935,6 +969,55 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
           color={slotsRemaining === 0 ? "amber" : "green"}
         />
       </div>
+
+      {/* Grant beta access */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-green-600" />
+            Grant Beta Access
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex flex-wrap gap-2 items-end">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-500">Clerk User ID</label>
+              <Input
+                placeholder="user_2abc..."
+                value={grantUserId}
+                onChange={(e) => setGrantUserId(e.target.value)}
+                className="h-8 text-xs w-56"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-500">Email (optional)</label>
+              <Input
+                placeholder="user@example.com"
+                value={grantEmail}
+                onChange={(e) => setGrantEmail(e.target.value)}
+                className="h-8 text-xs w-52"
+              />
+            </div>
+            <Button
+              size="sm"
+              className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white"
+              disabled={!grantUserId.trim() || grantMutation.isPending}
+              onClick={() => grantMutation.mutate()}
+            >
+              <UserPlus className="h-3.5 w-3.5 mr-1" />
+              {grantMutation.isPending ? "Granting…" : "Grant Access"}
+            </Button>
+          </div>
+          {grantMutation.isError && (
+            <p className="text-xs text-red-600 mt-2">{(grantMutation.error as Error).message}</p>
+          )}
+          {grantMutation.isSuccess && (
+            <p className="text-xs text-green-600 mt-2">Beta access granted.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Beta tester list */}
       <Card className="shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-gray-700">Beta Testers ({data.total})</CardTitle>
@@ -961,7 +1044,7 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
                       <td className="py-2 pr-4 text-gray-900 truncate max-w-[220px]">{r.email ?? <span className="text-gray-400 italic">no email</span>}</td>
                       <td className="py-2 pr-4 text-gray-500 whitespace-nowrap text-xs">{fmtDateTime(r.claimedAt)}</td>
                       <td className="py-2 pr-4 text-xs text-gray-400 font-mono">{r.userId.slice(0, 18)}…</td>
-                      <td className="py-2">
+                      <td className="py-2 flex items-center gap-1">
                         {r.email && (
                           <Button
                             variant="ghost"
@@ -973,6 +1056,21 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
                             View Cases
                           </Button>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
+                          disabled={revoking === r.userId || revokeMutation.isPending}
+                          onClick={() => {
+                            if (confirm(`Revoke beta access for ${r.email ?? r.userId}?`)) {
+                              setRevoking(r.userId);
+                              revokeMutation.mutate(r.userId);
+                            }
+                          }}
+                        >
+                          <UserMinus className="h-3.5 w-3.5 mr-1" />
+                          Revoke
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -982,6 +1080,174 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ── Hearings Tab ──────────────────────────────────────────────────────────────
+function HearingsTab({ onOpenCase }: { onOpenCase: (caseId: number) => void }) {
+  const { data, isLoading } = useQuery<HearingRow[]>({ queryKey: ["hearings"], queryFn: fetchHearings });
+  if (isLoading || !data) return <LoadingSkeleton rows={3} cols={1} />;
+
+  function hearingUrgency(dateStr: string) {
+    const days = Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
+    if (days <= 7) return { color: "bg-red-100 text-red-700 border-red-200", label: `${days}d` };
+    if (days <= 30) return { color: "bg-amber-100 text-amber-700 border-amber-200", label: `${days}d` };
+    return { color: "bg-green-100 text-green-700 border-green-200", label: `${days}d` };
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Calendar className="h-4 w-4 text-blue-600" />
+        <h3 className="text-sm font-semibold text-gray-700">Upcoming Hearings ({data.length})</h3>
+      </div>
+      {data.length === 0 ? (
+        <Card className="shadow-sm">
+          <CardContent className="p-8 text-center text-gray-400 text-sm">No upcoming hearings scheduled.</CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-sm">
+          <CardContent className="pt-0 p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
+                    <th className="px-4 py-3 font-medium">Date</th>
+                    <th className="px-4 py-3 font-medium">In</th>
+                    <th className="px-4 py-3 font-medium">Time</th>
+                    <th className="px-4 py-3 font-medium">User</th>
+                    <th className="px-4 py-3 font-medium">Case</th>
+                    <th className="px-4 py-3 font-medium">Courthouse</th>
+                    <th className="px-4 py-3 font-medium">Amount</th>
+                    <th className="px-4 py-3 font-medium">Ready</th>
+                    <th className="px-4 py-3 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.map((h) => {
+                    const urg = hearingUrgency(h.hearingDate);
+                    return (
+                      <tr key={h.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">{fmtDate(h.hearingDate)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${urg.color}`}>
+                            {urg.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{h.hearingTime ?? "—"}</td>
+                        <td className="px-4 py-3 text-gray-700 truncate max-w-[160px]">{h.email}</td>
+                        <td className="px-4 py-3 text-gray-700 truncate max-w-[180px]">{h.title}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs truncate max-w-[160px]">
+                          {[h.courthouseName, h.courthouseCity].filter(Boolean).join(", ") || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                          {h.claimAmount != null ? `$${fmt(h.claimAmount)}` : "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {h.readinessScore != null ? (
+                            <span className={`text-xs font-semibold ${h.readinessScore >= 70 ? "text-green-600" : h.readinessScore >= 40 ? "text-amber-600" : "text-red-600"}`}>
+                              {h.readinessScore}
+                            </span>
+                          ) : "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700" onClick={() => onOpenCase(h.id)}>
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ── Stuck Cases Tab ────────────────────────────────────────────────────────────
+function StuckCasesTab({ onOpenCase }: { onOpenCase: (caseId: number) => void }) {
+  const { data, isLoading } = useQuery<StuckCaseRow[]>({ queryKey: ["stuck-cases"], queryFn: fetchStuckCases });
+  if (isLoading || !data) return <LoadingSkeleton rows={3} cols={1} />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Clock className="h-4 w-4 text-amber-500" />
+        <h3 className="text-sm font-semibold text-gray-700">Stuck Cases — no activity in 14+ days ({data.length})</h3>
+      </div>
+      {data.length === 0 ? (
+        <Card className="shadow-sm">
+          <CardContent className="p-8 text-center text-gray-400 text-sm">No stuck cases right now.</CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-sm">
+          <CardContent className="pt-0 p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
+                    <th className="px-4 py-3 font-medium">Idle</th>
+                    <th className="px-4 py-3 font-medium">User</th>
+                    <th className="px-4 py-3 font-medium">Case</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Intake</th>
+                    <th className="px-4 py-3 font-medium">Amount</th>
+                    <th className="px-4 py-3 font-medium">Ready</th>
+                    <th className="px-4 py-3 font-medium">Last Active</th>
+                    <th className="px-4 py-3 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.map((c) => (
+                    <tr key={c.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${c.daysSinceActivity >= 60 ? "bg-red-100 text-red-700 border-red-200" : c.daysSinceActivity >= 30 ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-yellow-50 text-yellow-700 border-yellow-200"}`}>
+                          {c.daysSinceActivity}d
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 truncate max-w-[160px]">{c.email}</td>
+                      <td className="px-4 py-3 text-gray-700 truncate max-w-[200px]">{c.title}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[c.status] ?? "bg-gray-100 text-gray-600"}`}>
+                          {STATUS_LABELS[c.status] ?? c.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {c.intakeComplete ? (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-gray-300" />
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                        {c.claimAmount != null ? `$${fmt(c.claimAmount)}` : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {c.readinessScore != null ? (
+                          <span className={`text-xs font-semibold ${c.readinessScore >= 70 ? "text-green-600" : c.readinessScore >= 40 ? "text-amber-600" : "text-red-600"}`}>
+                            {c.readinessScore}
+                          </span>
+                        ) : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{fmtDate(c.updatedAt)}</td>
+                      <td className="px-4 py-3">
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700" onClick={() => onOpenCase(c.id)}>
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -1764,6 +2030,8 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
             <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
             <TabsTrigger value="revenue" className="text-xs sm:text-sm">Revenue</TabsTrigger>
+            <TabsTrigger value="hearings" className="text-xs sm:text-sm">Hearings</TabsTrigger>
+            <TabsTrigger value="stuck" className="text-xs sm:text-sm">Stuck Cases</TabsTrigger>
             <TabsTrigger value="system" className="text-xs sm:text-sm">System</TabsTrigger>
             <TabsTrigger value="beta" className="text-xs sm:text-sm">Beta</TabsTrigger>
             <TabsTrigger value="signups" className="text-xs sm:text-sm">Signups</TabsTrigger>
@@ -1782,6 +2050,8 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
           </TabsContent>
           <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
           <TabsContent value="revenue"><RevenueTab /></TabsContent>
+          <TabsContent value="hearings"><HearingsTab onOpenCase={setSelectedCaseId} /></TabsContent>
+          <TabsContent value="stuck"><StuckCasesTab onOpenCase={setSelectedCaseId} /></TabsContent>
           <TabsContent value="system"><SystemTab /></TabsContent>
           <TabsContent value="beta">
             <BetaTab onNavigateToUser={handleNavigateToUser} />

@@ -120,6 +120,25 @@ export async function fetchCaseDetail(caseId: number): Promise<CaseDetail> {
   return apiFetch<CaseDetail>(`/admin/cases/${caseId}`);
 }
 
+export async function fetchHearings(): Promise<HearingRow[]> {
+  return apiFetch<HearingRow[]>("/admin/hearings");
+}
+
+export async function fetchStuckCases(): Promise<StuckCaseRow[]> {
+  return apiFetch<StuckCaseRow[]>("/admin/stuck-cases");
+}
+
+export async function grantBeta(userId: string, email: string | null): Promise<BetaData> {
+  return apiFetch<BetaData>("/admin/beta/grant", {
+    method: "POST",
+    body: JSON.stringify({ userId, email }),
+  });
+}
+
+export async function revokeBeta(userId: string): Promise<BetaData> {
+  return apiFetch<BetaData>(`/admin/beta/${encodeURIComponent(userId)}`, { method: "DELETE" });
+}
+
 export async function validateCredentials(
   email: string,
   password: string
@@ -303,6 +322,38 @@ export interface CaseDocumentRow {
   fileSize: number;
   ocrStatus: string;
   createdAt: string;
+}
+
+export interface HearingRow {
+  id: number;
+  title: string;
+  userId: string | null;
+  email: string;
+  caseNumber: string | null;
+  hearingDate: string;
+  hearingTime: string | null;
+  hearingCourtroom: string | null;
+  hearingJudge: string | null;
+  courthouseName: string | null;
+  courthouseCity: string | null;
+  claimAmount: number | null;
+  readinessScore: number | null;
+  status: string;
+}
+
+export interface StuckCaseRow {
+  id: number;
+  title: string;
+  userId: string | null;
+  email: string;
+  status: string;
+  claimAmount: number | null;
+  claimType: string | null;
+  intakeComplete: boolean | null;
+  readinessScore: number | null;
+  updatedAt: string;
+  createdAt: string;
+  daysSinceActivity: number;
 }
 
 export interface CaseDetail {

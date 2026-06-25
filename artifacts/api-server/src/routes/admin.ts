@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction, type RequestHandler } from "express";
 import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable, documentsTable } from "@workspace/db";
-import { sql, count, sum, eq, gte, desc, and, isNotNull, like } from "drizzle-orm";
+import { sql, count, sum, eq, gte, lt, desc, and, isNotNull, like } from "drizzle-orm";
 import { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES } from "./counties";
 import { logger } from "../lib/logger";
 import { getErrors, clearErrors } from "../lib/errorLog";
@@ -900,6 +900,125 @@ router.post("/admin/notifications", async (req: Request, res: Response): Promise
   notificationsEnabled = enabled;
   logger.info({ enabled }, "Admin notifications toggle changed");
   res.json({ enabled: notificationsEnabled });
+});
+
+// ── GET /admin/hearings ───────────────────────────────────────────────────────
+router.get("/admin/hearings", async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+
+    const hearings = await db
+      .select({
+        id: casesTable.id,
+        title: casesTable.title,
+        userId: casesTable.userId,
+        caseNumber: casesTable.caseNumber,
+        hearingDate: casesTable.hearingDate,
+        hearingTime: casesTable.hearingTime,
+        hearingCourtroom: casesTable.hearingCourtroom,
+        hearingJudge: casesTable.hearingJudge,
+        courthouseName: casesTable.courthouseName,
+        courthouseCity: casesTable.courthouseCity,
+        claimAmount: casesTable.claimAmount,
+        readinessScore: casesTable.readinessScore,
+        status: casesTable.status,
+      })
+      .from(casesTable)
+      .where(and(isNotNull(casesTable.hearingDate), gte(casesTable.hearingDate, today)))
+      .orderBy(casesTable.hearingDate);
+
+    const userIds = [...new Set(hearings.map((h) => h.userId).filter(Boolean) as string[])];
+    const emailMap = await getClerkEmails(userIds);
+
+    res.json(
+      hearings.map((h) => ({
+        ...h,
+        email: emailMap.get(h.userId ?? "") ?? h.userId,
+      }))
+    );
+  } catch (err) {
+    logger.error({ err }, "Admin hearings error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/stuck-cases ────────────────────────────────────────────────────
+router.get("/admin/stuck-cases", async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 14);
+
+    const stuck = await db
+      .select({
+        id: casesTable.id,
+        title: casesTable.title,
+        userId: casesTable.userId,
+        status: casesTable.status,
+        claimAmount: casesTable.claimAmount,
+        claimType: casesTable.claimType,
+        intakeComplete: casesTable.intakeComplete,
+        readinessScore: casesTable.readinessScore,
+        updatedAt: casesTable.updatedAt,
+        createdAt: casesTable.createdAt,
+      })
+      .from(casesTable)
+      .where(
+        and(
+          lt(casesTable.updatedAt, cutoff),
+          sql`${casesTable.status} NOT IN ('complete', 'won', 'lost')`
+        )
+      )
+      .orderBy(casesTable.updatedAt);
+
+    const userIds = [...new Set(stuck.map((c) => c.userId).filter(Boolean) as string[])];
+    const emailMap = await getClerkEmails(userIds);
+
+    res.json(
+      stuck.map((c) => ({
+        ...c,
+        email: emailMap.get(c.userId ?? "") ?? c.userId,
+        daysSinceActivity: Math.floor((Date.now() - (c.updatedAt?.getTime() ?? Date.now())) / 86400000),
+      }))
+    );
+  } catch (err) {
+    logger.error({ err }, "Admin stuck-cases error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── POST /admin/beta/grant ────────────────────────────────────────────────────
+router.post("/admin/beta/grant", async (req: Request, res: Response): Promise<void> => {
+  const { userId, email } = req.body as { userId?: string; email?: string };
+  if (!userId) {
+    res.status(400).json({ error: "userId is required" });
+    return;
+  }
+  try {
+    await db
+      .insert(betaAccessTable)
+      .values({ userId, email: email ?? null })
+      .onConflictDoNothing();
+    const rows = await db.select().from(betaAccessTable).orderBy(desc(betaAccessTable.claimedAt));
+    logger.info({ userId, email }, "Admin granted beta access");
+    res.json({ total: rows.length, limit: BETA_LIMIT, rows });
+  } catch (err) {
+    logger.error({ err }, "Admin beta grant error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── DELETE /admin/beta/:userId ────────────────────────────────────────────────
+router.delete("/admin/beta/:userId", async (req: Request, res: Response): Promise<void> => {
+  const userId = req.params.userId as string;
+  try {
+    await db.delete(betaAccessTable).where(eq(betaAccessTable.userId, userId));
+    const rows = await db.select().from(betaAccessTable).orderBy(desc(betaAccessTable.claimedAt));
+    logger.info({ userId }, "Admin revoked beta access");
+    res.json({ total: rows.length, limit: BETA_LIMIT, rows });
+  } catch (err) {
+    logger.error({ err }, "Admin beta revoke error");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;
