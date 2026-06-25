@@ -692,6 +692,7 @@ function UsersTab({
   const [caseSearch, setCaseSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [claimTypeFilter, setClaimTypeFilter] = useState("all");
+  const [caseSort, setCaseSort] = useState<"newest" | "oldest" | "amount" | "readiness">("newest");
 
   if (isLoading || !data) return <LoadingSkeleton rows={5} cols={1} />;
 
@@ -723,7 +724,7 @@ function UsersTab({
   const caseQ = caseSearch.trim().toLowerCase();
   const filtersActive = statusFilter !== "all" || claimTypeFilter !== "all";
 
-  const matchedCases = (caseQ || filtersActive)
+  const filteredCases = (caseQ || filtersActive)
     ? allCasesWithUser.filter(({ case: c }) => {
         if (statusFilter !== "all" && c.status !== statusFilter) return false;
         if (claimTypeFilter !== "all" && c.claimType !== claimTypeFilter) return false;
@@ -737,6 +738,16 @@ function UsersTab({
         );
       })
     : [];
+
+  const matchedCases = [...filteredCases].sort((a, b) => {
+    const ca = a.case;
+    const cb = b.case;
+    if (caseSort === "newest") return new Date(cb.createdAt).getTime() - new Date(ca.createdAt).getTime();
+    if (caseSort === "oldest") return new Date(ca.createdAt).getTime() - new Date(cb.createdAt).getTime();
+    if (caseSort === "amount") return (cb.claimAmount ?? 0) - (ca.claimAmount ?? 0);
+    if (caseSort === "readiness") return (cb.readinessScore ?? 0) - (ca.readinessScore ?? 0);
+    return 0;
+  });
 
   const mainAppBase = window.location.origin.replace(/\/admin.*$/, "");
 
@@ -825,18 +836,31 @@ function UsersTab({
       {/* Case search / filter results */}
       {(caseQ || filtersActive) && (
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
               {caseQ ? "Case search" : "Filtered cases"} — {matchedCases.length} result{matchedCases.length !== 1 ? "s" : ""}
             </p>
-            {filtersActive && (
-              <button
-                onClick={() => { setStatusFilter("all"); setClaimTypeFilter("all"); }}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                Clear filters
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {filtersActive && (
+                <button
+                  onClick={() => { setStatusFilter("all"); setClaimTypeFilter("all"); }}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  Clear filters
+                </button>
+              )}
+              <Select value={caseSort} onValueChange={(v) => setCaseSort(v as typeof caseSort)}>
+                <SelectTrigger className="h-7 w-44 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest first</SelectItem>
+                  <SelectItem value="oldest">Oldest first</SelectItem>
+                  <SelectItem value="amount">Amount (high → low)</SelectItem>
+                  <SelectItem value="readiness">Readiness (high → low)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           {matchedCases.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">
