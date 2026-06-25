@@ -154,8 +154,6 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
   const courtName = selectedCourthouse?.name ?? selectedCounty?.courthouseName;
   const countyState = selectedCounty?.state ?? jurisdictionState;
   const isCA = countyState === "CA";
-  const isTX = countyState === "TX";
-  const isIL = countyState === "IL";
   const courtAddress = selectedCourthouse
     ? `${selectedCourthouse.address}, ${selectedCourthouse.city}, ${countyState} ${selectedCourthouse.zip}`
     : selectedCounty ? `${selectedCounty.courthouseAddress}, ${selectedCounty.courthouseCity}, ${countyState} ${selectedCounty.courthouseZip}` : "";
