@@ -690,6 +690,8 @@ function UsersTab({
   const { data: betaData } = useQuery<BetaData>({ queryKey: ["beta"], queryFn: fetchBeta });
   const [betaOnly, setBetaOnly] = useState(false);
   const [caseSearch, setCaseSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [claimTypeFilter, setClaimTypeFilter] = useState("all");
 
   if (isLoading || !data) return <LoadingSkeleton rows={5} cols={1} />;
 
@@ -713,15 +715,27 @@ function UsersTab({
     u.cases.map((c) => ({ case: c, user: u }))
   );
 
+  // Derive unique claim types from real data for the filter dropdown
+  const claimTypes = Array.from(
+    new Set(allCasesWithUser.map(({ case: c }) => c.claimType).filter(Boolean) as string[])
+  ).sort();
+
   const caseQ = caseSearch.trim().toLowerCase();
-  const matchedCases = caseQ
-    ? allCasesWithUser.filter(({ case: c }) =>
-        c.title.toLowerCase().includes(caseQ) ||
-        (c.claimType ?? "").toLowerCase().includes(caseQ) ||
-        (c.countyId ?? "").toLowerCase().includes(caseQ) ||
-        (c.caseNumber ?? "").toLowerCase().includes(caseQ) ||
-        String(c.id).includes(caseQ)
-      )
+  const filtersActive = statusFilter !== "all" || claimTypeFilter !== "all";
+
+  const matchedCases = (caseQ || filtersActive)
+    ? allCasesWithUser.filter(({ case: c }) => {
+        if (statusFilter !== "all" && c.status !== statusFilter) return false;
+        if (claimTypeFilter !== "all" && c.claimType !== claimTypeFilter) return false;
+        if (!caseQ) return true;
+        return (
+          c.title.toLowerCase().includes(caseQ) ||
+          (c.claimType ?? "").toLowerCase().includes(caseQ) ||
+          (c.countyId ?? "").toLowerCase().includes(caseQ) ||
+          (c.caseNumber ?? "").toLowerCase().includes(caseQ) ||
+          String(c.id).includes(caseQ)
+        );
+      })
     : [];
 
   const mainAppBase = window.location.origin.replace(/\/admin.*$/, "");
@@ -773,17 +787,52 @@ function UsersTab({
               onChange={(e) => setCaseSearch(e.target.value)}
             />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-9 w-44 text-sm">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="intake_complete">Intake Complete</SelectItem>
+              <SelectItem value="ready_to_file">Ready to File</SelectItem>
+              <SelectItem value="filed">Filed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={claimTypeFilter} onValueChange={setClaimTypeFilter}>
+            <SelectTrigger className="h-9 w-44 text-sm">
+              <SelectValue placeholder="All claim types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All claim types</SelectItem>
+              {claimTypes.map((ct) => (
+                <SelectItem key={ct} value={ct}>{ct}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Case search results */}
-      {caseQ && (
+      {/* Case search / filter results */}
+      {(caseQ || filtersActive) && (
         <div className="space-y-2">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-            Case search — {matchedCases.length} result{matchedCases.length !== 1 ? "s" : ""}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+              {caseQ ? "Case search" : "Filtered cases"} — {matchedCases.length} result{matchedCases.length !== 1 ? "s" : ""}
+            </p>
+            {filtersActive && (
+              <button
+                onClick={() => { setStatusFilter("all"); setClaimTypeFilter("all"); }}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
           {matchedCases.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">No cases match "{caseSearch}".</p>
+            <p className="text-sm text-gray-400 text-center py-8">
+              No cases match{caseQ ? ` "${caseSearch}"` : ""}{filtersActive ? " the selected filters" : ""}.
+            </p>
           ) : (
             <div className="space-y-2">
               {matchedCases.map(({ case: c, user: u }) => (
