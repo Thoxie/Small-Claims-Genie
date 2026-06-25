@@ -924,35 +924,6 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
     finally { setDownloadingForm(null); }
   }
 
-  async function openFW001InNewTab() {
-    if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
-    const win = window.open("", "_blank");
-    if (!win) {
-      toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site, then try again." });
-      return;
-    }
-    setDownloadingForm("fw001"); setDownloadError(null);
-    try {
-      const clerkToken = await getToken();
-      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${clerkToken}` },
-      });
-      if (!tokenRes.ok) { win.close(); setDownloadError("Could not authorize — please try again."); return; }
-      const { token } = await tokenRes.json();
-      const res = await fetch(`/api/cases/${caseId}/forms/fw001`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
-      if (!res.ok) { win.close(); setDownloadError("Failed to generate FW-001 PDF — please try again."); return; }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      win.location.href = url;
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch { win.close(); setDownloadError("Failed to open FW-001 PDF — please try again."); }
-    finally { setDownloadingForm(null); }
-  }
 
 
   async function downloadSignedSC100A(signatureDataUrl?: string) {
