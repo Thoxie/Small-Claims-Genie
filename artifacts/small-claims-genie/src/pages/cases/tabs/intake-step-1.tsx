@@ -364,16 +364,6 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                     Court website ↗
                   </a>
                 )}
-                {isIL && selectedCounty.filingFeeUnder10000 != null && (
-                  <span className="text-muted-foreground">
-                    Filing fee: <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder10000}</span> (claims up to $10,000)
-                  </span>
-                )}
-                {(isCA || isTX) && selectedCounty.filingFeeUnder1500 != null && (
-                  <span className="text-muted-foreground">
-                    Filing fee: <span className="font-medium text-foreground">${selectedCounty.filingFeeUnder1500}</span> (≤$1,500) · <span className="font-medium text-foreground">${selectedCounty.filingFee1500to5000}</span> ($1,500–$5,000) · <span className="font-medium text-foreground">${selectedCounty.filingFeeOver5000}</span> (&gt;$5,000)
-                  </span>
-                )}
               </div>
             )}
               {selectedCountyId && !courtName && <p className="text-xs text-muted-foreground italic">Loading court information…</p>}
