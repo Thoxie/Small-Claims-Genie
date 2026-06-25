@@ -1370,16 +1370,33 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
                     <th className="pb-2 pr-4 font-medium">Email</th>
                     <th className="pb-2 pr-4 font-medium">Claimed</th>
                     <th className="pb-2 pr-4 font-medium">User ID</th>
+                    <th className="pb-2 pr-4 font-medium text-right">Cases</th>
+                    <th className="pb-2 pr-4 font-medium text-right">Readiness</th>
                     <th className="pb-2 font-medium"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {data.rows.map((r, i) => (
+                  {(() => { const userMap = new Map(users.map((u) => [u.userId, u])); return data.rows.map((r, i) => {
+                    const userRecord = userMap.get(r.userId);
+                    const cases = userRecord?.cases ?? [];
+                    const caseCount = cases.length;
+                    const scores = cases.map((c) => c.readinessScore ?? 0);
+                    const avgReadinessRaw = caseCount > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / caseCount) : null;
+                    const avgReadiness = avgReadinessRaw != null && avgReadinessRaw > 0 ? avgReadinessRaw : null;
+                    return (
                     <tr key={r.id}>
                       <td className="py-2 pr-4 text-gray-400 text-xs">{i + 1}</td>
                       <td className="py-2 pr-4 text-gray-900 truncate max-w-[220px]">{r.email ?? <span className="text-gray-400 italic">no email</span>}</td>
                       <td className="py-2 pr-4 text-gray-500 whitespace-nowrap text-xs">{fmtDateTime(r.claimedAt)}</td>
                       <td className="py-2 pr-4 text-xs text-gray-400 font-mono">{r.userId.slice(0, 18)}…</td>
+                      <td className="py-2 pr-4 text-right text-xs text-gray-700">{caseCount > 0 ? caseCount : "—"}</td>
+                      <td className="py-2 pr-4 text-right text-xs">
+                        {avgReadiness != null ? (
+                          <span className={avgReadiness >= 70 ? "text-green-600 font-medium" : avgReadiness >= 40 ? "text-amber-600 font-medium" : "text-red-600 font-medium"}>
+                            {avgReadiness}/100
+                          </span>
+                        ) : "—"}
+                      </td>
                       <td className="py-2 flex items-center gap-1">
                         {r.email && (
                           <Button
@@ -1409,7 +1426,7 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
                         </Button>
                       </td>
                     </tr>
-                  ))}
+                  ); }); })()}
                 </tbody>
               </table>
             </div>
