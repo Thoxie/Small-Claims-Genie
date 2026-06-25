@@ -400,6 +400,9 @@ export interface CaseDetail {
   intakeComplete: boolean | null;
   documentCount: number | null;
   hasDemandLetter: boolean;
+  intakeScore: number;
+  docScore: number;
+  demandScore: number;
   documents: CaseDocumentRow[];
   createdAt: string;
   updatedAt: string;

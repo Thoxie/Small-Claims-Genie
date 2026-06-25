@@ -198,6 +198,72 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
   );
 }
 
+function ReadinessBar({ value, max, label, earned }: { value: number; max: number; label: string; earned: number }) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  return (
+    <div className="space-y-0.5">
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>{label}</span>
+        <span className="font-medium text-gray-700">{earned} / {max} pts</span>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-blue-400 transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ReadinessSection({
+  readinessScore,
+  intakeScore,
+  docScore,
+  demandScore,
+  documentCount,
+}: {
+  readinessScore: number;
+  intakeScore: number;
+  docScore: number;
+  demandScore: number;
+  documentCount: number;
+}) {
+  const score = readinessScore;
+
+  const barColor =
+    score >= 80 ? "bg-green-500" : score >= 50 ? "bg-amber-400" : "bg-red-500";
+  const labelColor =
+    score >= 80 ? "text-green-700" : score >= 50 ? "text-amber-700" : "text-red-600";
+
+  return (
+    <div className="space-y-3">
+      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b pb-1">Readiness</h4>
+
+      {/* Overall bar */}
+      <div className="space-y-1">
+        <div className="flex justify-between items-baseline">
+          <span className="text-xs text-gray-500">Overall score</span>
+          <span className={`text-sm font-bold ${labelColor}`}>{score} / 100</span>
+        </div>
+        <div className="h-3 w-full rounded-full bg-gray-100 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all ${barColor}`}
+            style={{ width: `${score}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Sub-score breakdown */}
+      <div className="space-y-2 pt-1">
+        <ReadinessBar label="Intake" max={60} value={intakeScore} earned={intakeScore} />
+        <ReadinessBar label={`Documents (${documentCount} uploaded)`} max={30} value={docScore} earned={docScore} />
+        <ReadinessBar label="Demand letter" max={10} value={demandScore} earned={demandScore} />
+      </div>
+    </div>
+  );
+}
+
 function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose: () => void }) {
   const { data, isLoading, error } = useQuery<CaseDetail>({
     queryKey: ["case-detail", caseId],
@@ -326,12 +392,13 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
             )}
 
             {/* Readiness */}
-            <DetailSection title="Readiness">
-              <DetailRow label="Score" value={`${data.readinessScore ?? 0} / 100`} />
-              <DetailRow label="Intake" value={data.intakeComplete ? "✓ Complete" : "In progress"} />
-              <DetailRow label="Documents" value={`${data.documentCount ?? 0} uploaded`} />
-              <DetailRow label="Demand Letter" value={data.hasDemandLetter ? "✓ Generated" : "Not yet"} />
-            </DetailSection>
+            <ReadinessSection
+              readinessScore={data.readinessScore ?? 0}
+              intakeScore={data.intakeScore}
+              docScore={data.docScore}
+              demandScore={data.demandScore}
+              documentCount={data.documentCount ?? 0}
+            />
 
             {/* Documents */}
             <div className="space-y-2">

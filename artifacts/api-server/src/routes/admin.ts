@@ -848,6 +848,12 @@ router.get("/admin/cases/:caseId", async (req: Request, res: Response): Promise<
         intakeComplete: casesTable.intakeComplete,
         documentCount: casesTable.documentCount,
         demandLetterText: casesTable.demandLetterText,
+        // intake fields needed to compute the proportional sub-score
+        venueBasis: casesTable.venueBasis,
+        hasAdditionalPlaintiff: casesTable.hasAdditionalPlaintiff,
+        additionalPlaintiffIsFictitious: casesTable.additionalPlaintiffIsFictitious,
+        additionalPlaintiffName: casesTable.additionalPlaintiffName,
+        secondPlaintiffDbaName: casesTable.secondPlaintiffDbaName,
         createdAt: casesTable.createdAt,
         updatedAt: casesTable.updatedAt,
       })
@@ -874,10 +880,43 @@ router.get("/admin/cases/:caseId", async (req: Request, res: Response): Promise<
       .where(eq(documentsTable.caseId, caseId))
       .orderBy(desc(documentsTable.createdAt));
 
+    // Compute sub-scores using the exact same formula as recalcReadiness() in cases.ts
+    // so intakeScore + docScore + demandScore == readinessScore (no rounding drift).
+    const intakeRequired: Array<unknown> = [
+      caseRow.plaintiffName,
+      caseRow.plaintiffAddress,
+      caseRow.defendantName,
+      caseRow.defendantAddress,
+      caseRow.claimAmount,
+      caseRow.claimDescription,
+      caseRow.incidentDate,
+      caseRow.howAmountCalculated,
+      caseRow.priorDemandMade != null ? true : null,
+      caseRow.countyId,
+      caseRow.venueBasis,
+    ];
+    if (caseRow.hasAdditionalPlaintiff && caseRow.additionalPlaintiffIsFictitious) {
+      intakeRequired.push(caseRow.additionalPlaintiffName);
+      intakeRequired.push(caseRow.secondPlaintiffDbaName);
+    }
+    const intakeFilled = intakeRequired.filter(Boolean).length;
+    const intakeScore = Math.round((intakeFilled / intakeRequired.length) * 60);
+    const docScore = Math.min(docs.length * 10, 30);
+    const demandScore = caseRow.priorDemandMade ? 10 : 0;
+
     res.json({
       ...caseRow,
       hasDemandLetter: !!caseRow.demandLetterText,
       demandLetterText: undefined,
+      // intake fields stripped — only needed for sub-score computation above
+      venueBasis: undefined,
+      hasAdditionalPlaintiff: undefined,
+      additionalPlaintiffIsFictitious: undefined,
+      additionalPlaintiffName: undefined,
+      secondPlaintiffDbaName: undefined,
+      intakeScore,
+      docScore,
+      demandScore,
       documents: docs,
     });
   } catch (err) {
