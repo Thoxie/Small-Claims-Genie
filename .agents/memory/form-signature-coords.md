@@ -43,6 +43,19 @@ Signature line sits at same row as Date (y≈280–292), to the right.
 
 **Final coords:** `SIG_X=268, SIG_Y=278, SIG_W=280, SIG_H=22`
 
+## FW-001 calibration result
+AcroForm PDF — save through pdf-lib first (strips certification), THEN walk widgets.
+No pdftk step needed because FW-001 uses pdf-lib fill (not pdftk FDF).
+
+| Field | x1 | y1 | x2 | y2 |
+|---|---|---|---|---|
+| SigDate | 66 | 97 | 247 | 110 |
+| PetitionerName (printed name) | 36 | 85 | 324 | 96 |
+
+Signature image placed just above those fields.
+
+**Final coords:** `SIG_X=36, SIG_Y=112, SIG_W=220, SIG_H=38`
+
 ## Why coords matter only for signature overlay
 Field FILL (pdftk FDF) doesn't need coords — pdftk places text automatically.
 Coords are only needed when overlaying a signature IMAGE on top of the filled PDF.
