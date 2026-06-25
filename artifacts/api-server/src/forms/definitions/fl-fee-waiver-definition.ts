@@ -10,11 +10,11 @@
  * Rendering: png-overlay (pdf-lib text overlay on official single-page PDF)
  *
  * Overlay coordinate system: pdf-lib (bottom-left origin, y increases upward).
- * Coordinates derived from pdftotext -bbox analysis of the official 612×792 pt page.
+ * Page size: 612 × 792 pt.
+ * Coordinates derived from pdftotext -bbox analysis: pdf_lib_y = 792 - bbox_yMax.
  *
  * Note: The official FL Form 1.998 is a flat PDF with no AcroForm fields.
- * Data is pre-filled via drawText overlay. The form is not user-editable after download,
- * but all case data is accurately placed on the correct lines.
+ * Data is pre-filled via drawText overlay. The form is not user-editable after download.
  *
  * Legal basis: Fla. Stat. § 57.082; Fla. R. Civ. P. Form 1.998 (2024).
  */
@@ -74,53 +74,70 @@ export async function buildFLFeeWaiver(
 
   // ── Court header: county name ───────────────────────────────────────────────
   // "IN AND FOR ______________ COUNTY, FLORIDA"
+  // blank at bbox x=268.23, screen yMax=76.206 → pdf-lib y = 792 - 76.206 = 715.8
   if (countyName) {
-    draw(countyName.toUpperCase(), 200, 716, 9);
+    draw(countyName.toUpperCase(), 268, 716, 9);
   }
 
   // ── Plaintiff name ──────────────────────────────────────────────────────────
+  // blank line before "Plaintiff/Petitioner": bbox xMin=50.55, screen yMax=91.206
+  // pdf-lib y = 792 - 91.206 = 700.8
   if (plaintiffName) {
-    draw(plaintiffName, 50, 705, 9);
+    draw(plaintiffName, 51, 701, 9);
   }
 
   // ── Case number ─────────────────────────────────────────────────────────────
+  // "CASE NO.______": same y as plaintiff line, value after "NO." at x≈466
+  // pdf-lib y = 700.8
   if (caseNumber) {
-    draw(caseNumber, 463, 705, 9);
+    draw(caseNumber, 466, 701, 9);
   }
 
   // ── Signature section ────────────────────────────────────────────────────────
   // "Signed on ________________________, 20____."
+  // "Signed on" text at screen yMax=554.600 → pdf-lib y = 792 - 554.600 = 237.4
   draw(today, 95, 237, 9);
 
-  // Signature image — blank line just below "Signed on"
+  // Signature blank line for image and print name:
+  // `___________________________________` at screen yMax=565.620 → pdf-lib y = 792 - 565.620 = 226.4
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, { x: 130, y: 217, width: 160, height: 22, opacity: 1 });
+        page.drawImage(sigImg, { x: 130, y: 226, width: 155, height: 18, opacity: 1 });
       }
     } catch { /* ignore */ }
   }
 
   // ── Print Full Legal Name ────────────────────────────────────────────────────
+  // Goes on the same blank line as the signature, right side (after "Last 4 digits..." area)
+  // "Print Full Legal Name" label is at x=302, same blank line → pdf-lib y = 226
   if (plaintiffName) {
-    draw(plaintiffName, 303, 217, 9);
+    draw(plaintiffName, 303, 226, 9);
   }
 
-  // ── Email and Phone ─────────────────────────────────────────────────────────
+  // ── Email ────────────────────────────────────────────────────────────────────
+  // "Email address:" label: screen yMax=587.620 → pdf-lib y = 792 - 587.620 = 204.4
+  // Value goes on the same line, right after the label (label ends at x≈103)
   if (email) {
-    draw(email, 130, 213, 8.5);
+    draw(email, 130, 204, 8.5);
   }
+
+  // ── Phone ────────────────────────────────────────────────────────────────────
+  // "Phone Number/s:" label: x=302 to x=367, same y as email → pdf-lib y = 204
+  // Value goes after the label at x≈370
   if (phone) {
-    draw(phone, 355, 213, 8.5);
+    draw(phone, 370, 204, 8.5);
   }
 
   // ── Address ─────────────────────────────────────────────────────────────────
+  // "Address: Street, City, State, Zip Code": screen yMax=611.650 → pdf-lib y = 792 - 611.650 = 180.35
+  // "Address:" label ends at x≈82; value starts immediately after at x=84
   const fullAddr = [addr, cityStateZip].filter(Boolean).join(", ");
   if (fullAddr) {
-    draw(fullAddr.slice(0, 90), 130, 189, 8.5);
+    draw(fullAddr.slice(0, 90), 84, 180, 8.5);
   }
 
   return Buffer.from(await doc.save({ updateFieldAppearances: false }));

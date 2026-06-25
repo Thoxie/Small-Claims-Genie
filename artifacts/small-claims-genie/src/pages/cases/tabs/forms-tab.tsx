@@ -2549,7 +2549,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Your name, address, and case information are pre-filled from your intake. Download the form, complete the financial eligibility section, sign it, and file it with the clerk before or at the same time as your Statement of Claim.
+                Your name, address, and case number are pre-filled. Print the form, hand-complete the financial eligibility section (income, assets, and debts), sign it, and file with the clerk at the same time as your Statement of Claim.
               </p>
               <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
