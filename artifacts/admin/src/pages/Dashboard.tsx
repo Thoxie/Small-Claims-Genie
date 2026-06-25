@@ -606,6 +606,7 @@ function UsersTab({
   const { data, isLoading } = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
   const { data: betaData } = useQuery<BetaData>({ queryKey: ["beta"], queryFn: fetchBeta });
   const [betaOnly, setBetaOnly] = useState(false);
+  const [caseSearch, setCaseSearch] = useState("");
 
   if (isLoading || !data) return <LoadingSkeleton rows={5} cols={1} />;
 
@@ -624,8 +625,27 @@ function UsersTab({
   const paid = data.filter((u) => u.hasPurchase).length;
   const betaCount = betaData?.total ?? 0;
 
+  // Build flat case list for case search
+  const allCasesWithUser = data.flatMap((u) =>
+    u.cases.map((c) => ({ case: c, user: u }))
+  );
+
+  const caseQ = caseSearch.trim().toLowerCase();
+  const matchedCases = caseQ
+    ? allCasesWithUser.filter(({ case: c }) =>
+        c.title.toLowerCase().includes(caseQ) ||
+        (c.claimType ?? "").toLowerCase().includes(caseQ) ||
+        (c.countyId ?? "").toLowerCase().includes(caseQ) ||
+        (c.caseNumber ?? "").toLowerCase().includes(caseQ) ||
+        String(c.id).includes(caseQ)
+      )
+    : [];
+
+  const mainAppBase = window.location.origin.replace(/\/admin.*$/, "");
+
   return (
     <div className="space-y-4">
+      {/* Controls row */}
       <div className="flex flex-wrap gap-3 items-center justify-between">
         <div className="flex gap-2 text-sm text-gray-600 flex-wrap">
           <span><strong>{data.length}</strong> users</span>
@@ -640,7 +660,7 @@ function UsersTab({
             </>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={() => setBetaOnly((v) => !v)}
             className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
@@ -652,8 +672,8 @@ function UsersTab({
             <Filter className="h-3 w-3" />
             Beta users only
           </button>
-          <div className="relative w-56">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <div className="relative w-52">
+            <Users className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               className="pl-9 h-9 text-sm"
               placeholder="Search email or user ID…"
@@ -661,9 +681,99 @@ function UsersTab({
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <div className="relative w-52">
+            <FileText className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              className="pl-9 h-9 text-sm"
+              placeholder="Search cases…"
+              value={caseSearch}
+              onChange={(e) => setCaseSearch(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
+      {/* Case search results */}
+      {caseQ && (
+        <div className="space-y-2">
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+            Case search — {matchedCases.length} result{matchedCases.length !== 1 ? "s" : ""}
+          </p>
+          {matchedCases.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-8">No cases match "{caseSearch}".</p>
+          ) : (
+            <div className="space-y-2">
+              {matchedCases.map(({ case: c, user: u }) => (
+                <div key={c.id} className="border rounded-lg bg-white px-4 py-3">
+                  <div className="flex items-start gap-2 flex-wrap mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm text-gray-900 truncate">{c.title}</span>
+                        <Badge className={`text-xs ${STATUS_COLORS[c.status] ?? "bg-gray-100 text-gray-600"}`}>
+                          {STATUS_LABELS[c.status] ?? c.status}
+                        </Badge>
+                        {c.caseNumber && (
+                          <span className="text-xs text-gray-500 font-mono">#{c.caseNumber}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                        <span className="text-gray-400">Owner:</span>
+                        <span className="font-medium">{u.email}</span>
+                        {u.hasPurchase && (
+                          <Badge className="bg-green-100 text-green-700 text-xs ml-1">Paid</Badge>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => onOpenCase(c.id)}
+                      >
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        View Details
+                      </Button>
+                      <a
+                        href={`${mainAppBase}/cases/${c.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 h-7 px-2 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        App
+                      </a>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600">
+                    <div>
+                      <span className="text-gray-400">Claim Type</span>
+                      <p className="font-medium">{c.claimType ?? "—"}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">County</span>
+                      <p className="font-medium">{c.countyId ?? "—"}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Amount</span>
+                      <p className="font-medium">{c.claimAmount ? fmtMoney(c.claimAmount) : "—"}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Case ID</span>
+                      <p className="font-medium font-mono">{c.id}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="border-t pt-4">
+            <p className="text-xs text-gray-400 mb-3">All users</p>
+          </div>
+        </div>
+      )}
+
+      {/* User rows */}
       {filtered.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-8">
           {betaOnly ? "No beta users found." : "No users found."}
