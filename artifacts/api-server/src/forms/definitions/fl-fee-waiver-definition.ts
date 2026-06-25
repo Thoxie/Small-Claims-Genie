@@ -53,7 +53,8 @@ export async function buildFLFeeWaiver(
 
   const countyName = countyDisplay((d as any).countyId);
   const plaintiffName = d.plaintiffName ?? "";
-  const addr = d.plaintiffAddress ?? "";
+  // Sanitize address — strip any embedded newlines so pdf-lib draws a single line
+  const addr = (d.plaintiffAddress ?? "").replace(/\n/g, " ").replace(/\s+/g, " ").trim();
   const cityStateZip = [d.plaintiffCity, d.plaintiffState ?? "FL", d.plaintiffZip]
     .filter(Boolean)
     .join(", ");
@@ -80,26 +81,26 @@ export async function buildFLFeeWaiver(
   }
 
   // ── Plaintiff name ──────────────────────────────────────────────────────────
-  // blank line before "Plaintiff/Petitioner": bbox xMin=50.55, screen yMax=91.206
-  // pdf-lib y = 792 - 91.206 = 700.8
+  // blank "_____" bbox: yMin=83.806, yMax=91.206 → pdf-lib range top=708.2, bottom=700.8
+  // Formula: pdftotext_yMax = (792 - pdf_lib_y) + 1.863
+  // y=700: text yMax=93.863, just below blank yMax=91.206 → name sits on blank line visually
   if (plaintiffName) {
-    draw(plaintiffName, 51, 701, 9);
+    draw(plaintiffName, 51, 700, 9);
   }
 
   // ── Case number ─────────────────────────────────────────────────────────────
-  // "CASE NO.______": same y as plaintiff line, value after "NO." at x≈466
-  // pdf-lib y = 700.8
+  // "CASE NO.______": same blank line as plaintiff name → y=700
   if (caseNumber) {
-    draw(caseNumber, 466, 701, 9);
+    draw(caseNumber, 466, 700, 9);
   }
 
   // ── Signature section ────────────────────────────────────────────────────────
-  // "Signed on ________________________, 20____."
-  // "Signed on" text at screen yMax=554.600 → pdf-lib y = 792 - 554.600 = 237.4
-  draw(today, 95, 237, 9);
+  // "Signed on ________________________, 20____." at screen yMax=554.600
+  // y=239: text yMax = (792-239)+1.863 = 554.863 ≈ template yMax=554.600 → on signed line
+  draw(today, 95, 239, 9);
 
-  // Signature blank line for image and print name:
-  // `___________________________________` at screen yMax=565.620 → pdf-lib y = 792 - 565.620 = 226.4
+  // Signature blank "___________________________________":
+  // bbox screen yMax=565.620 → pdf-lib y = 792 - 565.620 = 226.4
   if (opts?.signatureBytes) {
     try {
       const sigImg =
@@ -112,10 +113,12 @@ export async function buildFLFeeWaiver(
   }
 
   // ── Print Full Legal Name ────────────────────────────────────────────────────
-  // Goes on the same blank line as the signature, right side (after "Last 4 digits..." area)
-  // "Print Full Legal Name" label is at x=302, same blank line → pdf-lib y = 226
+  // "Print Full Legal Name" label: xMin=302.750, xMax=379.664, screen yMax=576.620
+  // → pdf-lib y = 792 - 576.620 = 215.38
+  // Draw name at x=382 (just right of the label) on the same row (y=215)
+  // so it sits inline with the label rather than colliding with "Signature of Applicant" text above
   if (plaintiffName) {
-    draw(plaintiffName, 303, 226, 9);
+    draw(plaintiffName, 382, 215, 9);
   }
 
   // ── Email ────────────────────────────────────────────────────────────────────
@@ -133,11 +136,14 @@ export async function buildFLFeeWaiver(
   }
 
   // ── Address ─────────────────────────────────────────────────────────────────
-  // "Address: Street, City, State, Zip Code": screen yMax=611.650 → pdf-lib y = 792 - 611.650 = 180.35
+  // The long "___" rule sits at screen yMax=600.620 → pdf-lib y = 792 - 600.620 = 191.4
+  // The "Address: Street, City, State, Zip Code" label is one line BELOW at y=180.
+  // We must draw on the blank rule (y=191), NOT on the label line (y=180), otherwise
+  // pdftotext merges our text with the form label words producing a staircase.
   // "Address:" label ends at x≈82; value starts immediately after at x=84
   const fullAddr = [addr, cityStateZip].filter(Boolean).join(", ");
   if (fullAddr) {
-    draw(fullAddr.slice(0, 90), 84, 180, 8.5);
+    draw(fullAddr.slice(0, 95), 84, 191, 8.5);
   }
 
   return Buffer.from(await doc.save({ updateFieldAppearances: false }));
