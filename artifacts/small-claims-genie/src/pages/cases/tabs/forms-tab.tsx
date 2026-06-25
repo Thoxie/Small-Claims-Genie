@@ -1314,6 +1314,11 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         requestingPartyRole: "plaintiff",
         currentTrialDate: cc.hearingDate || "",
       };
+      case "fw001": return {
+        // Name, address, job, employer, phone, and court info all come from the DB on the server.
+        // Pre-seed today's date so the Signature group field is hidden in the modal.
+        signDate: new Date().toISOString().split("T")[0],
+      };
       default: return {};
     }
   }
@@ -1847,25 +1852,19 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         return (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Your name, address, county, and case information are pre-filled from your intake. The form opens in a new tab — fill in <span className="font-semibold">Item 5</span> (eligibility) and any financial details directly in the PDF, then save it to your computer.
+              Your name, address, and case information are pre-filled from your intake. Answer the eligibility questions, add any financial details, then download your completed PDF.
             </p>
             {commonWarnings}
 
-            <button
-              type="button"
-              onClick={openFW001InNewTab}
+            <Button
+              size="sm"
+              className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
+              onClick={() => { setModalInitialValues(getInitialValues("fw001")); setModalFormId("fw001"); }}
               disabled={downloadingForm === "fw001"}
-              className="w-full flex items-center justify-between rounded-lg border-2 border-[#0d6b5e]/40 bg-[#0d6b5e]/5 px-4 py-3 text-sm font-semibold text-[#0d6b5e] hover:bg-[#0d6b5e]/10 transition-colors disabled:opacity-50"
             >
-              <span className="flex items-center gap-2">
-                {downloadingForm === "fw001" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-                Open FW-001 PDF
-              </span>
-              <span className="flex items-center gap-1.5 text-xs font-normal text-[#0d6b5e]/70">
-                Opens in a new tab
-                <ChevronRight className="h-4 w-4" />
-              </span>
-            </button>
+              {downloadingForm === "fw001" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+              Fill Out &amp; Download FW-001
+            </Button>
 
             <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
               <p className="text-xs text-amber-800 leading-relaxed">
