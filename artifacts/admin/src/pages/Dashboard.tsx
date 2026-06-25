@@ -604,7 +604,21 @@ function UserRow({ user, onOpenCase }: { user: UserRow; onOpenCase: (caseId: num
                 </div>
                 <div>
                   <span className="text-gray-400">Readiness</span>
-                  <p className="font-medium">{c.readinessScore ?? 0}/100</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden min-w-[48px]">
+                      <div
+                        className={`h-full rounded-full ${
+                          (c.readinessScore ?? 0) >= 80
+                            ? "bg-green-500"
+                            : (c.readinessScore ?? 0) >= 50
+                            ? "bg-amber-400"
+                            : "bg-red-400"
+                        }`}
+                        style={{ width: `${c.readinessScore ?? 0}%` }}
+                      />
+                    </div>
+                    <span className="font-medium shrink-0">{c.readinessScore ?? 0}/100</span>
+                  </div>
                 </div>
                 <div>
                   <span className="text-gray-400">Documents</span>
