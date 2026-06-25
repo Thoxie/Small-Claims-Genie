@@ -26,8 +26,8 @@ import { getOwnedCase, getUserId } from "../lib/owned-case";
 import { checkAiRateLimit } from "../lib/rate-limiter";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { makeFormHandler } from "../forms/generic-handler";
-import { formatDateDisplay, resolveDownloadUser } from "./forms-common";
-import { buildFW001PdfInteractive } from "../forms/definitions/fw001-definition";
+import { formatDateDisplay } from "./forms-common";
+import { buildFW001PdfInteractive, buildFW001PdfInteractiveSigned } from "../forms/definitions/fw001-definition";
 
 // ─── Side-effect: register every form definition with FormRegistry ─────────────
 import "../forms/definitions/index";
@@ -234,7 +234,7 @@ router.post("/cases/:id/forms/fw001", makeFormHandler("FW-001", (id) => `FW001-C
 // native PDF viewer.  The frontend fetches this with Authorization: Bearer,
 // converts the response to a blob URL, and sets that as the iframe src.
 router.get("/cases/:id/forms/fw001/interactive", requireAuth, async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(req.params.id as string, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
 
   const userId = getUserId(req);
@@ -253,6 +253,34 @@ router.get("/cases/:id/forms/fw001/interactive", requireAuth, async (req, res): 
   } catch (err: any) {
     req.log.error({ err }, "FW-001 interactive PDF error");
     res.status(500).json({ error: "Failed to generate FW-001 interactive PDF." });
+  }
+});
+
+// Interactive signed — accepts a signature PNG data-URL in the body and embeds
+// it on page 1 before returning the still-editable interactive PDF.
+router.post("/cases/:id/forms/fw001/interactive", requireAuth, async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id as string, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const userId = getUserId(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const c = await getOwnedCase(id, userId);
+  if (!c) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const { signatureDataUrl } = req.body as { signatureDataUrl?: string };
+  try {
+    const pdfBytes = signatureDataUrl
+      ? await buildFW001PdfInteractiveSigned(c as unknown as Parameters<typeof buildFW001PdfInteractiveSigned>[0], signatureDataUrl)
+      : await buildFW001PdfInteractive(c as unknown as Parameters<typeof buildFW001PdfInteractive>[0]);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+    res.setHeader("Content-Length", pdfBytes.length);
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.send(pdfBytes);
+  } catch (err: any) {
+    req.log.error({ err }, "FW-001 interactive signed PDF error");
+    res.status(500).json({ error: "Failed to generate FW-001 PDF." });
   }
 });
 

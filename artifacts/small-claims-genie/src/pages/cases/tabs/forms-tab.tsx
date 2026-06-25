@@ -595,6 +595,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const [downloadingForm, setDownloadingForm] = useState<string | null>(null);
   const [fw001BlobUrl, setFw001BlobUrl] = useState<string | null>(null);
   const [fw001Loading, setFw001Loading] = useState(false);
+  const [fw001SigModalOpen, setFw001SigModalOpen] = useState(false);
   useEffect(() => {
     return () => { if (fw001BlobUrl) URL.revokeObjectURL(fw001BlobUrl); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1833,26 +1834,13 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                 size="sm"
                 className="gap-1.5 bg-[#0d6b5e] hover:bg-[#0a5549] text-white h-8 text-xs px-3"
                 disabled={fw001Loading}
-                onClick={async () => {
+                onClick={() => {
                   if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
-                  setFw001Loading(true);
-                  try {
-                    const clerkToken = await getToken();
-                    const res = await fetch(`/api/cases/${caseId}/forms/fw001/interactive`, {
-                      headers: { Authorization: `Bearer ${clerkToken}` },
-                    });
-                    if (!res.ok) { toast({ title: "Error", description: "Could not load FW-001 — please try again." }); return; }
-                    const blob = await res.blob();
-                    setFw001BlobUrl(URL.createObjectURL(blob));
-                  } catch {
-                    toast({ title: "Error", description: "Could not load FW-001 — please try again." });
-                  } finally {
-                    setFw001Loading(false);
-                  }
+                  setFw001SigModalOpen(true);
                 }}
               >
                 {fw001Loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-                Open FW-001 to Fill Out
+                Sign &amp; Open FW-001
               </Button>
             )}
 
@@ -3942,6 +3930,49 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
         disclaimer="By signing, the additional plaintiff declares under penalty of perjury under the laws of the State of California that the foregoing is true and correct."
         onSign={(dataUrl) => { setSc103bSigModalOpen(false); downloadSignedSC103B(dataUrl); }}
         onSkipSign={() => { setSc103bSigModalOpen(false); downloadSignedSC103B(); }}
+      />
+
+      <SignaturePadModal
+        open={fw001SigModalOpen}
+        onClose={() => setFw001SigModalOpen(false)}
+        formTitle="FW-001"
+        disclaimer="By signing, you declare under penalty of perjury that the information in this fee waiver request is true and correct."
+        onSign={async (dataUrl) => {
+          setFw001SigModalOpen(false);
+          setFw001Loading(true);
+          try {
+            const clerkToken = await getToken();
+            const res = await fetch(`/api/cases/${caseId}/forms/fw001/interactive`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${clerkToken}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ signatureDataUrl: dataUrl }),
+            });
+            if (!res.ok) { toast({ title: "Error", description: "Could not load FW-001 — please try again." }); return; }
+            const blob = await res.blob();
+            setFw001BlobUrl(URL.createObjectURL(blob));
+          } catch {
+            toast({ title: "Error", description: "Could not load FW-001 — please try again." });
+          } finally {
+            setFw001Loading(false);
+          }
+        }}
+        onSkipSign={async () => {
+          setFw001SigModalOpen(false);
+          setFw001Loading(true);
+          try {
+            const clerkToken = await getToken();
+            const res = await fetch(`/api/cases/${caseId}/forms/fw001/interactive`, {
+              headers: { Authorization: `Bearer ${clerkToken}` },
+            });
+            if (!res.ok) { toast({ title: "Error", description: "Could not load FW-001 — please try again." }); return; }
+            const blob = await res.blob();
+            setFw001BlobUrl(URL.createObjectURL(blob));
+          } catch {
+            toast({ title: "Error", description: "Could not load FW-001 — please try again." });
+          } finally {
+            setFw001Loading(false);
+          }
+        }}
       />
 
       {/* Guide Dialog */}

@@ -77,6 +77,38 @@ export async function buildFW001PdfInteractive(d: CaseData): Promise<Buffer> {
   return Buffer.from(await pdfDoc.save());
 }
 
+/**
+ * Same as buildFW001PdfInteractive but embeds the user's handwritten
+ * signature image at the signature line on page 1 (above the printed
+ * name / date fields).  The form is still NOT flattened — all AcroForm
+ * fields remain editable in the browser's PDF viewer.
+ *
+ * Signature placement (page 1, PDF coordinates):
+ *   x=36, y=112, max 220×38 pt
+ * Reference widget positions (from widget walk on uncertified output):
+ *   SigDate:          x1=66  y1=97  x2=247 y2=110
+ *   PetitionerName:   x1=36  y1=85  x2=324 y2=96
+ */
+export async function buildFW001PdfInteractiveSigned(d: CaseData, signatureDataUrl: string): Promise<Buffer> {
+  const acroBytes = loadAsset("forms/fw001_acroform.pdf");
+  const pdfDoc = await PDFDocument.load(acroBytes, { ignoreEncryption: true });
+  fillIntakeFields(pdfDoc.getForm(), d);
+
+  const pngBytes = Buffer.from(
+    signatureDataUrl.replace(/^data:image\/\w+;base64,/, ""),
+    "base64"
+  );
+  const img = await pdfDoc.embedPng(pngBytes);
+  const { width: iw, height: ih } = img.scale(1);
+  const MAX_W = 220;
+  const MAX_H = 38;
+  const scale = Math.min(MAX_W / iw, MAX_H / ih, 1);
+  const page = pdfDoc.getPages()[0];
+  page.drawImage(img, { x: 36, y: 112, width: iw * scale, height: ih * scale });
+
+  return Buffer.from(await pdfDoc.save());
+}
+
 const fw001Definition: FormDefinition = {
   state: "CA",
   formId: "FW-001",
