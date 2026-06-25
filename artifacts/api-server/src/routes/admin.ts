@@ -1,5 +1,5 @@
 import { Router, type Request, type Response, type NextFunction, type RequestHandler } from "express";
-import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable } from "@workspace/db";
+import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable, documentsTable } from "@workspace/db";
 import { sql, count, sum, eq, gte, desc, and, isNotNull, like } from "drizzle-orm";
 import { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES } from "./counties";
 import { logger } from "../lib/logger";
@@ -790,6 +790,98 @@ router.delete("/admin/test-cases/:id", async (req: Request, res: Response): Prom
     res.json({ ok: true });
   } catch (err) {
     logger.error({ err }, "Admin test-cases delete error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/cases/:caseId ──────────────────────────────────────────────────
+router.get("/admin/cases/:caseId", async (req: Request, res: Response): Promise<void> => {
+  const rawId = Array.isArray(req.params.caseId) ? req.params.caseId[0] : req.params.caseId;
+  const caseId = parseInt(rawId, 10);
+  if (isNaN(caseId)) {
+    res.status(400).json({ error: "Invalid case ID" });
+    return;
+  }
+  try {
+    const [caseRow] = await db
+      .select({
+        id: casesTable.id,
+        userId: casesTable.userId,
+        title: casesTable.title,
+        status: casesTable.status,
+        claimAmount: casesTable.claimAmount,
+        claimType: casesTable.claimType,
+        claimDescription: casesTable.claimDescription,
+        incidentDate: casesTable.incidentDate,
+        countyId: casesTable.countyId,
+        jurisdictionState: casesTable.jurisdictionState,
+        caseNumber: casesTable.caseNumber,
+        hearingDate: casesTable.hearingDate,
+        hearingTime: casesTable.hearingTime,
+        hearingJudge: casesTable.hearingJudge,
+        hearingCourtroom: casesTable.hearingCourtroom,
+        hearingNotes: casesTable.hearingNotes,
+        courthouseName: casesTable.courthouseName,
+        courthouseAddress: casesTable.courthouseAddress,
+        courthouseCity: casesTable.courthouseCity,
+        courthouseZip: casesTable.courthouseZip,
+        plaintiffName: casesTable.plaintiffName,
+        plaintiffAddress: casesTable.plaintiffAddress,
+        plaintiffCity: casesTable.plaintiffCity,
+        plaintiffState: casesTable.plaintiffState,
+        plaintiffZip: casesTable.plaintiffZip,
+        plaintiffPhone: casesTable.plaintiffPhone,
+        plaintiffEmail: casesTable.plaintiffEmail,
+        plaintiffIsBusiness: casesTable.plaintiffIsBusiness,
+        plaintiffDbaName: casesTable.plaintiffDbaName,
+        defendantName: casesTable.defendantName,
+        defendantAddress: casesTable.defendantAddress,
+        defendantCity: casesTable.defendantCity,
+        defendantState: casesTable.defendantState,
+        defendantZip: casesTable.defendantZip,
+        defendantPhone: casesTable.defendantPhone,
+        defendantIsBusinessOrEntity: casesTable.defendantIsBusinessOrEntity,
+        priorDemandMade: casesTable.priorDemandMade,
+        priorDemandDate: casesTable.priorDemandDate,
+        howAmountCalculated: casesTable.howAmountCalculated,
+        readinessScore: casesTable.readinessScore,
+        intakeComplete: casesTable.intakeComplete,
+        documentCount: casesTable.documentCount,
+        demandLetterText: casesTable.demandLetterText,
+        createdAt: casesTable.createdAt,
+        updatedAt: casesTable.updatedAt,
+      })
+      .from(casesTable)
+      .where(eq(casesTable.id, caseId))
+      .limit(1);
+
+    if (!caseRow) {
+      res.status(404).json({ error: "Case not found" });
+      return;
+    }
+
+    const docs = await db
+      .select({
+        id: documentsTable.id,
+        originalName: documentsTable.originalName,
+        label: documentsTable.label,
+        mimeType: documentsTable.mimeType,
+        fileSize: documentsTable.fileSize,
+        ocrStatus: documentsTable.ocrStatus,
+        createdAt: documentsTable.createdAt,
+      })
+      .from(documentsTable)
+      .where(eq(documentsTable.caseId, caseId))
+      .orderBy(desc(documentsTable.createdAt));
+
+    res.json({
+      ...caseRow,
+      hasDemandLetter: !!caseRow.demandLetterText,
+      demandLetterText: undefined,
+      documents: docs,
+    });
+  } catch (err) {
+    logger.error({ err }, "Admin case detail error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -116,6 +116,10 @@ export async function deleteTestCase(id: number): Promise<void> {
   await apiFetch<{ ok: boolean }>(`/admin/test-cases/${id}`, { method: "DELETE" });
 }
 
+export async function fetchCaseDetail(caseId: number): Promise<CaseDetail> {
+  return apiFetch<CaseDetail>(`/admin/cases/${caseId}`);
+}
+
 export async function validateCredentials(
   email: string,
   password: string
@@ -289,4 +293,63 @@ export interface StatusData {
   logLevel: string;
   memoryMb: number;
   memoryTotalMb: number;
+}
+
+export interface CaseDocumentRow {
+  id: number;
+  originalName: string;
+  label: string | null;
+  mimeType: string;
+  fileSize: number;
+  ocrStatus: string;
+  createdAt: string;
+}
+
+export interface CaseDetail {
+  id: number;
+  userId: string | null;
+  title: string;
+  status: string;
+  claimAmount: number | null;
+  claimType: string | null;
+  claimDescription: string | null;
+  incidentDate: string | null;
+  countyId: string | null;
+  jurisdictionState: string | null;
+  caseNumber: string | null;
+  hearingDate: string | null;
+  hearingTime: string | null;
+  hearingJudge: string | null;
+  hearingCourtroom: string | null;
+  hearingNotes: string | null;
+  courthouseName: string | null;
+  courthouseAddress: string | null;
+  courthouseCity: string | null;
+  courthouseZip: string | null;
+  plaintiffName: string | null;
+  plaintiffAddress: string | null;
+  plaintiffCity: string | null;
+  plaintiffState: string | null;
+  plaintiffZip: string | null;
+  plaintiffPhone: string | null;
+  plaintiffEmail: string | null;
+  plaintiffIsBusiness: boolean | null;
+  plaintiffDbaName: string | null;
+  defendantName: string | null;
+  defendantAddress: string | null;
+  defendantCity: string | null;
+  defendantState: string | null;
+  defendantZip: string | null;
+  defendantPhone: string | null;
+  defendantIsBusinessOrEntity: boolean | null;
+  priorDemandMade: boolean | null;
+  priorDemandDate: string | null;
+  howAmountCalculated: string | null;
+  readinessScore: number | null;
+  intakeComplete: boolean | null;
+  documentCount: number | null;
+  hasDemandLetter: boolean;
+  documents: CaseDocumentRow[];
+  createdAt: string;
+  updatedAt: string;
 }

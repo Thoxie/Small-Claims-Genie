@@ -14,6 +14,7 @@ import {
   fetchGenieConversions,
   fetchTestCases,
   fetchAdminClerkId,
+  fetchCaseDetail,
   createTestCase,
   deleteTestCase,
   clearErrors,
@@ -21,6 +22,7 @@ import {
   clearStoredKey,
   type UserRow,
   type CaseRow,
+  type CaseDetail,
   type ErrorEntry,
   type StatusData,
   type BetaData,
@@ -73,7 +75,18 @@ import {
   FlaskConical,
   ExternalLink,
   Plus,
+  Filter,
+  Eye,
+  Mail,
+  MapPin,
+  Phone,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -155,6 +168,207 @@ function KpiCard({
   );
 }
 
+// ── Case Detail Drawer ────────────────────────────────────────────────────────
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  if (!value && value !== 0) return null;
+  return (
+    <div>
+      <span className="text-gray-400 text-xs">{label}</span>
+      <p className="text-sm font-medium text-gray-800">{value}</p>
+    </div>
+  );
+}
+
+function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b pb-1">{title}</h4>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2">{children}</div>
+    </div>
+  );
+}
+
+function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose: () => void }) {
+  const { data, isLoading, error } = useQuery<CaseDetail>({
+    queryKey: ["case-detail", caseId],
+    queryFn: () => fetchCaseDetail(caseId!),
+    enabled: caseId !== null,
+  });
+
+  const mainAppBase = window.location.origin.replace(/\/admin.*$/, "");
+
+  return (
+    <Sheet open={caseId !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetHeader className="mb-4">
+          <SheetTitle className="text-base">
+            {isLoading ? "Loading case…" : data ? data.title : "Case Detail"}
+          </SheetTitle>
+          {data && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className={`text-xs ${STATUS_COLORS[data.status] ?? "bg-gray-100 text-gray-600"}`}>
+                {STATUS_LABELS[data.status] ?? data.status}
+              </Badge>
+              {data.caseNumber && (
+                <span className="text-xs text-gray-500 font-mono">#{data.caseNumber}</span>
+              )}
+              <a
+                href={`${mainAppBase}/cases/${data.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline ml-auto"
+              >
+                Open in App <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+        </SheetHeader>
+
+        {isLoading && (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
+          </div>
+        )}
+
+        {error && (
+          <div className="text-sm text-red-600 bg-red-50 rounded-lg p-3">
+            Failed to load case details.
+          </div>
+        )}
+
+        {data && (
+          <div className="space-y-5">
+            {/* Claimant */}
+            <DetailSection title="Claimant (Plaintiff)">
+              <DetailRow label="Name" value={data.plaintiffName} />
+              <DetailRow label="Email" value={data.plaintiffEmail} />
+              <DetailRow label="Phone" value={data.plaintiffPhone} />
+              <DetailRow
+                label="Address"
+                value={
+                  [data.plaintiffAddress, data.plaintiffCity, data.plaintiffState, data.plaintiffZip]
+                    .filter(Boolean).join(", ") || null
+                }
+              />
+              {data.plaintiffIsBusiness && (
+                <DetailRow label="Business / DBA" value={data.plaintiffDbaName ?? "Yes"} />
+              )}
+            </DetailSection>
+
+            {/* Defendant */}
+            <DetailSection title="Defendant">
+              <DetailRow label="Name" value={data.defendantName} />
+              <DetailRow label="Phone" value={data.defendantPhone} />
+              <DetailRow
+                label="Type"
+                value={data.defendantIsBusinessOrEntity ? "Business / Entity" : "Individual"}
+              />
+              <DetailRow
+                label="Address"
+                value={
+                  [data.defendantAddress, data.defendantCity, data.defendantState, data.defendantZip]
+                    .filter(Boolean).join(", ") || null
+                }
+              />
+            </DetailSection>
+
+            {/* Claim Details */}
+            <DetailSection title="Claim Details">
+              <DetailRow label="Type" value={data.claimType} />
+              <DetailRow label="Amount" value={data.claimAmount ? fmtMoney(data.claimAmount) : null} />
+              <DetailRow label="Incident Date" value={fmtDate(data.incidentDate)} />
+              <DetailRow label="County" value={data.countyId} />
+              <DetailRow label="State" value={data.jurisdictionState} />
+              <DetailRow label="Prior Demand" value={data.priorDemandMade ? `Yes${data.priorDemandDate ? ` (${fmtDate(data.priorDemandDate)})` : ""}` : "No"} />
+              {data.claimDescription && (
+                <div className="col-span-2">
+                  <span className="text-gray-400 text-xs">Description</span>
+                  <p className="text-sm text-gray-800 mt-0.5 whitespace-pre-wrap">{data.claimDescription}</p>
+                </div>
+              )}
+              {data.howAmountCalculated && (
+                <div className="col-span-2">
+                  <span className="text-gray-400 text-xs">How Amount Calculated</span>
+                  <p className="text-sm text-gray-800 mt-0.5">{data.howAmountCalculated}</p>
+                </div>
+              )}
+            </DetailSection>
+
+            {/* Hearing & Court */}
+            {(data.hearingDate || data.courthouseName) && (
+              <DetailSection title="Hearing & Court">
+                <DetailRow label="Date" value={fmtDate(data.hearingDate)} />
+                <DetailRow label="Time" value={data.hearingTime} />
+                <DetailRow label="Dept / Courtroom" value={data.hearingCourtroom} />
+                <DetailRow label="Judge" value={data.hearingJudge} />
+                <DetailRow label="Courthouse" value={data.courthouseName} />
+                <DetailRow
+                  label="Court Address"
+                  value={[data.courthouseAddress, data.courthouseCity, data.courthouseZip].filter(Boolean).join(", ") || null}
+                />
+                {data.hearingNotes && (
+                  <div className="col-span-2">
+                    <span className="text-gray-400 text-xs">Notes</span>
+                    <p className="text-sm text-gray-800 mt-0.5">{data.hearingNotes}</p>
+                  </div>
+                )}
+              </DetailSection>
+            )}
+
+            {/* Readiness */}
+            <DetailSection title="Readiness">
+              <DetailRow label="Score" value={`${data.readinessScore ?? 0} / 100`} />
+              <DetailRow label="Intake" value={data.intakeComplete ? "✓ Complete" : "In progress"} />
+              <DetailRow label="Documents" value={`${data.documentCount ?? 0} uploaded`} />
+              <DetailRow label="Demand Letter" value={data.hasDemandLetter ? "✓ Generated" : "Not yet"} />
+            </DetailSection>
+
+            {/* Documents */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b pb-1">
+                Documents ({data.documents.length})
+              </h4>
+              {data.documents.length === 0 ? (
+                <p className="text-sm text-gray-400">No documents uploaded.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {data.documents.map((doc) => (
+                    <div key={doc.id} className="flex items-start justify-between gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">{doc.originalName}</p>
+                        {doc.label && <p className="text-xs text-gray-500">{doc.label}</p>}
+                        <p className="text-xs text-gray-400">{fmtDateTime(doc.createdAt)}</p>
+                      </div>
+                      <Badge
+                        className={`text-xs shrink-0 ${
+                          doc.ocrStatus === "done"
+                            ? "bg-green-100 text-green-700"
+                            : doc.ocrStatus === "failed"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        OCR: {doc.ocrStatus}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Meta */}
+            <div className="pt-2 border-t text-xs text-gray-400 space-y-0.5">
+              <p>Case ID: {data.id}</p>
+              <p>Created: {fmtDateTime(data.createdAt)}</p>
+              <p>Updated: {fmtDateTime(data.updatedAt)}</p>
+            </div>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 // ── Overview Tab ──────────────────────────────────────────────────────────────
 function OverviewTab() {
   const { data, isLoading } = useQuery({ queryKey: ["overview"], queryFn: fetchOverview });
@@ -193,10 +407,11 @@ function HearingBadge({ c }: { c: CaseRow }) {
   return <Badge className="bg-blue-100 text-blue-700 text-xs">Hearing {fmtDate(c.hearingDate)}</Badge>;
 }
 
-function UserRow({ user }: { user: UserRow }) {
+function UserRow({ user, onOpenCase }: { user: UserRow; onOpenCase: (caseId: number) => void }) {
   const [expanded, setExpanded] = useState(false);
   const upcoming = user.cases.find((c) => c.hearingDate && new Date(c.hearingDate) >= new Date());
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || null;
+  const mainAppBase = window.location.origin.replace(/\/admin.*$/, "");
 
   return (
     <div className="border rounded-lg overflow-hidden mb-2">
@@ -263,14 +478,36 @@ function UserRow({ user }: { user: UserRow }) {
 
           {user.cases.map((c) => (
             <div key={c.id} className="bg-white rounded-lg border p-3">
-              <div className="flex items-center gap-2 flex-wrap mb-2">
-                <span className="font-medium text-sm text-gray-900 truncate">{c.title}</span>
-                <Badge className={`text-xs ${STATUS_COLORS[c.status] ?? "bg-gray-100 text-gray-600"}`}>
-                  {STATUS_LABELS[c.status] ?? c.status}
-                </Badge>
-                {c.caseNumber && (
-                  <span className="text-xs text-gray-500 font-mono">#{c.caseNumber}</span>
-                )}
+              <div className="flex items-start gap-2 flex-wrap mb-2">
+                <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-sm text-gray-900 truncate">{c.title}</span>
+                  <Badge className={`text-xs ${STATUS_COLORS[c.status] ?? "bg-gray-100 text-gray-600"}`}>
+                    {STATUS_LABELS[c.status] ?? c.status}
+                  </Badge>
+                  {c.caseNumber && (
+                    <span className="text-xs text-gray-500 font-mono">#{c.caseNumber}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    onClick={() => onOpenCase(c.id)}
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    Details
+                  </Button>
+                  <a
+                    href={`${mainAppBase}/cases/${c.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 h-7 px-2 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    App
+                  </a>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
@@ -347,49 +584,84 @@ function UserRow({ user }: { user: UserRow }) {
   );
 }
 
-function UsersTab() {
+function UsersTab({
+  search,
+  setSearch,
+  onOpenCase,
+}: {
+  search: string;
+  setSearch: (s: string) => void;
+  onOpenCase: (caseId: number) => void;
+}) {
   const { data, isLoading } = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
-  const [search, setSearch] = useState("");
+  const { data: betaData } = useQuery<BetaData>({ queryKey: ["beta"], queryFn: fetchBeta });
+  const [betaOnly, setBetaOnly] = useState(false);
 
   if (isLoading || !data) return <LoadingSkeleton rows={5} cols={1} />;
 
-  const filtered = data.filter(
-    (u) =>
-      !search ||
+  const betaUserIds = new Set((betaData?.rows ?? []).map((r) => r.userId));
+
+  const filtered = data.filter((u) => {
+    if (betaOnly && !betaUserIds.has(u.userId)) return false;
+    if (!search) return true;
+    return (
       u.email.toLowerCase().includes(search.toLowerCase()) ||
       u.userId.toLowerCase().includes(search.toLowerCase())
-  );
+    );
+  });
 
   const withHearing = data.filter((u) => u.cases.some((c) => c.hearingDate)).length;
   const paid = data.filter((u) => u.hasPurchase).length;
+  const betaCount = betaData?.total ?? 0;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3 items-center justify-between">
-        <div className="flex gap-2 text-sm text-gray-600">
+        <div className="flex gap-2 text-sm text-gray-600 flex-wrap">
           <span><strong>{data.length}</strong> users</span>
           <span>·</span>
           <span><strong>{paid}</strong> paid</span>
           <span>·</span>
           <span><strong>{withHearing}</strong> with hearing</span>
+          {betaOnly && (
+            <>
+              <span>·</span>
+              <span><strong>{filtered.length}</strong> of {betaCount} beta shown</span>
+            </>
+          )}
         </div>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            className="pl-9 h-9 text-sm"
-            placeholder="Search email or user ID…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setBetaOnly((v) => !v)}
+            className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              betaOnly
+                ? "bg-amber-100 border-amber-300 text-amber-800 font-medium"
+                : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+            }`}
+          >
+            <Filter className="h-3 w-3" />
+            Beta users only
+          </button>
+          <div className="relative w-56">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              className="pl-9 h-9 text-sm"
+              placeholder="Search email or user ID…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-8">No users found.</p>
+        <p className="text-sm text-gray-400 text-center py-8">
+          {betaOnly ? "No beta users found." : "No users found."}
+        </p>
       ) : (
         <div>
           {filtered.map((u) => (
-            <UserRow key={u.userId} user={u} />
+            <UserRow key={u.userId} user={u} onOpenCase={onOpenCase} />
           ))}
         </div>
       )}
@@ -647,7 +919,7 @@ function SystemTab() {
 }
 
 // ── Beta Tab ──────────────────────────────────────────────────────────────────
-function BetaTab() {
+function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => void }) {
   const { data, isLoading } = useQuery<BetaData>({ queryKey: ["beta"], queryFn: fetchBeta });
   if (isLoading || !data) return <LoadingSkeleton rows={2} cols={1} />;
   const slotsRemaining = Math.max(0, data.limit - data.total);
@@ -678,7 +950,8 @@ function BetaTab() {
                     <th className="pb-2 pr-4 font-medium">#</th>
                     <th className="pb-2 pr-4 font-medium">Email</th>
                     <th className="pb-2 pr-4 font-medium">Claimed</th>
-                    <th className="pb-2 font-medium">User ID</th>
+                    <th className="pb-2 pr-4 font-medium">User ID</th>
+                    <th className="pb-2 font-medium"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -687,7 +960,20 @@ function BetaTab() {
                       <td className="py-2 pr-4 text-gray-400 text-xs">{i + 1}</td>
                       <td className="py-2 pr-4 text-gray-900 truncate max-w-[220px]">{r.email ?? <span className="text-gray-400 italic">no email</span>}</td>
                       <td className="py-2 pr-4 text-gray-500 whitespace-nowrap text-xs">{fmtDateTime(r.claimedAt)}</td>
-                      <td className="py-2 text-xs text-gray-400 font-mono">{r.userId.slice(0, 18)}…</td>
+                      <td className="py-2 pr-4 text-xs text-gray-400 font-mono">{r.userId.slice(0, 18)}…</td>
+                      <td className="py-2">
+                        {r.email && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => onNavigateToUser(r.email!)}
+                          >
+                            <Users className="h-3.5 w-3.5 mr-1" />
+                            View Cases
+                          </Button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1419,11 +1705,19 @@ function LoadingSkeleton({ rows = 3, cols = 1 }: { rows?: number; cols?: number 
 export default function Dashboard({ onLogout }: { onLogout: () => void }) {
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [usersSearch, setUsersSearch] = useState("");
+  const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
   async function handleRefresh() {
     setRefreshing(true);
     await qc.invalidateQueries();
     setTimeout(() => setRefreshing(false), 800);
+  }
+
+  function handleNavigateToUser(email: string) {
+    setUsersSearch(email);
+    setActiveTab("users");
   }
 
   return (
@@ -1464,7 +1758,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <Tabs defaultValue="overview">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6 flex flex-wrap gap-1 h-auto bg-gray-100">
             <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
             <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
@@ -1479,17 +1773,28 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
           </TabsList>
 
           <TabsContent value="overview"><OverviewTab /></TabsContent>
-          <TabsContent value="users"><UsersTab /></TabsContent>
+          <TabsContent value="users">
+            <UsersTab
+              search={usersSearch}
+              setSearch={setUsersSearch}
+              onOpenCase={setSelectedCaseId}
+            />
+          </TabsContent>
           <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
           <TabsContent value="revenue"><RevenueTab /></TabsContent>
           <TabsContent value="system"><SystemTab /></TabsContent>
-          <TabsContent value="beta"><BetaTab /></TabsContent>
+          <TabsContent value="beta">
+            <BetaTab onNavigateToUser={handleNavigateToUser} />
+          </TabsContent>
           <TabsContent value="signups"><SignupsTab /></TabsContent>
           <TabsContent value="status"><StatusTab /></TabsContent>
           <TabsContent value="conversions"><GenieConversionsTab /></TabsContent>
           <TabsContent value="test-cases"><TestCasesTab /></TabsContent>
         </Tabs>
       </div>
+
+      {/* Case Detail Drawer */}
+      <CaseDetailDrawer caseId={selectedCaseId} onClose={() => setSelectedCaseId(null)} />
     </div>
   );
 }
