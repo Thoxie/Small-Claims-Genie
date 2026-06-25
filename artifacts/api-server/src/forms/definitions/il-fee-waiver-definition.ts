@@ -95,7 +95,7 @@ export async function buildILFeeWaiver(
     } catch { /* ignore */ }
   }
 
-  return Buffer.from(await doc.save({ updateFieldAppearances: false, useObjectStreams: false }));
+  return Buffer.from(await doc.save({ updateFieldAppearances: true, useObjectStreams: false }));
 }
 
 const ilFeeWaiverDefinition: FormDefinition = {

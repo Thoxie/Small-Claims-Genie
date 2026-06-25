@@ -122,7 +122,7 @@ export async function buildFLFeeWaiver(
     } catch { /* ignore */ }
   }
 
-  return Buffer.from(await doc.save({ updateFieldAppearances: false, useObjectStreams: false }));
+  return Buffer.from(await doc.save({ updateFieldAppearances: true, useObjectStreams: false }));
 }
 
 const flFeeWaiverDefinition: FormDefinition = {
