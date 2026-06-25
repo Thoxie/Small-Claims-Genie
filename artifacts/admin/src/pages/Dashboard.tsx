@@ -758,6 +758,15 @@ function UsersTab({
           )}
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 px-2 text-xs"
+            onClick={() => exportUsersCSV(data)}
+          >
+            <Download className="h-3.5 w-3.5 mr-1" />
+            Export CSV
+          </Button>
           <button
             onClick={() => setBetaOnly((v) => !v)}
             className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
@@ -1171,6 +1180,32 @@ function SystemTab() {
 }
 
 // ── Beta Tab ──────────────────────────────────────────────────────────────────
+function exportUsersCSV(users: UserRow[]) {
+  const headers = ["Email", "User ID", "Signup Date", "Last Login", "Case Count", "Paid"];
+
+  const rows = users.map((u) => [
+    u.email,
+    u.userId,
+    u.signupDate ? new Date(u.signupDate).toISOString().slice(0, 10) : "",
+    u.lastSignInAt ? new Date(u.lastSignInAt).toISOString().slice(0, 10) : "",
+    String(u.cases.length),
+    u.hasPurchase ? "Yes" : "No",
+  ]);
+
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const csvContent = [headers.map(escape).join(","), ...rows.map((r) => r.map(escape).join(","))].join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `users-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function exportBetaCSV(betaRows: BetaRow[], users: UserRow[]) {
   const userMap = new Map(users.map((u) => [u.userId, u]));
 
