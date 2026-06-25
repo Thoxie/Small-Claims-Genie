@@ -27,7 +27,7 @@
  */
 
 import * as path from "path";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, PDFTextField } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -82,6 +82,18 @@ export async function buildILFeeWaiver(
   // the signature image on top, guaranteeing signed > unsigned.
   const doc = await PDFDocument.load(filled, { ignoreEncryption: true });
 
+  // The IL official form marks text fields with Comb + DoNotScroll flags (0xC00000).
+  // Comb fields expect one-character-per-box input — macOS Preview and Chrome cannot
+  // handle them as text input and fall back to annotation/comment mode instead.
+  // Strip both flags so all fields behave as simple editable text in every viewer.
+  const form = doc.getForm();
+  for (const field of form.getFields()) {
+    if (field instanceof PDFTextField) {
+      field.disableCombing();
+      field.enableScrolling();
+    }
+  }
+
   if (opts?.signatureBytes) {
     // "Last - Signature" widget: page 3 (index 3), x=96.98, y=550.09, w=196.93, h=14.4
     const sigPage = doc.getPage(3);
@@ -95,7 +107,7 @@ export async function buildILFeeWaiver(
     } catch { /* ignore */ }
   }
 
-  return Buffer.from(await doc.save({ updateFieldAppearances: true, useObjectStreams: false }));
+  return Buffer.from(await doc.save({ updateFieldAppearances: false, useObjectStreams: false }));
 }
 
 const ilFeeWaiverDefinition: FormDefinition = {
