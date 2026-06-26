@@ -139,6 +139,10 @@ export const casesTable = pgTable("cases", {
   // ── Hearing Prep — AI-generated statements ───────────────────────────────────
   statementText: text("statement_text"),
   noShowStatementText: text("no_show_statement_text"),
+  // ── E-Filing (Tyler EFM) status ──────────────────────────────────────────────
+  efilingEligible: boolean("efiling_eligible"),
+  efilingStatus: text("efiling_status"),
+  efilingEnvelopeId: text("efiling_envelope_id"),
   // ── Email reminder tracking ──────────────────────────────────────────────────
   reminder30DaySent: boolean("reminder_30_day_sent").default(false),
   reminder14DaySent: boolean("reminder_14_day_sent").default(false),

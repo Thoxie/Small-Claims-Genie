@@ -9,7 +9,8 @@ import {
   CalendarDays, UserCheck2, TrendingUp, Hourglass,
   Download, Loader2, AlertCircle, Info,
   Landmark, User, Building2, DollarSign, UserMinus,
-  Mail, Car, Briefcase,
+  Mail, Car, Briefcase, Send, X, ChevronRight,
+  CreditCard, PackageCheck, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -2378,6 +2379,563 @@ function TxEFilingPanel({
   );
 }
 
+// ─── Tyler EFM types ──────────────────────────────────────────────────────────
+
+type EligibilityResult = {
+  eligible: boolean;
+  reason?: "coming_soon" | "not_available";
+  state: string;
+  cliCode?: string;
+  courtName?: string | null;
+  courtFeeAmount?: number | null;
+  convenienceFeeAmount?: number | null;
+  forms?: Array<{ name: string; formKey: string }>;
+  message?: string;
+};
+
+type EfileStatusResult = {
+  efilingStatus: string | null;
+  efilingEnvelopeId: string | null;
+  submissions: Array<{
+    id: number;
+    status: string;
+    envelopeId: string | null;
+    rejectionReason: string | null;
+    submittedAt: string | null;
+    acceptedAt: string | null;
+    rejectedAt: string | null;
+  }>;
+};
+
+// ─── File Now Modal ───────────────────────────────────────────────────────────
+
+function FileNowModal({
+  open,
+  onClose,
+  eligibility,
+  caseId,
+  getToken,
+}: {
+  open: boolean;
+  onClose: () => void;
+  eligibility: EligibilityResult;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<{ reason: string; message: string } | null>(null);
+
+  if (!open) return null;
+
+  const courtFee = eligibility.courtFeeAmount != null
+    ? (eligibility.courtFeeAmount / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })
+    : null;
+  const convFee = eligibility.convenienceFeeAmount != null
+    ? (eligibility.convenienceFeeAmount / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })
+    : "$25.00";
+  const totalFee = (eligibility.courtFeeAmount ?? 0) + (eligibility.convenienceFeeAmount ?? 2500);
+  const totalFeeStr = (totalFee / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/cases/${caseId}/efile/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ cliCode: eligibility.cliCode }),
+      });
+      const json = await res.json() as { ok?: boolean; error?: string; reason?: string; envelopeId?: string };
+      if (!res.ok) {
+        setSubmitError({
+          reason: json.reason ?? "efm_error",
+          message: json.error ?? "Submission failed. Please try again.",
+        });
+      } else {
+        setStep(5);
+      }
+    } catch {
+      setSubmitError({ reason: "network_error", message: "Network error. Please check your connection and try again." });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const steps = [
+    { num: 1, label: "Packet Review" },
+    { num: 2, label: "Court Fee" },
+    { num: 3, label: "Service Fee" },
+    { num: 4, label: "Confirm & File" },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-lg bg-background rounded-t-2xl sm:rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-md bg-[#0d6b5e]/10 flex items-center justify-center">
+              <Send className="h-3.5 w-3.5 text-[#0d6b5e]" />
+            </div>
+            <span className="text-sm font-bold text-foreground">File with the Court</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Step progress */}
+        {step <= 4 && (
+          <div className="flex items-center gap-1 px-5 py-3 border-b shrink-0">
+            {steps.map(({ num, label }) => (
+              <div key={num} className="flex items-center gap-1 flex-1">
+                <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                  step > num ? "bg-[#0d6b5e] text-white" :
+                  step === num ? "bg-[#0d6b5e]/10 text-[#0d6b5e] border border-[#0d6b5e]" :
+                  "bg-muted text-muted-foreground"
+                }`}>
+                  {step > num ? <CheckCircle className="h-3 w-3" /> : num}
+                </div>
+                <span className={`text-[10px] font-medium truncate ${step === num ? "text-[#0d6b5e]" : "text-muted-foreground"}`}>
+                  {label}
+                </span>
+                {num < 4 && <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Step content */}
+        <div className="overflow-y-auto flex-1 px-5 py-5">
+
+          {/* Step 1: Packet review */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-0.5">Review Your Filing Packet</h3>
+                <p className="text-xs text-muted-foreground">These documents will be submitted to the court electronically.</p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 space-y-3">
+                <div className="flex items-center gap-2 border-b pb-2">
+                  <Landmark className="h-3.5 w-3.5 text-[#0d6b5e]" />
+                  <span className="text-xs font-semibold text-foreground">{eligibility.courtName ?? "Your Court"}</span>
+                </div>
+                <div className="space-y-2">
+                  {(eligibility.forms ?? []).map((f) => (
+                    <div key={f.formKey} className="flex items-center gap-2">
+                      <FileCheck2 className="h-3.5 w-3.5 text-[#0d6b5e] shrink-0" />
+                      <span className="text-xs text-foreground">{f.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border bg-amber-50 border-amber-200 p-4 space-y-2">
+                <p className="text-xs font-semibold text-amber-800">Fee Breakdown</p>
+                <div className="space-y-1">
+                  {courtFee && (
+                    <div className="flex justify-between text-xs text-amber-900">
+                      <span>Court filing fee</span>
+                      <span className="font-medium">{courtFee}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-xs text-amber-900">
+                    <span>Small Claims Genie service fee</span>
+                    <span className="font-medium">{convFee}</span>
+                  </div>
+                  {courtFee && (
+                    <div className="flex justify-between text-xs font-bold text-amber-900 border-t border-amber-200 pt-1 mt-1">
+                      <span>Total</span>
+                      <span>{totalFeeStr}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: TOGA court fee payment */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-0.5">Pay Court Filing Fee</h3>
+                <p className="text-xs text-muted-foreground">
+                  Court fees are paid through Tyler's secure payment system (TOGA).{courtFee ? ` Amount: ${courtFee}` : ""}
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-6 flex flex-col items-center gap-3 text-center">
+                <div className="h-12 w-12 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-[#0d6b5e]" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Tyler TOGA Payment</p>
+                <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+                  Tyler's secure court fee payment portal (TOGA) will open here once e-filing credentials are fully configured. Your payment information stays private and goes directly to the court.
+                </p>
+                <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 w-full text-left">
+                  <p className="text-xs font-semibold text-blue-800 mb-1">What is TOGA?</p>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    TOGA (Tyler Online Gateway for Attorneys) is Tyler Technologies' payment tokenization system used by courts nationwide. Your card details are never stored on our servers.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Stripe convenience fee */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-0.5">Small Claims Genie Service Fee</h3>
+                <p className="text-xs text-muted-foreground">
+                  Authorize the {convFee} service fee to cover e-filing preparation and submission.
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-6 flex flex-col items-center gap-3 text-center">
+                <div className="h-12 w-12 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center">
+                  <Zap className="h-5 w-5 text-[#0d6b5e]" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Stripe Secure Checkout</p>
+                <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+                  Your Stripe checkout will open here to authorize the service fee. This covers AI form preparation, ECF 5 packet assembly, and submission monitoring.
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 space-y-2">
+                <p className="text-xs font-semibold text-foreground">What's included</p>
+                {[
+                  "AI-assisted form pre-fill and review",
+                  "ECF 5 compliant filing packet assembly",
+                  "Electronic submission to court",
+                  "Status tracking and notifications",
+                  "Rejection reason guidance if needed",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-2">
+                    <CheckCircle className="h-3.5 w-3.5 text-[#0d6b5e] shrink-0 mt-0.5" />
+                    <span className="text-xs text-muted-foreground">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Confirm & submit */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-0.5">Ready to File</h3>
+                <p className="text-xs text-muted-foreground">
+                  Review the summary below and confirm to submit your filing to the court.
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 space-y-3">
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Court</span>
+                    <span className="font-medium text-foreground text-right max-w-[60%]">{eligibility.courtName ?? "Your Court"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Documents</span>
+                    <span className="font-medium text-foreground">{eligibility.forms?.length ?? 0} forms</span>
+                  </div>
+                  {courtFee && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Court fee</span>
+                      <span className="font-medium text-foreground">{courtFee}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Service fee</span>
+                    <span className="font-medium text-foreground">{convFee}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#0d6b5e]/20 bg-[#0d6b5e]/5 px-4 py-3 flex items-start gap-2">
+                <Info className="h-3.5 w-3.5 text-[#0d6b5e] shrink-0 mt-0.5" />
+                <p className="text-xs text-[#0d6b5e] leading-relaxed">
+                  By clicking "File Now" you authorize Small Claims Genie to submit your filing packet to the court on your behalf. You will receive an email confirmation and status updates.
+                </p>
+              </div>
+              {submitError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5 text-red-600 shrink-0" />
+                    <p className="text-xs font-bold text-red-800">
+                      {submitError.reason === "credentials_not_configured"
+                        ? "E-filing is being activated for this court"
+                        : "Submission error"}
+                    </p>
+                  </div>
+                  <p className="text-xs text-red-700 leading-relaxed">
+                    {submitError.reason === "credentials_not_configured"
+                      ? "Tyler e-filing credentials for this court are not yet active. Download your forms and file in person while we finish the integration."
+                      : submitError.message}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 5: Submitted */}
+          {step === 5 && (
+            <div className="flex flex-col items-center gap-4 py-6 text-center">
+              <div className="h-14 w-14 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center">
+                <PackageCheck className="h-7 w-7 text-[#0d6b5e]" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Filing Submitted</p>
+                <p className="text-xs text-muted-foreground mt-1">Your filing packet has been sent to the court. You will receive an email with your envelope ID and status updates.</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-4 border-t shrink-0">
+          {step > 1 && step <= 4 ? (
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setStep((s) => s - 1)}>
+              Back
+            </Button>
+          ) : (
+            <div />
+          )}
+          {step === 5 ? (
+            <Button size="sm" className="text-xs bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white" onClick={onClose}>
+              Done
+            </Button>
+          ) : step < 4 ? (
+            <Button size="sm" className="text-xs bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white gap-1.5" onClick={() => setStep((s) => s + 1)}>
+              Continue
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="text-xs bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white gap-1.5"
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+              {submitting ? "Filing…" : "File Now"}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── E-file status card ───────────────────────────────────────────────────────
+
+function EfileStatusCard({ status }: {
+  status: EfileStatusResult;
+}) {
+  const latest = status.submissions[status.submissions.length - 1];
+  if (!latest) return null;
+
+  const statusConfig: Record<string, { label: string; color: string; bg: string; border: string; icon: typeof CheckCircle }> = {
+    submitted:    { label: "Submitted — Awaiting Review", color: "text-blue-700",  bg: "bg-blue-50",  border: "border-blue-200", icon: Clock },
+    under_review: { label: "Under Clerk Review",          color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", icon: RefreshCw },
+    accepted:     { label: "Accepted by Court",           color: "text-[#0d6b5e]", bg: "bg-[#0d6b5e]/5", border: "border-[#0d6b5e]/20", icon: CheckCircle },
+    rejected:     { label: "Rejected — Action Required",  color: "text-red-700",   bg: "bg-red-50",   border: "border-red-200", icon: AlertCircle },
+  };
+
+  const cfg = statusConfig[latest.status] ?? statusConfig["submitted"];
+  const Icon = cfg.icon;
+
+  const timestamp = latest.acceptedAt ?? latest.rejectedAt ?? latest.submittedAt;
+  const dateStr = timestamp ? new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null;
+
+  return (
+    <div className={`rounded-xl border ${cfg.border} ${cfg.bg} px-4 py-3 space-y-2`}>
+      <div className="flex items-center gap-2">
+        <Icon className={`h-4 w-4 ${cfg.color} shrink-0`} />
+        <div className="flex-1 min-w-0">
+          <p className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</p>
+          {latest.envelopeId && (
+            <p className="text-[10px] text-muted-foreground font-mono mt-0.5">Envelope {latest.envelopeId}</p>
+          )}
+        </div>
+        {dateStr && <p className="text-[10px] text-muted-foreground shrink-0">{dateStr}</p>}
+      </div>
+      {latest.status === "rejected" && latest.rejectionReason && (
+        <div className="rounded-lg bg-red-100 border border-red-200 px-3 py-2 space-y-1">
+          <p className="text-[11px] font-semibold text-red-800">Rejection reason:</p>
+          <p className="text-[11px] text-red-700 leading-relaxed">{latest.rejectionReason}</p>
+          <p className="text-[11px] text-red-700 mt-1 leading-relaxed">
+            <span className="font-semibold">What to do:</span> Review the reason above, correct your filing, and resubmit. Contact the court clerk if you need clarification.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Tyler EFM eligibility + filing section ───────────────────────────────────
+
+function TylerEFilingSection({
+  caseId,
+  getToken,
+}: {
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  const [eligibility, setEligibility] = useState<EligibilityResult | null>(null);
+  const [efileStatus, setEfileStatus] = useState<EfileStatusResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchAll() {
+      try {
+        const token = await getToken();
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const [eligRes, statusRes] = await Promise.all([
+          fetch(`/api/cases/${caseId}/efile/eligibility`, { headers }),
+          fetch(`/api/cases/${caseId}/efile/status`, { headers }),
+        ]);
+
+        if (!cancelled) {
+          if (eligRes.ok) setEligibility(await eligRes.json() as EligibilityResult);
+          if (statusRes.ok) setEfileStatus(await statusRes.json() as EfileStatusResult);
+        }
+      } catch {
+        // silently fail — eligibility block is non-critical
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void fetchAll();
+    return () => { cancelled = true; };
+  }, [caseId, getToken]);
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border bg-card px-4 py-3 flex items-center gap-3 animate-pulse">
+        <div className="h-8 w-8 rounded-lg bg-muted shrink-0" />
+        <div className="flex-1 space-y-1.5">
+          <div className="h-3 w-40 bg-muted rounded" />
+          <div className="h-2.5 w-64 bg-muted rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!eligibility) return null;
+
+  if (eligibility.eligible) {
+    const courtFee = eligibility.courtFeeAmount != null
+      ? (eligibility.courtFeeAmount / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })
+      : null;
+    const convFee = eligibility.convenienceFeeAmount != null
+      ? (eligibility.convenienceFeeAmount / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })
+      : "$25.00";
+
+    return (
+      <div className="space-y-3">
+        {/* Eligibility banner */}
+        <div className="rounded-xl border border-[#0d6b5e]/30 bg-[#0d6b5e]/5 px-4 py-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0">
+              <Send className="h-4 w-4 text-[#0d6b5e]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-bold text-foreground leading-tight">E-Filing Available</p>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#0d6b5e] text-white leading-none">
+                  Tyler EFM
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                {eligibility.courtName} accepts electronic filings through Tyler's statewide e-filing system.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {courtFee && (
+              <div className="rounded-lg bg-white/70 border px-3 py-2">
+                <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Court fee</p>
+                <p className="text-sm font-bold text-foreground">{courtFee}</p>
+              </div>
+            )}
+            <div className="rounded-lg bg-white/70 border px-3 py-2">
+              <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Service fee</p>
+              <p className="text-sm font-bold text-foreground">{convFee}</p>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold text-muted-foreground">Documents in your packet:</p>
+            {(eligibility.forms ?? []).map((f) => (
+              <div key={f.formKey} className="flex items-center gap-1.5">
+                <FileCheck2 className="h-3 w-3 text-[#0d6b5e] shrink-0" />
+                <span className="text-[11px] text-foreground">{f.name}</span>
+              </div>
+            ))}
+          </div>
+          <Button
+            className="w-full bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white gap-2"
+            size="sm"
+            onClick={() => setShowModal(true)}
+          >
+            <Send className="h-3.5 w-3.5" />
+            File Now — Submit Electronically
+          </Button>
+        </div>
+
+        {/* Status card if there's a prior submission */}
+        {efileStatus && <EfileStatusCard status={efileStatus} />}
+
+        {showModal && (
+          <FileNowModal
+            open={showModal}
+            onClose={() => setShowModal(false)}
+            eligibility={eligibility}
+            caseId={caseId}
+            getToken={getToken}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (eligibility.reason === "coming_soon") {
+    const stateName = eligibility.state === "TX" ? "Texas" : eligibility.state === "IL" ? "Illinois" : eligibility.state;
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 space-y-2">
+        <div className="flex items-start gap-3">
+          <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+            <Zap className="h-4 w-4 text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-bold text-amber-900 leading-tight">E-Filing Coming Soon</p>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-white leading-none">
+                Tyler EFM
+              </span>
+            </div>
+            <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
+              {stateName} has a statewide Tyler e-filing mandate. We are completing the Tyler onboarding process — e-filing will be available soon. Download your forms and file in person in the meantime.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 // ─── Tab content panels ───────────────────────────────────────────────────────
 
 function EFilingPanel({
@@ -2395,16 +2953,25 @@ function EFilingPanel({
   serviceMethod: string | null | undefined;
   onSelectService: (method: string) => void;
 }) {
-  if (c?.jurisdictionState === "FL") {
-    return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
-  }
-  if (c?.jurisdictionState === "TX") {
-    return <TxEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
-  }
-  if ((c?.jurisdictionState as string) === "IL") {
-    return <IlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} />;
-  }
-  return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
+  const statePanel = (() => {
+    if (c?.jurisdictionState === "FL") {
+      return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
+    }
+    if (c?.jurisdictionState === "TX") {
+      return <TxEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
+    }
+    if ((c?.jurisdictionState as string) === "IL") {
+      return <IlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} />;
+    }
+    return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
+  })();
+
+  return (
+    <div className="space-y-6">
+      <TylerEFilingSection caseId={caseId} getToken={getToken} />
+      {statePanel}
+    </div>
+  );
 }
 
 function ProcessServerPanel() {

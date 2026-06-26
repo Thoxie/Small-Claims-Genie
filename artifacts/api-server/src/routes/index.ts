@@ -20,6 +20,7 @@ import storageRouter from "./storage";
 import { stripePublicRouter, stripeProtectedRouter } from "./stripe";
 import accountRouter from "./account";
 import { betaPublicRouter, betaProtectedRouter } from "./beta";
+import efileRouter, { efileWebhookRouter } from "./efile";
 
 const router: IRouter = Router();
 
@@ -34,6 +35,7 @@ router.use(helpChatRouter);
 router.use(caseClassifierRouter);
 router.use(stripePublicRouter); // /stripe/config and /stripe/products only
 router.use(betaPublicRouter);  // /beta/slots — public slot count
+router.use(efileWebhookRouter); // /efile/webhook — Tyler callback (no auth)
 
 // Dev-only utilities — never exposed in production
 if (process.env.NODE_ENV !== "production") {
@@ -66,5 +68,6 @@ router.use(chatExportRouter);
 router.use(formsTokenRouter);
 router.use(demandLetterRouter);
 router.use(hearingPrepRouter);
+router.use(efileRouter); // /cases/:id/efile/* — purchase-gated
 
 export default router;
