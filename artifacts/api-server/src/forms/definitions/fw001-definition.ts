@@ -106,7 +106,10 @@ export async function buildFW001PdfInteractiveSigned(d: CaseData, signatureDataU
   const page = pdfDoc.getPages()[0];
   page.drawImage(img, { x: 36, y: 112, width: iw * scale, height: ih * scale });
 
-  return Buffer.from(await pdfDoc.save());
+  // Flatten so the signature image and field appearances merge into static content.
+  // Without this, macOS Preview renders AcroForm widget appearances independently
+  // from the drawn image, causing the signature to appear misaligned on Mac.
+  return pdftkFlatten(Buffer.from(await pdfDoc.save()));
 }
 
 const fw001Definition: FormDefinition = {
