@@ -65,7 +65,7 @@ export const MC030_COORDS = {
 
   sig: {
     x:    370,
-    y:    112,
+    y:    118,   // was 112; shifted +6pt so sig bottom aligns with blank signature line
     maxW: 190,
     maxH:  42,
   },

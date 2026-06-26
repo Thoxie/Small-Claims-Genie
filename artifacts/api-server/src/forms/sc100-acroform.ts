@@ -302,7 +302,9 @@ export async function buildSC100AcroformPdf(
   // ── Signature image (signed version only) ─────────────────────────────────
   // The AcroForm has no native signature field; embed the PNG directly on page 4.
   // Coordinates are in PDF points, bottom-left origin.
-  // Signature box: x=320, width=240, top-of-sig y=503 (= 792−289), height=30pt.
+  // Signature box: x=320, width=240, sigY=484 (bottom of image), height=30pt.
+  // sigY=484 → sig occupies screen y=278–308 from top; "Plaintiff signs here"
+  // label starts at screen y=318, so the sig bottom clears the label by ~10pt.
   if (sigPngBytes) {
     try {
       const sigImage = await pdfDoc.embedPng(sigPngBytes);
@@ -311,7 +313,7 @@ export async function buildSC100AcroformPdf(
       const sigW     = 240;
       const sigH     = 30;
       const sigX     = 320;
-      const sigY     = 792 - 289 - sigH;         // CSS top 289 → PDF bottom-origin
+      const sigY     = 484;                      // bottom of sig image (pdf-lib coords)
       page4.drawImage(sigImage, { x: sigX, y: sigY, width: sigW, height: sigH });
     } catch {
       // Signature embedding failed — generate unsigned PDF rather than failing entirely.
