@@ -614,7 +614,7 @@ function UserRow({ user, onOpenCase }: { user: UserRow; onOpenCase: (caseId: num
               : user.signupDate
               ? ` · Joined ${fmtDate(user.signupDate)}`
               : ""}
-            {user.lastSignInAt && ` · Last login ${fmtDate(user.lastSignInAt)}`}
+            {user.lastSignInAt && ` · Last login ${fmtDateTime(user.lastSignInAt)}`}
           </p>
         </div>
         <span className="text-xs text-gray-400 hidden sm:block truncate max-w-[180px]" title={user.userId}>
@@ -635,7 +635,7 @@ function UserRow({ user, onOpenCase }: { user: UserRow; onOpenCase: (caseId: num
                 </div>
                 <div>
                   <span className="text-gray-400">Last login</span>
-                  <p className="font-medium">{fmtDate(user.lastSignInAt)}</p>
+                  <p className="font-medium">{fmtDateTime(user.lastSignInAt)}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Status</span>
