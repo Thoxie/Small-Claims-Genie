@@ -2065,285 +2065,25 @@ function TxDeadlinesSection() {
   );
 }
 
-// ─── CA service of process section ───────────────────────────────────────────
-
-function CaServiceSection({
-  c,
-  caseId,
-  getToken,
-  certifiedMailAvailable,
-  certifiedMailFee,
-  sheriffServiceFee,
-  sheriffOfficeAddress,
-  sheriffOfficePhone,
-  sheriffOfficeUrl,
-  serviceMethod,
-  onSelectService,
-}: {
-  c: ExtendedCase | undefined;
-  caseId: number;
-  getToken: () => Promise<string | null>;
-  certifiedMailAvailable: boolean;
-  certifiedMailFee: string | null | undefined;
-  sheriffServiceFee: string | null | undefined;
-  sheriffOfficeAddress: string | null | undefined;
-  sheriffOfficePhone: string | null | undefined;
-  sheriffOfficeUrl: string | null | undefined;
-  serviceMethod: string | null | undefined;
-  onSelectService: (method: string) => void;
-}) {
-  const { toast } = useToast();
-  const [downloading, setDownloading] = useState<string | null>(null);
-  const hasBasicInfo = !!c?.plaintiffName && !!c?.defendantName;
-
-  const downloadServiceForm = async (endpoint: string) => {
-    setDownloading(endpoint);
-    const win = window.open("", "_blank");
-    try {
-      const token = await getToken();
-      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!tokenRes.ok) {
-        win?.close();
-        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
-        return;
-      }
-      const { token: dlToken } = await tokenRes.json() as { token: string };
-      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: dlToken }),
-      });
-      if (!res.ok) {
-        win?.close();
-        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
-        return;
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      if (win) win.location.href = url;
-    } catch {
-      win?.close();
-      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
-    } finally {
-      setDownloading(null);
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <div>
-        <h2 className="text-sm font-bold text-foreground">Service of Process</h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
-          Defendant must be served at least 15 days before hearing (same county) or 20 days (different county)
-        </p>
-      </div>
-      <div className="space-y-2">
-        {/* Certified Mail by Court Clerk */}
-        {certifiedMailAvailable && (
-          <div
-            role="button"
-            tabIndex={0}
-            aria-pressed={serviceMethod === "certified_mail"}
-            onClick={() => onSelectService("certified_mail")}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("certified_mail"); }}
-            className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "certified_mail" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
-          >
-            {serviceMethod === "certified_mail" && (
-              <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
-            )}
-            <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
-              <Mail className="h-4 w-4 text-[#0d6b5e]" />
-            </div>
-            <div className="flex-1 min-w-0 pr-5">
-              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                <p className="text-sm font-semibold text-foreground leading-tight">Certified Mail by Court Clerk</p>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-blue-50 text-blue-700">
-                  {certifiedMailFee ? `Cheapest — ${certifiedMailFee}` : "Cheapest Option"}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                The court clerk mails the papers. Service only counts if the defendant signs — if they refuse or don't pick it up, service fails and you must use another method.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-2 h-7 text-xs gap-1.5"
-                disabled={!hasBasicInfo || downloading === "sc112a"}
-                onClick={(e) => { e.stopPropagation(); downloadServiceForm("sc112a"); }}
-              >
-                {downloading === "sc112a" ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Download className="h-3 w-3" />
-                )}
-                SC-112A Proof of Service by Mail
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Service by Adult */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-pressed={serviceMethod === "adult_service"}
-          onClick={() => onSelectService("adult_service")}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("adult_service"); }}
-          className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "adult_service" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
-        >
-          {serviceMethod === "adult_service" && (
-            <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
-          )}
-          <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
-            <User className="h-4 w-4 text-[#0d6b5e]" />
-          </div>
-          <div className="flex-1 min-w-0 pr-5">
-            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-              <p className="text-sm font-semibold text-foreground leading-tight">Service by Adult</p>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-amber-50 text-amber-700">Free</span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Any adult 18+ who is NOT a party to the case hand-delivers the papers to the defendant. File SC-104 (Proof of Service) with the court after delivery is completed.
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="mt-2 h-7 text-xs gap-1.5"
-              disabled={!hasBasicInfo || downloading === "sc104"}
-              onClick={(e) => { e.stopPropagation(); downloadServiceForm("sc104"); }}
-            >
-              {downloading === "sc104" ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Download className="h-3 w-3" />
-              )}
-              SC-104 Proof of Service
-            </Button>
-          </div>
-        </div>
-
-        {/* Sheriff/Marshal Service */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-pressed={serviceMethod === "sheriff"}
-          onClick={() => onSelectService("sheriff")}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("sheriff"); }}
-          className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "sheriff" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
-        >
-          {serviceMethod === "sheriff" && (
-            <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
-          )}
-          <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
-            <Car className="h-4 w-4 text-[#0d6b5e]" />
-          </div>
-          <div className="flex-1 min-w-0 pr-5">
-            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-              <p className="text-sm font-semibold text-foreground leading-tight">Sheriff/Marshal Service</p>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-[#0d6b5e]/10 text-[#0d6b5e]">
-                {sheriffServiceFee ? `${sheriffServiceFee} — Recoverable` : "Fee Recoverable"}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Arrange service through the county sheriff or marshal's office. The fee is recoverable if you win your case.
-            </p>
-            {(sheriffOfficeAddress || sheriffOfficePhone || sheriffOfficeUrl) && (
-              <div className="mt-2 rounded-lg bg-muted/50 px-3 py-2 space-y-0.5">
-                {sheriffOfficeAddress && (
-                  <p className="text-[11px] text-muted-foreground">📍 {sheriffOfficeAddress}</p>
-                )}
-                {sheriffOfficePhone && (
-                  <p className="text-[11px] text-muted-foreground">
-                    📞 <a href={`tel:${sheriffOfficePhone.replace(/\D/g, "")}`} className="underline underline-offset-2">{sheriffOfficePhone}</a>
-                  </p>
-                )}
-                {sheriffOfficeUrl && (
-                  <p className="text-[11px] text-muted-foreground">
-                    🔗 <a href={sheriffOfficeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{sheriffOfficeUrl.replace(/^https?:\/\//, "")}</a>
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Registered Process Server */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-pressed={serviceMethod === "process_server"}
-          onClick={() => onSelectService("process_server")}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectService("process_server"); }}
-          className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${serviceMethod === "process_server" ? "border-[#0d6b5e] bg-[#0d6b5e]/5" : "border-border bg-card hover:bg-muted/30"}`}
-        >
-          {serviceMethod === "process_server" && (
-            <CheckCircle className="absolute top-2.5 right-2.5 h-4 w-4 text-[#0d6b5e] shrink-0" />
-          )}
-          <div className="h-8 w-8 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
-            <Briefcase className="h-4 w-4 text-[#0d6b5e]" />
-          </div>
-          <div className="flex-1 min-w-0 pr-5">
-            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-              <p className="text-sm font-semibold text-foreground leading-tight">Registered Process Server</p>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-[#0d6b5e]/10 text-[#0d6b5e]">Most Reliable</span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              A licensed process server arranges personal delivery. Most reliable method. Their fee is recoverable if you win.
-            </p>
-          </div>
-        </div>
-      </div>
-      {serviceMethod && (
-        <p className="text-[11px] text-[#0d6b5e] font-medium px-1">
-          ✓ Service method saved
-        </p>
-      )}
-    </div>
-  );
-}
-
 // ─── CA case info (AI E-Filing System tab body) ───────────────────────────────
 
 function CaEFilingPanel({
   c,
   caseId,
   getToken,
-  serviceMethod,
-  onSelectService,
 }: {
   c: ExtendedCase | undefined;
   caseId: number;
   getToken: () => Promise<string | null>;
-  serviceMethod: string | null | undefined;
-  onSelectService: (method: string) => void;
 }) {
-  const { data: counties } = useListCounties({ state: "CA" });
-  const countyData = counties?.find((co: County) => co.id === c?.countyId);
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* LEFT — Case info */}
       <FilingSummaryPanel c={c} jurisdictionState="CA" />
 
-      {/* RIGHT — Court Forms + Service of Process */}
+      {/* RIGHT — Court Forms */}
       <div className="space-y-6">
         <CourtFormsSection c={c} caseId={caseId} getToken={getToken} />
-        <CaServiceSection
-          c={c}
-          caseId={caseId}
-          getToken={getToken}
-          certifiedMailAvailable={countyData?.certifiedMailAvailable ?? true}
-          certifiedMailFee={countyData?.certifiedMailFee ?? "$15"}
-          sheriffServiceFee={countyData?.sheriffServiceFee ?? "$40"}
-          sheriffOfficeAddress={countyData?.sheriffOfficeAddress ?? null}
-          sheriffOfficePhone={countyData?.sheriffOfficePhone ?? null}
-          sheriffOfficeUrl={countyData?.sheriffOfficeUrl ?? null}
-          serviceMethod={serviceMethod}
-          onSelectService={onSelectService}
-        />
       </div>
     </div>
   );
@@ -3047,7 +2787,7 @@ function EFilingPanel({
     if ((c?.jurisdictionState as string) === "IL") {
       return <IlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} />;
     }
-    return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
+    return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
   })();
 
   return (
