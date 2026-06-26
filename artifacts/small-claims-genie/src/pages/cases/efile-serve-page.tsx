@@ -2077,14 +2077,12 @@ function CaEFilingPanel({
   getToken: () => Promise<string | null>;
 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-      {/* LEFT — Case info */}
-      <FilingSummaryPanel c={c} jurisdictionState="CA" />
+    <div className="space-y-6">
+      {/* TOP — Court Forms (primary action, always visible first) */}
+      <CourtFormsSection c={c} caseId={caseId} getToken={getToken} />
 
-      {/* RIGHT — Court Forms */}
-      <div className="space-y-6">
-        <CourtFormsSection c={c} caseId={caseId} getToken={getToken} />
-      </div>
+      {/* BELOW — Case summary detail */}
+      <FilingSummaryPanel c={c} jurisdictionState="CA" />
     </div>
   );
 }
