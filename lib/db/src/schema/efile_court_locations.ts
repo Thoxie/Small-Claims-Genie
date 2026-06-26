@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, boolean, integer, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean, integer, index, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const efileCourtLocationsTable = pgTable("efile_court_locations", {
   id: serial("id").primaryKey(),
@@ -14,6 +14,7 @@ export const efileCourtLocationsTable = pgTable("efile_court_locations", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (t) => [
+  uniqueIndex("efile_court_locations_cli_state_uidx").on(t.cliCode, t.jurisdictionState),
   index("efile_court_locations_state_idx").on(t.jurisdictionState),
   index("efile_court_locations_courthouse_idx").on(t.courthouseId),
 ]);

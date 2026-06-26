@@ -27,7 +27,7 @@ import {
   efileCourtLocationsTable,
   efileSubmissionsTable,
 } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNotNull } from "drizzle-orm";
 import { getOwnedCase, getUserId } from "../lib/owned-case";
 import {
   isEfmConfigured,
@@ -81,6 +81,11 @@ router.get("/cases/:id/efile/eligibility", async (req, res): Promise<void> => {
   const forms = STATE_FORM_PACKETS[state] ?? STATE_FORM_PACKETS["CA"];
 
   // ── Check if there's a mapped Tyler CLI for this court location ──────────────
+  // Strategy:
+  //   1. Prefer an exact courthouseId match — most precise routing.
+  //   2. Fall back to any synced CLI for the state — Tyler provides cliCode but
+  //      not our internal courthouseId, so a state-level match is sufficient to
+  //      establish coverage after the nightly sync runs.
   let courtLocation = null;
   if (courthouseId) {
     const rows = await db
@@ -90,6 +95,20 @@ router.get("/cases/:id/efile/eligibility", async (req, res): Promise<void> => {
         and(
           eq(efileCourtLocationsTable.courthouseId, courthouseId),
           eq(efileCourtLocationsTable.jurisdictionState, state),
+        )
+      )
+      .limit(1);
+    courtLocation = rows[0] ?? null;
+  }
+
+  if (!courtLocation) {
+    const rows = await db
+      .select()
+      .from(efileCourtLocationsTable)
+      .where(
+        and(
+          eq(efileCourtLocationsTable.jurisdictionState, state),
+          isNotNull(efileCourtLocationsTable.cliCode),
         )
       )
       .limit(1);

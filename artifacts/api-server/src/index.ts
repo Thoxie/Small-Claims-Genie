@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { startReminderScheduler } from "./lib/reminder-scheduler";
 import { startGenieConversionsCleanup } from "./lib/genie-conversions-cleanup";
 import { startPendingUploadCleanup } from "./lib/pending-upload-cleanup";
+import { startTylerCourtSync } from "./lib/tyler-court-sync";
 import { warmupBrowser } from "./forms/chromium-pool";
 import { validateAllXfaForms } from "./forms/field-validator";
 import { runMigrations } from "stripe-replit-sync";
@@ -75,6 +76,7 @@ app.listen(port, (err) => {
   startReminderScheduler();
   startGenieConversionsCleanup();
   startPendingUploadCleanup();
+  startTylerCourtSync();
   warmupBrowser();
   validateAllXfaForms();
   initStripe();
