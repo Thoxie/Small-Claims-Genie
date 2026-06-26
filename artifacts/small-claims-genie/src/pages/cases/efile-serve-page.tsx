@@ -2428,6 +2428,32 @@ function FileNowModal({
   const [submitError, setSubmitError] = useState<{ reason: string; message: string } | null>(null);
   const [togaPaymentToken, setTogaPaymentToken] = useState<string | null>(null);
 
+  // TOGA postMessage listener — PENDING VENDOR CONFIRMATION
+  //
+  // Tyler Technologies has not yet publicly documented the exact postMessage event shape
+  // for TOGA (Tyler Online Gateway for Attorneys) payment tokenization.
+  //
+  // REQUIRED ACTION (Phase 0 onboarding):
+  //   Ask Tyler (EFMinfo@tylertech.com) to confirm ALL of the following:
+  //     1. Field name: is the payment token sent as `token`, `paymentToken`, `togaToken`,
+  //        or something else entirely?
+  //     2. Event type: does the message set event.data.type to a specific string
+  //        (e.g. "TOGA_PAYMENT_COMPLETE") that we should check before reading the token?
+  //     3. Allowed origin: what origin does the TOGA iframe postMessage from?
+  //        (Currently derived from togaUrl — confirm this is correct.)
+  //     4. Sandbox URL: request a Stage/sandbox TOGA URL so the full payment flow
+  //        can be end-to-end tested before going live.
+  //
+  // Once Tyler confirms the spec, update this listener to:
+  //   - Check event.data.type === "<confirmed type string>" (if applicable)
+  //   - Read only the confirmed field name (remove the defensive ?? chain below)
+  //   - Verify the confirmed origin matches the togaUrl pattern we use
+  //   - Update FilingEnvelope.togaPaymentToken field in tyler-efm/client.ts with
+  //     a comment referencing the confirmed Tyler spec document/ticket number.
+  //
+  // Current implementation: defensively tries all three candidate field names so the
+  // flow works regardless of which one Tyler actually uses. This is intentional interim
+  // behavior — do NOT remove the fallbacks until Tyler has confirmed the spec.
   useEffect(() => {
     if (!open) return;
     const handleMessage = (event: MessageEvent) => {
@@ -2440,6 +2466,8 @@ function FileNowModal({
       }
       const data = event.data as Record<string, unknown> | null;
       if (!data) return;
+      // TODO(tyler-toga-spec): Once Tyler confirms the field name, keep only the
+      // confirmed key here and remove the others.
       const token =
         (data.token as string | undefined) ??
         (data.paymentToken as string | undefined) ??

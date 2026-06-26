@@ -62,6 +62,11 @@ export type FilingEnvelope = {
   cliCode: string;
   state: TylerState;
   documents: Array<{ name: string; contentType: string; bytes: Buffer }>;
+  // TODO(tyler-toga-spec): The field name "togaPaymentToken" is our internal name for the
+  // token returned by the TOGA iframe via postMessage. The exact field name Tyler uses in
+  // their postMessage payload (and the EFM API field name for submitting it in a FilingEnvelope)
+  // must be confirmed with Tyler during Phase 0 onboarding.
+  // See also: efile-serve-page.tsx TOGA postMessage listener comment for the full question list.
   togaPaymentToken: string;
 };
 
