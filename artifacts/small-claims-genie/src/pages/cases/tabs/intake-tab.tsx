@@ -80,11 +80,11 @@ export function HearingInfoCard({ caseId, initialData }: { caseId: number; initi
           </div>
           <div>
             <label className="block text-[10px] font-medium text-teal-700 mb-0.5">Dept / Room</label>
-            <Input placeholder="Dept. 12" value={form.hearingCourtroom} onChange={e => setForm(f => ({ ...f, hearingCourtroom: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
+            <Input value={form.hearingCourtroom} onChange={e => setForm(f => ({ ...f, hearingCourtroom: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
           </div>
           <div>
             <label className="block text-[10px] font-medium text-teal-700 mb-0.5">Judge</label>
-            <Input placeholder="Hon. Smith" value={form.hearingJudge} onChange={e => setForm(f => ({ ...f, hearingJudge: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
+            <Input value={form.hearingJudge} onChange={e => setForm(f => ({ ...f, hearingJudge: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
           </div>
           <div className="flex items-end">
             <Button type="submit" size="sm" disabled={saving} className="h-7 text-xs bg-teal-600 hover:bg-teal-700 text-white px-3 w-full">
