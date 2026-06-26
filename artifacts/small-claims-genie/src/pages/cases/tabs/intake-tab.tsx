@@ -68,7 +68,7 @@ export function HearingInfoCard({ caseId, initialData }: { caseId: number; initi
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           <div>
             <label className="block text-[10px] font-medium text-teal-700 mb-0.5">Case #</label>
-            <Input placeholder="24SC01234" value={form.caseNumber} onChange={e => setForm(f => ({ ...f, caseNumber: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
+            <Input value={form.caseNumber} onChange={e => setForm(f => ({ ...f, caseNumber: e.target.value }))} className="h-7 text-xs bg-white border-teal-200 px-2" />
           </div>
           <div>
             <label className="block text-[10px] font-medium text-teal-700 mb-0.5">Hearing Date</label>
