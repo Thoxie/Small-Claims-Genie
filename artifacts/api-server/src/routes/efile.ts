@@ -109,6 +109,7 @@ router.get("/cases/:id/efile/eligibility", async (req, res): Promise<void> => {
       courtName: courtLocation!.courtName ?? courtName,
       courtFeeAmount: courtLocation!.filingFeeAmount ?? null,
       convenienceFeeAmount: 2500,
+      togaUrl: courtLocation!.togaUrl ?? null,
       forms,
     });
     return;

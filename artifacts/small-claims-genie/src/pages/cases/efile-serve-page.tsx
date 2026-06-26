@@ -2389,6 +2389,7 @@ type EligibilityResult = {
   courtName?: string | null;
   courtFeeAmount?: number | null;
   convenienceFeeAmount?: number | null;
+  togaUrl?: string | null;
   forms?: Array<{ name: string; formKey: string }>;
   message?: string;
 };
@@ -2425,6 +2426,31 @@ function FileNowModal({
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<{ reason: string; message: string } | null>(null);
+  const [togaPaymentToken, setTogaPaymentToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleMessage = (event: MessageEvent) => {
+      if (!eligibility.togaUrl) return;
+      try {
+        const origin = new URL(eligibility.togaUrl).origin;
+        if (event.origin !== origin) return;
+      } catch {
+        return;
+      }
+      const data = event.data as Record<string, unknown> | null;
+      if (!data) return;
+      const token =
+        (data.token as string | undefined) ??
+        (data.paymentToken as string | undefined) ??
+        (data.togaToken as string | undefined);
+      if (token) {
+        setTogaPaymentToken(token);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [open, eligibility.togaUrl]);
 
   if (!open) return null;
 
@@ -2448,7 +2474,7 @@ function FileNowModal({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ cliCode: eligibility.cliCode }),
+        body: JSON.stringify({ cliCode: eligibility.cliCode, togaPaymentToken: togaPaymentToken ?? "" }),
       });
       const json = await res.json() as { ok?: boolean; error?: string; reason?: string; envelopeId?: string };
       if (!res.ok) {
@@ -2571,21 +2597,46 @@ function FileNowModal({
                   Court fees are paid through Tyler's secure payment system (TOGA).{courtFee ? ` Amount: ${courtFee}` : ""}
                 </p>
               </div>
-              <div className="rounded-xl border bg-card p-6 flex flex-col items-center gap-3 text-center">
-                <div className="h-12 w-12 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center">
-                  <CreditCard className="h-5 w-5 text-[#0d6b5e]" />
-                </div>
-                <p className="text-sm font-semibold text-foreground">Tyler TOGA Payment</p>
-                <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
-                  Tyler's secure court fee payment portal (TOGA) will open here once e-filing credentials are fully configured. Your payment information stays private and goes directly to the court.
-                </p>
-                <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 w-full text-left">
-                  <p className="text-xs font-semibold text-blue-800 mb-1">What is TOGA?</p>
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    TOGA (Tyler Online Gateway for Attorneys) is Tyler Technologies' payment tokenization system used by courts nationwide. Your card details are never stored on our servers.
+
+              {eligibility.togaUrl ? (
+                togaPaymentToken ? (
+                  <div className="rounded-xl border border-[#0d6b5e]/20 bg-[#0d6b5e]/5 p-6 flex flex-col items-center gap-3 text-center">
+                    <div className="h-12 w-12 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center">
+                      <CheckCircle className="h-6 w-6 text-[#0d6b5e]" />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">Payment Received</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+                      Your court filing fee has been authorized. Click Continue to pay the service fee.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border bg-card overflow-hidden">
+                    <iframe
+                      src={eligibility.togaUrl}
+                      title="Tyler TOGA Court Fee Payment"
+                      className="w-full"
+                      style={{ height: "420px", border: "none" }}
+                      sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+                    />
+                  </div>
+                )
+              ) : (
+                <div className="rounded-xl border bg-card p-6 flex flex-col items-center gap-3 text-center">
+                  <div className="h-12 w-12 rounded-full bg-[#0d6b5e]/10 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-[#0d6b5e]" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Tyler TOGA Payment</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+                    Tyler's secure court fee payment portal (TOGA) will open here once e-filing credentials are fully configured. Your payment information stays private and goes directly to the court.
                   </p>
+                  <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 w-full text-left">
+                    <p className="text-xs font-semibold text-blue-800 mb-1">What is TOGA?</p>
+                    <p className="text-xs text-blue-700 leading-relaxed">
+                      TOGA (Tyler Online Gateway for Attorneys) is Tyler Technologies' payment tokenization system used by courts nationwide. Your card details are never stored on our servers.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -2710,7 +2761,12 @@ function FileNowModal({
               Done
             </Button>
           ) : step < 4 ? (
-            <Button size="sm" className="text-xs bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white gap-1.5" onClick={() => setStep((s) => s + 1)}>
+            <Button
+              size="sm"
+              className="text-xs bg-[#0d6b5e] hover:bg-[#0a5a4e] text-white gap-1.5"
+              onClick={() => setStep((s) => s + 1)}
+              disabled={step === 2 && !!eligibility.togaUrl && !togaPaymentToken}
+            >
               Continue
               <ChevronRight className="h-3 w-3" />
             </Button>
