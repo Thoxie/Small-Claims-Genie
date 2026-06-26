@@ -100,50 +100,47 @@ export async function buildFLFeeWaiver(
   draw(today, 95, 239, 9);
 
   // Signature blank "___________________________________":
-  // bbox screen yMax=565.620 → pdf-lib y = 792 - 565.620 = 226.4
+  // bbox screen yMin=556.620, yMax=565.620
+  // → pdf-lib y (image bottom) = 792 − (565.620 − 1.863) = 228.24 → 228
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, { x: 130, y: 226, width: 155, height: 18, opacity: 1 });
+        page.drawImage(sigImg, { x: 130, y: 228, width: 155, height: 18, opacity: 1 });
       }
     } catch { /* ignore */ }
   }
 
   // ── Print Full Legal Name ────────────────────────────────────────────────────
-  // "Print Full Legal Name" label: xMin=302.750, xMax=379.664, screen yMax=576.620
-  // → pdf-lib y = 792 - 576.620 = 215.38
-  // Draw name at x=382 (just right of the label) on the same row (y=215)
-  // so it sits inline with the label rather than colliding with "Signature of Applicant" text above
+  // "Print Full Legal Name" label: screen yMax=576.620
+  // → pdf-lib y = 792 − (576.620 − 1.863) = 217.24 → 217
   if (plaintiffName) {
-    draw(plaintiffName, 382, 215, 9);
+    draw(plaintiffName, 382, 217, 9);
   }
 
   // ── Email ────────────────────────────────────────────────────────────────────
-  // "Email address:" label: screen yMax=587.620 → pdf-lib y = 792 - 587.620 = 204.4
-  // Value goes on the same line, right after the label (label ends at x≈103)
+  // "Email address:" label: screen yMax=587.620
+  // → pdf-lib y = 792 − (587.620 − 1.863) = 206.24 → 206
   if (email) {
-    draw(email, 130, 204, 8.5);
+    draw(email, 130, 206, 8.5);
   }
 
   // ── Phone ────────────────────────────────────────────────────────────────────
-  // "Phone Number/s:" label: x=302 to x=367, same y as email → pdf-lib y = 204
-  // Value goes after the label at x≈370
+  // "Phone Number/s:" label: screen yMax=587.620 (same row as email)
+  // → pdf-lib y = 206
   if (phone) {
-    draw(phone, 370, 204, 8.5);
+    draw(phone, 370, 206, 8.5);
   }
 
   // ── Address ─────────────────────────────────────────────────────────────────
-  // The long "___" rule sits at screen yMax=600.620 → pdf-lib y = 792 - 600.620 = 191.4
-  // The "Address: Street, City, State, Zip Code" label is one line BELOW at y=180.
-  // We must draw on the blank rule (y=191), NOT on the label line (y=180), otherwise
-  // pdftotext merges our text with the form label words producing a staircase.
-  // "Address:" label ends at x≈82; value starts immediately after at x=84
+  // The long "___" rule: screen yMax=600.620
+  // → pdf-lib y = 792 − (600.620 − 1.863) = 193.24 → 193
+  // "Address: Street, City, State, Zip Code" label is one line BELOW at ~y=180 — do not use.
   const fullAddr = [addr, cityStateZip].filter(Boolean).join(", ");
   if (fullAddr) {
-    draw(fullAddr.slice(0, 95), 84, 191, 8.5);
+    draw(fullAddr.slice(0, 95), 84, 193, 8.5);
   }
 
   return Buffer.from(await doc.save({ updateFieldAppearances: false }));
