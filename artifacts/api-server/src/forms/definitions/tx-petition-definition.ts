@@ -358,7 +358,7 @@ export async function buildTXPetition(
       const sigImg = await doc.embedPng(opts.signatureBytes).catch(() => null)
         ?? await doc.embedJpg(opts.signatureBytes).catch(() => null);
       if (sigImg) {
-        page.drawImage(sigImg, { x: ML, y: y - 24, width: 180, height: 28 });
+        page.drawImage(sigImg, { x: ML, y: y - 4, width: 180, height: 28 });
       }
     } catch { /* ignore */ }
   }
