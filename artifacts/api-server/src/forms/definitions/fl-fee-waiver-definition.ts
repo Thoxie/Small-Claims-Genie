@@ -99,16 +99,20 @@ export async function buildFLFeeWaiver(
   // y=239: text yMax = (792-239)+1.863 = 554.863 ≈ template yMax=554.600 → on signed line
   draw(today, 95, 239, 9);
 
-  // Signature blank "___________________________________":
-  // bbox screen yMin=556.620, yMax=565.620
-  // → pdf-lib y (image bottom) = 792 − (565.620 − 1.863) = 228.24 → 228
+  // Signature area — right of "Signed on..., 20____." line.
+  // Derived from pdftotext -bbox-layout on user-annotated PDF (X markers):
+  //   X marker "xxyxy...": xMin=332.508 yMin=539.344 yMax=555.724
+  //   lower marker "ssssss22222": yMin=556.362 yMax=563.187
+  //   → pdf-lib y_bottom = 792 − 563.187 = 229   (bottom of zone)
+  //   → pdf-lib y_top    = 792 − 539.344 = 253   (top of zone)
+  //   "20____." xMax=229 → signature starts at x=332 (right of date)
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, { x: 130, y: 228, width: 155, height: 18, opacity: 1 });
+        page.drawImage(sigImg, { x: 332, y: 229, width: 190, height: 24, opacity: 1 });
       }
     } catch { /* ignore */ }
   }
