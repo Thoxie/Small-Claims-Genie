@@ -4,6 +4,7 @@
 - [Plaintiff-only system](plaintiff-only.md) — SC-120, SC-140 and any defendant-side forms are out of scope; never implement or surface them
 - [Form engine architecture](form-engine.md) — unified FormRegistry + makeFormHandler; all forms go through definitions/; acroform-filler.ts for pdftk flatten
 - [Form signature overlay coords](form-signature-coords.md) — certified PDFs block pdf-lib; fill with pdftk first, then walk widgets in the uncertified output to get exact coords
+- [Signature placement standard](sig-placement-standard.md) — use `pdftotext -bbox-layout` to find "Sign here" text coords; convert with pdf-lib_y = page_height − pdftotext_yMin; never guess from widget positions alone
 - [SC-100 rendering](sc100-rendering.md) — must use queueDirectField for ALL fields; pdf-lib setField centers text vertically causing it to float between lines; 9pt font, startY = spec.y + max(1, spec.h-10)
 - [FL forms architecture](fl-forms-architecture.md) — county-specific pdftk fills; Miami-Dade has hidden named fields only visible via pdf-lib (not pdftk); adding new FL county requires 8 steps
 - [Production startup crash](prod-startup-crash.md) — pg emits unhandled error events at boot; crashes process in <1s unless global handlers exist in index.ts

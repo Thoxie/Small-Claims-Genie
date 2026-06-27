@@ -84,14 +84,17 @@ export async function buildFW001PdfInteractive(d: CaseData): Promise<Buffer> {
  * fields remain editable in the browser's PDF viewer.
  *
  * Signature placement (page 1, PDF coordinates):
- *   x=336, y=97, max 220×26 pt
- *   x=336 is the right half of the form — the "Sign here" area.
- *   SigDate (date input) occupies the LEFT side (x=66–247, y=97–110);
- *   the Sign here line is on the RIGHT side (x≈330–575, same y row).
- *   y=97 = bottom of the widget row; image extends upward to y≈123.
+ *   x=336, y=82, max 220×22 pt
+ *
+ * Derived via: pdftotext -bbox-layout fw001_acroform.pdf
+ *   "Sign" text: xMin=336.875 yMin=708.425 yMax=718.325 (page-top origin)
+ *   pdf-lib y_top = 792 − 708.425 = 83.6 ≈ 84  (page_height − pdftotext_yMin)
+ *   Cross-check: "Date:" text pdf-lib y ≈ 99 → matches SigDate widget y1=97 ✓
+ *   Image bottom at y=82 sits just below the signature line at y≈84.
+ *
  * Reference widget positions (from pdf-lib widget walk, page 1):
- *   SigDate:          x1=66  y1=97  x2=247 y2=110
- *   PetitionerName:   x1=36  y1=85  x2=324 y2=96
+ *   SigDate:          x1=66  y1=97  x2=247 y2=110  (date input — LEFT side)
+ *   PetitionerName:   x1=36  y1=85  x2=324 y2=96   (print name — below sig line)
  */
 export async function buildFW001PdfInteractiveSigned(d: CaseData, signatureDataUrl: string): Promise<Buffer> {
   const acroBytes = loadAsset("forms/fw001_acroform.pdf");
@@ -105,10 +108,10 @@ export async function buildFW001PdfInteractiveSigned(d: CaseData, signatureDataU
   const img = await pdfDoc.embedPng(pngBytes);
   const { width: iw, height: ih } = img.scale(1);
   const MAX_W = 220;
-  const MAX_H = 26;
+  const MAX_H = 22;
   const scale = Math.min(MAX_W / iw, MAX_H / ih, 1);
   const page = pdfDoc.getPages()[0];
-  page.drawImage(img, { x: 336, y: 97, width: iw * scale, height: ih * scale });
+  page.drawImage(img, { x: 336, y: 82, width: iw * scale, height: ih * scale });
 
   // Flatten so the signature image and field appearances merge into static content.
   // Without this, macOS Preview renders AcroForm widget appearances independently
