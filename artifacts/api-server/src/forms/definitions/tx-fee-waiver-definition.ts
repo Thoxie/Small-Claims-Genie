@@ -98,7 +98,7 @@ export async function buildTXFeeWaiver(
     } catch { /* ignore */ }
   }
 
-  return Buffer.from(await doc.save({ updateFieldAppearances: true, useObjectStreams: false }));
+  return Buffer.from(await doc.save({ useObjectStreams: false }));
 }
 
 const txFeeWaiverDefinition: FormDefinition = {
