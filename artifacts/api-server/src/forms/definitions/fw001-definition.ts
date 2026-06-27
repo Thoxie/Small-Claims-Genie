@@ -84,11 +84,12 @@ export async function buildFW001PdfInteractive(d: CaseData): Promise<Buffer> {
  * fields remain editable in the browser's PDF viewer.
  *
  * Signature placement (page 1, PDF coordinates):
- *   x=36, y=97, max 220×28 pt
- *   y=97 aligns the image bottom with the SigDate widget bottom; the
- *   signature line at y≈110 falls ~13pt up from the image bottom, which
- *   is a natural baseline position and keeps the image on the line.
- * Reference widget positions (from widget walk on uncertified output):
+ *   x=336, y=97, max 220×26 pt
+ *   x=336 is the right half of the form — the "Sign here" area.
+ *   SigDate (date input) occupies the LEFT side (x=66–247, y=97–110);
+ *   the Sign here line is on the RIGHT side (x≈330–575, same y row).
+ *   y=97 = bottom of the widget row; image extends upward to y≈123.
+ * Reference widget positions (from pdf-lib widget walk, page 1):
  *   SigDate:          x1=66  y1=97  x2=247 y2=110
  *   PetitionerName:   x1=36  y1=85  x2=324 y2=96
  */
@@ -104,10 +105,10 @@ export async function buildFW001PdfInteractiveSigned(d: CaseData, signatureDataU
   const img = await pdfDoc.embedPng(pngBytes);
   const { width: iw, height: ih } = img.scale(1);
   const MAX_W = 220;
-  const MAX_H = 28;
+  const MAX_H = 26;
   const scale = Math.min(MAX_W / iw, MAX_H / ih, 1);
   const page = pdfDoc.getPages()[0];
-  page.drawImage(img, { x: 36, y: 97, width: iw * scale, height: ih * scale });
+  page.drawImage(img, { x: 336, y: 97, width: iw * scale, height: ih * scale });
 
   // Flatten so the signature image and field appearances merge into static content.
   // Without this, macOS Preview renders AcroForm widget appearances independently
