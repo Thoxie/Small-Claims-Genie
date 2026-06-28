@@ -92,7 +92,7 @@ function countyDisplay(countyId?: string | null): string {
 export async function buildTXCitation(
   d: CaseData,
   _body: FormBody,
-  opts?: GenerateOptions,
+  _opts?: GenerateOptions,
 ): Promise<Buffer> {
   const doc  = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
