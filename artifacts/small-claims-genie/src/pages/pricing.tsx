@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth, useSignUp } from "@clerk/clerk-react";
-import { Trophy, UserCheck, Loader2, X, Eye, EyeOff, Wand2 } from "lucide-react";
+import { Trophy, UserCheck, Loader2, X, Eye, EyeOff, Wand2, MapPin } from "lucide-react";
 
 function TermsAndSignUpModal({
   alreadySignedIn,
@@ -819,8 +819,14 @@ export default function Pricing() {
               30-Day Money-Back Guarantee
             </h1>
           </div>
-          <p className="text-[clamp(14px,1.1vw,17px)] text-[#5a6478] font-medium">
-            Start preparing. If it's not helping request a refund
+        </div>
+
+        <div className="w-full max-w-[1400px] mx-auto mb-5 flex items-center justify-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-2.5">
+          <MapPin className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+          <p className="text-sm text-indigo-700 font-medium">
+            <span className="text-indigo-500 font-normal mr-1">Available in</span>
+            <span className="sm:hidden">CA · FL · TX · IL</span>
+            <span className="hidden sm:inline">California · Florida · Texas · Illinois</span>
           </p>
         </div>
 
