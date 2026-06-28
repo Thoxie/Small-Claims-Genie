@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Eraser, Download, CheckCircle, Send, Mic, X, ArrowsMaximize } from "lucide-react";
-import { Expand } from "lucide-react";
+import { Eraser, Download, CheckCircle, Send, Mic, X, Expand } from "lucide-react";
 
 const MESSAGES = [
   { role: "user", content: "What are my strongest arguments against ABC Contractors?" },

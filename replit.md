@@ -66,6 +66,11 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
     -   **pdftk:** Used by `pdftkFlatten` to flatten XFA/AcroForm fields. Fails fast with logging on any error — no silent fallback to unfilled PDF.
 -   **Readiness Score:** A metric (0-100) based on intake completeness (60pts), document submission (30pts), and prior demand letters (10pts).
 
+**TypeScript typecheck ordering — non-negotiable:**
+-   Always run `pnpm run typecheck` from the workspace root. This script runs `typecheck:libs` (`tsc --build` for composite libs) **first**, then runs `tsc --noEmit` across all leaf artifacts in the correct dependency order.
+-   **Never run a leaf artifact's typecheck in isolation** (e.g. `pnpm --filter @workspace/small-claims-genie exec tsc --noEmit`) without first running `pnpm run typecheck:libs`. If `lib/api-client-react/dist/` (or any other composite lib) has stale declarations, the leaf check will silently pass or produce misleading errors.
+-   The named CI validation step `typecheck` is registered and runs `pnpm run typecheck` end-to-end.
+
 **System Design Choices:**
 -   Node.js 24, TypeScript 5.9.
 -   OpenAPI spec (`openapi.yaml`) is the source of truth for all endpoints, generating React Query hooks and Zod schemas via Orval.

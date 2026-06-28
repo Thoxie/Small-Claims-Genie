@@ -54,6 +54,10 @@ args = "test-fl-plain-soc-orange-signed"
 task = "workflow.run"
 args = "test-fl-soc-hillsborough-signed"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "typecheck"
+
 [[workflows.workflow]]
 name = "api-server-build"
 author = "agent"
@@ -138,6 +142,17 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "pnpm --filter @workspace/scripts run test:fl-soc-hillsborough-signed"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "typecheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm run typecheck"
 
 [workflows.workflow.metadata]
 isValidation = true
