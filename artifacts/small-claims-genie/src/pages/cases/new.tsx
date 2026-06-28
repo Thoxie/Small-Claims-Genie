@@ -16,12 +16,13 @@ const CLAIM_TYPES = [
   "Other",
 ];
 
-type JurisdictionState = "CA" | "FL" | "IL" | "TX";
+type JurisdictionState = "CA" | "FL" | "IL" | "NC" | "TX";
 
 const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = [
   { value: "CA", label: "California", flag: "🌴", sub: "Up to $12,500" },
   { value: "FL", label: "Florida", flag: "☀️", sub: "Up to $8,000" },
   { value: "IL", label: "Illinois", flag: "🌽", sub: "Up to $10,000" },
+  { value: "NC", label: "North Carolina", flag: "🏛️", sub: "Up to $10,000" },
   { value: "TX", label: "Texas", flag: "⭐", sub: "Up to $20,000" },
 ];
 

@@ -27,6 +27,7 @@ const STATE_OPTIONS = [
   { value: "CA", label: "California" },
   { value: "FL", label: "Florida" },
   { value: "IL", label: "Illinois" },
+  { value: "NC", label: "North Carolina" },
   { value: "TX", label: "Texas" },
 ];
 

@@ -4,10 +4,11 @@ import { CALIFORNIA_COUNTIES, enrichCaCounty } from "../data/counties-ca";
 import { FLORIDA_COUNTIES, enrichFlCounty } from "../data/counties-fl";
 import { TEXAS_COUNTIES } from "../data/counties-tx";
 import { ILLINOIS_COUNTIES, enrichIlCounty, getIlSheriffAddress } from "../data/counties-il";
+import { NORTH_CAROLINA_COUNTIES } from "../data/counties-nc";
 
 const router: IRouter = Router();
 
-export { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES, TEXAS_COUNTIES, ILLINOIS_COUNTIES, getIlSheriffAddress };
+export { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES, TEXAS_COUNTIES, ILLINOIS_COUNTIES, NORTH_CAROLINA_COUNTIES, getIlSheriffAddress };
 
 router.get("/counties", (req, res): void => {
   const { state } = req.query;
@@ -19,12 +20,15 @@ router.get("/counties", (req, res): void => {
     res.json(ILLINOIS_COUNTIES.map(enrichIlCounty));
   } else if (state === "TX") {
     res.json(TEXAS_COUNTIES);
+  } else if (state === "NC") {
+    res.json(NORTH_CAROLINA_COUNTIES);
   } else {
     res.json([
       ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
       ...FLORIDA_COUNTIES.map(enrichFlCounty),
       ...ILLINOIS_COUNTIES.map(enrichIlCounty),
       ...TEXAS_COUNTIES,
+      ...NORTH_CAROLINA_COUNTIES,
     ]);
   }
 });

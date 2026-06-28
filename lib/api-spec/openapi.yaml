@@ -47,8 +47,8 @@ paths:
           required: false
           schema:
             type: string
-            enum: [CA, FL, IL, TX]
-          description: Filter by jurisdiction state (CA, FL, IL, or TX). Returns all if omitted.
+            enum: [CA, FL, IL, NC, TX]
+          description: Filter by jurisdiction state (CA, FL, IL, NC, or TX). Returns all if omitted.
       responses:
         "200":
           description: List of counties
@@ -639,7 +639,7 @@ components:
           type: string
         state:
           type: string
-          enum: [CA, FL, IL, TX]
+          enum: [CA, FL, IL, NC, TX]
         courthouseName:
           type: string
         courthouseAddress:
@@ -707,7 +707,7 @@ components:
           type: string
         jurisdictionState:
           type: string
-          enum: [CA, FL, IL, TX]
+          enum: [CA, FL, IL, NC, TX]
         claimAmount:
           type: number
         claimType:
@@ -969,7 +969,7 @@ components:
           type: string
         jurisdictionState:
           type: string
-          enum: [CA, FL, IL, TX]
+          enum: [CA, FL, IL, NC, TX]
       required:
         - title
 
@@ -984,7 +984,7 @@ components:
           type: string
         jurisdictionState:
           type: string
-          enum: [CA, FL, IL, TX]
+          enum: [CA, FL, IL, NC, TX]
         claimAmount:
           type: number
         claimType:

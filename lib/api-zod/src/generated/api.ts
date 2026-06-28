@@ -19,17 +19,17 @@ export const HealthCheckResponse = zod.object({
  */
 export const ListCountiesQueryParams = zod.object({
   state: zod
-    .enum(["CA", "FL", "IL", "TX"])
+    .enum(["CA", "FL", "IL", "NC", "TX"])
     .optional()
     .describe(
-      "Filter by jurisdiction state (CA, FL, IL, or TX). Returns all if omitted.",
+      "Filter by jurisdiction state (CA, FL, IL, NC, or TX). Returns all if omitted.",
     ),
 });
 
 export const ListCountiesResponseItem = zod.object({
   id: zod.string(),
   name: zod.string(),
-  state: zod.enum(["CA", "FL", "IL", "TX"]),
+  state: zod.enum(["CA", "FL", "IL", "NC", "TX"]),
   courthouseName: zod.string(),
   courthouseAddress: zod.string(),
   courthouseCity: zod.string(),
@@ -66,7 +66,7 @@ export const ListCasesResponseItem = zod.object({
     "filed",
   ]),
   countyId: zod.string().optional(),
-  jurisdictionState: zod.enum(["CA", "FL", "IL", "TX"]).optional(),
+  jurisdictionState: zod.enum(["CA", "FL", "IL", "NC", "TX"]).optional(),
   claimAmount: zod.number().optional(),
   claimType: zod.string().optional(),
   plaintiffName: zod.string().optional(),
@@ -189,7 +189,7 @@ export const CreateCaseBody = zod.object({
   title: zod.string(),
   claimType: zod.string().optional(),
   countyId: zod.string().optional(),
-  jurisdictionState: zod.enum(["CA", "FL", "IL", "TX"]).optional(),
+  jurisdictionState: zod.enum(["CA", "FL", "IL", "NC", "TX"]).optional(),
 });
 
 /**
@@ -212,7 +212,7 @@ export const GetCaseStatsResponse = zod.object({
         "filed",
       ]),
       countyId: zod.string().optional(),
-      jurisdictionState: zod.enum(["CA", "FL", "IL", "TX"]).optional(),
+      jurisdictionState: zod.enum(["CA", "FL", "IL", "NC", "TX"]).optional(),
       claimAmount: zod.number().optional(),
       claimType: zod.string().optional(),
       plaintiffName: zod.string().optional(),
@@ -348,7 +348,7 @@ export const GetCaseResponse = zod
       "filed",
     ]),
     countyId: zod.string().optional(),
-    jurisdictionState: zod.enum(["CA", "FL", "IL", "TX"]).optional(),
+    jurisdictionState: zod.enum(["CA", "FL", "IL", "NC", "TX"]).optional(),
     claimAmount: zod.number().optional(),
     claimType: zod.string().optional(),
     plaintiffName: zod.string().optional(),
@@ -516,7 +516,7 @@ export const UpdateCaseBody = zod.object({
   title: zod.string().optional(),
   status: zod.string().optional(),
   countyId: zod.string().optional(),
-  jurisdictionState: zod.enum(["CA", "FL", "IL", "TX"]).optional(),
+  jurisdictionState: zod.enum(["CA", "FL", "IL", "NC", "TX"]).optional(),
   claimAmount: zod.number().optional(),
   claimType: zod.string().optional(),
   plaintiffName: zod.string().optional(),
@@ -639,7 +639,7 @@ export const UpdateCaseResponse = zod.object({
     "filed",
   ]),
   countyId: zod.string().optional(),
-  jurisdictionState: zod.enum(["CA", "FL", "IL", "TX"]).optional(),
+  jurisdictionState: zod.enum(["CA", "FL", "IL", "NC", "TX"]).optional(),
   claimAmount: zod.number().optional(),
   claimType: zod.string().optional(),
   plaintiffName: zod.string().optional(),
@@ -785,7 +785,7 @@ export const SaveIntakeProgressResponse = zod.object({
     "filed",
   ]),
   countyId: zod.string().optional(),
-  jurisdictionState: zod.enum(["CA", "FL", "IL", "TX"]).optional(),
+  jurisdictionState: zod.enum(["CA", "FL", "IL", "NC", "TX"]).optional(),
   claimAmount: zod.number().optional(),
   claimType: zod.string().optional(),
   plaintiffName: zod.string().optional(),

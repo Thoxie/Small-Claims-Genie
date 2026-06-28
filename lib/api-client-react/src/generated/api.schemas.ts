@@ -15,6 +15,7 @@ export const CountyState = {
   CA: "CA",
   FL: "FL",
   IL: "IL",
+  NC: "NC",
   TX: "TX",
 } as const;
 
@@ -60,6 +61,7 @@ export const CaseJurisdictionState = {
   CA: "CA",
   FL: "FL",
   IL: "IL",
+  NC: "NC",
   TX: "TX",
 } as const;
 
@@ -236,6 +238,7 @@ export const CreateCaseBodyJurisdictionState = {
   CA: "CA",
   FL: "FL",
   IL: "IL",
+  NC: "NC",
   TX: "TX",
 } as const;
 
@@ -253,6 +256,7 @@ export const UpdateCaseBodyJurisdictionState = {
   CA: "CA",
   FL: "FL",
   IL: "IL",
+  NC: "NC",
   TX: "TX",
 } as const;
 
@@ -498,7 +502,7 @@ export interface OpenaiError {
 
 export type ListCountiesParams = {
   /**
-   * Filter by jurisdiction state (CA, FL, IL, or TX). Returns all if omitted.
+   * Filter by jurisdiction state (CA, FL, IL, NC, or TX). Returns all if omitted.
    */
   state?: ListCountiesState;
 };
@@ -510,6 +514,7 @@ export const ListCountiesState = {
   CA: "CA",
   FL: "FL",
   IL: "IL",
+  NC: "NC",
   TX: "TX",
 } as const;
 
