@@ -215,14 +215,17 @@ const ilSmcComplaintDefinition: FormDefinition = {
     const doc = await PDFDocument.load(filledBuf, { ignoreEncryption: true });
 
     if (opts?.signatureBytes) {
-      // Plaintiff signature line is near the bottom of the first page.
-      const page = doc.getPage(0);
+      // Signature is on page 2 (index 1), above the "Your Signature" label.
+      // pdftotext -bbox-layout: "/s/" yMin=411.681 yMax=425.277
+      // → pdf-lib y_bottom = 792 − 425.277 = 367, y_top = 792 − 411.681 = 380
+      // x = 142 (xMin of /s/ placeholder)
+      const page = doc.getPage(1);
       try {
         const sigImg =
           (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
           (await doc.embedJpg(opts.signatureBytes).catch(() => null));
         if (sigImg) {
-          page.drawImage(sigImg, { x: 97, y: 110, width: 200, height: 22, opacity: 1 });
+          page.drawImage(sigImg, { x: 142, y: 358, width: 200, height: 22, opacity: 1 });
         }
       } catch { /* ignore */ }
     }
