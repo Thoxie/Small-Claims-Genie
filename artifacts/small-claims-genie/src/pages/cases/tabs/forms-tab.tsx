@@ -2706,16 +2706,12 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                   </div>
                   <p className="text-sm font-semibold text-foreground">Texas Citation</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details. Bring to the clerk when you file — the clerk signs, stamps, and forwards it for service on the defendant.</p>
-                  {downloadError && (downloadingForm === "tx/citation" || downloadingForm === "tx/citation/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+                  {downloadError && downloadingForm === "tx/citation" && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={downloadingForm === "tx/citation/signed"} onClick={() => openFlSigModal({ endpoint: "tx/citation", filename: `TX-Citation-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {downloadingForm === "tx/citation/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={downloadingForm === "tx/citation"} onClick={() => downloadSignedFLForm("tx/citation", `TX-Citation-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {downloadingForm === "tx/citation" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
+                  <button type="button" disabled={downloadingForm === "tx/citation"} onClick={() => downloadSignedFLForm("tx/citation", `TX-Citation-Case-${caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {downloadingForm === "tx/citation" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
+                    Download
                   </button>
                 </div>
               </div>
