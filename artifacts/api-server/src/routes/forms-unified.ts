@@ -619,4 +619,37 @@ router.post(
   makeFormHandler("FL-FEE-WAIVER", (id) => `FL-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true, inline: true }),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// North Carolina — AOC-CVM-200, AOC-CVM-100, AOC-G-106
+// ─────────────────────────────────────────────────────────────────────────────
+
+// NC Complaint for Money Owed — AOC-CVM-200 (primary filing form)
+router.post(
+  "/cases/:id/forms/nc/aoc-cvm-200",
+  makeFormHandler("NC-AOC-CVM-200", (id) => `NC-Complaint-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/nc/aoc-cvm-200/signed",
+  makeFormHandler("NC-AOC-CVM-200", (id) => `NC-Complaint-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+// NC Magistrate's Summons — AOC-CVM-100 (bring to clerk; clerk completes and issues)
+router.post(
+  "/cases/:id/forms/nc/aoc-cvm-100",
+  makeFormHandler("NC-AOC-CVM-100", (id) => `NC-Summons-Case-${id}.pdf`),
+);
+
+// NC Fee Waiver — AOC-G-106 (Petition to Sue as Indigent)
+// inline: true so the browser opens the PDF; user completes financial eligibility section
+router.post(
+  "/cases/:id/forms/nc/aoc-g-106",
+  makeFormHandler("NC-AOC-G-106", (id) => `NC-Fee-Waiver-Case-${id}.pdf`, { inline: true }),
+);
+
+router.post(
+  "/cases/:id/forms/nc/aoc-g-106/signed",
+  makeFormHandler("NC-AOC-G-106", (id) => `NC-Fee-Waiver-Signed-Case-${id}.pdf`, { signed: true, inline: true }),
+);
+
 export default router;

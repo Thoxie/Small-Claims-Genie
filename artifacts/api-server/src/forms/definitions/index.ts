@@ -59,3 +59,8 @@ export * from "./fl-summons-definition";
 export * from "./fl-proof-of-service-definition";
 export * from "./fl-fee-waiver-definition";
 export * from "./denton-citation-request-definition";
+
+// ─── North Carolina programmatic forms (pdf-lib, no template PDF) ─────────────
+export * from "./nc-aoc-cvm-200-definition";
+export * from "./nc-aoc-cvm-100-definition";
+export * from "./nc-aoc-g-106-definition";

@@ -73,6 +73,7 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 - Filing fees and sheriff service fees are recoverable as court costs by the prevailing party (G.S. 7A-305)
 - eCourts available statewide — case status at portal.nccourts.gov
 - Key counties: Mecklenburg (Charlotte), Wake (Raleigh), Guilford (Greensboro), Forsyth (Winston-Salem), Cumberland (Fayetteville), Durham, Buncombe (Asheville), New Hanover (Wilmington)
+- NC court forms: Small Claims Genie generates pre-filled NC forms — AOC-CVM-200 (Complaint for Money Owed, required, Sign & Download or unsigned), AOC-CVM-100 (Magistrate's Summons, bring to clerk when filing), and AOC-G-106 (Petition to Sue as Indigent — fee waiver). Available in the Court Forms tab using the 4-step wizard: Complaint → Summons → Service → Fee Waiver
 
 ## COMMON CASE TYPES & VIABILITY SIGNALS
 **Security deposit:** CA — strong if landlord missed 21-day return deadline (CA Civil Code §1950.5); up to 2x deposit in bad faith. FL — landlord has 15 days (early termination) or 30 days (lease end) to return or object; up to 2x deposit for bad faith.
