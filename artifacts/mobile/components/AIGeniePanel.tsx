@@ -33,7 +33,7 @@ interface Props {
   caseId: number;
   caseTitle?: string;
   pageContext?: string;
-  jurisdictionState?: "CA" | "FL" | "TX" | "IL";
+  jurisdictionState?: "CA" | "FL" | "TX" | "IL" | "NC";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }
 
@@ -201,6 +201,8 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
       ? "Select your Florida county where you plan to file."
       : jurisdictionState === "TX"
       ? "Select your Texas county and Justice of the Peace precinct."
+      : jurisdictionState === "NC"
+      ? "Select your North Carolina county where you plan to file."
       : "Select the California county where you plan to file.";
 
   const courtFormsFilingBullet =
@@ -208,6 +210,8 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
       ? "Download your Statement of Claim (the main filing form) first — this starts your case officially."
       : jurisdictionState === "TX"
       ? "Download your TX Petition (the main filing form) first — this starts your case officially."
+      : jurisdictionState === "NC"
+      ? "Download your AOC-CVM-200 Complaint (the main filing form) first — this starts your case officially."
       : "Download your SC-100 (the main filing form) first — this starts your case officially.";
 
   const courtFormsServiceBullet =
@@ -215,6 +219,8 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
       ? "Defendant must be served at least 10 days before the hearing (15 days for out-of-county service)."
       : jurisdictionState === "TX"
       ? "Defendant must be served at least 10 days before the hearing."
+      : jurisdictionState === "NC"
+      ? "Defendant must be served by the sheriff at least 5 days before the hearing (G.S. 7A-217)."
       : "Defendant must be served at least 15 days before the hearing (20 days if different county).";
 
   const deadlinesServiceBullet =
@@ -222,6 +228,8 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
       ? "Check your service deadline — defendant must be served at least 10 days before the hearing."
       : jurisdictionState === "TX"
       ? "Check your service deadline — defendant must be served at least 10 days before the hearing."
+      : jurisdictionState === "NC"
+      ? "Check your service deadline — the sheriff must serve the defendant at least 5 days before the hearing."
       : "Check your service deadline — defendant must be served 15 days before hearing (20 if out-of-county).";
 
   const deadlinesPostponeBullet =
@@ -229,6 +237,8 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
       ? "If you're running out of time, contact the court clerk to request a continuance."
       : jurisdictionState === "TX"
       ? "If you're running out of time, contact the Justice of the Peace court clerk to request a continuance."
+      : jurisdictionState === "NC"
+      ? "If you're running out of time, contact the magistrate's court clerk to request a continuance."
       : "If you're running out of time, download SC-150 from Court Forms to postpone your hearing.";
 
   const courtFormsFilingChip =
@@ -236,6 +246,8 @@ export function AIGeniePanel({ caseId, caseTitle, pageContext, jurisdictionState
       ? "How do I file my Statement of Claim?"
       : jurisdictionState === "TX"
       ? "How do I file my TX Petition?"
+      : jurisdictionState === "NC"
+      ? "How do I file my AOC-CVM-200 complaint?"
       : "How do I file the SC-100?";
 
   const resolvedPageHelp: Record<string, { title: string; bullets: string[] }> = {

@@ -116,7 +116,7 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
           data: {
             ...form,
             claimAmount: form.claimAmount ? Number(form.claimAmount) : undefined,
-            jurisdictionState: form.jurisdictionState as "CA" | "FL" | "TX" | "IL",
+            jurisdictionState: form.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC",
           },
         },
       });
@@ -732,6 +732,12 @@ const IL_FORMS = [
   { key: "il-fee-waiver", label: "Application for Waiver of Court Fees", desc: "File with the complaint if you cannot afford the filing fee", path: "il/fee-waiver", method: "POST" as const, note: "Editable fields require Adobe Acrobat." },
 ];
 
+const NC_FORMS = [
+  { key: "nc-aoc-cvm-200", label: "AOC-CVM-200", desc: "Complaint for Money Owed — file this with the magistrate's court clerk to start your small claims case", path: "nc/aoc-cvm-200", method: "POST" as const },
+  { key: "nc-aoc-cvm-100", label: "AOC-CVM-100", desc: "Magistrate's Summons — bring a pre-filled copy to assist the clerk; the clerk signs, seals, and gives it to the sheriff for service", path: "nc/aoc-cvm-100", method: "GET" as const },
+  { key: "nc-aoc-g-106", label: "AOC-G-106", desc: "Petition to Sue as Indigent (Fee Waiver) — file if you cannot afford the $96 filing fee and $30 sheriff service fee", path: "nc/aoc-g-106", method: "POST" as const },
+];
+
 const IL_FEE_SCHEDULE = [
   { range: "$0 – $500", fee: "$30" },
   { range: "$501 – $2,500", fee: "$50" },
@@ -774,6 +780,15 @@ const IL_COLLECT_STEPS = [
   { icon: "refresh-cw" as const, title: "Valid for 7 years — renew before expiration", body: "An Illinois judgment is enforceable for 7 years from entry and can be renewed for additional 7-year periods before expiration (735 ILCS 5/12-108). Post-judgment interest accrues at 9% per year." },
 ];
 
+const NC_COLLECT_STEPS = [
+  { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the magistrate enters a judgment in your favor. Get a certified copy from the clerk's office — you'll need it for every collection step." },
+  { icon: "trending-up" as const, title: "Locate the defendant's assets", body: "File a motion for a Judgment Debtor Examination (G.S. 1-352) to compel the defendant to appear in court and disclose bank accounts, employer, and property under oath." },
+  { icon: "file-text" as const, title: "Wage garnishment", body: "File a Writ of Execution with the clerk, then serve the defendant's employer with a garnishment order. North Carolina limits wage garnishment to amounts owed for taxes, student loans, and child support — standard judgment garnishment is not available for most debts. Consider a bank levy instead." },
+  { icon: "shield" as const, title: "Bank levy", body: "Direct the sheriff to execute a Writ of Execution against the defendant's bank account. Identify the bank and branch from the debtor examination. The sheriff charges a fee for levy service." },
+  { icon: "map-pin" as const, title: "Judgment lien on real estate", body: "Dock your judgment with the Clerk of Superior Court in any NC county where the defendant owns property to create a lien on their real estate (G.S. 1-234). The lien attaches to all real property in that county." },
+  { icon: "refresh-cw" as const, title: "Valid for 10 years — renew before expiration", body: "North Carolina judgments are enforceable for 10 years from entry and can be renewed. Post-judgment interest accrues at 8% per year (G.S. 24-1)." },
+];
+
 function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDetails }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -785,6 +800,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
   const isTX = caseData.jurisdictionState === "TX";
   const isFL = caseData.jurisdictionState === "FL";
   const isIL = caseData.jurisdictionState === "IL";
+  const isNC = caseData.jurisdictionState === "NC";
 
   const { data: ilCounties } = useListCounties(
     { state: "IL" },
@@ -817,7 +833,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
     },
   ];
 
-  const FORMS = isTX ? TX_FORMS : isFL ? FL_FORMS : isIL ? IL_FORMS : CA_FORMS;
+  const FORMS = isTX ? TX_FORMS : isFL ? FL_FORMS : isIL ? IL_FORMS : isNC ? NC_FORMS : CA_FORMS;
 
   const downloadForm = async (formKey: string, formPath: string, method: "GET" | "POST" = "GET") => {
     setReviewForm(null);
@@ -971,6 +987,29 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
               </Text>
             </View>
           </>
+        ) : isNC ? (
+          <>
+            <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+              <Feather name="info" size={14} color={colors.mutedForeground} />
+              <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
+                File the AOC-CVM-200 complaint at the magistrate's court clerk in the county where the defendant lives or the dispute occurred. The clerk prepares and issues the summons; the sheriff serves the defendant. Service must be completed at least 5 days before the hearing (G.S. 7A-217).
+              </Text>
+            </View>
+            <View style={[styles.txFeeCard, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}>
+              <Text style={[styles.txFeeTitle, { color: "#92400e" }]}>NC Filing Fees — G.S. 7A-311</Text>
+              <View style={styles.txFeeRow}>
+                <Text style={[styles.txFeeRange, { color: "#b45309" }]}>Filing fee:</Text>
+                <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>$96 flat rate</Text>
+              </View>
+              <View style={styles.txFeeRow}>
+                <Text style={[styles.txFeeRange, { color: "#b45309" }]}>Sheriff service fee:</Text>
+                <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>$30 per defendant</Text>
+              </View>
+              <Text style={[styles.txFeeNote, { color: "#b45309" }]}>
+                Claim limit: $10,000 (exclusive of interest and costs) — G.S. 7A-210
+              </Text>
+            </View>
+          </>
         ) : (
           <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
             <Feather name="info" size={14} color={colors.mutedForeground} />
@@ -991,9 +1030,11 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
             ? "Winning is only step one. Here's how to enforce your Florida judgment and actually collect."
             : isIL
             ? "Winning is only step one. Here's how to enforce your Illinois judgment and actually collect."
+            : isNC
+            ? "Winning is only step one. Here's how to enforce your North Carolina judgment and actually collect."
             : "Winning is only step one. Here's how to enforce your California judgment and actually collect."}
         </Text>
-        {(isTX ? TX_COLLECT_STEPS : isFL ? FL_COLLECT_STEPS : isIL ? IL_COLLECT_STEPS : CA_COLLECT_STEPS).map((step) => (
+        {(isTX ? TX_COLLECT_STEPS : isFL ? FL_COLLECT_STEPS : isIL ? IL_COLLECT_STEPS : isNC ? NC_COLLECT_STEPS : CA_COLLECT_STEPS).map((step) => (
           <View key={step.title} style={[styles.collectCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.collectIcon, { backgroundColor: "#fef3c7" }]}>
               <Feather name={step.icon} size={16} color="#d97706" />
@@ -1381,11 +1422,26 @@ const IL_CHECKLIST = [
   { id: "11", label: "Arrive 30 minutes early on hearing day", done: false },
 ];
 
+const NC_CHECKLIST = [
+  { id: "1", label: "Complete intake form", done: false },
+  { id: "2", label: "Upload all evidence documents", done: false },
+  { id: "3", label: "Send demand letter to defendant", done: false },
+  { id: "4", label: "Download and review AOC-CVM-200 complaint", done: false },
+  { id: "5", label: "File AOC-CVM-200 at magistrate's court clerk's office", done: false },
+  { id: "6", label: "Pay $96 filing fee + $30 sheriff service fee (or file AOC-G-106 fee waiver)", done: false },
+  { id: "7", label: "Clerk issues summons — sheriff serves the defendant", done: false },
+  { id: "8", label: "Confirm service completed at least 5 days before hearing", done: false },
+  { id: "9", label: "Prepare opening statement (2-3 min)", done: false },
+  { id: "10", label: "Organize evidence copies (3 sets)", done: false },
+  { id: "11", label: "Arrive 30 minutes early on hearing day", done: false },
+];
+
 function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId: number }) {
   const colors = useColors();
   const { getToken } = useAuth();
   const baseUrl = getBaseUrl();
-  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : caseData.jurisdictionState === "FL" ? FL_CHECKLIST : caseData.jurisdictionState === "IL" ? IL_CHECKLIST : CA_CHECKLIST;
+  const isNC = caseData.jurisdictionState === "NC";
+  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : caseData.jurisdictionState === "FL" ? FL_CHECKLIST : caseData.jurisdictionState === "IL" ? IL_CHECKLIST : caseData.jurisdictionState === "NC" ? NC_CHECKLIST : CA_CHECKLIST;
   const [checklist, setChecklist] = useState(DEFAULT_CHECKLIST);
   const [dateInput, setDateInput] = useState(caseData.hearingDate ? String(caseData.hearingDate) : "");
   const [savingDate, setSavingDate] = useState(false);
@@ -1579,6 +1635,30 @@ function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId:
                 </View>
               </View>
             </>
+          ) : isNC ? (
+            <>
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: colors.tealLight }]}>
+                  <Feather name="user-check" size={13} color={colors.teal} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Sheriff serves defendant (at least 5 days before hearing)</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.teal }]}>By {fmt(addDays(hearingDate, -5))}</Text>
+                </View>
+              </View>
+              <View style={[styles.deadlineLine, { backgroundColor: colors.border }]} />
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: "#fef3c7" }]}>
+                  <Feather name="calendar" size={13} color="#d97706" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Hearing</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.foreground }]}>
+                    {fmt(hearingDate)}{caseData.hearingTime ? ` at ${caseData.hearingTime}` : ""}
+                  </Text>
+                </View>
+              </View>
+            </>
           ) : (
             <>
               <View style={styles.deadlineRow}>
@@ -1708,7 +1788,7 @@ function AIChatTab({
 }: {
   caseId: number;
   initialMessage?: string;
-  jurisdictionState?: "CA" | "FL" | "TX" | "IL";
+  jurisdictionState?: "CA" | "FL" | "TX" | "IL" | "NC";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }) {
   const colors = useColors();
@@ -2137,7 +2217,7 @@ export default function CaseWorkspace() {
             caseId={caseId}
             initialMessage={pendingAiMessage}
             key={pendingAiMessage ?? "default"}
-            jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL") ?? "CA"}
+            jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC") ?? "CA"}
             onNavigateToTab={(tab, question) => {
               const validTabs = TABS.map((t) => t.key);
               if (validTabs.includes(tab)) {
@@ -2157,7 +2237,7 @@ export default function CaseWorkspace() {
           caseId={caseId}
           caseTitle={caseData.title ?? ""}
           pageContext={activeTab}
-          jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL") ?? "CA"}
+          jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC") ?? "CA"}
           onNavigateToTab={(tab, question) => {
             const validTabs = TABS.map((t) => t.key);
             if (validTabs.includes(tab)) {
