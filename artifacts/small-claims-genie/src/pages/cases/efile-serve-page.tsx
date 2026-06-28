@@ -78,7 +78,7 @@ function FilingSummaryPanel({
   jurisdictionState,
 }: {
   c: ExtendedCase | undefined;
-  jurisdictionState: "CA" | "FL" | "TX" | "IL";
+  jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC";
 }) {
   const stateAbbr = jurisdictionState;
   return (
@@ -2065,6 +2065,325 @@ function TxDeadlinesSection() {
   );
 }
 
+// ─── NC court forms section ───────────────────────────────────────────────────
+
+function NcCourtFormsSection({
+  c,
+  caseId,
+  getToken,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const [complaintSignOpen, setComplaintSignOpen] = useState(false);
+  const [feeWaiverSignOpen, setFeeWaiverSignOpen] = useState(false);
+  const { toast } = useToast();
+
+  const hasBasicInfo = !!c?.plaintiffName && !!c?.defendantName;
+
+  const downloadNcForm = async (endpoint: string, stateId: string) => {
+    setDownloading(stateId);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: dlToken }),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const downloadNcComplaint = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "nc/aoc-cvm-200/signed" : "nc/aoc-cvm-200";
+    setDownloading("nc-complaint");
+    setComplaintSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const downloadNcFeeWaiver = async (signatureDataUrl?: string) => {
+    const endpoint = signatureDataUrl ? "nc/aoc-g-106/signed" : "nc/aoc-g-106";
+    setDownloading("nc-fee-waiver");
+    setFeeWaiverSignOpen(false);
+    const win = window.open("", "_blank");
+    try {
+      const token = await getToken();
+      const tokenRes = await fetch(`/api/cases/${caseId}/forms/download-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!tokenRes.ok) {
+        win?.close();
+        toast({ title: "Could not authorize download", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const { token: dlToken } = await tokenRes.json() as { token: string };
+      const body: Record<string, string> = { token: dlToken };
+      if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
+      const res = await fetch(`/api/cases/${caseId}/forms/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        win?.close();
+        toast({ title: "Failed to generate PDF", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+    } catch {
+      win?.close();
+      toast({ title: "Download failed", description: "Please check your connection and try again.", variant: "destructive" });
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-sm font-bold text-foreground">Court Forms &amp; Filing</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">North Carolina small claims (magistrate court)</p>
+      </div>
+
+      {/* AOC-CVM-200 Complaint */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            NC Form
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Complaint for Money Owed</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo ? "AOC-CVM-200 — primary filing form, file with the clerk" : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => setComplaintSignOpen(true)}
+          disabled={!hasBasicInfo || downloading === "nc-complaint"}
+          title={hasBasicInfo ? "Sign & Download AOC-CVM-200" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "nc-complaint" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "nc-complaint" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      <SignaturePadModal
+        open={complaintSignOpen}
+        onClose={() => setComplaintSignOpen(false)}
+        onSign={(dataUrl) => downloadNcComplaint(dataUrl)}
+        onSkipSign={() => downloadNcComplaint()}
+        formTitle="NC Complaint for Money Owed (AOC-CVM-200)"
+        disclaimer="By signing, you declare that the information in this Complaint is true and correct to the best of your knowledge."
+      />
+
+      {/* AOC-CVM-100 Summons */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            NC Form
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Magistrate's Summons</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo ? "AOC-CVM-100 — bring to clerk; clerk completes and issues it" : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => downloadNcForm("nc/aoc-cvm-100", "nc-summons")}
+          disabled={!hasBasicInfo || downloading === "nc-summons"}
+          title={hasBasicInfo ? "Download AOC-CVM-100" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "nc-summons" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "nc-summons" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      {/* AOC-G-106 Fee Waiver */}
+      <div className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 shadow-sm${!hasBasicInfo ? " opacity-60" : ""}`}>
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#0d6b5e]/10">
+            <FileCheck2 className="h-4 w-4 text-[#0d6b5e]" />
+          </div>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none bg-teal-100 text-teal-700">
+            NC Form
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">Petition to Sue as Indigent</p>
+            <span className="shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200 leading-none">
+              AI Pre-filled
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">
+            {hasBasicInfo ? "AOC-G-106 — optional fee waiver if you cannot afford the $96 filing fee" : "Complete Step 1 (parties info) to enable"}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 shrink-0 gap-1.5 text-xs${hasBasicInfo ? " text-[#0d6b5e] hover:text-[#0a5a4e]" : " text-muted-foreground"}`}
+          onClick={() => setFeeWaiverSignOpen(true)}
+          disabled={!hasBasicInfo || downloading === "nc-fee-waiver"}
+          title={hasBasicInfo ? "Sign & Download AOC-G-106" : "Complete Step 1 (parties info) to enable"}
+        >
+          {downloading === "nc-fee-waiver" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {downloading === "nc-fee-waiver" ? "Generating…" : "Download"}
+        </Button>
+      </div>
+
+      <SignaturePadModal
+        open={feeWaiverSignOpen}
+        onClose={() => setFeeWaiverSignOpen(false)}
+        onSign={(dataUrl) => downloadNcFeeWaiver(dataUrl)}
+        onSkipSign={() => downloadNcFeeWaiver()}
+        formTitle="NC Petition to Sue as Indigent (AOC-G-106)"
+        disclaimer="By signing, you declare under penalty of perjury that the information in this Petition is true and correct."
+      />
+
+      {/* Filing info */}
+      <div className="rounded-xl border bg-card px-4 py-3 flex items-start gap-3">
+        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-tight mb-1.5">Filing in North Carolina — Next Steps</p>
+          <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside leading-relaxed">
+            <li>Print the Complaint (AOC-CVM-200) and bring it — along with the pre-filled Summons (AOC-CVM-100) — to the clerk of court in the county where the defendant lives or the dispute occurred.</li>
+            <li>Pay the $96 filing fee at the clerk's window (or file the AOC-G-106 fee waiver if you cannot afford it).</li>
+            <li>The clerk completes and issues the Summons. The sheriff then serves the defendant automatically — no action needed on your part.</li>
+            <li>The court will mail a hearing date notice to both parties within approximately 30 days. Attend the hearing before a magistrate.</li>
+          </ol>
+        </div>
+      </div>
+
+      {/* NC Filing fees */}
+      <div className="rounded-xl border bg-amber-50 border-amber-200 px-4 py-3">
+        <p className="text-xs font-semibold text-amber-800 mb-1.5">NC Filing &amp; Service Fees</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+          {[
+            ["Filing fee",        "$96"],
+            ["Sheriff service",   "$30"],
+          ].map(([label, fee]) => (
+            <div key={label} className="flex justify-between text-[11px] text-amber-900">
+              <span>{label}</span>
+              <span className="font-semibold">{fee}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-amber-700 mt-1.5">Both fees are recoverable as court costs if you win (G.S. 7A-305). Claim limit: $10,000.</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── NC case info (AI E-Filing System tab body) ───────────────────────────────
+
+function NcEFilingPanel({
+  c,
+  caseId,
+  getToken,
+}: {
+  c: ExtendedCase | undefined;
+  caseId: number;
+  getToken: () => Promise<string | null>;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {/* LEFT — Case info */}
+      <FilingSummaryPanel c={c} jurisdictionState="NC" />
+
+      {/* RIGHT — NC-specific content */}
+      <div className="space-y-6">
+        <NcCourtFormsSection c={c} caseId={caseId} getToken={getToken} />
+      </div>
+    </div>
+  );
+}
+
 // ─── CA case info (AI E-Filing System tab body) ───────────────────────────────
 
 function CaEFilingPanel({
@@ -2787,6 +3106,9 @@ function EFilingPanel({
     if ((c?.jurisdictionState as string) === "IL") {
       return <IlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} />;
     }
+    if ((c?.jurisdictionState as string) === "NC") {
+      return <NcEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
+    }
     return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
   })();
 
@@ -2903,10 +3225,11 @@ function ProcessServerPanel() {
   );
 }
 
-function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" | "IL" }) {
+function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC" }) {
   const isFL = jurisdictionState === "FL";
   const isTX = jurisdictionState === "TX";
   const isIL = jurisdictionState === "IL";
+  const isNC = jurisdictionState === "NC";
 
   const caSteps = [
     {
@@ -3040,7 +3363,40 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | 
     },
   ];
 
-  const steps = isIL ? ilSteps : isTX ? txSteps : isFL ? flSteps : caSteps;
+  const ncSteps = [
+    {
+      icon: Gavel,
+      title: "Obtain your judgment",
+      desc: "After you win, the magistrate enters a judgment in your favor. Get a certified copy from the clerk of court — you will need it for every collection step.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Supplemental proceedings (debtor examination)",
+      desc: "You can file a motion to require the defendant to appear in court and disclose their bank accounts, employer, and assets under oath. The court can hold a non-complying defendant in contempt.",
+    },
+    {
+      icon: Shield,
+      title: "Writ of Execution (personal property &amp; bank accounts)",
+      desc: "Direct the county sheriff to seize the defendant's non-exempt personal property or levy a bank account using a Writ of Execution issued by the clerk. You must identify the bank and branch.",
+    },
+    {
+      icon: FileCheck2,
+      title: "Judgment lien on real property",
+      desc: "File an Abstract of Judgment (also called a transcript of judgment) with the Register of Deeds in any NC county where the defendant owns real estate to create a lien against that property.",
+    },
+    {
+      icon: Clock,
+      title: "No wage garnishment for private debt",
+      desc: "North Carolina does not allow wage garnishment for private civil judgments. G.S. 110-136 restricts wage garnishment to child support and certain government debts only — do not attempt it.",
+    },
+    {
+      icon: RefreshCw,
+      title: "Your judgment is valid for 10 years",
+      desc: "NC judgments are enforceable for 10 years and can be renewed (docketed anew) before expiration. Post-judgment interest accrues at the legal rate set by G.S. 24-1 (currently 8% per year).",
+    },
+  ];
+
+  const steps = isNC ? ncSteps : isIL ? ilSteps : isTX ? txSteps : isFL ? flSteps : caSteps;
   const iconBg = "bg-amber-100";
   const iconColor = "text-amber-700";
 
@@ -3057,7 +3413,7 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | 
           </h2>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             A judgment in your favor is a powerful legal tool — but it does not automatically put money
-            in your pocket. {isIL ? "Illinois" : isTX ? "Texas" : isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
+            in your pocket. {isNC ? "North Carolina" : isIL ? "Illinois" : isTX ? "Texas" : isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
             Here is how to use them.
           </p>
         </div>
@@ -3123,7 +3479,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
   const { data: caseData, refetch: refetchCase } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const c = caseData as ExtendedCase | undefined;
 
-  const jurisdictionState: "CA" | "FL" | "TX" | "IL" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : (c?.jurisdictionState as string) === "IL" ? "IL" : "CA";
+  const jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : (c?.jurisdictionState as string) === "IL" ? "IL" : (c?.jurisdictionState as string) === "NC" ? "NC" : "CA";
 
   // Sync local state from case data once loaded (only initialises — does not override in-flight changes)
   const [serviceMethodInitialised, setServiceMethodInitialised] = useState(false);
