@@ -23,7 +23,7 @@
  */
 
 import * as path from "path";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
@@ -85,17 +85,36 @@ export async function buildTXFeeWaiver(
   // the signature image on top, guaranteeing signed > unsigned.
   const doc = await PDFDocument.load(filled, { ignoreEncryption: true });
 
+  // ── Page 0: plaintiff v. defendant caption overlay ─────────────────────────
+  // The caption blanks are graphical (not AcroForm fields). Overlay text with
+  // pdf-lib. "v." is at pdf-lib y≈367 (top). Plaintiff sits ~25pt above;
+  // defendant ~32pt below.
+  {
+    const captionPage = doc.getPage(0);
+    const helvetica = await doc.embedFont(StandardFonts.Helvetica);
+    const plaintiffLine = [
+      d.plaintiffName,
+      d.plaintiffIsBusiness && d.plaintiffDbaName ? `d/b/a ${d.plaintiffDbaName}` : null,
+    ].filter(Boolean).join(" ");
+    if (plaintiffLine) {
+      captionPage.drawText(plaintiffLine, { x: 84, y: 392, size: 9, font: helvetica });
+    }
+    if (d.defendantName) {
+      captionPage.drawText(d.defendantName, { x: 84, y: 318, size: 9, font: helvetica });
+    }
+  }
+
   if (opts?.signatureBytes) {
-    // Signature widget: page 10, x=96, y=366, w=367, h=25
-    const sigPage = doc.getPage(10);
-    try {
-      const sigImg =
-        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
-        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
-      if (sigImg) {
-        sigPage.drawImage(sigImg, { x: 96, y: 366, width: 240, height: 25, opacity: 1 });
-      }
-    } catch { /* ignore */ }
+    const sigImg =
+      (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+      (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+    if (sigImg) {
+      // Declaration section — page 11 (index 10)
+      doc.getPage(10).drawImage(sigImg, { x: 96, y: 366, width: 240, height: 25, opacity: 1 });
+      // Affidavit section — page 12 (index 11)
+      // "Your signature" label: pdftotext yMin=303.840 → pdf-lib y_top=488
+      doc.getPage(11).drawImage(sigImg, { x: 96, y: 488, width: 240, height: 25, opacity: 1 });
+    }
   }
 
   return Buffer.from(await doc.save({ useObjectStreams: false }));

@@ -135,6 +135,21 @@ export async function fetchAdminDocumentBlob(
   return { blob, filename };
 }
 
+export async function fetchAdminFormBlob(
+  caseId: number,
+  formId: string
+): Promise<{ blob: Blob; filename: string }> {
+  const key = getStoredKey();
+  const url = `${API_BASE}/admin/cases/${caseId}/form/${encodeURIComponent(formId)}`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${key}` } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition") ?? "";
+  const match = cd.match(/filename="([^"]+)"/);
+  const filename = match?.[1] ?? `${formId}-Case-${caseId}.pdf`;
+  return { blob, filename };
+}
+
 export async function fetchHearings(): Promise<HearingRow[]> {
   return apiFetch<HearingRow[]>("/admin/hearings");
 }

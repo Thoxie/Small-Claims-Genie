@@ -4,6 +4,8 @@ import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, gen
 import { sql, count, sum, eq, gte, lt, desc, and, isNotNull, like } from "drizzle-orm";
 import { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES } from "./counties";
 import { logger } from "../lib/logger";
+import { FormRegistry } from "../forms/registry";
+import type { CaseData } from "../forms/types";
 import { getErrors, clearErrors } from "../lib/errorLog";
 import { BETA_LIMIT } from "../lib/beta";
 import { ObjectStorageService } from "../lib/objectStorage";
@@ -925,6 +927,36 @@ router.get("/admin/cases/:caseId", async (req: Request, res: Response): Promise<
   } catch (err) {
     logger.error({ err }, "Admin case detail error");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/cases/:caseId/form/:formId ────────────────────────────────────
+router.get("/admin/cases/:caseId/form/:formId", async (req: Request, res: Response): Promise<void> => {
+  const caseId = parseInt(req.params.caseId as string, 10);
+  const formId = req.params.formId as string;
+  if (isNaN(caseId)) {
+    res.status(400).json({ error: "Invalid case ID" });
+    return;
+  }
+  const def = FormRegistry.get(formId);
+  if (!def) {
+    res.status(404).json({ error: `Form '${formId}' not found in registry` });
+    return;
+  }
+  try {
+    const [caseRow] = await db.select().from(casesTable).where(eq(casesTable.id, caseId)).limit(1);
+    if (!caseRow) {
+      res.status(404).json({ error: "Case not found" });
+      return;
+    }
+    const pdfBuf = await def.generate(caseRow as CaseData, {}, undefined);
+    const filename = `${formId}-Case-${caseId}.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(pdfBuf);
+  } catch (err) {
+    logger.error({ err }, "Admin form generation error");
+    res.status(500).json({ error: "Form generation failed" });
   }
 });
 
