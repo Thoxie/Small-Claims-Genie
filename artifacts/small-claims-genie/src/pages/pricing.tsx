@@ -4,6 +4,14 @@ import { useLocation, Link } from "wouter";
 import { useAuth, useSignUp } from "@clerk/clerk-react";
 import { Trophy, UserCheck, Loader2, X, Eye, EyeOff, Wand2, MapPin } from "lucide-react";
 
+const SUPPORTED_STATES = [
+  { abbr: "CA", name: "California" },
+  { abbr: "FL", name: "Florida" },
+  { abbr: "TX", name: "Texas" },
+  { abbr: "IL", name: "Illinois" },
+  { abbr: "NC", name: "North Carolina" },
+];
+
 function TermsAndSignUpModal({
   alreadySignedIn,
   onConfirm,
@@ -825,8 +833,8 @@ export default function Pricing() {
           <MapPin className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
           <p className="text-sm text-indigo-700 font-medium">
             <span className="text-indigo-500 font-normal mr-1">Available in</span>
-            <span className="sm:hidden">CA · FL · TX · IL · NC</span>
-            <span className="hidden sm:inline">California · Florida · Texas · Illinois · North Carolina</span>
+            <span className="sm:hidden">{SUPPORTED_STATES.map(s => s.abbr).join(" · ")}</span>
+            <span className="hidden sm:inline">{SUPPORTED_STATES.map(s => s.name).join(" · ")}</span>
             <span className="hidden sm:inline text-indigo-400 font-normal ml-2">· Additional states coming soon</span>
           </p>
         </div>
