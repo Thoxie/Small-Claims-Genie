@@ -825,8 +825,8 @@ export default function Pricing() {
           <MapPin className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
           <p className="text-sm text-indigo-700 font-medium">
             <span className="text-indigo-500 font-normal mr-1">Available in</span>
-            <span className="sm:hidden">CA · FL · TX · IL</span>
-            <span className="hidden sm:inline">California · Florida · Texas · Illinois</span>
+            <span className="sm:hidden">CA · FL · TX · IL · NC</span>
+            <span className="hidden sm:inline">California · Florida · Texas · Illinois · North Carolina</span>
             <span className="hidden sm:inline text-indigo-400 font-normal ml-2">· Additional states coming soon</span>
           </p>
         </div>
