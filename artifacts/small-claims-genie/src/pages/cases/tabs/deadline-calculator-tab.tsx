@@ -78,6 +78,27 @@ function getStatuteYearsFL(claimType: string): { years: number; note: string } {
 }
 
 
+// ── North Carolina statute helpers ───────────────────────────────────────────
+
+function getStatuteYearsNC(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Personal Injury":
+      return { years: 3, note: "G.S. 1-52(5) — 3-year limit for personal injury claims" };
+    case "Property Damage":
+      return { years: 3, note: "G.S. 1-52(3) — 3-year limit for property damage claims" };
+    case "Fraud":
+      return { years: 3, note: "G.S. 1-52(9) — 3-year limit for fraud claims" };
+    case "Security Deposit":
+      return { years: 3, note: "G.S. 1-52(1) — 3-year limit (written lease is a contract obligation)" };
+    case "Contract Dispute":
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 3, note: "G.S. 1-52(1) — 3-year limit for contract and debt claims" };
+    default:
+      return { years: 3, note: "G.S. 1-52 — 3-year general limit. Most small claims fall under this statute." };
+  }
+}
+
 // ── Texas statute helpers ─────────────────────────────────────────────────────
 
 function getStatuteYearsTX(claimType: string): { years: number; note: string } {
@@ -166,6 +187,8 @@ function printDeadlines(deadlines: Deadline[], caseName: string, today: Date, st
     ? `Florida courts: <a href="https://www.flcourts.gov" target="_blank">flcourts.gov</a>`
     : stateAbbr === "TX"
     ? `Texas courts: <a href="https://www.txcourts.gov" target="_blank">txcourts.gov</a>`
+    : stateAbbr === "NC"
+    ? `NC courts: <a href="https://www.nccourts.gov" target="_blank">nccourts.gov</a>`
     : `California courts: <a href="https://www.courts.ca.gov" target="_blank">courts.ca.gov</a>`;
 
   const w = window.open("", "_blank");
@@ -351,6 +374,88 @@ function buildTxDeadlines(
   return list;
 }
 
+// ── North Carolina deadline builder ──────────────────────────────────────────
+
+function buildNcDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsNC(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: "G.S. 1-52",
+  });
+
+  // Hearing set by magistrate — within ~30 days of filing
+  if (hearingDate) {
+    list.push({
+      id: "hearing",
+      category: "Hearing",
+      label: "Magistrate hearing date",
+      date: hearingDate,
+      status: getDeadlineStatus(hearingDate, today),
+      detail: `Your hearing is scheduled for ${format(hearingDate, "MMMM d, yyyy")}. The magistrate sets the date — typically within 30 days of filing. Arrive early and bring organized evidence. Both parties are allowed to speak.`,
+      law: "G.S. 7A-220",
+    });
+  } else {
+    list.push({
+      id: "hearing",
+      category: "Hearing",
+      label: "Magistrate hearing date (not yet entered)",
+      date: null,
+      status: "missing",
+      detail: "In NC small claims (magistrate) court, the court clerk schedules the hearing when you file — typically within 30 days. Enter your hearing date in the Intake tab once you receive the notice.",
+      law: "G.S. 7A-220",
+    });
+  }
+
+  // Service — sheriff handles automatically; no plaintiff service deadline
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "Sheriff serves the defendant (automatic)",
+    date: null,
+    status: "info",
+    detail: "In NC small claims court, you do not arrange service yourself. The county sheriff's office is responsible for serving the defendant after you file and pay the service fee. There is no separate plaintiff-driven service deadline — just ensure the case is filed with enough lead time before the hearing.",
+    law: "G.S. 7A-217; G.S. 1A-1, Rule 4",
+  });
+
+  // Appeal window — 30 days for trial de novo in district court
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window — 30 days for trial de novo",
+    date: null,
+    status: "info",
+    detail: "If the magistrate rules against you, either party has 30 days from the date of judgment to appeal to NC District Court for a trial de novo (a completely fresh trial). File a Notice of Appeal with the clerk of court and pay the appeal bond or request a waiver.",
+    law: "G.S. 7A-228",
+  });
+
+  // Judgment enforcement
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: "Judgment valid for 10 years",
+    date: null,
+    status: "info",
+    detail: "NC judgments are valid for 10 years from docketing and can be renewed (docketed anew) before expiration. Post-judgment interest accrues at the legal rate under G.S. 24-1 (currently 8% per year). If the defendant does not pay, you may pursue wage garnishment, writ of execution, or docket a judgment lien against real property.",
+    law: "G.S. 1-234; G.S. 24-1",
+  });
+
+  return list;
+}
+
 // ── California deadline builder ───────────────────────────────────────────────
 
 function buildCaDeadlines(
@@ -461,6 +566,7 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const today = useMemo(() => new Date(), []);
   const isFL = currentCase.jurisdictionState === "FL";
   const isTX = currentCase.jurisdictionState === "TX";
+  const isNC = (currentCase.jurisdictionState as string) === "NC";
 
   const incidentDate = useMemo(() => parseIncidentDate(currentCase.incidentDate || ""), [currentCase.incidentDate]);
   const hearingDate = useMemo(() => parseHearingDate(currentCase.hearingDate || ""), [currentCase.hearingDate]);
@@ -485,16 +591,19 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
     if (isTX) {
       return buildTxDeadlines(incidentDate, hearingDate, claimType, today);
     }
+    if (isNC) {
+      return buildNcDeadlines(incidentDate, hearingDate, claimType, today);
+    }
     return buildCaDeadlines(incidentDate, hearingDate, isBusiness, isSuingPublic, claimType, today);
-  }, [isFL, isTX, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
+  }, [isFL, isTX, isNC, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
 
   const categories = [...new Set(deadlines.map(d => d.category))];
 
   const urgentCount = deadlines.filter(d => d.status === "urgent" || d.status === "overdue").length;
   const missingCount = deadlines.filter(d => d.status === "missing").length;
 
-  const stateLabel = isFL ? "Florida" : isTX ? "Texas" : "California";
-  const stateAbbr = isFL ? "FL" : isTX ? "TX" : "CA";
+  const stateLabel = isFL ? "Florida" : isTX ? "Texas" : isNC ? "North Carolina" : "California";
+  const stateAbbr = isFL ? "FL" : isTX ? "TX" : isNC ? "NC" : "CA";
 
   return (
     <div className="px-6 pt-3 pb-6 space-y-6">
@@ -618,6 +727,10 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
           <span className="font-semibold">Disclaimer:</span> This calculator is for informational purposes only and does not constitute legal advice. Always verify deadlines with your specific court or a licensed attorney. County-specific rules may apply.{" "}
           {isFL ? (
             <a href="https://www.flcourts.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">flcourts.gov</a>
+          ) : isTX ? (
+            <a href="https://www.txcourts.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">txcourts.gov</a>
+          ) : isNC ? (
+            <a href="https://www.nccourts.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">nccourts.gov</a>
           ) : (
             <a href="https://www.courts.ca.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">courts.ca.gov</a>
           )}
