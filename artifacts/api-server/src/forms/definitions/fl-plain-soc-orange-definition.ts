@@ -2,10 +2,9 @@
  * FL Plain Statement of Claim — Orange County, Florida.
  *
  * Fills the Orange County Clerk of Courts "Plain Statement of Claim" PDF
- * (https://www.myorangeclerk.com) using pdftk FDF fill.
+ * (https://www.myorangeclerk.com) using pdf-lib AcroForm fill directly.
  *
  * Source PDF: assets/fl-forms/plain-statement-of-claim-orange.pdf
- * Field names confirmed via: pdftk dump_data_fields
  *
  * Fields:
  *   Name              — Plaintiff name (section 1)
@@ -23,16 +22,14 @@
  */
 
 import * as path from "path";
+import * as fs from "fs";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
-import { pdftk_fill_form } from "../pdftk-fdf";
 import { ASSET_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
 
 const PDF_PATH = path.join(ASSET_DIR, "fl-forms", "plain-statement-of-claim-orange.pdf");
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatAmount(amount: number | null | undefined): string {
   if (!amount) return "";
@@ -57,66 +54,60 @@ function cityStateZip(
   return parts.join(", ");
 }
 
-// ─── Form definition ──────────────────────────────────────────────────────────
+function safeSetText(form: ReturnType<PDFDocument["getForm"]>, name: string, value: string): void {
+  try { form.getTextField(name).setText(value || ""); } catch { /* field absent */ }
+}
 
 const plainSocOrangeDefinition: FormDefinition = {
   state: "FL",
   formId: "PLAIN-SOC-ORANGE",
   assetPath: PDF_PATH,
-  renderingTechnique: "xfa-pdftk",
+  renderingTechnique: "acroform-pdflib",
 
   async generate(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     const pltCityStateZip = cityStateZip(d.plaintiffCity, d.plaintiffState, d.plaintiffZip);
     const defCityStateZip = cityStateZip(d.defendantCity, d.defendantState, d.defendantZip);
 
-    const text: Record<string, string> = {
-      // ── Plaintiff section ───────────────────────────────────────────────────
-      "Name":                 d.plaintiffName ?? "",
-      "Street Address":       d.plaintiffAddress ?? "",
-      "City State and Zip":   pltCityStateZip,
-      "Phone Number":         d.plaintiffPhone ?? "",
+    const pdfBytes = fs.readFileSync(PDF_PATH);
+    const doc = await PDFDocument.load(pdfBytes);
+    const form = doc.getForm();
 
-      // ── Defendant section ───────────────────────────────────────────────────
-      "Name_2":                 d.defendantName ?? "",
-      "Street Address_2":       d.defendantAddress ?? "",
-      "City State and Zip_2":   defCityStateZip,
-      "Phone Number_2":         d.defendantPhone ?? "",
+    // ── Plaintiff section ───────────────────────────────────────────────────
+    safeSetText(form, "Name",               d.plaintiffName ?? "");
+    safeSetText(form, "Street Address",     d.plaintiffAddress ?? "");
+    safeSetText(form, "City State and Zip", pltCityStateZip);
+    safeSetText(form, "Phone Number",       d.plaintiffPhone ?? "");
 
-      // ── Case number — left blank for clerk to assign ────────────────────────
-      "Case Number": "",
+    // ── Defendant section ───────────────────────────────────────────────────
+    safeSetText(form, "Name_2",               d.defendantName ?? "");
+    safeSetText(form, "Street Address_2",     d.defendantAddress ?? "");
+    safeSetText(form, "City State and Zip_2", defCityStateZip);
+    safeSetText(form, "Phone Number_2",       d.defendantPhone ?? "");
 
-      // ── Claim amount ─────────────────────────────────────────────────────────
-      "of interest court costs and attorney fees": formatAmount(d.claimAmount),
+    // ── Case number — left blank for clerk to assign ────────────────────────
+    safeSetText(form, "Case Number", "");
 
-      // ── Sworn statement — plaintiff name ────────────────────────────────────
-      "Plaintiffs": d.plaintiffName ?? "",
+    // ── Claim amount ─────────────────────────────────────────────────────────
+    safeSetText(form, "of interest court costs and attorney fees", formatAmount(d.claimAmount));
 
-      // ── Claim description / basis of claim ───────────────────────────────────
-      "Text1": d.claimDescription ?? "",
-    };
+    // ── Sworn statement — plaintiff name ────────────────────────────────────
+    safeSetText(form, "Plaintiffs", d.plaintiffName ?? "");
 
-    const buf = await pdftk_fill_form(PDF_PATH, { text });
-    try {
-      const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-      const doc = await PDFDocument.load(buf);
-      const helv = await doc.embedFont(StandardFonts.Helvetica);
-      const [pg] = doc.getPages();
-      // Date goes in the left portion of the signature row (x=54, pdf-lib y=78), to the left of
-      // the right-aligned signature blank at x=378. The Orange plain SOC has no printed date field.
-      pg.drawText(`Date: ${todayStr}`, { x: 54, y: 78, size: 9, font: helv });
-      if (opts?.signatureBytes) {
-        // The signature area is right-aligned on this 1-page form.
-        // "Plaintiff(s)" / "(Sign here)" labels: xMin=378, pdf-lib y=57–68 (bottom/top of label).
-        // The blank line `___` is just above the "Plaintiff(s)" label at pdf-lib y≈68–82.
-        // x=378, y=68, h=28 places the image from y=68 (label top) up to y=96, spanning the blank.
-        // Visually confirmed correct (2026-06-21): sig lands on the right-side blank signature line,
-        // above the "Plaintiff(s) / (Sign here)" labels.
-        const sigImg = await doc.embedPng(opts.signatureBytes);
-        pg.drawImage(sigImg, { x: 378, y: 68, width: 150, height: 28, opacity: 1 });
-      }
-      return Buffer.from(await doc.save({ updateFieldAppearances: false }));
-    } catch { /* ignore — return plain fill */ }
-    return buf;
+    // ── Claim description / basis of claim ───────────────────────────────────
+    safeSetText(form, "Text1", d.claimDescription ?? "");
+
+    // ── Date + optional signature overlay ────────────────────────────────────
+    const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+    const helv = await doc.embedFont(StandardFonts.Helvetica);
+    const [pg] = doc.getPages();
+    pg.drawText(`Date: ${todayStr}`, { x: 54, y: 78, size: 9, font: helv });
+    if (opts?.signatureBytes) {
+      const sigImg = await doc.embedPng(opts.signatureBytes);
+      pg.drawImage(sigImg, { x: 378, y: 68, width: 150, height: 28, opacity: 1 });
+    }
+
+    form.flatten();
+    return Buffer.from(await doc.save({ updateFieldAppearances: false }));
   },
 };
 

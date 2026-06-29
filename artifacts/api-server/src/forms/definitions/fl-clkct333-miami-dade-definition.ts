@@ -1,31 +1,32 @@
 /**
  * FL CLK/CT. 333 — Miami-Dade County Statement of Claim (official county PDF).
  *
- * Fills the official Miami-Dade CLK/CT. 333 AcroForm PDF using pdftk FDF fill.
+ * Fills the official Miami-Dade CLK/CT. 333 AcroForm PDF using pdf-lib directly.
+ * pdf-lib sees all form fields in this PDF (including hidden named fields that
+ * pdftk could not enumerate).
  *
  * Source PDF: assets/fl-forms/clkct333-miami-dade.pdf
  * Form: CLK/CT. 333 Rev. 06/23
  * Filing: Miami-Dade County Court Clerk, 73 W. Flagler St., Suite 133, Miami, FL 33130
  * Phone: (305) 275-1155 | Website: https://www.miamidadeclerk.gov
  *
- * Key fields confirmed via pdftk dump_data_fields + filled sample:
+ * Key fields:
  *   Plaintiff     — plaintiff name (multiline, header)
  *   Defendant     — defendant name (multiline, header)
  *   Address       — defendant address
  *   Phone         — defendant phone
  *   Text14        — additional facts / claim description (large text area)
  *   Text16        — judgment amount
- *   Check Box6    — "Other (Explain)" claim type checkbox
- *   Check Box1-5,11 — specific claim type checkboxes
+ *   Check Box1-6,11 — claim type checkboxes
  *
  * Note: Signature and notary fields are left blank — user must sign before filing.
  */
 
 import * as path from "path";
+import * as fs from "fs";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
-import { pdftk_fill_form } from "../pdftk-fdf";
 import { ASSET_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
 
@@ -56,10 +57,6 @@ function fullAddress(
   return parts.join("\n");
 }
 
-/**
- * Map a claim description to the appropriate checkbox on the CLK/CT. 333.
- * Returns the field name of the matching checkbox, defaulting to Check Box6 (Other).
- */
 function claimTypeCheckbox(d: CaseData): string {
   const desc = (d.claimDescription ?? "").toLowerCase();
   const type = (d.claimType ?? "").toLowerCase();
@@ -69,102 +66,86 @@ function claimTypeCheckbox(d: CaseData): string {
   if (type.includes("account") || desc.includes("account stated")) return "Check Box4";
   if (type.includes("contract") || type.includes("written") || desc.includes("written instrument") || desc.includes("contract")) return "Check Box11";
   if (type.includes("rent") || desc.includes("rent") || desc.includes("lease")) return "Check Box5";
-  return "Check Box6"; // Other (Explain)
+  return "Check Box6";
+}
+
+function safeSetText(form: ReturnType<PDFDocument["getForm"]>, name: string, value: string): void {
+  try { form.getTextField(name).setText(value || ""); } catch { /* field absent */ }
+}
+
+function safeSetSingleLine(form: ReturnType<PDFDocument["getForm"]>, name: string, value: string): void {
+  try {
+    const f = form.getTextField(name);
+    f.disableMultiline();
+    f.setText(value || "");
+  } catch { /* field absent */ }
+}
+
+function safeCheck(form: ReturnType<PDFDocument["getForm"]>, name: string, checked: boolean): void {
+  try {
+    const cb = form.getCheckBox(name);
+    if (checked) cb.check(); else cb.uncheck();
+  } catch { /* field absent */ }
 }
 
 const clkCt333Definition: FormDefinition = {
   state: "FL",
   formId: "CLK-CT-333",
   assetPath: PDF_PATH,
-  renderingTechnique: "xfa-pdftk",
+  renderingTechnique: "acroform-pdflib",
 
   async generate(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     const defAddress = fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
-
     const checkedBox = claimTypeCheckbox(d);
 
-    const text: Record<string, string> = {
-      // ── Parties ───────────────────────────────────────────────────────────
-      "Plaintiff": d.plaintiffName ?? "",
-      "Defendant": d.defendantName ?? "",
+    const pdfBytes = fs.readFileSync(PDF_PATH);
+    const doc = await PDFDocument.load(pdfBytes);
+    const form = doc.getForm();
 
-      // ── Defendant address + phone ─────────────────────────────────────────
-      "Address": defAddress,
-      "Phone":   d.defendantPhone ?? "",
+    // ── Parties (single-line so pdftotext extracts them as searchable strings) ─
+    safeSetSingleLine(form, "Plaintiff", d.plaintiffName ?? "");
+    safeSetSingleLine(form, "Defendant", d.defendantName ?? "");
 
-      // ── Claim description (large text area) ───────────────────────────────
-      "Text14": d.claimDescription ?? "",
+    // ── Defendant address + phone ─────────────────────────────────────────────
+    safeSetText(form, "Address", defAddress);
+    safeSetSingleLine(form, "Phone",   d.defendantPhone ?? "");
 
-      // ── Judgment amount ───────────────────────────────────────────────────
-      "Text16": formatAmount(d.claimAmount),
+    // ── Claim description (multiline) ─────────────────────────────────────────
+    safeSetText(form, "Text14", d.claimDescription ?? "");
 
-      // ── Plaintiff name in oath line ───────────────────────────────────────
-      "Text8": d.plaintiffName ?? "",
+    // ── Judgment amount ───────────────────────────────────────────────────────
+    safeSetSingleLine(form, "Text16", formatAmount(d.claimAmount));
 
-      // ── Leave court-use / signature / notary fields blank ─────────────────
-      "Text1":  "",
-      "Text2":  "",
-      "Text7":  "",
-      "Text9":  "",
-      "Text10": "",
-      "Text11": "",
-      "Text12": "",
-      "Text13": "",
-      "Text15": "",
-      "Text17": "",
-      "Text18": "",
-      "Text19": "",
-      "Text20": "",
-      "Text21": "",
-      "Text22": "",
-      "Text23": "",
-      "Text24": "",
-      "Text25": "",
-      "Text26": "",
-      "Text27": "",
-    };
+    // ── Plaintiff name in oath line ───────────────────────────────────────────
+    safeSetSingleLine(form, "Text8", d.plaintiffName ?? "");
 
-    const checkboxes: Record<string, boolean> = {
-      "Check Box1":  checkedBox === "Check Box1",
-      "Check Box2":  checkedBox === "Check Box2",
-      "Check Box3":  checkedBox === "Check Box3",
-      "Check Box4":  checkedBox === "Check Box4",
-      "Check Box11": checkedBox === "Check Box11",
-      "Check Box5":  checkedBox === "Check Box5",
-      "Check Box6":  checkedBox === "Check Box6",
-      // Remaining checkboxes (service type, oath options) left unchecked
-      "Check Box7":  false,
-      "Check Box8":  false,
-      "Check Box9":  false,
-      "Check Box10": false,
-      "Check Box12": false,
-      "Check Box13": false,
-      "Check Box14": false,
-      "Check Box15": false,
-      "Check Box16": false,
-    };
+    // ── Court-use / signature / notary fields — leave blank ───────────────────
+    for (const f of ["Text1","Text2","Text7","Text9","Text10","Text11","Text12","Text13",
+                     "Text15","Text17","Text18","Text19","Text20","Text21","Text22","Text23",
+                     "Text24","Text25","Text26","Text27"]) {
+      safeSetText(form, f, "");
+    }
 
-    const buf = await pdftk_fill_form(PDF_PATH, { text, checkboxes });
-    try {
-      const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-      const doc = await PDFDocument.load(buf);
-      const helv = await doc.embedFont(StandardFonts.Helvetica);
-      const [pg] = doc.getPages();
-      // Date goes in the left column of the three-column verification row (x=54), at the same
-      // vertical midpoint as the Signature column (pdf-lib y=244).
-      pg.drawText(`Date: ${todayStr}`, { x: 54, y: 244, size: 9, font: helv });
-      if (opts?.signatureBytes) {
-        // "Signature" label (vs. "Attorney/Plaintiff" printed name) is at x=323, pdf-lib y=235–248.
-        // The blank line above the label sits at pdf-lib y≈252–268.
-        // x=323, y=235, h=36 places the image from y=235 (label bottom) up to y=271 (spanning the blank).
-        // Visually confirmed correct (2026-06-21): sig lands cleanly on the signature blank line
-        // in the middle (Signature) column of the three-column row.
-        const sigImg = await doc.embedPng(opts.signatureBytes);
-        pg.drawImage(sigImg, { x: 323, y: 235, width: 130, height: 36, opacity: 1 });
-      }
-      return Buffer.from(await doc.save({ updateFieldAppearances: false }));
-    } catch { /* ignore — return plain fill */ }
-    return buf;
+    // ── Claim type checkboxes ─────────────────────────────────────────────────
+    for (const f of ["Check Box1","Check Box2","Check Box3","Check Box4","Check Box5",
+                     "Check Box6","Check Box7","Check Box8","Check Box9","Check Box10",
+                     "Check Box11","Check Box12","Check Box13","Check Box14","Check Box15",
+                     "Check Box16"]) {
+      safeCheck(form, f, f === checkedBox);
+    }
+
+    // ── Date + optional signature overlay ────────────────────────────────────
+    const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+    const helv = await doc.embedFont(StandardFonts.Helvetica);
+    const [pg] = doc.getPages();
+    pg.drawText(`Date: ${todayStr}`, { x: 54, y: 244, size: 9, font: helv });
+    if (opts?.signatureBytes) {
+      const sigImg = await doc.embedPng(opts.signatureBytes);
+      pg.drawImage(sigImg, { x: 323, y: 235, width: 130, height: 36, opacity: 1 });
+    }
+
+    form.flatten();
+    return Buffer.from(await doc.save({ updateFieldAppearances: false }));
   },
 };
 

@@ -1,6 +1,6 @@
 ---
 name: FL Forms Architecture
-description: FL small claims form definitions — mix of programmatic (pdf-lib) and pdftk FDF template forms
+description: FL small claims form definitions — programmatic (pdf-lib) only; pdftk removed from all 4 signed forms due to JVM timeout
 ---
 
 # FL Forms Architecture
@@ -25,25 +25,20 @@ FL forms are split into two groups:
 - Both accept optional `countyOverride` / `clerkAddressOverride`
 - Date is drawn inline: `new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })` replacing placeholder text
 
-### 2. pdftk FDF + pdf-lib overlay (template PDFs in `assets/fl-forms/`)
+### 2. pdf-lib AcroForm (template PDFs in `assets/fl-forms/`) — formerly pdftk
 - `fl-clkct333-miami-dade-definition.ts` → `clkct333-miami-dade.pdf`
 - `fl-cl219-volusia-pdf-definition.ts` → `cl-219-volusia.pdf`
 - `fl-plain-soc-orange-definition.ts` → `plain-statement-of-claim-orange.pdf`
 - `fl-soc-hillsborough-definition.ts` → `statement-of-claim-hillsborough.pdf`
 
-All pdftk forms follow this pattern:
-1. `pdftk_fill_form(PDF_PATH, { text, checkboxes })` → fills FDF fields
-2. Always post-process with pdf-lib to draw the current date (and optionally embed the signature image):
-   ```typescript
-   try {
-     const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-     const doc = await PDFDocument.load(buf);
-     const helv = await doc.embedFont(StandardFonts.Helvetica);
-     // draw date + optional signature
-     return Buffer.from(await doc.save({ updateFieldAppearances: false }));
-   } catch { /* return plain fill */ }
-   ```
-3. Date positions (pdf-lib y = from bottom of page):
+**Why migrated from pdftk:** pdftk-java JVM cold start = 6+ seconds per call; Replit proxy timeout is ~1 second → 502 on every form download. pdf-lib AcroForm fill + flatten = 78–189ms.
+
+All 4 forms follow this pattern:
+1. `PDFDocument.load(pdfBytes)` → `doc.getForm()` → `safeSetText()` / `safeSetSingleLine()` / `safeCheck()` helpers
+2. **Critical:** For header/party name fields that are typed as multiline in the PDF, call `f.disableMultiline()` BEFORE `f.setText()`. Without this, pdf-lib wraps the text at word boundaries and pdftotext extracts it as separate lines (e.g. "South Florida\nContractors LLC"), causing test assertions like `.includes("South Florida Contractors LLC")` to fail.
+3. `form.flatten()` → then pdf-lib overlay: embed font, `page.drawText()` for today's date, and embed signature image bytes if provided.
+4. `renderingTechnique: "acroform-pdflib"` in the definition.
+5. Date positions (pdf-lib y = from bottom of page):
    - CLK/CT.333: x=54, y=244 (left column of three-column sig row)
    - CL-219 Volusia PDF: x=54, y=126 (left of right-aligned sig at x=342)
    - Plain SOC Orange: x=54, y=78 (left of right-aligned sig at x=378)
