@@ -282,17 +282,17 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
   const openDoc = async (docId: number) => {
     const key = `view-${docId}`;
     setDocLoading((s) => new Set(s).add(key));
+    // Open window immediately (inside user gesture) to avoid popup blockers.
+    const win = window.open("", "_blank");
     try {
-      const { blob, filename } = await fetchAdminDocumentBlob(docId, false);
+      const { blob } = await fetchAdminDocumentBlob(docId, false);
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.download = "";
-      a.click();
+      if (win) {
+        win.location.assign(url);
+      }
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
+      win?.close();
       alert(`Could not open document ${docId}.`);
     } finally {
       setDocLoading((s) => { const n = new Set(s); n.delete(key); return n; });
