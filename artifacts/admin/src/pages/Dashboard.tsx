@@ -17,6 +17,7 @@ import {
   fetchCaseDetail,
   fetchAdminDocumentBlob,
   fetchAdminFormBlob,
+  getStoredKey,
   fetchHearings,
   fetchStuckCases,
   grantBeta,
@@ -279,42 +280,11 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
   const [formLoading, setFormLoading] = useState<string | null>(null);
   const [demandOpen, setDemandOpen] = useState(false);
 
-  const openDoc = async (docId: number) => {
-    const key = `view-${docId}`;
-    setDocLoading((s) => new Set(s).add(key));
-    // Open window immediately (inside user gesture) to avoid popup blockers.
-    const win = window.open("about:blank", "_blank");
-    try {
-      const { blob } = await fetchAdminDocumentBlob(docId, false);
-      const url = URL.createObjectURL(blob);
-      if (win) {
-        const isImage = blob.type.startsWith("image/");
-        const isPDF   = blob.type === "application/pdf";
-        if (isImage) {
-          win.document.write(
-            `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#f5f5f5;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style></head>` +
-            `<body><img src="${url}" style="max-width:100%;max-height:100vh;object-fit:contain;box-shadow:0 2px 16px rgba(0,0,0,.2);"></body></html>`
-          );
-        } else if (isPDF) {
-          win.document.write(
-            `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}html,body{width:100%;height:100%;}</style></head>` +
-            `<body><iframe src="${url}" style="width:100%;height:100%;border:none;"></iframe></body></html>`
-          );
-        } else {
-          win.document.write(
-            `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:2rem;}</style></head>` +
-            `<body><p>File ready — <a href="${url}" download>click here to download</a>.</p></body></html>`
-          );
-        }
-        win.document.close();
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 120_000);
-    } catch {
-      win?.close();
-      alert(`Could not open document ${docId}.`);
-    } finally {
-      setDocLoading((s) => { const n = new Set(s); n.delete(key); return n; });
-    }
+  const openDoc = (docId: number) => {
+    // Synchronous window.open — no async, no popup blockers, no blob-URL origin issues.
+    // The /admin/documents/:docId/view endpoint validates the key via ?key= query param.
+    const key = getStoredKey();
+    window.open(`/api/admin/documents/${docId}/view?key=${encodeURIComponent(key)}`, "_blank");
   };
 
   const downloadDoc = async (docId: number, filename: string) => {

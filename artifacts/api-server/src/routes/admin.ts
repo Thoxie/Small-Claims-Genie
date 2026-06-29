@@ -58,6 +58,49 @@ router.post("/admin/login", (req: Request, res: Response): void => {
   res.json({ key: adminKey });
 });
 
+// ── GET /admin/documents/:docId/view (no Bearer — key in ?key= for window.open) ─
+router.get("/admin/documents/:docId/view", async (req: Request, res: Response): Promise<void> => {
+  const adminKey = process.env.ADMIN_API_KEY;
+  const providedKey = req.query.key as string | undefined;
+  if (!adminKey || !providedKey || providedKey !== adminKey) {
+    res.status(401).send("Unauthorized");
+    return;
+  }
+  const docId = parseInt(req.params.docId as string, 10);
+  if (isNaN(docId)) { res.status(400).send("Invalid document ID"); return; }
+  try {
+    const [doc] = await db
+      .select({
+        id: documentsTable.id,
+        originalName: documentsTable.originalName,
+        mimeType: documentsTable.mimeType,
+        storageObjectPath: documentsTable.storageObjectPath,
+        fileData: documentsTable.fileData,
+      })
+      .from(documentsTable)
+      .where(eq(documentsTable.id, docId))
+      .limit(1);
+    if (!doc) { res.status(404).send("Document not found"); return; }
+    const mime = doc.mimeType ?? "application/octet-stream";
+    const safeName = doc.originalName ?? `document-${docId}`;
+    res.setHeader("Content-Type", mime);
+    res.setHeader("Content-Disposition", `inline; filename="${safeName}"`);
+    if (doc.storageObjectPath) {
+      const objectFile = await objectStorage.getObjectEntityFile(doc.storageObjectPath);
+      const gcsRes = await objectStorage.downloadObject(objectFile);
+      if (!gcsRes.body) { res.status(500).send("Empty response from storage"); return; }
+      Readable.fromWeb(gcsRes.body as import("stream/web").ReadableStream<Uint8Array>).pipe(res);
+    } else if (doc.fileData) {
+      res.send(Buffer.from(doc.fileData, "base64"));
+    } else {
+      res.status(404).send("File data not found");
+    }
+  } catch (err) {
+    logger.error({ err, docId }, "Admin document view error");
+    res.status(500).send("Internal server error");
+  }
+});
+
 // Apply auth to all /admin/* routes
 router.use("/admin", requireAdmin);
 
