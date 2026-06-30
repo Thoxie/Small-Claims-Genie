@@ -101,6 +101,33 @@ router.get("/admin/documents/:docId/view", async (req: Request, res: Response): 
   }
 });
 
+// ── GET /admin/cases/:caseId/forms/:formId/view (no Bearer — key in ?key= for window.open) ─
+router.get("/admin/cases/:caseId/forms/:formId/view", async (req: Request, res: Response): Promise<void> => {
+  const adminKey = process.env.ADMIN_API_KEY;
+  const providedKey = req.query.key as string | undefined;
+  if (!adminKey || !providedKey || providedKey !== adminKey) {
+    res.status(401).send("Unauthorized");
+    return;
+  }
+  const caseId = parseInt(req.params.caseId as string, 10);
+  const formId = req.params.formId as string;
+  if (isNaN(caseId)) { res.status(400).send("Invalid case ID"); return; }
+  const def = FormRegistry.get(formId);
+  if (!def) { res.status(404).send(`Form '${formId}' not found`); return; }
+  try {
+    const [caseRow] = await db.select().from(casesTable).where(eq(casesTable.id, caseId)).limit(1);
+    if (!caseRow) { res.status(404).send("Case not found"); return; }
+    const pdfBuf = await def.generate(caseRow as CaseData, {}, undefined);
+    const filename = `${formId}-Case-${caseId}.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    res.send(pdfBuf);
+  } catch (err) {
+    logger.error({ err, caseId, formId }, "Admin form view error");
+    res.status(500).send("Form generation failed");
+  }
+});
+
 // Apply auth to all /admin/* routes
 router.use("/admin", requireAdmin);
 

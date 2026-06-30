@@ -16,7 +16,6 @@ import {
   fetchAdminClerkId,
   fetchCaseDetail,
   fetchAdminDocumentBlob,
-  fetchAdminFormBlob,
   getStoredKey,
   fetchHearings,
   fetchStuckCases,
@@ -277,7 +276,6 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
   });
 
   const [docLoading, setDocLoading] = useState<Set<string>>(new Set());
-  const [formLoading, setFormLoading] = useState<string | null>(null);
   const [demandOpen, setDemandOpen] = useState(false);
 
   const openDoc = (docId: number) => {
@@ -305,22 +303,10 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
     }
   };
 
-  const downloadAdminForm = async (formId: string) => {
-    if (!caseId || !data) return;
-    setFormLoading(formId);
-    try {
-      const { blob, filename } = await fetchAdminFormBlob(caseId, formId);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch {
-      alert(`Could not generate form ${formId}.`);
-    } finally {
-      setFormLoading(null);
-    }
+  const openForm = (formId: string) => {
+    if (!caseId) return;
+    const key = getStoredKey();
+    window.open(`/api/admin/cases/${caseId}/forms/${encodeURIComponent(formId)}/view?key=${encodeURIComponent(key)}`, "_blank");
   };
 
   const mainAppBase = window.location.origin.replace(/\/admin.*$/, "");
@@ -400,7 +386,8 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
                   { id: "IL-PROOF-OF-SERVICE", label: "Proof of Service" },
                 ],
               };
-              const forms = STATE_FORMS[data.jurisdictionState ?? "CA"] ?? [];
+              // Fall back to CA forms for any unrecognized or missing state
+              const forms = STATE_FORMS[data.jurisdictionState ?? "CA"] ?? STATE_FORMS["CA"] ?? [];
               if (forms.length === 0) return null;
               return (
                 <div className="space-y-2">
@@ -414,11 +401,10 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
                         size="sm"
                         variant="outline"
                         className="h-7 text-xs gap-1 px-2"
-                        disabled={formLoading === f.id}
-                        onClick={() => downloadAdminForm(f.id)}
+                        onClick={() => openForm(f.id)}
                       >
-                        <Download className="h-3 w-3" />
-                        {formLoading === f.id ? "Generating…" : f.label}
+                        <Eye className="h-3 w-3" />
+                        {f.label}
                       </Button>
                     ))}
                   </div>
