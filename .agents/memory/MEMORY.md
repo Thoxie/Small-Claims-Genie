@@ -12,3 +12,4 @@
 - [Stripe connection](stripe-connection.md) — app uses STRIPE_SECRET_KEY secret directly; never call proposeIntegration for Stripe; verify by hitting /api/stripe/products
 - [IL Letter to Sheriff](il-letter-to-sheriff.md) — pdftk FDF fill; typed signature (not image); sheriff address from getIlSheriffAddress(); fee waiver box left unset for user to check
 - [FL fee waiver coords](fl-fee-waiver-coords.md) — coordinate offset formula: pdftotext_yMax = (792-pdf_lib_y)+1.863; tsx hot-reload unreliable for definitions/, restart server after each edit
+# Last pushed: 2026-06-30 20:04 UTC
