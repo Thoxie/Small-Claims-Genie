@@ -315,7 +315,7 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
     <Sheet open={caseId !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-base">
+          <SheetTitle className="text-base line-clamp-2 leading-snug">
             {isLoading ? "Loading case…" : data ? data.title : "Case Detail"}
           </SheetTitle>
           {data && (
