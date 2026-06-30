@@ -366,6 +366,90 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
 
         {data && (
           <div className="space-y-5">
+            {/* Court Forms — shown first so admin sees them without scrolling */}
+            {(() => {
+              const STATE_FORMS: Record<string, { id: string; label: string }[]> = {
+                CA: [
+                  { id: "SC-100",  label: "SC-100 Plaintiff's Claim" },
+                  { id: "SC-103",  label: "SC-103 Answer" },
+                  { id: "SC-104",  label: "SC-104 Declaration" },
+                  { id: "SC-105",  label: "SC-105 Appearance" },
+                  { id: "SC-112A", label: "SC-112A Motion" },
+                  { id: "FW-001",  label: "FW-001 Fee Waiver" },
+                  { id: "MC-030",  label: "MC-030 Declaration" },
+                  { id: "SC-140",  label: "SC-140 Judgment" },
+                  { id: "SC-150",  label: "SC-150 Settlement" },
+                ],
+                FL: [
+                  { id: "FL-STATEMENT-OF-CLAIM", label: "Statement of Claim" },
+                  { id: "FL-SUMMONS",            label: "Summons" },
+                  { id: "FL-FEE-WAIVER",         label: "Fee Waiver" },
+                  { id: "FL-PROOF-OF-SERVICE",   label: "Proof of Service" },
+                ],
+                TX: [
+                  { id: "TX-PETITION",          label: "Petition" },
+                  { id: "TX-CITATION",          label: "Citation" },
+                  { id: "TX-FEE-WAIVER",        label: "Fee Waiver" },
+                  { id: "TX-RETURN-OF-SERVICE", label: "Return of Service" },
+                ],
+                IL: [
+                  { id: "IL-SMC-COMPLAINT",    label: "Small Claims Complaint" },
+                  { id: "IL-SUMMONS",          label: "Summons" },
+                  { id: "IL-FEE-WAIVER",       label: "Fee Waiver" },
+                  { id: "IL-LETTER-TO-SHERIFF",label: "Letter to Sheriff" },
+                  { id: "IL-PROOF-OF-SERVICE", label: "Proof of Service" },
+                ],
+              };
+              const forms = STATE_FORMS[data.jurisdictionState ?? "CA"] ?? [];
+              if (forms.length === 0) return null;
+              return (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b pb-1">
+                    Court Forms ({data.jurisdictionState ?? "CA"})
+                  </h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {forms.map((f) => (
+                      <Button
+                        key={f.id}
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1 px-2"
+                        disabled={formLoading === f.id}
+                        onClick={() => downloadAdminForm(f.id)}
+                      >
+                        <Download className="h-3 w-3" />
+                        {formLoading === f.id ? "Generating…" : f.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Demand Letter — shown near top for quick admin access */}
+            {data.demandLetterText && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between border-b pb-1">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Demand Letter
+                  </h4>
+                  <button
+                    onClick={() => setDemandOpen((v) => !v)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    {demandOpen ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {demandOpen && (
+                  <div className="bg-gray-50 rounded-lg p-3 max-h-72 overflow-y-auto">
+                    <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                      {data.demandLetterText}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Claimant */}
             <DetailSection title="Claimant (Plaintiff)">
               <DetailRow label="Name" value={data.plaintiffName} />
@@ -508,90 +592,6 @@ function CaseDetailDrawer({ caseId, onClose }: { caseId: number | null; onClose:
                 </div>
               )}
             </div>
-
-            {/* Court Forms */}
-            {(() => {
-              const STATE_FORMS: Record<string, { id: string; label: string }[]> = {
-                CA: [
-                  { id: "SC-100",  label: "SC-100 Plaintiff's Claim" },
-                  { id: "SC-103",  label: "SC-103 Answer" },
-                  { id: "SC-104",  label: "SC-104 Declaration" },
-                  { id: "SC-105",  label: "SC-105 Appearance" },
-                  { id: "SC-112A", label: "SC-112A Motion" },
-                  { id: "FW-001",  label: "FW-001 Fee Waiver" },
-                  { id: "MC-030",  label: "MC-030 Declaration" },
-                  { id: "SC-140",  label: "SC-140 Judgment" },
-                  { id: "SC-150",  label: "SC-150 Settlement" },
-                ],
-                FL: [
-                  { id: "FL-STATEMENT-OF-CLAIM", label: "Statement of Claim" },
-                  { id: "FL-SUMMONS",            label: "Summons" },
-                  { id: "FL-FEE-WAIVER",         label: "Fee Waiver" },
-                  { id: "FL-PROOF-OF-SERVICE",   label: "Proof of Service" },
-                ],
-                TX: [
-                  { id: "TX-PETITION",          label: "Petition" },
-                  { id: "TX-CITATION",          label: "Citation" },
-                  { id: "TX-FEE-WAIVER",        label: "Fee Waiver" },
-                  { id: "TX-RETURN-OF-SERVICE", label: "Return of Service" },
-                ],
-                IL: [
-                  { id: "IL-SMC-COMPLAINT",    label: "Small Claims Complaint" },
-                  { id: "IL-SUMMONS",          label: "Summons" },
-                  { id: "IL-FEE-WAIVER",       label: "Fee Waiver" },
-                  { id: "IL-LETTER-TO-SHERIFF",label: "Letter to Sheriff" },
-                  { id: "IL-PROOF-OF-SERVICE", label: "Proof of Service" },
-                ],
-              };
-              const forms = STATE_FORMS[data.jurisdictionState ?? "CA"] ?? [];
-              if (forms.length === 0) return null;
-              return (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b pb-1">
-                    Court Forms ({data.jurisdictionState})
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {forms.map((f) => (
-                      <Button
-                        key={f.id}
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs gap-1 px-2"
-                        disabled={formLoading === f.id}
-                        onClick={() => downloadAdminForm(f.id)}
-                      >
-                        <Download className="h-3 w-3" />
-                        {formLoading === f.id ? "Generating…" : f.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Demand Letter */}
-            {data.demandLetterText && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between border-b pb-1">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Demand Letter
-                  </h4>
-                  <button
-                    onClick={() => setDemandOpen((v) => !v)}
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    {demandOpen ? "Hide" : "Show"}
-                  </button>
-                </div>
-                {demandOpen && (
-                  <div className="bg-gray-50 rounded-lg p-3 max-h-72 overflow-y-auto">
-                    <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
-                      {data.demandLetterText}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Meta */}
             <div className="pt-2 border-t text-xs text-gray-400 space-y-0.5">
