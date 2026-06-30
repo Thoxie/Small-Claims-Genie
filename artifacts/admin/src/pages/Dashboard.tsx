@@ -69,7 +69,6 @@ import {
   LogOut,
   Bell,
   BellOff,
-  Activity,
   TrendingUp,
   ChevronDown,
   ChevronRight,
@@ -2512,12 +2511,9 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
       {/* Header */}
       <div className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Activity className="h-5 w-5 text-blue-600" />
-            <div>
-              <h1 className="text-base font-bold text-gray-900 leading-tight">Admin Dashboard</h1>
-              <p className="text-xs text-gray-400 leading-tight">Small Claims Genie</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <img src="/admin/logo.png" alt="Small Claims Genie" className="h-10 w-auto object-contain" />
+            <span className="text-sm font-semibold text-gray-500">Admin</span>
           </div>
           <div className="flex items-center gap-2">
             <Button
