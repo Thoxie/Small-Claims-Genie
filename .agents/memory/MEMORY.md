@@ -17,4 +17,5 @@
 - [pdf-lib WinAnsi glyph limitations](pdf-lib-winansi-glyphs.md) — Unicode symbols like ☐ crash drawText at runtime with standard fonts; use ASCII "[ ]" or drawn rectangles instead
 - [Duplicate hardcoded state dropdowns](duplicate-state-dropdowns.md) — cases/new.tsx and intake-step-1.tsx have separate state lists; adding a state to one doesn't update the other
 - [ChatGPT prompt return verification](chatgpt-prompt-return-verification.md) — standing rule: always check externally-gathered data matches the schema I requested; flag mismatches to the user
+- [VA court URL patterns](va-court-url-patterns.md) — vacourts.gov paths vary per locality (/gd/ vs /combined/, shared URLs); never assume one template, always fetch the directory and curl-verify
 # Last pushed: 2026-06-30 20:04 UTC

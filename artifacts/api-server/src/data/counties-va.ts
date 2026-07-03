@@ -13,7 +13,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Accomac",
     courthouseZip: "23301",
     phone: "(757) 787-0923",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/accomack/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/accomack/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -25,7 +25,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Charlottesville",
     courthouseZip: "22902",
     phone: "(434) 972-4004",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/albemarle/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/albemarle/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -37,7 +37,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Alexandria",
     courthouseZip: "22320",
     phone: "(703) 746-4021",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/alexandria/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/alexandria/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -49,7 +49,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Covington",
     courthouseZip: "24426",
     phone: "(540) 965-1720",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/alleghany/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/alleghany/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -61,7 +61,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Amelia",
     courthouseZip: "23002",
     phone: "(804) 561-2456",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/amelia/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/amelia/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -73,7 +73,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Amherst",
     courthouseZip: "24521",
     phone: "(434) 946-9351",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/amherst/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/amherst/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -85,7 +85,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Appomattox",
     courthouseZip: "24522",
     phone: "(434) 352-5540",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/appomattox/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/appomattox/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -97,7 +97,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Arlington",
     courthouseZip: "22201",
     phone: "(703) 228-7900",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/arlington/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/arlington/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -109,7 +109,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Verona",
     courthouseZip: "24482",
     phone: "(540) 245-5300",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/augusta/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/augusta/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -121,7 +121,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Warm Springs",
     courthouseZip: "24484",
     phone: "(540) 839-7241",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/bath/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/bath/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -133,7 +133,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Bedford",
     courthouseZip: "24523",
     phone: "(540) 586-7637",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/bedford/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/bedford/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -145,7 +145,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Bland",
     courthouseZip: "24315",
     phone: "(276) 688-4433",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/bland/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/bland/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -157,7 +157,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Fincastle",
     courthouseZip: "24090",
     phone: "(540) 928-2270",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/botetourt/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/botetourt/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -169,7 +169,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Bristol",
     courthouseZip: "24201",
     phone: "(276) 645-7341",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/bristol/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/bristol/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -181,7 +181,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lawrenceville",
     courthouseZip: "23868",
     phone: "(434) 848-2315",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/brunswick/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/brunswick/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -193,7 +193,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Grundy",
     courthouseZip: "24614",
     phone: "(276) 935-6526",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/buchanan/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/buchanan/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -205,7 +205,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Buckingham",
     courthouseZip: "23921",
     phone: "(434) 969-4755",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/buckingham/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/buckingham/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -217,7 +217,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Buena Vista",
     courthouseZip: "24416",
     phone: "(540) 264-2163",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/buena_vista/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/buena_vista/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -229,7 +229,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Rustburg",
     courthouseZip: "24588",
     phone: "(434) 332-9546",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/campbell/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/campbell/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -241,7 +241,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Bowling Green",
     courthouseZip: "22427",
     phone: "(804) 633-5720",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/caroline/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/caroline/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -253,7 +253,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Hillsville",
     courthouseZip: "24343",
     phone: "(276) 730-3050",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/carroll/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/carroll/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -265,7 +265,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Charles City",
     courthouseZip: "23030",
     phone: "(804) 652-2188",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/charles_city/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/charles_city/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -277,7 +277,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Charlotte Court House",
     courthouseZip: "23923",
     phone: "(434) 542-5600",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/charlotte/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/charlotte/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -289,7 +289,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Charlottesville",
     courthouseZip: "22902",
     phone: "(434) 970-3388",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/charlottesville/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/charlottesville/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -301,7 +301,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Chesapeake",
     courthouseZip: "23322",
     phone: "(757) 382-3100",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/chesapeake/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/chesapeake/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -313,7 +313,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Chesterfield",
     courthouseZip: "23832",
     phone: "(804) 748-1231",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/chesterfield/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/chesterfield/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -325,7 +325,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Berryville",
     courthouseZip: "22611",
     phone: "(540) 955-5128",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/clarke/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/clarke/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -337,7 +337,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Colonial Heights",
     courthouseZip: "23834",
     phone: "(804) 520-9346",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/colonial_heights/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/colonial_heights/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -349,7 +349,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Covington",
     courthouseZip: "24426",
     phone: "(540) 965-1720",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/alleghany/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/alleghany/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -361,7 +361,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "New Castle",
     courthouseZip: "24127",
     phone: "(540) 864-5989",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/craig/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/craig/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -373,7 +373,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Culpeper",
     courthouseZip: "22701",
     phone: "(540) 727-3417",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/culpeper/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/culpeper/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -385,7 +385,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Cumberland",
     courthouseZip: "23040",
     phone: "(804) 492-4848",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/cumberland/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/cumberland/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -397,7 +397,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Danville",
     courthouseZip: "24543",
     phone: "(434) 799-5179",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/danville/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/danville/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -409,7 +409,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Clintwood",
     courthouseZip: "24228",
     phone: "(276) 926-1630",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/dickenson/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/dickenson/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -421,7 +421,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Dinwiddie",
     courthouseZip: "23841",
     phone: "(804) 469-4533",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/dinwiddie/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/dinwiddie/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -433,7 +433,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Emporia",
     courthouseZip: "23847",
     phone: "(434) 634-5400",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/emporia/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/emporia/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -445,7 +445,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Tappahannock",
     courthouseZip: "22560",
     phone: "(804) 443-3744",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/essex/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/essex/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -457,7 +457,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Fairfax",
     courthouseZip: "22030",
     phone: "(703) 385-7866",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/fairfax_city/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/fairfax_city/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -469,7 +469,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Fairfax",
     courthouseZip: "22030",
     phone: "(703) 691-7320",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/fairfax_county/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/fairfax_county/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -481,7 +481,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Falls Church",
     courthouseZip: "22046",
     phone: "(703) 248-5098",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/falls_church/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/falls_church/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -493,7 +493,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Warrenton",
     courthouseZip: "20186",
     phone: "(540) 422-8035",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/fauquier/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/fauquier/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -505,7 +505,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Floyd",
     courthouseZip: "24091",
     phone: "(540) 745-9327",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/floyd/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/floyd/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -517,7 +517,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Palmyra",
     courthouseZip: "22963",
     phone: "(434) 591-1980",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/fluvanna/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/fluvanna/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -529,7 +529,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Franklin",
     courthouseZip: "23851",
     phone: "(757) 562-8550",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/franklin_city/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/franklin_city/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -541,7 +541,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Rocky Mount",
     courthouseZip: "24151",
     phone: "(540) 483-3060",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/franklin_county/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/franklin_county/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -553,7 +553,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Winchester",
     courthouseZip: "22601",
     phone: "(540) 722-7208",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/frederick_winchester/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Frederick~Winchester/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -565,7 +565,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Fredericksburg",
     courthouseZip: "22401",
     phone: "(540) 372-1042",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/fredericksburg/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/fredericksburg/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -577,7 +577,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Galax",
     courthouseZip: "24333",
     phone: "(276) 236-8731",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/galax/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/galax/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -589,7 +589,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Pearisburg",
     courthouseZip: "24134",
     phone: "(540) 921-3533",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/giles/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/giles/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -601,7 +601,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Gloucester",
     courthouseZip: "23061",
     phone: "(804) 693-4860",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/gloucester/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/gloucester/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -613,7 +613,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Goochland",
     courthouseZip: "23063",
     phone: "(804) 556-5309",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/goochland/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/goochland/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -625,7 +625,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Independence",
     courthouseZip: "24348",
     phone: "(276) 773-2011",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/grayson/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/grayson/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -637,7 +637,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Stanardsville",
     courthouseZip: "22973",
     phone: "(434) 985-5224",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/greene/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/greene/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -649,7 +649,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Emporia",
     courthouseZip: "23847",
     phone: "(434) 634-5400",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/greensville/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/greensville/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -661,7 +661,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Halifax",
     courthouseZip: "24558",
     phone: "(434) 476-3385",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/halifax/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/halifax/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -673,7 +673,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Hampton",
     courthouseZip: "23669",
     phone: "(757) 727-6260",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/hampton/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/hampton/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -685,7 +685,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Hanover",
     courthouseZip: "23069",
     phone: "(804) 365-6457",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/hanover/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/hanover/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -697,7 +697,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Harrisonburg",
     courthouseZip: "22801",
     phone: "(540) 564-3130",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/harrisonburg_rockingham/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Harrisonburg~Rockingham/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -709,7 +709,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Henrico",
     courthouseZip: "23273",
     phone: "(804) 501-4727",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/henrico/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/henrico/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -721,7 +721,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Martinsville",
     courthouseZip: "24112",
     phone: "(276) 634-4815",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/henry/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/henry/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -733,7 +733,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Monterey",
     courthouseZip: "24465",
     phone: "(540) 468-2445",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/highland/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/highland/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -745,7 +745,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Hopewell",
     courthouseZip: "23860",
     phone: "(804) 541-2257",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/hopewell/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/hopewell/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -757,7 +757,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Isle of Wight",
     courthouseZip: "23397",
     phone: "(757) 365-6244",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/isle_of_wight/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/isle_of_wight/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -769,7 +769,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Williamsburg",
     courthouseZip: "23188",
     phone: "(757) 564-2400",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/williamsburg_james_city_county/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Williamsburg~James_City_County/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -781,7 +781,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "King and Queen",
     courthouseZip: "23085",
     phone: "(804) 785-5982",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/king_and_queen/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/king_and_queen/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -793,7 +793,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "King George",
     courthouseZip: "22485",
     phone: "(540) 775-2390",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/king_george/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/king_george/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -805,7 +805,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "King William",
     courthouseZip: "23086",
     phone: "(804) 769-4947",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/king_william/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/king_william/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -817,7 +817,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lancaster",
     courthouseZip: "22503",
     phone: "(804) 462-0012",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/lancaster/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/lancaster/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -829,7 +829,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Jonesville",
     courthouseZip: "24263",
     phone: "(276) 346-7729",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/lee/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/lee/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -841,7 +841,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lexington",
     courthouseZip: "24450",
     phone: "(540) 463-3631",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/lexington_rockbridge/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Lexington~Rockbridge/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -853,7 +853,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Leesburg",
     courthouseZip: "20176",
     phone: "(703) 777-0312",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/loudoun/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/loudoun/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -865,7 +865,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Louisa",
     courthouseZip: "23093",
     phone: "(540) 967-5330",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/louisa/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/louisa/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -877,7 +877,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lunenburg",
     courthouseZip: "23952",
     phone: "(434) 696-5508",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/lunenburg/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/lunenburg/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -889,7 +889,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lynchburg",
     courthouseZip: "24504",
     phone: "(434) 455-2640",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/lynchburg/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/lynchburg/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -901,7 +901,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Madison",
     courthouseZip: "22727",
     phone: "(540) 948-4657",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/madison/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/madison/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -913,7 +913,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Manassas",
     courthouseZip: "20110",
     phone: "(703) 792-6141",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_william/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_william/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -925,7 +925,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Manassas",
     courthouseZip: "20110",
     phone: "(703) 792-6141",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_william/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_william/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -937,7 +937,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Martinsville",
     courthouseZip: "24114",
     phone: "(276) 403-5125",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/martinsville/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/martinsville/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -949,7 +949,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Mathews",
     courthouseZip: "23109",
     phone: "(804) 725-2242",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/mathews_middlesex/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/mathews/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -961,7 +961,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Boydton",
     courthouseZip: "23917",
     phone: "(434) 738-6260",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/mecklenburg/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/mecklenburg/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -973,7 +973,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Saluda",
     courthouseZip: "23149",
     phone: "(804) 758-4312",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/mathews_middlesex/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/middlesex/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -985,7 +985,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Christiansburg",
     courthouseZip: "24073",
     phone: "(540) 394-2085",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/montgomery/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/montgomery/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -997,7 +997,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lovingston",
     courthouseZip: "22949",
     phone: "(434) 263-7040",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/nelson/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/nelson/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1009,7 +1009,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "New Kent",
     courthouseZip: "23124",
     phone: "(804) 966-9530",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/new_kent/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/new_kent/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1021,7 +1021,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Newport News",
     courthouseZip: "23607",
     phone: "(757) 926-3520",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/newport_news_civil/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Newport_News-Civil/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1033,7 +1033,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Norfolk",
     courthouseZip: "23510",
     phone: "(757) 664-4910",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/norfolk/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/norfolk/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1045,7 +1045,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Eastville",
     courthouseZip: "23347",
     phone: "(757) 678-0466",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/northampton/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/northampton/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1057,7 +1057,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Heathsville",
     courthouseZip: "22473",
     phone: "(804) 580-4323",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/northumberland/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/northumberland/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1069,7 +1069,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Wise",
     courthouseZip: "24293",
     phone: "(276) 328-3426",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/wise_norton/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Wise~Norton/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1081,7 +1081,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Nottoway",
     courthouseZip: "23955",
     phone: "(434) 645-9312",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/nottoway/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/nottoway/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1093,7 +1093,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Orange",
     courthouseZip: "22960",
     phone: "(540) 672-6164",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/orange/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/orange/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1105,7 +1105,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Luray",
     courthouseZip: "22835",
     phone: "(540) 743-5705",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/page/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/page/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1117,7 +1117,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Stuart",
     courthouseZip: "24171",
     phone: "(276) 694-7258",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/patrick/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/patrick/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1129,7 +1129,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Petersburg",
     courthouseZip: "23803",
     phone: "(804) 733-2374",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/petersburg/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/petersburg/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1141,7 +1141,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Chatham",
     courthouseZip: "24531",
     phone: "(434) 432-7879",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/pittsylvania/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/pittsylvania/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1153,7 +1153,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Yorktown",
     courthouseZip: "23690",
     phone: "(757) 890-3450",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/york/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/york/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1165,7 +1165,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Portsmouth",
     courthouseZip: "23704",
     phone: "(757) 393-8624",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/portsmouth/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/portsmouth/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1177,7 +1177,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Powhatan",
     courthouseZip: "23139",
     phone: "(804) 598-5665",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/powhatan/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/powhatan/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1189,7 +1189,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Farmville",
     courthouseZip: "23901",
     phone: "(434) 392-4024",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_edward/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_edward/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1201,7 +1201,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Prince George",
     courthouseZip: "23875",
     phone: "(804) 733-2783",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_george/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/prince_george/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1213,7 +1213,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Manassas",
     courthouseZip: "20110",
     phone: "(703) 792-6141",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_william/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/prince_william/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1225,7 +1225,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Pulaski",
     courthouseZip: "24301",
     phone: "(540) 980-7470",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/pulaski/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/pulaski/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1237,7 +1237,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Radford",
     courthouseZip: "24141",
     phone: "(540) 731-3609",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/radford/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/radford/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1249,7 +1249,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Washington",
     courthouseZip: "22747",
     phone: "(540) 675-5356",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/rappahannock/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/rappahannock/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1261,7 +1261,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Richmond",
     courthouseZip: "23219",
     phone: "(804) 646-6461",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/richmond_city/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/richmond_city/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1273,7 +1273,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Warsaw",
     courthouseZip: "22572",
     phone: "(804) 333-4616",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/richmond_county/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/richmond_county/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1285,7 +1285,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Roanoke",
     courthouseZip: "24016",
     phone: "(540) 853-2511",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/roanoke_city/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/roanoke_city/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1297,7 +1297,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Salem",
     courthouseZip: "24153",
     phone: "(540) 387-6168",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/roanoke_county/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/roanoke_county/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1309,7 +1309,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lexington",
     courthouseZip: "24450",
     phone: "(540) 463-3631",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/lexington_rockbridge/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Lexington~Rockbridge/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1321,7 +1321,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Harrisonburg",
     courthouseZip: "22801",
     phone: "(540) 564-3130",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/harrisonburg_rockingham/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Harrisonburg~Rockingham/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1333,7 +1333,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Lebanon",
     courthouseZip: "24266",
     phone: "(276) 889-8051",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/russell/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/russell/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1345,7 +1345,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Salem",
     courthouseZip: "24153",
     phone: "(540) 375-3044",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/salem/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/salem/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1357,7 +1357,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Gate City",
     courthouseZip: "24251",
     phone: "(276) 386-7341",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/scott/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/scott/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1369,7 +1369,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Woodstock",
     courthouseZip: "22664",
     phone: "(540) 459-6130",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/shenandoah/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/shenandoah/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1381,7 +1381,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Marion",
     courthouseZip: "24354",
     phone: "(276) 782-4047",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/smyth/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/smyth/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1393,7 +1393,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Courtland",
     courthouseZip: "23837",
     phone: "(757) 653-2673",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/southampton/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/southampton/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1405,7 +1405,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Spotsylvania",
     courthouseZip: "22553",
     phone: "(540) 507-7680",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/spotsylvania/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/spotsylvania/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1417,7 +1417,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Stafford",
     courthouseZip: "22555",
     phone: "(540) 658-8935",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/stafford/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/stafford/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1429,7 +1429,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Staunton",
     courthouseZip: "24401",
     phone: "(540) 332-3878",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/staunton/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/staunton/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1441,7 +1441,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Suffolk",
     courthouseZip: "23434",
     phone: "(757) 514-4822",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/suffolk/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/suffolk/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1453,7 +1453,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Surry",
     courthouseZip: "23883",
     phone: "(757) 294-5201",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/surry/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/surry/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1465,7 +1465,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Sussex",
     courthouseZip: "23884",
     phone: "(434) 246-1096",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/sussex/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/combined/sussex/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1477,7 +1477,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Tazewell",
     courthouseZip: "24651",
     phone: "(276) 385-1563",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/tazewell/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/tazewell/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1489,7 +1489,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Virginia Beach",
     courthouseZip: "23456",
     phone: "(757) 385-8531",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/virginia_beach/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/virginia_beach/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1501,7 +1501,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Front Royal",
     courthouseZip: "22630",
     phone: "(540) 635-2335",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/warren/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/warren/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1513,7 +1513,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Abingdon",
     courthouseZip: "24210",
     phone: "(276) 676-6281",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/washington/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/washington/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1525,7 +1525,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Waynesboro",
     courthouseZip: "22980",
     phone: "(540) 942-6636",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/waynesboro/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/waynesboro/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1537,7 +1537,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Montross",
     courthouseZip: "22520",
     phone: "(804) 493-0105",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/westmoreland/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/westmoreland/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1549,7 +1549,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Williamsburg",
     courthouseZip: "23188",
     phone: "(757) 564-2400",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/williamsburg_james_city_county/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Williamsburg~James_City_County/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1561,7 +1561,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Winchester",
     courthouseZip: "22601",
     phone: "(540) 722-7208",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/frederick_winchester/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Frederick~Winchester/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1573,7 +1573,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Wise",
     courthouseZip: "24293",
     phone: "(276) 328-3426",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/wise_norton/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/Wise~Norton/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1585,7 +1585,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Wytheville",
     courthouseZip: "24382",
     phone: "(276) 223-6075",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/wythe/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/wythe/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
   {
@@ -1597,7 +1597,7 @@ export const VIRGINIA_COUNTIES = [
     courthouseCity: "Yorktown",
     courthouseZip: "23690",
     phone: "(757) 890-3450",
-    clerkWebsite: "https://www.vacourts.gov/courts/gd/york/home.html",
+    clerkWebsite: "https://www.vacourts.gov/courts/gd/york/home",
     notes: "UNKNOWN statewide exact dollar tiers; Virginia says fees depend on case type and location; use GDC Civil Filing Fee Calculator/local clerk",
   },
 ] as const;
