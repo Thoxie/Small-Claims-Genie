@@ -1,12 +1,9 @@
 // Case Story Builder — Intake Step 2 guided intake
 //
 // This module isolates all AI-related calls for the Step 2 "case story builder" so the
-// UI component never talks to the backend directly. Two of the three functions below are
-// wired to real, existing backend endpoints (`/advisor/analyze` and `/advisor/refine`)
-// because those endpoints are already built for draft review / case-statement generation.
-// `getMissingFactsWithAI` has no matching backend endpoint yet — it is a clearly-labeled
-// placeholder that returns local, structural checks only in development, and returns an
-// empty result in production so nothing resembling real AI analysis is shown to real users.
+// UI component never talks to the backend directly. All three functions below are wired
+// to real backend endpoints (`/advisor/analyze`, `/advisor/refine`, and
+// `/advisor/missing-facts`) — there are no mock/placeholder AI calls in this file.
 
 export interface GuidedQuestion {
   id: string;
@@ -245,26 +242,26 @@ export async function generateCaseStatementWithAI(
 }
 
 /**
- * TODO: No backend endpoint currently returns a structured "missing facts" checklist
- * distinct from the evidence checklist / follow-up questions already produced by
- * `/advisor/analyze`. This placeholder does not call any AI model.
- *
- * In development only, it returns a small set of clearly-labeled mock checklist items
- * so the UI shell can be exercised end-to-end. In production it returns an empty list
- * so nothing resembling real AI analysis is ever shown to real users.
- *
- * Wire this to a real backend endpoint (e.g. `POST /api/cases/:id/advisor/missing-facts`)
- * once one exists.
+ * Reviews the user's generated case description against the real Case Advisor
+ * backend (`/advisor/missing-facts`) and returns a short list of genuinely missing,
+ * substantive facts (e.g. no dollar amount, vague dates, no evidence mentioned).
+ * Returns an empty list if the description looks complete or the request fails.
  */
 export async function getMissingFactsWithAI(
   userDescription: string,
-  _claimType: string,
-  _guidedAnswers: Record<string, string>
+  claimType: string,
+  guidedAnswers: Record<string, string>,
+  { caseId, getToken }: AuthedFetchOpts
 ): Promise<string[]> {
-  if (import.meta.env.PROD) return [];
-  const desc = userDescription.trim();
-  const mock: string[] = [];
-  if (!/\$\s?\d/.test(desc)) mock.push("[DEV MOCK] You did not clearly state a dollar amount in your description.");
-  if (desc.length < 200) mock.push("[DEV MOCK] Your description may be missing detail about dates or evidence.");
-  return mock;
+  const description = userDescription.trim();
+  if (!description) return [];
+  const token = await getToken();
+  const res = await fetch(`/api/cases/${caseId}/advisor/missing-facts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify({ description, claimType, guidedAnswers }),
+  });
+  if (!res.ok) throw new Error("Missing facts check failed");
+  const data = await res.json();
+  return Array.isArray(data.missingFacts) ? data.missingFacts.filter((f: unknown) => typeof f === "string") : [];
 }

@@ -267,11 +267,11 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
 
   const runMissingFactsCheck = useCallback(async (description: string) => {
     try {
-      const facts = await getMissingFactsWithAI(description, claimTypeValue || "Other", guidedAnswers);
+      const facts = await getMissingFactsWithAI(description, claimTypeValue || "Other", guidedAnswers, { caseId, getToken });
       setMissingFacts(facts);
       if (facts.length) void persistGuidedData({ missingFacts: facts });
     } catch { /* non-critical */ }
-  }, [claimTypeValue, guidedAnswers, persistGuidedData]);
+  }, [claimTypeValue, guidedAnswers, persistGuidedData, caseId, getToken]);
 
   const openAdvisor = useCallback(async () => {
     const values = form.getValues();

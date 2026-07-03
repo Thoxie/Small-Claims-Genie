@@ -477,6 +477,90 @@ Plain English only. No legal jargon.`;
   }
 });
 
+// ─── Case Advisor: Missing Facts Check ────────────────────────────────────────
+router.post("/cases/:id/advisor/missing-facts", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rateCheck = await checkAiRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
+    return;
+  }
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const [caseRecord] = await db
+    .select()
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const { description, claimType, guidedAnswers } = req.body as {
+    description?: string;
+    claimType?: string;
+    guidedAnswers?: Record<string, string>;
+  };
+  const descriptionText = typeof description === "string" ? description.trim() : "";
+  if (!descriptionText) { res.status(400).json({ error: "description is required" }); return; }
+
+  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+  const { brief: caseBrief } = buildAdvisorBrief(caseRecord, docs);
+
+  const guidedAnswersText = guidedAnswers && typeof guidedAnswers === "object"
+    ? Object.entries(guidedAnswers).filter(([, v]) => v?.trim()).map(([k, v]) => `${k}: ${v}`).join("\n")
+    : "";
+
+  const prompt = `You are a California small claims court advisor. Review the DRAFT CASE DESCRIPTION below (written by the plaintiff to submit on their SC-100 form) and identify genuinely missing facts that would weaken the claim if left out. You also have the COMPLETE case record for context — do NOT flag anything as missing if it is already covered there.
+
+${caseBrief}
+
+CLAIM TYPE: ${claimType || "Other"}
+
+DRAFT CASE DESCRIPTION (what the user wrote):
+"""
+${descriptionText}
+"""
+
+${guidedAnswersText ? `GUIDED INTAKE ANSWERS ALREADY PROVIDED (do NOT flag these as missing):\n${guidedAnswersText}\n` : ""}
+
+Check specifically for:
+- No clear dollar amount stated or explained
+- Vague or missing dates (when the incident happened, when payment was due, etc.)
+- No mention of evidence (documents, photos, texts, receipts, witnesses)
+- No mention of a prior demand or attempt to resolve before filing
+- Missing explanation of how the dollar amount was calculated
+- Any claim-type-specific fact a judge would expect (e.g. for security deposits: move-out date and the 21-day return rule)
+
+Only flag facts that are ACTUALLY missing from the draft description and not already covered by the case record or guided intake answers above. Do not flag stylistic issues, only missing substantive facts.
+
+Return ONLY a valid JSON object — no markdown, no explanation, no code blocks. Return this exact structure:
+{
+  "missingFacts": ["short, plain-English warning describing the missing fact", "..."]
+}
+
+If nothing meaningful is missing, return { "missingFacts": [] }. Return at most 5 items. Plain English only, no legal jargon.`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 500,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const rawResponse = completion.choices[0].message.content || "{}";
+  const match = rawResponse.match(/\{[\s\S]*\}/);
+  const jsonStr = match ? match[0] : "{}";
+
+  try {
+    const parsed = JSON.parse(jsonStr);
+    const missingFacts = Array.isArray(parsed.missingFacts)
+      ? parsed.missingFacts.filter((f: unknown): f is string => typeof f === "string")
+      : [];
+    res.json({ missingFacts });
+  } catch {
+    res.status(500).json({ error: "Failed to parse AI response" });
+  }
+});
+
 // ─── Case Advisor: Save Checklist Checked State ───────────────────────────────
 router.patch("/cases/:id/advisor/checklist", async (req, res): Promise<void> => {
   const userId = getUserId(req);

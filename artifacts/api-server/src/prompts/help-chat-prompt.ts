@@ -217,7 +217,7 @@ WHAT THIS PAGE COLLECTS:
 - Claim type (unpaid debt, security deposit, property damage, vehicle damage/accident, landlord/tenant dispute, online purchase/marketplace dispute, unpaid wages/employment, breach of contract, fraud, etc.)
 - Amount claimed and how it was calculated
 - Incident date (or date range)
-- Description of what happened — in the user's own words. An AI writing assistant button can help improve the description.
+- Description of what happened — in the user's own words. An AI writing assistant button can help improve the description. A "Guide Me Through This" button walks the user through claim-type-specific questions and uses AI to draft a case description for them; after a draft is generated, the app automatically runs an AI check that flags any genuinely missing facts (e.g. no dollar amount, vague dates, no evidence mentioned) so the user can fill gaps before moving on.
 - Prior demand: did you ask the defendant to pay before filing? If yes: date of demand, method (in person, phone, text, email, letter, certified mail), defendant's response.
 - Venue basis: why you are filing in this county.
 - Eligibility questions: suing a public entity? attorney fee dispute? filing frequency.
