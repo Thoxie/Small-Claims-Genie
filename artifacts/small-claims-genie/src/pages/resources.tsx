@@ -1,10 +1,13 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
+import { useListCounties } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, FileText, Scale, BookOpen, HelpCircle, Wand2, Play, X, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ExternalLink, FileText, Scale, BookOpen, HelpCircle, Wand2, Play, X, ChevronRight, MapPin, Phone, Globe, Landmark, Gavel, Clock, Send } from "lucide-react";
+import { STATE_RESOURCES, STATE_ORDER, type ResourceStateCode } from "@/lib/state-resources";
 
 const resourcesSchema = {
   "@context": "https://schema.org",
@@ -15,51 +18,44 @@ const resourcesSchema = {
   "isPartOf": { "@id": "https://smallclaimsgenie.com/#website" },
 };
 
-const RESOURCES = [
-  {
-    category: "Official Court Forms",
-    icon: FileText,
-    items: [
-      { title: "SC-100 — Plaintiff's Claim and Order", desc: "The main form you file to start your small claims case.", url: "https://www.courts.ca.gov/documents/sc100.pdf" },
-      { title: "SC-101 — Additional Defendants", desc: "Use this if you are suing more than two defendants.", url: "https://www.courts.ca.gov/documents/sc101.pdf" },
-      { title: "SC-104 — Proof of Service", desc: "Required after serving the defendant with court papers.", url: "https://www.courts.ca.gov/documents/sc104.pdf" },
-      { title: "SC-120 — Defendant's Claim and Order", desc: "If the defendant wants to counter-sue you (filed by defendant).", url: "https://www.courts.ca.gov/documents/sc120.pdf" },
-    ],
-  },
-  {
-    category: "State Courts Self-Help",
-    icon: Scale,
-    items: [
-      { title: "Small Claims Overview — Courts Self-Help", desc: "Official state Judicial Branch guide to small claims court.", url: "https://www.courts.ca.gov/selfhelp-smallclaims.htm" },
-      { title: "Small Claims Advisor Program", desc: "Free legal advice from certified advisors before you file.", url: "https://www.courts.ca.gov/1196.htm" },
-      { title: "Find Your Local Courthouse", desc: "Search for your county courthouse by zip code.", url: "https://www.courts.ca.gov/find-my-court.htm" },
-      { title: "Filing Fees Waiver (Fee Waiver)", desc: "Apply to waive filing fees if you cannot afford them.", url: "https://www.courts.ca.gov/documents/fw001.pdf" },
-    ],
-  },
-  {
-    category: "Know the Rules",
-    icon: BookOpen,
-    items: [
-      { title: "Small Claims Limits (2026)", desc: "Claim limits vary by state, typically ranging from a few thousand dollars up to $25,000.", url: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=116.220.&lawCode=CCP" },
-      { title: "Statute of Limitations", desc: "How long you have to file — varies by claim type. Act fast.", url: "https://www.courts.ca.gov/1201.htm" },
-      { title: "Service of Process Rules", desc: "How you are required to legally notify the defendant.", url: "https://www.courts.ca.gov/1202.htm" },
-      { title: "What Happens at the Hearing", desc: "What to expect on your court date and how to prepare.", url: "https://www.courts.ca.gov/1207.htm" },
-    ],
-  },
-  {
-    category: "Common FAQs",
-    icon: HelpCircle,
-    items: [
-      { title: "Can I bring a lawyer to small claims court?", desc: "In most states, lawyers are NOT allowed to represent clients in small claims hearings." },
-      { title: "What if the defendant doesn't show up?", desc: "If properly served, the judge will likely rule in your favor by default." },
-      { title: "What if I lose?", desc: "You can appeal within 30 days. The defendant can also appeal." },
-      { title: "How do I collect my money after winning?", desc: "Winning a judgment doesn't automatically mean you'll be paid. You may need to garnish wages or levy a bank account." },
-    ],
-  },
+// CA-only official external PDF links, preserved exactly as before — do not remove or
+// change these; other states intentionally have no verified external PDF link and fall
+// back to the in-app form flow instead (see stateResourceSections below).
+const CA_SELF_HELP_LINKS = [
+  { title: "Small Claims Advisor Program", desc: "Free legal advice from certified advisors before you file.", url: "https://www.courts.ca.gov/1196.htm" },
+  { title: "Find Your Local Courthouse", desc: "Search for your county courthouse by zip code.", url: "https://www.courts.ca.gov/find-my-court.htm" },
 ];
 
 export default function Resources() {
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [selectedState, setSelectedState] = useState<ResourceStateCode>("CA");
+  const [selectedCountyId, setSelectedCountyId] = useState<string>("");
+
+  const { data: counties, isLoading: countiesLoading } = useListCounties({ state: selectedState } as Parameters<typeof useListCounties>[0]);
+
+  const sortedCounties = useMemo(
+    () => [...(counties ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
+    [counties]
+  );
+
+  const selectedCounty = useMemo(
+    () => sortedCounties.find((c) => c.id === selectedCountyId),
+    [sortedCounties, selectedCountyId]
+  );
+
+  const info = STATE_RESOURCES[selectedState];
+
+  const formsSection = useMemo(() => {
+    if (selectedState === "CA") {
+      return [
+        { title: "SC-100 — Plaintiff's Claim and Order", desc: "The main form you file to start your small claims case.", url: "https://www.courts.ca.gov/documents/sc100.pdf" },
+        { title: "SC-101 — Additional Defendants", desc: "Use this if you are suing more than two defendants.", url: "https://www.courts.ca.gov/documents/sc101.pdf" },
+        { title: "SC-104 — Proof of Service", desc: "Required after serving the defendant with court papers.", url: "https://www.courts.ca.gov/documents/sc104.pdf" },
+        { title: "SC-120 — Defendant's Claim and Order", desc: "If the defendant wants to counter-sue you (filed by defendant).", url: "https://www.courts.ca.gov/documents/sc120.pdf" },
+      ];
+    }
+    return info.formsUsed;
+  }, [selectedState, info]);
 
   return (
     <div className="container mx-auto px-4 pt-4 pb-10 max-w-5xl">
@@ -108,46 +104,264 @@ export default function Resources() {
         </div>
       </div>
 
-      {/* Resource sections */}
-      <div className="space-y-10">
-        {RESOURCES.map((section) => {
-          const Icon = section.icon;
-          return (
-            <div key={section.category}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Icon className="h-5 w-5 text-primary" />
+      {/* State & county selector */}
+      <div className="rounded-xl border bg-muted/20 p-4 mb-8">
+        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Find Resources for Your State &amp; County</h3>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {STATE_ORDER.map((code) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => { setSelectedState(code); setSelectedCountyId(""); }}
+              data-testid={`button-state-${code}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 font-semibold text-sm transition-all ${
+                selectedState === code
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-foreground hover:border-primary/50"
+              }`}
+            >
+              {STATE_RESOURCES[code].flagEmoji} {STATE_RESOURCES[code].name}
+            </button>
+          ))}
+        </div>
+        <div className="w-full sm:w-[280px]">
+          <Select
+            value={selectedCountyId || "__all__"}
+            onValueChange={(v) => setSelectedCountyId(v === "__all__" ? "" : v)}
+          >
+            <SelectTrigger className="h-10 w-full" data-testid="select-resource-county">
+              <SelectValue placeholder={countiesLoading ? "Loading counties..." : "Select your county (optional)"} />
+            </SelectTrigger>
+            <SelectContent className="max-h-72 overflow-y-auto">
+              <SelectItem value="__all__">All {info.name} counties</SelectItem>
+              {sortedCounties.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* County-specific courthouse card */}
+      {selectedCounty && (
+        <Card className="mb-8 border-primary/30" data-testid="card-selected-county">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Landmark className="h-5 w-5 text-primary" />
+              {selectedCounty.name} County, {info.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid sm:grid-cols-2 gap-4">
+            <div className="text-sm space-y-2">
+              <p className="font-medium">{selectedCounty.courthouseName}</p>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{selectedCounty.courthouseAddress}, {selectedCounty.courthouseCity}, {selectedState} {selectedCounty.courthouseZip}</span>
+              </div>
+              {selectedCounty.phone && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4 shrink-0" />
+                  <a href={`tel:${selectedCounty.phone}`} className="hover:text-primary hover:underline">{selectedCounty.phone}</a>
                 </div>
-                <h2 className="text-xl font-bold">{section.category}</h2>
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                {section.items.map((item) => (
-                  <Card key={item.title} className="hover:border-primary/40 transition-colors">
-                    <CardHeader className="pb-2 pt-4 px-5">
-                      <CardTitle className="text-base font-semibold flex items-start justify-between gap-2">
-                        <span>{item.title}</span>
-                        {"url" in item && item.url && (
-                          <a
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`Open ${item.title}`}
-                            className="text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        )}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-5 pb-4">
-                      <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              )}
+              {(selectedCounty.website || selectedCounty.clerkWebsite) && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Globe className="h-4 w-4 shrink-0" />
+                  <a
+                    href={selectedCounty.website || selectedCounty.clerkWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary hover:underline truncate"
+                  >
+                    County Court / Clerk Website
+                  </a>
+                </div>
+              )}
             </div>
-          );
-        })}
+            <div className="bg-muted/50 rounded-md p-3 text-sm h-fit">
+              <p className="font-semibold mb-1">Filing Fees</p>
+              <p className="text-muted-foreground">{info.filingFeeSummary}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resource sections — dynamic by selected state */}
+      <div className="space-y-10">
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold">Official Court Forms — {info.name}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {formsSection.map((item) => (
+              <Card key={item.title} className="hover:border-primary/40 transition-colors">
+                <CardHeader className="pb-2 pt-4 px-5">
+                  <CardTitle className="text-base font-semibold flex items-start justify-between gap-2">
+                    <span>{item.title}</span>
+                    {"url" in item && item.url && (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open ${item.title}`}
+                        className="text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-5 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {selectedState !== "CA" && (
+            <p className="text-xs text-muted-foreground mt-3">
+              Small Claims Genie prepares and fills in these forms for you automatically —{" "}
+              <Link href="/cases/new" className="text-primary hover:underline font-medium">start your case</Link> to generate them.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Scale className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold">{info.name} Courts Self-Help</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card className="hover:border-primary/40 transition-colors">
+              <CardHeader className="pb-2 pt-4 px-5">
+                <CardTitle className="text-base font-semibold flex items-start justify-between gap-2">
+                  <span>{info.courtBranchName}</span>
+                  <a
+                    href={info.selfHelpUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open ${info.selfHelpLabel}`}
+                    className="text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">Official {info.name} Judicial Branch website — small claims self-help information and court locations.</p>
+              </CardContent>
+            </Card>
+            {selectedState === "CA" && CA_SELF_HELP_LINKS.map((item) => (
+              <Card key={item.title} className="hover:border-primary/40 transition-colors">
+                <CardHeader className="pb-2 pt-4 px-5">
+                  <CardTitle className="text-base font-semibold flex items-start justify-between gap-2">
+                    <span>{item.title}</span>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Open ${item.title}`}
+                      className="text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-5 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
+              <BookOpen className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold">Know the Rules — {info.name}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card className="hover:border-primary/40 transition-colors">
+              <CardHeader className="pb-2 pt-4 px-5">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Gavel className="h-4 w-4 text-primary shrink-0" /> Claim Limit
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">{info.claimLimit}</p>
+              </CardContent>
+            </Card>
+            <Card className="hover:border-primary/40 transition-colors">
+              <CardHeader className="pb-2 pt-4 px-5">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary shrink-0" /> Statute of Limitations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pb-4">
+                <ul className="text-sm text-muted-foreground leading-relaxed space-y-1">
+                  {info.statuteOfLimitations.map((s) => (
+                    <li key={s.label} className="flex justify-between gap-2">
+                      <span>{s.label}</span>
+                      <span className="font-medium text-foreground">{s.period}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+            <Card className="hover:border-primary/40 transition-colors">
+              <CardHeader className="pb-2 pt-4 px-5">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary shrink-0" /> Filing Fees
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">{info.filingFeeSummary}</p>
+              </CardContent>
+            </Card>
+            <Card className="hover:border-primary/40 transition-colors">
+              <CardHeader className="pb-2 pt-4 px-5">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Send className="h-4 w-4 text-primary shrink-0" /> Service of Process
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">{info.serviceOfProcess}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
+              <HelpCircle className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold">Common FAQs</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              { title: "Can I bring a lawyer to small claims court?", desc: "In most states, lawyers are NOT allowed to represent clients in small claims hearings." },
+              { title: "What if the defendant doesn't show up?", desc: "If properly served, the judge will likely rule in your favor by default." },
+              { title: "What if I lose?", desc: info.appealNote },
+              { title: "How do I collect my money after winning?", desc: "Winning a judgment doesn't automatically mean you'll be paid. You may need to garnish wages or levy a bank account." },
+            ].map((item) => (
+              <Card key={item.title} className="hover:border-primary/40 transition-colors">
+                <CardHeader className="pb-2 pt-4 px-5">
+                  <CardTitle className="text-base font-semibold">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="px-5 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="mt-14 p-8 bg-primary rounded-2xl text-primary-foreground text-center">
