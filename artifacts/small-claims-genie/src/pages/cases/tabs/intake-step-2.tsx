@@ -7,12 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Home, Sparkles, Maximize2, Minimize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, CloudOff, Scale } from "lucide-react";
+import { Home, Sparkles, Maximize2, Minimize2, CheckSquare2, Square, RotateCcw, CheckCircle, Loader2, Play, X, ChevronRight, ChevronLeft, CloudOff, Scale, MessageSquareText, ClipboardCheck, Copy, AlertTriangle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { DateRangePicker, intakeStep2Schema } from "./shared";
+import { getGuidedQuestions, reviewDraftWithAI, generateCaseStatementWithAI, getMissingFactsWithAI } from "@/lib/case-story-ai";
 
 import type { ExtendedCase } from "@/lib/types";
 
@@ -138,7 +139,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
       void flush();
       onRegisterFlush?.(null);
     };
-  }, [onRegisterFlush]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onRegisterFlush]);
 
   type AdvisorPhase = "idle" | "analyzing" | "questions" | "refining" | "done";
   const [advisorPhase, setAdvisorPhase] = useState<AdvisorPhase>("idle");
@@ -158,6 +159,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
   );
   const [legalAlert, setLegalAlert] = useState<string>("");
   const [refinedStatement, setRefinedStatement] = useState("");
+  const [reviewOriginalDraft, setReviewOriginalDraft] = useState("");
   const [copied, setCopied] = useState(false);
   const [amountDisplay, setAmountDisplay] = useState<string>(() => {
     const raw = initialData.claimAmount;
@@ -165,6 +167,86 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     const n = typeof raw === "number" ? raw : parseFloat(String(raw).replace(/[^0-9.]/g, ""));
     return isNaN(n) || n === 0 ? "" : `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   });
+
+  // ── Guided "Case Story Builder" flow (path 2: guided questions) ────────────
+  const guided = (initialData.guidedIntakeData || {}) as {
+    guidedAnswers?: Record<string, string>;
+    generatedDraft?: string;
+    missingFacts?: string[];
+  };
+  const [guidedModalOpen, setGuidedModalOpen] = useState(false);
+  const [guidedQuestionIndex, setGuidedQuestionIndex] = useState(0);
+  const [guidedAnswers, setGuidedAnswers] = useState<Record<string, string>>(guided.guidedAnswers || {});
+  const [guidedGenerating, setGuidedGenerating] = useState(false);
+  const [guidedDraft, setGuidedDraft] = useState("");
+  const [guidedPreviewOpen, setGuidedPreviewOpen] = useState(false);
+  const [missingFacts, setMissingFacts] = useState<string[]>(Array.isArray(guided.missingFacts) ? guided.missingFacts : []);
+
+  const persistGuidedData = useCallback(async (data: { guidedAnswers?: Record<string, string>; generatedDraft?: string; missingFacts?: string[] }) => {
+    try {
+      const token = await getToken();
+      await fetch(`/api/cases/${caseId}/intake`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ data: { guidedIntakeData: { ...guided, ...data } } }),
+      });
+    } catch { /* non-critical — local state already reflects the change */ }
+  }, [caseId, getToken]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const claimTypeValue = form.watch("claimType");
+  const guidedQuestions = getGuidedQuestions(claimTypeValue || "Other");
+
+  const openGuided = () => {
+    if (!claimTypeValue) {
+      toast({ title: "Pick a claim type first", description: "Choose a claim type above so we can ask the right questions.", variant: "destructive" });
+      return;
+    }
+    setGuidedQuestionIndex(0);
+    setGuidedModalOpen(true);
+  };
+
+  const finishGuided = async () => {
+    setGuidedGenerating(true);
+    try {
+      const answersArr = guidedQuestions.map(q => ({ question: q.question, answer: guidedAnswers[q.id] || "" }));
+      const values = form.getValues();
+      const { generatedDraft } = await generateCaseStatementWithAI(values as Record<string, unknown>, answersArr, { caseId, getToken });
+      setGuidedDraft(generatedDraft);
+      setGuidedModalOpen(false);
+      setGuidedPreviewOpen(true);
+      void persistGuidedData({ guidedAnswers, generatedDraft });
+      void runMissingFactsCheck(generatedDraft);
+    } catch {
+      toast({ title: "Could not generate a draft", description: "Please try again in a moment.", variant: "destructive" });
+    } finally {
+      setGuidedGenerating(false);
+    }
+  };
+
+  const applyGuidedDraft = (mode: "replace" | "insert") => {
+    const current = form.getValues("claimDescription") || "";
+    const next = mode === "replace" ? guidedDraft : (current ? `${current}\n\n${guidedDraft}` : guidedDraft);
+    form.setValue("claimDescription", next, { shouldValidate: true, shouldDirty: true });
+    setGuidedPreviewOpen(false);
+    toast({ title: mode === "replace" ? "Draft applied" : "Draft inserted", description: "Your case description has been updated. Feel free to keep editing it." });
+  };
+
+  const copyGuidedDraft = async () => {
+    try {
+      await navigator.clipboard.writeText(guidedDraft);
+      toast({ title: "Copied to clipboard" });
+    } catch {
+      toast({ title: "Could not copy", variant: "destructive" });
+    }
+  };
+
+  const runMissingFactsCheck = useCallback(async (description: string) => {
+    try {
+      const facts = await getMissingFactsWithAI(description, claimTypeValue || "Other", guidedAnswers);
+      setMissingFacts(facts);
+      if (facts.length) void persistGuidedData({ missingFacts: facts });
+    } catch { /* non-critical */ }
+  }, [claimTypeValue, guidedAnswers, persistGuidedData]);
 
   const openAdvisor = useCallback(async () => {
     const values = form.getValues();
@@ -182,24 +264,17 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     setRefinedStatement("");
     setCopied(false);
     try {
-      const token = await getToken();
       // Flush any pending debounced save so the DB is up to date before AI reads it
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
         debounceRef.current = null;
       }
       await autoSave(values as Record<string, unknown>);
-      const res = await fetch(`/api/cases/${caseId}/advisor/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error("Analysis failed");
-      const data = await res.json();
-      setQuestions(data.questions || []);
-      setEvidenceChecklist(data.evidenceChecklist || []);
-      setTruncatedDocs(data.truncatedDocs || []);
-      setLegalAlert(typeof data.legalAlert === "string" ? data.legalAlert : "");
+      const review = await reviewDraftWithAI(values as Record<string, unknown>, { caseId, getToken });
+      setQuestions(review.followUpQuestions);
+      setEvidenceChecklist(review.evidenceChecklist);
+      setTruncatedDocs(review.truncatedDocs);
+      setLegalAlert(review.legalAlert);
       setAdvisorPhase("questions");
     } catch {
       toast({ title: "Advisor error", description: "Could not analyze your case. Please try again.", variant: "destructive" });
@@ -218,34 +293,36 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
   const refineStatement = async () => {
     setAdvisorPhase("refining");
     try {
-      const token = await getToken();
       const values = form.getValues();
+      setReviewOriginalDraft(values.claimDescription || "");
       const answersArr = questions.map(q => ({ question: q.question, answer: answers[q.id] || "" }));
-      const res = await fetch(`/api/cases/${caseId}/advisor/refine`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ ...values, answers: answersArr }),
-      });
-      if (!res.ok) throw new Error("Refine failed");
-      const data = await res.json();
-      const improved = data.refinedStatement?.trim() || "";
-      setRefinedStatement(improved);
-      if (improved) {
-        form.setValue("claimDescription", improved, { shouldValidate: true, shouldDirty: true });
-        toast({ title: "✓ Description updated", description: "Your improved case description has been applied. Review it in the form below." });
-      }
+      const { generatedDraft } = await generateCaseStatementWithAI(values as Record<string, unknown>, answersArr, { caseId, getToken });
+      setRefinedStatement(generatedDraft);
       setAdvisorPhase("done");
+      // Nothing is written to the user's draft here — the "done" phase below
+      // requires an explicit Replace / Insert / Copy action before anything changes.
+      void runMissingFactsCheck(generatedDraft);
     } catch {
       toast({ title: "Advisor error", description: "Could not generate your statement. Please try again.", variant: "destructive" });
       setAdvisorPhase("questions");
     }
   };
 
-  const copyToCase = () => {
-    form.setValue("claimDescription", refinedStatement, { shouldValidate: true, shouldDirty: true });
-    setCopied(true);
-    toast({ title: "Description re-applied", description: "Your case description has been updated." });
-    setTimeout(() => setCopied(false), 3000);
+  const applyReviewDraft = (mode: "replace" | "insert") => {
+    const next = mode === "replace" ? refinedStatement : (reviewOriginalDraft ? `${reviewOriginalDraft}\n\n${refinedStatement}` : refinedStatement);
+    form.setValue("claimDescription", next, { shouldValidate: true, shouldDirty: true });
+    toast({ title: mode === "replace" ? "Draft applied" : "Draft inserted", description: "Your case description has been updated. Feel free to keep editing it." });
+  };
+
+  const copyToCase = async () => {
+    try {
+      await navigator.clipboard.writeText(refinedStatement);
+      setCopied(true);
+      toast({ title: "Copied to clipboard" });
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      toast({ title: "Could not copy", variant: "destructive" });
+    }
   };
 
   const toggleEvidence = async (id: string) => {
@@ -411,10 +488,34 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
             </FormItem>
           )} />
 
-          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4">
-            <p className="font-semibold text-sm text-[#0d6b5e]">Not sure if your description is strong enough?</p>
-            <p className="text-xs text-[#4a9990] mt-0.5 leading-relaxed">The Case Advisor will review what you've written, ask follow-up questions, and help you write a stronger statement.</p>
+          <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-3">
+            <div>
+              <p className="font-semibold text-sm text-[#0d6b5e]">Not sure how to describe what happened?</p>
+              <p className="text-xs text-[#4a9990] mt-0.5 leading-relaxed">Write it yourself above, or let the Case Advisor help — either by asking you guided questions and drafting it for you, or by reviewing and improving what you've already written.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button type="button" variant="outline" onClick={openGuided} className="gap-2 text-sm border-[#0d6b5e] text-[#0d6b5e] hover:bg-[#e6fbf8] hover:text-[#0d6b5e]">
+                <MessageSquareText className="h-4 w-4" /> Guide Me Through This
+              </Button>
+              <Button type="button" variant="outline" onClick={openAdvisor} className="gap-2 text-sm border-[#0d6b5e] text-[#0d6b5e] hover:bg-[#e6fbf8] hover:text-[#0d6b5e]">
+                <ClipboardCheck className="h-4 w-4" /> Review My Draft
+              </Button>
+            </div>
           </div>
+
+          {missingFacts.length > 0 && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                <p className="font-semibold text-sm text-amber-900">Your description may be missing a few facts</p>
+              </div>
+              <ul className="list-disc pl-6 space-y-1">
+                {missingFacts.map((fact, i) => (
+                  <li key={i} className="text-xs text-amber-800">{fact}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
             </form>
           </Form>
@@ -456,7 +557,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
         <Button type="button" size="lg" onClick={onGoToAiChat ?? openAdvisor} className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-8">
           <Sparkles className="h-4 w-4" />
           <span className="sm:hidden">AI Check</span>
-          <span className="hidden sm:inline"> AI Genie Check My Case</span>
+          <span className="hidden sm:inline">Review My Draft</span>
         </Button>
         <Button type="button" size="lg" data-testid="button-next-step" disabled={saving} className="gap-2 px-2 sm:px-4" onClick={() => form.handleSubmit(onNext)()}>
           <span className="sm:hidden">{saving ? "Saving…" : "Continue"}</span>
@@ -621,16 +722,29 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                 )}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-green-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0">✓</div>
+                    <div className="h-6 w-6 rounded-full bg-[#0d6b5e] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </div>
                     <div>
-                      <h3 className="font-semibold text-sm">Description updated in your form</h3>
-                      <p className="text-xs text-muted-foreground">Already applied — scroll down to review it</p>
+                      <h3 className="font-semibold text-sm">Here's your improved draft</h3>
+                      <p className="text-xs text-muted-foreground">Nothing has been changed yet — review it, then choose what to do</p>
                     </div>
                   </div>
                   <div className="rounded-lg border border-[#a8e6df] bg-[#f0fffe] p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground">{refinedStatement}</div>
-                  <Button type="button" onClick={copyToCase} variant="outline" className={`w-full gap-2 text-sm ${copied ? "border-green-500 text-green-700" : ""}`}>
-                    {copied ? <><CheckCircle className="h-4 w-4" /> Re-applied!</> : <><RotateCcw className="h-4 w-4" /> Re-apply to form</>}
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button type="button" onClick={() => applyReviewDraft("replace")} className="gap-2 text-sm bg-[#0d6b5e] hover:bg-[#0a5449] text-white">
+                      <RotateCcw className="h-4 w-4" /> Replace My Draft
+                    </Button>
+                    <Button type="button" onClick={() => applyReviewDraft("insert")} variant="outline" className="gap-2 text-sm">
+                      <ChevronRight className="h-4 w-4" /> Insert Below
+                    </Button>
+                    <Button type="button" onClick={copyToCase} variant="outline" className={`gap-2 text-sm ${copied ? "border-green-500 text-green-700" : ""}`}>
+                      {copied ? <><CheckCircle className="h-4 w-4" /> Copied!</> : <><Copy className="h-4 w-4" /> Copy</>}
+                    </Button>
+                    <Button type="button" onClick={() => setAdvisorOpen(false)} variant="outline" className="gap-2 text-sm">
+                      Keep Editing Myself
+                    </Button>
+                  </div>
                   <button type="button" onClick={() => setAdvisorPhase("questions")} className="w-full text-xs text-muted-foreground hover:text-foreground text-center hover:underline">
                     ← Back to questions to refine further
                   </button>
@@ -665,6 +779,89 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* ── Guided questions modal (path 2: "Guide Me Through This") ── */}
+      <Dialog open={guidedModalOpen} onOpenChange={setGuidedModalOpen}>
+        <DialogContent className="w-[95vw] max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <MessageSquareText className="h-5 w-5 text-[#0d6b5e]" />
+              Let's build your case story
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Question {Math.min(guidedQuestionIndex + 1, guidedQuestions.length)} of {guidedQuestions.length}
+            </p>
+          </DialogHeader>
+          <div className="w-full h-1.5 rounded-full bg-[#ddf6f3] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#14b8a6] transition-all"
+              style={{ width: `${((guidedQuestionIndex + 1) / guidedQuestions.length) * 100}%` }}
+            />
+          </div>
+          {guidedQuestions[guidedQuestionIndex] && (
+            <div className="space-y-2 py-2">
+              <label className="text-sm font-medium text-foreground">{guidedQuestions[guidedQuestionIndex].question}</label>
+              <Textarea
+                autoFocus
+                className="min-h-[110px] text-sm"
+                placeholder="Your answer…"
+                value={guidedAnswers[guidedQuestions[guidedQuestionIndex].id] || ""}
+                onChange={e => setGuidedAnswers(prev => ({ ...prev, [guidedQuestions[guidedQuestionIndex].id]: e.target.value }))}
+              />
+            </div>
+          )}
+          <DialogFooter className="flex items-center justify-between sm:justify-between gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-1"
+              disabled={guidedQuestionIndex === 0}
+              onClick={() => setGuidedQuestionIndex(i => Math.max(0, i - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" /> Back
+            </Button>
+            {guidedQuestionIndex < guidedQuestions.length - 1 ? (
+              <Button type="button" className="gap-1 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => setGuidedQuestionIndex(i => i + 1)}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button type="button" disabled={guidedGenerating} className="gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={finishGuided}>
+                {guidedGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="h-4 w-4" /> Generate My Draft</>}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Guided draft preview — never auto-applied, requires explicit action ── */}
+      <Dialog open={guidedPreviewOpen} onOpenChange={setGuidedPreviewOpen}>
+        <DialogContent className="w-[95vw] max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Sparkles className="h-5 w-5 text-[#0d6b5e]" />
+              Your draft case story
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground mt-0.5">Based on your answers. Nothing has been saved to your form yet.</p>
+          </DialogHeader>
+          <div className="rounded-lg border border-[#a8e6df] bg-[#f0fffe] p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground max-h-[45vh] overflow-y-auto">
+            {guidedDraft}
+          </div>
+          <DialogFooter className="grid grid-cols-2 gap-2 sm:grid-cols-2">
+            <Button type="button" onClick={() => applyGuidedDraft("replace")} className="gap-2 text-sm bg-[#0d6b5e] hover:bg-[#0a5449] text-white">
+              <RotateCcw className="h-4 w-4" /> Use This Draft
+            </Button>
+            <Button type="button" onClick={() => applyGuidedDraft("insert")} variant="outline" className="gap-2 text-sm">
+              <ChevronRight className="h-4 w-4" /> Insert Below
+            </Button>
+            <Button type="button" onClick={copyGuidedDraft} variant="outline" className="gap-2 text-sm">
+              <Copy className="h-4 w-4" /> Copy
+            </Button>
+            <Button type="button" onClick={() => setGuidedPreviewOpen(false)} variant="outline" className="gap-2 text-sm">
+              Keep Editing Myself
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Video modal ── */}
       {tutorialOpen && (

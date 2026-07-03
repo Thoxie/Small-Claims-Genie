@@ -177,6 +177,17 @@ export const ListCasesResponseItem = zod.object({
   notifyMethod: zod.string().optional(),
   statementText: zod.string().optional(),
   noShowStatementText: zod.string().optional(),
+  guidedIntakeData: zod
+    .object({
+      guidedAnswers: zod.record(zod.string(), zod.string()).optional(),
+      generatedDraft: zod.string().optional(),
+      revisedDraft: zod.string().optional(),
+      missingFacts: zod.array(zod.string()).optional(),
+    })
+    .optional()
+    .describe(
+      "Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist.",
+    ),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -323,6 +334,17 @@ export const GetCaseStatsResponse = zod.object({
       notifyMethod: zod.string().optional(),
       statementText: zod.string().optional(),
       noShowStatementText: zod.string().optional(),
+      guidedIntakeData: zod
+        .object({
+          guidedAnswers: zod.record(zod.string(), zod.string()).optional(),
+          generatedDraft: zod.string().optional(),
+          revisedDraft: zod.string().optional(),
+          missingFacts: zod.array(zod.string()).optional(),
+        })
+        .optional()
+        .describe(
+          "Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist.",
+        ),
       createdAt: zod.coerce.date(),
       updatedAt: zod.coerce.date(),
     }),
@@ -459,6 +481,17 @@ export const GetCaseResponse = zod
     notifyMethod: zod.string().optional(),
     statementText: zod.string().optional(),
     noShowStatementText: zod.string().optional(),
+    guidedIntakeData: zod
+      .object({
+        guidedAnswers: zod.record(zod.string(), zod.string()).optional(),
+        generatedDraft: zod.string().optional(),
+        revisedDraft: zod.string().optional(),
+        missingFacts: zod.array(zod.string()).optional(),
+      })
+      .optional()
+      .describe(
+        "Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist.",
+      ),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   })
@@ -750,6 +783,17 @@ export const UpdateCaseResponse = zod.object({
   notifyMethod: zod.string().optional(),
   statementText: zod.string().optional(),
   noShowStatementText: zod.string().optional(),
+  guidedIntakeData: zod
+    .object({
+      guidedAnswers: zod.record(zod.string(), zod.string()).optional(),
+      generatedDraft: zod.string().optional(),
+      revisedDraft: zod.string().optional(),
+      missingFacts: zod.array(zod.string()).optional(),
+    })
+    .optional()
+    .describe(
+      "Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist.",
+    ),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -896,6 +940,17 @@ export const SaveIntakeProgressResponse = zod.object({
   notifyMethod: zod.string().optional(),
   statementText: zod.string().optional(),
   noShowStatementText: zod.string().optional(),
+  guidedIntakeData: zod
+    .object({
+      guidedAnswers: zod.record(zod.string(), zod.string()).optional(),
+      generatedDraft: zod.string().optional(),
+      revisedDraft: zod.string().optional(),
+      missingFacts: zod.array(zod.string()).optional(),
+    })
+    .optional()
+    .describe(
+      "Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist.",
+    ),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });

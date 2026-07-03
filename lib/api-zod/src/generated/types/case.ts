@@ -5,6 +5,7 @@
  * Small Claims Genie API
  * OpenAPI spec version: 0.1.0
  */
+import type { CaseGuidedIntakeData } from "./caseGuidedIntakeData";
 import type { CaseJurisdictionState } from "./caseJurisdictionState";
 import type { CaseStatus } from "./caseStatus";
 
@@ -124,6 +125,8 @@ export interface Case {
   notifyMethod?: string;
   statementText?: string;
   noShowStatementText?: string;
+  /** Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist. */
+  guidedIntakeData?: CaseGuidedIntakeData;
   createdAt: Date;
   updatedAt: Date;
 }

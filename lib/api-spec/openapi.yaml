@@ -931,6 +931,22 @@ components:
           type: string
         noShowStatementText:
           type: string
+        guidedIntakeData:
+          type: object
+          description: Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist.
+          properties:
+            guidedAnswers:
+              type: object
+              additionalProperties:
+                type: string
+            generatedDraft:
+              type: string
+            revisedDraft:
+              type: string
+            missingFacts:
+              type: array
+              items:
+                type: string
         createdAt:
           type: string
           format: date-time

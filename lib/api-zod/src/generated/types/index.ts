@@ -8,6 +8,8 @@
 
 export * from "./apiError";
 export * from "./case";
+export * from "./caseGuidedIntakeData";
+export * from "./caseGuidedIntakeDataGuidedAnswers";
 export * from "./caseJurisdictionState";
 export * from "./caseReadiness";
 export * from "./caseStats";

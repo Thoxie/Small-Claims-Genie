@@ -121,6 +121,8 @@ export const casesTable = pgTable("cases", {
   settlementLetterTone: text("settlement_letter_tone"),
   settlementAgreementText: text("settlement_agreement_text"),
   evidenceChecklist: jsonb("evidence_checklist"),
+  // ── Step 2 guided case-story builder — answers, AI drafts, missing-facts checklist ──
+  guidedIntakeData: jsonb("guided_intake_data"),
   // ── Court hearing info (entered after filing, once court responds) ──────────
   caseNumber: text("case_number"),
   hearingDate: text("hearing_date"),

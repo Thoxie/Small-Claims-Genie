@@ -65,6 +65,18 @@ export const CaseJurisdictionState = {
   TX: "TX",
 } as const;
 
+export type CaseGuidedIntakeDataGuidedAnswers = { [key: string]: string };
+
+/**
+ * Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist.
+ */
+export type CaseGuidedIntakeData = {
+  guidedAnswers?: CaseGuidedIntakeDataGuidedAnswers;
+  generatedDraft?: string;
+  revisedDraft?: string;
+  missingFacts?: string[];
+};
+
 export interface Case {
   id: number;
   title: string;
@@ -181,6 +193,8 @@ export interface Case {
   notifyMethod?: string;
   statementText?: string;
   noShowStatementText?: string;
+  /** Step 2 guided case-story builder state — guided question answers, AI-generated drafts, and missing-facts checklist. */
+  guidedIntakeData?: CaseGuidedIntakeData;
   createdAt: string;
   updatedAt: string;
 }
