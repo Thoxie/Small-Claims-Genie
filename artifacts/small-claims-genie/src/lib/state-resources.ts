@@ -42,19 +42,26 @@ const SOL_LABEL_OVERRIDES: Record<string, string> = {
   "Oral contract": "Oral agreement",
 };
 
+// TX/NC service-of-process copy shares a canonical clause with STATE_FACTS
+// (the constable/sheriff-serves clause; the $ service fee) via string
+// extraction below, so the underlying numbers can never drift out of sync
+// even though the surrounding sentence is phrased for this card's format.
+const TX_SERVICE_METHOD_CLAUSE = STATE_FACTS.TX.serviceMethodsText.split(" — ")[0];
+const NC_SHERIFF_FEE = STATE_FACTS.NC.serviceMethodsText.match(/\$[\d,]+/)?.[0] ?? STATE_FACTS.NC.serviceMethodsText;
+
 const SERVICE_OF_PROCESS_TEXT: Record<ResourceStateCode, string> = {
   CA: `${STATE_FACTS.CA.serviceMethodsText}. Must be completed at least 15 days before the hearing (20 if the defendant lives in a different county).`,
-  FL: `${STATE_FACTS.FL.serviceMethodsText}. Proof of service must be filed at least 5 days before the pretrial conference.`,
-  TX: "The court issues a citation; a constable or sheriff serves the defendant, typically within a few days.",
-  IL: "You arrange service through the sheriff or a private process server (roughly $60). Must be completed at least 3 days before the return date.",
-  NC: "The sheriff serves the defendant after filing ($30 fee paid to the Clerk at filing).",
+  FL: `${STATE_FACTS.FL.serviceMethodsText}. ${STATE_FACTS.FL.serviceDeadlineText.charAt(0).toUpperCase()}${STATE_FACTS.FL.serviceDeadlineText.slice(1)}.`.replace("Must be filed", "Proof of service must be filed"),
+  TX: `${TX_SERVICE_METHOD_CLAUSE}, typically within a few days.`,
+  IL: `You arrange service through the sheriff or a private process server (roughly $60). Must be completed ${STATE_FACTS.IL.serviceDeadlineText.replace(" (hearing date)", "")}.`,
+  NC: `The sheriff serves the defendant after filing (${NC_SHERIFF_FEE} fee paid to the Clerk at filing).`,
 };
 
 const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined> = {
   CA: undefined,
   FL: undefined,
-  TX: "Roughly $46–$321 depending on claim amount and county (Justice Court fee schedule)",
-  IL: "Roughly $189–$264 depending on county",
+  TX: `Roughly ${STATE_FACTS.TX.filingFeeTiers[0].fee}–${STATE_FACTS.TX.filingFeeTiers[STATE_FACTS.TX.filingFeeTiers.length - 1].fee} depending on claim amount and county (Justice Court fee schedule)`,
+  IL: `Roughly ${STATE_FACTS.IL.filingFeeTiers[0].fee} depending on county`,
   NC: undefined,
 };
 

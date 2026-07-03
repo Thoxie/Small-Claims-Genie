@@ -143,29 +143,29 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 - Individuals cannot file more than 2 cases over $2,500 per 12-month period
 
 ## ILLINOIS SMALL CLAIMS LIMITS (2026)
-- Any party: max $10,000 per case (735 ILCS 5/Art. II); claims over $10,000 go to the general civil docket
+- Any party: max ${IL.claimLimitText} per case (${IL.claimLimitCitation}); claims over ${IL.claimLimitText} go to the general civil docket
 - Claim limit is exclusive of court costs and interest
 - Key counties: Cook (Chicago), DuPage (Wheaton), Lake (Waukegan), Will (Joliet), Kane (Geneva), Winnebago (Rockford)
-- Statute of limitations: written contracts 10 years (735 ILCS 5/13-206), oral contracts 5 years, property damage 5 years, personal injury 2 years
+- Statute of limitations: written contracts ${IL.statuteOfLimitations[0].period} (735 ILCS 5/13-206), oral contracts ${IL.statuteOfLimitations[1].period}, property damage ${IL.statuteOfLimitations[2].period}, personal injury ${IL.statuteOfLimitations[3].period}
 - Filing fees: generally $100–$250; Cook County is higher — check the Clerk of the Circuit Court website; fee waivers available — the app generates a pre-filled IL Fee Waiver (Application for Waiver of Court Fees) downloadable from the Court Forms tab (Fee Waiver step in the wizard)
-- Service: plaintiff arranges service — sheriff or licensed process server; must be completed at least 3 days before the return date (hearing date); a proof of service must be filed with the clerk before the hearing
-- After winning: citation to discover assets, wage deduction order (garnishment), bank account citation, judgment lien on real property; judgment valid 7 years (renewable once)
+- Service: plaintiff arranges service — sheriff or licensed process server; must be completed ${IL.serviceDeadlineText}; a proof of service must be filed with the clerk before the hearing
+- After winning: citation to discover assets, wage deduction order (garnishment), bank account citation, judgment lien on real property; judgment valid ${IL.judgmentValidityYears} years (renewable once)
 
 ## NORTH CAROLINA SMALL CLAIMS RULES (2026)
 - Filed in District Court, Small Claims Division — cases are heard by a magistrate (sometimes called "magistrate's court")
-- Claim limit: up to $10,000 (G.S. 7A-210) — exclusive of interest and court costs
+- Claim limit: up to ${NC.claimLimitText} (${NC.claimLimitCitation}) — exclusive of interest and court costs
 - File in the county where the defendant lives or has a place of business, or where the cause of action arose (G.S. 7A-211)
 - Attorneys ARE allowed; self-represented plaintiffs are common and welcomed by magistrates
-- Filing fee: $96 flat statewide for ALL claim amounts (G.S. 7A-311) — same fee whether you sue for $500 or $10,000
-- Sheriff service fee: $30 per defendant (statewide, G.S. 7A-311) — you do NOT arrange service yourself; the court handles it after you file
-- Statute of limitations: written contracts 3 years, oral contracts 3 years, property damage 3 years, personal injury 3 years (G.S. 1-52)
+- Filing fee: ${NC.filingFeeTiers[0].fee} flat statewide for ALL claim amounts (${NC.filingFeeCitation}) — same fee whether you sue for $500 or ${NC.claimLimitText}
+- Sheriff service fee: $30 per defendant (statewide, ${NC.serviceOfProcessCitation}) — you do NOT arrange service yourself; the court handles it after you file
+- Statute of limitations: written contracts ${NC.statuteOfLimitations[0].period}, oral contracts ${NC.statuteOfLimitations[1].period}, property damage ${NC.statuteOfLimitations[2].period}, personal injury ${NC.statuteOfLimitations[3].period} (${NC.statuteOfLimitationsCitation})
 - Hearing timeline: typically within 30 days of filing (G.S. 7A-214); both parties receive mailed notice of the hearing date
-- NC court forms: AOC-CVM-200 (Complaint For Money Owed — the main filing form), AOC-CVM-100 (Magistrate Summons — issued by the clerk after filing), AOC-G-106 (Petition to Sue as Indigent — fee waiver if unable to afford the $96 filing fee). NOTE: the app does not yet generate pre-filled NC forms — download blank forms from nccourts.gov, fill them out, and file at the county courthouse clerk's office
+- NC court forms: AOC-CVM-200 (Complaint For Money Owed — the main filing form), AOC-CVM-100 (Magistrate Summons — issued by the clerk after filing), AOC-G-106 (Petition to Sue as Indigent — fee waiver if unable to afford the ${NC.filingFeeTiers[0].fee} filing fee). NOTE: the app does not yet generate pre-filled NC forms — download blank forms from nccourts.gov, fill them out, and file at the county courthouse clerk's office
 - After winning: writ of execution (sheriff seizes non-exempt property), bank account garnishment, judgment lien on real property (file abstract with the Register of Deeds). IMPORTANT: wage garnishment is NOT available for private civil debt in North Carolina (G.S. 110-136)
 - Appeal: either party may appeal within 10 days for a full trial de novo in District Court (G.S. 7A-228)
-- Filing fees and sheriff service fees are recoverable as court costs by the prevailing party (G.S. 7A-305)
+- Filing fees and sheriff service fees are recoverable as court costs by the prevailing party (${NC.feesRecoverableCitation})
 - eCourts available statewide — check case status at portal.nccourts.gov
-- Key counties: Mecklenburg (Charlotte), Wake (Raleigh), Guilford (Greensboro), Forsyth (Winston-Salem), Cumberland (Fayetteville), Durham, Buncombe (Asheville), New Hanover (Wilmington)
+- Key counties: ${NC.keyCounties?.join(", ")}
 
 ## APP NAVIGATION — 8 STEPS
 - Step 1 "Enter The Parties" — plaintiff info, defendant info, county & courthouse selection
@@ -190,7 +190,7 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 
 **"What counts as a prior demand?"** Any time you formally asked the defendant to pay or fix the problem before filing: a letter, email, text, or verbal request documented in writing.
 
-**"What is service of process?"** Formal legal delivery of court papers to the defendant, required before the hearing. For CALIFORNIA: options are certified mail (by court clerk), personal service by an adult (requires SC-104 Proof of Service), or a professional process server. Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county). For FLORIDA: service by sheriff, certified process server, or certified mail (FL residents only); proof of service must be filed at least 5 days before the pretrial conference. For TEXAS: plaintiff does not arrange service — the court issues a citation after filing, and the constable or sheriff serves the defendant within ~3 business days. For ILLINOIS: plaintiff arranges service (the court does NOT do it automatically) — options are sheriff service, licensed process server, or substitute service; must be completed at least 3 days before the return date (hearing date); a completed proof of service must be filed with the clerk before the hearing. For NORTH CAROLINA: plaintiff does NOT arrange service — the county sheriff serves the defendant after you file; the $30 sheriff service fee is paid at filing; the clerk mails both parties a hearing date notice.
+**"What is service of process?"** Formal legal delivery of court papers to the defendant, required before the hearing. For CALIFORNIA: options are certified mail (by court clerk), personal service by an adult (requires SC-104 Proof of Service), or a professional process server. Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county). For FLORIDA: service by sheriff, certified process server, or certified mail (FL residents only); proof of service ${FL.serviceDeadlineText}. For TEXAS: plaintiff does not arrange service — the court issues a citation after filing, and the constable or sheriff serves the defendant within ~3 business days. For ILLINOIS: plaintiff arranges service (the court does NOT do it automatically) — options are sheriff service, licensed process server, or substitute service; must be completed ${IL.serviceDeadlineText}; a completed proof of service must be filed with the clerk before the hearing. For NORTH CAROLINA: plaintiff does NOT arrange service — the county sheriff serves the defendant after you file; the $30 sheriff service fee is paid at filing; the clerk mails both parties a hearing date notice.
 
 **"What is the filing fee?"** Filing fees vary by state. CALIFORNIA: $30–$75 depending on claim amount; fee waiver available via FW-001 (Application for Waiver of Court Fees and Costs) — downloadable from the Court Forms tab. FLORIDA: under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300; fee waiver available — the app generates a pre-filled FL Fee Waiver (Application for Determination of Civil Indigent Status) downloadable from the Court Forms tab (Fee Waiver step in the wizard). TEXAS: ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321 (Tex. Gov't Code § 118.121); fee waiver available — the app generates a pre-filled TX Fee Waiver (Affidavit of Inability to Pay) downloadable from the Court Forms tab (Fee Waiver step in the wizard). ILLINOIS: generally $100–$250 depending on county and claim amount; Cook County fees are higher — check the Clerk of the Circuit Court website; fee waiver available — the app generates a pre-filled IL Fee Waiver (Application for Waiver of Court Fees) downloadable from the Court Forms tab (Fee Waiver step in the wizard). NORTH CAROLINA: $96 flat statewide for all claim amounts (G.S. 7A-311) — same fee regardless of how much you're suing for; fee waiver available via AOC-G-106 (Petition to Sue as Indigent) — download from nccourts.gov and file with the clerk.
 

@@ -29,7 +29,7 @@ Critical rules:
 ### CALIFORNIA CASES (jurisdictionState = "CA")
 - Small claims limits (2026): ${CA.claimLimitText}
 - Individuals cannot file more than 2 cases over $2,500 per 12-month period
-- ${CA.attorneysNote} (CA CCP §116.530)
+- ${CA.attorneysNote}
 - Filing fees: ${formatFilingFeeTiersPipe(CA)} depending on claim amount (${CA.filingFeeNote})
 - Statute of limitations: ${formatSolLine(CA)}
 - Serve defendant ${CA.serviceDeadlineText}
