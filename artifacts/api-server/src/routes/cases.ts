@@ -478,47 +478,31 @@ Plain English only. No legal jargon.`;
 });
 
 // ─── Case Advisor: Missing Facts Check ────────────────────────────────────────
-router.post("/cases/:id/advisor/missing-facts", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
-  const rateCheck = await checkAiRateLimit(userId);
-  if (!rateCheck.allowed) {
-    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
-    return;
-  }
-  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const id = parseInt(raw, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
-
-  const [caseRecord] = await db
-    .select()
-    .from(casesTable)
-    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
-  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
-
-  const { description, claimType, guidedAnswers } = req.body as {
-    description?: string;
-    claimType?: string;
-    guidedAnswers?: Record<string, string>;
-  };
-  const descriptionText = typeof description === "string" ? description.trim() : "";
-  if (!descriptionText) { res.status(400).json({ error: "description is required" }); return; }
-
-  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+/**
+ * Runs the missing-facts AI check for a given case + draft description. Extracted from
+ * the route handler so it can be exercised directly by scripts/tests without going
+ * through Clerk auth, using the exact same brief-building and prompt logic as production.
+ */
+export async function computeMissingFacts(
+  caseRecord: typeof casesTable.$inferSelect,
+  docs: typeof documentsTable.$inferSelect[],
+  params: { description: string; claimType?: string; guidedAnswers?: Record<string, string> }
+): Promise<string[]> {
   const { brief: caseBrief } = buildAdvisorBrief(caseRecord, docs);
 
-  const guidedAnswersText = guidedAnswers && typeof guidedAnswers === "object"
-    ? Object.entries(guidedAnswers).filter(([, v]) => v?.trim()).map(([k, v]) => `${k}: ${v}`).join("\n")
+  const guidedAnswersText = params.guidedAnswers && typeof params.guidedAnswers === "object"
+    ? Object.entries(params.guidedAnswers).filter(([, v]) => v?.trim()).map(([k, v]) => `${k}: ${v}`).join("\n")
     : "";
 
   const prompt = `You are a California small claims court advisor. Review the DRAFT CASE DESCRIPTION below (written by the plaintiff to submit on their SC-100 form) and identify genuinely missing facts that would weaken the claim if left out. You also have the COMPLETE case record for context — do NOT flag anything as missing if it is already covered there.
 
 ${caseBrief}
 
-CLAIM TYPE: ${claimType || "Other"}
+CLAIM TYPE: ${params.claimType || "Other"}
 
 DRAFT CASE DESCRIPTION (what the user wrote):
 """
-${descriptionText}
+${params.description}
 """
 
 ${guidedAnswersText ? `GUIDED INTAKE ANSWERS ALREADY PROVIDED (do NOT flag these as missing):\n${guidedAnswersText}\n` : ""}
@@ -550,11 +534,41 @@ If nothing meaningful is missing, return { "missingFacts": [] }. Return at most 
   const match = rawResponse.match(/\{[\s\S]*\}/);
   const jsonStr = match ? match[0] : "{}";
 
+  const parsed = JSON.parse(jsonStr);
+  return Array.isArray(parsed.missingFacts)
+    ? parsed.missingFacts.filter((f: unknown): f is string => typeof f === "string")
+    : [];
+}
+
+router.post("/cases/:id/advisor/missing-facts", async (req, res): Promise<void> => {
+  const userId = getUserId(req);
+  const rateCheck = await checkAiRateLimit(userId);
+  if (!rateCheck.allowed) {
+    res.status(429).json({ error: `Too many AI requests. Please wait ${Math.ceil((rateCheck.retryAfterSec ?? 3600) / 60)} minutes before trying again.` });
+    return;
+  }
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid case ID" }); return; }
+
+  const [caseRecord] = await db
+    .select()
+    .from(casesTable)
+    .where(and(eq(casesTable.id, id), eq(casesTable.userId, userId)));
+  if (!caseRecord) { res.status(404).json({ error: "Case not found" }); return; }
+
+  const { description, claimType, guidedAnswers } = req.body as {
+    description?: string;
+    claimType?: string;
+    guidedAnswers?: Record<string, string>;
+  };
+  const descriptionText = typeof description === "string" ? description.trim() : "";
+  if (!descriptionText) { res.status(400).json({ error: "description is required" }); return; }
+
+  const docs = await db.select().from(documentsTable).where(eq(documentsTable.caseId, id));
+
   try {
-    const parsed = JSON.parse(jsonStr);
-    const missingFacts = Array.isArray(parsed.missingFacts)
-      ? parsed.missingFacts.filter((f: unknown): f is string => typeof f === "string")
-      : [];
+    const missingFacts = await computeMissingFacts(caseRecord, docs, { description: descriptionText, claimType, guidedAnswers });
     res.json({ missingFacts });
   } catch {
     res.status(500).json({ error: "Failed to parse AI response" });
