@@ -73,6 +73,9 @@ export interface StateFacts {
   appealNote: string;
 
   keyCounties?: string[];
+
+  /** State-specific filing frequency cap, e.g. CA's "no more than 2 cases over $2,500 per 12 months" rule. */
+  filingFrequencyCapText?: string;
 }
 
 export const STATE_ORDER: StateCode[] = ["CA", "FL", "TX", "IL", "NC"];
@@ -92,6 +95,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
 
     attorneysAllowed: false,
     attorneysNote: "Lawyers are NOT allowed at California small claims hearings (CA CCP §116.530) — never suggest hiring one for the hearing",
+
+    filingFrequencyCapText: "Individuals cannot file more than 2 cases over $2,500 per 12-month period",
 
     filingFeeTiers: [
       { label: "under $1,500", fee: "$30" },
@@ -352,4 +357,15 @@ export function formatFilingFeeTiersParen(facts: StateFacts): string {
 /** e.g. "under $100: $55 | $101–$500: $80 | $501–$2,500: $175 | over $2,500: $300" */
 export function formatFilingFeeTiersPipe(facts: StateFacts): string {
   return facts.filingFeeTiers.map((t) => `${t.label}: ${t.fee}`).join(" | ");
+}
+
+/** e.g. "under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300" */
+export function formatFilingFeeTiersArrow(facts: StateFacts): string {
+  return facts.filingFeeTiers.map((t) => `${t.label} → ${t.fee}`).join(" | ");
+}
+
+/** e.g. "$30–$75" — low-high range across all filing fee tiers */
+export function formatFilingFeeRange(facts: StateFacts): string {
+  const fees = facts.filingFeeTiers.map((t) => t.fee);
+  return `${fees[0]}–${fees[fees.length - 1]}`;
 }

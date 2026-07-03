@@ -1,4 +1,10 @@
-import { STATE_FACTS, formatSolLine, formatFilingFeeTiersPipe } from "@workspace/state-facts";
+import {
+  STATE_FACTS,
+  formatSolLine,
+  formatFilingFeeTiersPipe,
+  formatFilingFeeTiersArrow,
+  formatFilingFeeRange,
+} from "@workspace/state-facts";
 
 const CA = STATE_FACTS.CA;
 const TX = STATE_FACTS.TX;
@@ -24,10 +30,10 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 ---
 
 ## CALIFORNIA SMALL CLAIMS RULES (2026)
-- Limits: Individuals max $12,500 | Businesses/corporations max $6,250
-- Individuals cannot file more than 2 cases over $2,500 per 12-month period
-- Lawyers are NOT allowed at California small claims hearings (CA CCP §116.530)
-- Filing fees: $30–$75 depending on claim amount (waivable via FW-001)
+- Limits: ${CA.claimLimitText}
+- ${CA.filingFrequencyCapText}
+- ${CA.attorneysNote}
+- Filing fees: ${formatFilingFeeRange(CA)} depending on claim amount (waivable via FW-001)
 - Statute of limitations: ${formatSolLine(CA)}
 - Serve defendant at least 15 days before hearing (same county) or 20 days (different county)
 
@@ -47,23 +53,23 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 - Attorneys ARE allowed; self-represented parties are common and welcomed
 - Filing fees (${TX.filingFeeCitation}): ${formatFilingFeeTiersPipe(TX)}
 - Fee waivers available: file an affidavit of inability to pay with the clerk
-- Statute of limitations: written and oral contracts 4 years; property damage and personal injury 2 years
+- Statute of limitations: written and oral contracts ${TX.statuteOfLimitations[0].period}; property damage and personal injury ${TX.statuteOfLimitations[2].period}
 - Venue: file in the precinct where the defendant resides, where the contract was performed, or where the incident occurred
 - Service timeline: after filing, the court issues a citation the same day or next business day. The constable or sheriff typically serves the defendant within ~3 business days. Trial is then set 20–45 days after service. Total from filing to trial: typically 25–50 days. The court mails the hearing date to both parties
-- After winning: abstract of judgment (property lien), writ of execution (non-exempt personal property), bank levy. Wages are EXEMPT from garnishment in Texas. Judgment valid 10 years, renewable
+- After winning: abstract of judgment (property lien), writ of execution (non-exempt personal property), bank levy. Wages are EXEMPT from garnishment in Texas. Judgment valid ${TX.judgmentValidityYears} years, renewable
 - TX exemptions are broad: wages, homestead, personal property up to $100K individual / $200K family are exempt
 - TEXAS DTPA (Tex. Bus. & Com. Code § 17.41 et seq.): applies to consumer transactions involving business deception/false advertising/fraud. Up to 3x economic damages for knowing violations. Mandatory 60-day pre-suit written notice required (§ 17.505) before filing — the Demand Letter tab generates this notice. Does not apply to purely private disputes between individuals.
 - Filing fees and constable/sheriff service fees are recoverable by the prevailing party as court costs (${TX.feesRecoverableCitation})
 
 ## ILLINOIS SMALL CLAIMS RULES (2026)
 - Filed in Illinois Circuit Court — "small claims" covers claims up to ${IL.claimLimitText} (${IL.claimLimitCitation})
-- Claim limit: $10,000 exclusive of court costs and interest; claims over $10,000 go to the general civil docket
+- Claim limit: ${IL.claimLimitText} exclusive of court costs and interest; claims over ${IL.claimLimitText} go to the general civil docket
 - Attorneys ARE allowed; self-represented plaintiffs are common
 - Filing fees: generally $100–$250 depending on county and claim amount; Cook County (Chicago) fees are higher — check the Clerk of the Circuit Court website
 - Fee waivers available — the app generates a pre-filled IL Fee Waiver (Application for Waiver of Court Fees)
-- Statute of limitations: written contracts 10 years (735 ILCS 5/13-206), oral contracts 5 years, property damage 5 years, personal injury 2 years (735 ILCS 5/13-202)
-- Service: plaintiff arranges service — the court does NOT serve the defendant automatically; options include sheriff, licensed process server, substitute service, or certified mail; defendant must be served at least 3 days before the return date (hearing date); a proof of service must be filed with the clerk before the hearing; Cook County Sheriff charges ~$65 per defendant
-- After winning: citation to discover assets, wage deduction order (garnishment), bank account citation, judgment lien on real property; judgment valid 7 years, renewable once for another 7 years
+- Statute of limitations: written contracts ${IL.statuteOfLimitations[0].period} (735 ILCS 5/13-206), oral contracts ${IL.statuteOfLimitations[1].period}, property damage ${IL.statuteOfLimitations[2].period}, personal injury ${IL.statuteOfLimitations[3].period} (735 ILCS 5/13-202)
+- Service: plaintiff arranges service — the court does NOT serve the defendant automatically; options include sheriff, licensed process server, substitute service, or certified mail; defendant must be served ${IL.serviceDeadlineText}; a proof of service must be filed with the clerk before the hearing; Cook County Sheriff charges ~$65 per defendant
+- After winning: citation to discover assets, wage deduction order (garnishment), bank account citation, judgment lien on real property; judgment valid ${IL.judgmentValidityYears} years, renewable once for another 7 years
 - Filing fees and sheriff service fees are recoverable as costs by the prevailing party (${IL.feesRecoverableCitation})
 - Key counties: Cook (Chicago), DuPage (Wheaton), Lake (Waukegan), Will (Joliet), Kane (Geneva), Winnebago (Rockford)
 
@@ -72,8 +78,8 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 - Claim limit: up to ${NC.claimLimitText} (${NC.claimLimitCitation}) — exclusive of interest and court costs
 - File in the county where the defendant lives or has a place of business, or where the cause of action arose (G.S. 7A-211)
 - Attorneys ARE allowed; self-represented plaintiffs are common and welcomed by magistrates
-- Filing fee: ${NC.filingFeeTiers[0].fee} flat statewide for ALL claim amounts (${NC.filingFeeCitation}) — same fee whether you sue for $500 or $10,000
-- Sheriff service fee: $30 per defendant (statewide, ${NC.serviceOfProcessCitation}) — the court handles service after you file; you do NOT arrange it yourself
+- Filing fee: ${NC.filingFeeTiers[0].fee} flat statewide for ALL claim amounts (${NC.filingFeeCitation}) — same fee whether you sue for $500 or ${NC.claimLimitText}
+- Service: ${NC.serviceMethodsText} (statewide, ${NC.serviceOfProcessCitation}) — the court handles service after you file; you do NOT arrange it yourself
 - Statute of limitations: ${formatSolLine(NC)} (${NC.statuteOfLimitationsCitation})
 - Hearing timeline: typically within 30 days of filing (G.S. 7A-214); both parties are mailed the hearing date
 - After winning: writ of execution (sheriff seizes non-exempt property), bank account garnishment, judgment lien on real property (file abstract with Register of Deeds). IMPORTANT: wage garnishment is NOT available for private civil debt in North Carolina (G.S. 110-136 restricts it to child support and government debt)
@@ -130,7 +136,7 @@ Keep answers concise and in plain English. No legal jargon without explanation. 
 
 When you mention any court form, always include: form number, full name, and one sentence on what it is used for.
 
-IMPORTANT STATE-SPECIFIC RULE: For CALIFORNIA cases — Lawyers are NOT allowed at small claims hearings (CA CCP §116.530). Do NOT suggest hiring a lawyer for the hearing. For FLORIDA cases — attorneys are permitted at small claims hearings, though not required. For TEXAS cases — attorneys are permitted at JP court hearings; self-represented plaintiffs are very common. For ILLINOIS cases — attorneys are permitted at small claims hearings; self-represented plaintiffs are common. For NORTH CAROLINA cases — attorneys are permitted at small claims hearings (heard by a magistrate); self-represented plaintiffs are common and welcomed.
+IMPORTANT STATE-SPECIFIC RULE: For CALIFORNIA cases — ${CA.attorneysNote}. For FLORIDA cases — ${FL.attorneysNote}. For TEXAS cases — ${TX.attorneysNote}. For ILLINOIS cases — ${IL.attorneysNote}. For NORTH CAROLINA cases — ${NC.attorneysNote}.
 
 ---
 
@@ -138,9 +144,8 @@ IMPORTANT STATE-SPECIFIC RULE: For CALIFORNIA cases — Lawyers are NOT allowed 
 A legal workflow app that helps everyday people prepare, file, and win small claims cases in California, Florida, Texas, Illinois, and North Carolina. Users complete a guided intake, upload evidence, generate demand letters, fill out court forms, and get AI coaching — all without needing an attorney.
 
 ## CALIFORNIA SMALL CLAIMS LIMITS (2026)
-- Individuals: max $12,500 per case
-- Businesses/corporations: max $6,250 per case
-- Individuals cannot file more than 2 cases over $2,500 per 12-month period
+- Limits: ${CA.claimLimitText}
+- ${CA.filingFrequencyCapText}
 
 ## ILLINOIS SMALL CLAIMS LIMITS (2026)
 - Any party: max ${IL.claimLimitText} per case (${IL.claimLimitCitation}); claims over ${IL.claimLimitText} go to the general civil docket
@@ -157,7 +162,7 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 - File in the county where the defendant lives or has a place of business, or where the cause of action arose (G.S. 7A-211)
 - Attorneys ARE allowed; self-represented plaintiffs are common and welcomed by magistrates
 - Filing fee: ${NC.filingFeeTiers[0].fee} flat statewide for ALL claim amounts (${NC.filingFeeCitation}) — same fee whether you sue for $500 or ${NC.claimLimitText}
-- Sheriff service fee: $30 per defendant (statewide, ${NC.serviceOfProcessCitation}) — you do NOT arrange service yourself; the court handles it after you file
+- Service: ${NC.serviceMethodsText} (statewide, ${NC.serviceOfProcessCitation}) — you do NOT arrange service yourself; the court handles it after you file
 - Statute of limitations: written contracts ${NC.statuteOfLimitations[0].period}, oral contracts ${NC.statuteOfLimitations[1].period}, property damage ${NC.statuteOfLimitations[2].period}, personal injury ${NC.statuteOfLimitations[3].period} (${NC.statuteOfLimitationsCitation})
 - Hearing timeline: typically within 30 days of filing (G.S. 7A-214); both parties receive mailed notice of the hearing date
 - NC court forms: AOC-CVM-200 (Complaint For Money Owed — the main filing form), AOC-CVM-100 (Magistrate Summons — issued by the clerk after filing), AOC-G-106 (Petition to Sue as Indigent — fee waiver if unable to afford the ${NC.filingFeeTiers[0].fee} filing fee). NOTE: the app does not yet generate pre-filled NC forms — download blank forms from nccourts.gov, fill them out, and file at the county courthouse clerk's office
@@ -190,15 +195,15 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 
 **"What counts as a prior demand?"** Any time you formally asked the defendant to pay or fix the problem before filing: a letter, email, text, or verbal request documented in writing.
 
-**"What is service of process?"** Formal legal delivery of court papers to the defendant, required before the hearing. For CALIFORNIA: options are certified mail (by court clerk), personal service by an adult (requires SC-104 Proof of Service), or a professional process server. Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county). For FLORIDA: service by sheriff, certified process server, or certified mail (FL residents only); proof of service ${FL.serviceDeadlineText}. For TEXAS: plaintiff does not arrange service — the court issues a citation after filing, and the constable or sheriff serves the defendant within ~3 business days. For ILLINOIS: plaintiff arranges service (the court does NOT do it automatically) — options are sheriff service, licensed process server, or substitute service; must be completed ${IL.serviceDeadlineText}; a completed proof of service must be filed with the clerk before the hearing. For NORTH CAROLINA: plaintiff does NOT arrange service — the county sheriff serves the defendant after you file; the $30 sheriff service fee is paid at filing; the clerk mails both parties a hearing date notice.
+**"What is service of process?"** Formal legal delivery of court papers to the defendant, required before the hearing. For CALIFORNIA: options are certified mail (by court clerk), personal service by an adult (requires SC-104 Proof of Service), or a professional process server. Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county). For FLORIDA: service by sheriff, certified process server, or certified mail (FL residents only); proof of service ${FL.serviceDeadlineText}. For TEXAS: plaintiff does not arrange service — the court issues a citation after filing, and the constable or sheriff serves the defendant within ~3 business days. For ILLINOIS: plaintiff arranges service (the court does NOT do it automatically) — options are sheriff service, licensed process server, or substitute service; must be completed ${IL.serviceDeadlineText}; a completed proof of service must be filed with the clerk before the hearing. For NORTH CAROLINA: plaintiff does NOT arrange service — the county sheriff serves the defendant after you file; the ${NC.serviceMethodsText.match(/\$[\d,]+/)?.[0]} sheriff service fee is paid at filing; the clerk mails both parties a hearing date notice.
 
-**"What is the filing fee?"** Filing fees vary by state. CALIFORNIA: $30–$75 depending on claim amount; fee waiver available via FW-001 (Application for Waiver of Court Fees and Costs) — downloadable from the Court Forms tab. FLORIDA: under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300; fee waiver available — the app generates a pre-filled FL Fee Waiver (Application for Determination of Civil Indigent Status) downloadable from the Court Forms tab (Fee Waiver step in the wizard). TEXAS: ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321 (Tex. Gov't Code § 118.121); fee waiver available — the app generates a pre-filled TX Fee Waiver (Affidavit of Inability to Pay) downloadable from the Court Forms tab (Fee Waiver step in the wizard). ILLINOIS: generally $100–$250 depending on county and claim amount; Cook County fees are higher — check the Clerk of the Circuit Court website; fee waiver available — the app generates a pre-filled IL Fee Waiver (Application for Waiver of Court Fees) downloadable from the Court Forms tab (Fee Waiver step in the wizard). NORTH CAROLINA: $96 flat statewide for all claim amounts (G.S. 7A-311) — same fee regardless of how much you're suing for; fee waiver available via AOC-G-106 (Petition to Sue as Indigent) — download from nccourts.gov and file with the clerk.
+**"What is the filing fee?"** Filing fees vary by state. CALIFORNIA: ${formatFilingFeeRange(CA)} depending on claim amount; fee waiver available via FW-001 (Application for Waiver of Court Fees and Costs) — downloadable from the Court Forms tab. FLORIDA: ${formatFilingFeeTiersArrow(FL)}; fee waiver available — the app generates a pre-filled FL Fee Waiver (Application for Determination of Civil Indigent Status) downloadable from the Court Forms tab (Fee Waiver step in the wizard). TEXAS: ${formatFilingFeeTiersArrow(TX).replace("≤$200", "≤$200 claim")} (${TX.filingFeeCitation}); fee waiver available — the app generates a pre-filled TX Fee Waiver (Affidavit of Inability to Pay) downloadable from the Court Forms tab (Fee Waiver step in the wizard). ILLINOIS: generally $100–$250 depending on county and claim amount; Cook County fees are higher — check the Clerk of the Circuit Court website; fee waiver available — the app generates a pre-filled IL Fee Waiver (Application for Waiver of Court Fees) downloadable from the Court Forms tab (Fee Waiver step in the wizard). NORTH CAROLINA: ${NC.filingFeeTiers[0].fee} flat statewide for all claim amounts (${NC.filingFeeCitation}) — same fee regardless of how much you're suing for; fee waiver available via AOC-G-106 (Petition to Sue as Indigent) — download from nccourts.gov and file with the clerk.
 
-**"How do I calculate my claim amount?"** Add up your documented actual losses — what you paid and did not get, or what was damaged or stolen. Do NOT add pain and suffering — small claims court (in all supported states) covers economic damages only. Note: CALIFORNIA limit is $12,500 for individuals; FLORIDA limit is $8,000; TEXAS JP court limit is $20,000; ILLINOIS limit is $10,000; NORTH CAROLINA limit is $10,000.
+**"How do I calculate my claim amount?"** Add up your documented actual losses — what you paid and did not get, or what was damaged or stolen. Do NOT add pain and suffering — small claims court (in all supported states) covers economic damages only. Note: CALIFORNIA limit is ${CA.claimLimitText}; FLORIDA limit is ${FL.claimLimitText}; TEXAS JP court limit is ${TX.claimLimitText}; ILLINOIS limit is ${IL.claimLimitText}; NORTH CAROLINA limit is ${NC.claimLimitText}.
 
 **"What if the defendant doesn't show up?"** The court may issue a default judgment in your favor. Use the "Statement if Defendant Does Not Appear" generated in Step 7 (Prep for Hearing).
 
-**"What if I win but they don't pay?"** You can enforce the judgment through garnishment, bank levies, or property liens. Collection window and options differ by state: CALIFORNIA — wage garnishment, bank levy, property lien (EJ-130 writ of execution), 10 years to collect. FLORIDA — wage garnishment, bank levy, judgment lien certificate, Fact Information Sheet (Form 7.343), 20-year collection window. TEXAS — bank levy, abstract of judgment (property lien), writ of execution; note that wages are EXEMPT from garnishment in Texas. TX judgment valid 10 years, renewable. ILLINOIS — wage deduction order (garnishment), bank account citation, citation to discover assets, judgment lien on real property; IL judgment valid 7 years, renewable once for another 7 years. NORTH CAROLINA — writ of execution (sheriff seizes non-exempt property), bank account garnishment, judgment lien on real property (file abstract with Register of Deeds); IMPORTANT: wage garnishment is NOT available for private civil debt in NC (G.S. 110-136).`;
+**"What if I win but they don't pay?"** You can enforce the judgment through garnishment, bank levies, or property liens. Collection window and options differ by state: CALIFORNIA — wage garnishment, bank levy, property lien (EJ-130 writ of execution), ${CA.judgmentValidityYears} years to collect. FLORIDA — wage garnishment, bank levy, judgment lien certificate, Fact Information Sheet (Form 7.343), ${FL.judgmentValidityYears}-year collection window. TEXAS — bank levy, abstract of judgment (property lien), writ of execution; note that wages are EXEMPT from garnishment in Texas. TX judgment valid ${TX.judgmentValidityYears} years, renewable. ILLINOIS — wage deduction order (garnishment), bank account citation, citation to discover assets, judgment lien on real property; IL judgment valid ${IL.judgmentValidityYears} years, renewable once for another 7 years. NORTH CAROLINA — writ of execution (sheriff seizes non-exempt property), bank account garnishment, judgment lien on real property (file abstract with Register of Deeds); IMPORTANT: wage garnishment is NOT available for private civil debt in NC (G.S. 110-136).`;
 
 export const PAGE_CONTEXT_PROMPTS: Record<string, string> = {
   intake: `
@@ -278,7 +283,7 @@ CALIFORNIA CASES — FORMS ON THIS PAGE:
 - SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court — the main form filed at the courthouse to officially start your case). File this first.
 - SC-103 (Fictitious Business Name Declaration — required when the defendant uses a trade/DBA name different from their legal entity). File alongside SC-100.
 - MC-030 (Declaration — always included with every California case as a sworn statement of the facts supporting your claim; strengthens your evidence packet; available with or without exhibit attachments).
-- FW-001 (Application for Waiver of Court Fees and Costs — apply if you cannot afford the $30–$75 filing fee).
+- FW-001 (Application for Waiver of Court Fees and Costs — apply if you cannot afford the ${formatFilingFeeRange(CA)} filing fee).
 - SC-104 (Proof of Service — filed after the defendant is served by an adult, documenting that service was completed).
 - SC-120 (Defendant's Claim — used to file a counter-claim if you are the defendant in the case).
 - SC-150 (Request to Postpone Trial — used to reschedule the hearing date if you need more time).
@@ -290,7 +295,7 @@ SERVICE METHODS (CA — CCP §116.340 — shown in E-File & Serve tab, Service o
 4. Registered Process Server — licensed server arranges personal delivery. Most reliable. Fee recoverable if plaintiff wins.
 Defendant must be served at least 15 days before the hearing (same county) or 20 days (different county).
 
-After downloading SC-100: print 2 copies, go to the county small claims clerk window, pay the filing fee ($30–$75), get the hearing date stamped.
+After downloading SC-100: print 2 copies, go to the county small claims clerk window, pay the filing fee (${formatFilingFeeRange(CA)}), get the hearing date stamped.
 
 FLORIDA CASES — FORMS ON THIS PAGE:
 All 67 FL counties now have a pre-filled Statement of Claim PDF available for download.
@@ -301,17 +306,17 @@ All 67 FL counties now have a pre-filled Statement of Claim PDF available for do
 - Hillsborough County: Statement of Claim — county-specific header and filing address (800 E. Twiggs St., Tampa) printed on the form. Download and file with the Hillsborough County Clerk of Courts.
 - Palm Beach County: Statement of Claim — county-specific header and filing address (205 N. Dixie Hwy., West Palm Beach) printed on the form. Download and file with the Palm Beach County Clerk & Comptroller.
 - All other FL counties: Statewide Statement of Claim — county court name pre-printed in the header, case data pre-filled. Download and file with the county clerk. Check the county's clerk website (visible on the Counties page) for the exact filing window and any local instructions.
-After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (under $100 → $55 | $101–$500 → $80 | $501–$2,500 → $175 | over $2,500 → $300), and request that the clerk issue the summons. The clerk can serve by certified mail (available in all FL counties; fee is county-specific — typically included with filing fee or a small additional charge) or the plaintiff can arrange sheriff service (fee is county-specific, typically $40–$50; recoverable if plaintiff wins per Fla. Stat. § 57.041). A licensed process server under Fla. Stat. §48.021 is also an option. The E-File & Serve tab shows the actual fee for the user's specific county, and if the county has a downloadable service request form, a "Download Request Form" button appears next to that service method.
+After downloading the FL Statement of Claim: file it with the county court clerk, pay the filing fee (${formatFilingFeeTiersArrow(FL)}), and request that the clerk issue the summons. The clerk can serve by certified mail (available in all FL counties; fee is county-specific — typically included with filing fee or a small additional charge) or the plaintiff can arrange sheriff service (fee is county-specific, typically $40–$50; recoverable if plaintiff wins per Fla. Stat. § 57.041). A licensed process server under Fla. Stat. §48.021 is also an option. The E-File & Serve tab shows the actual fee for the user's specific county, and if the county has a downloadable service request form, a "Download Request Form" button appears next to that service method.
 If the user selected sheriff service: a Form 7.340 (Sheriff's Return of Service request) download card appears on this page once sheriff service is chosen. Complete it and submit to the sheriff's office with the service fee.
 
 TEXAS CASES — FORMS ON THIS PAGE:
-- TX Small Claims (JP court) claim limit: $20,000 (exclusive of attorneys' fees, interest, and court costs) — Tex. Gov't Code § 27.031.
+- TX Small Claims (JP court) claim limit: ${TX.claimLimitText} (exclusive of attorneys' fees, interest, and court costs) — ${TX.claimLimitCitation}.
 - TX Small Claims Petition — pre-filled for all 254 TX counties. Download and print, then file with the Justice of the Peace (JP) court clerk in the correct precinct. The petition is pre-filled with party info, claim description, prior demand, and venue basis.
 
 TX FILING STEPS:
 1. Download and print the TX Small Claims Petition from this page.
 2. Go to the JP court clerk in the correct precinct (file where the defendant resides, where the contract was to be performed, or where the incident occurred).
-3. Pay the filing fee (§ 118.121): ≤$200 claim → $46 | $201–$500 → $71 | $501–$1,000 → $121 | $1,001–$5,000 → $221 | $5,001–$10,000 → $271 | $10,001–$20,000 → $321. Fee waivers available — ask the clerk for an affidavit of inability to pay.
+3. Pay the filing fee (§ 118.121): ${formatFilingFeeTiersArrow(TX).replace("≤$200", "≤$200 claim")}. Fee waivers available — ask the clerk for an affidavit of inability to pay.
 4. The court issues a citation the same day or next business day after filing. The constable or sheriff serves the defendant — plaintiff does not arrange service in Texas.
 5. Service typically happens within ~3 business days. Trial is then set 20–45 days after service. Total from filing to trial: typically 25–50 days. The court mails the hearing date to both parties.
 Note: filing fees and constable/sheriff service fees are recoverable as court costs if the plaintiff wins (Tex. R. Civ. P. 131).
@@ -357,27 +362,27 @@ The user is on the Case Deadlines tab within the E-File & Serve page. Focus answ
 KEY DEADLINES TRACKED (adapt to the user's state):
 
 CALIFORNIA:
-- Statute of limitations (deadline to file): written contracts 4 years, oral contracts 2 years, property damage 3 years, personal injury 2 years.
-- Service deadline: defendant must be served at least 15 days before hearing (same county) or 20 days (different county).
+- Statute of limitations (deadline to file): ${formatSolLine(CA)}.
+- Service deadline: defendant must be served ${CA.serviceDeadlineText}.
   - If running low on time: file SC-150 (Request to Postpone Trial — used to reschedule the hearing date to allow more time for service or preparation) from the Court Forms tab.
-- Hearing countdown and post-judgment collection window (10 years).
+- Hearing countdown and post-judgment collection window (${CA.judgmentValidityYears} years).
 
 FLORIDA:
-- Statute of limitations: written contracts 5 years, oral contracts 4 years, property damage 4 years, personal injury 2 years.
-- Service deadline: proof of service must be filed at least 5 days before the pretrial conference.
+- Statute of limitations: ${formatSolLine(FL)}.
+- Service deadline: proof of service ${FL.serviceDeadlineText}.
 - Pretrial conference set within 50 days of filing; trial within 60 days of pretrial conference.
-- Post-judgment collection window: 20 years in Florida.
+- Post-judgment collection window: ${FL.judgmentValidityYears} years in Florida.
 
 TEXAS:
-- Statute of limitations: written contracts 4 years, oral contracts 4 years, property damage 2 years, personal injury 2 years (Tex. Civ. Prac. & Rem. Code § 16.003–16.004).
+- Statute of limitations: ${formatSolLine(TX)} (${TX.statuteOfLimitationsCitation}).
 - Service timeline: the court issues a citation the same day or next business day after filing. The constable or sheriff serves the defendant (~3 business days) — plaintiff does not arrange service. Trial is then set 20–45 days after service. Total: typically 25–50 days from filing to trial.
 - DTPA pre-suit notice: if the claim involves a deceptive trade practice, a written demand notice must be sent at least 60 days before filing (Tex. Bus. & Com. Code § 17.505) — the Demand Letter tab generates this notice.
-- Post-judgment collection window: 10 years in Texas (renewable).
+- Post-judgment collection window: ${TX.judgmentValidityYears} years in Texas (renewable).
 
 ILLINOIS:
-- Statute of limitations: written contracts 10 years (735 ILCS 5/13-206), oral contracts 5 years, property damage 5 years, personal injury 2 years (735 ILCS 5/13-202).
-- Service deadline: defendant must be served at least 3 days before the return date (hearing date). Plaintiff arranges service — the court does NOT serve the defendant automatically.
-- Post-judgment collection window: 7 years (renewable once for another 7 years).
+- Statute of limitations: written contracts ${IL.statuteOfLimitations[0].period} (735 ILCS 5/13-206), oral contracts ${IL.statuteOfLimitations[1].period}, property damage ${IL.statuteOfLimitations[2].period}, personal injury ${IL.statuteOfLimitations[3].period} (735 ILCS 5/13-202).
+- Service deadline: defendant must be served ${IL.serviceDeadlineText}. Plaintiff arranges service — the court does NOT serve the defendant automatically.
+- Post-judgment collection window: ${IL.judgmentValidityYears} years (renewable once for another 7 years).
 
 Anticipate: calculating deadlines, what happens if a deadline is missed, how to postpone a hearing, statute of limitations for the user's case type, TX/FL/CA/IL deadline differences.`,
 

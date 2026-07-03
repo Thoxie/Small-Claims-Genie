@@ -65,6 +65,26 @@ const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined
   NC: undefined,
 };
 
+// STATE_FACTS.forms is the exhaustive form catalog used by the AI prompts and
+// form-generation engine (every form the app can produce for that state). The
+// Resources page only ever showed a curated subset by form id — pull that
+// subset from the canonical catalog by id instead of duplicating titles/
+// descriptions, so wording still comes from one place, but the visible list
+// doesn't silently grow every time a new form is added to the catalog.
+const FORMS_USED_IDS: Record<ResourceStateCode, string[]> = {
+  CA: ["SC-100", "SC-104", "SC-120", "FW-001"],
+  FL: ["Statement of Claim", "Summons", "Fee Waiver"],
+  TX: ["Small Claims Petition", "Citation", "Return of Service", "Fee Waiver (Statement of Inability to Afford Payment of Court Costs)"],
+  IL: ["Small Claims Complaint", "Summons", "Proof of Service", "Fee Waiver", "Letter to Sheriff"],
+  NC: ["AOC-CVM-200", "AOC-CVM-100", "AOC-G-106"],
+};
+
+// The Resources card uses the short "Fee Waiver" label while the canonical
+// catalog spells out the official NC form name for AI-prompt purposes.
+const FORMS_NAME_OVERRIDE: Partial<Record<string, string>> = {
+  "AOC-G-106": "Fee Waiver",
+};
+
 function buildStateResource(code: ResourceStateCode): StateResourceInfo {
   const facts = STATE_FACTS[code];
   return {
@@ -83,10 +103,17 @@ function buildStateResource(code: ResourceStateCode): StateResourceInfo {
       FILING_FEE_SUMMARY_OVERRIDES[code] ??
       `${formatFilingFeeTiersParen(facts)}${facts.filingFeeNote ? `, ${facts.filingFeeNote}` : ""}`,
     serviceOfProcess: SERVICE_OF_PROCESS_TEXT[code],
-    formsUsed: facts.forms.map((form) => ({
-      title: form.id ? `${form.id} — ${form.name}` : form.name,
-      desc: form.desc,
-    })),
+    formsUsed: FORMS_USED_IDS[code].map((key) => {
+      const form = facts.forms.find((f) => (f.id ? f.id === key : f.name === key));
+      if (!form) {
+        throw new Error(`state-resources: no STATE_FACTS form found for ${code} key "${key}"`);
+      }
+      const name = FORMS_NAME_OVERRIDE[form.id] ?? form.name;
+      return {
+        title: form.id ? `${form.id} — ${name}` : name,
+        desc: form.desc,
+      };
+    }),
     appealNote: facts.appealNote,
   };
 }
