@@ -370,6 +370,9 @@ function buildAdvisorBrief(
     brief += "\n\n-- CASE STORY BUILDER: STARTER ANSWERS (already provided by the user — do NOT re-ask these) --\n";
     brief += starterAnswers.map(a => `Q: ${a.question}\nA: ${a.answer}`).join("\n\n");
   }
+  if (docs.length > 0) {
+    brief += "\n\n-- CASE STORY BUILDER RULE: treat the UPLOADED DOCUMENTS section above exactly like the starter answers above — if a document (by name, label, or OCR text) already shows or supports a fact, do NOT ask the user to restate it or ask them to upload something they already provided. Only ask about facts that are genuinely missing from both the starter answers and the uploaded documents. --";
+  }
 
   return { brief, truncatedDocs };
 }

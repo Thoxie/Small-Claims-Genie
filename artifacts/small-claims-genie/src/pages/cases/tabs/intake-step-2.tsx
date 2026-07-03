@@ -197,7 +197,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
   }, [caseId, getToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const claimTypeValue = form.watch("claimType");
-  const starterQuestions = getStarterQuestions();
+  const starterQuestions = getStarterQuestions(claimTypeValue);
 
   const openGuided = () => {
     if (!claimTypeValue) {
@@ -824,8 +824,9 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
           {guidedPhase === "starter" && (
             <div className="space-y-4 py-2 max-h-[55vh] overflow-y-auto">
               {starterQuestions.map(q => (
-                <div key={q.id} className="space-y-2">
+                <div key={q.id} className="space-y-1.5">
                   <label className="text-sm font-medium text-foreground">{q.question}</label>
+                  {q.hint && <p className="text-xs text-muted-foreground">{q.hint}</p>}
                   <Textarea
                     className="min-h-[80px] text-sm"
                     placeholder="Your answer…"
@@ -850,8 +851,9 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                 <p className="text-sm text-muted-foreground">No additional questions — you're ready to generate your draft.</p>
               ) : (
                 guidedFollowUpQuestions.map(q => (
-                  <div key={q.id} className="space-y-2">
+                  <div key={q.id} className="space-y-1.5">
                     <label className="text-sm font-medium text-foreground">{q.question}</label>
+                    {q.hint && <p className="text-xs text-muted-foreground">{q.hint}</p>}
                     <Textarea
                       className="min-h-[80px] text-sm"
                       placeholder="Your answer…"
