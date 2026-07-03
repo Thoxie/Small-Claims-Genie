@@ -13,7 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { DateRangePicker, intakeStep2Schema } from "./shared";
-import { getGuidedQuestions, reviewDraftWithAI, generateCaseStatementWithAI, getMissingFactsWithAI } from "@/lib/case-story-ai";
+import { getStarterQuestions, reviewDraftWithAI, generateCaseStatementWithAI, getMissingFactsWithAI, type GuidedQuestion } from "@/lib/case-story-ai";
 
 import type { ExtendedCase } from "@/lib/types";
 
@@ -171,18 +171,21 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
   // ── Guided "Case Story Builder" flow (path 2: guided questions) ────────────
   const guided = (initialData.guidedIntakeData || {}) as {
     guidedAnswers?: Record<string, string>;
+    starterAnswers?: { question: string; answer: string }[];
     generatedDraft?: string;
     missingFacts?: string[];
   };
+  type GuidedPhase = "starter" | "loadingFollowups" | "followups";
   const [guidedModalOpen, setGuidedModalOpen] = useState(false);
-  const [guidedQuestionIndex, setGuidedQuestionIndex] = useState(0);
+  const [guidedPhase, setGuidedPhase] = useState<GuidedPhase>("starter");
   const [guidedAnswers, setGuidedAnswers] = useState<Record<string, string>>(guided.guidedAnswers || {});
+  const [guidedFollowUpQuestions, setGuidedFollowUpQuestions] = useState<GuidedQuestion[]>([]);
   const [guidedGenerating, setGuidedGenerating] = useState(false);
   const [guidedDraft, setGuidedDraft] = useState("");
   const [guidedPreviewOpen, setGuidedPreviewOpen] = useState(false);
   const [missingFacts, setMissingFacts] = useState<string[]>(Array.isArray(guided.missingFacts) ? guided.missingFacts : []);
 
-  const persistGuidedData = useCallback(async (data: { guidedAnswers?: Record<string, string>; generatedDraft?: string; missingFacts?: string[] }) => {
+  const persistGuidedData = useCallback(async (data: { guidedAnswers?: Record<string, string>; starterAnswers?: { question: string; answer: string }[]; generatedDraft?: string; missingFacts?: string[] }) => {
     try {
       const token = await getToken();
       await fetch(`/api/cases/${caseId}/intake`, {
@@ -194,21 +197,38 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
   }, [caseId, getToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const claimTypeValue = form.watch("claimType");
-  const guidedQuestions = getGuidedQuestions(claimTypeValue || "Other");
+  const starterQuestions = getStarterQuestions();
 
   const openGuided = () => {
     if (!claimTypeValue) {
       toast({ title: "Pick a claim type first", description: "Choose a claim type above so we can ask the right questions.", variant: "destructive" });
       return;
     }
-    setGuidedQuestionIndex(0);
+    setGuidedPhase("starter");
+    setGuidedFollowUpQuestions([]);
     setGuidedModalOpen(true);
+  };
+
+  const proceedToFollowUps = async () => {
+    setGuidedPhase("loadingFollowups");
+    try {
+      const starterAnswers = starterQuestions.map(q => ({ question: q.question, answer: guidedAnswers[q.id] || "" }));
+      await persistGuidedData({ guidedAnswers, starterAnswers });
+      const values = form.getValues();
+      const { followUpQuestions } = await reviewDraftWithAI(values as Record<string, unknown>, { caseId, getToken });
+      setGuidedFollowUpQuestions(followUpQuestions);
+      setGuidedPhase("followups");
+    } catch {
+      toast({ title: "Could not load follow-up questions", description: "Please try again in a moment.", variant: "destructive" });
+      setGuidedPhase("starter");
+    }
   };
 
   const finishGuided = async () => {
     setGuidedGenerating(true);
     try {
-      const answersArr = guidedQuestions.map(q => ({ question: q.question, answer: guidedAnswers[q.id] || "" }));
+      const allQuestions = [...starterQuestions, ...guidedFollowUpQuestions];
+      const answersArr = allQuestions.map(q => ({ question: q.question, answer: guidedAnswers[q.id] || "" }));
       const values = form.getValues();
       const { generatedDraft } = await generateCaseStatementWithAI(values as Record<string, unknown>, answersArr, { caseId, getToken });
       setGuidedDraft(generatedDraft);
@@ -789,45 +809,82 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
               Let's build your case story
             </DialogTitle>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Question {Math.min(guidedQuestionIndex + 1, guidedQuestions.length)} of {guidedQuestions.length}
+              {guidedPhase === "starter" && "A few quick questions to get started"}
+              {guidedPhase === "loadingFollowups" && "Reviewing your case…"}
+              {guidedPhase === "followups" && "A few more questions specific to your case"}
             </p>
           </DialogHeader>
           <div className="w-full h-1.5 rounded-full bg-[#ddf6f3] overflow-hidden">
             <div
               className="h-full rounded-full bg-[#14b8a6] transition-all"
-              style={{ width: `${((guidedQuestionIndex + 1) / guidedQuestions.length) * 100}%` }}
+              style={{ width: guidedPhase === "starter" ? "33%" : guidedPhase === "loadingFollowups" ? "66%" : "100%" }}
             />
           </div>
-          {guidedQuestions[guidedQuestionIndex] && (
-            <div className="space-y-2 py-2">
-              <label className="text-sm font-medium text-foreground">{guidedQuestions[guidedQuestionIndex].question}</label>
-              <Textarea
-                autoFocus
-                className="min-h-[110px] text-sm"
-                placeholder="Your answer…"
-                value={guidedAnswers[guidedQuestions[guidedQuestionIndex].id] || ""}
-                onChange={e => setGuidedAnswers(prev => ({ ...prev, [guidedQuestions[guidedQuestionIndex].id]: e.target.value }))}
-              />
+
+          {guidedPhase === "starter" && (
+            <div className="space-y-4 py-2 max-h-[55vh] overflow-y-auto">
+              {starterQuestions.map(q => (
+                <div key={q.id} className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">{q.question}</label>
+                  <Textarea
+                    className="min-h-[80px] text-sm"
+                    placeholder="Your answer…"
+                    value={guidedAnswers[q.id] || ""}
+                    onChange={e => setGuidedAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                  />
+                </div>
+              ))}
             </div>
           )}
+
+          {guidedPhase === "loadingFollowups" && (
+            <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+              <Loader2 className="h-6 w-6 animate-spin text-[#0d6b5e]" />
+              <p className="text-sm text-muted-foreground">Our AI advisor is reading your case to ask about anything specific that's still missing…</p>
+            </div>
+          )}
+
+          {guidedPhase === "followups" && (
+            <div className="space-y-4 py-2 max-h-[55vh] overflow-y-auto">
+              {guidedFollowUpQuestions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No additional questions — you're ready to generate your draft.</p>
+              ) : (
+                guidedFollowUpQuestions.map(q => (
+                  <div key={q.id} className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">{q.question}</label>
+                    <Textarea
+                      className="min-h-[80px] text-sm"
+                      placeholder="Your answer…"
+                      value={guidedAnswers[q.id] || ""}
+                      onChange={e => setGuidedAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                    />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
           <DialogFooter className="flex items-center justify-between sm:justify-between gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="gap-1"
-              disabled={guidedQuestionIndex === 0}
-              onClick={() => setGuidedQuestionIndex(i => Math.max(0, i - 1))}
-            >
-              <ChevronLeft className="h-4 w-4" /> Back
-            </Button>
-            {guidedQuestionIndex < guidedQuestions.length - 1 ? (
-              <Button type="button" className="gap-1 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => setGuidedQuestionIndex(i => i + 1)}>
-                Next <ChevronRight className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button type="button" disabled={guidedGenerating} className="gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={finishGuided}>
-                {guidedGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="h-4 w-4" /> Generate My Draft</>}
-              </Button>
+            {guidedPhase === "starter" && (
+              <>
+                <Button type="button" variant="outline" onClick={() => setGuidedModalOpen(false)}>Cancel</Button>
+                <Button type="button" className="gap-1 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={proceedToFollowUps}>
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+            {guidedPhase === "loadingFollowups" && (
+              <Button type="button" variant="outline" disabled className="ml-auto opacity-50">Please wait…</Button>
+            )}
+            {guidedPhase === "followups" && (
+              <>
+                <Button type="button" variant="outline" className="gap-1" onClick={() => setGuidedPhase("starter")}>
+                  <ChevronLeft className="h-4 w-4" /> Back
+                </Button>
+                <Button type="button" disabled={guidedGenerating} className="gap-2 bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={finishGuided}>
+                  {guidedGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="h-4 w-4" /> Generate My Draft</>}
+                </Button>
+              </>
             )}
           </DialogFooter>
         </DialogContent>

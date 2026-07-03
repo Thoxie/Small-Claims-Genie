@@ -360,7 +360,17 @@ function buildAdvisorBrief(
   c: typeof casesTable.$inferSelect,
   docs: typeof documentsTable.$inferSelect[]
 ): { brief: string; truncatedDocs: string[] } {
-  const { context: brief, truncatedDocs } = buildCaseContext(c, docs, { docCharLimit: PER_DOC_CHAR_LIMIT });
+  const { context: baseBrief, truncatedDocs } = buildCaseContext(c, docs, { docCharLimit: PER_DOC_CHAR_LIMIT });
+
+  const guided = (c.guidedIntakeData || {}) as { starterAnswers?: { question: string; answer: string }[] };
+  const starterAnswers = Array.isArray(guided.starterAnswers) ? guided.starterAnswers.filter(a => a?.answer?.trim()) : [];
+
+  let brief = baseBrief;
+  if (starterAnswers.length > 0) {
+    brief += "\n\n-- CASE STORY BUILDER: STARTER ANSWERS (already provided by the user — do NOT re-ask these) --\n";
+    brief += starterAnswers.map(a => `Q: ${a.question}\nA: ${a.answer}`).join("\n\n");
+  }
+
   return { brief, truncatedDocs };
 }
 
