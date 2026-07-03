@@ -10,8 +10,8 @@ const resourcesSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   "url": "https://smallclaimsgenie.com/resources",
-  "name": "California Small Claims Court Resources",
-  "description": "Free guides, court links, deadlines, and tips for California small claims court plaintiffs. Find your county courthouse and learn your rights.",
+  "name": "Small Claims Court Resources",
+  "description": "Free guides, court links, deadlines, and tips for small claims court plaintiffs. Find your county courthouse and learn your rights.",
   "isPartOf": { "@id": "https://smallclaimsgenie.com/#website" },
 };
 
@@ -27,10 +27,10 @@ const RESOURCES = [
     ],
   },
   {
-    category: "California Courts Self-Help",
+    category: "State Courts Self-Help",
     icon: Scale,
     items: [
-      { title: "Small Claims Overview — California Courts", desc: "Official California Judicial Branch guide to small claims court.", url: "https://www.courts.ca.gov/selfhelp-smallclaims.htm" },
+      { title: "Small Claims Overview — Courts Self-Help", desc: "Official state Judicial Branch guide to small claims court.", url: "https://www.courts.ca.gov/selfhelp-smallclaims.htm" },
       { title: "Small Claims Advisor Program", desc: "Free legal advice from certified advisors before you file.", url: "https://www.courts.ca.gov/1196.htm" },
       { title: "Find Your Local Courthouse", desc: "Search for your county courthouse by zip code.", url: "https://www.courts.ca.gov/find-my-court.htm" },
       { title: "Filing Fees Waiver (Fee Waiver)", desc: "Apply to waive filing fees if you cannot afford them.", url: "https://www.courts.ca.gov/documents/fw001.pdf" },
@@ -40,7 +40,7 @@ const RESOURCES = [
     category: "Know the Rules",
     icon: BookOpen,
     items: [
-      { title: "Small Claims Limits (2026)", desc: "Individuals may claim up to $12,500. Businesses limited to $6,250.", url: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=116.220.&lawCode=CCP" },
+      { title: "Small Claims Limits (2026)", desc: "Claim limits vary by state, typically ranging from a few thousand dollars up to $25,000.", url: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=116.220.&lawCode=CCP" },
       { title: "Statute of Limitations", desc: "How long you have to file — varies by claim type. Act fast.", url: "https://www.courts.ca.gov/1201.htm" },
       { title: "Service of Process Rules", desc: "How you are required to legally notify the defendant.", url: "https://www.courts.ca.gov/1202.htm" },
       { title: "What Happens at the Hearing", desc: "What to expect on your court date and how to prepare.", url: "https://www.courts.ca.gov/1207.htm" },
@@ -50,7 +50,7 @@ const RESOURCES = [
     category: "Common FAQs",
     icon: HelpCircle,
     items: [
-      { title: "Can I bring a lawyer to small claims court?", desc: "No. Lawyers are NOT allowed to represent clients in California small claims hearings." },
+      { title: "Can I bring a lawyer to small claims court?", desc: "In most states, lawyers are NOT allowed to represent clients in small claims hearings." },
       { title: "What if the defendant doesn't show up?", desc: "If properly served, the judge will likely rule in your favor by default." },
       { title: "What if I lose?", desc: "You can appeal within 30 days. The defendant can also appeal." },
       { title: "How do I collect my money after winning?", desc: "Winning a judgment doesn't automatically mean you'll be paid. You may need to garnish wages or levy a bank account." },
@@ -64,12 +64,12 @@ export default function Resources() {
   return (
     <div className="container mx-auto px-4 pt-4 pb-10 max-w-5xl">
       <Helmet>
-        <title>California Small Claims Court Resources — Small Claims Genie</title>
-        <meta name="description" content="Free guides, court links, deadlines, and tips for California small claims court plaintiffs. Find your county courthouse and learn your rights." />
+        <title>Small Claims Court Resources — Small Claims Genie</title>
+        <meta name="description" content="Free guides, court links, deadlines, and tips for small claims court plaintiffs. Find your county courthouse and learn your rights." />
         <link rel="canonical" href="https://smallclaimsgenie.com/resources" />
         <meta property="og:url" content="https://smallclaimsgenie.com/resources" />
-        <meta property="og:title" content="California Small Claims Court Resources — Small Claims Genie" />
-        <meta property="og:description" content="Free guides, court links, deadlines, and tips for California small claims court plaintiffs. Find your county courthouse and learn your rights." />
+        <meta property="og:title" content="Small Claims Court Resources — Small Claims Genie" />
+        <meta property="og:description" content="Free guides, court links, deadlines, and tips for small claims court plaintiffs. Find your county courthouse and learn your rights." />
         <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
         <script type="application/ld+json">{JSON.stringify(resourcesSchema)}</script>
       </Helmet>
@@ -79,7 +79,7 @@ export default function Resources() {
         <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold tracking-tight mb-2">{i18n.landing.resourcesTitle}</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Official court forms, California Judicial Branch guides, and answers to the most common small claims questions — all in one place.
+            Official court forms, state Judicial Branch guides, and answers to the most common small claims questions — all in one place.
           </p>
         </div>
 

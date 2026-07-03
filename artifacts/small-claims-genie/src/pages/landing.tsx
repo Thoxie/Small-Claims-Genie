@@ -15,7 +15,7 @@ const landingSchema = {
       "@id": "https://smallclaimsgenie.com/#website",
       "url": "https://smallclaimsgenie.com/",
       "name": "Small Claims Genie",
-      "description": "AI-powered California small claims court help. File confidently with AI-guided intake, demand letters, and court-ready forms for all 58 counties. No lawyer needed.",
+      "description": "AI-powered small claims court help. File confidently with AI-guided intake, demand letters, and court-ready forms for your state and county. No lawyer needed.",
     },
     {
       "@type": "SoftwareApplication",
@@ -24,7 +24,7 @@ const landingSchema = {
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "url": "https://smallclaimsgenie.com/",
-      "description": "AI-powered California small claims court assistant. Guides you through intake, organizes evidence, generates demand letters, and prepares court-ready forms for all 58 California counties.",
+      "description": "AI-powered small claims court assistant. Guides you through intake, organizes evidence, generates demand letters, and prepares court-ready forms for your state and county.",
       "offers": {
         "@type": "Offer",
         "price": 0,
@@ -41,11 +41,11 @@ export default function Landing() {
     <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
       <Helmet>
         <title>Small Claims Genie — Someone Owes You Money? Win in Small Claims Court Without a Lawyer</title>
-        <meta name="description" content="Someone owes you money? Small Claims Genie guides you through California small claims court step by step — AI-guided intake, evidence, demand letters, and court-ready forms. No lawyer needed." />
+        <meta name="description" content="Someone owes you money? Small Claims Genie guides you through small claims court step by step — AI-guided intake, evidence, demand letters, and court-ready forms for your state. No lawyer needed." />
         <link rel="canonical" href="https://smallclaimsgenie.com/" />
         <meta property="og:url" content="https://smallclaimsgenie.com/" />
         <meta property="og:title" content="Small Claims Genie — Someone Owes You Money? Win in Small Claims Court Without a Lawyer" />
-        <meta property="og:description" content="Someone owes you money? Small Claims Genie guides you through California small claims court step by step — AI-guided intake, evidence, demand letters, and court-ready forms. No lawyer needed." />
+        <meta property="og:description" content="Someone owes you money? Small Claims Genie guides you through small claims court step by step — AI-guided intake, evidence, demand letters, and court-ready forms for your state. No lawyer needed." />
         <script type="application/ld+json">{JSON.stringify(landingSchema)}</script>
       </Helmet>
 
@@ -130,7 +130,7 @@ export default function Landing() {
             {[
               { num: "01", icon: ClipboardList, label: "7-Step Intake Wizard", title: i18n.landing.step1Title, desc: i18n.landing.step1Desc },
               { num: "02", icon: FileText, label: "AI Evidence Reader", title: i18n.landing.step2Title, desc: i18n.landing.step2Desc },
-              { num: "03", icon: Scale, label: "SC-100 Download", title: i18n.landing.step3Title, desc: i18n.landing.step3Desc },
+              { num: "03", icon: Scale, label: "Court-Ready Forms", title: i18n.landing.step3Title, desc: i18n.landing.step3Desc },
             ].map(({ num, icon: Icon, title, desc, label }) => (
               <div key={num} className="bg-white/70 rounded-2xl p-5 border border-white/80 shadow-sm">
                 <div className="text-4xl font-black text-amber-400/40 mb-2 leading-none">{num}</div>

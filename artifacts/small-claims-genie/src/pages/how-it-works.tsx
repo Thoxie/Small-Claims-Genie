@@ -7,7 +7,7 @@ const howItWorksSchema = {
   "@type": "WebPage",
   "url": "https://smallclaimsgenie.com/how-it-works",
   "name": "How Small Claims Genie Works",
-  "description": "See how Small Claims Genie walks you through every step: intake, evidence, AI chat, demand letters, and court-ready forms for California small claims court.",
+  "description": "See how Small Claims Genie walks you through every step: intake, evidence, AI chat, demand letters, and court-ready forms for small claims court.",
   "isPartOf": { "@id": "https://smallclaimsgenie.com/#website" },
 };
 
@@ -68,11 +68,11 @@ export default function HowItWorks() {
     <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
       <Helmet>
         <title>How It Works — Small Claims Genie</title>
-        <meta name="description" content="See how Small Claims Genie walks you through every step: intake, evidence, AI chat, demand letters, and court-ready forms for California small claims court." />
+        <meta name="description" content="See how Small Claims Genie walks you through every step: intake, evidence, AI chat, demand letters, and court-ready forms for small claims court." />
         <link rel="canonical" href="https://smallclaimsgenie.com/how-it-works" />
         <meta property="og:url" content="https://smallclaimsgenie.com/how-it-works" />
         <meta property="og:title" content="How It Works — Small Claims Genie" />
-        <meta property="og:description" content="See how Small Claims Genie walks you through every step: intake, evidence, AI chat, demand letters, and court-ready forms for California small claims court." />
+        <meta property="og:description" content="See how Small Claims Genie walks you through every step: intake, evidence, AI chat, demand letters, and court-ready forms for small claims court." />
         <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
         <script type="application/ld+json">{JSON.stringify(howItWorksSchema)}</script>
       </Helmet>

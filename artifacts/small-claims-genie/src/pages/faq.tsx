@@ -105,11 +105,11 @@ export default function FAQ() {
     <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
       <Helmet>
         <title>Frequently Asked Questions — Small Claims Genie</title>
-        <meta name="description" content="Answers to common questions about filing in California small claims court, using AI tools, demand letters, court forms, and the Small Claims Genie platform." />
+        <meta name="description" content="Answers to common questions about filing in small claims court, using AI tools, demand letters, court forms, and the Small Claims Genie platform." />
         <link rel="canonical" href="https://smallclaimsgenie.com/faq" />
         <meta property="og:url" content="https://smallclaimsgenie.com/faq" />
         <meta property="og:title" content="Frequently Asked Questions — Small Claims Genie" />
-        <meta property="og:description" content="Answers to common questions about filing in California small claims court, using AI tools, demand letters, court forms, and the Small Claims Genie platform." />
+        <meta property="og:description" content="Answers to common questions about filing in small claims court, using AI tools, demand letters, court forms, and the Small Claims Genie platform." />
         <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Helmet>

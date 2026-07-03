@@ -99,7 +99,7 @@ export const en = {
     downloadSc100: "Download SC-100 PDF",
   },
   counties: {
-    title: "California Counties",
+    title: "Counties",
     subtitle: "Find your local small claims courthouse, filing fees, and contact information. Filing in the correct county is critical — your case can be dismissed if you file in the wrong one.",
     searchPlaceholder: "Search by county, city, or courthouse...",
     courthouse: "Courthouse",

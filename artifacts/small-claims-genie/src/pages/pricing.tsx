@@ -669,7 +669,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
           <p className="text-xl font-black tracking-tight text-[#0d6b5e] leading-tight">Post-Judgment Collection</p>
         </div>
         <p className="text-[13px] text-[#5a6478] leading-[1.4]">
-          Won your case but the defendant still hasn't paid? This add-on gives you every tool California law provides to force collection.
+          Won your case but the defendant still hasn't paid? This add-on gives you every legal tool available to force collection.
         </p>
       </div>
 
@@ -699,7 +699,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
 
       <div className="bg-[#fffbeb] border border-[#fde68a] rounded-xl p-[8px_12px] mb-4 h-[88px] flex flex-col justify-center">
         <strong className="block text-[13px] text-[#92400e] mb-[2px] leading-[1.25]">Best for winners who still need to collect.</strong>
-        <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Every enforcement tool California law provides — writs, levies, garnishments, and liens — in one guided workflow.</span>
+        <span className="block text-[11px] text-[#5a6478] leading-[1.3]">Every enforcement tool the law provides — writs, levies, garnishments, and liens — in one guided workflow.</span>
       </div>
 
       <ul className="flex-1 list-none p-0 m-0 grid gap-[8px] content-start mb-5">
@@ -707,7 +707,7 @@ function CollectionCard({ loadingKey, onCheckout }: { loadingKey: PlanKey | null
           "Writ of Execution — the court order that authorizes the sheriff to seize the debtor's assets on your behalf.",
           "Wage Garnishment — directs the debtor's employer to withhold a portion of each paycheck and pay it to you.",
           "Bank Levy — freezes funds in the debtor's bank account and transfers the balance to satisfy your judgment.",
-          "Abstract of Judgment — creates a legal lien on any real property the debtor owns in California.",
+          "Abstract of Judgment — creates a legal lien on any real property the debtor owns.",
           "Judgment Renewal — extends the life of your judgment so you never lose your right to collect.",
           "AI enforcement strategy — tells you which method to use first based on what you know about the debtor.",
           "Step-by-step collection workflow — no guesswork on what to file next or where to go.",
@@ -847,7 +847,7 @@ export default function Pricing() {
         </div>
 
         <p className="mt-6 text-center text-[12px] text-[#8a96a8] max-w-md">
-          All plans include AI chat, document uploads, all California and Florida counties, and email reminders.
+          All plans include AI chat, document uploads, full state and county coverage, and email reminders.
         </p>
 
         <div className="mt-8 w-full max-w-xl mx-auto border-2 border-[#a8e6df] rounded-2xl px-8 py-7 text-center bg-[#f0fffe]">
