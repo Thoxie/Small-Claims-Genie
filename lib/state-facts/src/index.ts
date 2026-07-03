@@ -12,7 +12,7 @@
 // (AI advisor vs. AI visitor triage vs. Resources page) can stay tailored while
 // the numbers themselves are guaranteed consistent.
 
-export type StateCode = "CA" | "FL" | "TX" | "IL" | "NC";
+export type StateCode = "CA" | "FL" | "TX" | "IL" | "NC" | "VA";
 
 export interface SolPeriod {
   /** e.g. "Written contract" */
@@ -78,7 +78,7 @@ export interface StateFacts {
   filingFrequencyCapText?: string;
 }
 
-export const STATE_ORDER: StateCode[] = ["CA", "FL", "TX", "IL", "NC"];
+export const STATE_ORDER: StateCode[] = ["CA", "FL", "TX", "IL", "NC", "VA"];
 
 export const STATE_FACTS: Record<StateCode, StateFacts> = {
   CA: {
@@ -329,6 +329,51 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     appealNote: "Appeals from Magistrate Court are generally filed within 10 days of judgment, and are heard fresh (\"de novo\") in District Court (G.S. 7A-228).",
 
     keyCounties: ["Mecklenburg (Charlotte)", "Wake (Raleigh)", "Guilford (Greensboro)", "Forsyth (Winston-Salem)", "Cumberland (Fayetteville)", "Durham", "Buncombe (Asheville)", "New Hanover (Wilmington)"],
+  },
+
+  VA: {
+    code: "VA",
+    name: "Virginia",
+    flagEmoji: "🏛️",
+    courtSystemName: "General District Court (Small Claims Division)",
+    courtBranchName: "Virginia Judicial System",
+    selfHelpUrl: "https://www.vacourts.gov",
+    selfHelpLabel: "Virginia's Judicial System",
+
+    claimLimitText: "$5,000",
+    claimLimitCitation: "Va. Code § 16.1-122.2",
+
+    attorneysAllowed: false,
+    attorneysNote: "Attorneys are generally NOT allowed to represent parties in Virginia's Small Claims Division (Va. Code § 16.1-122.4) — never suggest hiring one for the hearing",
+
+    filingFeeTiers: [
+      { label: "varies by locality and claim type", fee: "UNKNOWN — needs verification" },
+    ],
+    filingFeeNote: "Virginia filing fees are set per General District Court and depend on case type and location — there is no single statewide dollar amount. Use the GDC Civil Filing Fee Calculator or contact the local clerk before filing. Do not treat any single county's fee as the statewide rate.",
+    feesRecoverableCitation: undefined,
+
+    statuteOfLimitations: [
+      { label: "Written contract", period: "5 years" },
+      { label: "Oral contract", period: "3 years" },
+      { label: "Property damage", period: "5 years" },
+      { label: "Personal injury", period: "2 years" },
+    ],
+    statuteOfLimitationsCitation: "written contract Va. Code § 8.01-246(A)(2); oral contract Va. Code § 8.01-246(A)(4) (needs final verification); property damage Va. Code § 8.01-243(B); personal injury Va. Code § 8.01-243(A)",
+
+    serviceDeadlineText: "at least 5 days before the hearing; if served by mail, at least 10 days before the return date (DC-413 required for mail service, if applicable)",
+    serviceMethodsText: "Sheriff service (~$12 per defendant — verify exact fee before production) or certified mail per Va. Code § 17.1-272",
+    serviceOfProcessCitation: "Va. Code § 17.1-272",
+
+    forms: [
+      { id: "DC-402", name: "Warrant in Debt", desc: "The main form you file to start your case in the Small Claims Division of General District Court." },
+      { id: "DC-409", name: "Petition to Proceed In Forma Pauperis (Fee Waiver)", desc: "Apply to waive filing fees if you cannot afford them." },
+    ],
+
+    judgmentValidityYears: 10,
+    judgmentRenewable: true,
+    collectionToolsText: "garnishment (wages/bank), writ of fieri facias (property execution), judgment lien — GDC judgments entered on or after 1985 are valid for 10 years (Va. Code § 16.1-94.1)",
+
+    appealNote: "Appeals to Circuit Court must generally be filed within 10 days of judgment; the case is heard fresh (\"trial de novo\") in Circuit Court.",
   },
 };
 

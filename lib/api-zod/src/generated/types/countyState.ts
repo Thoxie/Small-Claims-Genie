@@ -14,4 +14,5 @@ export const CountyState = {
   IL: "IL",
   NC: "NC",
   TX: "TX",
+  VA: "VA",
 } as const;

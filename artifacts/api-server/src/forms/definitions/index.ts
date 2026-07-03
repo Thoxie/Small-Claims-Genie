@@ -64,3 +64,7 @@ export * from "./denton-citation-request-definition";
 export * from "./nc-aoc-cvm-200-definition";
 export * from "./nc-aoc-cvm-100-definition";
 export * from "./nc-aoc-g-106-definition";
+
+// ─── Virginia programmatic forms (pdf-lib, no template PDF) ───────────────────
+export * from "./va-dc-402-definition";
+export * from "./va-dc-409-definition";

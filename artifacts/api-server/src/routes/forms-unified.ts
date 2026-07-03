@@ -652,4 +652,31 @@ router.post(
   makeFormHandler("NC-AOC-G-106", (id) => `NC-Fee-Waiver-Signed-Case-${id}.pdf`, { signed: true, inline: true }),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Virginia — DC-402 (Warrant in Debt), DC-409 (In Forma Pauperis fee waiver)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// VA Warrant in Debt — DC-402 (primary filing form)
+router.post(
+  "/cases/:id/forms/va/dc-402",
+  makeFormHandler("VA-DC-402", (id) => `VA-Warrant-in-Debt-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/va/dc-402/signed",
+  makeFormHandler("VA-DC-402", (id) => `VA-Warrant-in-Debt-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+// VA Petition to Proceed In Forma Pauperis — DC-409 (fee waiver)
+// inline: true so the browser opens the PDF; user completes financial eligibility section
+router.post(
+  "/cases/:id/forms/va/dc-409",
+  makeFormHandler("VA-DC-409", (id) => `VA-Fee-Waiver-Case-${id}.pdf`, { inline: true }),
+);
+
+router.post(
+  "/cases/:id/forms/va/dc-409/signed",
+  makeFormHandler("VA-DC-409", (id) => `VA-Fee-Waiver-Signed-Case-${id}.pdf`, { signed: true, inline: true }),
+);
+
 export default router;

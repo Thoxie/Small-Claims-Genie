@@ -48,6 +48,7 @@
     "test:tx-fee-waiver": "tsx ./src/test-tx-fee-waiver.ts",
     "test:tx-petition-signed": "tsx ./src/test-tx-petition-signed.ts",
     "test:il-smc-complaint-signed": "tsx ./src/test-il-smc-complaint-signed.ts",
+    "test:va-forms": "tsx ./src/test-va-forms.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

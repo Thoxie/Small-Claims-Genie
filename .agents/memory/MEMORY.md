@@ -14,4 +14,5 @@
 - [FL fee waiver coords](fl-fee-waiver-coords.md) — coordinate offset formula: pdftotext_yMax = (792-pdf_lib_y)+1.863; tsx hot-reload unreliable for definitions/, restart server after each edit
 - [Multi-state SEO copy pattern](multi-state-seo-copy.md) — state names allowed only on pricing page's "Available in" badge; counties.tsx and sc100-generator.tsx are the intentional exceptions
 - [State facts single source of truth](state-facts-single-source.md) — lib/state-facts is canonical for per-state legal numbers; verify prompt interpolations by rendering with node --experimental-strip-types, not npx tsx
+- [pdf-lib WinAnsi glyph limitations](pdf-lib-winansi-glyphs.md) — Unicode symbols like ☐ crash drawText at runtime with standard fonts; use ASCII "[ ]" or drawn rectangles instead
 # Last pushed: 2026-06-30 20:04 UTC

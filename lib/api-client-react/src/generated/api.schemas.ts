@@ -17,6 +17,7 @@ export const CountyState = {
   IL: "IL",
   NC: "NC",
   TX: "TX",
+  VA: "VA",
 } as const;
 
 export interface County {
@@ -63,6 +64,7 @@ export const CaseJurisdictionState = {
   IL: "IL",
   NC: "NC",
   TX: "TX",
+  VA: "VA",
 } as const;
 
 export type CaseGuidedIntakeDataGuidedAnswers = { [key: string]: string };
@@ -254,6 +256,7 @@ export const CreateCaseBodyJurisdictionState = {
   IL: "IL",
   NC: "NC",
   TX: "TX",
+  VA: "VA",
 } as const;
 
 export interface CreateCaseBody {
@@ -272,6 +275,7 @@ export const UpdateCaseBodyJurisdictionState = {
   IL: "IL",
   NC: "NC",
   TX: "TX",
+  VA: "VA",
 } as const;
 
 export interface UpdateCaseBody {
@@ -530,6 +534,7 @@ export const ListCountiesState = {
   IL: "IL",
   NC: "NC",
   TX: "TX",
+  VA: "VA",
 } as const;
 
 export type UploadDocumentBody = {

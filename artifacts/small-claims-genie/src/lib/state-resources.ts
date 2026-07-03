@@ -28,6 +28,7 @@ const CLAIM_LIMIT_PREFIX: Record<ResourceStateCode, string> = {
   TX: "Up to",
   IL: "Up to",
   NC: "Up to",
+  VA: "Up to",
 };
 
 const CLAIM_LIMIT_SUFFIX: Record<ResourceStateCode, string> = {
@@ -36,6 +37,7 @@ const CLAIM_LIMIT_SUFFIX: Record<ResourceStateCode, string> = {
   TX: ", exclusive of interest, attorneys' fees, and court costs",
   IL: ", exclusive of costs and interest",
   NC: ", exclusive of interest and court costs",
+  VA: "",
 };
 
 const SOL_LABEL_OVERRIDES: Record<string, string> = {
@@ -55,6 +57,7 @@ const SERVICE_OF_PROCESS_TEXT: Record<ResourceStateCode, string> = {
   TX: `${TX_SERVICE_METHOD_CLAUSE}, typically within a few days.`,
   IL: `You arrange service through the sheriff or a private process server (roughly $60). Must be completed ${STATE_FACTS.IL.serviceDeadlineText.replace(" (hearing date)", "")}.`,
   NC: `The sheriff serves the defendant after filing (${NC_SHERIFF_FEE} fee paid to the Clerk at filing).`,
+  VA: `${STATE_FACTS.VA.serviceMethodsText}. Must be completed ${STATE_FACTS.VA.serviceDeadlineText}.`,
 };
 
 const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined> = {
@@ -63,6 +66,7 @@ const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined
   TX: `Roughly ${STATE_FACTS.TX.filingFeeTiers[0].fee}–${STATE_FACTS.TX.filingFeeTiers[STATE_FACTS.TX.filingFeeTiers.length - 1].fee} depending on claim amount and county (Justice Court fee schedule)`,
   IL: `Roughly ${STATE_FACTS.IL.filingFeeTiers[0].fee} depending on county`,
   NC: undefined,
+  VA: "UNKNOWN — needs verification. Virginia does not publish a single statewide filing fee; amounts vary by locality and case type. Use the GDC Civil Filing Fee Calculator or contact your local clerk before filing.",
 };
 
 // STATE_FACTS.forms is the exhaustive form catalog used by the AI prompts and
@@ -77,12 +81,14 @@ const FORMS_USED_IDS: Record<ResourceStateCode, string[]> = {
   TX: ["Small Claims Petition", "Citation", "Return of Service", "Fee Waiver (Statement of Inability to Afford Payment of Court Costs)"],
   IL: ["Small Claims Complaint", "Summons", "Proof of Service", "Fee Waiver", "Letter to Sheriff"],
   NC: ["AOC-CVM-200", "AOC-CVM-100", "AOC-G-106"],
+  VA: ["DC-402", "DC-409"],
 };
 
 // The Resources card uses the short "Fee Waiver" label while the canonical
-// catalog spells out the official NC form name for AI-prompt purposes.
+// catalog spells out the official NC/VA form name for AI-prompt purposes.
 const FORMS_NAME_OVERRIDE: Partial<Record<string, string>> = {
   "AOC-G-106": "Fee Waiver",
+  "DC-409": "Fee Waiver",
 };
 
 function buildStateResource(code: ResourceStateCode): StateResourceInfo {
@@ -124,6 +130,7 @@ export const STATE_RESOURCES: Record<ResourceStateCode, StateResourceInfo> = {
   TX: buildStateResource("TX"),
   IL: buildStateResource("IL"),
   NC: buildStateResource("NC"),
+  VA: buildStateResource("VA"),
 };
 
-export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NC", "TX"];
+export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NC", "TX", "VA"];
