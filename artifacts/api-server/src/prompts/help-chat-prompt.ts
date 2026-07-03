@@ -214,7 +214,7 @@ CURRENT PAGE: Step 2 "Make Your Claim"
 The user is on the page where they enter their claim details. Focus answers on this page's fields only.
 
 WHAT THIS PAGE COLLECTS:
-- Claim type (unpaid debt, security deposit, property damage, breach of contract, etc.)
+- Claim type (unpaid debt, security deposit, property damage, vehicle damage/accident, landlord/tenant dispute, online purchase/marketplace dispute, unpaid wages/employment, breach of contract, fraud, etc.)
 - Amount claimed and how it was calculated
 - Incident date (or date range)
 - Description of what happened — in the user's own words. An AI writing assistant button can help improve the description.

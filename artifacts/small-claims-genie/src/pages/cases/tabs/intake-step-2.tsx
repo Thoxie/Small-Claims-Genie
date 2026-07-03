@@ -393,7 +393,7 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
                       <SelectContent>
-                        {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Contract Dispute", "Fraud", "Other"].map(t => (
+                        {["Money Owed", "Unpaid Debt", "Security Deposit", "Property Damage", "Vehicle Damage/Accident", "Landlord/Tenant Dispute", "Online Purchase/Marketplace Dispute", "Unpaid Wages/Employment", "Contract Dispute", "Fraud", "Other"].map(t => (
                           <SelectItem key={t} value={t}>{t}</SelectItem>
                         ))}
                       </SelectContent>
