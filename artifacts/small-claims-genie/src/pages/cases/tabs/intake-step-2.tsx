@@ -437,6 +437,8 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                       ? <p className="text-xs text-muted-foreground">Florida small claims limit: $8,000</p>
                       : initialData.jurisdictionState === "CA"
                       ? <p className="text-xs text-muted-foreground">California limit: $12,500 for individuals · $6,250 for businesses</p>
+                      : initialData.jurisdictionState === "VA"
+                      ? <p className="text-xs text-muted-foreground">Virginia small claims limit: $5,000</p>
                       : <p className="text-xs text-muted-foreground">Check your state's small claims court for its dollar limit.</p>
                     }
                     <FormMessage />

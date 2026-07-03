@@ -15,4 +15,5 @@
 - [Multi-state SEO copy pattern](multi-state-seo-copy.md) — state names allowed only on pricing page's "Available in" badge; counties.tsx and sc100-generator.tsx are the intentional exceptions
 - [State facts single source of truth](state-facts-single-source.md) — lib/state-facts is canonical for per-state legal numbers; verify prompt interpolations by rendering with node --experimental-strip-types, not npx tsx
 - [pdf-lib WinAnsi glyph limitations](pdf-lib-winansi-glyphs.md) — Unicode symbols like ☐ crash drawText at runtime with standard fonts; use ASCII "[ ]" or drawn rectangles instead
+- [Duplicate hardcoded state dropdowns](duplicate-state-dropdowns.md) — cases/new.tsx and intake-step-1.tsx have separate state lists; adding a state to one doesn't update the other
 # Last pushed: 2026-06-30 20:04 UTC
