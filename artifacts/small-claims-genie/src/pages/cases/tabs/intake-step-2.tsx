@@ -197,7 +197,12 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
   }, [caseId, getToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const claimTypeValue = form.watch("claimType");
-  const starterQuestions = getStarterQuestions(claimTypeValue);
+  const starterQuestions = getStarterQuestions(claimTypeValue, {
+    defendantName: initialData.defendantName,
+    plaintiffName: initialData.plaintiffName,
+    jurisdictionState: initialData.jurisdictionState,
+    defendantIsBusiness: initialData.defendantIsBusinessOrEntity,
+  });
 
   const openGuided = () => {
     if (!claimTypeValue) {
@@ -430,7 +435,9 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                       ? <p className="text-xs text-muted-foreground">Texas small claims limit: $20,000</p>
                       : initialData.jurisdictionState === "FL"
                       ? <p className="text-xs text-muted-foreground">Florida small claims limit: $8,000</p>
-                      : <p className="text-xs text-muted-foreground">California limit: $12,500 for individuals · $6,250 for businesses</p>
+                      : initialData.jurisdictionState === "CA"
+                      ? <p className="text-xs text-muted-foreground">California limit: $12,500 for individuals · $6,250 for businesses</p>
+                      : <p className="text-xs text-muted-foreground">Check your state's small claims court for its dollar limit.</p>
                     }
                     <FormMessage />
                   </FormItem>
