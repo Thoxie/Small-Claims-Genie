@@ -255,7 +255,7 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
       courthouseCity: selectedCourthouse?.city ?? selectedCounty?.courthouseCity ?? null,
       courthouseZip: selectedCourthouse?.zip ?? selectedCounty?.courthouseZip ?? null,
       courthousePhone: courtPhone || null,
-      courthouseWebsite: selectedCounty?.website ?? null,
+      courthouseWebsite: selectedCounty?.website ?? selectedCounty?.clerkWebsite ?? null,
       courthouseClerkEmail: selectedCounty?.clerkEmail ?? null,
     });
   };
@@ -359,8 +359,8 @@ export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck
                 <span className="font-semibold text-foreground">{courtName}</span>
                 {courtAddress && <span className="text-muted-foreground">{courtAddress}</span>}
                 {courtPhone && <span className="text-muted-foreground">{courtPhone}</span>}
-                {selectedCounty?.website && (
-                  <a href={selectedCounty.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium inline-flex items-center gap-0.5">
+                {(selectedCounty?.website || selectedCounty?.clerkWebsite) && (
+                  <a href={selectedCounty.website || selectedCounty.clerkWebsite} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium inline-flex items-center gap-0.5">
                     Court website ↗
                   </a>
                 )}
