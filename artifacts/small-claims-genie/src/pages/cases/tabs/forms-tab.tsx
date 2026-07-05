@@ -3467,7 +3467,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
               <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
                 <p className="text-base font-bold text-foreground mb-1">Virginia Filing Fees</p>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-2">
-                  <span className="text-blue-700">Filing fee</span><span className="font-medium text-blue-900">Varies by county — UNKNOWN, verify with your local clerk</span>
+                  <span className="text-blue-700">Filing fee</span><span className="font-medium text-blue-900">Varies by county — check with your local clerk</span>
                   <span className="text-blue-700">Claim limit</span><span className="font-medium text-blue-900">$5,000 (Va. Code § 16.1-122.2)</span>
                 </div>
                 <p className="text-xs text-blue-800">Unlike some states, Virginia does not publish one statewide flat filing fee — amounts are set per General District Court. File a Fee Waiver (DC-409) if you cannot afford the fees — see the Fee Waiver step.</p>
@@ -3493,7 +3493,7 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
                     <p className="text-xs font-semibold text-blue-900 mb-0.5">What to bring to the clerk's window</p>
                     <ul className="text-xs text-blue-800 leading-relaxed space-y-1 mt-1">
                       <li>• Your signed <strong>Warrant in Debt (DC-402)</strong></li>
-                      <li>• The filing fee — <strong>UNKNOWN, verify amount with your local clerk</strong></li>
+                      <li>• The filing fee — <strong>check with your local clerk for the amount</strong></li>
                       <li>• The defendant's full name and best known address</li>
                       <li>• If applicable, your <strong>Petition to Proceed In Forma Pauperis (DC-409)</strong></li>
                     </ul>
