@@ -18,7 +18,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-asotin",
@@ -30,7 +30,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-benton",
@@ -42,7 +42,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-chelan",
@@ -54,7 +54,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-clallam",
@@ -66,7 +66,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-clark",
@@ -90,7 +90,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-cowlitz",
@@ -102,7 +102,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-douglas",
@@ -114,7 +114,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-ferry",
@@ -126,7 +126,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-franklin",
@@ -138,7 +138,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-garfield",
@@ -150,7 +150,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-grant",
@@ -162,7 +162,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-grays-harbor",
@@ -174,7 +174,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-island",
@@ -186,7 +186,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-jefferson",
@@ -198,7 +198,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-king-bellevue",
@@ -210,7 +210,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-king-issaquah",
@@ -222,7 +222,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-king-redmond",
@@ -234,7 +234,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-king-auburn",
@@ -246,7 +246,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-king-burien",
@@ -258,7 +258,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-king-kent",
@@ -270,7 +270,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-king-seattle",
@@ -282,7 +282,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-king-shoreline",
@@ -294,7 +294,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://kingcounty.gov/en/dept/courts/district-court",
-    notes: "One of King County's multiple filing facilities; full address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "One of King County's multiple filing facilities — confirm the exact address before filing",
   },
   {
     id: "wa-kitsap",
@@ -306,7 +306,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-kittitas",
@@ -318,7 +318,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-klickitat",
@@ -330,7 +330,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-lewis",
@@ -342,7 +342,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-lincoln",
@@ -354,7 +354,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-mason",
@@ -366,7 +366,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-okanogan",
@@ -390,7 +390,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-pend-oreille",
@@ -402,7 +402,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-pierce",
@@ -414,7 +414,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-san-juan",
@@ -426,7 +426,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-skagit",
@@ -438,7 +438,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-skamania",
@@ -450,7 +450,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-snohomish",
@@ -462,7 +462,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-spokane",
@@ -474,7 +474,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-stevens",
@@ -486,7 +486,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-thurston",
@@ -498,7 +498,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-wahkiakum",
@@ -510,7 +510,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-walla-walla",
@@ -522,7 +522,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-whatcom",
@@ -534,7 +534,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-whitman",
@@ -546,7 +546,7 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
   {
     id: "wa-yakima",
@@ -558,6 +558,6 @@ export const WASHINGTON_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.courts.wa.gov/court_dir/?fa=court_dir.county",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; clerkWebsite is the statewide court directory search tool, not a direct county page",
+    notes: "Use the statewide court directory search tool to find this county's exact filing location",
   },
 ] as const;

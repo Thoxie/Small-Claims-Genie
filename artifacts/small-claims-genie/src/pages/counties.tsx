@@ -93,13 +93,15 @@ function FilingFeesPanel({ state, county }: { state: StateTab; county: CountyIte
     );
   }
 
-  // No numeric per-county fee data (VA, NJ, WA): surface the statewide note instead
-  // of fabricating a number.
+  // No numeric per-county fee data (VA, NJ, WA): surface the statewide fee note.
+  // Never use `county.notes` here — for these states it holds general courthouse
+  // caveats (e.g. address/phone confidence), not fee information, and showing it
+  // under a "Filing Fee" heading is misleading.
   return (
     <>
       <h4 className="font-semibold mb-2">Filing Fee</h4>
       <p className="text-xs text-muted-foreground">
-        {county.notes || STATE_FACTS[state].filingFeeNote || "Varies — check with the local court before filing."}
+        {STATE_FACTS[state].filingFeeNote || "Varies — check with the local court before filing."}
       </p>
     </>
   );

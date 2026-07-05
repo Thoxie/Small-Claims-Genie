@@ -72,9 +72,9 @@ const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined
   TX: `Roughly ${STATE_FACTS.TX.filingFeeTiers[0].fee}–${STATE_FACTS.TX.filingFeeTiers[STATE_FACTS.TX.filingFeeTiers.length - 1].fee} depending on claim amount and county (Justice Court fee schedule)`,
   IL: `Roughly ${STATE_FACTS.IL.filingFeeTiers[0].fee} depending on county`,
   NC: undefined,
-  VA: "UNKNOWN — needs verification. Virginia does not publish a single statewide filing fee; amounts vary by locality and case type. Use the GDC Civil Filing Fee Calculator or contact your local clerk before filing.",
+  VA: "Varies by General District Court and case type — Virginia does not have a single statewide filing fee. Use the GDC Civil Filing Fee Calculator or contact your local clerk before filing.",
   NJ: undefined,
-  WA: "UNKNOWN — needs verification. Washington's exact statewide filing fee was not independently confirmed; verify with RCW 12.40 and the specific county district court before filing.",
+  WA: undefined,
 };
 
 // STATE_FACTS.forms is the exhaustive form catalog used by the AI prompts and

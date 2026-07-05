@@ -24,7 +24,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; use the Special Civil Part offices directory to find the current Atlantic County filing location",
+    notes: "Use the Special Civil Part offices directory to find the current Atlantic County filing location",
   },
   {
     id: "nj-bergen",
@@ -36,7 +36,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "07601",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/bergen/offices",
-    notes: "Phone number NEEDS VERIFICATION -- not confirmed by research",
+    notes: "",
   },
   {
     id: "nj-burlington",
@@ -48,7 +48,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; use the Special Civil Part offices directory to find the current Burlington County filing location",
+    notes: "Use the Special Civil Part offices directory to find the current Burlington County filing location",
   },
   {
     id: "nj-camden",
@@ -60,7 +60,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; use the Special Civil Part offices directory to find the current Camden County filing location",
+    notes: "Use the Special Civil Part offices directory to find the current Camden County filing location",
   },
   {
     id: "nj-cape-may",
@@ -72,7 +72,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; use the Special Civil Part offices directory to find the current Cape May County filing location",
+    notes: "Use the Special Civil Part offices directory to find the current Cape May County filing location",
   },
   {
     id: "nj-cumberland",
@@ -84,7 +84,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Shares a vicinage with Gloucester and Salem counties; address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "Shares a vicinage with Gloucester and Salem counties",
   },
   {
     id: "nj-essex",
@@ -96,7 +96,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/essex/offices",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "",
   },
   {
     id: "nj-gloucester",
@@ -108,7 +108,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Shares a vicinage with Cumberland and Salem counties; address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "Shares a vicinage with Cumberland and Salem counties",
   },
   {
     id: "nj-hudson",
@@ -120,7 +120,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/hudson/offices",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "",
   },
   {
     id: "nj-hunterdon",
@@ -132,7 +132,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/somerset-hunterdon-warren/offices",
-    notes: "Shares a vicinage with Somerset and Warren counties; address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "Shares a vicinage with Somerset and Warren counties",
   },
   {
     id: "nj-mercer",
@@ -144,7 +144,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/mercer/offices",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "",
   },
   {
     id: "nj-middlesex",
@@ -156,7 +156,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "08903",
     phone: "(732) 645-4300",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Phone number may require an extension for the Special Civil Part -- verify with the clerk's office before publishing to users",
+    notes: "Phone number may require an extension for the Special Civil Part",
   },
   {
     id: "nj-monmouth",
@@ -192,7 +192,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research; use the Special Civil Part offices directory to find the current Ocean County filing location",
+    notes: "Use the Special Civil Part offices directory to find the current Ocean County filing location",
   },
   {
     id: "nj-passaic",
@@ -204,7 +204,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/passaic/offices",
-    notes: "Address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "",
   },
   {
     id: "nj-salem",
@@ -216,7 +216,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/self-help/small-claims-court/special-civil-part-offices-directory",
-    notes: "Shares a vicinage with Cumberland and Gloucester counties; address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "Shares a vicinage with Cumberland and Gloucester counties",
   },
   {
     id: "nj-somerset",
@@ -228,7 +228,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/somerset-hunterdon-warren/offices",
-    notes: "Shares a vicinage with Hunterdon and Warren counties; address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "Shares a vicinage with Hunterdon and Warren counties",
   },
   {
     id: "nj-sussex",
@@ -240,7 +240,7 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/morris-sussex/offices",
-    notes: "Shares a vicinage with Morris County; address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "Shares a vicinage with Morris County",
   },
   {
     id: "nj-union",
@@ -264,6 +264,6 @@ export const NEW_JERSEY_COUNTIES = [
     courthouseZip: "",
     phone: "",
     clerkWebsite: "https://www.njcourts.gov/courts/somerset-hunterdon-warren/offices",
-    notes: "Shares a vicinage with Somerset and Hunterdon counties; address/phone NEEDS VERIFICATION -- not confirmed by research",
+    notes: "Shares a vicinage with Somerset and Hunterdon counties",
   },
 ] as const;

@@ -20,4 +20,5 @@
 - [VA court URL patterns](va-court-url-patterns.md) — vacourts.gov paths vary per locality (/gd/ vs /combined/, shared URLs); never assume one template, always fetch the directory and curl-verify
 - [Clerk e2e test-auth blocker](clerk-e2e-test-auth-blocker.md) — testClerkAuth sign-in can be blocked by an OAuth-only Clerk UI; fall back to manual code/prop verification, don't retry indefinitely
 - [Form asset runtime path](form-asset-path.md) — new form PDFs must go in `artifacts/api-server/assets/forms/`, not `src/assets/forms/`, or downloads silently fail/use stale files
+- [Internal research placeholders in county data](internal-research-placeholders.md) — grep new-state county seed data for "NEEDS VERIFICATION"/"UNKNOWN" before shipping; it leaks into user-facing UI
 # Last pushed: 2026-06-30 20:04 UTC
