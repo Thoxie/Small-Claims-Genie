@@ -84,18 +84,22 @@ function countyDisplay(countyId?: string | null): string {
     .join(" ");
 }
 
+// Keys are the exact `claimType` values saved by the intake UI
+// (see cases/new.tsx and cases/tabs/intake-step-2.tsx CLAIM_TYPES list).
+// Values are the exact checkbox labels on the WA Notice of Small Claim form.
 function claimReasonLabel(ct?: string | null): string {
   const MAP: Record<string, string> = {
-    goods: "Merchandise",
-    services: "Faulty Workmanship",
-    loan: "Loan",
-    account_stated: "Other",
-    contract: "Other",
-    rent: "Rent",
-    property_damage: "Property Damage",
-    personal_injury: "Auto Damage - Accident",
-    security_deposit: "Return of Deposit",
-    other: "Other",
+    "Money Owed": "Loan",
+    "Unpaid Debt": "Loan",
+    "Security Deposit": "Return of Deposit",
+    "Property Damage": "Property Damage",
+    "Vehicle Damage/Accident": "Auto Damage",
+    "Landlord/Tenant Dispute": "Rent",
+    "Online Purchase/Marketplace Dispute": "Merchandise",
+    "Unpaid Wages/Employment": "Wages",
+    "Contract Dispute": "Faulty Workmanship",
+    Fraud: "Other",
+    Other: "Other",
   };
   return ct ? (MAP[ct] ?? "Other") : "Other";
 }
@@ -223,8 +227,7 @@ export async function buildWANotice(
   y -= 12;
   let cx = ML;
   for (const r of reasons) {
-    const isMatch = reason === r || (reason === "Auto Damage - Accident" && r === "Auto Damage");
-    checkbox(page, font, isMatch, cx, y, 8);
+    checkbox(page, font, reason === r, cx, y, 8);
     txt(page, font, r, cx + 11, y, 7.5);
     cx += font.widthOfTextAtSize(r, 7.5) + 24;
     if (cx > MR - 70) { cx = ML; y -= 12; }
