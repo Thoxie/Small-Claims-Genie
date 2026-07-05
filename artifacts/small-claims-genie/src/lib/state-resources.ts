@@ -29,6 +29,8 @@ const CLAIM_LIMIT_PREFIX: Record<ResourceStateCode, string> = {
   IL: "Up to",
   NC: "Up to",
   VA: "Up to",
+  NJ: "Up to",
+  WA: "Up to",
 };
 
 const CLAIM_LIMIT_SUFFIX: Record<ResourceStateCode, string> = {
@@ -38,6 +40,8 @@ const CLAIM_LIMIT_SUFFIX: Record<ResourceStateCode, string> = {
   IL: ", exclusive of costs and interest",
   NC: ", exclusive of interest and court costs",
   VA: "",
+  NJ: "",
+  WA: "",
 };
 
 const SOL_LABEL_OVERRIDES: Record<string, string> = {
@@ -58,6 +62,8 @@ const SERVICE_OF_PROCESS_TEXT: Record<ResourceStateCode, string> = {
   IL: `You arrange service through the sheriff or a private process server (roughly $60). Must be completed ${STATE_FACTS.IL.serviceDeadlineText.replace(" (hearing date)", "")}.`,
   NC: `The sheriff serves the defendant after filing (${NC_SHERIFF_FEE} fee paid to the Clerk at filing).`,
   VA: `${STATE_FACTS.VA.serviceMethodsText}. Must be completed ${STATE_FACTS.VA.serviceDeadlineText}.`,
+  NJ: `${STATE_FACTS.NJ.serviceMethodsText}. Deadline: ${STATE_FACTS.NJ.serviceDeadlineText}`,
+  WA: `${STATE_FACTS.WA.serviceMethodsText}. Deadline: ${STATE_FACTS.WA.serviceDeadlineText}`,
 };
 
 const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined> = {
@@ -67,6 +73,8 @@ const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined
   IL: `Roughly ${STATE_FACTS.IL.filingFeeTiers[0].fee} depending on county`,
   NC: undefined,
   VA: "UNKNOWN — needs verification. Virginia does not publish a single statewide filing fee; amounts vary by locality and case type. Use the GDC Civil Filing Fee Calculator or contact your local clerk before filing.",
+  NJ: undefined,
+  WA: "UNKNOWN — needs verification. Washington's exact statewide filing fee was not independently confirmed; verify with RCW 12.40 and the specific county district court before filing.",
 };
 
 // STATE_FACTS.forms is the exhaustive form catalog used by the AI prompts and
@@ -82,6 +90,8 @@ const FORMS_USED_IDS: Record<ResourceStateCode, string[]> = {
   IL: ["Small Claims Complaint", "Summons", "Proof of Service", "Fee Waiver", "Letter to Sheriff"],
   NC: ["AOC-CVM-200", "AOC-CVM-100", "AOC-G-106"],
   VA: ["DC-402", "DC-409"],
+  NJ: ["Small Claims Complaint", "Appendix XI-A(2)", "Fee Waiver (Application to Proceed as an Indigent)"],
+  WA: ["Notice of Small Claim", "Small Claims Calendar Notice"],
 };
 
 // The Resources card uses the short "Fee Waiver" label while the canonical
@@ -131,6 +141,12 @@ export const STATE_RESOURCES: Record<ResourceStateCode, StateResourceInfo> = {
   IL: buildStateResource("IL"),
   NC: buildStateResource("NC"),
   VA: buildStateResource("VA"),
+  NJ: buildStateResource("NJ"),
+  WA: buildStateResource("WA"),
 };
 
+// NJ and WA are intentionally NOT yet in the public state picker order below --
+// they are in Phase 1 (data layer only) of the state-expansion process. See
+// .agents/skills/state-expansion/SKILL.md. Do not add them here until Phase 2
+// is explicitly greenlit (facts verified + forms pipeline decided).
 export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NC", "TX", "VA"];

@@ -12,7 +12,7 @@
 // (AI advisor vs. AI visitor triage vs. Resources page) can stay tailored while
 // the numbers themselves are guaranteed consistent.
 
-export type StateCode = "CA" | "FL" | "TX" | "IL" | "NC" | "VA";
+export type StateCode = "CA" | "FL" | "TX" | "IL" | "NC" | "VA" | "NJ" | "WA";
 
 export interface SolPeriod {
   /** e.g. "Written contract" */
@@ -78,7 +78,7 @@ export interface StateFacts {
   filingFrequencyCapText?: string;
 }
 
-export const STATE_ORDER: StateCode[] = ["CA", "FL", "TX", "IL", "NC", "VA"];
+export const STATE_ORDER: StateCode[] = ["CA", "FL", "TX", "IL", "NC", "VA", "NJ", "WA"];
 
 export const STATE_FACTS: Record<StateCode, StateFacts> = {
   CA: {
@@ -374,6 +374,99 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     collectionToolsText: "garnishment (wages/bank), writ of fieri facias (property execution), judgment lien — GDC judgments entered on or after 1985 are valid for 10 years (Va. Code § 16.1-94.1)",
 
     appealNote: "Appeals to Circuit Court must generally be filed within 10 days of judgment; the case is heard fresh (\"trial de novo\") in Circuit Court.",
+  },
+
+  NJ: {
+    code: "NJ",
+    name: "New Jersey",
+    flagEmoji: "🌊",
+    courtSystemName: "Special Civil Part, Small Claims Section",
+    courtBranchName: "New Jersey Courts",
+    selfHelpUrl: "https://www.njcourts.gov/self-help/small-claims-court",
+    selfHelpLabel: "NJ Courts Small Claims Self-Help",
+
+    claimLimitText: "$5,000 (the general Special Civil Part limit is $20,000, but the Small Claims Section is capped at $5,000)",
+    claimLimitCitation: "N.J. Ct. R. 6:1-1, 6:1-2 (effective July 1, 2022)",
+
+    attorneysAllowed: true,
+    attorneysNote: "Attorneys are allowed but most individuals file and present small claims cases without one. Whether an LLC/corporation may appear without a licensed attorney is NEEDS VERIFICATION (research did not confirm this against N.J. Ct. R. 1:21-1) — do not tell a business user they can self-represent until this is verified",
+
+    filingFeeTiers: [
+      { label: "to sue one defendant", fee: "$35" },
+      { label: "each additional defendant", fee: "$5" },
+    ],
+    filingFeeNote: "Plus service fees: roughly $10 per defendant for certified/regular mail service; the court mails the summons for you after filing",
+    feesRecoverableCitation: undefined,
+
+    statuteOfLimitations: [
+      { label: "Written contract", period: "6 years" },
+      { label: "Oral contract", period: "6 years" },
+      { label: "Property damage", period: "6 years" },
+      { label: "Personal injury", period: "2 years" },
+    ],
+    statuteOfLimitationsCitation: "N.J.S.A. 2A:14-1 (contracts/property — NEEDS VERIFICATION of current statutory text); N.J.S.A. 2A:14-2 (personal injury)",
+
+    serviceDeadlineText: "UNKNOWN — the exact number of days before the hearing that service must be completed was NOT confirmed by research; needs verification before being surfaced to users as a deadline",
+    serviceMethodsText: "The court mails the summons and complaint to the defendant by certified and regular mail after you file; a Special Civil Part Officer can also serve personally for an additional fee",
+
+    forms: [
+      { id: "", name: "Small Claims Complaint", desc: "States the parties, the amount claimed, and why the defendant owes you money." },
+      { id: "Appendix XI-A(2)", name: "Small Claims Summons and Return of Service", desc: "Summons and proof-of-service form used in the Small Claims Section." },
+      { id: "", name: "Fee Waiver (Application to Proceed as an Indigent)", desc: "Apply to waive filing fees if you cannot afford them." },
+    ],
+
+    judgmentValidityYears: 20,
+    judgmentRenewable: true,
+    collectionToolsText: "wage garnishment, bank levy, and a judgment lien on real property docketed with the Superior Court Clerk — NOTE: the 20-year figure is a well-established general NJ civil-judgment rule (N.J.S.A. 2A:14-5) but was NOT independently re-confirmed by this round of research specifically for Small Claims Section judgments; verify before publishing to users",
+
+    appealNote: "Appeals from the Special Civil Part Small Claims Section are generally filed with the Superior Court, Appellate Division — exact deadline NEEDS VERIFICATION",
+
+    filingFrequencyCapText: undefined,
+  },
+
+  WA: {
+    code: "WA",
+    name: "Washington",
+    flagEmoji: "🏔️",
+    courtSystemName: "District Court, Small Claims Department",
+    courtBranchName: "Washington Courts",
+    selfHelpUrl: "https://www.courts.wa.gov/newsinfo/resources/index.cfm?fa=newsinfo_resources.smallclaims",
+    selfHelpLabel: "Washington Courts Small Claims Resources",
+
+    claimLimitText: "$10,000 for individuals; $5,000 for businesses, assignees, and collection agencies",
+    claimLimitCitation: "RCW 12.40.010",
+
+    attorneysAllowed: false,
+    attorneysNote: "Attorneys are generally NOT allowed to represent parties in Washington small claims court (RCW 12.40.080) — never suggest hiring one for the hearing. Whether a corporation must still appear through a non-attorney authorized representative is NEEDS VERIFICATION",
+
+    filingFeeTiers: [
+      { label: "typical filing fee", fee: "generally not more than $50 — NEEDS VERIFICATION of the exact statewide figure and whether it varies by county" },
+    ],
+    filingFeeNote: "Exact statewide fee schedule was not independently confirmed by research; verify with RCW 12.40 and the specific county district court before publishing a number to users",
+    feesRecoverableCitation: undefined,
+
+    statuteOfLimitations: [
+      { label: "Written contract", period: "6 years" },
+      { label: "Oral contract", period: "3 years" },
+      { label: "Property damage", period: "3 years" },
+      { label: "Personal injury", period: "3 years" },
+    ],
+    statuteOfLimitationsCitation: "RCW 4.16.040 (written contract); RCW 4.16.080 (oral contract, property damage, personal injury)",
+
+    serviceDeadlineText: "UNKNOWN — the exact number of days before the hearing that service must be completed was NOT confirmed by research; needs verification before being surfaced to users as a deadline",
+    serviceMethodsText: "Certified mail, sheriff, or a process server — the plaintiff arranges service, the court does not serve the defendant automatically",
+
+    forms: [
+      { id: "", name: "Notice of Small Claim", desc: "The main form you file to start your case in Small Claims Department of District Court." },
+      { id: "", name: "Small Claims Calendar Notice", desc: "Notifies the defendant of the hearing date and location." },
+    ],
+
+    judgmentValidityYears: 10,
+    judgmentRenewable: true,
+    collectionToolsText: "wage garnishment, bank account garnishment, writ of execution, judgment lien on real property — a WA judgment is valid for 10 years and may be renewed for an additional 10 years",
+    appealNote: "Appeals from a small claims judgment are generally filed in Superior Court within 30 days — exact procedure NEEDS VERIFICATION",
+
+    keyCounties: ["King (Seattle)", "Pierce (Tacoma)", "Snohomish (Everett)", "Spokane", "Clark (Vancouver)"],
   },
 };
 
