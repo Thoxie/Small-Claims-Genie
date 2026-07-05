@@ -164,7 +164,11 @@ export async function buildWAService(
   if (line) { txt(page, font, line, ML, y, 8); y -= 11; }
   y -= 12;
 
-  const sigLineY = y;
+  // Note: this certificate is signed by whoever actually performed service
+  // (often not the plaintiff — can be a process server, sheriff, or other
+  // adult third party). The app only captures the plaintiff/user's
+  // e-signature, so it must NOT be auto-embedded here — the "server" signs
+  // this line by hand after printing.
   drawLine(page, ML, y, ML + 200, y, 0.5);
   txt(page, font, `Dated: ${new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}`, ML + 215, y + 2, 9);
   y -= 4;
@@ -176,14 +180,6 @@ export async function buildWAService(
   const footer = "MISC 05.0200 — WA Certificate of Service — RCW 12.40.040 — File with the court after service is completed";
   const fw = font.widthOfTextAtSize(footer, 6.5);
   txt(page, font, footer, (PW - fw) / 2, y, 6.5, GRAY);
-
-  if (opts?.signatureBytes) {
-    try {
-      const sigImg = await doc.embedPng(opts.signatureBytes).catch(() => null)
-        ?? await doc.embedJpg(opts.signatureBytes).catch(() => null);
-      if (sigImg) page.drawImage(sigImg, { x: ML, y: sigLineY, width: 180, height: 32 });
-    } catch { /* ignore invalid image data */ }
-  }
 
   return Buffer.from(await doc.save());
 }
