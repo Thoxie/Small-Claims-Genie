@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useState, useMemo } from "react";
 import { useListCounties } from "@workspace/api-client-react";
+import { STATE_FACTS, type StateCode } from "@workspace/state-facts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,16 +9,101 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Globe, Landmark, Search, Wand2 } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 
-const countiesSchema = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "url": "https://smallclaimsgenie.com/counties",
-  "name": "California & Florida Small Claims Court Counties",
-  "description": "Find your county courthouse, filing fees, limits, and contact information for California and Florida small claims courts.",
-  "isPartOf": { "@id": "https://smallclaimsgenie.com/#website" },
+// Order mirrors STATE_ORDER in lib state-resources.ts; keep in sync whenever a
+// new state is added (see .agents/skills/state-expansion/SKILL.md).
+const STATE_TABS: StateCode[] = ["CA", "FL", "TX", "IL", "NC", "VA", "NJ", "WA"];
+
+type StateTab = StateCode;
+
+type CountyItem = {
+  name: string;
+  courthouseName: string;
+  courthouseAddress: string;
+  courthouseCity: string;
+  courthouseZip: string;
+  state: string;
+  phone?: string;
+  website?: string;
+  clerkWebsite?: string;
+  filingFeeUnder1500?: number;
+  filingFee1500to5000?: number;
+  filingFeeOver5000?: number;
+  filingFeeUnder10000?: number;
+  notes?: string;
+  id: string;
 };
 
-type StateTab = "CA" | "FL";
+// Fee display is intentionally per-state: each state's County data models filing
+// fees differently (CA/TX/NC use 3 numeric tiers, IL uses a single flat number,
+// FL uses a fixed statutory table, VA/NJ/WA have no numeric per-county fee and
+// rely on the county's free-text `notes` field). Never fabricate numbers for a
+// state that doesn't have them — fall back to notes/statewide facts instead.
+function FilingFeesPanel({ state, county }: { state: StateTab; county: CountyItem }) {
+  if (state === "FL") {
+    return (
+      <>
+        <h4 className="font-semibold mb-2">Filing Fees (Fla. Stat. 34.041)</h4>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <div className="flex justify-between"><span className="text-muted-foreground">Under $100</span><span className="font-medium">$55</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">$101–$500</span><span className="font-medium">$80</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">$501–$2,500</span><span className="font-medium">$175</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Over $2,500</span><span className="font-medium">$300</span></div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">+ summons, service, and e-filing fees</p>
+      </>
+    );
+  }
+
+  const hasTiers =
+    county.filingFeeUnder1500 != null &&
+    county.filingFee1500to5000 != null &&
+    county.filingFeeOver5000 != null;
+
+  if (hasTiers) {
+    return (
+      <>
+        <h4 className="font-semibold mb-2">{i18n.counties.filingFees || "Filing Fees"}</h4>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">{i18n.counties.under1500 || "Under $1.5k"}</div>
+            <div className="font-medium">${county.filingFeeUnder1500}</div>
+          </div>
+          <div className="border-x border-border/50">
+            <div className="text-xs text-muted-foreground mb-1">{i18n.counties.upTo5000 || "$1.5k–$5k"}</div>
+            <div className="font-medium">${county.filingFee1500to5000}</div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">{i18n.counties.over5000 || "Over $5k"}</div>
+            <div className="font-medium">${county.filingFeeOver5000}</div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (county.filingFeeUnder10000 != null) {
+    return (
+      <>
+        <h4 className="font-semibold mb-2">Filing Fee</h4>
+        <div className="text-center">
+          <span className="text-lg font-semibold">${county.filingFeeUnder10000}</span>
+        </div>
+        {county.notes && <p className="text-xs text-muted-foreground mt-2">{county.notes}</p>}
+      </>
+    );
+  }
+
+  // No numeric per-county fee data (VA, NJ, WA): surface the statewide note instead
+  // of fabricating a number.
+  return (
+    <>
+      <h4 className="font-semibold mb-2">Filing Fee</h4>
+      <p className="text-xs text-muted-foreground">
+        {county.notes || STATE_FACTS[state].filingFeeNote || "Varies — check with the local court before filing."}
+      </p>
+    </>
+  );
+}
 
 export default function Counties() {
   const [selectedState, setSelectedState] = useState<StateTab>("CA");
@@ -36,22 +122,34 @@ export default function Counties() {
     );
   }, [counties, searchTerm]);
 
+  const stateFacts = STATE_FACTS[selectedState];
+  const countCopy = counties ? `all ${counties.length}` : "every";
   const headingText = selectedState === "CA"
     ? "All 58 California Counties"
-    : "All 67 Florida Counties";
+    : `${countCopy === "every" ? "" : countCopy.charAt(0).toUpperCase() + countCopy.slice(1) + " "}${stateFacts.name} Counties`;
   const subtitleText = selectedState === "CA"
     ? (i18n.counties.subtitle || "Find your courthouse, filing fees, and contact info for all 58 California small claims courts.")
-    : "Find your courthouse, filing fees, and contact info for all 67 Florida small claims courts.";
+    : `Find your courthouse, filing fees, and contact info for ${countCopy} ${stateFacts.name} small claims courts.`;
+  const pageTitle = `${stateFacts.name} Small Claims Court Counties — Small Claims Genie`;
+  const pageDescription = `Find your county courthouse, filing fees, limits, and contact information for ${stateFacts.name} small claims courts.`;
+  const countiesSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "url": "https://smallclaimsgenie.com/counties",
+    "name": pageTitle,
+    "description": pageDescription,
+    "isPartOf": { "@id": "https://smallclaimsgenie.com/#website" },
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <Helmet>
-        <title>California & Florida Small Claims Court Counties — Small Claims Genie</title>
-        <meta name="description" content="Find your county courthouse, filing fees, limits, and contact information for California and Florida small claims courts." />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
         <link rel="canonical" href="https://smallclaimsgenie.com/counties" />
         <meta property="og:url" content="https://smallclaimsgenie.com/counties" />
-        <meta property="og:title" content="California & Florida Small Claims Court Counties — Small Claims Genie" />
-        <meta property="og:description" content="Find your county courthouse, filing fees, limits, and contact information for California and Florida small claims courts." />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
         <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
         <script type="application/ld+json">{JSON.stringify(countiesSchema)}</script>
       </Helmet>
@@ -62,29 +160,21 @@ export default function Counties() {
         </p>
 
         {/* State toggle */}
-        <div className="flex gap-2 mb-5">
-          <button
-            type="button"
-            onClick={() => { setSelectedState("CA"); setSearchTerm(""); }}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 font-semibold text-sm transition-all ${
-              selectedState === "CA"
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background text-foreground hover:border-primary/50"
-            }`}
-          >
-            🌴 California
-          </button>
-          <button
-            type="button"
-            onClick={() => { setSelectedState("FL"); setSearchTerm(""); }}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 font-semibold text-sm transition-all ${
-              selectedState === "FL"
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background text-foreground hover:border-primary/50"
-            }`}
-          >
-            ☀️ Florida
-          </button>
+        <div className="flex flex-wrap gap-2 mb-5">
+          {STATE_TABS.map((code) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => { setSelectedState(code); setSearchTerm(""); }}
+              className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 font-semibold text-sm transition-all ${
+                selectedState === code
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-foreground hover:border-primary/50"
+              }`}
+            >
+              {STATE_FACTS[code].flagEmoji} {STATE_FACTS[code].name}
+            </button>
+          ))}
         </div>
         
         <div className="relative max-w-md">
@@ -159,43 +249,14 @@ export default function Counties() {
                         rel="noopener noreferrer"
                         className="hover:text-primary hover:underline truncate"
                       >
-                        {county.state === "FL" ? "Clerk Website" : "Court Website"}
+                        {county.website ? "Court Website" : "Clerk Website"}
                       </a>
                     </div>
                   )}
                 </div>
 
                 <div className="bg-muted/50 rounded-md p-3 text-sm">
-                  {selectedState === "CA" ? (
-                    <>
-                      <h4 className="font-semibold mb-2">{i18n.counties.filingFees || "Filing Fees"}</h4>
-                      <div className="grid grid-cols-3 gap-2 text-center">
-                        <div>
-                          <div className="text-xs text-muted-foreground mb-1">{i18n.counties.under1500 || "Under $1.5k"}</div>
-                          <div className="font-medium">${county.filingFeeUnder1500 || 30}</div>
-                        </div>
-                        <div className="border-x border-border/50">
-                          <div className="text-xs text-muted-foreground mb-1">{i18n.counties.upTo5000 || "$1.5k–$5k"}</div>
-                          <div className="font-medium">${county.filingFee1500to5000 || 50}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground mb-1">{i18n.counties.over5000 || "Over $5k"}</div>
-                          <div className="font-medium">${county.filingFeeOver5000 || 75}</div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h4 className="font-semibold mb-2">Filing Fees (Fla. Stat. 34.041)</h4>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                        <div className="flex justify-between"><span className="text-muted-foreground">Under $100</span><span className="font-medium">$55</span></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">$101–$500</span><span className="font-medium">$80</span></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">$501–$2,500</span><span className="font-medium">$175</span></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">Over $2,500</span><span className="font-medium">$300</span></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">+ summons, service, and e-filing fees</p>
-                    </>
-                  )}
+                  <FilingFeesPanel state={selectedState} county={county} />
                 </div>
               </CardContent>
             </Card>

@@ -42,11 +42,13 @@ Exposing a state in the picker before its forms pipeline exists lets a user crea
 
 1. State picker dropdowns: `cases/new.tsx`, `intake-step-1.tsx` (there are two separate hardcoded lists — update both, see `duplicate-hardcoded-state-dropdowns` memory).
 2. `state-resources.ts` (Resources page) — add the new `ResourceStateCode` entries across every `Record<ResourceStateCode, ...>` map in the file.
-3. Court Forms tab (`forms-tab.tsx`) and Deadline Calculator tab (`deadline-calculator-tab.tsx`) — add state-specific sections following the existing per-state conditional pattern (`isVirginiaCase`, `isNorthCarolinaCase`, etc.).
-4. AI prompts (`chat.ts` Case Advisor, `help-chat.ts` Help Genie) — add a new per-state block interpolating from `STATE_FACTS`, matching the existing CA/FL/TX/IL/NC/VA blocks.
-5. Actual PDF form generation — register new `FormDefinition`s in the Form Registry per the Unified Form Engine pattern in replit.md.
-6. Run `pnpm run typecheck` from the workspace root (never a leaf artifact in isolation).
-7. Test the full flow end-to-end (new case creation → county selection → intake → forms → AI chat mentions the state correctly).
+3. `pricing.tsx` (`SUPPORTED_STATES`) — add the new state so the "Available in" badge and pricing copy stay accurate.
+4. `counties.tsx` (public `/counties` directory page) — add the new state to `STATE_TABS` and confirm `FilingFeesPanel` renders correctly for its data shape (numeric 3-tier grid, flat fee, or notes-only fallback depending on what the state's county data actually has). This is a standing requirement for every new state, not optional polish — always do it as part of Phase 2/rollout.
+5. Court Forms tab (`forms-tab.tsx`) and Deadline Calculator tab (`deadline-calculator-tab.tsx`) — add state-specific sections following the existing per-state conditional pattern (`isVirginiaCase`, `isNorthCarolinaCase`, etc.).
+6. AI prompts (`chat.ts` Case Advisor, `help-chat.ts` Help Genie) — add a new per-state block interpolating from `STATE_FACTS`, matching the existing CA/FL/TX/IL/NC/VA blocks.
+7. Actual PDF form generation — register new `FormDefinition`s in the Form Registry per the Unified Form Engine pattern in replit.md.
+8. Run `pnpm run typecheck` from the workspace root (never a leaf artifact in isolation).
+9. Test the full flow end-to-end (new case creation → county selection → intake → forms → AI chat mentions the state correctly), including clicking through the new state's tab on `/counties` via `runTest()`.
 
 ## Guardrails (apply throughout)
 
