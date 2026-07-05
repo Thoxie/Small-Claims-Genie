@@ -182,11 +182,13 @@ export default function NewCase() {
               onChange={(e) => { setCountyId(e.target.value); setErrors((p) => ({ ...p, countyId: undefined })); }}
             >
               <option value="">Select your county</option>
-              {counties?.map((county) => (
-                <option key={county.id} value={county.id}>
-                  {county.name} County
-                </option>
-              ))}
+              {[...(counties ?? [])]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((county) => (
+                  <option key={county.id} value={county.id}>
+                    {county.name} County
+                  </option>
+                ))}
             </select>
             <p className="text-sm text-muted-foreground mt-1">{countyHint}</p>
             {jurisdictionState === "IL" && selectedCounty?.filingFeeUnder10000 != null && (
