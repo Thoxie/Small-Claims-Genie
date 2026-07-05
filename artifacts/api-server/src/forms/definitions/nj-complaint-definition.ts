@@ -15,11 +15,17 @@
  * njcourts.gov (direct download is blocked by Incapsula bot protection).
  */
 
-import { PDFDocument, PDFName, PDFString } from "pdf-lib";
+import { PDFDocument, PDFName, PDFString, StandardFonts, layoutMultilineText } from "pdf-lib";
 import type { FormDefinition, CaseData, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { loadAsset } from "../../routes/forms-common";
 import { pdftkFlatten } from "../acroform-filler";
+
+// plaSigA widget rect (from the source AcroForm; see buildNJComplaint below).
+const SIG_X = 324.902;
+const SIG_Y = 432.861;
+const SIG_W = 229.694;
+const SIG_H = 19.031;
 
 const NJ_COUNTY_CODES: Record<string, string> = {
   "nj-atlantic": "atl",
@@ -64,6 +70,73 @@ function setField(form: any, name: string, value: string) {
     f.acroField.dict.set(PDFName.of("DA"), PDFString.of("/Helv 10 Tf 0 g"));
     f.setText(value || "");
   } catch { /* field may not exist */ }
+}
+
+/**
+ * Fills a multiline text field, shrinking the font size as needed so the
+ * wrapped text fits within the field's own box height. Falls back to the
+ * smallest size and truncates with an ellipsis if it still doesn't fit
+ * (rather than letting pdf-lib overflow the text past the box, which used
+ * to print into the page footer for long AI-generated claim descriptions).
+ */
+async function setFittedMultilineField(
+  pdfDoc: PDFDocument,
+  form: any,
+  name: string,
+  value: string,
+  opts?: { maxFontSize?: number; minFontSize?: number },
+): Promise<void> {
+  const text = value || "";
+  let field: any;
+  try {
+    field = form.getTextField(name);
+  } catch {
+    return;
+  }
+
+  const widgets = field.acroField.getWidgets();
+  const rect = widgets[0]?.getRectangle();
+  // Leave a small margin inside the visible box so wrapped text never
+  // touches the field border.
+  const boxWidth = rect ? Math.max(20, rect.width - 8) : 500;
+  const boxHeight = rect ? Math.max(20, rect.height - 6) : 180;
+
+  const helvFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const maxFontSize = opts?.maxFontSize ?? 10;
+  const minFontSize = opts?.minFontSize ?? 6;
+
+  for (let size = maxFontSize; size >= minFontSize; size -= 0.5) {
+    const layout = layoutMultilineText(text, {
+      alignment: 0,
+      fontSize: size,
+      font: helvFont,
+      bounds: { x: 0, y: 0, width: boxWidth, height: boxHeight },
+    });
+    const lineHeight = size * 1.15;
+    const neededHeight = layout.lines.length * lineHeight;
+    if (neededHeight <= boxHeight) {
+      field.acroField.dict.set(PDFName.of("DA"), PDFString.of(`/Helv ${size} Tf 0 g`));
+      field.setText(text);
+      return;
+    }
+  }
+
+  // Nothing fit even at minFontSize — truncate to the max number of lines
+  // that fit, keeping whole words, and append an ellipsis.
+  const layout = layoutMultilineText(text, {
+    alignment: 0,
+    fontSize: minFontSize,
+    font: helvFont,
+    bounds: { x: 0, y: 0, width: boxWidth, height: boxHeight },
+  });
+  const lineHeight = minFontSize * 1.15;
+  const maxLines = Math.max(1, Math.floor(boxHeight / lineHeight));
+  const kept = layout.lines.slice(0, maxLines).map((l) => l.text);
+  if (kept.length > 0) {
+    kept[kept.length - 1] = kept[kept.length - 1].replace(/[\s.]*$/, "") + "…";
+  }
+  field.acroField.dict.set(PDFName.of("DA"), PDFString.of(`/Helv ${minFontSize} Tf 0 g`));
+  field.setText(kept.join("\n"));
 }
 
 function setChoice(form: any, name: string, value: string) {
@@ -136,14 +209,46 @@ export async function buildNJComplaint(
 
   const desc = [d.claimDescription, (d as any).howAmountCalculated]
     .filter(Boolean).join("  ");
-  setField(form, "demandDesc", desc);
+  await setFittedMultilineField(pdfDoc, form, "demandDesc", desc);
 
   setField(form, "sigDtA", fmtDate(null));
-  setField(form, "plaSigA", opts?.signatureBytes ? "s/" : "s/");
+  // Leave plaSigA blank when we have an actual signature image (drawn on the
+  // page below); otherwise fall back to a typed "/s/ Name" e-signature line.
+  setField(form, "plaSigA", opts?.signatureBytes ? "" : `/s/ ${d.plaintiffName ?? ""}`);
   setField(form, "plaA", d.plaintiffName ?? "");
 
   const filled = Buffer.from(await pdfDoc.save());
-  return pdftkFlatten(filled);
+  const flattened = await pdftkFlatten(filled);
+
+  if (opts?.signatureBytes) {
+    return embedSignatureImage(flattened, opts.signatureBytes);
+  }
+  return flattened;
+}
+
+/** Overlay the plaintiff's drawn signature image onto the flattened PDF. */
+async function embedSignatureImage(flattenedBuf: Buffer, sigBytes: Buffer): Promise<Buffer> {
+  try {
+    const pdfDoc = await PDFDocument.load(flattenedBuf, { ignoreEncryption: true });
+    const sigImg = await pdfDoc.embedPng(sigBytes).catch(() => null)
+      ?? await pdfDoc.embedJpg(sigBytes).catch(() => null);
+    if (sigImg) {
+      // The plaSigA widget lives on page 2 (index 1) of this form, not page 1.
+      const page = pdfDoc.getPages()[1] ?? pdfDoc.getPages()[0];
+      if (page) {
+        // Preserve the image's aspect ratio within the field's box.
+        const scale = Math.min(SIG_W / sigImg.width, SIG_H / sigImg.height);
+        const w = sigImg.width * scale;
+        const h = sigImg.height * scale;
+        page.drawImage(sigImg, { x: SIG_X, y: SIG_Y, width: w, height: h });
+      }
+    }
+    return Buffer.from(await pdfDoc.save());
+  } catch {
+    // If signature embedding fails for any reason, still return the
+    // otherwise-valid flattened PDF rather than failing the download.
+    return flattenedBuf;
+  }
 }
 
 const njComplaintDefinition: FormDefinition = {
