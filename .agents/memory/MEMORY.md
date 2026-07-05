@@ -21,4 +21,5 @@
 - [Clerk e2e test-auth blocker](clerk-e2e-test-auth-blocker.md) — testClerkAuth sign-in can be blocked by an OAuth-only Clerk UI; fall back to manual code/prop verification, don't retry indefinitely
 - [Form asset runtime path](form-asset-path.md) — new form PDFs must go in `artifacts/api-server/assets/forms/`, not `src/assets/forms/`, or downloads silently fail/use stale files
 - [Internal research placeholders in county data](internal-research-placeholders.md) — grep new-state county seed data for "NEEDS VERIFICATION"/"UNKNOWN" before shipping; it leaks into user-facing UI
+- [County directory batch-fetch](county-directory-batch-fetch.md) — fetch per-county courthouse pages in parallel batches, not one-by-one; handle 404s by checking the county index page for the real building-page slug
 # Last pushed: 2026-06-30 20:04 UTC
