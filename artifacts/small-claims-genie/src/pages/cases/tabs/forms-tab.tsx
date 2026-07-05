@@ -3597,9 +3597,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
             <div className="flex gap-2.5">
               <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-blue-900 mb-0.5">After you file</p>
+                <p className="text-xs font-semibold text-blue-900 mb-0.5">After you file — 2 ways to serve the defendant</p>
                 <p className="text-xs text-blue-800 leading-relaxed">
-                  The clerk mails the Summons and Return of Service to the defendant. If you cannot afford the filing fee, ask the clerk for the Application to Proceed as an Indigent when you file.
+                  By default, the clerk mails the Summons and Return of Service to the defendant by certified and regular mail — this is included in your filing fee, but only counts as service if the defendant signs for the certified mail. If you'd rather not rely on mail (or the defendant is likely to avoid signing for it), you can ask the clerk to have a <strong>Special Civil Part Officer serve the defendant in person</strong> instead, for an additional fee. If you cannot afford the filing fee, ask the clerk for the Application to Proceed as an Indigent when you file.
                 </p>
               </div>
             </div>

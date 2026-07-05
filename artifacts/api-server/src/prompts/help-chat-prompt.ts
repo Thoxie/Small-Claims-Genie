@@ -112,7 +112,7 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 - Service: ${NJ.serviceDeadlineText}. ${NJ.serviceMethodsText} (${NJ.serviceOfProcessCitation})
 - After winning: judgment valid ${NJ.judgmentValidityYears} years, renewable for another ${NJ.judgmentValidityYears}. Collection options: ${NJ.collectionToolsText}
 - Appeal: ${NJ.appealNote}
-- NJ court forms: Small Claims Genie generates the pre-filled CN 10532 Small Claims Complaint (Appendix XI-C) — available with Sign & Download or unsigned download. The clerk mails the Summons and Return of Service after filing; the optional Fee Waiver (Application to Proceed as an Indigent) is requested from the clerk directly — the app does not generate either of those two.
+- NJ court forms: Small Claims Genie generates the pre-filled CN 10532 Small Claims Complaint (Appendix XI-C) — available with Sign & Download or unsigned download. After filing, there are 2 ways to serve the defendant: by default the clerk mails the Summons and Return of Service by certified and regular mail (included in the filing fee, but only counts if the defendant signs); or the user can ask the clerk for personal service by a Special Civil Part Officer for an additional fee. The optional Fee Waiver (Application to Proceed as an Indigent) is requested from the clerk directly — the app does not generate either of those two.
 
 ## WASHINGTON SMALL CLAIMS RULES (2026)
 - Filed in the Small Claims Department of District Court — limit ${WA.claimLimitText} (${WA.claimLimitCitation})
@@ -226,7 +226,7 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 - Filing fee: ${NJ.filingFeeTiers[0].fee} to sue one defendant, plus ${NJ.filingFeeTiers[1].fee} per additional defendant. ${NJ.filingFeeNote}
 - Statute of limitations: written and oral contracts ${NJ.statuteOfLimitations[0].period}, property damage ${NJ.statuteOfLimitations[2].period}, personal injury ${NJ.statuteOfLimitations[3].period} (${NJ.statuteOfLimitationsCitation})
 - Service: ${NJ.serviceDeadlineText}. ${NJ.serviceMethodsText} (${NJ.serviceOfProcessCitation})
-- NJ court forms: the app generates a pre-filled CN 10532 Small Claims Complaint (Appendix XI-C) — available with Sign & Download or unsigned download from the Court Forms tab. The clerk mails the Summons and Return of Service after filing. The optional Fee Waiver (Application to Proceed as an Indigent) is requested from the clerk directly — the app does not generate it
+- NJ court forms: the app generates a pre-filled CN 10532 Small Claims Complaint (Appendix XI-C) — available with Sign & Download or unsigned download from the Court Forms tab. After filing, there are 2 ways to serve the defendant: by default the clerk mails the Summons and Return of Service by certified and regular mail (included in the filing fee, but only counts if the defendant signs); or the user can ask the clerk for personal service by a Special Civil Part Officer for an additional fee. The optional Fee Waiver (Application to Proceed as an Indigent) is requested from the clerk directly — the app does not generate it
 - After winning: judgment valid ${NJ.judgmentValidityYears} years, renewable for another ${NJ.judgmentValidityYears}. Collection options: ${NJ.collectionToolsText}
 - Appeal: ${NJ.appealNote}
 
