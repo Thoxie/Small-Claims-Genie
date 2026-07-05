@@ -11,7 +11,7 @@ import { i18n } from "@/lib/i18n";
 
 // Order mirrors STATE_ORDER in lib state-resources.ts; keep in sync whenever a
 // new state is added (see .agents/skills/state-expansion/SKILL.md).
-const STATE_TABS: StateCode[] = ["CA", "FL", "TX", "IL", "NC", "VA", "NJ", "WA"];
+const STATE_TABS: StateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA"];
 
 type StateTab = StateCode;
 

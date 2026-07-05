@@ -7,11 +7,11 @@ import { Trophy, UserCheck, Loader2, X, Eye, EyeOff, Wand2, MapPin } from "lucid
 const SUPPORTED_STATES = [
   { abbr: "CA", name: "California" },
   { abbr: "FL", name: "Florida" },
-  { abbr: "TX", name: "Texas" },
   { abbr: "IL", name: "Illinois" },
-  { abbr: "NC", name: "North Carolina" },
-  { abbr: "VA", name: "Virginia" },
   { abbr: "NJ", name: "New Jersey" },
+  { abbr: "NC", name: "North Carolina" },
+  { abbr: "TX", name: "Texas" },
+  { abbr: "VA", name: "Virginia" },
   { abbr: "WA", name: "Washington" },
 ];
 

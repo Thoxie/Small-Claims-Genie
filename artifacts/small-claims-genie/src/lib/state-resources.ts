@@ -145,4 +145,4 @@ export const STATE_RESOURCES: Record<ResourceStateCode, StateResourceInfo> = {
   WA: buildStateResource("WA"),
 };
 
-export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NC", "NJ", "TX", "VA", "WA"];
+export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA"];

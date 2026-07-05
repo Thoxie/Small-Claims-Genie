@@ -78,7 +78,7 @@ export interface StateFacts {
   filingFrequencyCapText?: string;
 }
 
-export const STATE_ORDER: StateCode[] = ["CA", "FL", "TX", "IL", "NC", "VA", "NJ", "WA"];
+export const STATE_ORDER: StateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA"];
 
 export const STATE_FACTS: Record<StateCode, StateFacts> = {
   CA: {
