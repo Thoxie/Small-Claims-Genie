@@ -68,3 +68,10 @@ export * from "./nc-aoc-g-106-definition";
 // ─── Virginia programmatic forms (pdf-lib, no template PDF) ───────────────────
 export * from "./va-dc-402-definition";
 export * from "./va-dc-409-definition";
+
+// ─── New Jersey — CN 10532 (AcroForm, official njcourts.gov PDF) ──────────────
+export * from "./nj-complaint-definition";
+
+// ─── Washington programmatic forms (pdf-lib, no template PDF) ─────────────────
+export * from "./wa-notice-definition";
+export * from "./wa-service-definition";

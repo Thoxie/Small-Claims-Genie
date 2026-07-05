@@ -873,6 +873,9 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       if (endpoint.includes("summons") || endpoint === "fl/clkct423") return "Summons / Notice to Appear";
       if (endpoint === "fl/proof-of-service") return "Florida Proof of Service";
       if (endpoint === "fl/fee-waiver") return "FL Fee Waiver";
+      if (endpoint === "nj/complaint") return "New Jersey Small Claims Complaint";
+      if (endpoint === "wa/notice") return "Washington Notice of Small Claim";
+      if (endpoint === "wa/service") return "Washington Certificate of Service";
       return "Statement of Claim";
     }
 
@@ -3563,64 +3566,109 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       )}
 
 
-      {/* NJ forms section — pre-filled PDF generation not yet built */}
+      {/* NJ forms section — CN 10532 Small Claims Complaint (Appendix XI-C) */}
       {isNewJerseyCase && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-xl">🌊</span>
             <h3 className="text-base font-bold text-foreground">New Jersey Court Forms</h3>
           </div>
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+          <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">CN 10532</span>
+              </div>
+              <p className="text-sm font-semibold text-foreground">Small Claims Complaint</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details — plaintiff, defendant, county, amount claimed, and basis of claim. Sign and file with the Special Civil Part clerk.</p>
+              {downloadError && (downloadingForm === "nj/complaint" || downloadingForm === "nj/complaint/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+            </div>
+            <div className="shrink-0 flex flex-col items-end gap-1.5">
+              <button type="button" disabled={downloadingForm === "nj/complaint/signed"} onClick={() => openFlSigModal({ endpoint: "nj/complaint", filename: `NJ-Small-Claims-Complaint-Signed-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                {downloadingForm === "nj/complaint/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                Sign &amp; Download
+              </button>
+              <button type="button" disabled={downloadingForm === "nj/complaint"} onClick={() => downloadSignedFLForm("nj/complaint", `NJ-Small-Claims-Complaint-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                {downloadingForm === "nj/complaint" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                Skip signing
+              </button>
+            </div>
+          </div>
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
             <div className="flex gap-2.5">
               <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-blue-900 mb-1">Pre-filled forms for New Jersey are coming soon</p>
+                <p className="text-xs font-semibold text-blue-900 mb-0.5">After you file</p>
                 <p className="text-xs text-blue-800 leading-relaxed">
-                  We don't yet auto-fill New Jersey court forms with your case details. You can still use everything else in your case — the Case Advisor, Demand Letter, Hearing Prep, and Deadlines — and download the official forms directly from the New Jersey Courts self-help center to fill out yourself.
+                  The clerk mails the Summons and Return of Service to the defendant. If you cannot afford the filing fee, ask the clerk for the Application to Proceed as an Indigent when you file.
                 </p>
               </div>
             </div>
-          </div>
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <p className="text-sm font-bold text-foreground">Forms you'll need to file in NJ Small Claims (Special Civil Part)</p>
-            <ul className="text-xs text-muted-foreground space-y-2">
-              <li>• <strong className="text-foreground">Small Claims Complaint</strong> — states the parties, amount claimed, and why the defendant owes you money.</li>
-              <li>• <strong className="text-foreground">Appendix XI-A(2) — Small Claims Summons and Return of Service</strong> — the court mails this to the defendant after you file.</li>
-              <li>• <strong className="text-foreground">Fee Waiver (Application to Proceed as an Indigent)</strong> — optional, if you cannot afford the filing fee.</li>
-            </ul>
             <a href="https://www.njcourts.gov/self-help/small-claims-court" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
-              Get official forms at NJ Courts Small Claims Self-Help <ExternalLink className="h-3 w-3" />
+              NJ Courts Small Claims Self-Help <ExternalLink className="h-3 w-3" />
             </a>
           </div>
         </div>
       )}
 
-      {/* WA forms section — pre-filled PDF generation not yet built */}
+      {/* WA forms section — MISC 05.0100 Notice of Small Claim + MISC 05.0200 Certificate of Service */}
       {isWashingtonCase && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-xl">🏔️</span>
             <h3 className="text-base font-bold text-foreground">Washington Court Forms</h3>
           </div>
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+          <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">MISC 05.0100</span>
+              </div>
+              <p className="text-sm font-semibold text-foreground">Notice of Small Claim</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details — the main form you file to start your case in District Court.</p>
+              {downloadError && (downloadingForm === "wa/notice" || downloadingForm === "wa/notice/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+            </div>
+            <div className="shrink-0 flex flex-col items-end gap-1.5">
+              <button type="button" disabled={downloadingForm === "wa/notice/signed"} onClick={() => openFlSigModal({ endpoint: "wa/notice", filename: `WA-Notice-of-Small-Claim-Signed-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                {downloadingForm === "wa/notice/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                Sign &amp; Download
+              </button>
+              <button type="button" disabled={downloadingForm === "wa/notice"} onClick={() => downloadSignedFLForm("wa/notice", `WA-Notice-of-Small-Claim-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                {downloadingForm === "wa/notice" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                Skip signing
+              </button>
+            </div>
+          </div>
+          <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">MISC 05.0200</span>
+              </div>
+              <p className="text-sm font-semibold text-foreground">Certificate of Service</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Complete and file after the defendant has been served, to prove service to the court.</p>
+              {downloadError && (downloadingForm === "wa/service" || downloadingForm === "wa/service/signed") && <p className="mt-1 text-xs text-destructive">{downloadError}</p>}
+            </div>
+            <div className="shrink-0 flex flex-col items-end gap-1.5">
+              <button type="button" disabled={downloadingForm === "wa/service/signed"} onClick={() => openFlSigModal({ endpoint: "wa/service", filename: `WA-Certificate-of-Service-Signed-Case-${caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                {downloadingForm === "wa/service/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                Sign &amp; Download
+              </button>
+              <button type="button" disabled={downloadingForm === "wa/service"} onClick={() => downloadSignedFLForm("wa/service", `WA-Certificate-of-Service-Case-${caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                {downloadingForm === "wa/service" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                Skip signing
+              </button>
+            </div>
+          </div>
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
             <div className="flex gap-2.5">
               <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-blue-900 mb-1">Pre-filled forms for Washington are coming soon</p>
+                <p className="text-xs font-semibold text-blue-900 mb-0.5">Filing and service</p>
                 <p className="text-xs text-blue-800 leading-relaxed">
-                  We don't yet auto-fill Washington court forms with your case details. You can still use everything else in your case — the Case Advisor, Demand Letter, Hearing Prep, and Deadlines — and download the official forms directly from Washington Courts to fill out yourself.
+                  File the Notice of Small Claim with the District Court clerk, who sets a hearing date. You are responsible for arranging service on the defendant per RCW 12.40 — then file the Certificate of Service before your hearing.
                 </p>
               </div>
             </div>
-          </div>
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <p className="text-sm font-bold text-foreground">Forms you'll need to file in WA Small Claims (District Court)</p>
-            <ul className="text-xs text-muted-foreground space-y-2">
-              <li>• <strong className="text-foreground">Notice of Small Claim</strong> — the main form you file to start your case.</li>
-              <li>• <strong className="text-foreground">Small Claims Calendar Notice</strong> — notifies the defendant of the hearing date and location.</li>
-            </ul>
             <a href="https://www.courts.wa.gov/newsinfo/resources/index.cfm?fa=newsinfo_resources.smallclaims" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
-              Get official forms at Washington Courts Small Claims Resources <ExternalLink className="h-3 w-3" />
+              Washington Courts Small Claims Resources <ExternalLink className="h-3 w-3" />
             </a>
           </div>
         </div>

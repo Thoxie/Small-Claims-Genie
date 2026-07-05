@@ -19,4 +19,5 @@
 - [ChatGPT prompt return verification](chatgpt-prompt-return-verification.md) — standing rule: always check externally-gathered data matches the schema I requested; flag mismatches to the user
 - [VA court URL patterns](va-court-url-patterns.md) — vacourts.gov paths vary per locality (/gd/ vs /combined/, shared URLs); never assume one template, always fetch the directory and curl-verify
 - [Clerk e2e test-auth blocker](clerk-e2e-test-auth-blocker.md) — testClerkAuth sign-in can be blocked by an OAuth-only Clerk UI; fall back to manual code/prop verification, don't retry indefinitely
+- [Form asset runtime path](form-asset-path.md) — new form PDFs must go in `artifacts/api-server/assets/forms/`, not `src/assets/forms/`, or downloads silently fail/use stale files
 # Last pushed: 2026-06-30 20:04 UTC

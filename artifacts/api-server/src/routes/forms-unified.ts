@@ -679,4 +679,42 @@ router.post(
   makeFormHandler("VA-DC-409", (id) => `VA-Fee-Waiver-Signed-Case-${id}.pdf`, { signed: true, inline: true }),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// New Jersey — CN 10532 Small Claims Complaint (Appendix XI-C)
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.post(
+  "/cases/:id/forms/nj/complaint",
+  makeFormHandler("NJ-CN10532", (id) => `NJ-Small-Claims-Complaint-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/nj/complaint/signed",
+  makeFormHandler("NJ-CN10532", (id) => `NJ-Small-Claims-Complaint-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Washington — MISC 05.0100 (Notice of Small Claim), MISC 05.0200 (Certificate of Service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.post(
+  "/cases/:id/forms/wa/notice",
+  makeFormHandler("WA-MISC05-0100", (id) => `WA-Notice-of-Small-Claim-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/wa/notice/signed",
+  makeFormHandler("WA-MISC05-0100", (id) => `WA-Notice-of-Small-Claim-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+router.post(
+  "/cases/:id/forms/wa/service",
+  makeFormHandler("WA-MISC05-0200", (id) => `WA-Certificate-of-Service-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/wa/service/signed",
+  makeFormHandler("WA-MISC05-0200", (id) => `WA-Certificate-of-Service-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
 export default router;

@@ -5,7 +5,7 @@ description: Methodology for adding a new state (county court directory + state 
 
 # State Expansion Methodology
 
-Small Claims Genie supports one state at a time by layering three things: county court directory data, canonical state legal facts, and (eventually) a PDF form-generation pipeline. This skill defines the repeatable process so each new state follows the same rigor as CA/FL/TX/IL/NC/VA.
+Small Claims Genie supports one state at a time by layering three things: county court directory data, canonical state legal facts, and a PDF form-generation pipeline. This skill defines the repeatable process so each new state follows the same rigor as CA/FL/TX/IL/NC/VA/NJ/WA. NJ and WA (added 2026-07-05) are the reference precedent for what "fully complete" means: real pre-filled PDF forms via the Unified Form Engine (not "coming soon" placeholders), Sign & Download / Skip signing UI matching the VA/FL pattern, and AI prompts (`chat-prompt.ts`, `help-chat-prompt.ts`) fully in sync — no state should ship to users with placeholder forms.
 
 ## Phase 0 — Research (before touching any code)
 
@@ -46,7 +46,7 @@ Exposing a state in the picker before its forms pipeline exists lets a user crea
 4. `counties.tsx` (public `/counties` directory page) — add the new state to `STATE_TABS` and confirm `FilingFeesPanel` renders correctly for its data shape (numeric 3-tier grid, flat fee, or notes-only fallback depending on what the state's county data actually has). This is a standing requirement for every new state, not optional polish — always do it as part of Phase 2/rollout.
 5. Court Forms tab (`forms-tab.tsx`) and Deadline Calculator tab (`deadline-calculator-tab.tsx`) — add state-specific sections following the existing per-state conditional pattern (`isVirginiaCase`, `isNorthCarolinaCase`, etc.).
 6. AI prompts (`chat.ts` Case Advisor, `help-chat.ts` Help Genie) — add a new per-state block interpolating from `STATE_FACTS`, matching the existing CA/FL/TX/IL/NC/VA blocks.
-7. Actual PDF form generation — register new `FormDefinition`s in the Form Registry per the Unified Form Engine pattern in replit.md.
+7. Actual PDF form generation — register new `FormDefinition`s in the Form Registry per the Unified Form Engine pattern in replit.md. Never ship a "coming soon" placeholder for a state's Court Forms tab — see the `form-asset-path` memory topic for a runtime asset-loading pitfall to avoid when adding new form PDFs.
 8. Run `pnpm run typecheck` from the workspace root (never a leaf artifact in isolation).
 9. Test the full flow end-to-end (new case creation → county selection → intake → forms → AI chat mentions the state correctly), including clicking through the new state's tab on `/counties` via `runTest()`.
 
