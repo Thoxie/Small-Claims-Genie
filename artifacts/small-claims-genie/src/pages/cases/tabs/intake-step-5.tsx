@@ -1,17 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Home, Sparkles, Play, X, ChevronRight } from "lucide-react";
+import { Home, Sparkles, Eraser, ChevronRight } from "lucide-react";
 import { ChatTab } from "./chat-tab";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
-import { intakeStep4Schema } from "./shared";
 
 import type { ExtendedCase } from "@/lib/types";
 
@@ -27,335 +18,60 @@ interface Props {
   onAutoMessageSent?: () => void;
 }
 
+// Step 5 is always the full-screen AI Genie Case Review chat — the same
+// experience whether reached via the outer step tracker or by clicking
+// "Save & Continue" from Step 4. There is no form here.
 export function IntakeStep5({ caseId, initialData, onNext, saving, onCheckCase, onSaveExit, autoCheckMessage, onAutoMessageSent }: Props) {
-  const form = useForm({
-    resolver: zodResolver(intakeStep4Schema),
-    defaultValues: {
-      priorDemandMade: initialData.priorDemandMade ?? false,
-      priorDemandDate: initialData.priorDemandDate || "",
-      priorDemandMethod: initialData.priorDemandMethod || "",
-      priorDemandDescription: initialData.priorDemandDescription || "",
-      priorDemandWhyNot: initialData.priorDemandWhyNot || "",
-      venueBasis: initialData.venueBasis || "",
-      venueReason: initialData.venueReason || "",
-      isSuingPublicEntity: initialData.isSuingPublicEntity || false,
-      publicEntityClaimFiledDate: initialData.publicEntityClaimFiledDate || "",
-      isAttyFeeDispute: initialData.isAttyFeeDispute || false,
-      hadArbitration: initialData.hadArbitration || false,
-      filedMoreThan12Claims: initialData.filedMoreThan12Claims || false,
-      claimOver2500: initialData.claimOver2500 || false,
-    }
-  });
-
-  const madeDemand = form.watch("priorDemandMade");
-  const basis = form.watch("venueBasis");
-  const suingPublic = form.watch("isSuingPublicEntity");
-  const attyFeeDispute = form.watch("isAttyFeeDispute");
-  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   return (
-    <div className="px-4 pt-3 pb-4 space-y-5 text-sm">
-      <div className="flex gap-4 items-start">
-        <div className="flex-1 min-w-0">
-
-          <button
-            type="button"
-            onClick={() => setTutorialOpen(true)}
-            className="sm:hidden flex items-center gap-2 rounded-lg border border-[#14b8a6] bg-[#f0fffe] px-3 py-2 text-xs font-semibold text-[#0d6b5e] w-full"
-          >
-            <Play className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
-            Watch Tutorial Video — Step 5
-            <ChevronRight className="h-3 w-3 ml-auto shrink-0" />
-          </button>
-
-          <Form {...form}>
-            <div className="space-y-5">
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-            {/* ── Left column ── */}
-            <div className="space-y-4">
-
-              {/* Prior Demand */}
-              <div className="rounded-xl border p-5 space-y-4">
-                <FormField control={form.control} name="priorDemandMade" render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Have you already asked the defendant to pay you?</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={(val) => field.onChange(val === "true")}
-                        defaultValue={field.value ? "true" : "false"}
-                        className="flex flex-row gap-0 rounded-lg border overflow-hidden"
-                      >
-                        <FormItem className="flex-1 flex items-center justify-center space-x-2 space-y-0 p-3 cursor-pointer border-r last:border-r-0">
-                          <FormControl><RadioGroupItem value="true" /></FormControl>
-                          <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex-1 flex items-center justify-center space-x-2 space-y-0 p-3 cursor-pointer">
-                          <FormControl><RadioGroupItem value="false" /></FormControl>
-                          <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                {madeDemand && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormField control={form.control} name="priorDemandDate" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Date of demand</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="priorDemandMethod" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>How did you contact them?</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select method" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="in person">In person</SelectItem>
-                              <SelectItem value="phone">Phone</SelectItem>
-                              <SelectItem value="text message">Text message</SelectItem>
-                              <SelectItem value="email">Email</SelectItem>
-                              <SelectItem value="written letter">Written letter</SelectItem>
-                              <SelectItem value="certified mail">Certified mail</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <FormField control={form.control} name="priorDemandDescription" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Their response <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
-                        <FormControl>
-                          <Textarea className="min-h-[72px]" placeholder="e.g. They said they would pay but never did, or they denied owing anything." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-                )}
-                {!madeDemand && (
-                  <FormField control={form.control} name="priorDemandWhyNot" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Why not? <span className="text-muted-foreground font-normal">(optional — goes on the form)</span></FormLabel>
-                      <FormControl>
-                        <Textarea className="min-h-[72px]" placeholder="e.g. Defendant refuses to communicate, or it would be unsafe to contact them." {...field} />
-                      </FormControl>
-                      <p className="text-xs text-muted-foreground">The form asks you to explain if you have not yet made a demand. Leave blank if you prefer not to answer.</p>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                )}
-              </div>
-
-              {/* Why This County */}
-              <div className="rounded-xl border p-5 space-y-4">
-                <FormField control={form.control} name="venueBasis" render={({ field }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Why This County? <span className="text-destructive">*</span></FormLabel>
-                    <FormControl>
-                      <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
-                        {[
-                          { value: "where_defendant_lives",      label: "Where the defendant lives or does business" },
-                          { value: "where_damage_happened",      label: "Where the damage or injury happened" },
-                          { value: "where_contract_made_broken", label: "Where the contract was made or broken" },
-                          { value: "other",                      label: "Other reason" },
-                        ].map(({ value, label }) => (
-                          <FormItem key={value} className="flex items-center space-x-3 space-y-0 rounded-lg border p-3 cursor-pointer">
-                            <FormControl><RadioGroupItem value={value} /></FormControl>
-                            <FormLabel className="font-normal cursor-pointer">{label}</FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                {basis === "other" && (
-                  <FormField control={form.control} name="venueReason" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Please explain</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                )}
-              </div>
-
-              {/* Eligibility Questions */}
-              <div className="rounded-xl border p-5 space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Eligibility Questions</h3>
-                {[
-                  { name: "isSuingPublicEntity"    as const, label: "Suing a public entity? (e.g. City, County, State)" },
-                  { name: "isAttyFeeDispute"       as const, label: "Is this a dispute with a lawyer about attorney fees?" },
-                  { name: "filedMoreThan12Claims"  as const, label: "Filed more than 12 small claims in California in the past 12 months?" },
-                  { name: "claimOver2500"          as const, label: "Claim over $2,500: Have you filed 2+ other small claims over $2,500 in CA this calendar year?" },
-                ].map(({ name, label }) => (
-                  <FormField key={name} control={form.control} name={name} render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
-                      <FormControl><Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} /></FormControl>
-                      <div className="space-y-1 leading-none"><FormLabel className="cursor-pointer">{label}</FormLabel></div>
-                    </FormItem>
-                  )} />
-                ))}
-                {suingPublic && (
-                  <FormField control={form.control} name="publicEntityClaimFiledDate" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>When did you file a government claim with them?</FormLabel>
-                      <FormControl><Input type="date" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                )}
-                {attyFeeDispute && (
-                  <FormField control={form.control} name="hadArbitration" render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                      <FormControl><Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} /></FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="cursor-pointer">Have you already gone through arbitration about these fees?</FormLabel>
-                        <p className="text-xs text-muted-foreground">If yes, you must fill out and attach form SC-101.</p>
-                      </div>
-                    </FormItem>
-                  )} />
-                )}
-              </div>
-            </div>
-
-            {/* ── Right column — embedded AI chat ── */}
-            <div className="rounded-xl border overflow-hidden flex flex-col" style={{ height: '520px' }}>
-              <div
-                className="flex items-center gap-2 px-4 py-2.5 shrink-0"
-                style={{ background: "linear-gradient(135deg, #0d6b5e 0%, #14b8a6 100%)" }}
-              >
-                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                <p className="font-semibold text-sm text-white leading-tight">AI Genie — Case Advisor</p>
-              </div>
-              <div className="flex-1 min-h-0 flex flex-col bg-white">
-                <ChatTab
-                  caseId={caseId}
-                  isDraftMode={false}
-                  currentCase={initialData as ExtendedCase}
-                  hideTutorial={true}
-                  freshReview={false}
-                  pageContext="intake-1"
-                  autoMessage={autoCheckMessage}
-                  onAutoMessageSent={onAutoMessageSent}
-                />
-              </div>
-            </div>
-          </div>
-
-            </div>
-          </Form>
-        </div>
-
-        {/* Right: video tutorial card — desktop only */}
-        <div
-          onClick={() => setTutorialOpen(true)}
-          className="hidden sm:block cursor-pointer group flex-shrink-0 w-[220px] rounded-xl overflow-hidden border-2 border-[#14b8a6] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
-          title="Watch the tutorial for this step"
-        >
-          <div className="relative bg-[#0f2537] h-[120px] flex items-center justify-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#14b8a6]/30 via-transparent to-[#0f2537]" />
-            <div className="relative z-10 flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
-                <Play className="w-[18px] h-[18px] text-white ml-1" fill="white" />
-              </div>
-              <span className="text-white text-xs font-semibold opacity-90">Watch Tutorial</span>
-            </div>
-            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">~3 min</div>
-            <div className="absolute top-2 left-2 bg-[#14b8a6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Step 5</div>
-          </div>
-          <div className="bg-background px-3 py-2 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold">AI Genie Case Review</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Venue &amp; eligibility before filing</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
-          </div>
-        </div>
+    <div className="flex flex-col" style={{ height: "calc(100dvh - 165px)", minHeight: "420px" }}>
+      <div className="flex-1 min-h-0 flex flex-col bg-white rounded-lg border shadow-sm overflow-hidden">
+        <ChatTab
+          caseId={caseId}
+          isDraftMode={false}
+          currentCase={initialData as ExtendedCase}
+          autoMessage={autoCheckMessage}
+          onAutoMessageSent={onAutoMessageSent}
+          hideTutorial={true}
+          freshReview={false}
+          pageContext="chat"
+          onTypingChange={setIsTyping}
+        />
       </div>
 
-      {/* ── Full-width footer — outside two-column layout so it spans both columns ── */}
-      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8">
-        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit(form.getValues())}>
+      <div className="sticky bottom-0 z-10 bg-white border-t border-border flex items-center justify-between px-4 sm:pl-6 sm:pr-[165px] py-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] -mx-8 mt-2">
+        <Button type="button" variant="ghost" size="lg" className="px-2 sm:px-8" onClick={() => onSaveExit({})}>
           <Home className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Save &amp; Exit</span>
         </Button>
-        <Button type="button" size="lg" onClick={onCheckCase} className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-8">
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="gap-1 sm:gap-2 px-2 sm:px-6 border-[#14b8a6] text-[#0d6b5e] hover:bg-[#f0fffe]"
+          onClick={() => window.dispatchEvent(new CustomEvent('ai-genie-clear-chat'))}
+        >
+          <Eraser className="h-4 w-4" />
+          <span className="hidden sm:inline">Clear Chat</span>
+        </Button>
+        <Button
+          type="button"
+          size="lg"
+          onClick={onCheckCase}
+          disabled={isTyping || !!autoCheckMessage}
+          className="bg-amber-500 hover:bg-amber-600 text-white gap-1 sm:gap-2 px-2 sm:px-8"
+        >
           <Sparkles className="h-4 w-4" />
           <span className="sm:hidden">AI Check</span>
           <span className="hidden sm:inline"> AI Genie Check My Case</span>
         </Button>
-        <Button type="button" size="lg" onClick={() => onNext(form.getValues())} disabled={saving} className="gap-2 px-2 sm:px-4">
+        <Button type="button" size="lg" onClick={() => onNext({})} disabled={saving} className="gap-2 px-2 sm:px-4">
           <span className="sm:hidden">{saving ? "Saving…" : "Continue"}</span>
           <span className="hidden sm:inline">{saving ? "Saving…" : i18n.intake.saveAndContinue}</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-
-      {/* ── Tutorial video modal ── */}
-      {tutorialOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          onClick={() => setTutorialOpen(false)}
-        >
-          <div
-            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-[95vw] max-h-[95vh] flex flex-col"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-3 border-b bg-[#f8fffe]">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-[#14b8a6] flex items-center justify-center">
-                  <Play className="w-3 h-3 text-white ml-0.5" fill="white" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Step 5 Tutorial — AI Genie Case Review</p>
-                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setTutorialOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <iframe
-              width="800"
-              height="450"
-              src="https://www.youtube.com/embed/WI3i9F2KJAI?autoplay=1"
-              title="Step 5 Tutorial — AI Genie Case Review"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="block"
-            />
-            <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
-                Video plays above — click X or press Escape to return to your case.
-              </p>
-              <button
-                onClick={() => setTutorialOpen(false)}
-                className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
-              >
-                Close ✕
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

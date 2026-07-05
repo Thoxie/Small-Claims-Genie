@@ -199,10 +199,10 @@ A legal workflow app that helps everyday people prepare, file, and win small cla
 
 ## APP NAVIGATION — 8 STEPS
 - Step 1 "Enter The Parties" — plaintiff info, defendant info, county & courthouse selection
-- Step 2 "Make Your Claim" — claim type, amount, incident date, description, prior demand, venue, eligibility
+- Step 2 "Make Your Claim" — claim type, amount, incident date, description
 - Step 3 "Upload My Evidence" — upload receipts, contracts, photos, screenshots, emails
-- Step 4 "Send Demand Letter" — demand letters, settlement offers, settlement agreements
-- Step 5 "Review Your Case" — AI case advisor chat that knows the user's specific case and documents
+- Step 4 "Send Demand Letter" — demand letters, settlement offers, settlement agreements, plus prior demand details, venue basis, and eligibility questions
+- Step 5 "Review Your Case" — AI case advisor chat only (no form fields) that knows the user's specific case and documents
 - Step 6 "Create Court Forms" — all court forms pre-filled and ready to download. CALIFORNIA: SC-100, SC-103, MC-030, SC-104 open in a fill-in modal to review and download; FW-001 (fee waiver) opens as an inline PDF viewer where the user fills all fields directly on the actual form — click "Open FW-001 to Fill Out", fill the fields in the embedded PDF viewer, then use the viewer's save button to download the completed form. FLORIDA: Statement of Claim for all 67 FL counties + optional FL Fee Waiver (Application for Determination of Civil Indigent Status) — available in the Fee Waiver step of the wizard. TEXAS: TX Small Claims Petition for all 254 TX counties + optional TX Fee Waiver (Affidavit of Inability to Pay) — available in the Fee Waiver step of the wizard. ILLINOIS: IL Small Claims Complaint + IL Summons + optional IL Fee Waiver (Application for Waiver of Court Fees) — available in the Fee Waiver step of the wizard. VIRGINIA: DC-402 Warrant in Debt + optional DC-409 Petition to Proceed In Forma Pauperis (fee waiver) — available in the Fee Waiver step of the 3-step wizard (Warrant in Debt → Service → Fee Waiver).
 - Step 7 "Prep for Hearing" — Court-Ready Statement and AI Mock Trial
 - Step 8 "E-File & Serve" — E-Filing System with filing summary (court, parties, claim) and 4 tabs: (1) AI E-Filing System — court forms to download (CA: SC-100, MC-030, SC-103, SC-112A, SC-100A, FW-001; FL: Statement of Claim PDF pre-filled for all 67 FL counties — CLK/CT. 333 for Miami-Dade, CL-219 for Volusia, statewide form for all others + optional FL Fee Waiver (Application for Determination of Civil Indigent Status); TX: TX Small Claims Petition pre-filled for all 254 TX counties — download, print, and file with the JP court clerk; court issues citation same day or next business day; constable/sheriff serves within ~3 days; trial set 20–45 days after service (~25–50 days total from filing to trial) + optional TX Fee Waiver (Affidavit of Inability to Pay); IL: IL Small Claims Complaint + IL Summons — download, file with circuit court clerk, have clerk issue summons, arrange sheriff/process server service at least 3 days before hearing date + optional IL Fee Waiver (Application for Waiver of Court Fees); VA: DC-402 Warrant in Debt — download, file with the GDC clerk in the correct locality, and pay the filing fee (varies by locality — no single statewide amount) + optional DC-409 fee waiver) + state-specific service options and key deadlines; (2) AI Process Server Select — hire a licensed process server; (3) Collect After You Have Won — post-judgment collection tools (CA: debtor exam EJ-125, writ of execution EJ-130, WG-002 earnings withholding; FL: Fact Information Sheet Form 7.343, writ of execution, wage garnishment, bank levy, judgment lien certificate; TX: abstract of judgment, writ of execution, bank levy — wages are exempt in TX; IL: citation to discover assets, wage deduction order, bank account citation, judgment lien on real property, 7-year validity renewable once; VA: ${VA.collectionToolsText}); (4) Case Deadlines — key dates and countdown timers
@@ -256,16 +256,15 @@ WHAT THIS PAGE COLLECTS:
 - Amount claimed and how it was calculated
 - Incident date (or date range)
 - Description of what happened — in the user's own words. An AI writing assistant button can help improve the description. A "Guide Me Through This" button walks the user through claim-type-specific questions and uses AI to draft a case description for them; after a draft is generated, the app automatically runs an AI check that flags any genuinely missing facts (e.g. no dollar amount, vague dates, no evidence mentioned) so the user can fill gaps before moving on.
-- Prior demand: did you ask the defendant to pay before filing? If yes: date of demand, method (in person, phone, text, email, letter, certified mail), defendant's response.
-- Venue basis: why you are filing in this county.
-- Eligibility questions: suing a public entity? attorney fee dispute? filing frequency.
 
 FORM POPULATED BY THIS PAGE (state-dependent):
-- CALIFORNIA: SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court). The claim description and prior demand fields auto-fill Sections 3 and 4. Do NOT reference SC-100 for FL or TX cases.
+- CALIFORNIA: SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court). The claim description auto-fills Section 3. Do NOT reference SC-100 for FL or TX cases.
 - FLORIDA: Statement of Claim — the claim description, incident date, and amount auto-fill the FL court form fields.
-- TEXAS: TX Small Claims Petition — the claim description, prior demand, and venue basis auto-fill the TX JP court petition fields.
+- TEXAS: TX Small Claims Petition — the claim description auto-fills the TX JP court petition fields.
 
-Anticipate: claim type selection, how to calculate the amount, what the AI writing assistant does, what counts as a prior demand, what venue means.`,
+Anticipate: claim type selection, how to calculate the amount, what the AI writing assistant does.
+
+Note: prior demand, venue basis, and eligibility questions are collected on Step 4 "Send Demand Letter", not this page — if asked about those, direct the user there.`,
 
   documents: `
 CURRENT PAGE: Step 3 "Upload My Evidence"
