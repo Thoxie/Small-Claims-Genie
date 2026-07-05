@@ -145,8 +145,4 @@ export const STATE_RESOURCES: Record<ResourceStateCode, StateResourceInfo> = {
   WA: buildStateResource("WA"),
 };
 
-// NJ and WA are intentionally NOT yet in the public state picker order below --
-// they are in Phase 1 (data layer only) of the state-expansion process. See
-// .agents/skills/state-expansion/SKILL.md. Do not add them here until Phase 2
-// is explicitly greenlit (facts verified + forms pipeline decided).
-export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NC", "TX", "VA"];
+export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NC", "NJ", "TX", "VA", "WA"];

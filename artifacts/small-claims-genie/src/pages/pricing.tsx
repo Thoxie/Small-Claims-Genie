@@ -11,6 +11,8 @@ const SUPPORTED_STATES = [
   { abbr: "IL", name: "Illinois" },
   { abbr: "NC", name: "North Carolina" },
   { abbr: "VA", name: "Virginia" },
+  { abbr: "NJ", name: "New Jersey" },
+  { abbr: "WA", name: "Washington" },
 ];
 
 function TermsAndSignUpModal({

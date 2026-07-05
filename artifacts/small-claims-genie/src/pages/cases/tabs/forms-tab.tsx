@@ -2011,6 +2011,8 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
   const isIllinoisCase = currentCase.jurisdictionState === "IL";
   const isNorthCarolinaCase = (currentCase.jurisdictionState as string) === "NC";
   const isVirginiaCase = (currentCase.jurisdictionState as string) === "VA";
+  const isNewJerseyCase = (currentCase.jurisdictionState as string) === "NJ";
+  const isWashingtonCase = (currentCase.jurisdictionState as string) === "WA";
 
   return (
     <div className="pt-3 pb-4 md:pb-6 space-y-4 px-4 md:px-6">
@@ -3561,8 +3563,71 @@ export function FormsTab({ caseId, currentCase, onSwitchToIntake: _onSwitchToInt
       )}
 
 
+      {/* NJ forms section — pre-filled PDF generation not yet built */}
+      {isNewJerseyCase && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🌊</span>
+            <h3 className="text-base font-bold text-foreground">New Jersey Court Forms</h3>
+          </div>
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+            <div className="flex gap-2.5">
+              <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-blue-900 mb-1">Pre-filled forms for New Jersey are coming soon</p>
+                <p className="text-xs text-blue-800 leading-relaxed">
+                  We don't yet auto-fill New Jersey court forms with your case details. You can still use everything else in your case — the Case Advisor, Demand Letter, Hearing Prep, and Deadlines — and download the official forms directly from the New Jersey Courts self-help center to fill out yourself.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <p className="text-sm font-bold text-foreground">Forms you'll need to file in NJ Small Claims (Special Civil Part)</p>
+            <ul className="text-xs text-muted-foreground space-y-2">
+              <li>• <strong className="text-foreground">Small Claims Complaint</strong> — states the parties, amount claimed, and why the defendant owes you money.</li>
+              <li>• <strong className="text-foreground">Appendix XI-A(2) — Small Claims Summons and Return of Service</strong> — the court mails this to the defendant after you file.</li>
+              <li>• <strong className="text-foreground">Fee Waiver (Application to Proceed as an Indigent)</strong> — optional, if you cannot afford the filing fee.</li>
+            </ul>
+            <a href="https://www.njcourts.gov/self-help/small-claims-court" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+              Get official forms at NJ Courts Small Claims Self-Help <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* WA forms section — pre-filled PDF generation not yet built */}
+      {isWashingtonCase && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🏔️</span>
+            <h3 className="text-base font-bold text-foreground">Washington Court Forms</h3>
+          </div>
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+            <div className="flex gap-2.5">
+              <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-blue-900 mb-1">Pre-filled forms for Washington are coming soon</p>
+                <p className="text-xs text-blue-800 leading-relaxed">
+                  We don't yet auto-fill Washington court forms with your case details. You can still use everything else in your case — the Case Advisor, Demand Letter, Hearing Prep, and Deadlines — and download the official forms directly from Washington Courts to fill out yourself.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <p className="text-sm font-bold text-foreground">Forms you'll need to file in WA Small Claims (District Court)</p>
+            <ul className="text-xs text-muted-foreground space-y-2">
+              <li>• <strong className="text-foreground">Notice of Small Claim</strong> — the main form you file to start your case.</li>
+              <li>• <strong className="text-foreground">Small Claims Calendar Notice</strong> — notifies the defendant of the hearing date and location.</li>
+            </ul>
+            <a href="https://www.courts.wa.gov/newsinfo/resources/index.cfm?fa=newsinfo_resources.smallclaims" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+              Get official forms at Washington Courts Small Claims Resources <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* CA form wizard — California only */}
-      {!isFloridaCase && !isTexasCase && !isIllinoisCase && !isNorthCarolinaCase && !isVirginiaCase && <>
+      {!isFloridaCase && !isTexasCase && !isIllinoisCase && !isNorthCarolinaCase && !isVirginiaCase && !isNewJerseyCase && !isWashingtonCase && <>
 
       {/* Mobile tutorial trigger — hidden on desktop */}
       <button

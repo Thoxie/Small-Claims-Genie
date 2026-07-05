@@ -20,15 +20,17 @@ const CLAIM_TYPES = [
   "Other",
 ];
 
-type JurisdictionState = "CA" | "FL" | "IL" | "NC" | "TX" | "VA";
+type JurisdictionState = "CA" | "FL" | "IL" | "NC" | "NJ" | "TX" | "VA" | "WA";
 
 const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = [
   { value: "CA", label: "California", flag: "🌴", sub: "Up to $12,500" },
   { value: "FL", label: "Florida", flag: "☀️", sub: "Up to $8,000" },
   { value: "IL", label: "Illinois", flag: "🌽", sub: "Up to $10,000" },
   { value: "NC", label: "North Carolina", flag: "🏛️", sub: "Up to $10,000" },
+  { value: "NJ", label: "New Jersey", flag: "🌊", sub: "Up to $5,000" },
   { value: "TX", label: "Texas", flag: "⭐", sub: "Up to $20,000" },
   { value: "VA", label: "Virginia", flag: "🦅", sub: "Up to $5,000" },
+  { value: "WA", label: "Washington", flag: "🏔️", sub: "Up to $10,000" },
 ];
 
 export default function NewCase() {
@@ -87,6 +89,8 @@ export default function NewCase() {
     jurisdictionState === "TX" ? "Texas County" :
     jurisdictionState === "NC" ? "North Carolina County" :
     jurisdictionState === "VA" ? "Virginia County/City" :
+    jurisdictionState === "NJ" ? "New Jersey County" :
+    jurisdictionState === "WA" ? "Washington County" :
     "Florida County";
   const countyHint =
     jurisdictionState === "CA"

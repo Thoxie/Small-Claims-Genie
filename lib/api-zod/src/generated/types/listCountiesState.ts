@@ -16,4 +16,6 @@ export const ListCountiesState = {
   NC: "NC",
   TX: "TX",
   VA: "VA",
+  NJ: "NJ",
+  WA: "WA",
 } as const;

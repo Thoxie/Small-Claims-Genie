@@ -28,8 +28,10 @@ const STATE_OPTIONS = [
   { value: "FL", label: "Florida" },
   { value: "IL", label: "Illinois" },
   { value: "NC", label: "North Carolina" },
+  { value: "NJ", label: "New Jersey" },
   { value: "TX", label: "Texas" },
   { value: "VA", label: "Virginia" },
+  { value: "WA", label: "Washington" },
 ];
 
 export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {

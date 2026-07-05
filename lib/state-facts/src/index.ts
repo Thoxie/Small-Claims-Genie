@@ -406,8 +406,9 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     ],
     statuteOfLimitationsCitation: "N.J.S.A. 2A:14-1 (contracts/property — NEEDS VERIFICATION of current statutory text); N.J.S.A. 2A:14-2 (personal injury)",
 
-    serviceDeadlineText: "UNKNOWN — the exact number of days before the hearing that service must be completed was NOT confirmed by research; needs verification before being surfaced to users as a deadline",
+    serviceDeadlineText: "at least 5 days before the hearing (and no more than 30 days after the date of service); process must be mailed within 12 days of filing",
     serviceMethodsText: "The court mails the summons and complaint to the defendant by certified and regular mail after you file; a Special Civil Part Officer can also serve personally for an additional fee",
+    serviceOfProcessCitation: "N.J. Ct. R. 6:2-1",
 
     forms: [
       { id: "", name: "Small Claims Complaint", desc: "States the parties, the amount claimed, and why the defendant owes you money." },
@@ -417,9 +418,9 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
 
     judgmentValidityYears: 20,
     judgmentRenewable: true,
-    collectionToolsText: "wage garnishment, bank levy, and a judgment lien on real property docketed with the Superior Court Clerk — NOTE: the 20-year figure is a well-established general NJ civil-judgment rule (N.J.S.A. 2A:14-5) but was NOT independently re-confirmed by this round of research specifically for Small Claims Section judgments; verify before publishing to users",
+    collectionToolsText: "wage garnishment, bank levy, and a judgment lien on real property docketed with the Superior Court Clerk — a NJ judgment is valid for 20 years and may be revived for an additional 20-year term via motion (N.J.S.A. 2A:14-5)",
 
-    appealNote: "Appeals from the Special Civil Part Small Claims Section are generally filed with the Superior Court, Appellate Division — exact deadline NEEDS VERIFICATION",
+    appealNote: "Appeals from a Small Claims Section judgment must generally be filed within 45 days of the date of judgment.",
 
     filingFrequencyCapText: undefined,
   },
@@ -440,9 +441,10 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     attorneysNote: "Attorneys are generally NOT allowed to represent parties in Washington small claims court (RCW 12.40.080) — never suggest hiring one for the hearing. Whether a corporation must still appear through a non-attorney authorized representative is NEEDS VERIFICATION",
 
     filingFeeTiers: [
-      { label: "typical filing fee", fee: "generally not more than $50 — NEEDS VERIFICATION of the exact statewide figure and whether it varies by county" },
+      { label: "base statutory fee", fee: "$35" },
+      { label: "in counties with a Dispute Resolution Center surcharge", fee: "$50" },
     ],
-    filingFeeNote: "Exact statewide fee schedule was not independently confirmed by research; verify with RCW 12.40 and the specific county district court before publishing a number to users",
+    filingFeeNote: "The base fee is $35 statewide (RCW 12.40.020); most counties (including King, Pierce, Snohomish, and Thurston) add a Dispute Resolution Center surcharge (RCW 7.75.035) bringing the total to $50. Plus a sheriff/process-server service fee, typically $30–$50.",
     feesRecoverableCitation: undefined,
 
     statuteOfLimitations: [
@@ -453,8 +455,9 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     ],
     statuteOfLimitationsCitation: "RCW 4.16.040 (written contract); RCW 4.16.080 (oral contract, property damage, personal injury)",
 
-    serviceDeadlineText: "UNKNOWN — the exact number of days before the hearing that service must be completed was NOT confirmed by research; needs verification before being surfaced to users as a deadline",
+    serviceDeadlineText: "at least 10 days before the hearing",
     serviceMethodsText: "Certified mail, sheriff, or a process server — the plaintiff arranges service, the court does not serve the defendant automatically",
+    serviceOfProcessCitation: "RCW 12.40.030; CRLJ 5",
 
     forms: [
       { id: "", name: "Notice of Small Claim", desc: "The main form you file to start your case in Small Claims Department of District Court." },
@@ -464,7 +467,7 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     judgmentValidityYears: 10,
     judgmentRenewable: true,
     collectionToolsText: "wage garnishment, bank account garnishment, writ of execution, judgment lien on real property — a WA judgment is valid for 10 years and may be renewed for an additional 10 years",
-    appealNote: "Appeals from a small claims judgment are generally filed in Superior Court within 30 days — exact procedure NEEDS VERIFICATION",
+    appealNote: "Appeals from a small claims judgment are generally filed in Superior Court — exact appeal deadline NEEDS VERIFICATION before being surfaced as a specific number to users",
 
     keyCounties: ["King (Seattle)", "Pierce (Tacoma)", "Snohomish (Everett)", "Spokane", "Clark (Vancouver)"],
   },
