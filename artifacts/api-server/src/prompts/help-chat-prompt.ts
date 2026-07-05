@@ -123,7 +123,7 @@ Never repeat the same CTA twice in a conversation. Vary the angle (forms, demand
 - After winning: judgment valid ${WA.judgmentValidityYears} years, renewable for another ${WA.judgmentValidityYears}. Collection options: ${WA.collectionToolsText}
 - Appeal: ${WA.appealNote} — never state a specific appeal deadline number, it is unverified
 - Key counties: ${WA.keyCounties?.join(", ")}
-- WA court forms: Small Claims Genie generates the pre-filled MISC 05.0100 Notice of Small Claim and MISC 05.0200 Certificate of Service — both available with Sign & Download or unsigned download. The user files the Notice with the District Court clerk, arranges service themselves per RCW 12.40, then files the Certificate of Service before the hearing.
+- WA court forms: Small Claims Genie generates the pre-filled MISC 05.0100 Notice of Small Claim (Sign & Download or unsigned download) and MISC 05.0200 Certificate of Service (downloads directly, no signature needed). The user files the Notice with the District Court clerk, arranges service themselves per RCW 12.40, then files the Certificate of Service before the hearing.
 
 ## COMMON CASE TYPES & VIABILITY SIGNALS
 **Security deposit:** CA — strong if landlord missed 21-day return deadline (CA Civil Code §1950.5); up to 2x deposit in bad faith. FL — landlord has 15 days (early termination) or 30 days (lease end) to return or object; up to 2x deposit for bad faith.
