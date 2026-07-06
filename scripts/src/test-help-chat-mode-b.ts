@@ -73,6 +73,23 @@ interface Case {
   // AND surface relevant product features.)
   jurisdictionState?: string;
   jurisdictionCounty?: string;
+  // Case-insensitive whole-word terms the final answer must contain
+  // (e.g. "magistrate" for North Carolina hearing terminology).
+  mustContainWord?: string;
+  // Case-insensitive whole-word terms the final answer must NOT contain
+  // (e.g. "judge" must not appear for a North Carolina hearing answer).
+  mustNotContainWord?: string;
+}
+
+const STATE_TERMINOLOGY_STATES = ["CA", "FL", "TX", "IL", "NC", "VA", "NJ", "WA"] as const;
+
+function hearingOfficialTitleFor(state: string): "judge" | "magistrate" {
+  return state === "NC" ? "magistrate" : "judge";
+}
+
+function containsWholeWord(text: string, word: string): boolean {
+  const re = new RegExp(`\\b${word}\\b`, "i");
+  return re.test(text);
 }
 
 // The live model runs at temperature 0.5, so exact wording varies run to run.
@@ -181,6 +198,26 @@ const CASES: Case[] = [
     expectedTags: ["EVIDENCE_UPLOAD"],
     jurisdictionState: "TX",
   },
+  // Hearing-terminology + FEATURE_TAG regression: for each of the 8
+  // supported states, asking "what do I say to the judge at the hearing?"
+  // must (a) still classify as HEARING_PREP (feature-tag classification is
+  // state-independent) and (b) use the state's correct hearing-official
+  // term in the answer — "magistrate" for North Carolina, "judge"
+  // everywhere else. See help-chat-prompt.ts HEARING BASICS section and
+  // the hearingOfficialTitle-driven stateNote in routes/help-chat.ts.
+  ...STATE_TERMINOLOGY_STATES.map((state): Case => {
+    const correctTerm = hearingOfficialTitleFor(state);
+    const wrongTerm = correctTerm === "magistrate" ? "judge" : "magistrate";
+    return {
+      label: `Hearing terminology — ${state} uses "${correctTerm}" (Mode B -> Hearing Prep / Mock Trial)`,
+      mode: "B",
+      message: "What do I say to the judge at the hearing?",
+      jurisdictionState: state,
+      expectedTags: ["HEARING_PREP"],
+      mustContainWord: correctTerm,
+      mustNotContainWord: wrongTerm,
+    };
+  }),
 ];
 
 async function streamHelpResponse(
@@ -332,6 +369,23 @@ async function main() {
       } else {
         console.log(`  ✗ Does NOT mention any expected feature (${(c.expectedTags ?? []).join(" / ")}) after ${attempts} attempts — Mode B pitch missing or wrong`);
         passed = false;
+      }
+
+      if (c.mustContainWord) {
+        if (containsWholeWord(lastAnswer, c.mustContainWord)) {
+          console.log(`  ✓ Uses "${c.mustContainWord}" for the hearing official`);
+        } else {
+          console.log(`  ✗ Does NOT contain "${c.mustContainWord}" — wrong hearing-official terminology for ${c.jurisdictionState}`);
+          passed = false;
+        }
+      }
+      if (c.mustNotContainWord) {
+        if (!containsWholeWord(lastAnswer, c.mustNotContainWord)) {
+          console.log(`  ✓ Does not use "${c.mustNotContainWord}" for the hearing official`);
+        } else {
+          console.log(`  ✗ Incorrectly contains "${c.mustNotContainWord}" — wrong hearing-official terminology for ${c.jurisdictionState}`);
+          passed = false;
+        }
       }
     } else {
       // Mode A: a light, natural closing mention of "Small Claims Genie" is

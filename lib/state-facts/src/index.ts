@@ -52,6 +52,9 @@ export interface StateFacts {
   claimLimitText: string;
   claimLimitCitation?: string;
 
+  /** Title of the official who presides over the hearing, e.g. "judge" or "magistrate" (NC). Use this instead of hardcoding "judge" in any cross-state generic content. */
+  hearingOfficialTitle: string;
+
   attorneysAllowed: boolean;
   attorneysNote: string;
 
@@ -98,6 +101,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
 
     claimLimitText: "$12,500 for individuals, $6,250 for businesses",
     claimLimitCitation: undefined,
+
+    hearingOfficialTitle: "judge",
 
     attorneysAllowed: false,
     attorneysNote: "Lawyers are NOT allowed at California small claims hearings (CA CCP §116.530) — never suggest hiring one for the hearing",
@@ -154,6 +159,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     claimLimitText: "$8,000 or less",
     claimLimitCitation: "Fla. Stat. Ch. 34",
 
+    hearingOfficialTitle: "judge",
+
     attorneysAllowed: true,
     attorneysNote: "Attorneys ARE allowed but not required",
 
@@ -203,6 +210,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
 
     claimLimitText: "$20,000",
     claimLimitCitation: "Tex. Gov't Code § 27.031",
+
+    hearingOfficialTitle: "judge",
 
     attorneysAllowed: true,
     attorneysNote: "Attorneys ARE allowed at Texas JP court hearings; self-represented parties are common and welcomed",
@@ -257,6 +266,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     claimLimitText: "$10,000",
     claimLimitCitation: "735 ILCS 5/Art. II",
 
+    hearingOfficialTitle: "judge",
+
     attorneysAllowed: true,
     attorneysNote: "Attorneys ARE allowed at Illinois small claims hearings; self-represented plaintiffs are common",
 
@@ -307,6 +318,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
 
     claimLimitText: "$10,000",
     claimLimitCitation: "G.S. 7A-210",
+
+    hearingOfficialTitle: "magistrate",
 
     attorneysAllowed: true,
     attorneysNote: "Attorneys ARE allowed at NC small claims hearings; self-represented plaintiffs are common and welcomed by magistrates",
@@ -359,6 +372,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     claimLimitText: "$5,000",
     claimLimitCitation: "Va. Code § 16.1-122.2",
 
+    hearingOfficialTitle: "judge",
+
     attorneysAllowed: false,
     attorneysNote: "Attorneys are generally NOT allowed to represent parties in Virginia's Small Claims Division (Va. Code § 16.1-122.4) — never suggest hiring one for the hearing",
 
@@ -405,6 +420,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
 
     claimLimitText: "$5,000 (the general Special Civil Part limit is $20,000, but the Small Claims Section is capped at $5,000)",
     claimLimitCitation: "N.J. Ct. R. 6:1-1, 6:1-2 (effective July 1, 2022)",
+
+    hearingOfficialTitle: "judge",
 
     attorneysAllowed: true,
     attorneysNote: "Attorneys are allowed but most individuals file and present small claims cases without one. Whether an LLC/corporation may appear without a licensed attorney is NEEDS VERIFICATION (research did not confirm this against N.J. Ct. R. 1:21-1) — do not tell a business user they can self-represent until this is verified",
@@ -456,6 +473,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
 
     claimLimitText: "$10,000 for individuals; $5,000 for businesses, assignees, and collection agencies",
     claimLimitCitation: "RCW 12.40.010",
+
+    hearingOfficialTitle: "judge",
 
     attorneysAllowed: false,
     attorneysNote: "Attorneys are generally NOT allowed to represent parties in Washington small claims court (RCW 12.40.080) — never suggest hiring one for the hearing. Whether a corporation must still appear through a non-attorney authorized representative is NEEDS VERIFICATION",
