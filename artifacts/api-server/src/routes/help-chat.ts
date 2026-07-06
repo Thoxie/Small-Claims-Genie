@@ -6,6 +6,63 @@ import { VISITOR_PROMPT, VISITOR_SUGGESTIONS_INSTRUCTION, HELP_BASE_PROMPT, PAGE
 
 const router: IRouter = Router();
 
+// Deterministic guardrail (code-level, not prompt-level) for a specific
+// failure mode observed at ~100% reproducibility: a pure defendant with no
+// counterclaim gets an answer that legitimately discusses "the hearing" /
+// "evidence" to defend themselves, and that answer text pattern-matches the
+// Hearing Prep / Evidence Upload feature-table rows strongly enough that the
+// model's own FEATURE_TAG self-check consistently overrides the "defendant
+// with no counterclaim = NONE" instruction. Prompt-only tuning (self-check
+// wording, worked examples matching this exact scenario) did not change the
+// outcome across repeated samples, so this narrow, additive check forces the
+// tag back to NONE only when the user's own message clearly describes a
+// one-sided lawsuit against them with no counterclaim/owed-money language.
+// It only ever downgrades a tag to NONE — it never upgrades, removes a
+// legitimate plaintiff-side pitch, or fires on messages that don't match.
+const HELP_CHAT_TAG_MARKER = "FEATURE_TAG:";
+
+const DEFENDANT_SIGNALS = [
+  "being sued",
+  "got served",
+  "i was served",
+  "i've been served",
+  "served with a lawsuit",
+  "served with a small claims",
+  "sued me",
+  "suing me",
+  "lawsuit against me",
+  "case against me",
+  "respond to a lawsuit",
+  "respond to a small claims",
+  "defendant in",
+];
+
+const COUNTERCLAIM_SIGNALS = [
+  "counterclaim",
+  "counter claim",
+  "counter-claim",
+  "owes me",
+  "owe me",
+  "they owe",
+  "he owes",
+  "she owes",
+  "sue them back",
+  "sue him back",
+  "sue her back",
+  "my own claim",
+  "separate claim",
+  "separate dispute",
+  "separate deal",
+  "claim of my own",
+];
+
+function isPureDefendantNoCounterclaim(message: string): boolean {
+  const m = message.toLowerCase();
+  const hasDefendantSignal = DEFENDANT_SIGNALS.some((s) => m.includes(s));
+  if (!hasDefendantSignal) return false;
+  const hasCounterclaimSignal = COUNTERCLAIM_SIGNALS.some((s) => m.includes(s));
+  return !hasCounterclaimSignal;
+}
 
 router.post("/help", async (req, res): Promise<void> => {
   const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
@@ -77,10 +134,74 @@ router.post("/help", async (req, res): Promise<void> => {
       temperature: 0.5,
     });
 
-    for await (const chunk of stream) {
-      const delta = chunk.choices[0]?.delta?.content;
-      if (delta) {
-        res.write(`data: ${JSON.stringify({ content: delta })}\n\n`);
+    const guardrailActive = isSignedIn === false && isPureDefendantNoCounterclaim(message.trim());
+
+    if (!guardrailActive) {
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content;
+        if (delta) {
+          res.write(`data: ${JSON.stringify({ content: delta })}\n\n`);
+        }
+      }
+    } else {
+      // Buffer only around the FEATURE_TAG line so the answer prose above it
+      // still streams live; everything before/after the tag line passes
+      // through unmodified.
+      let acc = "";
+      let sentLen = 0;
+      let tagHandled = false;
+
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content;
+        if (!delta) continue;
+        acc += delta;
+
+        if (tagHandled) {
+          if (acc.length > sentLen) {
+            res.write(`data: ${JSON.stringify({ content: acc.slice(sentLen) })}\n\n`);
+            sentLen = acc.length;
+          }
+          continue;
+        }
+
+        const markerIdx = acc.indexOf(HELP_CHAT_TAG_MARKER, sentLen);
+        if (markerIdx === -1) {
+          // No marker seen yet; hold back a small tail in case it's a
+          // partial marker split across chunks.
+          const safeLen = Math.max(sentLen, acc.length - HELP_CHAT_TAG_MARKER.length);
+          if (safeLen > sentLen) {
+            res.write(`data: ${JSON.stringify({ content: acc.slice(sentLen, safeLen) })}\n\n`);
+            sentLen = safeLen;
+          }
+          continue;
+        }
+
+        const afterMarker = acc.slice(markerIdx + HELP_CHAT_TAG_MARKER.length);
+        const nlIdx = afterMarker.indexOf("\n");
+        if (nlIdx === -1) {
+          // Tag line not fully received yet; wait for the rest.
+          continue;
+        }
+
+        const before = acc.slice(sentLen, markerIdx);
+        if (before) {
+          res.write(`data: ${JSON.stringify({ content: before })}\n\n`);
+        }
+
+        const originalTag = afterMarker.slice(0, nlIdx).trim();
+        if (originalTag !== "NONE") {
+          req.log.info(
+            { originalTag },
+            "[help-chat] guardrail overrode FEATURE_TAG to NONE for defendant-no-counterclaim message",
+          );
+        }
+        res.write(`data: ${JSON.stringify({ content: `${HELP_CHAT_TAG_MARKER} NONE\n` })}\n\n`);
+        sentLen = markerIdx + HELP_CHAT_TAG_MARKER.length + nlIdx + 1;
+        tagHandled = true;
+      }
+
+      if (acc.length > sentLen) {
+        res.write(`data: ${JSON.stringify({ content: acc.slice(sentLen) })}\n\n`);
       }
     }
 
