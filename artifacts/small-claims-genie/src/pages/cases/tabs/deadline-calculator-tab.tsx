@@ -3,6 +3,7 @@ import { addDays, addYears, addMonths, differenceInDays, parseISO, isValid, form
 import { AlertCircle, CheckCircle, Clock, CalendarDays, AlertTriangle, Info, Scale, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HearingInfoCard } from "./intake-tab";
+import { STATE_FACTS } from "@workspace/state-facts";
 
 import type { ExtendedCase } from "@/lib/types";
 
@@ -121,6 +122,93 @@ function getStatuteYearsTX(claimType: string): { years: number; note: string } {
   }
 }
 
+// ── Illinois statute helpers ──────────────────────────────────────────────────
+
+function getStatuteYearsIL(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Property Damage":
+      return { years: 5, note: "735 ILCS 5/13-205 — 5-year limit for property damage claims" };
+    case "Personal Injury":
+      return { years: 2, note: "735 ILCS 5/13-202 — 2-year limit for personal injury claims" };
+    case "Fraud":
+      return { years: 5, note: "735 ILCS 5/13-205 — 5-year limit for fraud claims (catch-all civil actions statute)" };
+    case "Security Deposit":
+      return { years: 10, note: "735 ILCS 5/13-206 — 10-year limit (written lease is a written contract)" };
+    case "Contract Dispute":
+      return { years: 10, note: "735 ILCS 5/13-206 — 10 years for written contracts; oral contracts are 5 years (735 ILCS 5/13-205)" };
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 10, note: "735 ILCS 5/13-206 — 10 years if based on a written agreement; 5 years if oral only (735 ILCS 5/13-205)" };
+    default:
+      return { years: 5, note: "735 ILCS 5/13-205 — 5-year default limit for civil actions not otherwise specified. Check if a written contract applies (10 years under 735 ILCS 5/13-206)" };
+  }
+}
+
+// ── Virginia statute helpers ──────────────────────────────────────────────────
+
+function getStatuteYearsVA(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Property Damage":
+      return { years: 5, note: "Va. Code § 8.01-243(B) — 5-year limit for property damage claims" };
+    case "Personal Injury":
+      return { years: 2, note: "Va. Code § 8.01-243(A) — 2-year limit for personal injury claims" };
+    case "Fraud":
+      return { years: 2, note: "Va. Code § 8.01-243(A) — 2-year limit for fraud claims" };
+    case "Security Deposit":
+      return { years: 5, note: "Va. Code § 8.01-246(A)(2) — 5-year limit (written lease is a written contract)" };
+    case "Contract Dispute":
+      return { years: 5, note: "Va. Code § 8.01-246(A)(2) — 5 years for written contracts; 3 years for oral contracts (§ 8.01-246(A)(4))" };
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 5, note: "Va. Code § 8.01-246(A)(2) — 5 years if based on a written agreement; 3 years if oral only (§ 8.01-246(A)(4))" };
+    default:
+      return { years: 3, note: "Va. Code § 8.01-246(A)(4) — 3-year default limit for oral obligations. Check if a written contract applies (5 years under § 8.01-246(A)(2))" };
+  }
+}
+
+// ── New Jersey statute helpers ────────────────────────────────────────────────
+
+function getStatuteYearsNJ(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Property Damage":
+      return { years: 6, note: "N.J.S.A. 2A:14-1 — 6-year limit for property damage claims" };
+    case "Personal Injury":
+      return { years: 2, note: "N.J.S.A. 2A:14-2 — 2-year limit for personal injury claims" };
+    case "Fraud":
+      return { years: 6, note: "N.J.S.A. 2A:14-1 — 6-year limit for fraud claims" };
+    case "Security Deposit":
+      return { years: 6, note: "N.J.S.A. 2A:14-1 — 6-year limit (written lease is a written contract)" };
+    case "Contract Dispute":
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 6, note: "N.J.S.A. 2A:14-1 — 6-year limit for written and oral contract claims" };
+    default:
+      return { years: 6, note: "N.J.S.A. 2A:14-1 — 6-year default limit for contract and property claims. Personal injury claims have a shorter 2-year limit (N.J.S.A. 2A:14-2)" };
+  }
+}
+
+// ── Washington statute helpers ────────────────────────────────────────────────
+
+function getStatuteYearsWA(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Property Damage":
+      return { years: 3, note: "RCW 4.16.080 — 3-year limit for property damage claims" };
+    case "Personal Injury":
+      return { years: 3, note: "RCW 4.16.080 — 3-year limit for personal injury claims" };
+    case "Fraud":
+      return { years: 3, note: "RCW 4.16.080(4) — 3-year limit for fraud claims (discovery rule may apply)" };
+    case "Security Deposit":
+      return { years: 6, note: "RCW 4.16.040 — 6-year limit (written lease is a written contract)" };
+    case "Contract Dispute":
+      return { years: 6, note: "RCW 4.16.040 — 6 years for written contracts; 3 years for oral contracts (RCW 4.16.080)" };
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 6, note: "RCW 4.16.040 — 6 years if based on a written agreement; 3 years if oral only (RCW 4.16.080)" };
+    default:
+      return { years: 3, note: "RCW 4.16.080 — 3-year default limit for actions not otherwise provided. Check if a written contract applies (6 years under RCW 4.16.040)" };
+  }
+}
+
 // ── Shared UI helpers ─────────────────────────────────────────────────────────
 
 function statusColor(s: Deadline["status"]) {
@@ -189,6 +277,14 @@ function printDeadlines(deadlines: Deadline[], caseName: string, today: Date, st
     ? `Texas courts: <a href="https://www.txcourts.gov" target="_blank">txcourts.gov</a>`
     : stateAbbr === "NC"
     ? `NC courts: <a href="https://www.nccourts.gov" target="_blank">nccourts.gov</a>`
+    : stateAbbr === "IL"
+    ? `Illinois courts: <a href="${STATE_FACTS.IL.selfHelpUrl}" target="_blank">${STATE_FACTS.IL.selfHelpLabel}</a>`
+    : stateAbbr === "VA"
+    ? `Virginia courts: <a href="${STATE_FACTS.VA.selfHelpUrl}" target="_blank">${STATE_FACTS.VA.selfHelpLabel}</a>`
+    : stateAbbr === "NJ"
+    ? `NJ courts: <a href="${STATE_FACTS.NJ.selfHelpUrl}" target="_blank">${STATE_FACTS.NJ.selfHelpLabel}</a>`
+    : stateAbbr === "WA"
+    ? `WA courts: <a href="${STATE_FACTS.WA.selfHelpUrl}" target="_blank">${STATE_FACTS.WA.selfHelpLabel}</a>`
     : `California courts: <a href="https://www.courts.ca.gov" target="_blank">courts.ca.gov</a>`;
 
   const w = window.open("", "_blank");
@@ -456,6 +552,341 @@ function buildNcDeadlines(
   return list;
 }
 
+// ── Illinois deadline builder ─────────────────────────────────────────────────
+
+function buildIlDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+  const facts = STATE_FACTS.IL;
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsIL(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: facts.statuteOfLimitationsCitation ?? "735 ILCS 5/13-201 et seq.",
+  });
+
+  // Service — plaintiff arranges, at least 3 days before the return date
+  const serviceDeadline = hearingDate ? addDays(hearingDate, -3) : null;
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "Serve the defendant by (3 days before return date)",
+    date: serviceDeadline,
+    status: serviceDeadline ? getDeadlineStatus(serviceDeadline, today) : "missing",
+    detail: `In Illinois small claims, the plaintiff arranges service — the court does not serve the defendant automatically. ${facts.serviceMethodsText}. The defendant must be served ${facts.serviceDeadlineText}.`,
+    law: "735 ILCS 5/2-203",
+  });
+
+  // Hearing / return date
+  if (hearingDate) {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Return date / hearing date",
+      date: hearingDate,
+      status: getDeadlineStatus(hearingDate, today),
+      detail: `Your hearing (return date) is scheduled for ${format(hearingDate, "MMMM d, yyyy")}. Arrive early, bring organized evidence, and prepare a short statement of your claim.`,
+      law: "735 ILCS 5/2-201",
+    });
+  } else {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Return date / hearing date (not yet entered)",
+      date: null,
+      status: "missing",
+      detail: "Enter your hearing date in the Intake tab once the Circuit Court clerk assigns a return date.",
+      law: "735 ILCS 5/2-201",
+    });
+  }
+
+  // Appeal window
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window (if you lose)",
+    date: null,
+    status: "info",
+    detail: facts.appealNote,
+    law: "Ill. S. Ct. R. 303",
+  });
+
+  // Post-judgment collection
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: `Judgment valid for ${facts.judgmentValidityYears} years`,
+    date: null,
+    status: "info",
+    detail: `Illinois judgments are valid for ${facts.judgmentValidityYears} years and can be renewed. If the defendant does not pay, you can use ${facts.collectionToolsText}.`,
+    law: "735 ILCS 5/12-108",
+  });
+
+  return list;
+}
+
+// ── Virginia deadline builder ─────────────────────────────────────────────────
+
+function buildVaDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+  const facts = STATE_FACTS.VA;
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsVA(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: facts.statuteOfLimitationsCitation ?? "Va. Code § 8.01-243 et seq.",
+  });
+
+  // Service — at least 5 days before the hearing
+  const serviceDeadline = hearingDate ? addDays(hearingDate, -5) : null;
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "Serve the defendant by (5 days before hearing)",
+    date: serviceDeadline,
+    status: serviceDeadline ? getDeadlineStatus(serviceDeadline, today) : "missing",
+    detail: `In Virginia's Small Claims Division, the defendant must be served ${facts.serviceDeadlineText}. ${facts.serviceMethodsText}.`,
+    law: facts.serviceOfProcessCitation ?? "Va. Code § 17.1-272",
+  });
+
+  // Hearing date
+  if (hearingDate) {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date",
+      date: hearingDate,
+      status: getDeadlineStatus(hearingDate, today),
+      detail: `Your hearing is scheduled for ${format(hearingDate, "MMMM d, yyyy")}. Attorneys are not allowed to represent either side in the Small Claims Division — arrive early and bring organized evidence.`,
+      law: "Va. Code § 16.1-122.2",
+    });
+  } else {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date (not yet entered)",
+      date: null,
+      status: "missing",
+      detail: "Enter your hearing date in the Intake tab once the General District Court clerk schedules it.",
+      law: "Va. Code § 16.1-122.2",
+    });
+  }
+
+  // Appeal window
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window (if you lose)",
+    date: null,
+    status: "info",
+    detail: facts.appealNote,
+    law: "Va. Code § 16.1-106",
+  });
+
+  // Post-judgment collection
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: `Judgment valid for ${facts.judgmentValidityYears} years`,
+    date: null,
+    status: "info",
+    detail: `Virginia GDC judgments are valid for ${facts.judgmentValidityYears} years. If the defendant does not pay, you can use ${facts.collectionToolsText}.`,
+    law: "Va. Code § 16.1-94.1",
+  });
+
+  return list;
+}
+
+// ── New Jersey deadline builder ───────────────────────────────────────────────
+
+function buildNjDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+  const facts = STATE_FACTS.NJ;
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsNJ(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: facts.statuteOfLimitationsCitation ?? "N.J.S.A. 2A:14-1",
+  });
+
+  // Service — court mails the summons automatically; no plaintiff-driven deadline
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "Court mails the summons (automatic)",
+    date: null,
+    status: "info",
+    detail: `In NJ's Small Claims Section, you do not arrange service yourself. ${facts.serviceMethodsText}. The defendant must be served ${facts.serviceDeadlineText}.`,
+    law: facts.serviceOfProcessCitation ?? "N.J. Ct. R. 6:2-1",
+  });
+
+  // Hearing date
+  if (hearingDate) {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date",
+      date: hearingDate,
+      status: getDeadlineStatus(hearingDate, today),
+      detail: `Your hearing is scheduled for ${format(hearingDate, "MMMM d, yyyy")}. Arrive early, bring organized evidence, and prepare a short statement of your claim.`,
+      law: "N.J. Ct. R. 6:1-2",
+    });
+  } else {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date (not yet entered)",
+      date: null,
+      status: "missing",
+      detail: "Enter your hearing date in the Intake tab once the Special Civil Part clerk schedules it.",
+      law: "N.J. Ct. R. 6:1-2",
+    });
+  }
+
+  // Appeal window
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window (if you lose)",
+    date: null,
+    status: "info",
+    detail: facts.appealNote,
+    law: "N.J. Ct. R. 2:4-1",
+  });
+
+  // Post-judgment collection
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: `Judgment valid for ${facts.judgmentValidityYears} years`,
+    date: null,
+    status: "info",
+    detail: `NJ judgments are valid for ${facts.judgmentValidityYears} years. If the defendant does not pay, you can use ${facts.collectionToolsText}.`,
+    law: "N.J.S.A. 2A:14-5",
+  });
+
+  return list;
+}
+
+// ── Washington deadline builder ───────────────────────────────────────────────
+
+function buildWaDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+  const facts = STATE_FACTS.WA;
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsWA(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: facts.statuteOfLimitationsCitation ?? "RCW 4.16.040; RCW 4.16.080",
+  });
+
+  // Service — at least 10 days before the hearing
+  const serviceDeadline = hearingDate ? addDays(hearingDate, -10) : null;
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "Serve the defendant by (10 days before hearing)",
+    date: serviceDeadline,
+    status: serviceDeadline ? getDeadlineStatus(serviceDeadline, today) : "missing",
+    detail: `In WA Small Claims Department, the defendant must be served ${facts.serviceDeadlineText}. ${facts.serviceMethodsText}.`,
+    law: facts.serviceOfProcessCitation ?? "RCW 12.40.030",
+  });
+
+  // Hearing date
+  if (hearingDate) {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date",
+      date: hearingDate,
+      status: getDeadlineStatus(hearingDate, today),
+      detail: `Your hearing is scheduled for ${format(hearingDate, "MMMM d, yyyy")}. Attorneys are not allowed to represent either side in WA small claims — arrive early and bring organized evidence.`,
+      law: "RCW 12.40.080",
+    });
+  } else {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date (not yet entered)",
+      date: null,
+      status: "missing",
+      detail: "Enter your hearing date in the Intake tab once the District Court clerk schedules it.",
+      law: "RCW 12.40.080",
+    });
+  }
+
+  // Appeal window
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "Appeal window (if you lose)",
+    date: null,
+    status: "info",
+    detail: facts.appealNote,
+    law: "RALJ 2.5",
+  });
+
+  // Post-judgment collection
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: `Judgment valid for ${facts.judgmentValidityYears} years`,
+    date: null,
+    status: "info",
+    detail: `WA judgments are valid for ${facts.judgmentValidityYears} years and may be renewed. If the defendant does not pay, you can use ${facts.collectionToolsText}.`,
+    law: "RCW 6.17.020",
+  });
+
+  return list;
+}
+
 // ── California deadline builder ───────────────────────────────────────────────
 
 function buildCaDeadlines(
@@ -567,6 +998,10 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const isFL = currentCase.jurisdictionState === "FL";
   const isTX = currentCase.jurisdictionState === "TX";
   const isNC = (currentCase.jurisdictionState as string) === "NC";
+  const isIL = (currentCase.jurisdictionState as string) === "IL";
+  const isVA = (currentCase.jurisdictionState as string) === "VA";
+  const isNJ = (currentCase.jurisdictionState as string) === "NJ";
+  const isWA = (currentCase.jurisdictionState as string) === "WA";
 
   const incidentDate = useMemo(() => parseIncidentDate(currentCase.incidentDate || ""), [currentCase.incidentDate]);
   const hearingDate = useMemo(() => parseHearingDate(currentCase.hearingDate || ""), [currentCase.hearingDate]);
@@ -594,16 +1029,28 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
     if (isNC) {
       return buildNcDeadlines(incidentDate, hearingDate, claimType, today);
     }
+    if (isIL) {
+      return buildIlDeadlines(incidentDate, hearingDate, claimType, today);
+    }
+    if (isVA) {
+      return buildVaDeadlines(incidentDate, hearingDate, claimType, today);
+    }
+    if (isNJ) {
+      return buildNjDeadlines(incidentDate, hearingDate, claimType, today);
+    }
+    if (isWA) {
+      return buildWaDeadlines(incidentDate, hearingDate, claimType, today);
+    }
     return buildCaDeadlines(incidentDate, hearingDate, isBusiness, isSuingPublic, claimType, today);
-  }, [isFL, isTX, isNC, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
+  }, [isFL, isTX, isNC, isIL, isVA, isNJ, isWA, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
 
   const categories = [...new Set(deadlines.map(d => d.category))];
 
   const urgentCount = deadlines.filter(d => d.status === "urgent" || d.status === "overdue").length;
   const missingCount = deadlines.filter(d => d.status === "missing").length;
 
-  const stateLabel = isFL ? "Florida" : isTX ? "Texas" : isNC ? "North Carolina" : "California";
-  const stateAbbr = isFL ? "FL" : isTX ? "TX" : isNC ? "NC" : "CA";
+  const stateLabel = isFL ? "Florida" : isTX ? "Texas" : isNC ? "North Carolina" : isIL ? "Illinois" : isVA ? "Virginia" : isNJ ? "New Jersey" : isWA ? "Washington" : "California";
+  const stateAbbr = isFL ? "FL" : isTX ? "TX" : isNC ? "NC" : isIL ? "IL" : isVA ? "VA" : isNJ ? "NJ" : isWA ? "WA" : "CA";
 
   return (
     <div className="px-6 pt-3 pb-6 space-y-6">
@@ -731,6 +1178,14 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
             <a href="https://www.txcourts.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">txcourts.gov</a>
           ) : isNC ? (
             <a href="https://www.nccourts.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">nccourts.gov</a>
+          ) : isIL ? (
+            <a href={STATE_FACTS.IL.selfHelpUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">{STATE_FACTS.IL.selfHelpLabel}</a>
+          ) : isVA ? (
+            <a href={STATE_FACTS.VA.selfHelpUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">{STATE_FACTS.VA.selfHelpLabel}</a>
+          ) : isNJ ? (
+            <a href={STATE_FACTS.NJ.selfHelpUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">{STATE_FACTS.NJ.selfHelpLabel}</a>
+          ) : isWA ? (
+            <a href={STATE_FACTS.WA.selfHelpUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">{STATE_FACTS.WA.selfHelpLabel}</a>
           ) : (
             <a href="https://www.courts.ca.gov" target="_blank" rel="noopener noreferrer" className="underline font-medium">courts.ca.gov</a>
           )}
