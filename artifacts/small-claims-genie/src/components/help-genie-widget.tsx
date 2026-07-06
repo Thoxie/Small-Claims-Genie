@@ -261,7 +261,7 @@ export function HelpGenieWidget() {
     } finally {
       setStreaming(false);
     }
-  }, [messages, streaming, pageContext]);
+  }, [messages, streaming, pageContext, isSignedIn, jurisdictionState, jurisdictionCounty]);
 
   useEffect(() => {
     sendMessageRef.current = sendMessage;
