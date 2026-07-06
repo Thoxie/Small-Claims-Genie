@@ -47,7 +47,7 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
 **Technical Implementations & Features:**
 -   **Auth:** Clerk authentication handles user sign-in/sign-up and protects routes using JWTs.
 -   **File Storage:** Documents are uploaded to Google Cloud Storage (GCS) via presigned URLs.
--   **AI Rate Limiting:** An in-memory rate limiter restricts AI calls to 30 per user per hour for `/chat`, `/demand-letter`, and `/advisor/analyze` endpoints.
+-   **AI Rate Limiting:** An in-memory rate limiter restricts AI calls to 30 per user per hour for `/chat`, `/demand-letter`, and `/advisor/analyze` endpoints. The public, anonymous `/api/help` and `/api/help/conversion` endpoints (Help Genie) are rate-limited per-IP instead (same 30/hour budget, shared `ai_rate_limits` table). Testing these locally (e.g. `curl localhost:80` or `scripts/src/test-help-chat-mode-b.ts` with its default `API_BASE_URL=http://localhost:80`) never burns real visitor budget or requires hand-deleting rows — the server automatically exempts loopback-origin requests (`127.0.0.1`/`::1`) outside production. See `isInternalTestBypass` in `artifacts/api-server/src/lib/rate-limiter.ts`. Targeting a non-loopback URL (e.g. a public preview/staging domain) still consumes real per-IP budget.
 -   **OCR:** OpenAI Vision API performs asynchronous OCR on uploaded documents.
 -   **Chat:** Implemented with SSE streaming via raw `fetch` and `ReadableStream`.
 -   **Voice:** Push-to-talk functionality uses `useVoiceRecorder` for Whisper transcription and AI integration.

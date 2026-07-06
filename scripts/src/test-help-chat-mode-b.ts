@@ -20,6 +20,16 @@
  *   - artifacts/api-server/src/prompts/help-chat-prompt.ts (VISITOR_PROMPT)
  *   - artifacts/api-server/src/routes/help-chat.ts (/help endpoint)
  *   - the OpenAI model used for help-chat completions
+ *
+ * NOTE ON RATE LIMITS: `/api/help` is rate-limited per-IP (30 calls/hour,
+ * shared with real anonymous visitors). Running this script against the
+ * default `API_BASE_URL=http://localhost:80` hits the server over loopback,
+ * which the server automatically exempts from the limit outside production
+ * (see `isInternalTestBypass` in artifacts/api-server/src/lib/rate-limiter.ts)
+ * — so repeated test runs never consume real visitor budget or require
+ * manually deleting rows from `ai_rate_limits`. If you point this script at
+ * a non-loopback `API_BASE_URL` (e.g. a public preview/staging domain), it
+ * will consume real per-IP budget like any other client.
  */
 
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:80";
