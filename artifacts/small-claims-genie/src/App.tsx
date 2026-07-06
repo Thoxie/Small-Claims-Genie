@@ -20,6 +20,7 @@ import Counties from "@/pages/counties";
 import Resources from "@/pages/resources";
 import HowItWorks from "@/pages/how-it-works";
 import FAQ from "@/pages/faq";
+import Blog from "@/pages/blog";
 import TypesOfCases from "@/pages/types-of-cases";
 import Terms from "@/pages/terms";
 import TermsOfService from "@/pages/tos";
@@ -271,6 +272,7 @@ function Router() {
               <Route path="/resources" component={Resources} />
               <Route path="/how-it-works" component={HowItWorks} />
               <Route path="/faq" component={FAQ} />
+              <Route path="/blog" component={Blog} />
               <Route path="/types-of-cases" component={TypesOfCases} />
               <Route path="/pricing" component={Pricing} />
               <Route path="/download" component={Download} />

@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },
   { href: "/resources", label: "Resources" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
