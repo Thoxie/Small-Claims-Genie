@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
@@ -6,6 +7,8 @@ import { Wand2 } from "lucide-react";
 const SORO_EMBED_SRC = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
 
 export default function Blog() {
+  const [, setLocation] = useLocation();
+
   useEffect(() => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${SORO_EMBED_SRC}"]`);
     if (existing) return;
@@ -58,13 +61,33 @@ export default function Blog() {
 
         {/* ── Bottom CTA ── */}
         <section className="px-6 pb-12 bg-[#f5fdfb]">
-          <div className="max-w-3xl mx-auto border-2 border-[#a8e6df] rounded-xl px-8 py-8 text-center bg-[#f0fffe]">
-            <h2 className="text-lg font-black text-primary mb-1.5">Have a small claims question?</h2>
-            <p className="text-sm text-muted-foreground mb-2">
-              Describe your situation in plain English — by voice or text. The Genie will tell you if you have a
-              case, what evidence you need, and exactly how Small Claims Genie can help you win.
+          <div className="max-w-3xl mx-auto rounded-xl px-8 py-10 text-center bg-[#0f1b2d]">
+            <h2 className="text-xl sm:text-2xl font-black text-white mb-3">
+              Have a question about your situation?
+            </h2>
+            <p className="text-sm text-white/70 mb-6 max-w-2xl mx-auto leading-relaxed">
+              Describe what happened — by voice or text. The Genie will tell you if you have a case, what evidence
+              you need, and how to win. No account required.
             </p>
-            <p className="text-xs text-[#0d6b5e] font-semibold">Free to use — no account required.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button
+                size="lg"
+                onClick={() => window.dispatchEvent(new Event("open-help-genie"))}
+                className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg"
+              >
+                <Wand2 className="mr-2 h-5 w-5" />
+                Ask the Genie — Free
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => setLocation("/cases/new")}
+                className="h-12 px-8 text-base bg-white/10 hover:bg-white/20 text-white rounded-full font-bold border border-white/30"
+              >
+                <Wand2 className="mr-2 h-5 w-5" />
+                Start Your Case
+              </Button>
+            </div>
+            <p className="text-xs text-white/40 mt-4">No sign-up needed to chat. Flat fee to start your case.</p>
           </div>
         </section>
       </div>
