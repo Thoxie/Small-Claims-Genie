@@ -192,7 +192,22 @@ export async function buildNCAocCvm200(
 
   txt(page, bold, "Email:", PC, y, 8);
   txt(page, font, d.plaintiffEmail ?? "", PC + 36, y, 8);
-  y -= 14;
+  y -= 12;
+
+  // Defendant business agent (if applicable)
+  if ((d as any).defendantIsBusinessOrEntity && (d as any).defendantAgentName) {
+    txt(page, bold, "Registered Agent:", DC, y, 8);
+    txt(page, font, (d as any).defendantAgentName, DC + 88, y, 8);
+    y -= 11;
+    if ((d as any).defendantAgentStreet) {
+      txt(page, bold, "Agent Address:", DC, y, 8);
+      txt(page, font,
+        [(d as any).defendantAgentStreet, (d as any).defendantAgentCity, ((d as any).defendantAgentState ?? "NC"), (d as any).defendantAgentZip].filter(Boolean).join(", "),
+        DC + 76, y, 8);
+      y -= 11;
+    }
+  }
+  y -= 2;
 
   drawLine(page, ML, y, MR, y, 0.5);
   y -= 14;

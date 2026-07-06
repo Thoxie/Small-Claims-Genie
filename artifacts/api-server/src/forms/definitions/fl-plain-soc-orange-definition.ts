@@ -65,8 +65,17 @@ const plainSocOrangeDefinition: FormDefinition = {
   renderingTechnique: "acroform-pdflib",
 
   async generate(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
+    const isBusiness = !!(d as any).defendantIsBusinessOrEntity && !!(d as any).defendantAgentName;
+    const defNameForPdf = isBusiness
+      ? `${d.defendantName ?? ""} (c/o ${(d as any).defendantAgentName})`
+      : (d.defendantName ?? "");
+    const defStreetForPdf = isBusiness && (d as any).defendantAgentStreet
+      ? (d as any).defendantAgentStreet
+      : (d.defendantAddress ?? "");
     const pltCityStateZip = cityStateZip(d.plaintiffCity, d.plaintiffState, d.plaintiffZip);
-    const defCityStateZip = cityStateZip(d.defendantCity, d.defendantState, d.defendantZip);
+    const defCityStateZip = isBusiness && (d as any).defendantAgentStreet
+      ? cityStateZip((d as any).defendantAgentCity, (d as any).defendantAgentState ?? "FL", (d as any).defendantAgentZip)
+      : cityStateZip(d.defendantCity, d.defendantState, d.defendantZip);
 
     const pdfBytes = fs.readFileSync(PDF_PATH);
     const doc = await PDFDocument.load(pdfBytes);
@@ -79,8 +88,8 @@ const plainSocOrangeDefinition: FormDefinition = {
     safeSetText(form, "Phone Number",       d.plaintiffPhone ?? "");
 
     // ── Defendant section ───────────────────────────────────────────────────
-    safeSetText(form, "Name_2",               d.defendantName ?? "");
-    safeSetText(form, "Street Address_2",     d.defendantAddress ?? "");
+    safeSetText(form, "Name_2",               defNameForPdf);
+    safeSetText(form, "Street Address_2",     defStreetForPdf);
     safeSetText(form, "City State and Zip_2", defCityStateZip);
     safeSetText(form, "Phone Number_2",       d.defendantPhone ?? "");
 

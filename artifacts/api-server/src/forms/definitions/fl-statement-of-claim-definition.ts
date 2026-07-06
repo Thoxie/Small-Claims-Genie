@@ -249,7 +249,22 @@ export async function buildFLStatementOfClaim(
 
   txt(page, bold, "Email:", PCOL, y, 8);
   txt(page, font, d.plaintiffEmail ?? "", PCOL + 36, y, 8);
-  y -= 14;
+  y -= 12;
+
+  // Defendant business agent (if applicable)
+  if ((d as any).defendantIsBusinessOrEntity && (d as any).defendantAgentName) {
+    txt(page, bold, "Registered Agent:", DCOL, y, 8);
+    txt(page, font, (d as any).defendantAgentName, DCOL + 88, y, 8);
+    y -= 11;
+    if ((d as any).defendantAgentStreet) {
+      txt(page, bold, "Agent Address:", DCOL, y, 8);
+      txt(page, font,
+        [(d as any).defendantAgentStreet, (d as any).defendantAgentCity, ((d as any).defendantAgentState ?? "FL"), (d as any).defendantAgentZip].filter(Boolean).join(", "),
+        DCOL + 76, y, 8);
+      y -= 11;
+    }
+  }
+  y -= 2;
 
   // divider
   drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.5);

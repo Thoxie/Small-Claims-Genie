@@ -25,4 +25,5 @@
 - [SSE marker parsing order dependency](sse-marker-parse-order.md) — truncating on an earlier-stripped marker can consume the delimiter a later-positioned marker's parser still needs
 - [LLM classification ceiling for AI-tag output](llm-classification-ceiling.md) — when an answer's own content strongly resembles a wrong category, prompt-only self-check rules can plateau at ~0% fix rate; measure empirically, then use a deterministic code-level override instead of continued prompt tuning
 - [State-specific terminology in shared AI prompts](help-genie-state-terminology.md) — keep the majority word literal with a parenthetical exception; a neutral third term gets adopted for every state
+- [Registered agent printing pattern](registered-agent-printing-pattern.md) — additive block (TX/NC/VA) vs. name/address substitution (NJ/FL AcroForm templates); pick by available PDF space
 # Last pushed: 2026-06-30 20:04 UTC

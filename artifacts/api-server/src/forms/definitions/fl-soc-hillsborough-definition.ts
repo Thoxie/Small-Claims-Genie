@@ -90,6 +90,14 @@ const socHillsboroughDefinition: FormDefinition = {
     const description = d.claimDescription ?? "";
     const [exp1, exp2, exp3, exp4] = splitExplanation(description);
     const amountStr = formatAmount(d.claimAmount);
+    const isBusiness = !!(d as any).defendantIsBusinessOrEntity && !!(d as any).defendantAgentName;
+    const defAgentLine = isBusiness ? `c/o ${(d as any).defendantAgentName}` : "";
+    const defAddressForPdf = isBusiness && (d as any).defendantAgentStreet
+      ? (d as any).defendantAgentStreet
+      : (d.defendantAddress ?? "");
+    const defCityForPdf = isBusiness && (d as any).defendantAgentStreet ? (d as any).defendantAgentCity : d.defendantCity;
+    const defStateForPdf = isBusiness && (d as any).defendantAgentStreet ? ((d as any).defendantAgentState ?? "FL") : d.defendantState;
+    const defZipForPdf = isBusiness && (d as any).defendantAgentStreet ? (d as any).defendantAgentZip : d.defendantZip;
 
     const pdfBytes = fs.readFileSync(PDF_PATH);
     const doc = await PDFDocument.load(pdfBytes);
@@ -101,11 +109,11 @@ const socHillsboroughDefinition: FormDefinition = {
 
     // ── Defendant names & contact ────────────────────────────────────────────
     safeSetText(form, "DefendantName1", d.defendantName ?? "");
-    safeSetText(form, "DefendantName2", "");
-    safeSetText(form, "DefAddress",  d.defendantAddress ?? "");
-    safeSetText(form, "DefCity",     d.defendantCity ?? "");
-    safeSetText(form, "DefState",    d.defendantState ?? "");
-    safeSetText(form, "DefZipCode",  d.defendantZip ?? "");
+    safeSetText(form, "DefendantName2", defAgentLine);
+    safeSetText(form, "DefAddress",  defAddressForPdf ?? "");
+    safeSetText(form, "DefCity",     defCityForPdf ?? "");
+    safeSetText(form, "DefState",    defStateForPdf ?? "");
+    safeSetText(form, "DefZipCode",  defZipForPdf ?? "");
     safeSetText(form, "DefPhone",    d.defendantPhone ?? "");
 
     // ── Claim type specific ──────────────────────────────────────────────────

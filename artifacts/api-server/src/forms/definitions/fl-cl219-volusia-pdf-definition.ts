@@ -108,8 +108,20 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
   renderingTechnique: "acroform-pdflib",
 
   async generate(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
+    const isBusiness = !!(d as any).defendantIsBusinessOrEntity && !!(d as any).defendantAgentName;
+    const defNameForPdf = isBusiness
+      ? `${d.defendantName ?? ""} (c/o ${(d as any).defendantAgentName})`
+      : (d.defendantName ?? "");
+    const defAddressSource = isBusiness && (d as any).defendantAgentStreet
+      ? fullAddress(
+          (d as any).defendantAgentStreet,
+          (d as any).defendantAgentCity,
+          (d as any).defendantAgentState ?? "FL",
+          (d as any).defendantAgentZip,
+        )
+      : fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
     const pltAddress = fullAddress(d.plaintiffAddress, d.plaintiffCity, d.plaintiffState, d.plaintiffZip);
-    const defAddress = fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
+    const defAddress = defAddressSource;
     const [primary, continuations] = splitDescription(d.claimDescription ?? "");
 
     const pdfBytes = fs.readFileSync(PDF_PATH);
@@ -118,7 +130,7 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
 
     // ── Header: parties ────────────────────────────────────────────────────────
     safeSetText(form, "Plaintiffs",  d.plaintiffName ?? "");
-    safeSetText(form, "Defendants",  d.defendantName ?? "");
+    safeSetText(form, "Defendants",  defNameForPdf);
 
     // ── Addresses ──────────────────────────────────────────────────────────────
     safeSetText(form, "Address",   pltAddress);
@@ -130,7 +142,7 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
 
     // ── Body: "Plaintiffs [name] sues Defendants [name] for…" ─────────────────
     safeSetText(form, "Plaintiffs_2", d.plaintiffName ?? "");
-    safeSetText(form, "sues",         d.defendantName ?? "");
+    safeSetText(form, "sues",         defNameForPdf);
 
     // ── Claim description ──────────────────────────────────────────────────────
     safeSetText(form, "2 Give a brief statement explaining reasons for filing this suit  what happened dates times place etc Attach", primary);

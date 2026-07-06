@@ -95,7 +95,18 @@ const clkCt333Definition: FormDefinition = {
   renderingTechnique: "acroform-pdflib",
 
   async generate(d: CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
-    const defAddress = fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
+    const isBusiness = !!(d as any).defendantIsBusinessOrEntity && !!(d as any).defendantAgentName;
+    const defNameForPdf = isBusiness
+      ? `${d.defendantName ?? ""} (c/o ${(d as any).defendantAgentName})`
+      : (d.defendantName ?? "");
+    const defAddress = isBusiness && (d as any).defendantAgentStreet
+      ? fullAddress(
+          (d as any).defendantAgentStreet,
+          (d as any).defendantAgentCity,
+          (d as any).defendantAgentState ?? "FL",
+          (d as any).defendantAgentZip,
+        )
+      : fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
     const checkedBox = claimTypeCheckbox(d);
 
     const pdfBytes = fs.readFileSync(PDF_PATH);
@@ -104,7 +115,7 @@ const clkCt333Definition: FormDefinition = {
 
     // ── Parties (single-line so pdftotext extracts them as searchable strings) ─
     safeSetSingleLine(form, "Plaintiff", d.plaintiffName ?? "");
-    safeSetSingleLine(form, "Defendant", d.defendantName ?? "");
+    safeSetSingleLine(form, "Defendant", defNameForPdf);
 
     // ── Defendant address + phone ─────────────────────────────────────────────
     safeSetText(form, "Address", defAddress);
