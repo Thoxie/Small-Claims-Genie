@@ -77,12 +77,13 @@ router.post("/help", async (req, res): Promise<void> => {
     return;
   }
 
-  const { message, history = [], pageContext, isSignedIn, jurisdictionState } = req.body as {
+  const { message, history = [], pageContext, isSignedIn, jurisdictionState, jurisdictionCounty } = req.body as {
     message: string;
     history: Array<{ role: "user" | "assistant"; content: string }>;
     pageContext?: string;
     isSignedIn?: boolean;
     jurisdictionState?: string;
+    jurisdictionCounty?: string;
   };
 
   if (!message || typeof message !== "string" || message.trim().length === 0) {
@@ -95,17 +96,19 @@ router.post("/help", async (req, res): Promise<void> => {
     return;
   }
 
+  const stateName = jurisdictionState === "CA" ? "California" : jurisdictionState === "FL" ? "Florida" : jurisdictionState === "TX" ? "Texas" : jurisdictionState === "IL" ? "Illinois" : jurisdictionState === "NC" ? "North Carolina" : jurisdictionState === "VA" ? "Virginia" : jurisdictionState === "NJ" ? "New Jersey" : jurisdictionState === "WA" ? "Washington" : jurisdictionState;
+  const countyPhrase = jurisdictionCounty ? `${jurisdictionCounty} County, ` : "";
+  const stateNote = jurisdictionState
+    ? `\n\nUser's selected jurisdiction: ${countyPhrase}${stateName} (${jurisdictionState}). Answer using ONLY ${stateName}-specific rules, limits, fees, and procedures — do NOT list or compare other states' rules unless the user explicitly asks to compare states. If a detail (e.g. filing fee, local form) varies by county within ${stateName}${jurisdictionCounty ? `, note anything specific to ${jurisdictionCounty} County when you know it and otherwise` : ""}, tell the user to verify with their local county court/clerk rather than guessing a number.`
+    : "";
+
   let systemPrompt: string;
   if (isSignedIn === false) {
-    systemPrompt = VISITOR_PROMPT + "\n\n" + VISITOR_SUGGESTIONS_INSTRUCTION;
+    systemPrompt = VISITOR_PROMPT + stateNote + "\n\n" + VISITOR_SUGGESTIONS_INSTRUCTION;
   } else {
     const pageAddendum = pageContext && PAGE_CONTEXT_PROMPTS[pageContext]
       ? PAGE_CONTEXT_PROMPTS[pageContext] + SUGGESTIONS_INSTRUCTION
       : SUGGESTIONS_INSTRUCTION;
-    const stateName = jurisdictionState === "FL" ? "Florida" : jurisdictionState === "TX" ? "Texas" : jurisdictionState === "IL" ? "Illinois" : jurisdictionState === "NC" ? "North Carolina" : jurisdictionState === "VA" ? "Virginia" : jurisdictionState === "NJ" ? "New Jersey" : jurisdictionState === "WA" ? "Washington" : jurisdictionState;
-    const stateNote = jurisdictionState && jurisdictionState !== "CA"
-      ? `\n\nUser's case jurisdiction: ${stateName} (${jurisdictionState}). Apply ${stateName}-specific rules, limits, and procedures when answering questions about this case.`
-      : "";
     systemPrompt = HELP_BASE_PROMPT + stateNote + "\n\n" + pageAddendum;
   }
 

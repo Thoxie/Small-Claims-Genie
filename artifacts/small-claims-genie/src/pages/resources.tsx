@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { useListCounties } from "@workspace/api-client-react";
@@ -44,6 +44,12 @@ export default function Resources() {
   );
 
   const info = STATE_RESOURCES[selectedState];
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("help-genie-jurisdiction", {
+      detail: { state: selectedState, county: selectedCounty?.name ?? null },
+    }));
+  }, [selectedState, selectedCounty]);
 
   const formsSection = useMemo(() => {
     if (selectedState === "CA") {

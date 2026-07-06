@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useListCounties } from "@workspace/api-client-react";
 import { STATE_FACTS, STATE_ORDER, type StateCode } from "@workspace/state-facts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,6 +124,12 @@ export default function Counties() {
         c.courthouseCity.toLowerCase().includes(lower)
     );
   }, [counties, searchTerm]);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("help-genie-jurisdiction", {
+      detail: { state: selectedState },
+    }));
+  }, [selectedState]);
 
   const stateFacts = STATE_FACTS[selectedState];
   const countCopy = counties ? `all ${counties.length}` : "every";
