@@ -285,7 +285,6 @@ export default function Counties() {
           Describe your situation in plain English — by voice or text. The Genie will help you figure out
           where to file, what to expect, and how Small Claims Genie can help you prepare.
         </p>
-        <p className="text-xs text-[#0d6b5e] font-semibold mb-5">Free to use — no account required.</p>
         <Button
           size="lg"
           onClick={() => window.dispatchEvent(new Event("open-help-genie"))}

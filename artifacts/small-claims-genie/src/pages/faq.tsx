@@ -150,7 +150,6 @@ export default function FAQ() {
             Describe your situation in plain English — by voice or text. The Genie will tell you if you have a case,
             what evidence you need, and exactly how Small Claims Genie can help you win.
           </p>
-          <p className="text-xs text-[#0d6b5e] font-semibold">Free to use — no account required.</p>
         </div>
       </section>
 
