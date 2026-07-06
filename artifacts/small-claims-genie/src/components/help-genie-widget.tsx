@@ -17,8 +17,19 @@ interface Message {
 const HG_REDIRECT_SEP = "\nREDIRECT:";
 const HG_SUGGESTIONS_SEP = "\nSUGGESTIONS:";
 const HG_SIGNUP_CTA = "\nSIGNUP_CTA";
+const HG_FEATURE_TAG_SEP = "\nFEATURE_TAG:";
 
-function parseHelpContent(raw: string): { displayText: string; redirect: { target: string; question: string } | null; showSignupCta: boolean } {
+const HG_FEATURE_CTAS: Record<string, string> = {
+  DEMAND_LETTER: "Small Claims Genie's Demand Letter tool drafts a professional settlement offer or full settlement agreement for you in seconds, pulling in your case facts automatically — a documented, formal offer settles cases faster than an informal phone call. It's free to try.",
+  COURT_FORMS: "Small Claims Genie generates your state's court forms pre-filled with your case details, so you don't have to figure out which form or field to use — free to try.",
+  PROCESS_SERVER: "Small Claims Genie can connect you with a professional process server to get the defendant served correctly and on time, so your case doesn't get dismissed on a technicality — free to try.",
+  HEARING_PREP: "Small Claims Genie's Hearing Prep step generates your opening statement from your case facts, and its AI Mock Trial lets you practice answering a judge's likely questions out loud before the real thing — free to start.",
+  EVIDENCE_UPLOAD: "Small Claims Genie's Evidence Upload tool organizes and labels your documents automatically, so everything is ready to present at your hearing — free to try.",
+  CASE_ADVISOR: "Small Claims Genie's AI Case Advisor reviews your specific facts and evidence and tells you exactly how strong your case is and what's missing — free to try.",
+  DEADLINE_TRACKING: "Small Claims Genie automatically tracks your filing, service, and hearing deadlines so you never miss one — free to try.",
+};
+
+function parseHelpContent(raw: string): { displayText: string; redirect: { target: string; question: string } | null; showSignupCta: boolean; featureTagPending: boolean } {
   let text = raw;
   let redirect: { target: string; question: string } | null = null;
   const ridx = text.indexOf(HG_REDIRECT_SEP);
@@ -35,8 +46,26 @@ function parseHelpContent(raw: string): { displayText: string; redirect: { targe
     text = text.slice(0, text.indexOf(HG_SIGNUP_CTA));
   }
   const sidx = text.indexOf(HG_SUGGESTIONS_SEP);
-  if (sidx !== -1) text = text.slice(0, sidx);
-  return { displayText: text.trimEnd(), redirect, showSignupCta };
+  const hasSuggestions = sidx !== -1;
+  if (hasSuggestions) text = text.slice(0, sidx);
+
+  let featureTagPending = false;
+  const ftidx = text.indexOf(HG_FEATURE_TAG_SEP);
+  if (ftidx !== -1) {
+    const rest = text.slice(ftidx + HG_FEATURE_TAG_SEP.length);
+    const answer = text.slice(0, ftidx).trimEnd();
+    const nlidx = rest.indexOf("\n");
+    if (nlidx === -1 && !hasSuggestions) {
+      featureTagPending = true;
+      text = answer;
+    } else {
+      const tag = (nlidx === -1 ? rest : rest.slice(0, nlidx)).trim();
+      const cta = HG_FEATURE_CTAS[tag];
+      text = cta ? `${answer}\n\n${cta}` : answer;
+    }
+  }
+
+  return { displayText: text.trimEnd(), redirect, showSignupCta, featureTagPending };
 }
 
 const HG_REDIRECT_LABELS: Record<string, string> = {

@@ -22,4 +22,5 @@
 - [Form asset runtime path](form-asset-path.md) — new form PDFs must go in `artifacts/api-server/assets/forms/`, not `src/assets/forms/`, or downloads silently fail/use stale files
 - [Internal research placeholders in county data](internal-research-placeholders.md) — grep new-state county seed data for "NEEDS VERIFICATION"/"UNKNOWN" before shipping; it leaks into user-facing UI
 - [County directory batch-fetch](county-directory-batch-fetch.md) — fetch per-county courthouse pages in parallel batches, not one-by-one; handle 404s by checking the county index page for the real building-page slug
+- [SSE marker parsing order dependency](sse-marker-parse-order.md) — truncating on an earlier-stripped marker can consume the delimiter a later-positioned marker's parser still needs
 # Last pushed: 2026-06-30 20:04 UTC
