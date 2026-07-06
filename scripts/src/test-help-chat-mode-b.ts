@@ -64,6 +64,15 @@ interface Case {
   // variance can occasionally over-pitch — the same tolerance already
   // extended to Mode B for the same reason.
   maxAttempts?: number;
+  // Simulates a visitor who has already selected a state/county on a
+  // marketing page (Resources/Counties), which the widget forwards on every
+  // turn via jurisdictionState/jurisdictionCounty. Regression coverage for
+  // the real-world scenario: does adding state-specific context ever
+  // suppress the FEATURE_TAG/CTA pipeline that sells the matching paid
+  // feature? (See replit.md — Help Genie must both use state-specific facts
+  // AND surface relevant product features.)
+  jurisdictionState?: string;
+  jurisdictionCounty?: string;
 }
 
 // The live model runs at temperature 0.5, so exact wording varies run to run.
@@ -151,9 +160,34 @@ const CASES: Case[] = [
     message: "I won my case against them months ago but they still haven't paid a cent — what happens if they just keep ignoring it?",
     expectedTags: ["JUDGMENT_COLLECTION"],
   },
+  {
+    label: "Hearing question with NC jurisdiction selected (Mode B -> Hearing Prep, magistrate terminology)",
+    mode: "B",
+    message: "What happens at a small claims hearing?",
+    expectedTags: ["HEARING_PREP"],
+    jurisdictionState: "NC",
+  },
+  {
+    label: "Hearing question with CA jurisdiction selected (Mode B -> Hearing Prep)",
+    mode: "B",
+    message: "What happens at a small claims hearing?",
+    expectedTags: ["HEARING_PREP"],
+    jurisdictionState: "CA",
+  },
+  {
+    label: "Evidence question with TX jurisdiction selected (Mode B -> Evidence Upload tool)",
+    mode: "B",
+    message: "How do I prove my case in court?",
+    expectedTags: ["EVIDENCE_UPLOAD"],
+    jurisdictionState: "TX",
+  },
 ];
 
-async function streamHelpResponse(message: string): Promise<string> {
+async function streamHelpResponse(
+  message: string,
+  jurisdictionState?: string,
+  jurisdictionCounty?: string,
+): Promise<string> {
   const resp = await fetch(`${BASE_URL}/api/help`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -161,6 +195,8 @@ async function streamHelpResponse(message: string): Promise<string> {
       message,
       history: [],
       isSignedIn: false,
+      ...(jurisdictionState ? { jurisdictionState } : {}),
+      ...(jurisdictionCounty ? { jurisdictionCounty } : {}),
     }),
   });
 
@@ -235,7 +271,7 @@ async function main() {
     for (let attempt = 1; attempt <= attempts; attempt++) {
       let raw: string;
       try {
-        raw = await streamHelpResponse(c.message);
+        raw = await streamHelpResponse(c.message, c.jurisdictionState, c.jurisdictionCounty);
       } catch (err) {
         requestError = err instanceof Error ? err.message : String(err);
         continue;
