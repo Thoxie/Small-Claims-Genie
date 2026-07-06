@@ -27,6 +27,7 @@ const HG_FEATURE_CTAS: Record<string, string> = {
   EVIDENCE_UPLOAD: "Small Claims Genie's Evidence Upload tool organizes and labels your documents automatically, so everything is ready to present at your hearing — free to try.",
   CASE_ADVISOR: "Small Claims Genie's AI Case Advisor reviews your specific facts and evidence and tells you exactly how strong your case is and what's missing — free to try.",
   DEADLINE_TRACKING: "Small Claims Genie automatically tracks your filing, service, and hearing deadlines so you never miss one — free to try.",
+  JUDGMENT_COLLECTION: "Small Claims Genie's Collect After You Have Won tools walk you through the right post-judgment enforcement options for your state — garnishment, bank levies, liens, and debtor exams — so a judgment doesn't just sit unpaid. Free to try.",
 };
 
 function parseHelpContent(raw: string): { displayText: string; redirect: { target: string; question: string } | null; showSignupCta: boolean; featureTagPending: boolean } {

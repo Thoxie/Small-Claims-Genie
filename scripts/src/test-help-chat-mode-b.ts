@@ -47,6 +47,7 @@ const VALID_TAGS = [
   "EVIDENCE_UPLOAD",
   "CASE_ADVISOR",
   "DEADLINE_TRACKING",
+  "JUDGMENT_COLLECTION",
   "NONE",
 ];
 
@@ -131,6 +132,24 @@ const CASES: Case[] = [
     mode: "B",
     message: "I'm being sued in small claims court, but the person suing me actually owes ME money from a separate deal we had. What are my options?",
     expectedTags: ["CASE_ADVISOR"],
+  },
+  {
+    label: "Defendant not responding to demand letter (Mode B -> court forms, next step is filing)",
+    mode: "B",
+    message: "I sent a demand letter two weeks ago and they haven't responded at all — what do I do now?",
+    expectedTags: ["COURT_FORMS"],
+  },
+  {
+    label: "Collecting after winning a judgment (Mode B -> Collect After You Have Won tools)",
+    mode: "B",
+    message: "I won my small claims case — how do I actually get the money from them?",
+    expectedTags: ["JUDGMENT_COLLECTION"],
+  },
+  {
+    label: "Defendant ignoring the judgment (Mode B -> Collect After You Have Won tools, defensive phrasing)",
+    mode: "B",
+    message: "I won my case against them months ago but they still haven't paid a cent — what happens if they just keep ignoring it?",
+    expectedTags: ["JUDGMENT_COLLECTION"],
   },
 ];
 
