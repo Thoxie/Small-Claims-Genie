@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useListCounties, useCreateCase } from "@workspace/api-client-react";
+import { STATE_ORDER, STATE_FACTS, type StateCode } from "@workspace/state-facts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,18 +21,32 @@ const CLAIM_TYPES = [
   "Other",
 ];
 
-type JurisdictionState = "CA" | "FL" | "IL" | "NC" | "NJ" | "TX" | "VA" | "WA";
+type JurisdictionState = StateCode;
 
-const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = [
-  { value: "CA", label: "California", flag: "🌴", sub: "Up to $12,500" },
-  { value: "FL", label: "Florida", flag: "☀️", sub: "Up to $8,000" },
-  { value: "IL", label: "Illinois", flag: "🌽", sub: "Up to $10,000" },
-  { value: "NC", label: "North Carolina", flag: "🏛️", sub: "Up to $10,000" },
-  { value: "NJ", label: "New Jersey", flag: "🌊", sub: "Up to $5,000" },
-  { value: "TX", label: "Texas", flag: "⭐", sub: "Up to $20,000" },
-  { value: "VA", label: "Virginia", flag: "🦅", sub: "Up to $5,000" },
-  { value: "WA", label: "Washington", flag: "🏔️", sub: "Up to $10,000" },
-];
+// State list/order comes from the canonical @workspace/state-facts registry
+// (see .agents/skills/state-expansion/SKILL.md). The flag emoji here is this
+// picker's own presentation choice (deliberately distinct from the flagEmoji
+// shown on the Resources/Counties pages) and label/sub come from STATE_FACTS
+// so a new state only needs to be added once, in state-facts.
+const STATE_PICKER_FLAGS: Record<StateCode, string> = {
+  CA: "🌴",
+  FL: "☀️",
+  IL: "🌽",
+  NC: "🏛️",
+  NJ: "🌊",
+  TX: "⭐",
+  VA: "🦅",
+  WA: "🏔️",
+};
+
+const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = STATE_ORDER.map(
+  (code) => ({
+    value: code,
+    label: STATE_FACTS[code].name,
+    flag: STATE_PICKER_FLAGS[code],
+    sub: STATE_FACTS[code].pickerSubText,
+  })
+);
 
 export default function NewCase() {
   const [, setLocation] = useLocation();
@@ -83,15 +98,7 @@ export default function NewCase() {
 
   const selectedCounty = counties?.find((c) => c.id === countyId);
 
-  const countyLabel =
-    jurisdictionState === "CA" ? "California County" :
-    jurisdictionState === "IL" ? "Illinois County" :
-    jurisdictionState === "TX" ? "Texas County" :
-    jurisdictionState === "NC" ? "North Carolina County" :
-    jurisdictionState === "VA" ? "Virginia County/City" :
-    jurisdictionState === "NJ" ? "New Jersey County" :
-    jurisdictionState === "WA" ? "Washington County" :
-    "Florida County";
+  const countyLabel = STATE_FACTS[jurisdictionState].countyLabel;
   const countyHint =
     jurisdictionState === "CA"
       ? "Usually where the defendant lives or where the incident happened."

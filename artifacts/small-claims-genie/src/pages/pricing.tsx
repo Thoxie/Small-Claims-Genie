@@ -3,17 +3,12 @@ import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth, useSignUp } from "@clerk/clerk-react";
 import { Trophy, UserCheck, Loader2, X, Eye, EyeOff, Wand2, MapPin } from "lucide-react";
+import { STATE_ORDER, STATE_FACTS } from "@workspace/state-facts";
 
-const SUPPORTED_STATES = [
-  { abbr: "CA", name: "California" },
-  { abbr: "FL", name: "Florida" },
-  { abbr: "IL", name: "Illinois" },
-  { abbr: "NJ", name: "New Jersey" },
-  { abbr: "NC", name: "North Carolina" },
-  { abbr: "TX", name: "Texas" },
-  { abbr: "VA", name: "Virginia" },
-  { abbr: "WA", name: "Washington" },
-];
+// State list comes from the canonical @workspace/state-facts registry (see
+// .agents/skills/state-expansion/SKILL.md) so a new state only needs to be
+// added once.
+const SUPPORTED_STATES = STATE_ORDER.map((code) => ({ abbr: code, name: STATE_FACTS[code].name }));
 
 function TermsAndSignUpModal({
   alreadySignedIn,

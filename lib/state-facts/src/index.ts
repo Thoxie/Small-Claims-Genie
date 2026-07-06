@@ -44,6 +44,10 @@ export interface StateFacts {
   courtBranchName: string;
   selfHelpUrl: string;
   selfHelpLabel: string;
+  /** UI label for the county picker, e.g. "California County" / "Virginia County/City" */
+  countyLabel: string;
+  /** Short claim-limit badge text for compact pickers, e.g. "Up to $12,500" (see claimLimitText for the full legal text) */
+  pickerSubText: string;
 
   claimLimitText: string;
   claimLimitCitation?: string;
@@ -89,6 +93,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "California Courts — Judicial Branch",
     selfHelpUrl: "https://www.courts.ca.gov/selfhelp-smallclaims.htm",
     selfHelpLabel: "California Courts Small Claims Self-Help",
+    countyLabel: "California County",
+    pickerSubText: "Up to $12,500",
 
     claimLimitText: "$12,500 for individuals, $6,250 for businesses",
     claimLimitCitation: undefined,
@@ -142,6 +148,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "Florida Courts — Judicial Branch",
     selfHelpUrl: "https://www.flcourts.gov",
     selfHelpLabel: "Florida Courts",
+    countyLabel: "Florida County",
+    pickerSubText: "Up to $8,000",
 
     claimLimitText: "$8,000 or less",
     claimLimitCitation: "Fla. Stat. Ch. 34",
@@ -190,6 +198,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "Texas Judicial Branch",
     selfHelpUrl: "https://www.txcourts.gov",
     selfHelpLabel: "Texas Courts",
+    countyLabel: "Texas County",
+    pickerSubText: "Up to $20,000",
 
     claimLimitText: "$20,000",
     claimLimitCitation: "Tex. Gov't Code § 27.031",
@@ -241,6 +251,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "Illinois Courts — Judicial Branch",
     selfHelpUrl: "https://www.illinoiscourts.gov",
     selfHelpLabel: "Illinois Courts",
+    countyLabel: "Illinois County",
+    pickerSubText: "Up to $10,000",
 
     claimLimitText: "$10,000",
     claimLimitCitation: "735 ILCS 5/Art. II",
@@ -290,6 +302,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "North Carolina Judicial Branch",
     selfHelpUrl: "https://www.nccourts.gov",
     selfHelpLabel: "North Carolina Courts",
+    countyLabel: "North Carolina County",
+    pickerSubText: "Up to $10,000",
 
     claimLimitText: "$10,000",
     claimLimitCitation: "G.S. 7A-210",
@@ -339,6 +353,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "Virginia Judicial System",
     selfHelpUrl: "https://www.vacourts.gov",
     selfHelpLabel: "Virginia's Judicial System",
+    countyLabel: "Virginia County/City",
+    pickerSubText: "Up to $5,000",
 
     claimLimitText: "$5,000",
     claimLimitCitation: "Va. Code § 16.1-122.2",
@@ -384,6 +400,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "New Jersey Courts",
     selfHelpUrl: "https://www.njcourts.gov/self-help/small-claims-court",
     selfHelpLabel: "NJ Courts Small Claims Self-Help",
+    countyLabel: "New Jersey County",
+    pickerSubText: "Up to $5,000",
 
     claimLimitText: "$5,000 (the general Special Civil Part limit is $20,000, but the Small Claims Section is capped at $5,000)",
     claimLimitCitation: "N.J. Ct. R. 6:1-1, 6:1-2 (effective July 1, 2022)",
@@ -433,6 +451,8 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     courtBranchName: "Washington Courts",
     selfHelpUrl: "https://www.courts.wa.gov/newsinfo/resources/index.cfm?fa=newsinfo_resources.smallclaims",
     selfHelpLabel: "Washington Courts Small Claims Resources",
+    countyLabel: "Washington County",
+    pickerSubText: "Up to $10,000",
 
     claimLimitText: "$10,000 for individuals; $5,000 for businesses, assignees, and collection agencies",
     claimLimitCitation: "RCW 12.40.010",

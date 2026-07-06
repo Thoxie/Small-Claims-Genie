@@ -1,4 +1,5 @@
 import type { casesTable, documentsTable } from "@workspace/db";
+import { STATE_FACTS, type StateCode } from "@workspace/state-facts";
 
 export interface BuildContextOptions {
   docCharLimit?: number;
@@ -46,7 +47,8 @@ export function buildCaseContext(
   }
 
   parts.push("\n-- COURT & FILING --");
-  parts.push(`Jurisdiction State: ${c.jurisdictionState ?? "CA"} (${(c.jurisdictionState ?? "CA") === "FL" ? "Florida" : (c.jurisdictionState ?? "CA") === "TX" ? "Texas" : "California"})`);
+  const stateCode = (c.jurisdictionState as StateCode) ?? "CA";
+  parts.push(`Jurisdiction State: ${stateCode} (${STATE_FACTS[stateCode]?.name ?? "California"})`);
   parts.push(`Filing County: ${c.countyId || "[not selected]"}`);
   if (c.notifyMethod) {
     const methodLabel: Record<string, string> = {

@@ -44,11 +44,22 @@ Exposing a state in the picker before its forms pipeline exists lets a user crea
 2. `state-resources.ts` (Resources page) — add the new `ResourceStateCode` entries across every `Record<ResourceStateCode, ...>` map in the file.
 3. `pricing.tsx` (`SUPPORTED_STATES`) — add the new state so the "Available in" badge and pricing copy stay accurate.
 4. `counties.tsx` (public `/counties` directory page) — add the new state to `STATE_TABS` and confirm `FilingFeesPanel` renders correctly for its data shape (numeric 3-tier grid, flat fee, or notes-only fallback depending on what the state's county data actually has). This is a standing requirement for every new state, not optional polish — always do it as part of Phase 2/rollout.
-5. Court Forms tab (`forms-tab.tsx`) and Deadline Calculator tab (`deadline-calculator-tab.tsx`) — add state-specific sections following the existing per-state conditional pattern (`isVirginiaCase`, `isNorthCarolinaCase`, etc.).
-6. AI prompts (`chat.ts` Case Advisor, `help-chat.ts` Help Genie) — add a new per-state block interpolating from `STATE_FACTS`, matching the existing CA/FL/TX/IL/NC/VA blocks.
+5. Court Forms tab — each state (except CA, which stays inline as the default/fallback branch) gets its own JSX file at `artifacts/small-claims-genie/src/pages/cases/tabs/forms-tab-sections/<state-slug>-forms-section.tsx`, exporting a `<StateName>FormsSection({ ctx }: { ctx: FormsTabCtx })` component. `forms-tab.tsx` owns the shared `useFormsTabState()` hook and just adds one more `{isXCase && <XFormsSection ctx={ctx} />}` line — do not add new inline per-state JSX blocks directly in `forms-tab.tsx` anymore (added 2026-07-06 refactor, kept the file from growing back to 4,600+ lines). Also add the state to Deadline Calculator tab (`deadline-calculator-tab.tsx`) — as of 2026-07-06 this tab only branches for FL/TX/NC and silently falls back to CA logic for IL/NJ/VA/WA; a new state MUST add its own branch, and this pre-existing gap should eventually be fixed for the 4 already-live states too.
+6. AI prompts (`chat.ts` Case Advisor, `help-chat.ts` Help Genie — actually in `artifacts/api-server/src/prompts/chat-prompt.ts` / `help-chat-prompt.ts`) — add a new per-state block interpolating from `STATE_FACTS` (the `${XX.field}` pattern), matching the existing blocks. If your new state's forms aren't ready yet, phrase it as "not yet available" — but you MUST come back and remove that phrase the moment `forms/definitions` gets a real `FormDefinition` for that state, or `check:state-completeness` will (correctly) flag it as a stale user-facing claim.
 7. Actual PDF form generation — register new `FormDefinition`s in the Form Registry per the Unified Form Engine pattern in replit.md. Never ship a "coming soon" placeholder for a state's Court Forms tab — see the `form-asset-path` memory topic for a runtime asset-loading pitfall to avoid when adding new form PDFs.
-8. Run `pnpm run typecheck` from the workspace root (never a leaf artifact in isolation).
-9. Test the full flow end-to-end (new case creation → county selection → intake → forms → AI chat mentions the state correctly), including clicking through the new state's tab on `/counties` via `runTest()`.
+8. Run `pnpm run typecheck` from the workspace root (never a leaf artifact in isolation), then `pnpm --filter @workspace/scripts run check:state-completeness` (see below) to catch any surface you forgot to wire up.
+9. Test the full flow end-to-end (new case creation → county selection → intake → forms → AI chat mentions the state correctly), including clicking through the new state's tab on `/counties` via `runTest()`. Note: as of 2026-07-06, Clerk sign-in via `runTest()`/`testClerkAuth` is unreliable in this environment (OAuth-only UI blocks it, and programmatic `testClerkAuth` sign-in can 422) — see `clerk-e2e-test-auth-blocker` memory topic. If it fails, fall back to manual screenshot verification + code review rather than retrying repeatedly.
+
+## Automated completeness check
+
+`pnpm --filter @workspace/scripts run check:state-completeness` (script: `scripts/src/check-state-completeness.ts`) verifies every state in `STATE_ORDER` is wired into the surfaces TypeScript can't check for you (missing `Record<StateCode, …>` keys already fail to compile, so those aren't re-checked here):
+- Court Forms tab conditional + section file exists for the state
+- Deadline Calculator tab has its own branch (not silently falling back to CA)
+- Both AI prompts have a `${XX.field}` interpolation block for the state
+- Form Registry has at least one `FormDefinition` with `state: "XX"`
+- Neither prompt claims a state's forms are "not yet available"/"coming soon" while that state actually has a registered `FormDefinition` (catches AI-prompt/reality drift that violates replit.md rule #4)
+
+Run this after any state-expansion work, and periodically as a health check — it exits non-zero on any FAIL so it can be wired into CI later.
 
 ## Guardrails (apply throughout)
 

@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { i18n } from "@/lib/i18n";
 import { formatPhone, formatZip, DatePicker, intakeStep1Schema } from "./shared";
+import { STATE_ORDER, STATE_FACTS } from "@workspace/state-facts";
 
 import type { ExtendedCase, ExtendedCounty, Courthouse } from "@/lib/types";
 
@@ -23,16 +24,10 @@ interface Props {
   onAiCheck?: () => void;
 }
 
-const STATE_OPTIONS = [
-  { value: "CA", label: "California" },
-  { value: "FL", label: "Florida" },
-  { value: "IL", label: "Illinois" },
-  { value: "NC", label: "North Carolina" },
-  { value: "NJ", label: "New Jersey" },
-  { value: "TX", label: "Texas" },
-  { value: "VA", label: "Virginia" },
-  { value: "WA", label: "Washington" },
-];
+// State list comes from the canonical @workspace/state-facts registry (see
+// .agents/skills/state-expansion/SKILL.md) so a new state only needs to be
+// added once.
+const STATE_OPTIONS = STATE_ORDER.map((code) => ({ value: code, label: STATE_FACTS[code].name }));
 
 export function IntakeStep1({ initialData, onNext, saving, onSaveExit, onAiCheck }: Props) {
   const [jurisdictionState, setJurisdictionState] = useState<string>(

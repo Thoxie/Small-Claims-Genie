@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useState, useMemo } from "react";
 import { useListCounties } from "@workspace/api-client-react";
-import { STATE_FACTS, type StateCode } from "@workspace/state-facts";
+import { STATE_FACTS, STATE_ORDER, type StateCode } from "@workspace/state-facts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Globe, Landmark, Search, Wand2 } from "lucide-react";
 import { i18n } from "@/lib/i18n";
 
-// Order mirrors STATE_ORDER in lib state-resources.ts; keep in sync whenever a
-// new state is added (see .agents/skills/state-expansion/SKILL.md).
-const STATE_TABS: StateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA"];
+// State list/order comes from the canonical @workspace/state-facts registry
+// (see .agents/skills/state-expansion/SKILL.md) so a new state only needs to
+// be added once.
+const STATE_TABS: StateCode[] = STATE_ORDER;
 
 type StateTab = StateCode;
 

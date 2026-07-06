@@ -51,6 +51,7 @@
     "test:va-forms": "tsx ./src/test-va-forms.ts",
     "test:nj-wa-forms": "tsx ./src/test-nj-wa-forms.ts",
     "test:help-chat-mode-b": "tsx ./src/test-help-chat-mode-b.ts",
+    "check:state-completeness": "tsx ./src/check-state-completeness.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
