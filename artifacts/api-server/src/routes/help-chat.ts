@@ -34,7 +34,12 @@ const DEFENDANT_SIGNALS = [
   "case against me",
   "respond to a lawsuit",
   "respond to a small claims",
-  "defendant in",
+  "i am the defendant",
+  "i'm the defendant",
+  "i am a defendant",
+  "i'm a defendant",
+  "named as a defendant",
+  "named as the defendant",
 ];
 
 const COUNTERCLAIM_SIGNALS = [

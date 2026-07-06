@@ -275,7 +275,7 @@ async function main() {
       if (attemptOk) {
         console.log(`  ✓ Mentions matching paid feature within ${attempts} attempts`);
       } else {
-        console.log(`  ✗ Does NOT mention any expected feature (${(c.expectedFeatureNames ?? []).join(" / ")}) after ${attempts} attempts — Mode B pitch missing or wrong`);
+        console.log(`  ✗ Does NOT mention any expected feature (${(c.expectedTags ?? []).join(" / ")}) after ${attempts} attempts — Mode B pitch missing or wrong`);
         passed = false;
       }
     } else {
