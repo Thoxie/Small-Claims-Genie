@@ -73,7 +73,7 @@ router.post("/help", async (req, res): Promise<void> => {
       model: "gpt-4o-mini",
       messages,
       stream: true,
-      max_tokens: 600,
+      max_tokens: 750,
       temperature: 0.5,
     });
 
