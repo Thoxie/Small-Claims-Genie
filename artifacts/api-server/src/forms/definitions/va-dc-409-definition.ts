@@ -33,13 +33,6 @@ import type { CaseData } from "../types";
 
 const PDF_PATH = path.join(ASSET_DIR, "va-forms", "dc-409.pdf");
 
-function fmtDate(iso?: string | null): string {
-  if (!iso) return "";
-  const parts = iso.split("-");
-  if (parts.length < 3) return iso;
-  const [y, m, d] = parts;
-  return `${m}/${d}/${y}`;
-}
 
 const vaDc409Definition: FormDefinition = {
   state: "VA",

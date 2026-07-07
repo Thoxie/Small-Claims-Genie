@@ -7,11 +7,10 @@
  * Notes:
  * - The IL summons is court-issued and stamped by the circuit court clerk.
  *   There is no user-signed variant — the /signed route does not exist.
- * - The IL courts site (illinoiscourts.gov) is a JS-rendered application
- *   that serves JavaScript bundles from all URLs, not actual PDFs.
- *   This form is generated programmatically via pdf-lib (png-overlay technique).
- * - pdf-lib compresses content streams with deflate, so text strings are NOT
- *   present as plain ASCII in the raw bytes. Content validation is done visually.
+ * - The official IL Supreme Court PDF is filled via pdftk FDF fill.
+ *   The asset lives at artifacts/api-server/assets/il-forms/il-smc-summons.pdf.
+ * - pdftk flattens the form fields so no AcroForm widgets remain in the output.
+ *   Content validation is done by checking PDF magic bytes and body size.
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";

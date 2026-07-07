@@ -553,14 +553,12 @@ router.post(
   makeFormHandler("IL-SMC-COMPLAINT", (id) => `IL-Small-Claims-Complaint-Signed-Case-${id}.pdf`, { signed: true }),
 );
 
-// IL Small Claims Summons (programmatic pdf-lib)
+// IL Small Claims Summons (official IL Supreme Court PDF via pdftk FDF fill)
+// Clerk-issued form — the circuit court clerk fills in case number, return date,
+// and provides the court stamp/signature. No plaintiff signature route exists.
 router.post(
   "/cases/:id/forms/il/summons",
   makeFormHandler("IL-SUMMONS", (id) => `IL-Small-Claims-Summons-Case-${id}.pdf`),
-);
-router.post(
-  "/cases/:id/forms/il/summons/signed",
-  makeFormHandler("IL-SUMMONS", (id) => `IL-Small-Claims-Summons-Signed-Case-${id}.pdf`, { signed: true }),
 );
 
 // IL Proof of Service (programmatic pdf-lib)
