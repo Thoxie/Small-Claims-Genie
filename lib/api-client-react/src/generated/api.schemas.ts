@@ -20,6 +20,7 @@ export const CountyState = {
   VA: "VA",
   NJ: "NJ",
   WA: "WA",
+  AZ: "AZ",
 } as const;
 
 export interface County {
@@ -69,6 +70,7 @@ export const CaseJurisdictionState = {
   VA: "VA",
   NJ: "NJ",
   WA: "WA",
+  AZ: "AZ",
 } as const;
 
 export type CaseGuidedIntakeDataGuidedAnswers = { [key: string]: string };
@@ -263,6 +265,7 @@ export const CreateCaseBodyJurisdictionState = {
   VA: "VA",
   NJ: "NJ",
   WA: "WA",
+  AZ: "AZ",
 } as const;
 
 export interface CreateCaseBody {
@@ -284,6 +287,7 @@ export const UpdateCaseBodyJurisdictionState = {
   VA: "VA",
   NJ: "NJ",
   WA: "WA",
+  AZ: "AZ",
 } as const;
 
 export interface UpdateCaseBody {
@@ -528,7 +532,7 @@ export interface OpenaiError {
 
 export type ListCountiesParams = {
   /**
-   * Filter by jurisdiction state (CA, FL, IL, NC, or TX). Returns all if omitted.
+   * Filter by jurisdiction state (CA, FL, IL, NC, TX, VA, NJ, WA, or AZ). Returns all if omitted.
    */
   state?: ListCountiesState;
 };
@@ -545,6 +549,7 @@ export const ListCountiesState = {
   VA: "VA",
   NJ: "NJ",
   WA: "WA",
+  AZ: "AZ",
 } as const;
 
 export type UploadDocumentBody = {

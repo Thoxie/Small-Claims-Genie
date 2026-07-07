@@ -9,7 +9,7 @@ import type { ListCountiesState } from "./listCountiesState";
 
 export type ListCountiesParams = {
   /**
-   * Filter by jurisdiction state (CA, FL, IL, NC, or TX). Returns all if omitted.
+   * Filter by jurisdiction state (CA, FL, IL, NC, TX, VA, NJ, WA, or AZ). Returns all if omitted.
    */
   state?: ListCountiesState;
 };

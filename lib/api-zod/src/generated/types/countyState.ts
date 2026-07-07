@@ -17,4 +17,5 @@ export const CountyState = {
   VA: "VA",
   NJ: "NJ",
   WA: "WA",
+  AZ: "AZ",
 } as const;

@@ -18,4 +18,5 @@ export const CaseJurisdictionState = {
   VA: "VA",
   NJ: "NJ",
   WA: "WA",
+  AZ: "AZ",
 } as const;
