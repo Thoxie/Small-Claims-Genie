@@ -1,5 +1,6 @@
 /**
  * End-to-end test: Virginia DC-402 (Warrant in Debt) and DC-409 (In Forma Pauperis) form downloads
+ * Covers both unsigned and signed (/signed) endpoints for each form.
  *
  * Run with:
  *   pnpm --filter @workspace/scripts exec tsx src/test-va-forms.ts
@@ -20,11 +21,30 @@ const EXPECTED_DEFENDANT = "ABC Hardware LLC";
 const EXPECTED_AMOUNT    = "3,500.00";
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:80";
 
-async function testForm(caseId: number, token: string, label: string, path: string, checkAmount = true) {
-  const url = `${BASE_URL}/api/cases/${caseId}/forms/va/${path}?token=${token}`;
+// 1×1 transparent PNG as a data URL — minimal valid signature for signed-endpoint tests
+const STUB_SIG_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+async function testForm(
+  caseId: number,
+  token: string,
+  label: string,
+  urlPath: string,
+  checks: string[],
+  sigDataUrl?: string,
+) {
+  const url = `${BASE_URL}/api/cases/${caseId}/forms/va/${urlPath}?token=${token}`;
   console.log(`\nTesting ${label}: POST ${url.replace(token, token.slice(0, 8) + "…")}`);
 
-  const resp = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  const body_ = sigDataUrl
+    ? JSON.stringify({ signatureDataUrl: sigDataUrl })
+    : "{}";
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: body_,
+  });
   const body = Buffer.from(await resp.arrayBuffer());
 
   let passed = true;
@@ -53,22 +73,17 @@ async function testForm(caseId: number, token: string, label: string, path: stri
     passed = false;
   }
 
-  const tmpPdf = `/tmp/va-test-${label.replace(/\s+/g, "-")}.pdf`;
-  const tmpTxt = `/tmp/va-test-${label.replace(/\s+/g, "-")}.txt`;
+  const tmpPdf = `/tmp/va-test-${label.replace(/[\s/]+/g, "-")}.pdf`;
+  const tmpTxt = `/tmp/va-test-${label.replace(/[\s/]+/g, "-")}.txt`;
   await writeFile(tmpPdf, body);
   try {
     await execFileAsync("pdftotext", [tmpPdf, tmpTxt]);
     const text = await readFile(tmpTxt, "utf8");
-    const checks: [string, string][] = [
-      ["Plaintiff name", EXPECTED_PLAINTIFF],
-      ["Defendant name", EXPECTED_DEFENDANT],
-    ];
-    if (checkAmount) checks.push(["Claim amount", EXPECTED_AMOUNT]);
-    for (const [fieldLabel, value] of checks) {
+    for (const value of checks) {
       if (text.includes(value)) {
-        console.log(`  ✓ ${fieldLabel} "${value}" found`);
+        console.log(`  ✓ "${value}" found in PDF text`);
       } else {
-        console.log(`  ✗ ${fieldLabel} "${value}" NOT found`);
+        console.log(`  ✗ "${value}" NOT found in PDF text`);
         passed = false;
       }
     }
@@ -119,20 +134,51 @@ async function main() {
   const caseId = row!.id;
   console.log(`  Case ID: ${caseId}`);
 
-  const token1 = await makeToken(caseId);
-  const dc402Ok = await testForm(caseId, token1, "DC-402 Warrant in Debt", "dc-402");
+  const results: boolean[] = [];
 
-  const token2 = await makeToken(caseId);
-  const dc409Ok = await testForm(caseId, token2, "DC-409 In Forma Pauperis", "dc-409", false);
+  // DC-402 unsigned
+  results.push(await testForm(
+    caseId, await makeToken(caseId),
+    "DC-402 Warrant in Debt (unsigned)",
+    "dc-402",
+    [EXPECTED_PLAINTIFF, EXPECTED_DEFENDANT, EXPECTED_AMOUNT],
+  ));
+
+  // DC-402 signed
+  results.push(await testForm(
+    caseId, await makeToken(caseId),
+    "DC-402 Warrant in Debt (signed)",
+    "dc-402/signed",
+    [EXPECTED_PLAINTIFF, EXPECTED_DEFENDANT, EXPECTED_AMOUNT],
+    STUB_SIG_DATA_URL,
+  ));
+
+  // DC-409 unsigned
+  results.push(await testForm(
+    caseId, await makeToken(caseId),
+    "DC-409 In Forma Pauperis (unsigned)",
+    "dc-409",
+    [EXPECTED_PLAINTIFF, EXPECTED_DEFENDANT],
+  ));
+
+  // DC-409 signed
+  results.push(await testForm(
+    caseId, await makeToken(caseId),
+    "DC-409 In Forma Pauperis (signed)",
+    "dc-409/signed",
+    [EXPECTED_PLAINTIFF, EXPECTED_DEFENDANT],
+    STUB_SIG_DATA_URL,
+  ));
 
   console.log(`\nCleaning up: deleting test case ${caseId}…`);
   await db.delete(casesTable).where(eq(casesTable.id, caseId));
   console.log("  Done.");
 
-  if (dc402Ok && dc409Ok) {
-    console.log("\n✅ All assertions passed — VA DC-402 and DC-409 PDFs are valid.");
+  const allPassed = results.every(Boolean);
+  if (allPassed) {
+    console.log("\n✅ All assertions passed — VA DC-402 and DC-409 PDFs are valid (unsigned + signed).");
   } else {
-    console.error("\n❌ Test failed.");
+    console.error("\n❌ One or more tests failed.");
     process.exit(1);
   }
 }

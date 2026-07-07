@@ -13,6 +13,11 @@
  *   Filing fees (Tex. Gov't Code § 118.121): ≤$200: $46 | $201–$500: $71 |
  *     $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 |
  *     $10,001–$20,000: $321
+ *
+ * Official PDF status: The TX OCA small claims forms (txcourts.gov) could not be
+ * downloaded — all tried media URLs under /media/<id>/sc1.pdf returned HTTP 404.
+ * The OCA form media IDs change when forms are revised; this form remains programmatic
+ * until the current media ID is confirmed and automated download is verified.
  */
 
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";

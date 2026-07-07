@@ -7,6 +7,12 @@
  * number and return date before it is served on the defendant.
  *
  * Rendering technique: png-overlay (programmatic pdf-lib, no template PDF).
+ *
+ * Official PDF status: The Illinois Supreme Court-approved Small Claims Summons
+ * PDF (illinoiscourts.gov) could not be downloaded via automated fetch — all
+ * tried URLs (under /docs/default-source/forms-documents/ and
+ * /docs/default-source/approved-forms/) returned HTTP 404 with an HTML error page.
+ * This form remains programmatic until a stable direct-download URL is found.
  */
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";

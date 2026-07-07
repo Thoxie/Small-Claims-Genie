@@ -1,349 +1,180 @@
 /**
- * VA DC-402 — Warrant in Debt (General District Court, Civil Division)
+ * VA DC-402 — Warrant in Debt (General District Court, Small Claims Division)
  *
- * Programmatically generated with pdf-lib (no template PDF required) —
- * follows the same png-overlay-style precedent as NC AOC-CVM-200.
+ * Fills the official Virginia General District Court PDF (DC-402) using pdftk FDF.
+ * The official form is a landscape AcroForm (page rotation = 90°) with fields in
+ * the User.* namespace.
+ *
+ * Source PDF: https://www.vacourts.gov/forms/district/dc402.pdf
+ * Fields confirmed via: pdftk dc-402.pdf dump_data_fields
+ * Rendering technique: xfa-pdftk (pdftk FDF fill + optional pdf-lib signature overlay)
  *
  * Legal basis:
- *   Va. Code § 16.1-122.2 — Small claims/General District Court civil claim limit: $5,000
- *   Va. Code § 8.01-246 — Statute of limitations for contract actions
- *   Va. Code § 16.1-122.4 — Attorneys barred from small claims division absent both parties' consent
- *   Va. Code § 16.1-94.1 — Judgment validity period (10 years)
+ *   Va. Code § 16.1-122.2 — Small claims limit: $5,000
+ *   Va. Code § 16.1-79    — Warrant in Debt procedure
+ *   Va. Code § 16.1-122.3 — Small Claims Division
  *
- * Filing fee: UNKNOWN statewide flat rate — Virginia sets General District Court fees by
- * case type and locality with no single published statewide schedule (unlike NC's flat $96).
- * Never fabricate a fee number here; always defer to the county's clerk/GDC Civil Filing Fee Calculator.
+ * Field notes:
+ *   User.RB2  — claim basis: "1"=Open Account, "2"=Contract, "3"=Note, "4"=Other
+ *   User.RB3  — homestead exemption: "1"=YES, "2"=NO, "3"=cannot be demanded
+ *   User.RB4  — filer type: "1"=PLAINTIFF, "2"=PLAINTIFF'S EMPLOYEE
+ *   User.Date3 — date from which interest accrues (incident/debt date)
+ *   User.Date4 — date warrant is signed (today)
+ *   Date1/Time/Date2/RB1 — read-only; clerk fills hearing date and service result
+ *   ReturnName1/ReturnAddress1/ReturnPhone1 — back-page service stub; prefilled
+ *     with plaintiff info so the officer knows who to return to.
+ *
+ * Signature overlay (page 1, /Rotate 90):
+ *   In pre-rotation pdf-lib space: pdf_x = visual_y_from_top, pdf_y = visual_x.
+ *   "Plaintiff(s)' signature" label: pdftotext visual (x≈284, y≈146–154).
+ *   Pre-rotation: pdf_x≈146, pdf_y≈284.
+ *   With rotate(degrees(90)) at anchor (x=146, y=284), width=200, height=24:
+ *     width(200) extends in +pdf_y = RIGHT in visual (200px wide signature) ✓
+ *     height(24) extends in -pdf_x = UP in visual (24px above the label) ✓
+ *
+ * Filing fee: varies by locality — always defer to the county GDC clerk.
  */
 
-import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";
+import * as path from "path";
+import { PDFDocument, degrees } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
+import { pdftk_fill_form } from "../pdftk-fdf";
+import { ASSET_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
 
-const PW = 612;
-const PH = 792;
-const BLACK = rgb(0, 0, 0);
-const GRAY = rgb(0.5, 0.5, 0.5);
-const LIGHT = rgb(0.93, 0.93, 0.93);
-
-const ML = 54;
-const MR = PW - 54;
-
-function drawLine(page: PDFPage, x1: number, y1: number, x2: number, y2: number, thickness = 0.5, color = BLACK) {
-  page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness, color });
-}
-
-function drawRect(page: PDFPage, x: number, y: number, w: number, h: number, fill = LIGHT) {
-  page.drawRectangle({ x, y, width: w, height: h, color: fill, borderColor: BLACK, borderWidth: 0.5 });
-}
-
-function txt(page: PDFPage, font: PDFFont, text: string | null | undefined, x: number, y: number, size = 9, color = BLACK) {
-  if (!text) return;
-  page.drawText(String(text), { x, y, size, font, color });
-}
-
-function wrapText(page: PDFPage, font: PDFFont, text: string, x: number, y: number, maxWidth: number, size = 9, lineGap = 4): number {
-  const words = text.replace(/\r/g, "").split(/\s+/);
-  let line = "";
-  let curY = y;
-  for (const word of words) {
-    const candidate = line ? line + " " + word : word;
-    if (font.widthOfTextAtSize(candidate, size) > maxWidth && line) {
-      txt(page, font, line, x, curY, size);
-      curY -= size + lineGap;
-      line = word;
-    } else {
-      line = candidate;
-    }
-  }
-  if (line) { txt(page, font, line, x, curY, size); curY -= size + lineGap; }
-  return curY;
-}
+const PDF_PATH = path.join(ASSET_DIR, "va-forms", "dc-402.pdf");
 
 function fmtAmount(amount: number | null | undefined): string {
   if (!amount) return "";
-  return "$" + amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return Number(amount).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function fmtDate(iso?: string | null): string {
   if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  if (!y || !m || !d) return iso;
+  const parts = iso.split("-");
+  if (parts.length < 3) return iso;
+  const [y, m, d] = parts;
   return `${m}/${d}/${y}`;
 }
 
-function countyDisplay(countyId?: string | null): string {
-  if (!countyId) return "";
-  return countyId
-    .replace(/^va-/, "")
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-function claimTypeLabel(ct?: string | null): string {
-  const MAP: Record<string, string> = {
-    goods: "Goods, wares, and merchandise sold",
-    services: "Work done and materials furnished",
-    loan: "Money lent",
-    account_stated: "Money due on account stated",
-    contract: "Written contract",
-    rent: "Rent for property",
-    property_damage: "Property damage",
-    personal_injury: "Personal injury",
-    security_deposit: "Security deposit",
-    other: "Other",
+function claimBasisRadio(claimType?: string | null): string {
+  const map: Record<string, string> = {
+    goods: "1",
+    services: "1",
+    loan: "1",
+    account_stated: "1",
+    security_deposit: "1",
+    contract: "2",
+    rent: "2",
+    property_damage: "4",
+    personal_injury: "4",
+    other: "4",
   };
-  return ct ? (MAP[ct] ?? ct) : "";
-}
-
-export async function buildVADc402(
-  d: CaseData,
-  _body: FormBody,
-  opts?: GenerateOptions,
-): Promise<Buffer> {
-  const doc = await PDFDocument.create();
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-
-  const page = doc.addPage([PW, PH]);
-  const countyName = countyDisplay((d as any).countyId);
-
-  let y = PH - 36;
-  let sigLineY = 0;
-
-  // ── Header ──────────────────────────────────────────────────────────────────
-  const hdr1 = "COMMONWEALTH OF VIRGINIA";
-  const hdr2 = `${countyName ? countyName.toUpperCase() + " " : ""}GENERAL DISTRICT COURT`;
-  const hdr3 = "CIVIL DIVISION";
-  const hdr4 = "WARRANT IN DEBT";
-
-  for (const [text, sz] of [[hdr1, 9], [hdr2, 10], [hdr3, 8], [hdr4, 11]] as [string, number][]) {
-    const w = (sz >= 10 ? bold : font).widthOfTextAtSize(text, sz);
-    txt(page, sz >= 10 ? bold : font, text, (PW - w) / 2, y, sz);
-    y -= sz + 5;
-  }
-
-  const formNote = "DC-402 | Form generated by Small Claims Genie";
-  const formNoteW = font.widthOfTextAtSize(formNote, 7);
-  txt(page, font, formNote, (PW - formNoteW) / 2, y, 7, GRAY);
-  y -= 10;
-
-  if (d.courthouseAddress || d.courthouseName) {
-    const cAddrLine = [
-      d.courthouseName,
-      d.courthouseAddress,
-      d.courthouseCity ? `${d.courthouseCity}, VA` : null,
-      d.courthouseZip,
-    ].filter(Boolean).join(" — ");
-    const caw = font.widthOfTextAtSize(cAddrLine, 7.5);
-    txt(page, font, cAddrLine, (PW - caw) / 2, y, 7.5, GRAY);
-    y -= 10;
-  }
-
-  drawLine(page, ML, y, MR, y, 1.2);
-  y -= 12;
-
-  // ── Case number row ──────────────────────────────────────────────────────────
-  txt(page, bold, "CASE NO.:", ML, y, 9);
-  txt(page, font, (d as any).caseNumber ?? "", ML + 58, y, 9);
-  txt(page, bold, "FILING FEE: SEE LOCAL CLERK", MR - 165, y, 8);
-  y -= 10;
-  drawLine(page, ML, y, MR, y, 0.5);
-  y -= 14;
-
-  // ── Plaintiff / Defendant columns ────────────────────────────────────────────
-  const COL_MID = ML + (MR - ML) / 2;
-  drawRect(page, ML, y - 1, COL_MID - ML - 4, 14, LIGHT);
-  drawRect(page, COL_MID, y - 1, MR - COL_MID, 14, LIGHT);
-  txt(page, bold, "PLAINTIFF (You)", ML + 4, y + 2, 9);
-  txt(page, bold, "DEFENDANT", COL_MID + 4, y + 2, 9);
-  y -= 16;
-
-  const PC = ML + 4;
-  const DC = COL_MID + 4;
-  const CW = COL_MID - ML - 12;
-
-  const pNameFull = (d as any).plaintiffDbaName
-    ? `${d.plaintiffName} d/b/a ${(d as any).plaintiffDbaName}`
-    : (d.plaintiffName ?? "");
-  const pAddr = [d.plaintiffAddress, d.plaintiffCity, `VA ${d.plaintiffZip ?? ""}`.trim()].filter(Boolean).join(", ");
-
-  txt(page, bold, "Name:", PC, y, 8);
-  txt(page, font, pNameFull, PC + 36, y, 8);
-  txt(page, bold, "Name:", DC, y, 8);
-  txt(page, font, d.defendantName ?? "", DC + 36, y, 8);
-  y -= 12;
-
-  txt(page, bold, "Addr:", PC, y, 8);
-  wrapText(page, font, d.plaintiffAddress ?? "", PC + 36, y, CW - 36, 8, 3);
-  txt(page, bold, "Addr:", DC, y, 8);
-  wrapText(page, font, d.defendantAddress ?? "", DC + 36, y, CW - 36, 8, 3);
-  y -= 12;
-
-  txt(page, bold, "City:", PC, y, 8);
-  txt(page, font, [d.plaintiffCity, "VA", d.plaintiffZip].filter(Boolean).join(", "), PC + 36, y, 8);
-  txt(page, bold, "City:", DC, y, 8);
-  txt(page, font, [d.defendantCity, d.defendantState ?? "VA", d.defendantZip].filter(Boolean).join(", "), DC + 36, y, 8);
-  y -= 12;
-
-  txt(page, bold, "Phone:", PC, y, 8);
-  txt(page, font, d.plaintiffPhone ?? "", PC + 36, y, 8);
-  txt(page, bold, "Phone:", DC, y, 8);
-  txt(page, font, d.defendantPhone ?? "", DC + 36, y, 8);
-  y -= 12;
-
-  txt(page, bold, "Email:", PC, y, 8);
-  txt(page, font, d.plaintiffEmail ?? "", PC + 36, y, 8);
-  y -= 12;
-
-  // Defendant business agent (if applicable)
-  if ((d as any).defendantIsBusinessOrEntity && (d as any).defendantAgentName) {
-    txt(page, bold, "Registered Agent:", DC, y, 8);
-    txt(page, font, (d as any).defendantAgentName, DC + 88, y, 8);
-    y -= 11;
-    if ((d as any).defendantAgentStreet) {
-      txt(page, bold, "Agent Address:", DC, y, 8);
-      txt(page, font,
-        [(d as any).defendantAgentStreet, (d as any).defendantAgentCity, ((d as any).defendantAgentState ?? "VA"), (d as any).defendantAgentZip].filter(Boolean).join(", "),
-        DC + 76, y, 8);
-      y -= 11;
-    }
-  }
-  y -= 2;
-
-  drawLine(page, ML, y, MR, y, 0.5);
-  y -= 14;
-
-  // ── Amount Claimed ────────────────────────────────────────────────────────────
-  drawRect(page, ML, y - 1, MR - ML, 14, LIGHT);
-  txt(page, bold, "AMOUNT CLAIMED", ML + 4, y + 2, 9);
-  y -= 16;
-
-  txt(page, bold, "Principal Amount:", ML, y, 9);
-  txt(page, font, fmtAmount(d.claimAmount), ML + 105, y, 9);
-  txt(page, bold, "Claim Limit: $5,000 (Va. Code § 16.1-122.2)", MR - 220, y, 8);
-  y -= 12;
-
-  const claimLabel = claimTypeLabel((d as any).claimType);
-  if (claimLabel) {
-    txt(page, bold, "Basis of Claim:", ML, y, 9);
-    txt(page, font, claimLabel, ML + 90, y, 9);
-    y -= 12;
-  }
-
-  if (d.incidentDate) {
-    txt(page, bold, "Date of Incident:", ML, y, 9);
-    txt(page, font, fmtDate(d.incidentDate), ML + 100, y, 9);
-    y -= 12;
-  }
-
-  if ((d as any).howAmountCalculated) {
-    txt(page, bold, "How Amount Calculated:", ML, y, 9);
-    y -= 11;
-    y = wrapText(page, font, (d as any).howAmountCalculated, ML + 12, y, MR - ML - 14, 8.5, 3);
-    y -= 4;
-  }
-
-  y -= 4;
-  drawLine(page, ML, y, MR, y, 0.5);
-  y -= 14;
-
-  // ── Statement of Claim ────────────────────────────────────────────────────────
-  drawRect(page, ML, y - 1, MR - ML, 14, LIGHT);
-  txt(page, bold, "STATEMENT OF CLAIM", ML + 4, y + 2, 9);
-  y -= 16;
-
-  txt(page, font,
-    "Plaintiff states that Defendant is indebted to Plaintiff in the amount stated above for the following reasons:",
-    ML, y, 8.5);
-  y -= 13;
-
-  const desc = d.claimDescription ?? "";
-  if (desc) {
-    y = wrapText(page, font, desc, ML, y, MR - ML, 8.5, 3);
-  } else {
-    for (let i = 0; i < 5; i++) {
-      drawLine(page, ML, y, MR, y, 0.3, GRAY);
-      y -= 14;
-    }
-  }
-  y -= 10;
-
-  // ── Prior Demand ──────────────────────────────────────────────────────────────
-  if ((d as any).priorDemandMade) {
-    drawLine(page, ML, y, MR, y, 0.5);
-    y -= 12;
-    txt(page, bold, "PRIOR DEMAND:", ML, y, 9);
-    y -= 11;
-    const demandDesc = (d as any).priorDemandDescription ?? "A prior demand for payment was made to the Defendant.";
-    y = wrapText(page, font, demandDesc, ML, y, MR - ML, 8.5, 3);
-    y -= 8;
-  }
-
-  // ── Venue ─────────────────────────────────────────────────────────────────────
-  drawLine(page, ML, y, MR, y, 0.5);
-  y -= 12;
-  txt(page, bold, "VENUE:", ML, y, 9);
-  txt(page, font, "This action is brought in the county/city where the Defendant resides, is employed, or where the cause of action arose (Va. Code § 8.01-262).", ML + 44, y, 7.5);
-  y -= 20;
-
-  // ── Verification / Signature ──────────────────────────────────────────────────
-  drawLine(page, ML, y, MR, y, 0.8);
-  y -= 14;
-
-  drawRect(page, ML, y - 1, MR - ML, 14, LIGHT);
-  txt(page, bold, "PLAINTIFF'S CERTIFICATION", ML + 4, y + 2, 9);
-  y -= 16;
-
-  const verText =
-    "I, the undersigned Plaintiff (or authorized agent of Plaintiff), certify that the foregoing statement of claim is " +
-    "true and accurate to the best of my knowledge and belief, and I request judgment against the Defendant for the " +
-    "amount stated above, plus interest and costs as allowed by law.";
-  y = wrapText(page, font, verText, ML, y, MR - ML, 8, 3);
-  y -= 14;
-
-  sigLineY = y;
-  drawLine(page, ML, y, ML + 200, y, 0.5);
-  txt(page, font, `Date: ${new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}`, ML + 215, y + 2, 9);
-  y -= 4;
-  txt(page, font, "Plaintiff Signature", ML, y, 7.5, GRAY);
-  y -= 14;
-
-  txt(page, bold, "Print Name:", ML, y, 9);
-  txt(page, font, d.plaintiffName ?? "", ML + 64, y, 9);
-  y -= 12;
-  txt(page, bold, "Address:", ML, y, 9);
-  txt(page, font, pAddr, ML + 52, y, 9);
-  y -= 12;
-  txt(page, bold, "Phone:", ML, y, 9);
-  txt(page, font, d.plaintiffPhone ?? "", ML + 40, y, 9);
-  y -= 20;
-
-  // ── Footer ────────────────────────────────────────────────────────────────────
-  drawLine(page, ML, y, MR, y, 0.4);
-  y -= 10;
-  const footer = "DC-402 — Virginia Warrant in Debt — Claim limit: $5,000 (Va. Code § 16.1-122.2) — Filing fee: varies by county, contact your GDC clerk";
-  const fw = font.widthOfTextAtSize(footer, 6.5);
-  txt(page, font, footer, (PW - fw) / 2, y, 6.5, GRAY);
-
-  // ── Signature image overlay ───────────────────────────────────────────────────
-  if (opts?.signatureBytes && sigLineY > 0) {
-    try {
-      const sigImg = await doc.embedPng(opts.signatureBytes);
-      page.drawImage(sigImg, { x: ML, y: sigLineY, width: 180, height: 36, opacity: 1 });
-    } catch { /* ignore invalid image data */ }
-  }
-
-  return Buffer.from(await doc.save());
+  return map[claimType ?? ""] ?? "4";
 }
 
 const vaDc402Definition: FormDefinition = {
   state: "VA",
   formId: "VA-DC-402",
-  renderingTechnique: "png-overlay",
-  async generate(d: CaseData, body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
-    return buildVADc402(d, body, opts);
+  assetPath: PDF_PATH,
+  renderingTechnique: "xfa-pdftk",
+
+  async generate(
+    d: CaseData,
+    _body: FormBody,
+    opts?: GenerateOptions,
+  ): Promise<Buffer> {
+    const pName = (d as any).plaintiffDbaName
+      ? `${d.plaintiffName} d/b/a ${(d as any).plaintiffDbaName}`
+      : (d.plaintiffName ?? "");
+
+    const courtCity = d.courthouseCity ? `${d.courthouseCity}, VA` : "";
+    const courtName = [d.courthouseName, courtCity].filter(Boolean).join(" — ");
+    const courtAddr = [
+      d.courthouseAddress,
+      courtCity,
+      d.courthouseZip,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const pAddr2 = [d.plaintiffCity, "VA", d.plaintiffZip]
+      .filter(Boolean)
+      .join(", ");
+    const dAddr2 = [
+      d.defendantCity,
+      d.defendantState ?? "VA",
+      d.defendantZip,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const today = new Date().toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+
+    const filledBuf = await pdftk_fill_form(PDF_PATH, {
+      text: {
+        "User.CourtName": courtName,
+        "User.CourtAddress": courtAddr,
+        "User.PlaintiffName": pName,
+        "User.PlaintiffAddress1": d.plaintiffAddress ?? "",
+        "User.PlaintiffAddress2": pAddr2,
+        "User.PlaintiffAddress3": d.plaintiffPhone ?? "",
+        "User.DefendantName": d.defendantName ?? "",
+        "User.DefendantAddress1": d.defendantAddress ?? "",
+        "User.DefendantAddress2": dAddr2,
+        "User.DefendantAddress3": d.defendantPhone ?? "",
+        "User.Net": fmtAmount(d.claimAmount),
+        "User.Date3": fmtDate(d.incidentDate),
+        "User.Date4": today,
+        "User.Other": d.claimDescription ?? "",
+        "User.ReturnName1": pName,
+        "User.ReturnAddress1": [d.plaintiffAddress, pAddr2]
+          .filter(Boolean)
+          .join(", "),
+        "User.ReturnPhone1": d.plaintiffPhone ?? "",
+      },
+      checkboxes: {
+        "User.RB2": claimBasisRadio((d as any).claimType),
+        "User.RB3": "3",
+        "User.RB4": "1",
+      },
+    });
+
+    if (!opts?.signatureBytes) {
+      return filledBuf;
+    }
+
+    const doc = await PDFDocument.load(filledBuf, { ignoreEncryption: true });
+    const pages = doc.getPages();
+    const sigPage = pages[0];
+
+    try {
+      const sigImg =
+        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+      if (sigImg) {
+        sigPage.drawImage(sigImg, {
+          x: 146,
+          y: 284,
+          width: 200,
+          height: 24,
+          rotate: degrees(90),
+          opacity: 1,
+        });
+      }
+    } catch { }
+
+    return Buffer.from(
+      await doc.save({ updateFieldAppearances: false, useObjectStreams: false }),
+    );
   },
 };
 

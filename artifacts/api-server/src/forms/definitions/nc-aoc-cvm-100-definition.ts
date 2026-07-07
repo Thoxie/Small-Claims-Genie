@@ -11,6 +11,9 @@
  * Legal basis:
  *   N.C. Gen. Stat. § 7A-216 — magistrate's summons issued by clerk
  *   Service by sheriff (G.S. 42-28); $30 sheriff service fee per defendant (G.S. 7A-311)
+ *
+ * Official PDF status: nccourts.gov blocks all automated PDF downloads via
+ * Cloudflare WAF (HTTP 403). Remains programmatic until direct access is available.
  */
 
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";

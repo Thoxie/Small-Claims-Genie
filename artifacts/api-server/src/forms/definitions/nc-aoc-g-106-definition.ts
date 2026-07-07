@@ -8,6 +8,9 @@
  *   N.C. Gen. Stat. § 1-110 — Petition to Sue as Indigent
  *   If granted, plaintiff is exempt from the $96 filing fee and $30 service fee.
  *   The court clerk or judge must approve the petition before filing is accepted.
+ *
+ * Official PDF status: nccourts.gov blocks all automated PDF downloads via
+ * Cloudflare WAF (HTTP 403). Remains programmatic until direct access is available.
  */
 
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";

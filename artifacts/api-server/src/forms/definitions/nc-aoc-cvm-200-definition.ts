@@ -8,6 +8,11 @@
  *   N.C. Gen. Stat. § 7A-210 et seq. — Small Claims Court (District Court Division)
  *   Heard by a magistrate; claim limit $10,000 (exclusive of interest and costs)
  *   Filing fee: $96 flat rate (G.S. 7A-311) + $30 sheriff service fee per defendant
+ *
+ * Official PDF status: The NC AOC form PDF (nccourts.gov) cannot be downloaded
+ * via automated fetch — all URLs under /assets/documents/forms/ and /forms/documents/
+ * are blocked by Cloudflare WAF (HTTP 403). This form remains programmatic until
+ * direct PDF access is available (e.g., a bulk-download arrangement with NC AOC).
  */
 
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";

@@ -13,6 +13,11 @@
  * Legal basis:
  *   Fla. Sm. Cl. R. 7.010 et seq.; statewide small claims procedure.
  *   Claim limit: $8,000 (exclusive of costs, interest, and attorney's fees).
+ *
+ * Official PDF status: The statewide FL SOC PDF was downloaded (3 pages, ~71 KB)
+ * from the Florida Courts website but has NO AcroForm fields (pdftk dump_data_fields
+ * returns nothing). Coordinate overlay would require manual visual calibration;
+ * this programmatic form remains the canonical implementation.
  */
 
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";
