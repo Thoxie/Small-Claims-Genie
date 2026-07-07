@@ -20,6 +20,11 @@
  * files only. eFileTexas.gov provides an interactive online interview but no static
  * fillable PDF. This form remains programmatic — pdf-lib generates a complete,
  * pre-filled petition that courts accept in lieu of the official docx template.
+ *
+ * Last checked: July 2026 — confirmed no official fillable PDF available at
+ * txcourts.gov or tjctc.org. When TX OCA publishes a fillable SC-1 PDF, migrate
+ * this definition to pdftk FDF fill (see nc-aoc-cvm-200-definition.ts as the pattern)
+ * and store the asset in artifacts/api-server/assets/tx-forms/sc-1.pdf.
  */
 
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";
