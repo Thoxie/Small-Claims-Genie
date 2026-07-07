@@ -163,7 +163,6 @@ export default function Landing() {
             <Wand2 className="mr-2 h-5 w-5" />
             Ask the Genie — Free
           </Button>
-          <p className="text-xs text-primary-foreground/40 mt-3">No sign-up. No credit card. Just answers.</p>
         </div>
       </section>
 
