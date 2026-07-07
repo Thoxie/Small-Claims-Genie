@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle2, Wand2 } from "lucide-react";
+import { CheckCircle2, Wand2, ArrowRight } from "lucide-react";
 import { gtagReportConversion } from "@/lib/gtag";
 
 const howItWorksSchema = {
@@ -50,14 +50,14 @@ const steps = [
   {
     num: "01",
     title: "Tell the Genie What Happened",
-    whatYouDo: "Answer plain-English questions about your dispute, who is involved, what happened, when it happened, what you are owed, and what evidence you have.",
+    whatYouDo: "Answer plain-English questions about your dispute, who is involved, what happened, when it happened, and what you are owed.",
     whatGenieDoes: "Turns your answers into the beginning of a structured small claims case file.",
     whatYouGet: "A clearer starting point for your claim without needing legal jargon.",
   },
   {
     num: "02",
     title: "Upload Your Evidence",
-    whatYouDo: "Add receipts, invoices, contracts, photos, screenshots, emails, text messages, payment records, and other documents.",
+    whatYouDo: "Add receipts, invoices, contracts, photos, screenshots, emails, text messages, and payment records.",
     whatGenieDoes: "Helps organize the materials around the facts, dates, parties, and damages in your claim.",
     whatYouGet: "An evidence structure instead of a pile of disconnected files.",
   },
@@ -65,7 +65,7 @@ const steps = [
     num: "03",
     title: "Genie Reviews the Case",
     whatYouDo: "Provide the facts and documents you have so Genie can identify the important parts of the dispute.",
-    whatGenieDoes: "Looks for key facts, missing information, important dates, possible weaknesses, and common defenses the other side may raise.",
+    whatGenieDoes: "Looks for key facts, missing information, important dates, and possible weaknesses in your case.",
     whatYouGet: "A better understanding of what supports your case and what still needs work.",
   },
   {
@@ -78,21 +78,21 @@ const steps = [
   {
     num: "05",
     title: "Calculate What You Are Owed",
-    whatYouDo: "Enter the amount you are asking for and connect it to invoices, receipts, deposits, property damage, payments, estimates, or money owed.",
+    whatYouDo: "Enter the amount you are asking for and connect it to invoices, receipts, deposits, property damage, or money owed.",
     whatGenieDoes: "Breaks your damages into clearer categories and ties the amount to your evidence.",
     whatYouGet: "A damages breakdown that helps explain your number.",
   },
   {
     num: "06",
     title: "Generate a Demand Letter",
-    whatYouDo: "Review the dispute summary, amount requested, deadline, and supporting facts before sending a demand letter.",
+    whatYouDo: "Review the dispute summary, amount requested, deadline, and supporting facts before sending.",
     whatGenieDoes: "Creates a plain-English demand letter that explains the problem, states what you want, and shows you are prepared.",
     whatYouGet: "A stronger pre-filing letter that may help resolve the dispute before court.",
   },
   {
     num: "07",
     title: "Prepare Court-Ready Materials",
-    whatYouDo: "Review the case summary, filing information, evidence list, service details, and documents needed for your small claims process.",
+    whatYouDo: "Review the case summary, filing details, evidence list, and service documents needed for your small claims process.",
     whatGenieDoes: "Organizes your information into court-ready preparation materials and checklists.",
     whatYouGet: "A cleaner, more complete case package before filing or before your hearing.",
   },
@@ -100,13 +100,13 @@ const steps = [
     num: "08",
     title: "Practice for the Hearing",
     whatYouDo: "Practice explaining your case and answering likely questions from the judge or the other side.",
-    whatGenieDoes: "Runs mock trial-style questions, identifies weak spots, and helps you prepare for defenses and follow-up questions.",
+    whatGenieDoes: "Runs mock trial-style questions, identifies weak spots, and helps you prepare for follow-up questions.",
     whatYouGet: "More confidence and less confusion when it is time to speak.",
   },
   {
     num: "09",
     title: "Present Your Case Clearly",
-    whatYouDo: "Use your court-ready statement, timeline, evidence checklist, and damages breakdown to stay organized.",
+    whatYouDo: "Use your statement, timeline, evidence checklist, and damages breakdown to stay organized.",
     whatGenieDoes: "Helps you focus on the facts, evidence, and amount you are asking for.",
     whatYouGet: "A prepared presentation instead of scattered notes and random documents.",
   },
@@ -122,6 +122,13 @@ const casePackage = [
   "Service instructions",
   "Court-ready statement",
   "Hearing practice",
+];
+
+const exampleSteps = [
+  "Upload the contract, photos, messages, and payment records",
+  "Build a timeline of promises, payments, and missed work",
+  "Connect the requested amount to the evidence",
+  "Practice explaining the claim before the hearing",
 ];
 
 const howItWorksFaqs = [
@@ -150,7 +157,7 @@ const howItWorksFaqs = [
 export default function HowItWorks() {
   return (
     <>
-    <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
+    <div className="flex flex-col w-full bg-[#f5fdfb] pb-4">
       <Helmet>
         <title>How Small Claims Genie Works | Small Claims Court Preparation</title>
         <meta name="description" content="See how Small Claims Genie helps you organize evidence, build a timeline, calculate damages, create a demand letter, prepare court-ready materials, and practice for your small claims hearing." />
@@ -206,30 +213,50 @@ export default function HowItWorks() {
             <div className="absolute left-[1.75rem] top-8 bottom-8 w-0.5 bg-gray-200 hidden md:block" aria-hidden="true" />
 
             {steps.map(({ num, title, whatYouDo, whatGenieDoes, whatYouGet }) => (
-              <div key={num} className="relative flex items-start gap-5 mb-5">
+              <div key={num} className="relative flex items-start gap-4 mb-4">
                 {/* Step number circle */}
                 <div className="flex-shrink-0 w-14 h-14 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center z-10 mt-0.5">
                   <span className="text-sm font-black text-amber-500">{num}</span>
                 </div>
 
                 {/* Content card */}
-                <div className="flex-1 bg-white rounded-xl border-2 border-gray-200 p-5 hover:border-amber-200 hover:shadow-md transition-all">
-                  <h2 className="text-sm font-bold text-primary mb-4">{title}</h2>
-                  <div className="grid sm:grid-cols-3 gap-4">
+                <div className="flex-1 bg-white rounded-xl border border-gray-200 p-5 sm:p-6 hover:border-amber-200 hover:shadow-sm transition-all">
+                  <h2 className="text-sm font-bold text-primary mb-4 leading-snug">{title}</h2>
+                  <div className="grid sm:grid-cols-3 gap-4 sm:gap-5">
                     <div>
-                      <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest mb-1.5">What you do</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{whatYouDo}</p>
+                      <p className="text-[11px] font-semibold text-primary/45 uppercase tracking-wide mb-2">What you do</p>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">{whatYouDo}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-amber-500/80 uppercase tracking-widest mb-1.5">What Genie does</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{whatGenieDoes}</p>
+                      <p className="text-[11px] font-semibold text-amber-500/70 uppercase tracking-wide mb-2">What Genie does</p>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">{whatGenieDoes}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest mb-1.5">What you get</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{whatYouGet}</p>
+                      <p className="text-[11px] font-semibold text-primary/45 uppercase tracking-wide mb-2">What you get</p>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">{whatYouGet}</p>
                     </div>
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Example Section ── */}
+      <section className="px-4 py-10 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary mb-3">
+            Example: From Dispute to Case Package
+          </h2>
+          <p className="text-[13px] sm:text-sm text-muted-foreground leading-relaxed mb-6 max-w-2xl">
+            For example, if a contractor took a deposit and did not finish the work, Small Claims Genie can help you organize the contract, payment records, photos, messages, timeline, amount owed, demand letter, and hearing presentation around that specific claim.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {exampleSteps.map((step, i) => (
+              <div key={i} className="flex items-start gap-3 bg-[#f5fdfb] rounded-lg px-4 py-3 border border-gray-100">
+                <ArrowRight className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-[13px] text-muted-foreground leading-snug">{step}</p>
               </div>
             ))}
           </div>
@@ -260,7 +287,7 @@ export default function HowItWorks() {
       <section className="px-4 py-10 bg-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-black text-primary mb-2">
-            Prepare smarter. File correctly. Present confidently.
+            Prepare smarter. Organize clearly. Present confidently.
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
             Small Claims Genie is free to start. Pay only when you are ready to download your court-ready forms.
@@ -320,19 +347,19 @@ export default function HowItWorks() {
 
     </div>
 
-    {/* ── Sticky Bottom Genie Button ── */}
+    {/* ── Floating Genie Button — desktop only; mobile has inline CTAs in hero + bottom sections ── */}
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 flex justify-end pointer-events-none"
-      style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))', paddingRight: '72px', paddingTop: '12px' }}
+      className="hidden md:block fixed bottom-6 right-6 z-40"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <Button
-        size="lg"
+        size="sm"
         onClick={() => window.dispatchEvent(new Event("open-help-genie"))}
-        className="h-[43px] px-[29px] text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg pointer-events-auto"
+        className="h-10 pl-3 pr-4 text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-semibold shadow-md"
         aria-label="Ask the Genie a question for free"
       >
-        <Wand2 className="mr-2 h-[18px] w-[18px]" aria-hidden="true" />
-        Ask the Genie — Free
+        <Wand2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+        <span className="hidden sm:inline">Ask the Genie — </span>Free
       </Button>
     </div>
 
