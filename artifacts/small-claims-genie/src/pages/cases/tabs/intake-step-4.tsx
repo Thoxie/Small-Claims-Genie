@@ -181,8 +181,10 @@ export function IntakeStep4({ caseId, initialData, onNext, saving, onSaveExit, o
               {[
                 { name: "isSuingPublicEntity"    as const, label: "Suing a public entity? (e.g. City, County, State)" },
                 { name: "isAttyFeeDispute"       as const, label: "Is this a dispute with a lawyer about attorney fees?" },
-                { name: "filedMoreThan12Claims"  as const, label: "Filed more than 12 small claims in California in the past 12 months?" },
-                { name: "claimOver2500"          as const, label: "Claim over $2,500: Have you filed 2+ other small claims over $2,500 in CA this calendar year?" },
+                ...(initialData.jurisdictionState === "CA" ? [
+                  { name: "filedMoreThan12Claims" as const, label: "Filed more than 12 small claims in California in the past 12 months?" },
+                  { name: "claimOver2500"          as const, label: "Claim over $2,500: Have you filed 2+ other small claims over $2,500 in CA this calendar year?" },
+                ] : []),
               ].map(({ name, label }) => (
                 <FormField key={name} control={form.control} name={name} render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">

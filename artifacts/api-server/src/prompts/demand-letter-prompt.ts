@@ -91,17 +91,38 @@ MUST NOT APPEAR IN THIS LETTER:
 };
 
 export function buildDemandLetterSystemPrompt(state: string): string {
-  const stateFullName = state === "TX" ? "Texas" : state === "FL" ? "Florida" : "California";
-  const defaultCourtRef = state === "TX"
-    ? "Texas Justice of the Peace Court"
-    : state === "FL"
-    ? "Florida County Court (Small Claims Division)"
-    : "California Small Claims Court";
-  const countyCourtFormat = state === "TX"
-    ? '"...file a court action against you in [County Name] County Justice of the Peace Court, Texas..."'
-    : state === "FL"
-    ? '"...file a court action against you in [County Name] County Court (Small Claims Division), Florida..."'
-    : '"...file a court action against you in [County Name] County Small Claims Court..."';
+  const stateFullName =
+    state === "TX" ? "Texas" :
+    state === "FL" ? "Florida" :
+    state === "IL" ? "Illinois" :
+    state === "NC" ? "North Carolina" :
+    state === "VA" ? "Virginia" :
+    state === "NJ" ? "New Jersey" :
+    state === "WA" ? "Washington" :
+    state === "AZ" ? "Arizona" :
+    "California";
+
+  const defaultCourtRef =
+    state === "TX" ? "Texas Justice of the Peace Court" :
+    state === "FL" ? "Florida County Court (Small Claims Division)" :
+    state === "IL" ? "Illinois Circuit Court (Small Claims)" :
+    state === "NC" ? "North Carolina District Court (Small Claims Division)" :
+    state === "VA" ? "Virginia General District Court" :
+    state === "NJ" ? "New Jersey Special Civil Part (Small Claims Division)" :
+    state === "WA" ? "Washington District Court (Small Claims)" :
+    state === "AZ" ? "Arizona Justice Court (Small Claims Division)" :
+    "California Small Claims Court";
+
+  const countyCourtFormat =
+    state === "TX" ? '"...file a court action against you in [County Name] County Justice of the Peace Court, Texas..."' :
+    state === "FL" ? '"...file a court action against you in [County Name] County Court (Small Claims Division), Florida..."' :
+    state === "IL" ? '"...file a court action against you in [County Name] County Circuit Court (Small Claims), Illinois..."' :
+    state === "NC" ? '"...file a court action against you in [County Name] County District Court (Small Claims), North Carolina..."' :
+    state === "VA" ? '"...file a court action against you in [City/County] General District Court, Virginia..."' :
+    state === "NJ" ? '"...file a court action against you in [County Name] County Special Civil Part (Small Claims Division), New Jersey..."' :
+    state === "WA" ? '"...file a court action against you in [County Name] County District Court (Small Claims), Washington..."' :
+    state === "AZ" ? '"...file a court action against you in [County Name] Justice Court (Small Claims Division), Arizona..."' :
+    '"...file a court action against you in [County Name] County Small Claims Court..."';
 
   return `You are a professional legal document writer specializing in pre-litigation demand letters for small claims matters in ${stateFullName}. You write letters that are tight, factual, and effective — the kind a seasoned paralegal would produce.
 
@@ -169,7 +190,19 @@ TEXAS LAW REFERENCES (use only when applicable):
 - Defective goods/services (consumer): Texas DTPA — up to 3x economic damages for knowing violations
 - Property damage: Tex. Civ. Prac. & Rem. Code § 16.003 (2-year SOL)
 
-COURT REFERENCE: "Justice of the Peace Court" or "[County] County Justice of the Peace Court, [Precinct], Texas"` : `- Response deadline: exactly 14 calendar days from today`}`;
+COURT REFERENCE: "Justice of the Peace Court" or "[County] County Justice of the Peace Court, [Precinct], Texas"` : state === "AZ" ? `
+═══ ARIZONA-SPECIFIC DEMAND LETTER RULES ═══
+NOTICE PERIOD: Use 14 calendar days from today as the response deadline.
+
+ARIZONA LAW REFERENCES (use only when applicable):
+- Written contract/debt: A.R.S. § 12-548 (6-year SOL)
+- Oral contract/debt: A.R.S. § 12-543 (3-year SOL)
+- Security deposit (residential lease): A.R.S. § 33-1321 — landlord must return deposit within 14 business days of move-out; liable for double the wrongfully withheld amount
+- Property damage / personal injury: A.R.S. § 12-542 (2-year SOL)
+
+CONSEQUENCES PARAGRAPH — AZ NOTE: Arizona small claims judgments are final with no appeal (A.R.S. § 22-519). You may mention this in the consequences paragraph to emphasize the finality of a judgment: "A small claims judgment in Arizona is final and not subject to appeal."
+
+COURT REFERENCE: "Arizona Justice Court (Small Claims Division)" or "[County Name] Justice Court (Small Claims Division), Arizona"` : `- Response deadline: exactly 14 calendar days from today`}`;
 }
 
 /** @deprecated use buildDemandLetterSystemPrompt(state) instead */

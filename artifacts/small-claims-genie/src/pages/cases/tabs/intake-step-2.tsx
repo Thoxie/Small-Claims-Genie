@@ -439,6 +439,16 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                       ? <p className="text-xs text-muted-foreground">California limit: $12,500 for individuals · $6,250 for businesses</p>
                       : initialData.jurisdictionState === "VA"
                       ? <p className="text-xs text-muted-foreground">Virginia small claims limit: $5,000</p>
+                      : initialData.jurisdictionState === "NC"
+                      ? <p className="text-xs text-muted-foreground">North Carolina small claims limit: $10,000</p>
+                      : initialData.jurisdictionState === "IL"
+                      ? <p className="text-xs text-muted-foreground">Illinois small claims limit: $10,000</p>
+                      : initialData.jurisdictionState === "NJ"
+                      ? <p className="text-xs text-muted-foreground">New Jersey small claims limit: $5,000 (tenancy disputes: $5,000)</p>
+                      : initialData.jurisdictionState === "WA"
+                      ? <p className="text-xs text-muted-foreground">Washington small claims limit: $10,000</p>
+                      : initialData.jurisdictionState === "AZ"
+                      ? <p className="text-xs text-muted-foreground">Arizona small claims limit: $5,000 (A.R.S. § 22-503)</p>
                       : <p className="text-xs text-muted-foreground">Check your state's small claims court for its dollar limit.</p>
                     }
                     <FormMessage />
