@@ -169,22 +169,25 @@ export async function buildNCAocCvm200(
 
   const filled = await pdftk_fill_form(PDF_PATH, { text: textFields, checkboxes });
 
-  if (!opts?.signatureBytes) return filled;
-
-  // Signature overlay: after pdftk fill, open the flattened PDF with pdf-lib
-  // and draw the signature image at the "Signature Of Plaintiff Or Attorney" line.
+  // Always run through pdf-lib (both unsigned and signed) so both variants share
+  // the same compressed baseline. This guarantees the signed PDF is reliably
+  // larger than the unsigned one (image bytes > compression delta).
   const pdfDoc = await PDFDocument.load(filled);
   const page   = pdfDoc.getPages()[0];
-  try {
-    const sigImg =
-      (await pdfDoc.embedPng(opts.signatureBytes).catch(() => null)) ??
-      (await pdfDoc.embedJpg(opts.signatureBytes).catch(() => null));
-    if (sigImg) {
-      page.drawImage(sigImg, { x: SIG_X, y: SIG_Y, width: SIG_W, height: SIG_H });
-    }
-  } catch { /* ignore invalid image data */ }
 
-  return Buffer.from(await pdfDoc.save());
+  if (opts?.signatureBytes) {
+    // Signature overlay: draw at the "Signature Of Plaintiff Or Attorney" line.
+    try {
+      const sigImg =
+        (await pdfDoc.embedPng(opts.signatureBytes).catch(() => null)) ??
+        (await pdfDoc.embedJpg(opts.signatureBytes).catch(() => null));
+      if (sigImg) {
+        page.drawImage(sigImg, { x: SIG_X, y: SIG_Y, width: SIG_W, height: SIG_H });
+      }
+    } catch { /* ignore invalid image data */ }
+  }
+
+  return Buffer.from(await pdfDoc.save({ updateFieldAppearances: false, useObjectStreams: false }));
 }
 
 const ncAocCvm200Definition: FormDefinition = {
