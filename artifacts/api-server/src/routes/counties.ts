@@ -8,10 +8,11 @@ import { NORTH_CAROLINA_COUNTIES } from "../data/counties-nc";
 import { VIRGINIA_COUNTIES } from "../data/counties-va";
 import { NEW_JERSEY_COUNTIES } from "../data/counties-nj";
 import { WASHINGTON_COUNTIES } from "../data/counties-wa";
+import { ARIZONA_COUNTIES } from "../data/counties-az";
 
 const router: IRouter = Router();
 
-export { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES, TEXAS_COUNTIES, ILLINOIS_COUNTIES, NORTH_CAROLINA_COUNTIES, VIRGINIA_COUNTIES, NEW_JERSEY_COUNTIES, WASHINGTON_COUNTIES, getIlSheriffAddress };
+export { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES, TEXAS_COUNTIES, ILLINOIS_COUNTIES, NORTH_CAROLINA_COUNTIES, VIRGINIA_COUNTIES, NEW_JERSEY_COUNTIES, WASHINGTON_COUNTIES, ARIZONA_COUNTIES, getIlSheriffAddress };
 
 router.get("/counties", (req, res): void => {
   const { state } = req.query;
@@ -31,6 +32,8 @@ router.get("/counties", (req, res): void => {
     res.json(NEW_JERSEY_COUNTIES);
   } else if (state === "WA") {
     res.json(WASHINGTON_COUNTIES);
+  } else if (state === "AZ") {
+    res.json(ARIZONA_COUNTIES);
   } else {
     res.json([
       ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
@@ -41,6 +44,7 @@ router.get("/counties", (req, res): void => {
       ...VIRGINIA_COUNTIES,
       ...NEW_JERSEY_COUNTIES,
       ...WASHINGTON_COUNTIES,
+      ...ARIZONA_COUNTIES,
     ]);
   }
 });

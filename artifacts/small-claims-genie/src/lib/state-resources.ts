@@ -31,6 +31,7 @@ const CLAIM_LIMIT_PREFIX: Record<ResourceStateCode, string> = {
   VA: "Up to",
   NJ: "Up to",
   WA: "Up to",
+  AZ: "Up to",
 };
 
 const CLAIM_LIMIT_SUFFIX: Record<ResourceStateCode, string> = {
@@ -42,6 +43,7 @@ const CLAIM_LIMIT_SUFFIX: Record<ResourceStateCode, string> = {
   VA: "",
   NJ: "",
   WA: "",
+  AZ: ", exclusive of interest and court costs",
 };
 
 const SOL_LABEL_OVERRIDES: Record<string, string> = {
@@ -64,6 +66,7 @@ const SERVICE_OF_PROCESS_TEXT: Record<ResourceStateCode, string> = {
   VA: `${STATE_FACTS.VA.serviceMethodsText}. Must be completed ${STATE_FACTS.VA.serviceDeadlineText}.`,
   NJ: `${STATE_FACTS.NJ.serviceMethodsText}. Deadline: ${STATE_FACTS.NJ.serviceDeadlineText}`,
   WA: `${STATE_FACTS.WA.serviceMethodsText}. Deadline: ${STATE_FACTS.WA.serviceDeadlineText}`,
+  AZ: `${STATE_FACTS.AZ.serviceMethodsText}. Deadline: ${STATE_FACTS.AZ.serviceDeadlineText}`,
 };
 
 const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined> = {
@@ -75,6 +78,7 @@ const FILING_FEE_SUMMARY_OVERRIDES: Record<ResourceStateCode, string | undefined
   VA: "Varies by General District Court and case type — Virginia does not have a single statewide filing fee. Use the GDC Civil Filing Fee Calculator or contact your local clerk before filing.",
   NJ: undefined,
   WA: undefined,
+  AZ: undefined,
 };
 
 // STATE_FACTS.forms is the exhaustive form catalog used by the AI prompts and
@@ -92,6 +96,7 @@ const FORMS_USED_IDS: Record<ResourceStateCode, string[]> = {
   VA: ["DC-402", "DC-409"],
   NJ: ["Small Claims Complaint", "Appendix XI-A(2)", "Fee Waiver (Application to Proceed as an Indigent)"],
   WA: ["Notice of Small Claim", "Small Claims Calendar Notice"],
+  AZ: ["Small Claims Complaint", "Proof of Service by Registered or Certified Mail", "AOCDFGF1F"],
 };
 
 // The Resources card uses the short "Fee Waiver" label while the canonical
@@ -143,6 +148,7 @@ export const STATE_RESOURCES: Record<ResourceStateCode, StateResourceInfo> = {
   VA: buildStateResource("VA"),
   NJ: buildStateResource("NJ"),
   WA: buildStateResource("WA"),
+  AZ: buildStateResource("AZ"),
 };
 
-export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA"];
+export const STATE_ORDER: ResourceStateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA", "AZ"];

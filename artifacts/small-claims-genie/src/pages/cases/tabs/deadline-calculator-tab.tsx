@@ -285,6 +285,8 @@ function printDeadlines(deadlines: Deadline[], caseName: string, today: Date, st
     ? `NJ courts: <a href="${STATE_FACTS.NJ.selfHelpUrl}" target="_blank">${STATE_FACTS.NJ.selfHelpLabel}</a>`
     : stateAbbr === "WA"
     ? `WA courts: <a href="${STATE_FACTS.WA.selfHelpUrl}" target="_blank">${STATE_FACTS.WA.selfHelpLabel}</a>`
+    : stateAbbr === "AZ"
+    ? `AZ courts: <a href="${STATE_FACTS.AZ.selfHelpUrl}" target="_blank">${STATE_FACTS.AZ.selfHelpLabel}</a>`
     : `California courts: <a href="https://www.courts.ca.gov" target="_blank">courts.ca.gov</a>`;
 
   const w = window.open("", "_blank");
@@ -887,6 +889,109 @@ function buildWaDeadlines(
   return list;
 }
 
+// ── Arizona deadline builder ──────────────────────────────────────────────────
+
+function getStatuteYearsAZ(claimType: string): { years: number; note: string } {
+  switch (claimType) {
+    case "Property Damage":
+      return { years: 2, note: "A.R.S. § 12-542 — 2-year limit for property damage claims" };
+    case "Personal Injury":
+      return { years: 2, note: "A.R.S. § 12-542 — 2-year limit for personal injury claims" };
+    case "Fraud":
+      return { years: 3, note: "A.R.S. § 12-543 — 3-year limit for fraud claims (discovery rule may apply)" };
+    case "Security Deposit":
+      return { years: 6, note: "A.R.S. § 12-548 — 6-year limit (written lease is a written contract)" };
+    case "Contract Dispute":
+      return { years: 6, note: "A.R.S. § 12-548 — 6 years for written contracts; 3 years for oral contracts (A.R.S. § 12-543)" };
+    case "Money Owed":
+    case "Unpaid Debt":
+      return { years: 6, note: "A.R.S. § 12-548 — 6 years if based on a written agreement; 3 years if oral only (A.R.S. § 12-543)" };
+    default:
+      return { years: 2, note: "A.R.S. § 12-542 — 2-year default limit for actions not otherwise provided. Check if a written contract applies (6 years under A.R.S. § 12-548)" };
+  }
+}
+
+function buildAzDeadlines(
+  incidentDate: Date | null,
+  hearingDate: Date | null,
+  claimType: string,
+  today: Date,
+): Deadline[] {
+  const list: Deadline[] = [];
+  const facts = STATE_FACTS.AZ;
+
+  // Statute of limitations
+  const { years, note } = getStatuteYearsAZ(claimType);
+  const solDate = incidentDate ? addYears(incidentDate, years) : null;
+  list.push({
+    id: "sol",
+    category: "Statute of Limitations",
+    label: `File your case by (${years}-year limit)`,
+    date: solDate,
+    status: solDate ? getDeadlineStatus(solDate, today) : "missing",
+    detail: note,
+    law: facts.statuteOfLimitationsCitation ?? "A.R.S. § 12-542; § 12-543; § 12-548",
+  });
+
+  // Proof of service — must be filed within 45 days of filing complaint
+  list.push({
+    id: "service",
+    category: "Service of Process",
+    label: "File proof of service (within 45 days of filing)",
+    date: null,
+    status: "info",
+    detail: `${facts.serviceMethodsText}. Once you file and serve, ${facts.serviceDeadlineText}.`,
+    law: facts.serviceOfProcessCitation ?? "A.R.S. § 22-513",
+  });
+
+  // Hearing date
+  if (hearingDate) {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date",
+      date: hearingDate,
+      status: getDeadlineStatus(hearingDate, today),
+      detail: `Your hearing is scheduled for ${format(hearingDate, "MMMM d, yyyy")}. Attorneys are not allowed to appear at AZ small claims hearings (A.R.S. § 22-512). Arrive early with organized evidence.`,
+      law: "A.R.S. § 22-514",
+    });
+  } else {
+    list.push({
+      id: "trial",
+      category: "Hearing",
+      label: "Hearing date (not yet entered)",
+      date: null,
+      status: "missing",
+      detail: "Enter your hearing date in the Intake tab once the Justice Court clerk schedules it. Arizona courts typically set hearings within 30–70 days of filing.",
+      law: "A.R.S. § 22-514",
+    });
+  }
+
+  // No appeal warning
+  list.push({
+    id: "appeal",
+    category: "After the Hearing",
+    label: "No appeal available — judgment is final",
+    date: null,
+    status: "info",
+    detail: facts.appealNote,
+    law: "A.R.S. § 22-519",
+  });
+
+  // Post-judgment collection
+  list.push({
+    id: "collection",
+    category: "After the Hearing",
+    label: `Judgment valid for ${facts.judgmentValidityYears} years`,
+    date: null,
+    status: "info",
+    detail: `AZ judgments are valid for ${facts.judgmentValidityYears} years and may be renewed. If the defendant does not pay, you can use ${facts.collectionToolsText}.`,
+    law: "A.R.S. § 12-1551; § 12-1611",
+  });
+
+  return list;
+}
+
 // ── California deadline builder ───────────────────────────────────────────────
 
 function buildCaDeadlines(
@@ -1002,6 +1107,7 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
   const isVA = (currentCase.jurisdictionState as string) === "VA";
   const isNJ = (currentCase.jurisdictionState as string) === "NJ";
   const isWA = (currentCase.jurisdictionState as string) === "WA";
+  const isAZ = (currentCase.jurisdictionState as string) === "AZ";
 
   const incidentDate = useMemo(() => parseIncidentDate(currentCase.incidentDate || ""), [currentCase.incidentDate]);
   const hearingDate = useMemo(() => parseHearingDate(currentCase.hearingDate || ""), [currentCase.hearingDate]);
@@ -1041,16 +1147,19 @@ export function DeadlineCalculatorTab({ caseId, currentCase }: Props) {
     if (isWA) {
       return buildWaDeadlines(incidentDate, hearingDate, claimType, today);
     }
+    if (isAZ) {
+      return buildAzDeadlines(incidentDate, hearingDate, claimType, today);
+    }
     return buildCaDeadlines(incidentDate, hearingDate, isBusiness, isSuingPublic, claimType, today);
-  }, [isFL, isTX, isNC, isIL, isVA, isNJ, isWA, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
+  }, [isFL, isTX, isNC, isIL, isVA, isNJ, isWA, isAZ, incidentDate, hearingDate, filingDate, isBusiness, isSuingPublic, claimType, today]);
 
   const categories = [...new Set(deadlines.map(d => d.category))];
 
   const urgentCount = deadlines.filter(d => d.status === "urgent" || d.status === "overdue").length;
   const missingCount = deadlines.filter(d => d.status === "missing").length;
 
-  const stateLabel = isFL ? "Florida" : isTX ? "Texas" : isNC ? "North Carolina" : isIL ? "Illinois" : isVA ? "Virginia" : isNJ ? "New Jersey" : isWA ? "Washington" : "California";
-  const stateAbbr = isFL ? "FL" : isTX ? "TX" : isNC ? "NC" : isIL ? "IL" : isVA ? "VA" : isNJ ? "NJ" : isWA ? "WA" : "CA";
+  const stateLabel = isFL ? "Florida" : isTX ? "Texas" : isNC ? "North Carolina" : isIL ? "Illinois" : isVA ? "Virginia" : isNJ ? "New Jersey" : isWA ? "Washington" : isAZ ? "Arizona" : "California";
+  const stateAbbr = isFL ? "FL" : isTX ? "TX" : isNC ? "NC" : isIL ? "IL" : isVA ? "VA" : isNJ ? "NJ" : isWA ? "WA" : isAZ ? "AZ" : "CA";
 
   return (
     <div className="px-6 pt-3 pb-6 space-y-6">

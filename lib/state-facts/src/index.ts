@@ -12,7 +12,7 @@
 // (AI advisor vs. AI visitor triage vs. Resources page) can stay tailored while
 // the numbers themselves are guaranteed consistent.
 
-export type StateCode = "CA" | "FL" | "TX" | "IL" | "NC" | "VA" | "NJ" | "WA";
+export type StateCode = "CA" | "FL" | "TX" | "IL" | "NC" | "VA" | "NJ" | "WA" | "AZ";
 
 export interface SolPeriod {
   /** e.g. "Written contract" */
@@ -85,7 +85,7 @@ export interface StateFacts {
   filingFrequencyCapText?: string;
 }
 
-export const STATE_ORDER: StateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA"];
+export const STATE_ORDER: StateCode[] = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA", "AZ"];
 
 export const STATE_FACTS: Record<StateCode, StateFacts> = {
   CA: {
@@ -509,6 +509,59 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     appealNote: "Appeals from a small claims judgment are generally filed in Superior Court — exact appeal deadline NEEDS VERIFICATION before being surfaced as a specific number to users",
 
     keyCounties: ["King (Seattle)", "Pierce (Tacoma)", "Snohomish (Everett)", "Spokane", "Clark (Vancouver)"],
+  },
+
+  AZ: {
+    code: "AZ",
+    name: "Arizona",
+    flagEmoji: "🌵",
+    courtSystemName: "Small Claims Division of the Justice Court",
+    courtBranchName: "Arizona Judicial Branch",
+    selfHelpUrl: "https://www.azcourts.gov/selfservicecenter/small-claims",
+    selfHelpLabel: "Arizona Courts Small Claims Self-Help",
+    countyLabel: "Arizona Justice Court Precinct",
+    pickerSubText: "Up to $5,000",
+
+    claimLimitText: "$5,000 for individuals and businesses alike (exclusive of interest and court costs)",
+    claimLimitCitation: "A.R.S. § 22-503",
+
+    hearingOfficialTitle: "justice of the peace",
+
+    attorneysAllowed: false,
+    attorneysNote: "Attorneys may NOT appear, prosecute, or defend a small claims case (A.R.S. § 22-512) unless all parties stipulate in writing before the hearing — businesses appear through an authorized officer or employee, not a lawyer. Never suggest hiring an attorney for an AZ small claims hearing",
+
+    filingFeeTiers: [
+      { label: "flat statewide fee", fee: "$30" },
+    ],
+    filingFeeCitation: "A.R.S. § 22-281",
+    filingFeeNote: "plus $8 service-by-mail fee; constable, sheriff, or process server fees vary by county. Fee waiver form: AOCDFGF1F (Application for Deferral or Waiver of Court Fees or Costs)",
+
+    statuteOfLimitations: [
+      { label: "Written contract", period: "6 years" },
+      { label: "Oral contract", period: "3 years" },
+      { label: "Property damage", period: "2 years" },
+      { label: "Personal injury", period: "2 years" },
+    ],
+    statuteOfLimitationsCitation: "written A.R.S. § 12-548; oral A.R.S. § 12-543; property damage and personal injury A.R.S. § 12-542",
+
+    serviceDeadlineText: "proof of service must be filed with the court within 45 days after filing the complaint",
+    serviceMethodsText: "Registered or certified mail with return receipt requested, constable, sheriff, or licensed private process server — the plaintiff arranges service; the court does NOT serve the defendant automatically",
+    serviceOfProcessCitation: "A.R.S. § 22-513",
+
+    forms: [
+      { id: "", name: "Small Claims Complaint", desc: "The main form you file to start your case in the Small Claims Division of the Justice Court." },
+      { id: "", name: "Small Claims Summons", desc: "Notifies the defendant of the lawsuit and the hearing date." },
+      { id: "", name: "Proof of Service by Registered or Certified Mail", desc: "Required — file with the court within 45 days of filing your complaint to prove the defendant was served." },
+      { id: "AOCDFGF1F", name: "Application for Deferral or Waiver of Court Fees or Costs", desc: "Apply to waive filing fees if you cannot afford them." },
+    ],
+
+    judgmentValidityYears: 10,
+    judgmentRenewable: true,
+    collectionToolsText: "wage garnishment, bank account levy/garnishment, writ of execution on personal property, judgment lien on real property (record certified copy with county recorder per A.R.S. § 33-961 — valid 10 years), and debtor's examination (A.R.S. § 22-524) — judgment is valid for 10 years and may be renewed for an additional 10-year term (A.R.S. § 12-1551, § 12-1611)",
+
+    appealNote: "There is NO appeal from an Arizona small claims judgment — the decision of the justice of the peace or hearing officer is final and binding (A.R.S. § 22-519). Choose small claims carefully: if you lose, you cannot appeal.",
+
+    keyCounties: ["Maricopa (Phoenix)", "Pima (Tucson)", "Pinal (Florence)", "Yavapai (Prescott)", "Mohave (Kingman)", "Coconino (Flagstaff)", "Yuma", "Navajo (Holbrook)"],
   },
 };
 

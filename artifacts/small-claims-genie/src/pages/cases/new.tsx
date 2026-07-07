@@ -37,6 +37,7 @@ const STATE_PICKER_FLAGS: Record<StateCode, string> = {
   TX: "⭐",
   VA: "🦅",
   WA: "🏔️",
+  AZ: "🌵",
 };
 
 const STATE_OPTIONS: { value: JurisdictionState; label: string; flag: string; sub: string }[] = STATE_ORDER.map(

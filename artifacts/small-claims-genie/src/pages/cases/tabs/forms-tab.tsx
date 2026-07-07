@@ -20,6 +20,7 @@ import { NorthCarolinaFormsSection } from "./forms-tab-sections/north-carolina-f
 import { VirginiaFormsSection } from "./forms-tab-sections/virginia-forms-section";
 import { NewJerseyFormsSection } from "./forms-tab-sections/new-jersey-forms-section";
 import { WashingtonFormsSection } from "./forms-tab-sections/washington-forms-section";
+import { ArizonaFormsSection } from "./forms-tab-sections/arizona-forms-section";
 
 // ─── TX JP Precinct 1 Place 1 lookup (top 30 counties by population) ─────────
 export const TX_JP_PRECINCTS: Record<string, { address: string; city: string; zip: string }> = {
@@ -2161,6 +2162,7 @@ const {
     const isVirginiaCase = (currentCase.jurisdictionState as string) === "VA";
     const isNewJerseyCase = (currentCase.jurisdictionState as string) === "NJ";
     const isWashingtonCase = (currentCase.jurisdictionState as string) === "WA";
+    const isArizonaCase = (currentCase.jurisdictionState as string) === "AZ";
   
   return (
     <div className="pt-3 pb-4 md:pb-6 space-y-4 px-4 md:px-6">
@@ -2193,8 +2195,11 @@ const {
       {/* WA forms section — MISC 05.0100 Notice of Small Claim + MISC 05.0200 Certificate of Service */}
       {isWashingtonCase && <WashingtonFormsSection ctx={ctx} />}
 
+      {/* AZ forms section — AZ Small Claims Complaint */}
+      {isArizonaCase && <ArizonaFormsSection ctx={ctx} />}
+
       {/* CA form wizard — California only */}
-      {!isFloridaCase && !isTexasCase && !isIllinoisCase && !isNorthCarolinaCase && !isVirginiaCase && !isNewJerseyCase && !isWashingtonCase && <>
+      {!isFloridaCase && !isTexasCase && !isIllinoisCase && !isNorthCarolinaCase && !isVirginiaCase && !isNewJerseyCase && !isWashingtonCase && !isArizonaCase && <>
 
       {/* Mobile tutorial trigger — hidden on desktop */}
       <button

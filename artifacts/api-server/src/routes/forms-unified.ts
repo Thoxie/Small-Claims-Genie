@@ -717,4 +717,18 @@ router.post(
   makeFormHandler("WA-MISC05-0200", (id) => `WA-Certificate-of-Service-Signed-Case-${id}.pdf`, { signed: true }),
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Arizona — AZ-COMPLAINT (programmatic pdf-lib, no template PDF)
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.post(
+  "/cases/:id/forms/az/complaint",
+  makeFormHandler("AZ-COMPLAINT", (id) => `AZ-Small-Claims-Complaint-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/az/complaint/signed",
+  makeFormHandler("AZ-COMPLAINT", (id) => `AZ-Small-Claims-Complaint-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
 export default router;
