@@ -20,14 +20,14 @@ const HG_SIGNUP_CTA = "\nSIGNUP_CTA";
 const HG_FEATURE_TAG_SEP = "\nFEATURE_TAG:";
 
 const HG_FEATURE_CTAS: Record<string, string> = {
-  DEMAND_LETTER: "Small Claims Genie's Demand Letter tool drafts a professional settlement offer or full settlement agreement for you in seconds, pulling in your case facts automatically — a documented, formal offer settles cases faster than an informal phone call. It's free to try.",
-  COURT_FORMS: "Small Claims Genie generates your state's court forms pre-filled with your case details, so you don't have to figure out which form or field to use — free to try.",
-  PROCESS_SERVER: "Small Claims Genie can connect you with a professional process server to get the defendant served correctly and on time, so your case doesn't get dismissed on a technicality — free to try.",
-  HEARING_PREP: "Small Claims Genie's Hearing Prep step generates your opening statement from your case facts, and its AI Mock Trial lets you practice answering a judge's likely questions out loud before the real thing — free to start.",
-  EVIDENCE_UPLOAD: "Small Claims Genie's Evidence Upload tool organizes and labels your documents automatically, so everything is ready to present at your hearing — free to try.",
-  CASE_ADVISOR: "Small Claims Genie's AI Case Advisor reviews your specific facts and evidence and tells you exactly how strong your case is and what's missing — free to try.",
-  DEADLINE_TRACKING: "Small Claims Genie automatically tracks your filing, service, and hearing deadlines so you never miss one — free to try.",
-  JUDGMENT_COLLECTION: "Small Claims Genie's Collect After You Have Won tools walk you through the right post-judgment enforcement options for your state — garnishment, bank levies, liens, and debtor exams — so a judgment doesn't just sit unpaid. Free to try.",
+  DEMAND_LETTER: "**Small Claims Genie** generates a professional demand letter from your case facts in seconds — choose Formal, Firm, or Friendly tone, edit it live, and download it as a signed PDF ready to send. A documented written demand resolves more disputes before filing than a phone call ever will. Free to try.",
+  COURT_FORMS: "**Small Claims Genie** generates your state's official court forms pre-filled with your case details — the right form for your exact county, every field completed, ready to sign and file. No guessing which form to use or how to fill it out. Covers all 67 Florida counties, all 254 Texas counties, and every supported state. Free to try.",
+  PROCESS_SERVER: "**Small Claims Genie** connects you with a licensed, bonded process server who handles serving the defendant — with GPS tracking on every attempt, photo proof of service, and a notarized affidavit ready to file with the court. Your case cannot move forward until the defendant is properly served. Free to start.",
+  HEARING_PREP: "**Small Claims Genie**'s Hearing Prep Coach builds your Court-Ready Statement — exactly what to say when the judge asks you to explain your case — and runs an AI Mock Trial where a simulated judge asks the tough questions you'll face so you're prepared and confident on hearing day. Nothing you practice is sent to the court. Free to start.",
+  EVIDENCE_UPLOAD: "**Small Claims Genie** creates a custom evidence checklist for your exact case type, lets you upload your documents directly, and uses AI to analyze each piece and explain what it proves to a judge — so you walk into court with a complete, organized case file and no surprises. Free to try.",
+  CASE_ADVISOR: "**Small Claims Genie**'s AI Case Advisor reviews your specific facts and uploaded evidence, scores your case strength, flags exactly what's missing, and asks follow-up questions to sharpen your claim before you file — like having a knowledgeable friend review your case before you walk into court. Free to try.",
+  DEADLINE_TRACKING: "**Small Claims Genie** automatically tracks every critical date — filing deadline, service deadline, and hearing date — with live countdown timers so nothing falls through the cracks and your case stays on track. Free to try.",
+  JUDGMENT_COLLECTION: "**Small Claims Genie**'s Collect After You Have Won tools walk you through the right post-judgment enforcement steps for your state — wage garnishment, bank levy, property lien, or debtor examination to locate hidden assets — so a court judgment actually turns into money in your pocket. Free to try.",
 };
 
 function parseHelpContent(raw: string): { displayText: string; redirect: { target: string; question: string } | null; showSignupCta: boolean; featureTagPending: boolean } {
@@ -84,9 +84,22 @@ const SUGGESTED = [
   { q: "Do I have a strong enough case for small claims court?", icon: "⚖️" },
   { q: "How much can I sue for in small claims court?", icon: "💰" },
   { q: "What evidence do I need to win my case?", icon: "📋" },
-  { q: "I'm being sued — what are my options?", icon: "🔍" },
   { q: "What happens at a small claims hearing?", icon: "🏛️" },
+  { q: "How do I write a demand letter before filing?", icon: "✉️" },
 ];
+
+const STATES = [
+  { code: "CA", label: "California" },
+  { code: "FL", label: "Florida" },
+  { code: "TX", label: "Texas" },
+  { code: "IL", label: "Illinois" },
+  { code: "NC", label: "North Carolina" },
+  { code: "VA", label: "Virginia" },
+  { code: "NJ", label: "New Jersey" },
+  { code: "WA", label: "Washington" },
+];
+
+const HG_STATE_KEY = "hg_jurisdiction_state";
 
 export function HelpGenieWidget() {
   const [open, setOpen] = useState(false);
@@ -106,7 +119,9 @@ export function HelpGenieWidget() {
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const [pageContext, setPageContext] = useState<string | null>(null);
-  const [jurisdictionState, setJurisdictionState] = useState<string | null>(null);
+  const [jurisdictionState, setJurisdictionState] = useState<string | null>(() => {
+    try { return localStorage.getItem(HG_STATE_KEY) ?? null; } catch { return null; }
+  });
   const [jurisdictionCounty, setJurisdictionCounty] = useState<string | null>(null);
 
   useEffect(() => {
@@ -137,6 +152,12 @@ export function HelpGenieWidget() {
     window.addEventListener("help-genie-page-context", handleContext);
     return () => window.removeEventListener("help-genie-page-context", handleContext);
   }, []);
+
+  useEffect(() => {
+    if (jurisdictionState) {
+      try { localStorage.setItem(HG_STATE_KEY, jurisdictionState); } catch {}
+    }
+  }, [jurisdictionState]);
 
   useEffect(() => {
     const handleJurisdiction = (e: Event) => {
@@ -354,10 +375,44 @@ export function HelpGenieWidget() {
                   </div>
                   <div className="bg-[#f0fffe] border border-[#a8e6df] rounded-2xl rounded-tl-sm px-3.5 py-2.5 max-w-[85%]">
                     <p className="text-sm text-[#0d6b5e] leading-relaxed">
-                      Hi! I'm the Small Claims Genie. Tell me about your situation and I'll help you figure out your options — for free, no sign-up needed.
+                      Hi! I'm the Small Claims Genie. Tell me about your situation and I'll give you real, state-specific guidance — free, no sign-up needed.
                     </p>
                   </div>
                 </div>
+
+                {/* State selector */}
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0d6b5e]/60">
+                    Your state <span className="normal-case font-normal text-[#0d6b5e]/50">(for accurate answers)</span>
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {STATES.map(({ code, label }) => (
+                      <button
+                        key={code}
+                        onClick={() => setJurisdictionState(jurisdictionState === code ? null : code)}
+                        title={label}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+                          jurisdictionState === code
+                            ? "bg-[#0d6b5e] text-white border-[#0d6b5e]"
+                            : "bg-white text-[#0d6b5e] border-[#a8e6df] hover:bg-[#f0fffe]"
+                        }`}
+                      >
+                        {code}
+                      </button>
+                    ))}
+                    {jurisdictionState && !STATES.find(s => s.code === jurisdictionState) && (
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold border bg-[#0d6b5e] text-white border-[#0d6b5e]">
+                        {jurisdictionState}
+                      </span>
+                    )}
+                  </div>
+                  {jurisdictionState && (
+                    <p className="text-[10px] text-[#0d6b5e]/50">
+                      Answering for {STATES.find(s => s.code === jurisdictionState)?.label ?? jurisdictionState} · <button className="underline hover:text-[#0d6b5e]/80" onClick={() => { setJurisdictionState(null); try { localStorage.removeItem(HG_STATE_KEY); } catch {} }}>Change</button>
+                    </p>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0d6b5e]/60 flex items-center gap-1.5">
                     <Sparkles className="h-3 w-3" /> Tap a question to ask
