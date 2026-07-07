@@ -2,7 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import { i18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { FileText, Scale, BookOpen, ClipboardList, Wand2 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { FileText, Scale, BookOpen, ClipboardList, Wand2, Search, CalendarDays, DollarSign, Mail, Mic, MessageCircle, CheckCircle2 } from "lucide-react";
 import { gtagReportConversion } from "@/lib/gtag";
 
 const TEAL = "#f5fdfb";
@@ -15,7 +16,7 @@ const landingSchema = {
       "@id": "https://smallclaimsgenie.com/#website",
       "url": "https://smallclaimsgenie.com/",
       "name": "Small Claims Genie",
-      "description": "AI-powered small claims court help. File confidently with AI-guided intake, demand letters, and court-ready forms for your state and county. No lawyer needed.",
+      "description": "Guided small claims court preparation — intake, evidence, demand letters, court-ready forms, and hearing practice. No lawyer needed.",
     },
     {
       "@type": "SoftwareApplication",
@@ -24,7 +25,7 @@ const landingSchema = {
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "url": "https://smallclaimsgenie.com/",
-      "description": "AI-powered small claims court assistant. Guides you through intake, organizes evidence, generates demand letters, and prepares court-ready forms for your state and county.",
+      "description": "Small Claims Genie helps you prepare for small claims court with guided intake, evidence organization, demand letters, court-ready forms, hearing preparation, and mock trial practice.",
       "offers": {
         "@type": "Offer",
         "price": 0,
@@ -35,18 +36,158 @@ const landingSchema = {
   ],
 };
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What does Small Claims Genie do?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Small Claims Genie helps you prepare for small claims court by guiding you through intake, evidence organization, demand letters, court-ready materials, hearing preparation, and mock trial practice.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "Does Small Claims Genie file my case for me?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Small Claims Genie does not file your case for you and does not provide legal representation. It helps you prepare the information, documents, and case materials you may need before filing.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "Can Small Claims Genie help me write a demand letter?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Small Claims Genie can help create a demand letter that explains the dispute, states what you are asking for, and gives the other side a deadline to respond before you file a small claims case.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "What evidence can I upload?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can upload common small claims evidence such as contracts, receipts, invoices, photos, screenshots, emails, text messages, payment records, repair estimates, and other documents related to your dispute.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "Can Small Claims Genie help me prepare for the hearing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Genie helps you organize your case, create a court-ready statement, review possible defenses, and practice with mock trial questions before your small claims hearing.",
+      },
+    },
+  ],
+};
+
+const featureCards = [
+  {
+    icon: ClipboardList,
+    title: "Guided Small Claims Intake",
+    desc: "Answer simple questions about what happened, who is involved, what you are owed, and what evidence you have. Small Claims Genie turns scattered facts into a structured case file.",
+  },
+  {
+    icon: Search,
+    title: "AI Evidence Review",
+    desc: "Upload receipts, contracts, photos, screenshots, emails, text messages, invoices, payment records, and other documents. Genie helps identify the evidence that supports your small claims case.",
+  },
+  {
+    icon: CalendarDays,
+    title: "Small Claims Timeline Builder",
+    desc: "Turn confusing events into a clean timeline the court can follow. Dates, conversations, payments, missed promises, and key events are organized in chronological order.",
+  },
+  {
+    icon: DollarSign,
+    title: "Damages Calculator",
+    desc: "Break down what you are asking for and why. Genie helps connect your claimed amount to invoices, receipts, payments, property damage, deposits, or money owed.",
+  },
+  {
+    icon: Mail,
+    title: "Demand Letter Generator",
+    desc: "Create a clear demand letter before filing a small claims case. Explain the dispute, state what you want, include a deadline, and show the other side you are prepared.",
+  },
+  {
+    icon: Scale,
+    title: "Court-Ready Forms",
+    desc: "Prepare the information needed for small claims court forms and filing. Genie helps organize the details so your paperwork is cleaner and easier to complete.",
+  },
+  {
+    icon: Mic,
+    title: "Court-Ready Judge Statement",
+    desc: "Generate a clear, plain-English statement that explains your case to the judge. Practice from it, refine it, and use it to stay focused at the hearing.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Small Claims Mock Trial Practice",
+    desc: "Practice before court with questions the judge or the other side may ask. Genie helps you prepare for weak spots, defenses, and follow-up questions.",
+  },
+];
+
+const outputs = [
+  "Small claims case summary",
+  "Evidence checklist",
+  "Organized case timeline",
+  "Damages breakdown",
+  "Demand letter",
+  "Court-ready statement",
+  "Filing checklist",
+  "Service instructions",
+  "Hearing preparation",
+  "Mock trial practice",
+];
+
+const caseTypes = [
+  "Unpaid invoices",
+  "Security deposits",
+  "Contractor disputes",
+  "Property damage",
+  "Auto damage",
+  "Loans and money owed",
+  "Breach of contract",
+  "Bad service or unfinished work",
+  "Customer disputes",
+  "Landlord/tenant money disputes",
+];
+
+const homepageFaqs = [
+  {
+    q: "What does Small Claims Genie do?",
+    a: "Small Claims Genie helps you prepare for small claims court by guiding you through intake, evidence organization, demand letters, court-ready materials, hearing preparation, and mock trial practice.",
+  },
+  {
+    q: "Does Small Claims Genie file my case for me?",
+    a: "No. Small Claims Genie does not file your case for you and does not provide legal representation. It helps you prepare the information, documents, and case materials you may need before filing.",
+  },
+  {
+    q: "Can Small Claims Genie help me write a demand letter?",
+    a: "Yes. Small Claims Genie can help create a demand letter that explains the dispute, states what you are asking for, and gives the other side a deadline to respond before you file a small claims case.",
+  },
+  {
+    q: "What evidence can I upload?",
+    a: "You can upload common small claims evidence such as contracts, receipts, invoices, photos, screenshots, emails, text messages, payment records, repair estimates, and other documents related to your dispute.",
+  },
+  {
+    q: "Can Small Claims Genie help me prepare for the hearing?",
+    a: "Yes. Genie helps you organize your case, create a court-ready statement, review possible defenses, and practice with mock trial questions before your small claims hearing.",
+  },
+];
+
 export default function Landing() {
   return (
     <>
     <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
       <Helmet>
-        <title>Small Claims Genie — Someone Owes You Money? Win in Small Claims Court Without a Lawyer</title>
-        <meta name="description" content="Someone owes you money? Small Claims Genie guides you through small claims court step by step — AI-guided intake, evidence, demand letters, and court-ready forms for your state. No lawyer needed." />
+        <title>Small Claims Genie | Prepare for Small Claims Court</title>
+        <meta name="description" content="Small Claims Genie helps you prepare for small claims court with guided intake, evidence organization, demand letters, court-ready forms, hearing preparation, and mock trial practice." />
         <link rel="canonical" href="https://smallclaimsgenie.com/" />
         <meta property="og:url" content="https://smallclaimsgenie.com/" />
-        <meta property="og:title" content="Small Claims Genie — Someone Owes You Money? Win in Small Claims Court Without a Lawyer" />
-        <meta property="og:description" content="Someone owes you money? Small Claims Genie guides you through small claims court step by step — AI-guided intake, evidence, demand letters, and court-ready forms for your state. No lawyer needed." />
+        <meta property="og:title" content="Small Claims Genie | Prepare for Small Claims Court" />
+        <meta property="og:description" content="Small Claims Genie helps you prepare for small claims court with guided intake, evidence organization, demand letters, court-ready forms, hearing preparation, and mock trial practice." />
         <script type="application/ld+json">{JSON.stringify(landingSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Helmet>
 
       {/* ── Hero ── */}
@@ -143,6 +284,11 @@ export default function Landing() {
               </div>
             ))}
           </div>
+          <div className="text-center mt-6">
+            <Link href="/how-it-works" className="text-sm text-primary/60 hover:text-primary underline underline-offset-4 transition-colors">
+              See the full step-by-step process →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -163,6 +309,144 @@ export default function Landing() {
             <Wand2 className="mr-2 h-5 w-5" />
             Ask the Genie — Free
           </Button>
+        </div>
+      </section>
+
+      {/* ── Small Claims Court Help, Step by Step ── */}
+      <section className="px-4 py-12 bg-white">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary mb-2">Small Claims Court Help, Step by Step</h2>
+            <p className="text-muted-foreground text-base max-w-2xl mx-auto leading-relaxed">
+              Small Claims Genie is more than a form filler. It is a guided small claims court preparation tool that helps you understand your dispute, organize your evidence, prepare your documents, and get ready to explain your case clearly.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {featureCards.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex flex-col p-5 rounded-2xl border border-gray-100 bg-[#f5fdfb] shadow-sm hover:shadow-md hover:border-amber-200 transition-all">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-3 bg-white border border-gray-100">
+                  <Icon className="h-5 w-5 text-primary/70" aria-hidden="true" />
+                </div>
+                <h3 className="text-sm font-bold mb-1.5 text-primary">{title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── What You Get ── */}
+      <section className="px-4 py-12 bg-primary text-primary-foreground">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">What You Get With Small Claims Genie</h2>
+            <p className="text-primary-foreground/70 text-base max-w-2xl mx-auto leading-relaxed">
+              By the end of the process, you are not walking into small claims court with random papers and a vague story. You have an organized case package built around your facts, evidence, damages, and hearing preparation.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {outputs.map((item) => (
+              <div key={item} className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3">
+                <CheckCircle2 className="h-5 w-5 text-amber-300 shrink-0" aria-hidden="true" />
+                <span className="text-sm font-medium">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Built for Common Disputes ── */}
+      <section className="px-4 py-12 bg-[#f5fdfb]">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary mb-2">Built for Common Small Claims Court Disputes</h2>
+            <p className="text-muted-foreground text-base max-w-2xl mx-auto leading-relaxed">
+              Small Claims Genie is designed for everyday disputes where people need a clear, organized way to get their money back.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {caseTypes.map((type) => (
+              <div
+                key={type}
+                className="rounded-xl border border-gray-200 bg-white px-3 py-3 text-center text-xs font-semibold text-primary shadow-sm hover:border-amber-300 hover:shadow-md transition-all"
+              >
+                {type}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Prepare + Hearing ── */}
+      <section className="px-4 py-12 bg-white">
+        <div className="container mx-auto max-w-4xl">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-gray-100 bg-[#f5fdfb] p-7 shadow-sm">
+              <h2 className="text-xl font-bold text-primary mb-3">Prepare Before You File</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Many people lose or settle for less because they are disorganized, missing evidence, or unsure how to explain their claim. Small Claims Genie helps you prepare before you file, so your facts, documents, timeline, damages, and demand letter are organized from the beginning.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-gray-100 bg-[#f5fdfb] p-7 shadow-sm">
+              <h2 className="text-xl font-bold text-primary mb-3">Get Ready for the Hearing</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Small claims court is designed for people to represent themselves, but preparation still matters. Genie helps you practice your presentation, answer likely questions, understand possible defenses, and stay focused when it is time to explain your case.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Legal Self-Help Disclaimer + CTA ── */}
+      <section className="px-4 py-12 bg-primary text-primary-foreground">
+        <div className="container mx-auto max-w-3xl text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Legal Self-Help, Not a Law Firm</h2>
+          <p className="text-base text-primary-foreground/75 max-w-xl mx-auto leading-relaxed mb-8">
+            Small Claims Genie is legal self-help software. It is not a law firm, does not provide legal representation, and does not file your case for you. It helps you organize your facts, prepare documents, understand the process, and get ready to present your claim.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              asChild
+              size="lg"
+              onClick={() => gtagReportConversion()}
+              className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg"
+            >
+              <Link href="/cases/new"><Wand2 className="mr-2 h-4 w-4" />Start Your Case Free</Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => window.dispatchEvent(new Event("open-help-genie"))}
+              className="h-12 px-8 text-base rounded-full font-bold border-white/30 text-white hover:bg-white/10"
+            >
+              Ask the Genie Free
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="px-4 py-12 bg-[#f5fdfb]">
+        <div className="container mx-auto max-w-3xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary mb-2">Small Claims Court Questions</h2>
+          </div>
+          <Accordion type="single" collapsible className="space-y-2">
+            {homepageFaqs.map((faq, idx) => (
+              <AccordionItem
+                key={idx}
+                value={`faq-${idx}`}
+                className="bg-white rounded-xl border border-gray-100 shadow-sm px-2 data-[state=open]:border-amber-200"
+              >
+                <AccordionTrigger className="px-4 py-4 text-sm font-semibold text-primary hover:no-underline text-left">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 
