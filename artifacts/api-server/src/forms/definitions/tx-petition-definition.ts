@@ -14,10 +14,12 @@
  *     $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 |
  *     $10,001–$20,000: $321
  *
- * Official PDF status: The TX OCA small claims forms (txcourts.gov) could not be
- * downloaded — all tried media URLs under /media/<id>/sc1.pdf returned HTTP 404.
- * The OCA form media IDs change when forms are revised; this form remains programmatic
- * until the current media ID is confirmed and automated download is verified.
+ * Official PDF status: No statewide fillable PDF exists for TX small claims.
+ * The TX OCA (txcourts.gov) does not publish justice court petition forms as PDFs;
+ * the Texas Justice Court Training Center (TJCTC) distributes them as Word (.docx)
+ * files only. eFileTexas.gov provides an interactive online interview but no static
+ * fillable PDF. This form remains programmatic — pdf-lib generates a complete,
+ * pre-filled petition that courts accept in lieu of the official docx template.
  */
 
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";

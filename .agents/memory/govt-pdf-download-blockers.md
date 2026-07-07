@@ -7,17 +7,17 @@ description: Which state court websites block automated PDF downloads and why, a
 
 When building official-PDF-backed forms, automated `curl` downloads of government court PDFs are frequently blocked. Here are the confirmed outcomes by state:
 
-## NC — nccourts.gov (Cloudflare WAF)
+## NC — nccourts.gov (Cloudflare WAF) — RESOLVED
 - **Block method:** Cloudflare WAF returns HTTP 403 for all non-browser requests
 - **Affected forms:** AOC-CVM-200, AOC-CVM-100, AOC-G-106
-- **Tried URL patterns:** `/assets/documents/forms/aoc-cvm-200.pdf`, `/documents/forms/aoc-cvm-200-en.pdf`, `/forms/files/aoccvm200en.pdf`
-- **Workaround needed:** Manual download from a browser, or a bulk-access arrangement with NC AOC
+- **Resolution:** Manual browser download succeeded; PDF stored at `artifacts/api-server/assets/nc-forms/nc-aoc-cvm-200.pdf`
+- **Form details:** Landscape 792×612 pts, AcroForm fields (pdftk FDF fill confirmed working). County fields: County1 (header, centered), County2 (plaintiff section), County3 (defendant section), County4 (second defendant)
 
-## WA — courts.wa.gov (HTML redirect)
+## WA — courts.wa.gov (HTML redirect) — RESOLVED
 - **Block method:** All `/content/publicUpload/` and `/forms/documents/` PDF URLs return HTTP 200 but with 3,623-byte HTML (a JavaScript-gated download page)
 - **Affected forms:** MISC 05.0100, MISC 05.0200
-- **Tried URL patterns:** `/content/publicUpload/Small%20Claims/MISC0501000.pdf`, `/forms/documents/MISC05.0100.pdf`, etc.
-- **Workaround needed:** Manual download only (JS must execute to get the real file)
+- **Resolution:** Manual browser download succeeded; PDF stored at `artifacts/api-server/assets/wa-forms/wa-misc-05-0100.pdf`
+- **Form details:** Portrait 612×792 pts, 3 pages, NO AcroForm fields — coordinate overlay via pdf-lib (pdftotext bbox mapping)
 
 ## IL — illinoiscourts.gov (HTML 404 page)
 - **Block method:** All PDF paths return HTTP 404 but with a 143 KB HTML error page (not a true 404 body)

@@ -27,11 +27,14 @@ export interface GenerateOptions {
  * How a form fills its output PDF.
  *
  * - `acroform-pdflib`  Standard AcroForm fields filled by pdf-lib (SC-104, SC-105, SC-112A, FW-001)
+ * - `acroform-pdftk`  AcroForm fields filled via pdftk FDF fill+flatten (NC AOC-CVM-200, NJ CN10532)
  * - `xfa-pdftk`        XFA fields filled via pdftk FDF (SC-103, SC-120, SC-150)
- * - `png-overlay`      Coordinate drawing over a PNG background via pdf-lib (SC-100, SC-100A, SC-140, MC-030)
+ * - `png-overlay`      Coordinate drawing over a PNG background or official PDF via pdf-lib
+ *                      (SC-100, SC-100A, SC-140, MC-030, WA MISC 05.0100)
  *
- * The technique is determined by inspecting the official Judicial Council PDF:
- *   - pdf-lib sees > 0 fields → acroform-pdflib
+ * The technique is determined by inspecting the official form PDF:
+ *   - pdf-lib sees > 0 standard AcroForm fields → acroform-pdflib or acroform-pdftk
+ *     (prefer acroform-pdftk for official government forms from non-CA jurisdictions)
  *   - pdf-lib sees 0, pdftk sees > 0 → xfa-pdftk
  *   - neither sees fields, OR dynamic content required → png-overlay
  *
@@ -42,7 +45,7 @@ export interface GenerateOptions {
  * continuation pages, and ordered exhibit assembly that cannot be expressed as static
  * AcroForm field values.
  */
-export type RenderingTechnique = "acroform-pdflib" | "xfa-pdftk" | "png-overlay";
+export type RenderingTechnique = "acroform-pdflib" | "acroform-pdftk" | "xfa-pdftk" | "png-overlay";
 
 /**
  * Canonical interface every court form must implement.
