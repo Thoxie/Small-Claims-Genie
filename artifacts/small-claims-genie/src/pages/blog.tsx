@@ -87,7 +87,6 @@ export default function Blog() {
                 Start Your Case
               </Button>
             </div>
-            <p className="text-xs text-white/40 mt-4">No sign-up needed to chat. Flat fee to start your case.</p>
           </div>
         </section>
       </div>

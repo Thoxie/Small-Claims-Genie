@@ -391,7 +391,6 @@ export default function Resources() {
             </Link>
           </Button>
         </div>
-        <p className="text-xs text-primary-foreground/40 mt-3">No sign-up needed to chat. Flat fee to start your case.</p>
       </div>
 
       {/* Video modal — same pattern as case workspace tabs */}
