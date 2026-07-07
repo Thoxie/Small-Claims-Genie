@@ -235,10 +235,10 @@ export async function buildWANotice(
     t(pg2, hearingTime, 406, 650);
   }
   if (ampm) {
-    // Draw circle indicator next to the correct period (a.m./p.m.).
-    // "a.m." bbox x=478, "p.m." bbox x=518 — draw asterisk to the left.
+    // Draw "X" indicator next to the correct period (a.m./p.m.).
+    // "a.m." bbox xMin=478.56, "p.m." bbox xMin=518.64 — draw just to the left.
     const amX = ampm === "a.m." ? 472 : 512;
-    t(pg2, "*", amX, 650, 8);
+    t(pg2, "X", amX, 650, 8);
   }
 
   // Court address.
@@ -261,11 +261,11 @@ export async function buildWANotice(
   // Line 2 (y≈418-432 from top): "owes me the sum of $ [amount] in principal and $ [interest]"
   //   Principal at x=220, pdf_lib_y=362; interest at x=459, pdf_lib_y=362
   // Line 3 (y≈432-445 from top): "which was due and owing on (Date)"
-  //   Date at x=297, pdf_lib_y=349
+  //   Row midpoint from top = (431.30+445.91)/2 = 438.6 → pdf_lib_y = 353
   t(pg2, pName,                   105, 375);
   t(pg2, fmtAmount(claimAmt),     220, 362);
   // Interest amount on same line (leave blank — 0 by default)
-  t(pg2, fmtDate(d.incidentDate), 297, 349);
+  t(pg2, fmtDate(d.incidentDate), 297, 353);
 
   // ── Claim type checkbox ───────────────────────────────────────────────────
   const cbLabel = claimLabel((d as any).claimType);
