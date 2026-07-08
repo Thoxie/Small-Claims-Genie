@@ -153,7 +153,9 @@ const socHillsboroughDefinition: FormDefinition = {
     const helv = await doc.embedFont(StandardFonts.Helvetica);
     const pages = doc.getPages();
     const pg = pages[1] ?? pages[0]!;
-    pg.drawText(`Date: ${todayStr}`, { x: 54, y: 598, size: 9, font: helv });
+    // y=612 places the date above the "Plaintiff Address:" label row (which is at ~y=598)
+    // so the two do not visually overlap.
+    pg.drawText(`Date: ${todayStr}`, { x: 54, y: 612, size: 9, font: helv });
     if (opts?.signatureBytes) {
       const sigImg = await doc.embedPng(opts.signatureBytes);
       pg.drawImage(sigImg, { x: 346, y: 582, width: 180, height: 36, opacity: 1 });

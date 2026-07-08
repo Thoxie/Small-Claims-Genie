@@ -103,7 +103,14 @@ const plainSocOrangeDefinition: FormDefinition = {
     safeSetText(form, "Plaintiffs", d.plaintiffName ?? "");
 
     // ── Claim description / basis of claim ───────────────────────────────────
-    safeSetText(form, "Text1", d.claimDescription ?? "");
+    // Text1 is a single-line field in the PDF; enable multiline so the full
+    // description wraps within the field area rather than being clipped.
+    try {
+      const tf = form.getTextField("Text1");
+      tf.enableMultiline();
+      tf.setFontSize(9);
+      tf.setText(d.claimDescription ?? "");
+    } catch { /* field absent */ }
 
     // ── Date + optional signature overlay ────────────────────────────────────
     const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });

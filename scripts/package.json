@@ -5,6 +5,7 @@
   "description": "Small Claims Genie — utility scripts",
   "type": "module",
   "scripts": {
+    "form-check-visual": "tsx ./src/form-check-visual.ts",
     "hello": "tsx ./src/hello.ts",
     "test:sc103-primary": "tsx ./src/test-sc103-primary.ts",
     "test:sc103-secondary": "tsx ./src/test-sc103-secondary.ts",

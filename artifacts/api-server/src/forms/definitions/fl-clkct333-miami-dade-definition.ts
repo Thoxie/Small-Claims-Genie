@@ -10,13 +10,24 @@
  * Filing: Miami-Dade County Court Clerk, 73 W. Flagler St., Suite 133, Miami, FL 33130
  * Phone: (305) 275-1155 | Website: https://www.miamidadeclerk.gov
  *
- * Key fields:
+ * Field map (verified via pdftk FDF field-name render, 2026-07-08):
  *   Plaintiff     — plaintiff name (multiline, header)
  *   Defendant     — defendant name (multiline, header)
  *   Address       — defendant address
  *   Phone         — defendant phone
- *   Text14        — additional facts / claim description (large text area)
- *   Text16        — judgment amount
+ *   Text1         — Case Number (left blank, assigned by clerk)
+ *   Text2         — Section No. (left blank)
+ *   Text7         — Claim description line 1  (large blank area below checkboxes)
+ *   Text8         — Claim description line 2
+ *   Text9         — Claim description line 3
+ *   Text10        — Judgment amount ("Where Plaintiff demands judgment in the sum of $")
+ *   Text11        — Plaintiff name in oath ("The Plaintiff, ___ says the foregoing...")
+ *   Text12        — Attorney/Plaintiff name (plaintiff fills pro se)
+ *   Text13        — Attorney's Bar No. (left blank, plaintiff filing pro se)
+ *   Text14        — Address of Attorney/Plaintiff
+ *   Text15        — Telephone No. (plaintiff phone)
+ *   Text16        — Email Address (plaintiff email)
+ *   Text17-Text27 — Notary / acknowledgment fields (left blank)
  *   Check Box1-6,11 — claim type checkboxes
  *
  * Note: Signature and notary fields are left blank — user must sign before filing.
@@ -55,6 +66,29 @@ function fullAddress(
   else if (zip) cityLine.push(zip);
   if (cityLine.length) parts.push(cityLine.join(", "));
   return parts.join("\n");
+}
+
+/**
+ * Split description across 3 single-line text fields (Text7, Text8, Text9).
+ * Each field is one line — break at word boundaries.
+ */
+function splitDescriptionLines(desc: string): [string, string, string] {
+  if (!desc) return ["", "", ""];
+  const MAX = 120;
+  const lines: string[] = ["", "", ""];
+  let remaining = desc.trim();
+  for (let i = 0; i < 3; i++) {
+    if (!remaining) break;
+    if (remaining.length <= MAX) {
+      lines[i] = remaining;
+      break;
+    }
+    const cut = remaining.lastIndexOf(" ", MAX);
+    const splitAt = cut > 0 ? cut : MAX;
+    lines[i] = remaining.slice(0, splitAt).trim();
+    remaining = remaining.slice(splitAt).trim();
+  }
+  return [lines[0]!, lines[1]!, lines[2]!];
 }
 
 function claimTypeCheckbox(d: CaseData): string {
@@ -108,32 +142,40 @@ const clkCt333Definition: FormDefinition = {
         )
       : fullAddress(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
     const checkedBox = claimTypeCheckbox(d);
+    const [desc1, desc2, desc3] = splitDescriptionLines(d.claimDescription ?? "");
 
     const pdfBytes = fs.readFileSync(PDF_PATH);
     const doc = await PDFDocument.load(pdfBytes);
     const form = doc.getForm();
 
-    // ── Parties (single-line so pdftotext extracts them as searchable strings) ─
+    // ── Parties (header caption) ──────────────────────────────────────────────
     safeSetSingleLine(form, "Plaintiff", d.plaintiffName ?? "");
     safeSetSingleLine(form, "Defendant", defNameForPdf);
 
     // ── Defendant address + phone ─────────────────────────────────────────────
     safeSetText(form, "Address", defAddress);
-    safeSetSingleLine(form, "Phone",   d.defendantPhone ?? "");
+    safeSetSingleLine(form, "Phone", d.defendantPhone ?? "");
 
-    // ── Claim description (multiline) ─────────────────────────────────────────
-    safeSetText(form, "Text14", d.claimDescription ?? "");
+    // ── Claim description — 3 lines below the checkboxes ─────────────────────
+    safeSetSingleLine(form, "Text7", desc1);
+    safeSetSingleLine(form, "Text8", desc2);
+    safeSetSingleLine(form, "Text9", desc3);
 
     // ── Judgment amount ───────────────────────────────────────────────────────
-    safeSetSingleLine(form, "Text16", formatAmount(d.claimAmount));
+    safeSetSingleLine(form, "Text10", formatAmount(d.claimAmount));
 
     // ── Plaintiff name in oath line ───────────────────────────────────────────
-    safeSetSingleLine(form, "Text8", d.plaintiffName ?? "");
+    safeSetSingleLine(form, "Text11", d.plaintiffName ?? "");
 
-    // ── Court-use / signature / notary fields — leave blank ───────────────────
-    for (const f of ["Text1","Text2","Text7","Text9","Text10","Text11","Text12","Text13",
-                     "Text15","Text17","Text18","Text19","Text20","Text21","Text22","Text23",
-                     "Text24","Text25","Text26","Text27"]) {
+    // ── Attorney/Plaintiff section (plaintiff filing pro se) ──────────────────
+    safeSetSingleLine(form, "Text12", d.plaintiffName ?? "");
+    safeSetText(form, "Text14", d.plaintiffAddress ?? "");
+    safeSetSingleLine(form, "Text15", d.plaintiffPhone ?? "");
+    safeSetText(form, "Text16", d.plaintiffEmail ?? "");
+
+    // ── Court-use / notary fields — leave blank ───────────────────────────────
+    for (const f of ["Text1","Text2","Text13","Text17","Text18","Text19","Text20","Text21",
+                     "Text22","Text23","Text24","Text25","Text26","Text27"]) {
       safeSetText(form, f, "");
     }
 
@@ -145,11 +187,14 @@ const clkCt333Definition: FormDefinition = {
       safeCheck(form, f, f === checkedBox);
     }
 
-    // ── Date + optional signature overlay ────────────────────────────────────
+    // ── Date + optional signature overlay ─────────────────────────────────────
+    // Date is drawn in the left Attorney/Plaintiff cell, above the printed label.
+    // y=252 places it in the blank area of the cell, 10 pts above the "Attorney/Plaintiff"
+    // label text (which sits at approximately y=242), avoiding visual overlap.
     const todayStr = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
     const helv = await doc.embedFont(StandardFonts.Helvetica);
     const [pg] = doc.getPages();
-    pg.drawText(`Date: ${todayStr}`, { x: 54, y: 244, size: 9, font: helv });
+    pg.drawText(`Date: ${todayStr}`, { x: 54, y: 252, size: 9, font: helv });
     if (opts?.signatureBytes) {
       const sigImg = await doc.embedPng(opts.signatureBytes);
       pg.drawImage(sigImg, { x: 323, y: 235, width: 130, height: 36, opacity: 1 });
