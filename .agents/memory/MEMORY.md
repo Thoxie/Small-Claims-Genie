@@ -28,4 +28,5 @@
 - [Registered agent printing pattern](registered-agent-printing-pattern.md) — additive block (TX/NC/VA) vs. name/address substitution (NJ/FL AcroForm templates); pick by available PDF space
 - [VA official form PDFs](va-official-forms.md) — DC-402 and DC-409 are real AcroForm PDFs; pdftk FDF fill confirmed working; DC-402 page rotation=90 but pdftk handles it correctly
 - [Govt PDF download blockers](govt-pdf-download-blockers.md) — NC blocks via Cloudflare WAF (403); WA/IL return HTML; TX OCA media IDs rotate on form revision (all tried = 404)
+- [PDF revision field-name drift](pdf-revision-field-drift.md) — court form PDFs can completely rename all AcroForm fields across revisions; always re-verify field names with pdftk dump_data_fields against the new asset before shipping
 # Last pushed: 2026-06-30 20:04 UTC

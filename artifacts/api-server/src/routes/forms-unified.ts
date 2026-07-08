@@ -716,9 +716,10 @@ router.post(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Arizona — AZ-COMPLAINT (programmatic pdf-lib, no template PDF)
+// Arizona — official court PDFs (coordinate overlay)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// AZ Small Claims Complaint — LJSC00001F (AcroForm via pdf-lib)
 router.post(
   "/cases/:id/forms/az/complaint",
   makeFormHandler("AZ-COMPLAINT", (id) => `AZ-Small-Claims-Complaint-Case-${id}.pdf`),
@@ -727,6 +728,54 @@ router.post(
 router.post(
   "/cases/:id/forms/az/complaint/signed",
   makeFormHandler("AZ-COMPLAINT", (id) => `AZ-Small-Claims-Complaint-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+// AZ Summons — LJSC00002F (coordinate overlay, flat PDF)
+router.post(
+  "/cases/:id/forms/az/summons",
+  makeFormHandler("AZ-SUMMONS", (id) => `AZ-Summons-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/az/summons/signed",
+  makeFormHandler("AZ-SUMMONS", (id) => `AZ-Summons-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+// AZ Proof of Service by Certified Mail — LJSC00003F (coordinate overlay, flat PDF)
+router.post(
+  "/cases/:id/forms/az/proof-of-service",
+  makeFormHandler("AZ-PROOF-OF-SERVICE", (id) => `AZ-Proof-of-Service-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/az/proof-of-service/signed",
+  makeFormHandler("AZ-PROOF-OF-SERVICE", (id) => `AZ-Proof-of-Service-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Texas — Travis County official court PDFs (Precinct 2 & 5)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// TX Travis County Precinct 2 Petition (J2-CV) — coordinate overlay
+router.post(
+  "/cases/:id/forms/tx/petition-jp2",
+  makeFormHandler("TX-PETITION-JP2", (id) => `TX-Petition-JP2-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/tx/petition-jp2/signed",
+  makeFormHandler("TX-PETITION-JP2", (id) => `TX-Petition-JP2-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
+// TX Travis County Precinct 5 Petition (J5-CV) — coordinate overlay
+router.post(
+  "/cases/:id/forms/tx/petition-jp5",
+  makeFormHandler("TX-PETITION-JP5", (id) => `TX-Petition-JP5-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/tx/petition-jp5/signed",
+  makeFormHandler("TX-PETITION-JP5", (id) => `TX-Petition-JP5-Signed-Case-${id}.pdf`, { signed: true }),
 );
 
 export default router;

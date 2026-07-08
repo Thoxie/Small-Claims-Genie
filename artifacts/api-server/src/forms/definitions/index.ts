@@ -76,5 +76,11 @@ export * from "./nj-complaint-definition";
 export * from "./wa-notice-definition";
 export * from "./wa-service-definition";
 
-// ─── Arizona programmatic forms (pdf-lib, no template PDF) ────────────────────
+// ─── Arizona official court PDFs (coordinate overlay) ────────────────────────
 export * from "./az-complaint-definition";
+export * from "./az-summons-definition";
+export * from "./az-proof-of-service-definition";
+
+// ─── Texas Travis County official court PDFs (coordinate overlay) ─────────────
+export * from "./tx-petition-jp2-definition";
+export * from "./tx-petition-jp5-definition";

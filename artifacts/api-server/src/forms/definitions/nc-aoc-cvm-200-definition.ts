@@ -14,19 +14,42 @@
  *   Heard by a magistrate; claim limit $10,000 (exclusive of interest and costs)
  *   Filing fee: $96 flat rate (G.S. 7A-311) + $30 sheriff service fee per defendant
  *
- * Form AOC-CVM-200, Rev. 9/13 — page dimensions: 792 × 612 pts (landscape)
+ * Form AOC-CVM-200, Rev. 7/24 — page dimensions: 792 × 612 pts (landscape)
  *
  * Signature line coords (pdf-lib, landscape page height = 612):
- *   "Signature Of Plaintiff Or Attorney" label at pdftotext bbox
- *   [578.80, 516.11-525.37] → pdf_lib_y = 612 − 525.37 ≈ 87
+ *   "Signature Of Plaintiff Or Attorney" — same position as prior revision.
+ *   SIG_X=578, SIG_Y=87 (verified against Rev. 9/13; re-verify if layout shifts)
  *
- * Checkbox field mapping (CkBox_001 – CkBox_006):
- *   001 = On An Account
- *   002 = For Goods Sold And Delivered Between
- *   003 = For Money Lent On a Promissory Note
- *   004 = Date From Which Interest Due (generic)
- *   005 = For a Worthless Check
- *   006 = For conversion (describe property)
+ * Field mapping (Rev. 7/24 field names — confirmed via pdftk dump_data_fields):
+ *   Text fields:
+ *     FileNumber                        — case/file number
+ *     CountyName                        — county name (single field in Rev. 7/24)
+ *     PlaintiffName                     — plaintiff full name
+ *     PlaintiffAddr1                    — plaintiff street address
+ *     PlaintiffAddr2                    — plaintiff mailing address (same as Addr1)
+ *     PlaintiffCity / PlaintiffState / PlaintiffZip
+ *     PlaintiffCounty                   — plaintiff county
+ *     PlaintiffTelephone                — plaintiff phone
+ *     Defendant1Name                    — primary defendant
+ *     Defendant1Addr1 / Addr2 / City / State / Zip / County / Telephone
+ *     Defendant2Name / Addr1-2 / City / State / Zip / County / Telephone (2nd def.)
+ *     ReasonTextField                   — claim description / reason
+ *     PrincipalAmountOwed               — claim principal amount
+ *     TotalAmountOwed                   — same as principal (no interest)
+ *     InterestOwed                      — interest amount (usually blank)
+ *     SignedByPlaintiffOrAttorneyDate   — date signed
+ *     SigningPlaintiffOrAttorneyName    — plaintiff name at signature line
+ *     PlaintiffsAttorneyName / Addr1-2 / City / State / Zip  — attorney (blank pro se)
+ *     AttorneyBarNumber                 — bar no. (blank pro se)
+ *     OtherTextField                    — "Other" description
+ *     ForConversionPropertyDescription  — property description for conversion claims
+ *     YesInterpreterNeededExplanationField — interpreter language if needed
+ *   Checkboxes:
+ *     OnAnAccountCkBox / ForGoodsSoldCkBox / ForMoneyLentCkBox
+ *     OnAPromissoryNoteCkBox / ForAWorthlessCheckCkBox / ForConversionCkBox
+ *     Defendant1IndividualCkBox / Defendant1CorporationCkBox
+ *     Defendant2IndividualCkBox / Defendant2CorporationCkBox
+ *     NoInterpreterNotNeededCkBox / YesInterpreterNeededCkBox
  */
 
 import * as path from "path";
@@ -40,9 +63,7 @@ import { ASSET_DIR } from "../../routes/forms-common";
 const PDF_PATH = path.join(ASSET_DIR, "nc-forms", "nc-aoc-cvm-200.pdf");
 
 // Landscape page: 792 × 612 pts.
-// "Signature Of Plaintiff Or Attorney" label bbox in pdftotext (y from top):
-//   yMin=516.11, yMax=525.37 → pdf_lib_y = 612 − yMax = 86.6
-// Draw signature image starting at that y so it sits on the signature line.
+// Signature area: same relative position as prior revision.
 const SIG_X = 578;
 const SIG_Y = 87;
 const SIG_W = 170;
@@ -71,40 +92,42 @@ function countyDisplay(countyId?: string | null): string {
 
 /**
  * Maps our internal claimType values to the NC AcroForm checkbox field names.
- * CkBox_001: On An Account (most generic — used as fallback)
- * CkBox_002: For Goods Sold And Delivered Between [dates]
- * CkBox_003: For Money Lent On a Promissory Note
- * CkBox_004: Date From Which Interest Due (general interest-bearing claim)
- * CkBox_005: For a Worthless Check
- * CkBox_006: For conversion (describe property)
+ * Rev. 7/24 uses descriptive field names instead of CkBox_NNN.
+ *
+ *   OnAnAccountCkBox        — On An Account (most generic — default fallback)
+ *   ForGoodsSoldCkBox       — For Goods Sold And Delivered Between [dates]
+ *   ForMoneyLentCkBox       — For Money Lent
+ *   OnAPromissoryNoteCkBox  — On A Promissory Note
+ *   ForAWorthlessCheckCkBox — For a Worthless Check
+ *   ForConversionCkBox      — For conversion (describe property)
  */
 function claimCheckbox(claimType?: string | null): string {
   const MAP: Record<string, string> = {
     // snake_case values (legacy / direct API calls)
-    account_stated:   "CkBox_001",
-    goods:            "CkBox_002",
-    loan:             "CkBox_003",
-    check:            "CkBox_005",
-    property_damage:  "CkBox_006",
-    services:         "CkBox_001",
-    contract:         "CkBox_001",
-    rent:             "CkBox_001",
-    security_deposit: "CkBox_001",
-    other:            "CkBox_004",
+    account_stated:   "OnAnAccountCkBox",
+    goods:            "ForGoodsSoldCkBox",
+    loan:             "ForMoneyLentCkBox",
+    check:            "ForAWorthlessCheckCkBox",
+    property_damage:  "ForConversionCkBox",
+    services:         "OnAnAccountCkBox",
+    contract:         "OnAnAccountCkBox",
+    rent:             "OnAnAccountCkBox",
+    security_deposit: "OnAnAccountCkBox",
+    other:            "OnAnAccountCkBox",
     // Title-case values from intake UI (new.tsx / intake-step-2.tsx)
-    "Money Owed":                          "CkBox_001",
-    "Unpaid Debt":                         "CkBox_001",
-    "Security Deposit":                    "CkBox_001",
-    "Property Damage":                     "CkBox_006",
-    "Vehicle Damage/Accident":             "CkBox_006",
-    "Landlord/Tenant Dispute":             "CkBox_001",
-    "Online Purchase/Marketplace Dispute": "CkBox_002",
-    "Unpaid Wages/Employment":             "CkBox_001",
-    "Contract Dispute":                    "CkBox_001",
-    "Fraud":                               "CkBox_004",
-    "Other":                               "CkBox_004",
+    "Money Owed":                          "OnAnAccountCkBox",
+    "Unpaid Debt":                         "OnAnAccountCkBox",
+    "Security Deposit":                    "OnAnAccountCkBox",
+    "Property Damage":                     "ForConversionCkBox",
+    "Vehicle Damage/Accident":             "ForConversionCkBox",
+    "Landlord/Tenant Dispute":             "OnAnAccountCkBox",
+    "Online Purchase/Marketplace Dispute": "ForGoodsSoldCkBox",
+    "Unpaid Wages/Employment":             "OnAnAccountCkBox",
+    "Contract Dispute":                    "OnAnAccountCkBox",
+    "Fraud":                               "OnAnAccountCkBox",
+    "Other":                               "OnAnAccountCkBox",
   };
-  return claimType ? (MAP[claimType] ?? "CkBox_004") : "CkBox_004";
+  return claimType ? (MAP[claimType] ?? "OnAnAccountCkBox") : "OnAnAccountCkBox";
 }
 
 export async function buildNCAocCvm200(
@@ -124,48 +147,63 @@ export async function buildNCAocCvm200(
 
   const checkedBox = claimCheckbox((d as any).claimType);
 
+  // Rev. 7/24 field names (completely renamed from Rev. 9/13)
   const textFields: Record<string, string> = {
-    FileNo:         (d as any).caseNumber ?? "",
-    County1:        countyName,
-    County2:        countyName,
-    County3:        countyName,
-    NamPltf:        pName,
-    PltfStreetAddr: d.plaintiffAddress ?? "",
-    PltfMailAddr:   d.plaintiffAddress ?? "",
-    PltfCity:       d.plaintiffCity ?? "",
-    PltfState:      (d as any).plaintiffState ?? "NC",
-    PltfZip:        d.plaintiffZip ?? "",
-    TeleNo1:        d.plaintiffPhone ?? "",
-    NameDef:        d.defendantName ?? "",
-    DefStreetAddr:  d.defendantAddress ?? "",
-    DefMailAddr:    d.defendantAddress ?? "",
-    DefCity:        d.defendantCity ?? "",
-    DefState:       d.defendantState ?? "NC",
-    DefZip:         d.defendantZip ?? "",
-    TeleNo2:        d.defendantPhone ?? "",
-    Reason:         d.claimDescription ?? "",
-    AmtOwed:        fmtAmount(claimAmt),
-    IntrstOwed:     "",
-    Date5:          today,
-    NamPltfAtty:    "",
-    NameDef2:       "",
+    FileNumber:                     (d as any).caseNumber ?? "",
+    CountyName:                     countyName,
+    PlaintiffName:                  pName,
+    PlaintiffAddr1:                 d.plaintiffAddress ?? "",
+    PlaintiffAddr2:                 d.plaintiffAddress ?? "",
+    PlaintiffCity:                  d.plaintiffCity ?? "",
+    PlaintiffState:                 (d as any).plaintiffState ?? "NC",
+    PlaintiffZip:                   d.plaintiffZip ?? "",
+    PlaintiffCounty:                countyName,
+    PlaintiffTelephone:             d.plaintiffPhone ?? "",
+    Defendant1Name:                 d.defendantName ?? "",
+    Defendant1Addr1:                d.defendantAddress ?? "",
+    Defendant1Addr2:                d.defendantAddress ?? "",
+    Defendant1City:                 d.defendantCity ?? "",
+    Defendant1State:                d.defendantState ?? "NC",
+    Defendant1Zip:                  d.defendantZip ?? "",
+    Defendant1Telephone:            d.defendantPhone ?? "",
+    Defendant2Name:                 "",
+    ReasonTextField:                d.claimDescription ?? "",
+    PrincipalAmountOwed:            fmtAmount(claimAmt),
+    TotalAmountOwed:                fmtAmount(claimAmt),
+    InterestOwed:                   "",
+    SignedByPlaintiffOrAttorneyDate: today,
+    SigningPlaintiffOrAttorneyName: pName,
+    PlaintiffsAttorneyName:         "",
+    AttorneyBarNumber:              "",
   };
 
   // For goods sold between dates, fill the beginning date field.
-  if ((d as any).claimType === "goods" && d.incidentDate) {
-    textFields.BeginDate = fmtDate(d.incidentDate);
+  if (
+    ((d as any).claimType === "goods" ||
+      (d as any).claimType === "Online Purchase/Marketplace Dispute") &&
+    d.incidentDate
+  ) {
+    textFields.ForGoodsSoldBeginningDate = fmtDate(d.incidentDate);
   }
 
+  const allCheckboxes = [
+    "OnAnAccountCkBox", "ForGoodsSoldCkBox", "ForMoneyLentCkBox",
+    "OnAPromissoryNoteCkBox", "ForAWorthlessCheckCkBox", "ForConversionCkBox",
+  ];
   const checkboxes: Record<string, boolean | string> = {
-    // Plaintiff type: default individual; flip to Corp if business entity.
-    Ind_01: !(d as any).plaintiffIsBusinessOrEntity,
-    Corp_01: !!(d as any).plaintiffIsBusinessOrEntity,
-    // Defendant type: default individual; flip to Corp if business entity.
-    Ind_02: !(d as any).defendantIsBusinessOrEntity,
-    Corp_02: !!(d as any).defendantIsBusinessOrEntity,
-    // Check the appropriate claim type box.
-    [checkedBox]: true,
+    // Defendant type checkboxes (Rev. 7/24 removed plaintiff individual/corp boxes)
+    Defendant1IndividualCkBox:  !(d as any).defendantIsBusinessOrEntity,
+    Defendant1CorporationCkBox: !!(d as any).defendantIsBusinessOrEntity,
+    Defendant2IndividualCkBox:  false,
+    Defendant2CorporationCkBox: false,
+    // Interpreter: assume not needed
+    NoInterpreterNotNeededCkBox: true,
+    YesInterpreterNeededCkBox:   false,
   };
+  // Claim type: set the matching box, clear all others
+  for (const box of allCheckboxes) {
+    checkboxes[box] = box === checkedBox;
+  }
 
   const filled = await pdftk_fill_form(PDF_PATH, { text: textFields, checkboxes });
 
@@ -176,7 +214,7 @@ export async function buildNCAocCvm200(
   const page   = pdfDoc.getPages()[0];
 
   if (opts?.signatureBytes) {
-    // Signature overlay: draw at the "Signature Of Plaintiff Or Attorney" line.
+    // Signature overlay: draw at the "Signed By Plaintiff Or Attorney" line.
     try {
       const sigImg =
         (await pdfDoc.embedPng(opts.signatureBytes).catch(() => null)) ??
