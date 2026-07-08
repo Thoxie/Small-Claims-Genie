@@ -1,9 +1,10 @@
 /**
  * FL Palm Beach County Statement of Claim.
  *
- * Generates a Palm Beach County-specific Statement of Claim programmatically
- * using pdf-lib (no template PDF required). The header and filing address
- * are customized for Palm Beach County Court.
+ * Delegates to buildFLStatementOfClaim which overlays case data on the official
+ * FL SOC PDF (fl-soc-7340.pdf, Forms 7.330–7.336) — same backing implementation
+ * as FL-ORANGE-SOC and FL-STATEMENT-OF-CLAIM. The Palm Beach County name and clerk
+ * address are passed as overrides so the legal caption is county-specific.
  *
  * Filing: Palm Beach County Clerk & Comptroller, 205 N. Dixie Hwy., West Palm Beach, FL 33401
  * Phone: (561) 355-2986 | Website: https://www.mypalmbeachclerk.com
@@ -17,7 +18,7 @@ import { buildFLStatementOfClaim } from "./fl-statement-of-claim-definition";
 const flPalmBeachDefinition: FormDefinition = {
   state: "FL",
   formId: "FL-PALM-BEACH-SOC",
-  renderingTechnique: "png-overlay",
+  renderingTechnique: "pdf-overlay",
 
   async generate(d: CaseData, body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     return buildFLStatementOfClaim(

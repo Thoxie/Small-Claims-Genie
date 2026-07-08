@@ -86,7 +86,7 @@ const clkCt423Definition: FormDefinition = {
   async generate(
     d: CaseData,
     _body: FormBody,
-    _opts?: GenerateOptions,
+    opts?: GenerateOptions,
   ): Promise<Buffer> {
     const pdfBytes = fs.readFileSync(PDF_PATH);
     const doc = await PDFDocument.load(pdfBytes);
@@ -96,14 +96,14 @@ const clkCt423Definition: FormDefinition = {
     safeSetText(form, "Plaintiff", d.plaintiffName ?? "");
     safeSetText(form, "Defendant", d.defendantName ?? "");
 
-    // ── Defendant service address (name + street + city/state/zip) ─────────────
+    // ── Defendant service address (street + city/state/zip only) ───────────────
+    // "Defendant" field already holds the name; do not duplicate it here.
     const defCSZ = cityStateZip(
       d.defendantCity,
       d.defendantState ?? "FL",
       d.defendantZip,
     );
     const defServeParts: string[] = [];
-    if (d.defendantName) defServeParts.push(d.defendantName);
     if (d.defendantAddress) defServeParts.push(d.defendantAddress);
     if (defCSZ) defServeParts.push(defCSZ);
     safeSetText(form, "Defendant to be served at", defServeParts.join("\n"));
@@ -121,21 +121,23 @@ const clkCt423Definition: FormDefinition = {
     // ── Division — always Civil for small claims ────────────────────────────────
     safeCheck(form, "Civil", true);
 
+    // ── "Plaintiff check box" — indicates the filer is the plaintiff (not attorney) ──
+    safeCheck(form, "Plaintiff check box", true);
+
     // ── Hearing date and time ──────────────────────────────────────────────────
-    // AcroForm fields filled by plaintiff: "Month" (full name), "Year", "Time".
-    // "Date" (day number), "Courtroom", and case-assignment checkboxes are
-    // clerk-only fields completed at filing — intentionally left blank here.
-    // hearingDate is expected in ISO format "YYYY-MM-DD".
+    // Fields filled by plaintiff: "Month" (full month name), "Date" (day number),
+    // "Year", and "Time". hearingDate is expected in ISO format "YYYY-MM-DD".
     if (d.hearingDate) {
       const MONTH_NAMES = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December",
       ];
-      const [yr, mo] = d.hearingDate.split("-");
+      const [yr, mo, day] = d.hearingDate.split("-");
       if (mo) {
         const monthName = MONTH_NAMES[parseInt(mo, 10) - 1] ?? mo;
         safeSetText(form, "Month", monthName);
       }
+      if (day) safeSetText(form, "Date", parseInt(day, 10).toString());
       if (yr) safeSetText(form, "Year", yr);
     }
     const hearingTimeStr = d.hearingTimeFormatted ?? d.hearingTime ?? "";

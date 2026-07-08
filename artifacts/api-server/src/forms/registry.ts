@@ -21,6 +21,8 @@ export interface GenerateOptions {
   signatureBytes?: Buffer;
   /** True when the response should be an attachment (Content-Disposition: attachment). */
   download?: boolean;
+  /** True when this call originates from a /signed route (even if signatureBytes is absent). */
+  signed?: boolean;
 }
 
 /**

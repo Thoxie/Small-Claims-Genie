@@ -90,7 +90,7 @@ export function makeFormHandler(
       const pdfBytes = await def.generate(
         c as CaseData,
         body,
-        { signatureBytes, download: isAttachment }
+        { signatureBytes, download: isAttachment, signed: !!opts.signed }
       );
 
       const disposition = isAttachment ? "attachment" : "inline";

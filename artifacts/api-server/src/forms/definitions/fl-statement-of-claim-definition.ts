@@ -169,6 +169,31 @@ export async function buildFLStatementOfClaim(
   t(truncate(d.plaintiffName ?? "", 65, 8), 183, 583, 8);
   t(truncate(d.defendantName ?? "", 51, 8), 376, 583, 8);
 
+  // ── Auto-negligence narrative fill-ins (Form 7.330) ───────────────────────
+  // Form 7.330 (Auto Negligence) contains a pre-printed narrative with fill-in blanks.
+  // Coordinates calibrated via pdftotext -bbox-layout (pdf-lib y = 792 − pdftotext_yMax):
+  //   "On or about [date],"              → y=566, blank x=114–180
+  //   "[county] County, Florida"         → y=550, blank x=72–112 (39pt)
+  //   "operated by [plaintiff name],"    → y=550, blank x=457–504 (47pt)
+  //   "operated by [defendant name];"    → y=534, blank x=409–468 (59pt)
+  //   "judgment in the sum of $[amt]."   → y=455, after "$" at x=452
+  if (d.incidentDate) {
+    const fmtIncDate = (() => {
+      try {
+        return new Date(d.incidentDate + "T12:00:00").toLocaleDateString("en-US", {
+          month: "short", day: "numeric", year: "numeric",
+        });
+      } catch { return d.incidentDate ?? ""; }
+    })();
+    t(fmtIncDate, 114, 566, 7.5);
+  }
+  const cntyOnly = countyName?.replace(/\s+County$/i, "") ?? "";
+  if (cntyOnly) t(truncate(cntyOnly, 39, 7.5), 72, 550, 7.5);
+  t(truncate(d.plaintiffName ?? "", 47, 7.5), 457, 550, 7.5);
+  t(truncate(d.defendantName ?? "", 59, 7.5), 409, 534, 7.5);
+  const wfAmt = fmtAmount(d.claimAmount);
+  if (wfAmt) t(wfAmt, 452, 455, 8);
+
   // ── Signature overlay and signature-block fields ───────────────────────────
   if (opts?.signatureBytes) {
     try {
@@ -190,6 +215,9 @@ export async function buildFLStatementOfClaim(
         });
         t(`/${d.plaintiffName ?? ""}/`, ML + 100, 720, 7);
         t(todaySig, ML + 265, 720, 7);
+        // Second line of signature block: address (left) and phone (right).
+        if (d.plaintiffAddress) t(d.plaintiffAddress, ML + 100, 712, 7);
+        if (d.plaintiffPhone) t(d.plaintiffPhone, ML + 265, 712, 7);
       }
     } catch {
       /* ignore invalid image data */

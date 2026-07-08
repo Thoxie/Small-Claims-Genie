@@ -186,8 +186,8 @@ const azComplaintDefinition: FormDefinition = {
       } catch {
         /* ignore invalid signature data */
       }
-    } else if (d.plaintiffName) {
-      // Typed-name signature fallback when no image is supplied.
+    } else if (opts?.signed && d.plaintiffName) {
+      // Typed-name signature fallback for signed variants when no image is supplied.
       try {
         const oblique  = await doc.embedFont(StandardFonts.HelveticaOblique);
         const regular  = await doc.embedFont(StandardFonts.Helvetica);
