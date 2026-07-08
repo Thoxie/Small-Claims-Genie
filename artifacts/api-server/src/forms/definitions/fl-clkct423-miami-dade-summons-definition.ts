@@ -157,10 +157,11 @@ const clkCt423Definition: FormDefinition = {
     safeCheck(form, "Dade County Courthouse Central Court", true);
 
     // ── Signed variant: draw plaintiff signature at the "FILED BY:" area ───────
-    // pdftotext -bbox-layout: "FILED BY: _____..." at pdf-lib y=319, blank
-    // runs x=82–342. No AcroForm signature widget exists; drawn directly on page.
+    // pdftotext -bbox-layout (page 2, index 1): "FILED BY: _____..." at
+    // pdf-lib y=319, blank runs x=82–342. No AcroForm signature widget exists;
+    // drawn directly on page 2 (index 1) where the "Filed by" section lives.
     if (opts?.signed) {
-      const page = doc.getPages()[0]!;
+      const page = doc.getPages()[1]!;
       if (opts.signatureBytes) {
         const sigImg =
           (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??

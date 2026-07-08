@@ -169,31 +169,6 @@ export async function buildFLStatementOfClaim(
   t(truncate(d.plaintiffName ?? "", 65, 8), 183, 583, 8);
   t(truncate(d.defendantName ?? "", 51, 8), 376, 583, 8);
 
-  // ── Auto-negligence narrative fill-ins (Form 7.330) ───────────────────────
-  // Form 7.330 (Auto Negligence) contains a pre-printed narrative with fill-in blanks.
-  // Coordinates calibrated via pdftotext -bbox-layout (pdf-lib y = 792 − pdftotext_yMax):
-  //   "On or about [date],"              → y=566, blank x=114–180
-  //   "[county] County, Florida"         → y=550, blank x=72–112 (39pt)
-  //   "operated by [plaintiff name],"    → y=550, blank x=457–504 (47pt)
-  //   "operated by [defendant name];"    → y=534, blank x=409–468 (59pt)
-  //   "judgment in the sum of $[amt]."   → y=455, after "$" at x=452
-  if (d.incidentDate) {
-    const fmtIncDate = (() => {
-      try {
-        return new Date(d.incidentDate + "T12:00:00").toLocaleDateString("en-US", {
-          month: "short", day: "numeric", year: "numeric",
-        });
-      } catch { return d.incidentDate ?? ""; }
-    })();
-    t(fmtIncDate, 114, 566, 7.5);
-  }
-  const cntyOnly = countyName?.replace(/\s+County$/i, "") ?? "";
-  if (cntyOnly) t(truncate(cntyOnly, 39, 7.5), 72, 550, 7.5);
-  t(truncate(d.plaintiffName ?? "", 47, 7.5), 457, 550, 7.5);
-  t(truncate(d.defendantName ?? "", 59, 7.5), 409, 534, 7.5);
-  const wfAmt = fmtAmount(d.claimAmount);
-  if (wfAmt) t(wfAmt, 452, 455, 8);
-
   // ── Claim description — word-wrapped into the gap below WHEREFORE ──────────
   // pdftotext -bbox-layout (page 0): WHEREFORE "." at pdf-lib y=439; Form 7.331
   // title ("FORM 7.331. ...") starts at y=405.8 — leaving ~33pt of blank space
@@ -227,30 +202,21 @@ export async function buildFLStatementOfClaim(
     }
   }
 
-  // ── Signature block fields (always rendered — unsigned and signed) ────────
-  // Printed name, date, address, and phone appear regardless of whether a
-  // signature image is supplied, so the unsigned download is also complete.
-  const todaySig = new Date().toLocaleDateString("en-US", {
-    month: "2-digit", day: "2-digit", year: "numeric",
-  });
-  t(`/${d.plaintiffName ?? ""}/`, ML + 100, 720, 7);
-  t(todaySig, ML + 265, 720, 7);
-  if (d.plaintiffAddress) t(d.plaintiffAddress, ML + 100, 712, 7);
-  if (d.plaintiffPhone) t(d.plaintiffPhone, ML + 265, 712, 7);
-
   // ── Signature image overlay (signed variant only) ──────────────────────────
+  // Placed at the plaintiff signature line near the bottom of the form.
+  // pdftotext -bbox-layout (page 0): signature blank at pdf-lib x=378, y=68.
+  // Unsigned download leaves the signature area blank — user signs before filing.
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        // Placed in the blank header next to the plaintiff block (y≈727–753).
         page.drawImage(sigImg, {
-          x: ML + 100,
-          y: 727,
-          width: 155,
-          height: 26,
+          x: 378,
+          y: 68,
+          width: 150,
+          height: 28,
           opacity: 1,
         });
       }
