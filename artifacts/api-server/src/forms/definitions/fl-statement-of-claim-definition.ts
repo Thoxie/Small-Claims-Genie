@@ -227,7 +227,18 @@ export async function buildFLStatementOfClaim(
     }
   }
 
-  // ── Signature overlay and signature-block fields ───────────────────────────
+  // ── Signature block fields (always rendered — unsigned and signed) ────────
+  // Printed name, date, address, and phone appear regardless of whether a
+  // signature image is supplied, so the unsigned download is also complete.
+  const todaySig = new Date().toLocaleDateString("en-US", {
+    month: "2-digit", day: "2-digit", year: "numeric",
+  });
+  t(`/${d.plaintiffName ?? ""}/`, ML + 100, 720, 7);
+  t(todaySig, ML + 265, 720, 7);
+  if (d.plaintiffAddress) t(d.plaintiffAddress, ML + 100, 712, 7);
+  if (d.plaintiffPhone) t(d.plaintiffPhone, ML + 265, 712, 7);
+
+  // ── Signature image overlay (signed variant only) ──────────────────────────
   if (opts?.signatureBytes) {
     try {
       const sigImg =
@@ -242,15 +253,6 @@ export async function buildFLStatementOfClaim(
           height: 26,
           opacity: 1,
         });
-        // Printed name and date directly below the signature image.
-        const todaySig = new Date().toLocaleDateString("en-US", {
-          month: "2-digit", day: "2-digit", year: "numeric",
-        });
-        t(`/${d.plaintiffName ?? ""}/`, ML + 100, 720, 7);
-        t(todaySig, ML + 265, 720, 7);
-        // Second line of signature block: address (left) and phone (right).
-        if (d.plaintiffAddress) t(d.plaintiffAddress, ML + 100, 712, 7);
-        if (d.plaintiffPhone) t(d.plaintiffPhone, ML + 265, 712, 7);
       }
     } catch {
       /* ignore invalid image data */

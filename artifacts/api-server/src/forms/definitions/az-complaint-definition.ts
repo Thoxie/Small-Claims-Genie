@@ -35,6 +35,7 @@ import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
+import { pdftkFlatten } from "../acroform-filler";
 
 const PDF_PATH = path.join(FORMS_DIR, "az-ljsc00001f-complaint.pdf");
 
@@ -223,7 +224,9 @@ const azComplaintDefinition: FormDefinition = {
     } catch {
       saved = await doc.save({ updateFieldAppearances: false });
     }
-    return Buffer.from(saved);
+    // Flatten interactive AcroForm fields so the output is non-editable and
+    // renders identically in all PDF viewers (same pattern as other acroform-pdftk forms).
+    return pdftkFlatten(Buffer.from(saved));
   },
 };
 
