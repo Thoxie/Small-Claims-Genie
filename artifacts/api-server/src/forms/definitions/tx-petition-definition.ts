@@ -13,7 +13,7 @@
  *   PDF (pdftk dump_data_fields returns nothing); all data is drawn directly.
  *
  * Coordinate reference (pdftotext yMax → pdf-lib y = 792 − pdftotext_yMax):
- *   Plaintiff name  : x=96,  y=733  (label yMax=59)
+ *   Plaintiff name  : x=96,  y=747  (label yMin=44.244 → appears on same visual line)
  *   Defendant name  : x=103, y=696  (label yMax=96)
  *   Street address  : x=175, y=677  (blank above "Street Address" label yMin=117)
  *   City            : x=153, y=649  (blank above "City" label yMin=143)
@@ -22,9 +22,13 @@
  *   Service address : x=115, y=504  (label yMax=288)
  *   Complaint lines : y=477,458,439,420,401,382 (6 blank lines, ~19pt spacing)
  *   Claim amount    : x=340, y=336  (RELIEF "$" at yMax=456)
- *   Signature image : x=36,  y=152  (near bottom of page)
- *   Plaintiff print : x=36,  y=143
- *   Date            : x=350, y=143
+ *
+ * Right-column signature block — content = label_bottom + 13pt (established pattern):
+ *   "Phone & Fax" label bottom      : 792 − 722.215 = 69.8  → phone content  y=83  ✓
+ *   "Address of Plaintiff" label bot: 792 − 666.475 = 125.5 → addr content   y=139 ✓
+ *   "Signature of Plaintiff" label  : 792 − 638.635 = 153.4 → sig image      y=166
+ *   "Petitioner's Printed Name" bot : 792 − 630.655 = 161.3 → printed name   y=174
+ *   (Left sig block removed — printed name goes left, signature goes right only)
  *
  * Legal basis:
  *   Texas Rules of Civil Procedure, Part V — Rules of Practice in Justice Courts
@@ -71,7 +75,7 @@ export async function buildTXPetition(
   t((d as any).caseNumber ?? "", 265, 750);
 
   // ── Plaintiff name ─────────────────────────────────────────────────────────
-  t(d.plaintiffName ?? "", 96, 733);
+  t(d.plaintiffName ?? "", 96, 747);
 
   // ── Defendant name ─────────────────────────────────────────────────────────
   t(d.defendantName ?? "", 103, 696);
@@ -126,54 +130,29 @@ export async function buildTXPetition(
     : "";
   t(amt, 340, 336);
 
-  // ── Signature ──────────────────────────────────────────────────────────────
-  const sigY = 152;
+  // ── Signature + contact block ─────────────────────────────────────────────
+  // Left column: "Petitioner's Printed Name" label bottom at pdf-lib y=161.3
+  //   → printed name goes on blank line 13pt above label → y=174.
+  // Right column: "Signature of Plaintiff" label bottom at pdf-lib y=153.4
+  //   → signature image goes on blank line 13pt above label → y=166.
+  //   Same +13pt pattern as address (label y=125.5 → content y=139) and
+  //   phone (label y=69.8 → content y=83).
+  t(d.plaintiffName ?? "", 36, 174, 8);
+
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, {
-          x: 36,
-          y: sigY,
-          width: 180,
-          height: 26,
-          opacity: 1,
-        });
-      }
-    } catch {
-      /* ignore invalid image data */
-    }
-  }
-  // Plaintiff printed name and date at signature area
-  t(d.plaintiffName ?? "", 36, sigY - 12, 8);
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-  });
-  t(today, 350, sigY - 12, 8);
-
-  // ── Right-side plaintiff contact block ────────────────────────────────────
-  // The TX Petition right column (x≈307) has: Signature blank (pdf-lib y=167.3)
-  // → Address blank (y=139.4) → City/State/Zip blank (y=111.5) → Phone blank
-  // (y=83.7).  Coordinates from pdftotext -bbox-layout; text drawn at the
-  // blank-line y value so it appears inline with the form's underscores.
-  if (opts?.signatureBytes) {
-    try {
-      const rSigImg =
-        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
-        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
-      if (rSigImg) {
-        page.drawImage(rSigImg, { x: 307, y: 155, width: 175, height: 20, opacity: 1 });
+        page.drawImage(sigImg, { x: 307, y: 166, width: 175, height: 20, opacity: 1 });
       }
     } catch { /* ignore */ }
   }
-  const pltAddr   = d.plaintiffAddress ?? "";
-  const pltCSZ    = [d.plaintiffCity, d.plaintiffState ?? "TX", d.plaintiffZip]
+  const pltAddr  = d.plaintiffAddress ?? "";
+  const pltCSZ   = [d.plaintiffCity, d.plaintiffState ?? "TX", d.plaintiffZip]
     .filter(Boolean).join(", ");
-  const pltPhone  = d.plaintiffPhone ?? "";
+  const pltPhone = d.plaintiffPhone ?? "";
   t(pltAddr,  307, 139, 8);
   t(pltCSZ,   307, 111, 8);
   t(pltPhone, 307,  83, 8);
