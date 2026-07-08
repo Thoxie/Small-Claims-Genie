@@ -132,20 +132,27 @@ export async function buildFLStatementOfClaim(
   const pNameFull = (d as any).plaintiffDbaName
     ? `${d.plaintiffName ?? ""} d/b/a ${(d as any).plaintiffDbaName}`
     : (d.plaintiffName ?? "________________");
-  t(pNameFull, ML, 745, 9, bold);
-  t("Plaintiff,", ML, 734, 8.5);
 
-  t("Case No.:", MR - 165, 745, 8.5, bold);
-  t(d.caseNumber ?? "", MR - 110, 745, 8.5);
+  // ── Legal caption — plaintiff block ───────────────────────────────────────
+  t(pNameFull, ML, 747, 9, bold);
+  const pAddrLine = [d.plaintiffAddress, d.plaintiffCity].filter(Boolean).join(", ");
+  if (pAddrLine) t(pAddrLine, ML, 736, 7.5);
+  t("Plaintiff,", ML, 725, 8.5);
+
+  t("Case No.:", MR - 165, 747, 8.5, bold);
+  t(d.caseNumber ?? "", MR - 110, 747, 8.5);
   const amtStr = fmtAmount(d.claimAmount);
   if (amtStr) {
-    t("Amount:", MR - 165, 734, 8.5, bold);
-    t(amtStr, MR - 117, 734, 8.5);
+    t("Amount:", MR - 165, 736, 8, bold);
+    t(amtStr, MR - 117, 736, 8);
   }
 
-  t("vs.", ML, 722, 8.5);
-  t(d.defendantName ?? "________________", ML, 710, 9, bold);
-  t("Defendant.", ML, 699, 8.5);
+  // ── Legal caption — defendant block ───────────────────────────────────────
+  t("vs.", ML, 714, 8.5);
+  t(d.defendantName ?? "________________", ML, 703, 9, bold);
+  const dAddrLine = [d.defendantAddress, d.defendantCity].filter(Boolean).join(", ");
+  if (dAddrLine) t(dAddrLine, ML, 692, 7.5);
+  t("Defendant.", MR - 60, 692, 8);
   page.drawLine({
     start: { x: ML, y: 691 },
     end: { x: MR, y: 691 },
@@ -162,21 +169,27 @@ export async function buildFLStatementOfClaim(
   t(truncate(d.plaintiffName ?? "", 65, 8), 183, 583, 8);
   t(truncate(d.defendantName ?? "", 51, 8), 376, 583, 8);
 
-  // ── Signature overlay ──────────────────────────────────────────────────────
+  // ── Signature overlay and signature-block fields ───────────────────────────
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        // Placed in the blank header to the right of "Plaintiff," (y≈726–754).
+        // Placed in the blank header next to the plaintiff block (y≈727–753).
         page.drawImage(sigImg, {
           x: ML + 100,
-          y: 726,
-          width: 160,
-          height: 28,
+          y: 727,
+          width: 155,
+          height: 26,
           opacity: 1,
         });
+        // Printed name and date directly below the signature image.
+        const todaySig = new Date().toLocaleDateString("en-US", {
+          month: "2-digit", day: "2-digit", year: "numeric",
+        });
+        t(`/${d.plaintiffName ?? ""}/`, ML + 100, 720, 7);
+        t(todaySig, ML + 265, 720, 7);
       }
     } catch {
       /* ignore invalid image data */

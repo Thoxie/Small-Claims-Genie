@@ -155,6 +155,29 @@ export async function buildTXPetition(
   });
   t(today, 350, sigY - 12, 8);
 
+  // ── Right-side plaintiff contact block ────────────────────────────────────
+  // The TX Petition right column (x≈307) has: Signature blank (pdf-lib y=167.3)
+  // → Address blank (y=139.4) → City/State/Zip blank (y=111.5) → Phone blank
+  // (y=83.7).  Coordinates from pdftotext -bbox-layout; text drawn at the
+  // blank-line y value so it appears inline with the form's underscores.
+  if (opts?.signatureBytes) {
+    try {
+      const rSigImg =
+        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+      if (rSigImg) {
+        page.drawImage(rSigImg, { x: 307, y: 155, width: 175, height: 20, opacity: 1 });
+      }
+    } catch { /* ignore */ }
+  }
+  const pltAddr   = d.plaintiffAddress ?? "";
+  const pltCSZ    = [d.plaintiffCity, d.plaintiffState ?? "TX", d.plaintiffZip]
+    .filter(Boolean).join(", ");
+  const pltPhone  = d.plaintiffPhone ?? "";
+  t(pltAddr,  307, 139, 8);
+  t(pltCSZ,   307, 111, 8);
+  t(pltPhone, 307,  83, 8);
+
   const pdfBytes = await doc.save();
   return Buffer.from(pdfBytes);
 }

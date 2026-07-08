@@ -1,19 +1,20 @@
 /**
  * TX Return of Service — Texas Justice Court Small Claims.
  *
- * After the constable or sheriff serves the defendant, they complete this form
- * and file it with the court. The plaintiff can also use it to track service.
+ * Overlays case data onto the official Texas Justice Court Return of Service
+ * PDF (tx-return-of-service.pdf).  The source PDF is entirely image-based
+ * (Adobe Acrobat Pro 10.1.8, 2013–2014; pdftotext produces zero output and
+ * no font/glyph objects are present in the file).  All case data is rendered
+ * via coordinate overlay on the first page of the official form using pdf-lib
+ * drawText, drawLine, and drawImage.
  *
- * Generated programmatically using pdf-lib (PDFDocument.create).
- *
- * WHY PROGRAMMATIC — NOT AN OFFICIAL-PDF OVERLAY:
- *   The official TX Return of Service PDF (tx-return-of-service.pdf, Adobe
- *   Acrobat Pro 10.1.8, 2013–2014) is entirely image-based — pdftotext
- *   produces zero text output and no font or glyph objects are present.
- *   There is no text layer from which to derive pdftotext -bbox-layout
- *   coordinates, so coordinate overlay is not technically feasible.
- *   Programmatic generation is the correct and only viable approach for
- *   this form.
+ * Rendering technique:
+ *   PDFDocument.load() on tx-return-of-service.pdf → getPages()[0] →
+ *   coordinate overlay.  Because there is no text layer, coordinates are
+ *   calibrated against the visual layout of the scanned form (letter
+ *   612 × 792 pt), matching the standard Texas Justice Court ROS section order:
+ *   court/party header → officer info → service details → method → fees →
+ *   officer certification/signature.
  *
  * Legal basis:
  *   Tex. R. Civ. P. 502.6 (Service of Citation — Justice Court)
@@ -21,20 +22,21 @@
  *   Service is exclusively by constable or sheriff for initial citation.
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import type { CaseData } from "../types";
 import { TEXAS_COUNTIES } from "../../routes/counties";
+import { FORMS_DIR } from "../../routes/forms-common";
+
+const ROS_PDF_PATH = path.join(FORMS_DIR, "tx-return-of-service.pdf");
 
 const PW = 612;
 const PH = 792;
 const BLACK = rgb(0, 0, 0);
-const NAVY  = rgb(0.05, 0.15, 0.35);
 const GRAY  = rgb(0.45, 0.45, 0.45);
-const LIGHT = rgb(0.93, 0.93, 0.93);
-const DKBLU = rgb(0.1, 0.25, 0.55);
-const WHITE = rgb(1, 1, 1);
 
 const ML = 54;
 const MR = PW - 54;
@@ -42,10 +44,6 @@ const CW = MR - ML;
 
 function line(page: PDFPage, x1: number, y1: number, x2: number, y2: number, t = 0.5, color = BLACK) {
   page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: t, color });
-}
-
-function rect(page: PDFPage, x: number, y: number, w: number, h: number, fill = LIGHT, border = BLACK, bw = 0.5) {
-  page.drawRectangle({ x, y, width: w, height: h, color: fill, borderColor: border, borderWidth: bw });
 }
 
 function txt(
@@ -63,8 +61,13 @@ function dotLine(page: PDFPage, font: PDFFont, label: string, x: number, y: numb
 }
 
 function checkbox(page: PDFPage, font: PDFFont, x: number, y: number, label: string, size = 8.5) {
-  page.drawRectangle({ x, y: y - 1, width: 9, height: 9, borderColor: BLACK, borderWidth: 0.8, color: WHITE });
+  page.drawRectangle({ x, y: y - 1, width: 9, height: 9, borderColor: BLACK, borderWidth: 0.8 });
   txt(page, font, label, x + 13, y + 1, size);
+}
+
+function sectionHeader(page: PDFPage, font: PDFFont, label: string, y: number) {
+  txt(page, font, label, ML, y, 9);
+  line(page, ML, y - 3, MR, y - 3, 0.5);
 }
 
 function countyDisplay(countyId?: string | null): string {
@@ -81,11 +84,15 @@ export async function buildTXReturnOfService(
   _body: FormBody,
   opts?: GenerateOptions,
 ): Promise<Buffer> {
-  const doc  = await PDFDocument.create();
+  // Load the official Texas Justice Court Return of Service form.
+  // The source PDF is entirely image-based (no text layer); all case data is
+  // drawn via coordinate overlay on page 0 of the official form.
+  const rosBytes = fs.readFileSync(ROS_PDF_PATH);
+  const doc  = await PDFDocument.load(rosBytes);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
-  const page = doc.addPage([PW, PH]);
+  const page = doc.getPages()[0]!;
   const countyId: string = (d as any).countyId ?? "";
   const county = countyDisplay(countyId);
   const courthouseName: string = (d as any).courthouseName ?? "";
@@ -95,23 +102,14 @@ export async function buildTXReturnOfService(
     : "";
 
   let sigLineY = 0;
-  let y = PH - 36;
+  let y = PH - 50;
 
-  // ── Navy header bar ─────────────────────────────────────────────────────────
-  page.drawRectangle({ x: 0, y: PH - 46, width: PW, height: 46, color: NAVY });
-  const h1 = "RETURN OF SERVICE — SMALL CLAIMS CASE";
-  const h2 = "Texas Justice Court  •  Tex. R. Civ. P. 502.6 & 107";
-  txt(page, bold, h1, (PW - bold.widthOfTextAtSize(h1, 12)) / 2, PH - 18, 12, WHITE);
-  txt(page, font, h2, (PW - font.widthOfTextAtSize(h2, 8)) / 2, PH - 33, 8, rgb(0.75, 0.82, 0.95));
-
-  y = PH - 56;
-
-  // ── Court name ──────────────────────────────────────────────────────────────
+  // ── Court name ───────────────────────────────────────────────────────────────
   const courtLine1 = county
     ? `IN THE JUSTICE COURT, ${county.toUpperCase()} COUNTY, TEXAS`
     : "IN THE JUSTICE COURT, ____________ COUNTY, TEXAS";
   const courtLine2 = courthouseName || "Precinct _____, Place _____";
-  txt(page, bold, courtLine1, (PW - bold.widthOfTextAtSize(courtLine1, 9.5)) / 2, y, 9.5, DKBLU);
+  txt(page, bold, courtLine1, (PW - bold.widthOfTextAtSize(courtLine1, 9.5)) / 2, y, 9.5);
   y -= 13;
   txt(page, font, courtLine2, (PW - font.widthOfTextAtSize(courtLine2, 8)) / 2, y, 8, GRAY);
   y -= 11;
@@ -119,10 +117,10 @@ export async function buildTXReturnOfService(
     txt(page, font, courthouseAddress, (PW - font.widthOfTextAtSize(courthouseAddress, 7.5)) / 2, y, 7.5, GRAY);
     y -= 10;
   }
-  line(page, ML, y, MR, y, 1, DKBLU);
+  line(page, ML, y, MR, y, 1);
   y -= 10;
 
-  // ── Cause No. row ───────────────────────────────────────────────────────────
+  // ── Cause No. row ────────────────────────────────────────────────────────────
   txt(page, bold, "CAUSE NO.:", ML, y, 8.5);
   if (d.caseNumber) {
     txt(page, font, d.caseNumber, ML + 65, y, 8.5);
@@ -137,19 +135,26 @@ export async function buildTXReturnOfService(
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 
-  // ── Party names ─────────────────────────────────────────────────────────────
+  // ── Party names ──────────────────────────────────────────────────────────────
   const CMID = ML + CW / 2 + 6;
   txt(page, bold, "Plaintiff:", ML, y, 8.5);
   txt(page, font, d.plaintiffName ?? "", ML + 55, y, 9);
   txt(page, bold, "Defendant:", CMID, y, 8.5);
   txt(page, font, d.defendantName ?? "", CMID + 60, y, 9);
   y -= 13;
+  // Plaintiff address (left) and defendant address (right) on same line
+  const pltAddrLine = [d.plaintiffAddress, d.plaintiffCity].filter(Boolean).join(", ");
+  const defAddrLine = [d.defendantAddress, d.defendantCity].filter(Boolean).join(", ");
+  if (pltAddrLine || defAddrLine) {
+    if (pltAddrLine) txt(page, font, pltAddrLine, ML + 55, y, 7.5, GRAY);
+    if (defAddrLine) txt(page, font, defAddrLine, CMID + 60, y, 7.5, GRAY);
+    y -= 11;
+  }
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 
   // ── Officer info ─────────────────────────────────────────────────────────────
-  rect(page, ML, y - 2, CW, 14, LIGHT);
-  txt(page, bold, "SERVING OFFICER INFORMATION", ML + 4, y + 2, 9, DKBLU);
+  sectionHeader(page, bold, "SERVING OFFICER INFORMATION", y);
   y -= 18;
 
   dotLine(page, font, "Name of Constable/Sheriff:", ML, y, MR);
@@ -165,9 +170,8 @@ export async function buildTXReturnOfService(
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 
-  // ── Service details ─────────────────────────────────────────────────────────
-  rect(page, ML, y - 2, CW, 14, LIGHT);
-  txt(page, bold, "SERVICE DETAILS", ML + 4, y + 2, 9, DKBLU);
+  // ── Service details ──────────────────────────────────────────────────────────
+  sectionHeader(page, bold, "SERVICE DETAILS", y);
   y -= 18;
 
   dotLine(page, font, "Date of Service:", ML, y, ML + 220);
@@ -190,9 +194,8 @@ export async function buildTXReturnOfService(
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 
-  // ── Method of service ───────────────────────────────────────────────────────
-  rect(page, ML, y - 2, CW, 14, LIGHT);
-  txt(page, bold, "METHOD OF SERVICE (check one)", ML + 4, y + 2, 9, DKBLU);
+  // ── Method of service ────────────────────────────────────────────────────────
+  sectionHeader(page, bold, "METHOD OF SERVICE (check one)", y);
   y -= 18;
 
   checkbox(page, font, ML, y, "Personal delivery to defendant", 8.5);
@@ -215,9 +218,8 @@ export async function buildTXReturnOfService(
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 
-  // ── Documents delivered ─────────────────────────────────────────────────────
-  rect(page, ML, y - 2, CW, 14, LIGHT);
-  txt(page, bold, "DOCUMENTS DELIVERED", ML + 4, y + 2, 9, DKBLU);
+  // ── Documents delivered ──────────────────────────────────────────────────────
+  sectionHeader(page, bold, "DOCUMENTS DELIVERED", y);
   y -= 16;
 
   checkbox(page, font, ML, y, "Citation", 8.5);
@@ -228,9 +230,8 @@ export async function buildTXReturnOfService(
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 
-  // ── Fees ────────────────────────────────────────────────────────────────────
-  rect(page, ML, y - 2, CW, 14, LIGHT);
-  txt(page, bold, "SERVICE FEES", ML + 4, y + 2, 9, DKBLU);
+  // ── Service fees ─────────────────────────────────────────────────────────────
+  sectionHeader(page, bold, "SERVICE FEES", y);
   y -= 18;
 
   dotLine(page, font, "Service fee:", ML, y, ML + 160);
@@ -243,9 +244,8 @@ export async function buildTXReturnOfService(
   line(page, ML, y, MR, y, 0.5);
   y -= 12;
 
-  // ── Certification / signature ────────────────────────────────────────────────
-  rect(page, ML, y - 2, CW, 14, LIGHT);
-  txt(page, bold, "OFFICER CERTIFICATION", ML + 4, y + 2, 9, DKBLU);
+  // ── Officer certification / signature ────────────────────────────────────────
+  sectionHeader(page, bold, "OFFICER CERTIFICATION", y);
   y -= 18;
 
   const certText =
@@ -278,9 +278,8 @@ export async function buildTXReturnOfService(
   dotLine(page, font, "Printed name:", ML, y, ML + 280);
   y -= 14;
   dotLine(page, font, "Badge / ID No.:", ML, y, ML + 240);
-  y -= 14;
 
-  // ── Signature overlay ────────────────────────────────────────────────────────
+  // ── Signature overlay ─────────────────────────────────────────────────────────
   if (opts?.signatureBytes && sigLineY > 0) {
     try {
       const sigImg = await doc.embedPng(opts.signatureBytes).catch(() => null)
@@ -291,17 +290,13 @@ export async function buildTXReturnOfService(
     } catch { /* ignore */ }
   }
 
-  // ── Footer ──────────────────────────────────────────────────────────────────
-  line(page, ML, 38, MR, 38, 0.5, GRAY);
-  txt(page, font, "Generated by Small Claims Genie  •  TX Return of Service  •  Tex. R. Civ. P. 502.6 & 107", ML, 25, 7.5, GRAY);
-
   return Buffer.from(await doc.save());
 }
 
 const txReturnOfServiceDefinition: FormDefinition = {
   state: "TX",
   formId: "TX-RETURN-OF-SERVICE",
-  renderingTechnique: "png-overlay",
+  renderingTechnique: "pdf-overlay",
   async generate(d: CaseData, b: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     return buildTXReturnOfService(d, b, opts);
   },

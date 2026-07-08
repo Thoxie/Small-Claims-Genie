@@ -122,14 +122,21 @@ const clkCt423Definition: FormDefinition = {
     safeCheck(form, "Civil", true);
 
     // ── Hearing date and time ──────────────────────────────────────────────────
-    // AcroForm fields: "Month", "Year", "Time", "Date", "Court Room number"
-    // Populated when the plaintiff knows the court-assigned hearing schedule.
+    // AcroForm fields filled by plaintiff: "Month" (full name), "Year", "Time".
+    // "Date" (day number), "Courtroom", and case-assignment checkboxes are
+    // clerk-only fields completed at filing — intentionally left blank here.
     // hearingDate is expected in ISO format "YYYY-MM-DD".
     if (d.hearingDate) {
-      const [yr, mo, day] = d.hearingDate.split("-");
-      if (mo) safeSetText(form, "Month", mo);
+      const MONTH_NAMES = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+      ];
+      const [yr, mo] = d.hearingDate.split("-");
+      if (mo) {
+        const monthName = MONTH_NAMES[parseInt(mo, 10) - 1] ?? mo;
+        safeSetText(form, "Month", monthName);
+      }
       if (yr) safeSetText(form, "Year", yr);
-      if (day && mo && yr) safeSetText(form, "Date", `${mo}/${day}/${yr}`);
     }
     const hearingTimeStr = d.hearingTimeFormatted ?? d.hearingTime ?? "";
     if (hearingTimeStr) safeSetText(form, "Time", hearingTimeStr);

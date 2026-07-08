@@ -135,16 +135,23 @@ export async function buildFLSummons(
     ? `${d.plaintiffName ?? ""} d/b/a ${(d as any).plaintiffDbaName}`
     : (d.plaintiffName ?? "________________");
   t(pNameFull, ML, 742, 9, bold);
-  t("Plaintiff(s),", ML, 731, 8.5);
+
+  // ── Plaintiff address and contact info ────────────────────────────────────
+  const pSummonsAddrLine = [d.plaintiffAddress, d.plaintiffCity, d.plaintiffState ?? "FL"]
+    .filter(Boolean)
+    .join(", ");
+  if (pSummonsAddrLine) t(pSummonsAddrLine, ML, 731, 7.5);
+  t("Plaintiff(s),", ML, 721, 8.5);
 
   t("Case No.:", MR - 165, 742, 8.5, bold);
   t(d.caseNumber ?? "", MR - 110, 742, 8.5);
+  if (d.plaintiffPhone) t(d.plaintiffPhone, MR - 165, 731, 7.5);
 
-  t("vs.", ML, 719, 8.5);
-  t(d.defendantName ?? "________________", ML, 708, 9, bold);
+  t("vs.", ML, 711, 8.5);
+  t(d.defendantName ?? "________________", ML, 701, 9, bold);
   page.drawLine({
-    start: { x: ML, y: 699 },
-    end: { x: MR, y: 699 },
+    start: { x: ML, y: 693 },
+    end: { x: MR, y: 693 },
     thickness: 0.5,
     color: BLACK,
   });
