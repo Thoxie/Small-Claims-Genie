@@ -45,7 +45,7 @@ export interface GenerateOptions {
  * continuation pages, and ordered exhibit assembly that cannot be expressed as static
  * AcroForm field values.
  */
-export type RenderingTechnique = "acroform-pdflib" | "acroform-pdftk" | "xfa-pdftk" | "png-overlay";
+export type RenderingTechnique = "acroform-pdflib" | "acroform-pdftk" | "xfa-pdftk" | "png-overlay" | "pdf-overlay";
 
 /**
  * Canonical interface every court form must implement.

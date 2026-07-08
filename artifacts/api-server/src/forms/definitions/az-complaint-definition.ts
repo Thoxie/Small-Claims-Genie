@@ -144,6 +144,11 @@ const azComplaintDefinition: FormDefinition = {
       /* field absent */
     }
 
+    // ── Page 2 overflow description field ──────────────────────────────────────
+    // Field "1_4" on page 2 accepts continuation text when description overflows.
+    // Populate it with the same description so both pages carry the claim narrative.
+    safeSetText(form, "1_4", d.claimDescription ?? "");
+
     // ── Signature overlay (plaintiff signs Page 2 of the form) ────────────────
     if (opts?.signatureBytes) {
       try {

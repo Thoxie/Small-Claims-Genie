@@ -121,6 +121,12 @@ const clkCt423Definition: FormDefinition = {
     // ── Division — always Civil for small claims ────────────────────────────────
     safeCheck(form, "Civil", true);
 
+    // ── Default venue — Dade County Courthouse Central Court ───────────────────
+    // Pre-select the Dade County Courthouse Central Court venue checkbox so the
+    // form arrives pre-populated. The clerk overrides this selection at filing if
+    // the case is assigned to a different courthouse location.
+    safeCheck(form, "Dade County Courthouse Central Court", true);
+
     let saved: Uint8Array;
     try {
       saved = await doc.save({ updateFieldAppearances: true });

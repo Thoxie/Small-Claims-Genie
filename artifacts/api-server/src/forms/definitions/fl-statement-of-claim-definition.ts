@@ -1,10 +1,16 @@
 /**
- * FL Statement of Claim — statewide programmatic form.
+ * FL Statement of Claim — official-PDF-backed statewide form.
  *
- * Generates a professional, pre-filled Florida small claims Statement of Claim
- * entirely with pdf-lib (no template PDF required). The county court name in
- * the header is derived from the case record so the same definition serves all
- * 67 Florida counties.
+ * Generates a professional, pre-filled Florida small claims Statement of Claim.
+ * The output is the official Florida Small Claims Rule 7.330-7.337 multi-form PDF
+ * (fl-soc-7340.pdf, 5 pages) with a filled-in case-data cover page inserted at
+ * position 0.  The cover page carries all party and claim information; the official
+ * form pages that follow serve as the required judicial-council template.
+ *
+ * Rendering technique:
+ *   PDFDocument.load() on the official PDF → insertPage(0) cover page → coordinate
+ *   overlay of case data.  No AcroForm fields exist in the source PDF (confirmed via
+ *   pdftk dump_data_fields); all data is drawn directly via pdf-lib drawText.
  *
  * Used for all FL counties that do not have a county-specific definition.
  * Also used as the base renderer for Miami-Dade and Volusia county-specific
@@ -13,17 +19,18 @@
  * Legal basis:
  *   Fla. Sm. Cl. R. 7.010 et seq.; statewide small claims procedure.
  *   Claim limit: $8,000 (exclusive of costs, interest, and attorney's fees).
- *
- * Official PDF status: The statewide FL SOC PDF was downloaded (3 pages, ~71 KB)
- * from the Florida Courts website but has NO AcroForm fields (pdftk dump_data_fields
- * returns nothing). Coordinate overlay would require manual visual calibration;
- * this programmatic form remains the canonical implementation.
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";
+import { FORMS_DIR } from "../../routes/forms-common";
+
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import type { CaseData } from "../types";
+
+const FL_SOC_PDF_PATH = path.join(FORMS_DIR, "fl-soc-7340.pdf");
 
 // ─── Page constants ────────────────────────────────────────────────────────────
 const PW = 612;  // 8.5"
@@ -153,12 +160,16 @@ export async function buildFLStatementOfClaim(
   countyOverride?: string,
   clerkAddressOverride?: string
 ): Promise<Buffer> {
-  const doc  = await PDFDocument.create();
+  // Load the official FL SOC PDF (Forms 7.330-7.337).  Insert a filled-in cover
+  // page at position 0 so the output begins with all case data; the official form
+  // pages follow as the required judicial-council template.
+  const socPdfBytes = fs.readFileSync(FL_SOC_PDF_PATH);
+  const doc  = await PDFDocument.load(socPdfBytes);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   let sigLineY = 0;
 
-  const page  = doc.addPage([PW, PH]);
+  const page  = doc.insertPage(0, [PW, PH]);
   const countyName = countyOverride ?? countyDisplay((d as any).countyId);
   const clerkAddr  = clerkAddressOverride ?? "";
 
@@ -413,7 +424,7 @@ export async function buildFLStatementOfClaim(
 const flStatementOfClaimDefinition: FormDefinition = {
   state: "FL",
   formId: "FL-STATEMENT-OF-CLAIM",
-  renderingTechnique: "png-overlay",
+  renderingTechnique: "pdf-overlay",
 
   async generate(d: CaseData, body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     return buildFLStatementOfClaim(d, body, opts);

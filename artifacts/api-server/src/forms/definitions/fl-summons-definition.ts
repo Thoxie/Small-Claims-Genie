@@ -1,10 +1,16 @@
 /**
  * FL Summons/Notice to Appear for Pretrial Conference — Form 7.322.
  *
- * Generates the statewide Florida Form 7.322 programmatically using pdf-lib.
- * Pre-fills plaintiff and defendant information from case data.
- * Court-assigned fields (case number, judge, courtroom, location, date, time)
- * are left blank with dotted placeholders for the court clerk to complete.
+ * Outputs the official Florida Form 7.322 (fl-summons-7322.pdf, 4 pages) with a
+ * filled-in case-data cover page inserted at position 0.  The cover page carries
+ * all plaintiff/defendant information, courtroom-assignment blanks, and the full
+ * Form 7.322 notice text.  The official form pages that follow are the
+ * court-required judicial-council template.
+ *
+ * Rendering technique:
+ *   PDFDocument.load() on fl-summons-7322.pdf → insertPage(0) cover page →
+ *   coordinate overlay of case data.  Court-assigned fields (case number, date,
+ *   time, courtroom, location) are left blank on the cover page for the clerk.
  *
  * One definition file covers all FL counties. County-specific definitions
  * simply override the county name and clerk filing address.
@@ -13,10 +19,16 @@
  * Required for all FL small claims filings.
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import { FORMS_DIR } from "../../routes/forms-common";
+
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import type { CaseData } from "../types";
+
+const FL_SUMMONS_PDF_PATH = path.join(FORMS_DIR, "fl-summons-7322.pdf");
 
 // ─── Page constants ────────────────────────────────────────────────────────────
 const PW = 612;
@@ -95,12 +107,17 @@ export async function buildFLSummons(
   countyOverride?: string,
   clerkAddressOverride?: string
 ): Promise<Buffer> {
-  const doc  = await PDFDocument.create();
+  // Load the official FL Summons PDF (Forms 7.316 + 7.322, 4 pages).
+  // Insert a filled-in cover page at position 0 so the output begins with all
+  // case data pre-populated; the official form pages follow as the
+  // court-required judicial-council template.
+  const summonsPdfBytes = fs.readFileSync(FL_SUMMONS_PDF_PATH);
+  const doc  = await PDFDocument.load(summonsPdfBytes);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   let sigLineY = 0;
 
-  const page = doc.addPage([PW, PH]);
+  const page = doc.insertPage(0, [PW, PH]);
   const countyName = countyOverride ?? countyDisplay((d as any).countyId);
   const clerkAddr  = clerkAddressOverride ?? "";
 
@@ -324,7 +341,7 @@ export async function buildFLSummons(
 const flSummonsDefinition: FormDefinition = {
   state: "FL",
   formId: "FL-SUMMONS",
-  renderingTechnique: "png-overlay",
+  renderingTechnique: "pdf-overlay",
   async generate(d, body, opts) {
     return buildFLSummons(d, body, opts);
   },
