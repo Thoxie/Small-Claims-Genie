@@ -3,7 +3,17 @@
  *
  * After the constable or sheriff serves the defendant, they complete this form
  * and file it with the court. The plaintiff can also use it to track service.
- * Generated programmatically using pdf-lib — no template PDF required.
+ *
+ * Generated programmatically using pdf-lib (PDFDocument.create).
+ *
+ * WHY PROGRAMMATIC — NOT AN OFFICIAL-PDF OVERLAY:
+ *   The official TX Return of Service PDF (tx-return-of-service.pdf, Adobe
+ *   Acrobat Pro 10.1.8, 2013–2014) is entirely image-based — pdftotext
+ *   produces zero text output and no font or glyph objects are present.
+ *   There is no text layer from which to derive pdftotext -bbox-layout
+ *   coordinates, so coordinate overlay is not technically feasible.
+ *   Programmatic generation is the correct and only viable approach for
+ *   this form.
  *
  * Legal basis:
  *   Tex. R. Civ. P. 502.6 (Service of Citation — Justice Court)

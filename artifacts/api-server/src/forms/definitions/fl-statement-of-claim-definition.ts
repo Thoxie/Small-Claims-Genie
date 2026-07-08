@@ -1,20 +1,25 @@
 /**
  * FL Statement of Claim — official-PDF-backed statewide form.
  *
- * Generates a professional, pre-filled Florida small claims Statement of Claim.
- * The output is the official Florida Small Claims Rule 7.330-7.337 multi-form PDF
- * (fl-soc-7340.pdf, 5 pages) with a filled-in case-data cover page inserted at
- * position 0.  The cover page carries all party and claim information; the official
- * form pages that follow serve as the required judicial-council template.
+ * Renders the official Florida Small Claims Rule 7.330–7.336 multi-form PDF
+ * (fl-soc-7340.pdf, 5 pages) with case data drawn directly on page 0
+ * (Form 7.330 — Statement of Claim, Auto Negligence) without inserting any
+ * synthetic pages.
  *
- * Rendering technique:
- *   PDFDocument.load() on the official PDF → insertPage(0) cover page → coordinate
- *   overlay of case data.  No AcroForm fields exist in the source PDF (confirmed via
- *   pdftk dump_data_fields); all data is drawn directly via pdf-lib drawText.
+ * Rendering technique — coordinate overlay on the official form:
+ *   PDFDocument.load() on the official PDF → get page 0 → drawText/drawImage.
+ *   The case caption is drawn in the blank header region above the form title
+ *   (form title begins at pdftotext y=103, pdf-lib y≈689; the 103-point blank
+ *   header above it occupies pdf-lib y=689–792).
+ *   Plaintiff and defendant names are also drawn at the calibrated fill-in
+ *   blanks in the Form 7.330 narrative text (pdftotext y=193–209 → pdf-lib
+ *   y≈583; confirmed via pdftotext -bbox-layout).
+ *   No AcroForm fields exist in the source PDF (confirmed via pdftk
+ *   dump_data_fields); all data is placed via pdf-lib drawText/drawImage.
  *
  * Used for all FL counties that do not have a county-specific definition.
- * Also used as the base renderer for Miami-Dade and Volusia county-specific
- * forms (county name and filing address are overridden per county).
+ * County-specific forms override the county name and clerk address via the
+ * countyOverride/clerkAddressOverride parameters.
  *
  * Legal basis:
  *   Fla. Sm. Cl. R. 7.010 et seq.; statewide small claims procedure.
@@ -23,7 +28,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { FORMS_DIR } from "../../routes/forms-common";
 
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
@@ -32,98 +37,20 @@ import type { CaseData } from "../types";
 
 const FL_SOC_PDF_PATH = path.join(FORMS_DIR, "fl-soc-7340.pdf");
 
-// ─── Page constants ────────────────────────────────────────────────────────────
-const PW = 612;  // 8.5"
-const PH = 792;  // 11"
+const PW = 612;
 const BLACK = rgb(0, 0, 0);
-const GRAY  = rgb(0.5, 0.5, 0.5);
-const LIGHT = rgb(0.92, 0.92, 0.92);
-
-const MARGIN_L = 54;
-const MARGIN_R = PW - 54;
-const COL_MID  = MARGIN_L + (MARGIN_R - MARGIN_L) / 2;
-
-// ─── Drawing helpers ──────────────────────────────────────────────────────────
-
-function drawLine(
-  page: PDFPage,
-  x1: number, y1: number,
-  x2: number, y2: number,
-  thickness = 0.5,
-  color = BLACK
-) {
-  page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness, color });
-}
-
-function drawRect(page: PDFPage, x: number, y: number, w: number, h: number, fill = LIGHT, borderColor = BLACK) {
-  page.drawRectangle({ x, y, width: w, height: h, color: fill, borderColor, borderWidth: 0.5 });
-}
-
-function txt(
-  page: PDFPage,
-  font: PDFFont,
-  text: string | null | undefined,
-  x: number,
-  y: number,
-  size = 9,
-  color = BLACK
-) {
-  if (!text) return;
-  page.drawText(String(text), { x, y, size, font, color });
-}
-
-/** Draw wrapped text and return the y coordinate BELOW the last line drawn. */
-function wrapText(
-  page: PDFPage,
-  font: PDFFont,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  size = 9,
-  lineGap = 4
-): number {
-  const words = text.replace(/\r/g, "").split(/\s+/);
-  let line = "";
-  let curY  = y;
-  for (const word of words) {
-    const candidate = line ? line + " " + word : word;
-    const w = font.widthOfTextAtSize(candidate, size);
-    if (w > maxWidth && line) {
-      txt(page, font, line, x, curY, size);
-      curY -= size + lineGap;
-      line = word;
-    } else {
-      line = candidate;
-    }
-  }
-  if (line) {
-    txt(page, font, line, x, curY, size);
-    curY -= size + lineGap;
-  }
-  return curY;
-}
-
-// ─── Formatters ───────────────────────────────────────────────────────────────
+const ML = 54;
+const MR = PW - 54;
 
 function fmtAmount(amount: number | null | undefined): string {
   if (!amount) return "";
-  return "$" + amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function fmtAddr(street?: string | null, city?: string | null, state?: string | null, zip?: string | null): string {
-  const parts: string[] = [];
-  if (street) parts.push(street);
-  const csz = [city, state && zip ? `${state} ${zip}` : (state ?? zip)].filter(Boolean).join(", ");
-  if (csz) parts.push(csz);
-  return parts.join(", ");
-}
-
-function fmtDate(iso?: string | null): string {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  if (!y || !m || !d) return iso;
-  return `${m}/${d}/${y}`;
+  return (
+    "$" +
+    amount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 }
 
 function countyDisplay(countyId?: string | null): string {
@@ -135,22 +62,6 @@ function countyDisplay(countyId?: string | null): string {
     .join(" ");
 }
 
-function claimTypeLabel(ct?: string | null): string {
-  const MAP: Record<string, string> = {
-    goods:            "Goods, wares, and merchandise sold",
-    services:         "Work done and materials furnished",
-    loan:             "Money lent",
-    account_stated:   "Money due on account stated",
-    contract:         "Written contract",
-    rent:             "Rent for premises",
-    property_damage:  "Property damage",
-    personal_injury:  "Personal injury",
-    security_deposit: "Security deposit",
-    other:            "Other",
-  };
-  return ct ? (MAP[ct] ?? ct) : "";
-}
-
 // ─── Main generator ───────────────────────────────────────────────────────────
 
 export async function buildFLStatementOfClaim(
@@ -158,262 +69,118 @@ export async function buildFLStatementOfClaim(
   _body: FormBody,
   opts?: GenerateOptions,
   countyOverride?: string,
-  clerkAddressOverride?: string
+  _clerkAddressOverride?: string,
 ): Promise<Buffer> {
-  // Load the official FL SOC PDF (Forms 7.330-7.337).  Insert a filled-in cover
-  // page at position 0 so the output begins with all case data; the official form
-  // pages follow as the required judicial-council template.
+  // Load official FL SOC PDF (Forms 7.330–7.336, 5 pages).
+  // Draw case data directly on page 0 (Form 7.330) — no synthetic pages
+  // are inserted.  The form title lives at pdftotext y=103 (pdf-lib y≈689);
+  // the 103-point blank header above it is used for the legal caption.
   const socPdfBytes = fs.readFileSync(FL_SOC_PDF_PATH);
-  const doc  = await PDFDocument.load(socPdfBytes);
+  const doc = await PDFDocument.load(socPdfBytes);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  let sigLineY = 0;
 
-  const page  = doc.insertPage(0, [PW, PH]);
+  const page = doc.getPages()[0]!;
   const countyName = countyOverride ?? countyDisplay((d as any).countyId);
-  const clerkAddr  = clerkAddressOverride ?? "";
 
-  let y = PH - 36;
-
-  // ── Header ──────────────────────────────────────────────────────────────────
-  const title1 = `IN THE COUNTY COURT, ${countyName.toUpperCase()} COUNTY, FLORIDA`;
-  const title2 = "SMALL CLAIMS DIVISION";
-  const title3 = "STATEMENT OF CLAIM";
-
-  const t1w = bold.widthOfTextAtSize(title1, 10);
-  const t2w = bold.widthOfTextAtSize(title2, 10);
-  const t3w = bold.widthOfTextAtSize(title3, 11);
-  txt(page, bold, title1, (PW - t1w) / 2, y, 10);
-  y -= 15;
-  txt(page, bold, title2, (PW - t2w) / 2, y, 10);
-  y -= 15;
-  txt(page, bold, title3, (PW - t3w) / 2, y, 11);
-  y -= 13;
-
-  // Courthouse address (centered, gray)
-  const courthouseAddrLine = [
-    d.courthouseAddress,
-    d.courthouseCity ? `${d.courthouseCity}, FL` : null,
-    d.courthouseZip,
-  ].filter(Boolean).join(" ");
-  if (courthouseAddrLine) {
-    const caw = font.widthOfTextAtSize(courthouseAddrLine, 8);
-    txt(page, font, courthouseAddrLine, (PW - caw) / 2, y, 8, GRAY);
-    y -= 11;
-  } else {
-    y -= 5;
+  function t(
+    text: string | null | undefined,
+    x: number,
+    y: number,
+    size = 9,
+    f = font,
+  ) {
+    if (!text) return;
+    page.drawText(String(text), { x, y, size, font: f, color: BLACK });
   }
 
-  // horizontal rule
-  drawLine(page, MARGIN_L, y, MARGIN_R, y, 1.2);
-  y -= 12;
-
-  // ── Case / filing info row ───────────────────────────────────────────────────
-  txt(page, bold, "CASE NO.:", MARGIN_L, y, 9);
-  txt(page, font, d.caseNumber ?? "", MARGIN_L + 60, y, 9);
-  if (clerkAddr) {
-    const ca = "FILE WITH: " + clerkAddr;
-    const caw = font.widthOfTextAtSize(ca, 7.5);
-    txt(page, font, ca, MARGIN_R - caw, y, 7.5, GRAY);
-  }
-  y -= 10;
-  drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.5);
-  y -= 14;
-
-  // ── Plaintiff | Defendant headers ────────────────────────────────────────────
-  drawRect(page, MARGIN_L, y - 1, COL_MID - MARGIN_L - 4, 14, LIGHT);
-  drawRect(page, COL_MID, y - 1, MARGIN_R - COL_MID, 14, LIGHT);
-  txt(page, bold, "PLAINTIFF", MARGIN_L + 4, y + 2, 9);
-  txt(page, bold, "DEFENDANT", COL_MID + 4, y + 2, 9);
-  y -= 16;
-
-  // Party info block
-  const PCOL = MARGIN_L + 4;
-  const DCOL = COL_MID + 4;
-  const COL_W = COL_MID - MARGIN_L - 12;
-
-  const pAddr = fmtAddr(d.plaintiffAddress, d.plaintiffCity, d.plaintiffState ?? "FL", d.plaintiffZip);
-
-  // Name row
-  const pNameFull = d.plaintiffDbaName ? `${d.plaintiffName} d/b/a ${d.plaintiffDbaName}` : (d.plaintiffName ?? "");
-  txt(page, bold, "Name:", PCOL, y, 8);
-  txt(page, font, pNameFull, PCOL + 36, y, 8);
-  txt(page, bold, "Name:", DCOL, y, 8);
-  txt(page, font, d.defendantName ?? "", DCOL + 36, y, 8);
-  y -= 12;
-
-  // Address (may wrap)
-  txt(page, bold, "Addr:", PCOL, y, 8);
-  wrapText(page, font, d.plaintiffAddress ?? "", PCOL + 36, y, COL_W - 36, 8, 3);
-  txt(page, bold, "Addr:", DCOL, y, 8);
-  wrapText(page, font, d.defendantAddress ?? "", DCOL + 36, y, COL_W - 36, 8, 3);
-  y -= 12;
-
-  // City, State, Zip
-  txt(page, bold, "City:", PCOL, y, 8);
-  txt(page, font, [d.plaintiffCity, d.plaintiffState ?? "FL", d.plaintiffZip].filter(Boolean).join(", "), PCOL + 36, y, 8);
-  txt(page, bold, "City:", DCOL, y, 8);
-  txt(page, font, [d.defendantCity, d.defendantState ?? "FL", d.defendantZip].filter(Boolean).join(", "), DCOL + 36, y, 8);
-  y -= 12;
-
-  // Phone / Email
-  txt(page, bold, "Phone:", PCOL, y, 8);
-  txt(page, font, d.plaintiffPhone ?? "", PCOL + 36, y, 8);
-  txt(page, bold, "Phone:", DCOL, y, 8);
-  txt(page, font, d.defendantPhone ?? "", DCOL + 36, y, 8);
-  y -= 12;
-
-  txt(page, bold, "Email:", PCOL, y, 8);
-  txt(page, font, d.plaintiffEmail ?? "", PCOL + 36, y, 8);
-  y -= 12;
-
-  // Defendant business agent (if applicable)
-  if ((d as any).defendantIsBusinessOrEntity && (d as any).defendantAgentName) {
-    txt(page, bold, "Registered Agent:", DCOL, y, 8);
-    txt(page, font, (d as any).defendantAgentName, DCOL + 88, y, 8);
-    y -= 11;
-    if ((d as any).defendantAgentStreet) {
-      txt(page, bold, "Agent Address:", DCOL, y, 8);
-      txt(page, font,
-        [(d as any).defendantAgentStreet, (d as any).defendantAgentCity, ((d as any).defendantAgentState ?? "FL"), (d as any).defendantAgentZip].filter(Boolean).join(", "),
-        DCOL + 76, y, 8);
-      y -= 11;
-    }
-  }
-  y -= 2;
-
-  // divider
-  drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.5);
-  y -= 14;
-
-  // ── Claim Summary ────────────────────────────────────────────────────────────
-  drawRect(page, MARGIN_L, y - 1, MARGIN_R - MARGIN_L, 14, LIGHT);
-  txt(page, bold, "NATURE OF CLAIM", MARGIN_L + 4, y + 2, 9);
-  y -= 16;
-
-  const claimLabel = claimTypeLabel((d as any).claimType);
-  txt(page, bold, "Amount Claimed:", MARGIN_L, y, 9);
-  txt(page, font, fmtAmount(d.claimAmount), MARGIN_L + 90, y, 9);
-  if (d.incidentDate) {
-    txt(page, bold, "Date of Incident:", MARGIN_L + 200, y, 9);
-    txt(page, font, fmtDate(d.incidentDate), MARGIN_L + 295, y, 9);
-  }
-  y -= 12;
-
-  if (claimLabel) {
-    txt(page, bold, "Basis of Claim:", MARGIN_L, y, 9);
-    txt(page, font, claimLabel, MARGIN_L + 85, y, 9);
-    y -= 12;
+  function truncate(text: string, maxPt: number, sz = 8): string {
+    if (font.widthOfTextAtSize(text, sz) <= maxPt) return text;
+    let s = text;
+    while (s.length > 0 && font.widthOfTextAtSize(s + "…", sz) > maxPt)
+      s = s.slice(0, -1);
+    return s + "…";
   }
 
-  if ((d as any).howAmountCalculated) {
-    txt(page, bold, "How Amount Calculated:", MARGIN_L, y, 9);
-    y -= 11;
-    y = wrapText(page, font, (d as any).howAmountCalculated, MARGIN_L + 12, y, MARGIN_R - MARGIN_L - 14, 8.5, 3);
-    y -= 4;
+  // ── Legal caption in the blank header above the form title ────────────────
+  // Confirmed via pdftotext -bbox-layout (page 0): the region pdf-lib y=689–792
+  // contains no printed form content — safe for overlay.
+  const courtTitle = countyName
+    ? `IN THE COUNTY COURT, ${countyName.toUpperCase()} COUNTY, FLORIDA`
+    : "IN THE COUNTY COURT, _____________ COUNTY, FLORIDA";
+  t(
+    courtTitle,
+    (PW - bold.widthOfTextAtSize(courtTitle, 9)) / 2,
+    779,
+    9,
+    bold,
+  );
+  t(
+    "SMALL CLAIMS DIVISION",
+    (PW - bold.widthOfTextAtSize("SMALL CLAIMS DIVISION", 9)) / 2,
+    766,
+    9,
+    bold,
+  );
+  page.drawLine({
+    start: { x: ML, y: 758 },
+    end: { x: MR, y: 758 },
+    thickness: 0.8,
+    color: BLACK,
+  });
+
+  const pNameFull = (d as any).plaintiffDbaName
+    ? `${d.plaintiffName ?? ""} d/b/a ${(d as any).plaintiffDbaName}`
+    : (d.plaintiffName ?? "________________");
+  t(pNameFull, ML, 745, 9, bold);
+  t("Plaintiff,", ML, 734, 8.5);
+
+  t("Case No.:", MR - 165, 745, 8.5, bold);
+  t(d.caseNumber ?? "", MR - 110, 745, 8.5);
+  const amtStr = fmtAmount(d.claimAmount);
+  if (amtStr) {
+    t("Amount:", MR - 165, 734, 8.5, bold);
+    t(amtStr, MR - 117, 734, 8.5);
   }
 
-  y -= 4;
-  drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.5);
-  y -= 14;
+  t("vs.", ML, 722, 8.5);
+  t(d.defendantName ?? "________________", ML, 710, 9, bold);
+  t("Defendant.", ML, 699, 8.5);
+  page.drawLine({
+    start: { x: ML, y: 691 },
+    end: { x: MR, y: 691 },
+    thickness: 0.5,
+    color: BLACK,
+  });
 
-  // ── Statement of Facts ──────────────────────────────────────────────────────
-  drawRect(page, MARGIN_L, y - 1, MARGIN_R - MARGIN_L, 14, LIGHT);
-  txt(page, bold, "STATEMENT OF FACTS", MARGIN_L + 4, y + 2, 9);
-  y -= 16;
+  // ── Overlay party names at the form's own fill-in blanks ──────────────────
+  // Form 7.330 narrative (page 0): "The plaintiff, [blank], sues the defendant, [blank], and alleges:"
+  // Calibrated via pdftotext -bbox-layout (page 0 of fl-soc-7340.pdf):
+  //   "plaintiff," xMax=182.640, next token "," at xMin=252.000, yMax=209.376
+  //   "defendant," xMax=375.360, next token "," at xMin=432.000, yMax=209.376
+  //   pdf-lib y = 792 − pdftotext_yMax = 792 − 209.376 ≈ 583
+  t(truncate(d.plaintiffName ?? "", 65, 8), 183, 583, 8);
+  t(truncate(d.defendantName ?? "", 51, 8), 376, 583, 8);
 
-  txt(page, font,
-    "Plaintiff states that Defendant is justly indebted to Plaintiff in the sum stated above for the following reasons:",
-    MARGIN_L, y, 8.5);
-  y -= 13;
-
-  const desc = d.claimDescription ?? "";
-  if (desc) {
-    y = wrapText(page, font, desc, MARGIN_L, y, MARGIN_R - MARGIN_L, 8.5, 3);
-  } else {
-    // Draw blank lines for manual completion
-    for (let i = 0; i < 6; i++) {
-      drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.3, GRAY);
-      y -= 14;
-    }
-  }
-
-  y -= 10;
-
-  // ── Prior Demand ─────────────────────────────────────────────────────────────
-  if ((d as any).priorDemandMade) {
-    drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.5);
-    y -= 12;
-    txt(page, bold, "PRIOR DEMAND:", MARGIN_L, y, 9);
-    y -= 11;
-    const demandDesc = (d as any).priorDemandDescription ?? "A prior demand for payment was made to the Defendant.";
-    y = wrapText(page, font, demandDesc, MARGIN_L, y, MARGIN_R - MARGIN_L, 8.5, 3);
-    y -= 8;
-  }
-
-  // ── Venue ────────────────────────────────────────────────────────────────────
-  const venueBasis = (d as any).venueBasis;
-  if (venueBasis) {
-    const venueMap: Record<string, string> = {
-      defendant_lives: "Defendant resides in this county.",
-      contract_here:   "The contract was entered into in this county.",
-      incident_here:   "The cause of action accrued in this county.",
-      business_here:   "Defendant has an office or agency in this county.",
-    };
-    drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.5);
-    y -= 12;
-    txt(page, bold, "VENUE:", MARGIN_L, y, 9);
-    txt(page, font, venueMap[venueBasis] ?? venueBasis, MARGIN_L + 44, y, 9);
-    y -= 14;
-  }
-
-  // ── Verification / Signature ─────────────────────────────────────────────────
-  drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.8);
-  y -= 14;
-
-  drawRect(page, MARGIN_L, y - 1, MARGIN_R - MARGIN_L, 14, LIGHT);
-  txt(page, bold, "VERIFICATION", MARGIN_L + 4, y + 2, 9);
-  y -= 16;
-
-  const verificationText =
-    "Under penalty of perjury, I declare that I have read the foregoing, and the facts alleged are true and correct to " +
-    "the best of my knowledge and belief. I understand that pursuant to section 92.525, Florida Statutes, the making of " +
-    "a false statement of material fact in this document constitutes a felony of the third degree.";
-  y = wrapText(page, font, verificationText, MARGIN_L, y, MARGIN_R - MARGIN_L, 8, 3);
-  y -= 14;
-
-  // Signature line — capture Y for signature image overlay
-  sigLineY = y;
-  drawLine(page, MARGIN_L, y, MARGIN_L + 200, y, 0.5);
-  txt(page, font, `Date: ${new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}`, MARGIN_L + 220, y + 2, 9);
-  y -= 4;
-  txt(page, font, "Plaintiff Signature", MARGIN_L, y, 7.5, GRAY);
-  y -= 14;
-
-  txt(page, bold, "Print Name:", MARGIN_L, y, 9);
-  txt(page, font, d.plaintiffName ?? "", MARGIN_L + 64, y, 9);
-  y -= 12;
-  txt(page, bold, "Address:", MARGIN_L, y, 9);
-  txt(page, font, pAddr, MARGIN_L + 52, y, 9);
-  y -= 12;
-  txt(page, bold, "Phone:", MARGIN_L, y, 9);
-  txt(page, font, d.plaintiffPhone ?? "", MARGIN_L + 40, y, 9);
-  y -= 20;
-
-  // ── Footer note ─────────────────────────────────────────────────────────────
-  drawLine(page, MARGIN_L, y, MARGIN_R, y, 0.4);
-  y -= 10;
-  const flNote =
-    "Florida Small Claims — Claim limit: $8,000 (exclusive of costs, interest, and attorney's fees) — Fla. Stat. §34.011";
-  const flNoteW = font.widthOfTextAtSize(flNote, 7);
-  txt(page, font, flNote, (PW - flNoteW) / 2, y, 7, GRAY);
-
-  // ── Signature image overlay ──────────────────────────────────────────────────
-  if (opts?.signatureBytes && sigLineY > 0) {
+  // ── Signature overlay ──────────────────────────────────────────────────────
+  if (opts?.signatureBytes) {
     try {
-      const sigImg = await doc.embedPng(opts.signatureBytes);
-      page.drawImage(sigImg, { x: MARGIN_L, y: sigLineY, width: 180, height: 36, opacity: 1 });
-    } catch { /* ignore invalid image data */ }
+      const sigImg =
+        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+      if (sigImg) {
+        // Placed in the blank header to the right of "Plaintiff," (y≈726–754).
+        page.drawImage(sigImg, {
+          x: ML + 100,
+          y: 726,
+          width: 160,
+          height: 28,
+          opacity: 1,
+        });
+      }
+    } catch {
+      /* ignore invalid image data */
+    }
   }
 
   return Buffer.from(await doc.save());
@@ -426,7 +193,11 @@ const flStatementOfClaimDefinition: FormDefinition = {
   formId: "FL-STATEMENT-OF-CLAIM",
   renderingTechnique: "pdf-overlay",
 
-  async generate(d: CaseData, body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
+  async generate(
+    d: CaseData,
+    body: FormBody,
+    opts?: GenerateOptions,
+  ): Promise<Buffer> {
     return buildFLStatementOfClaim(d, body, opts);
   },
 };

@@ -132,22 +132,35 @@ const azComplaintDefinition: FormDefinition = {
     safeSetText(form, "Case Number", d.caseNumber ?? "");
     safeSetText(form, "Date17_af_date", todayStr);
 
-    // ── Claim description (enable multiline to allow wrapping) ─────────────────
+    // ── Claim description — primary field (page 1) ────────────────────────────
+    // Split at DESCRIPTION_SPLIT characters: the primary field receives the
+    // first portion, and "1_4" (page 2 continuation) receives the overflow.
+    // If the description fits entirely in the primary field, "1_4" is left blank.
+    const DESCRIPTION_SPLIT = 500;
+    const fullDesc = d.claimDescription ?? "";
+    const primaryDesc = fullDesc.slice(0, DESCRIPTION_SPLIT);
+    const overflowDesc =
+      fullDesc.length > DESCRIPTION_SPLIT
+        ? fullDesc.slice(DESCRIPTION_SPLIT)
+        : "";
+
     try {
       const tf = form.getTextField(
         "is the total amount owed to me by the defendant because 1",
       );
       tf.enableMultiline();
       tf.setFontSize(9);
-      tf.setText(d.claimDescription ?? "");
+      tf.setText(primaryDesc);
     } catch {
       /* field absent */
     }
 
     // ── Page 2 overflow description field ──────────────────────────────────────
-    // Field "1_4" on page 2 accepts continuation text when description overflows.
-    // Populate it with the same description so both pages carry the claim narrative.
-    safeSetText(form, "1_4", d.claimDescription ?? "");
+    // "1_4" receives only the overflow portion; left blank when description fits
+    // entirely in the primary field above.
+    if (overflowDesc) {
+      safeSetText(form, "1_4", overflowDesc);
+    }
 
     // ── Signature overlay (plaintiff signs Page 2 of the form) ────────────────
     if (opts?.signatureBytes) {

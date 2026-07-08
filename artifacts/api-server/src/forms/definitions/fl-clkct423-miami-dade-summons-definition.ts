@@ -121,6 +121,19 @@ const clkCt423Definition: FormDefinition = {
     // ── Division — always Civil for small claims ────────────────────────────────
     safeCheck(form, "Civil", true);
 
+    // ── Hearing date and time ──────────────────────────────────────────────────
+    // AcroForm fields: "Month", "Year", "Time", "Date", "Court Room number"
+    // Populated when the plaintiff knows the court-assigned hearing schedule.
+    // hearingDate is expected in ISO format "YYYY-MM-DD".
+    if (d.hearingDate) {
+      const [yr, mo, day] = d.hearingDate.split("-");
+      if (mo) safeSetText(form, "Month", mo);
+      if (yr) safeSetText(form, "Year", yr);
+      if (day && mo && yr) safeSetText(form, "Date", `${mo}/${day}/${yr}`);
+    }
+    const hearingTimeStr = d.hearingTimeFormatted ?? d.hearingTime ?? "";
+    if (hearingTimeStr) safeSetText(form, "Time", hearingTimeStr);
+
     // ── Default venue — Dade County Courthouse Central Court ───────────────────
     // Pre-select the Dade County Courthouse Central Court venue checkbox so the
     // form arrives pre-populated. The clerk overrides this selection at filing if
