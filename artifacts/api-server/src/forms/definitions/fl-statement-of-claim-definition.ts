@@ -194,6 +194,39 @@ export async function buildFLStatementOfClaim(
   const wfAmt = fmtAmount(d.claimAmount);
   if (wfAmt) t(wfAmt, 452, 455, 8);
 
+  // ── Claim description — word-wrapped into the gap below WHEREFORE ──────────
+  // pdftotext -bbox-layout (page 0): WHEREFORE "." at pdf-lib y=439; Form 7.331
+  // title ("FORM 7.331. ...") starts at y=405.8 — leaving ~33pt of blank space
+  // confirmed empty on the official form.  Three lines at 7pt fill this area.
+  const claimDesc = d.claimDescription ?? "";
+  if (claimDesc) {
+    const descSize = 7;
+    const descLineH = 9;
+    const descMaxW = MR - ML; // 450pt
+    let descY = 434;           // first baseline — just below WHEREFORE "." (y=439)
+    const descWords = claimDesc.split(" ");
+    let descLine = "";
+    for (const w of descWords) {
+      const test = descLine ? `${descLine} ${w}` : w;
+      if (font.widthOfTextAtSize(test, descSize) > descMaxW) {
+        if (descY < 408) break; // no more room before Form 7.331 at y=405.8
+        if (descLine) {
+          page.drawText(descLine, { x: ML, y: descY, size: descSize, font, color: BLACK });
+          descY -= descLineH;
+          descLine = w;
+        } else {
+          page.drawText(w, { x: ML, y: descY, size: descSize, font, color: BLACK });
+          descY -= descLineH;
+        }
+      } else {
+        descLine = test;
+      }
+    }
+    if (descLine && descY >= 408) {
+      page.drawText(descLine, { x: ML, y: descY, size: descSize, font, color: BLACK });
+    }
+  }
+
   // ── Signature overlay and signature-block fields ───────────────────────────
   if (opts?.signatureBytes) {
     try {

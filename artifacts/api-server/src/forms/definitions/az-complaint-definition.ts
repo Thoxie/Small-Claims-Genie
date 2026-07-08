@@ -138,11 +138,15 @@ const azComplaintDefinition: FormDefinition = {
     // If the description fits entirely in the primary field, "1_4" is left blank.
     const DESCRIPTION_SPLIT = 500;
     const fullDesc = d.claimDescription ?? "";
-    const primaryDesc = fullDesc.slice(0, DESCRIPTION_SPLIT);
-    const overflowDesc =
-      fullDesc.length > DESCRIPTION_SPLIT
-        ? fullDesc.slice(DESCRIPTION_SPLIT)
-        : "";
+    // Word-boundary split: find the last space at or before DESCRIPTION_SPLIT so
+    // the primary field ends on a complete word (no mid-word truncation at char 500).
+    let splitPos = DESCRIPTION_SPLIT;
+    if (fullDesc.length > DESCRIPTION_SPLIT) {
+      const boundary = fullDesc.lastIndexOf(" ", DESCRIPTION_SPLIT);
+      splitPos = boundary > 0 ? boundary : DESCRIPTION_SPLIT;
+    }
+    const primaryDesc = fullDesc.slice(0, splitPos);
+    const overflowDesc = splitPos < fullDesc.length ? fullDesc.slice(splitPos).trimStart() : "";
 
     try {
       const tf = form.getTextField(

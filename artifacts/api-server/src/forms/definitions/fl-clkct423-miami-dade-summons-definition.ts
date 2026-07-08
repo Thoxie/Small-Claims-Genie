@@ -31,7 +31,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
@@ -125,8 +125,9 @@ const clkCt423Definition: FormDefinition = {
     safeCheck(form, "Plaintiff check box", true);
 
     // ── Hearing date and time ──────────────────────────────────────────────────
-    // Fields filled by plaintiff: "Month" (full month name), "Date" (day number),
+    // Plaintiff-filled fields: "Month" (full month name + day, e.g. "July 15"),
     // "Year", and "Time". hearingDate is expected in ISO format "YYYY-MM-DD".
+    // "Date" is a clerk-controlled issuance field on page 2 — intentionally left blank.
     if (d.hearingDate) {
       const MONTH_NAMES = [
         "January", "February", "March", "April", "May", "June",
@@ -135,9 +136,9 @@ const clkCt423Definition: FormDefinition = {
       const [yr, mo, day] = d.hearingDate.split("-");
       if (mo) {
         const monthName = MONTH_NAMES[parseInt(mo, 10) - 1] ?? mo;
-        safeSetText(form, "Month", monthName);
+        const dayNum = day ? ` ${parseInt(day, 10)}` : "";
+        safeSetText(form, "Month", `${monthName}${dayNum}`);
       }
-      if (day) safeSetText(form, "Date", parseInt(day, 10).toString());
       if (yr) safeSetText(form, "Year", yr);
     }
     const hearingTimeStr = d.hearingTimeFormatted ?? d.hearingTime ?? "";
@@ -148,6 +149,36 @@ const clkCt423Definition: FormDefinition = {
     // form arrives pre-populated. The clerk overrides this selection at filing if
     // the case is assigned to a different courthouse location.
     safeCheck(form, "Dade County Courthouse Central Court", true);
+
+    // ── Signed variant: draw plaintiff signature at the "FILED BY:" area ───────
+    // pdftotext -bbox-layout: "FILED BY: _____..." at pdf-lib y=319, blank
+    // runs x=82–342. No AcroForm signature widget exists; drawn directly on page.
+    if (opts?.signed) {
+      const page = doc.getPages()[0]!;
+      if (opts.signatureBytes) {
+        const sigImg =
+          (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+          (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+        if (sigImg) {
+          page.drawImage(sigImg, {
+            x: 82,
+            y: 305,
+            width: 230,
+            height: 18,
+            opacity: 1,
+          });
+        }
+      } else if (d.plaintiffName) {
+        const oblique = await doc.embedFont(StandardFonts.HelveticaOblique);
+        page.drawText(`/s/ ${d.plaintiffName}`, {
+          x: 82,
+          y: 315,
+          size: 10,
+          font: oblique,
+          color: rgb(0, 0, 0.55),
+        });
+      }
+    }
 
     let saved: Uint8Array;
     try {

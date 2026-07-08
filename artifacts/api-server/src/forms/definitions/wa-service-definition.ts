@@ -59,7 +59,7 @@ const waServiceDefinition: FormDefinition = {
   state: "WA",
   formId: "WA-MISC05-0200",
   assetPath: PDF_PATH,
-  renderingTechnique: "png-overlay",
+  renderingTechnique: "pdf-overlay",
 
   async generate(
     d: CaseData,
@@ -150,12 +150,7 @@ const waServiceDefinition: FormDefinition = {
       }
     }
 
-    let saved: Uint8Array;
-    try {
-      saved = await doc.save();
-    } catch {
-      saved = await doc.save();
-    }
+    const saved = await doc.save();
     return Buffer.from(saved);
   },
 };
