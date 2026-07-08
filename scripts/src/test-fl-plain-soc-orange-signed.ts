@@ -17,6 +17,9 @@
  *   - Cleans up test cases in the database afterwards
  *
  * Signature coords (pdf-lib, y from bottom): x=378, y=68, w=150, h=28, page=1
+ * fl-soc-form7340.pdf is a single-page PDF (Form 7.340 extracted from the
+ * 5-page fl-soc-7340.pdf packet via pdftk, because pdf-lib cannot reliably
+ * parse the pypdf page tree).
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";
@@ -39,6 +42,7 @@ const EXPECTED_AMOUNT    = "3,000.00";
 const EXPECTED_DESC_CHUNK = "Defendant never completed the work";
 
 // Signature placement (pdf-lib coords: x/y from bottom-left, y is bottom edge of image)
+// fl-soc-form7340.pdf is a single-page PDF → signature is on page 1.
 const SIG_PAGE = 1;
 const SIG_X    = 378;
 const SIG_Y    = 68;

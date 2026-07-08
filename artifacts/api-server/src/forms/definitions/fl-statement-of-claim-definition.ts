@@ -1,19 +1,27 @@
 /**
  * FL Statement of Claim — official-PDF-backed statewide form.
  *
- * Renders the official Florida Small Claims Rule 7.330–7.336 multi-form PDF
- * (fl-soc-7340.pdf, 5 pages) with case data drawn directly on page 0
- * (Form 7.330 — Statement of Claim, Auto Negligence) without inserting any
- * synthetic pages.
+ * Renders the official Florida Small Claims Rule 7.340 PDF
+ * (fl-soc-form7340.pdf — page 2 of the 5-page packet, extracted via pdftk
+ * because pdf-lib cannot reliably parse the pypdf-generated parent PDF's
+ * page tree) with case data drawn directly on page index 0.
  *
  * Rendering technique — coordinate overlay on the official form:
- *   PDFDocument.load() on the official PDF → get page 0 → drawText/drawImage.
- *   The case caption is drawn in the blank header region above the form title
- *   (form title begins at pdftotext y=103, pdf-lib y≈689; the 103-point blank
- *   header above it occupies pdf-lib y=689–792).
- *   Plaintiff and defendant names are also drawn at the calibrated fill-in
- *   blanks in the Form 7.330 narrative text (pdftotext y=193–209 → pdf-lib
- *   y≈583; confirmed via pdftotext -bbox-layout).
+ *   PDFDocument.load() on the single-page Form 7.340 PDF → get page index 0 →
+ *   drawText/drawImage.
+ *   The case caption is drawn in the blank header region above the form content
+ *   (Form 7.340 content begins at pdftotext y=99.636, pdf-lib y≈677; the
+ *   ~115-point blank header above it occupies pdf-lib y=677–792).
+ *   Plaintiff and defendant names are drawn at the calibrated fill-in blanks in
+ *   the Form 7.340 narrative "Plaintiff, [blank], sues defendant, [blank]":
+ *     "Plaintiff," xMax=157.2, blank until "," xMin=216, yMax=115.356
+ *     → pdf-lib y = 792 − 115.356 ≈ 677; fill at x=158, y=677 (plaintiff)
+ *     "defendant," xMax=316.8, blank until "," xMin=360, same y
+ *     → fill at x=317, y=677 (defendant)
+ *   Amount blank: after "$" xMax=379.92, yMax=131.556 → pdf-lib y≈660
+ *     → fill at x=381, y=660
+ *   Description: word-wrapped in item-list blank area (pdf-lib y=640–608).
+ *   Signature block: drawn only in signed variant at bottom of page.
  *   No AcroForm fields exist in the source PDF (confirmed via pdftk
  *   dump_data_fields); all data is placed via pdf-lib drawText/drawImage.
  *
@@ -35,7 +43,11 @@ import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import type { CaseData } from "../types";
 
-const FL_SOC_PDF_PATH = path.join(FORMS_DIR, "fl-soc-7340.pdf");
+// fl-soc-form7340.pdf is page 2 of the 5-page fl-soc-7340.pdf packet,
+// extracted via `pdftk fl-soc-7340.pdf cat 2 output fl-soc-form7340.pdf`.
+// The extraction is necessary because pdf-lib cannot reliably parse the
+// pypdf-generated parent PDF's page tree (it only sees 1 page at runtime).
+const FL_SOC_PDF_PATH = path.join(FORMS_DIR, "fl-soc-form7340.pdf");
 
 const PW = 612;
 const BLACK = rgb(0, 0, 0);
@@ -72,14 +84,15 @@ export async function buildFLStatementOfClaim(
   _clerkAddressOverride?: string,
 ): Promise<Buffer> {
   // Load official FL SOC PDF (Forms 7.330–7.336, 5 pages).
-  // Draw case data directly on page 0 (Form 7.330) — no synthetic pages
-  // are inserted.  The form title lives at pdftotext y=103 (pdf-lib y≈689);
-  // the 103-point blank header above it is used for the legal caption.
+  // Draw case data on page index 1 (Form 7.340 — general Statement of Claim).
+  // The form title lives at pdftotext y≈99 (pdf-lib y≈692); the ~115-point
+  // blank header above it (pdf-lib y=677–792) is used for the legal caption.
   const socPdfBytes = fs.readFileSync(FL_SOC_PDF_PATH);
   const doc = await PDFDocument.load(socPdfBytes);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
+  // fl-soc-form7340.pdf is a single-page PDF (Form 7.340 extracted by pdftk).
   const page = doc.getPages()[0]!;
   const countyName = countyOverride ?? countyDisplay((d as any).countyId);
 
@@ -102,8 +115,9 @@ export async function buildFLStatementOfClaim(
     return s + "…";
   }
 
-  // ── Legal caption in the blank header above the form title ────────────────
-  // Confirmed via pdftotext -bbox-layout (page 0): the region pdf-lib y=689–792
+  // ── Legal caption in the blank header above Form 7.340 ───────────────────
+  // pdftotext -bbox-layout (page index 1): Form 7.340 content starts at
+  // pdftotext yMin=99.636 → pdf-lib y≈692. The region pdf-lib y=692–792
   // contains no printed form content — safe for overlay.
   const courtTitle = countyName
     ? `IN THE COUNTY COURT, ${countyName.toUpperCase()} COUNTY, FLORIDA`
@@ -160,31 +174,36 @@ export async function buildFLStatementOfClaim(
     color: BLACK,
   });
 
-  // ── Overlay party names at the form's own fill-in blanks ──────────────────
-  // Form 7.330 narrative (page 0): "The plaintiff, [blank], sues the defendant, [blank], and alleges:"
-  // Calibrated via pdftotext -bbox-layout (page 0 of fl-soc-7340.pdf):
-  //   "plaintiff," xMax=182.640, next token "," at xMin=252.000, yMax=209.376
-  //   "defendant," xMax=375.360, next token "," at xMin=432.000, yMax=209.376
-  //   pdf-lib y = 792 − pdftotext_yMax = 792 − 209.376 ≈ 583
-  t(truncate(d.plaintiffName ?? "", 65, 8), 183, 583, 8);
-  t(truncate(d.defendantName ?? "", 51, 8), 376, 583, 8);
+  // ── Overlay party names at Form 7.340 narrative fill-in blanks ─────────────
+  // Form 7.340 (page index 1): "Plaintiff, [blank], sues defendant, [blank], and alleges:"
+  // Calibrated via pdftotext -bbox-layout (page index 1 of fl-soc-7340.pdf):
+  //   "Plaintiff," xMax=157.2, blank until "," xMin=216, yMax=115.356
+  //   "defendant," xMax=316.8, blank until "," xMin=360, yMax=115.356
+  //   pdf-lib y = 792 − 115.356 ≈ 677
+  t(truncate(d.plaintiffName ?? "", 55, 8), 158, 677, 8);
+  t(truncate(d.defendantName ?? "", 40, 8), 317, 677, 8);
 
-  // ── Claim description — word-wrapped into the gap below WHEREFORE ──────────
-  // pdftotext -bbox-layout (page 0): WHEREFORE "." at pdf-lib y=439; Form 7.331
-  // title ("FORM 7.331. ...") starts at y=405.8 — leaving ~33pt of blank space
-  // confirmed empty on the official form.  Three lines at 7pt fill this area.
+  // ── Amount: "due, owing, and unpaid from defendant to plaintiff $[blank]" ──
+  // pdftotext: "$" xMax=379.92, yMax=131.556 → pdf-lib y = 792 − 131.556 ≈ 660
+  const amtNarr = fmtAmount(d.claimAmount);
+  if (amtNarr) t(amtNarr.replace(/^\$/, ""), 381, 660, 8);
+
+  // ── Claim description — word-wrapped into the Form 7.340 item-list area ───
+  // pdftotext (page index 1): item-list blank runs between the date-range line
+  // (yMax=163.956 → pdf-lib y=628) and the "(list time and materials)" note
+  // (yMin=178.416 → pdf-lib y=614). Three lines at 7pt fit in this 33pt gap.
   const claimDesc = d.claimDescription ?? "";
   if (claimDesc) {
     const descSize = 7;
     const descLineH = 9;
-    const descMaxW = MR - ML; // 450pt
-    let descY = 434;           // first baseline — just below WHEREFORE "." (y=439)
+    const descMaxW = MR - ML; // 504pt
+    let descY = 638;           // first baseline — just below date-range line (y≈628)
     const descWords = claimDesc.split(" ");
     let descLine = "";
     for (const w of descWords) {
       const test = descLine ? `${descLine} ${w}` : w;
       if (font.widthOfTextAtSize(test, descSize) > descMaxW) {
-        if (descY < 408) break; // no more room before Form 7.331 at y=405.8
+        if (descY < 610) break; // no more room before "(list...)" note at y=614
         if (descLine) {
           page.drawText(descLine, { x: ML, y: descY, size: descSize, font, color: BLACK });
           descY -= descLineH;
@@ -197,31 +216,41 @@ export async function buildFLStatementOfClaim(
         descLine = test;
       }
     }
-    if (descLine && descY >= 408) {
+    if (descLine && descY >= 610) {
       page.drawText(descLine, { x: ML, y: descY, size: descSize, font, color: BLACK });
     }
   }
 
-  // ── Signature image overlay (signed variant only) ──────────────────────────
-  // Placed at the plaintiff signature line near the bottom of the form.
-  // pdftotext -bbox-layout (page 0): signature blank at pdf-lib x=378, y=68.
-  // Unsigned download leaves the signature area blank — user signs before filing.
-  if (opts?.signatureBytes) {
-    try {
-      const sigImg =
-        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
-        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
-      if (sigImg) {
-        page.drawImage(sigImg, {
-          x: 378,
-          y: 68,
-          width: 150,
-          height: 28,
-          opacity: 1,
-        });
+  // ── Signature block (signed variant only) ─────────────────────────────────
+  // Placed at the plaintiff signature area near the bottom of page index 1.
+  // Unsigned download leaves this area blank — user signs the paper form before
+  // filing. Typed name, date, address, and phone accompany the image signature.
+  if (opts?.signed) {
+    const todaySig = new Date().toLocaleDateString("en-US", {
+      month: "2-digit", day: "2-digit", year: "numeric",
+    });
+    t(`/${d.plaintiffName ?? ""}/`, ML, 97, 7);
+    t(todaySig, ML + 265, 97, 7);
+    if (d.plaintiffAddress) t(d.plaintiffAddress, ML, 87, 7);
+    if (d.plaintiffPhone) t(d.plaintiffPhone, ML + 265, 87, 7);
+
+    if (opts.signatureBytes) {
+      try {
+        const sigImg =
+          (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
+          (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+        if (sigImg) {
+          page.drawImage(sigImg, {
+            x: 378,
+            y: 68,
+            width: 150,
+            height: 28,
+            opacity: 1,
+          });
+        }
+      } catch {
+        /* ignore invalid image data */
       }
-    } catch {
-      /* ignore invalid image data */
     }
   }
 
