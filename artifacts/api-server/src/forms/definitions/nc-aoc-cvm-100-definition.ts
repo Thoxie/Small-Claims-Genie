@@ -50,21 +50,8 @@ export async function buildNCAocCvm100(
     ? `${d.plaintiffName ?? ""} d/b/a ${(d as any).plaintiffDbaName}`
     : (d.plaintiffName ?? "");
 
-  const pCityStateZip = [
-    d.plaintiffCity,
-    (d as any).plaintiffState ?? "NC",
-    d.plaintiffZip,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  const def1CityStateZip = [
-    d.defendantCity,
-    d.defendantState ?? "NC",
-    d.defendantZip,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  // Note: Def1City / PltfAttyCity are city-only fields on the form.
+  // Def1State, Def1Zip and PltfAttyState, PltfAttyZip are separate fields.
 
   // PlaceTrial: courthouse name + address if available
   const placeTrial = [
@@ -87,19 +74,21 @@ export async function buildNCAocCvm100(
     Def_1:           d.defendantName ?? "",
 
     // Defendant 1 address block
+    // Def1City is city-only; Def1State and Def1Zip are separate fields on the form.
     Def1Nam:         d.defendantName ?? "",
     Def1StreetAddr:  d.defendantAddress ?? "",
     Def1MailAddr:    d.defendantAddress ?? "",
-    Def1City:        def1CityStateZip,
+    Def1City:        d.defendantCity ?? "",
     Def1State:       d.defendantState ?? "NC",
     Def1Zip:         d.defendantZip ?? "",
     Def1Telephone:   d.defendantPhone ?? "",
 
     // Plaintiff / attorney address block (plaintiff is pro se)
+    // PltfAttyCity is city-only; PltfAttyState and PltfAttyZip are separate fields.
     NamPltfAtty:     pName,
     PltfAttyStAddr:  d.plaintiffAddress ?? "",
     PltfAttyMailAddr: d.plaintiffAddress ?? "",
-    PltfAttyCity:    pCityStateZip,
+    PltfAttyCity:    d.plaintiffCity ?? "",
     PltfAttyState:   (d as any).plaintiffState ?? "NC",
     PltfAttyZip:     d.plaintiffZip ?? "",
 

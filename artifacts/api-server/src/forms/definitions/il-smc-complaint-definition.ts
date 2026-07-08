@@ -208,6 +208,13 @@ const ilSmcComplaintDefinition: FormDefinition = {
         ...textFields,
         ...(countyVal ? { "County": countyVal } : {}),
       },
+      checkboxes: {
+        // Section 3: written-agreement checkbox group — default to (a) no written
+        // agreement since CaseData does not collect whether a written agreement exists.
+        "3 - Checkboxes": "I have no written agreement with Defendants.",
+        // Section 4: demanded payment — check when the intake recorded a prior demand.
+        "4 - Checkbox": d.priorDemandMade ? "Yes" : "Off",
+      },
     });
 
     // Both unsigned and signed run through pdf-lib so they share the same
