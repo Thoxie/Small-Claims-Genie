@@ -182,8 +182,19 @@ const cl219VolusiaPdfDefinition: FormDefinition = {
       }
     }
 
-    form.flatten();
-    return Buffer.from(await doc.save({ updateFieldAppearances: false }));
+    // form.flatten() is intentionally omitted: it throws on these county PDFs
+    // because their widgets reference /Helv shorthand fonts that pdf-lib cannot
+    // resolve when building appearance streams.  Instead we attempt to update
+    // appearances (so every PDF viewer renders the filled values), with a
+    // graceful fallback to saving without appearance updates if that also fails
+    // (field /V values are still stored and most modern viewers honour them).
+    let saved: Uint8Array;
+    try {
+      saved = await doc.save({ updateFieldAppearances: true });
+    } catch {
+      saved = await doc.save({ updateFieldAppearances: false });
+    }
+    return Buffer.from(saved);
   },
 };
 
