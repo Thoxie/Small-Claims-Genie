@@ -96,17 +96,23 @@ const clkCt423Definition: FormDefinition = {
     safeSetText(form, "Plaintiff", d.plaintiffName ?? "");
     safeSetText(form, "Defendant", d.defendantName ?? "");
 
-    // ── Defendant service address (street + city/state/zip only) ───────────────
+    // ── Defendant service address — multi-line fields ──────────────────────────
     // "Defendant" field already holds the name; do not duplicate it here.
+    // "Defendant to be served at"      → street address
+    // "Defendant 2nd to be served at"  → city, state ZIP
+    // "Defendant 3rd to be served at"  → left blank (reserved for apt/unit)
     const defCSZ = cityStateZip(
       d.defendantCity,
       d.defendantState ?? "FL",
       d.defendantZip,
     );
-    const defServeParts: string[] = [];
-    if (d.defendantAddress) defServeParts.push(d.defendantAddress);
-    if (defCSZ) defServeParts.push(defCSZ);
-    safeSetText(form, "Defendant to be served at", defServeParts.join("\n"));
+    safeSetText(form, "Defendant to be served at", d.defendantAddress ?? "");
+    safeSetText(form, "Defendant 2nd to be served at", defCSZ);
+
+    // ── Case number (if already assigned by court) ─────────────────────────────
+    if (d.caseNumber) {
+      safeSetText(form, "Case Number", d.caseNumber);
+    }
 
     // ── Filed by (plaintiff contact info — not a signature field) ──────────────
     safeSetText(form, "Filed by", d.plaintiffName ?? "");
