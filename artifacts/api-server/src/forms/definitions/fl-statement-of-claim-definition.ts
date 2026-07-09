@@ -96,6 +96,17 @@ export async function buildFLStatementOfClaim(
   const page = doc.getPages()[0]!;
   const countyName = countyOverride ?? countyDisplay((d as any).countyId);
 
+  // Collapses vertical whitespace (line breaks, tabs, form feeds) to a single
+  // space. The overlay draws with a StandardFonts (WinAnsi) font, whose
+  // widthOfTextAtSize/drawText throw "WinAnsi cannot encode \n" on any line
+  // break. User claim descriptions and addresses can contain newlines, so every
+  // drawn or measured string is normalized to one line first. This is a no-op
+  // for values that contain no vertical whitespace, so existing output is
+  // unchanged for all currently-working cases.
+  function oneLine(s: string): string {
+    return s.replace(/[\r\n\t\f\v]+/g, " ");
+  }
+
   function t(
     text: string | null | undefined,
     x: number,
@@ -104,10 +115,11 @@ export async function buildFLStatementOfClaim(
     f = font,
   ) {
     if (!text) return;
-    page.drawText(String(text), { x, y, size, font: f, color: BLACK });
+    page.drawText(oneLine(String(text)), { x, y, size, font: f, color: BLACK });
   }
 
   function truncate(text: string, maxPt: number, sz = 8): string {
+    text = oneLine(text);
     if (font.widthOfTextAtSize(text, sz) <= maxPt) return text;
     let s = text;
     while (s.length > 0 && font.widthOfTextAtSize(s + "…", sz) > maxPt)
@@ -192,7 +204,7 @@ export async function buildFLStatementOfClaim(
   // pdftotext (page index 1): item-list blank runs between the date-range line
   // (yMax=163.956 → pdf-lib y=628) and the "(list time and materials)" note
   // (yMin=178.416 → pdf-lib y=614). Three lines at 7pt fit in this 33pt gap.
-  const claimDesc = d.claimDescription ?? "";
+  const claimDesc = oneLine(d.claimDescription ?? "");
   if (claimDesc) {
     const descSize = 7;
     const descLineH = 9;

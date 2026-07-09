@@ -29,6 +29,34 @@ function fdfEscape(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
 }
 
+/**
+ * Escapes a string for use as a PDF name object — the `/Name` written after
+ * `/V /` for checkbox and radio-button export values.
+ *
+ * PDF name syntax (ISO 32000-1 §7.3.5) only permits "regular" characters
+ * (0x21–0x7E, excluding the delimiters ( ) < > [ ] { } / % and the '#' escape
+ * introducer) to appear literally. Any other byte — spaces, delimiters, '#',
+ * and non-ASCII — must be written as '#' followed by its two hex digits.
+ * Radio export values such as IL's "I have no written agreement with
+ * Defendants." contain spaces, which pdftk rejects ("Failed to open form data
+ * file") unless they are '#20'-escaped. Values with no special characters
+ * (e.g. "Yes", "Off", "1") are returned unchanged.
+ */
+function fdfNameEscape(s: string): string {
+  let out = "";
+  for (const ch of s) {
+    const code = ch.charCodeAt(0);
+    if (code >= 0x21 && code <= 0x7e && !"#()<>[]{}/%".includes(ch)) {
+      out += ch;
+    } else {
+      for (const b of Buffer.from(ch, "utf8")) {
+        out += "#" + b.toString(16).padStart(2, "0").toUpperCase();
+      }
+    }
+  }
+  return out;
+}
+
 export interface FdfFields {
   text?: Record<string, string>;
   /**
@@ -67,7 +95,7 @@ export function generateFdf(fields: FdfFields): string {
       exportVal = value ? "Yes" : "Off";   // standard AcroForm
     }
     entries.push(
-      `<<\n/T(${fdfEscape(name)})\n/V /${exportVal}\n>>`
+      `<<\n/T(${fdfEscape(name)})\n/V /${fdfNameEscape(exportVal)}\n>>`
     );
   }
 
