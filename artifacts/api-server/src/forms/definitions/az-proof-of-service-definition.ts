@@ -99,22 +99,37 @@ export async function buildAZProofOfService(
   t(defCSZ, 365, 422);
   t(d.defendantPhone ?? "", 400, 401);
 
-  // ── Signature (plaintiff affirms service) ────────────────────────────────────
+  // ── Signature block (plaintiff affirms service) ──────────────────────────────
+  // LJSC00003F has no pre-printed signature line; the area below the
+  // "date of service" checkboxes (pdf-lib y≈45–125) is blank. Draw the
+  // signature/date block there (it previously overlapped the checkboxes at y≈153).
+  const sigLineY = 96;
+  page.drawLine({ start: { x: 72, y: sigLineY }, end: { x: 268, y: sigLineY }, thickness: 0.6, color: BLACK });
+  t("Signature of Person Filing", 72, sigLineY - 11, 7);
+  page.drawLine({ start: { x: 320, y: sigLineY }, end: { x: 470, y: sigLineY }, thickness: 0.6, color: BLACK });
+  t("Date", 320, sigLineY - 11, 7);
+
+  let sigDrawn = false;
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, { x: 72, y: 165, width: 180, height: 24, opacity: 1 });
+        page.drawImage(sigImg, { x: 74, y: sigLineY + 2, width: 190, height: 24, opacity: 1 });
+        sigDrawn = true;
       }
     } catch { /* ignore */ }
   }
-  t(d.plaintiffName ?? "", 72, 153);
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "2-digit", day: "2-digit", year: "numeric",
-  });
-  t(today, 310, 153);
+  if (!sigDrawn && opts?.signed && d.plaintiffName) {
+    t(`/s/ ${d.plaintiffName}`, 74, sigLineY + 3, 10);
+  }
+  if (opts?.signed) {
+    const today = new Date().toLocaleDateString("en-US", {
+      month: "2-digit", day: "2-digit", year: "numeric",
+    });
+    t(today, 322, sigLineY + 3, 9);
+  }
 
   return Buffer.from(await doc.save());
 }

@@ -168,10 +168,11 @@ const azComplaintDefinition: FormDefinition = {
     }
 
     // ── Signature overlay (plaintiff signs Page 2 of the form) ──────────────
-    // Signature area is at approximately x=54, y=130 on page 2 of LJSC00001F.
-    // If a signature image is provided it is drawn there; otherwise a typed-name
-    // signature in the form "/s/ [Plaintiff Name]" is used as a fallback so the
-    // signed variant always carries some form of signature.
+    // The "Plaintiff Signature" line on page 2 sits just above its label
+    // (pdftotext label yMin=281.96 → pdf-lib y≈510; line at ~y=513, x≈324).
+    // If a signature image is provided it is drawn on that line; otherwise a
+    // typed-name "/s/ [Plaintiff Name]" fallback is drawn there instead. The
+    // signature date is already supplied by the Date17_af_date AcroForm field.
     const azSigPages = doc.getPages();
     const azSigPage  = azSigPages[1] ?? azSigPages[0];
     if (opts?.signatureBytes) {
@@ -181,10 +182,10 @@ const azComplaintDefinition: FormDefinition = {
           (await doc.embedJpg(opts.signatureBytes).catch(() => null));
         if (sigImg) {
           azSigPage.drawImage(sigImg, {
-            x: 54,
-            y: 130,
-            width: 200,
-            height: 34,
+            x: 326,
+            y: 513,
+            width: 180,
+            height: 28,
             opacity: 1,
           });
         }
@@ -195,23 +196,12 @@ const azComplaintDefinition: FormDefinition = {
       // Typed-name signature fallback for signed variants when no image is supplied.
       try {
         const oblique  = await doc.embedFont(StandardFonts.HelveticaOblique);
-        const regular  = await doc.embedFont(StandardFonts.Helvetica);
         azSigPage.drawText(`/s/ ${d.plaintiffName}`, {
-          x: 54,
-          y: 148,
+          x: 326,
+          y: 516,
           size: 11,
           font: oblique,
           color: rgb(0, 0, 0.55),
-        });
-        const todayAZ = new Date().toLocaleDateString("en-US", {
-          month: "2-digit", day: "2-digit", year: "numeric",
-        });
-        azSigPage.drawText(todayAZ, {
-          x: 54,
-          y: 128,
-          size: 9,
-          font: regular,
-          color: rgb(0, 0, 0),
         });
       } catch {
         /* ignore font/draw errors */

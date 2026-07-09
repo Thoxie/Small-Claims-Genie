@@ -31,7 +31,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
@@ -86,7 +86,7 @@ const clkCt423Definition: FormDefinition = {
   async generate(
     d: CaseData,
     _body: FormBody,
-    opts?: GenerateOptions,
+    _opts?: GenerateOptions,
   ): Promise<Buffer> {
     const pdfBytes = fs.readFileSync(PDF_PATH);
     const doc = await PDFDocument.load(pdfBytes);
@@ -156,36 +156,10 @@ const clkCt423Definition: FormDefinition = {
     // the case is assigned to a different courthouse location.
     safeCheck(form, "Dade County Courthouse Central Court", true);
 
-    // ── Signed variant: draw plaintiff signature at the "FILED BY:" area ───────
-    // pdftotext -bbox-layout (page 2, index 1): "FILED BY: _____..." at
-    // pdf-lib y=319, blank runs x=82–342. No AcroForm signature widget exists;
-    // drawn directly on page 2 (index 1) where the "Filed by" section lives.
-    if (opts?.signed) {
-      const page = doc.getPages()[1]!;
-      if (opts.signatureBytes) {
-        const sigImg =
-          (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
-          (await doc.embedJpg(opts.signatureBytes).catch(() => null));
-        if (sigImg) {
-          page.drawImage(sigImg, {
-            x: 82,
-            y: 305,
-            width: 230,
-            height: 18,
-            opacity: 1,
-          });
-        }
-      } else if (d.plaintiffName) {
-        const oblique = await doc.embedFont(StandardFonts.HelveticaOblique);
-        page.drawText(`/s/ ${d.plaintiffName}`, {
-          x: 82,
-          y: 315,
-          size: 10,
-          font: oblique,
-          color: rgb(0, 0, 0.55),
-        });
-      }
-    }
+    // ── No plaintiff signature ────────────────────────────────────────────────
+    // CLK/CT. 423 is a court-issued summons; the only signature is the Deputy
+    // Clerk's, applied at filing. The /signed route is accepted but intentionally
+    // does NOT embed a plaintiff signature (see file header).
 
     let saved: Uint8Array;
     try {

@@ -26,11 +26,13 @@
  *
  * Signature overlay (page 1, /Rotate 90):
  *   In pre-rotation pdf-lib space: pdf_x = visual_y_from_top, pdf_y = visual_x.
- *   "Plaintiff(s)' signature" label: pdftotext visual (x≈284, y≈146–154).
- *   Pre-rotation: pdf_x≈146, pdf_y≈284.
- *   With rotate(degrees(90)) at anchor (x=146, y=284), width=200, height=24:
- *     width(200) extends in +pdf_y = RIGHT in visual (200px wide signature) ✓
- *     height(24) extends in -pdf_x = UP in visual (24px above the label) ✓
+ *   The plaintiff signs on the line above the "[ ] PLAINTIFF [ ] PLAINTIFF'S
+ *   EMPLOYEE" caption (pdftotext visual: "PLAINTIFF" x≈206, y≈340).
+ *   Anchor pre-rotation: pdf_x = visual_y ≈ 339 (image bottom just above the
+ *   caption), pdf_y = visual_x ≈ 200 (left start above the checkboxes).
+ *   With rotate(degrees(90)) at anchor (x=339, y=200), width=155, height=22:
+ *     width(155) extends in +pdf_y = RIGHT in visual (signature width) ✓
+ *     height(22) extends in -pdf_x = UP in visual (above the caption line) ✓
  *
  * Filing fee: varies by locality — always defer to the county GDC clerk.
  */
@@ -162,10 +164,10 @@ const vaDc402Definition: FormDefinition = {
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
         sigPage.drawImage(sigImg, {
-          x: 146,
-          y: 284,
-          width: 200,
-          height: 24,
+          x: 339,
+          y: 200,
+          width: 155,
+          height: 22,
           rotate: degrees(90),
           opacity: 1,
         });

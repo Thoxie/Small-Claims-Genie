@@ -236,7 +236,8 @@ export async function buildFLStatementOfClaim(
   // ── Signature block (signed variant only) ─────────────────────────────────
   // Placed at the plaintiff signature area near the bottom of page index 1.
   // Unsigned download leaves this area blank — user signs the paper form before
-  // filing. Typed name, date, address, and phone accompany the image signature.
+  // filing. The typed "/name/", date, address, and phone ARE the signature
+  // block; Form 7.340 has a single signature line, so no image is embedded.
   if (opts?.signed) {
     const todaySig = new Date().toLocaleDateString("en-US", {
       month: "2-digit", day: "2-digit", year: "numeric",
@@ -245,25 +246,6 @@ export async function buildFLStatementOfClaim(
     t(todaySig, ML + 265, 97, 7);
     if (d.plaintiffAddress) t(d.plaintiffAddress, ML, 87, 7);
     if (d.plaintiffPhone) t(d.plaintiffPhone, ML + 265, 87, 7);
-
-    if (opts.signatureBytes) {
-      try {
-        const sigImg =
-          (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
-          (await doc.embedJpg(opts.signatureBytes).catch(() => null));
-        if (sigImg) {
-          page.drawImage(sigImg, {
-            x: 378,
-            y: 68,
-            width: 150,
-            height: 28,
-            opacity: 1,
-          });
-        }
-      } catch {
-        /* ignore invalid image data */
-      }
-    }
   }
 
   return Buffer.from(await doc.save());

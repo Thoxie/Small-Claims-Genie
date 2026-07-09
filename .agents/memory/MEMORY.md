@@ -33,4 +33,5 @@
 - [Overlay→AcroForm conversion audit](overlay-to-acroform-conversion.md) — when converting a coordinate-overlay form to pdftk fill, audit every original drawText/drawImage; overlay-only fields (e.g. a date with no AcroForm field) silently regress
 - [pdf-lib embedPng sync-hang](pdf-lib-embedpng-sync-hang.md) — degenerate-but-valid signature PNGs make embedPng spin synchronously and DoS the server; try/catch can't rescue it; test fixtures must be real PNGs
 - [AcroForm auto-size font](acroform-autosize-font.md) — DA font size 0 makes short wrapped lines balloon under pdftk flatten; pin size via pdf-lib setFontSize on a derived template (pdftk honors it)
+- [Clerk-signed summons](clerk-signed-summons.md) — some non-CA forms (e.g. FL CLK-CT-423) are filed by plaintiff but signed by the clerk; render caption/contact only, NO plaintiff signature — don't "fix" the absence
 # Last pushed: 2026-06-30 20:04 UTC
