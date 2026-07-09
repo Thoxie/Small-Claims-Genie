@@ -28,8 +28,14 @@
  *   Address : x=365, y=422
  *   Phone   : x=400, y=387
  *
- * Signature coordinates (page 1):
- *   Plaintiff sig image: x=36, y=165 (signature line above "Date" at yMax=681)
+ * Signature — NONE. The AZ small-claims summons is CLERK-ISSUED: the bottom
+ * "Date" / "Clerk" lines belong to the clerk, and the plaintiff does not sign
+ * the summons (they sign the complaint). The /signed route is accepted for
+ * routing consistency but no plaintiff signature is embedded. Only the issue
+ * date is drawn, above the "Date" line (label baseline pdf-lib y≈111).
+ *
+ * Court name: the county is drawn on the "____ JUSTICE COURT, ARIZONA" line,
+ * right-aligned to end just before the printed "JUSTICE" (x≈348, y≈560).
  *
  * Legal basis:
  *   A.R.S. § 22-513 — Service in Small Claims
@@ -44,6 +50,7 @@ import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
+import { ARIZONA_COUNTIES } from "../../data/counties-az";
 
 const PDF_PATH = path.join(FORMS_DIR, "az-ljsc00002f-summons.pdf");
 const BLACK = rgb(0, 0, 0);
@@ -84,6 +91,16 @@ export async function buildAZSummons(
   const pltCSZ = csz(d.plaintiffCity, d.plaintiffState ?? "AZ", d.plaintiffZip);
   const defCSZ = csz(d.defendantCity, d.defendantState ?? "AZ", d.defendantZip);
 
+  // ── Court name on the "____ JUSTICE COURT, ARIZONA" line ─────────────────────
+  // Right-align the county so it ends just before the printed "JUSTICE"
+  // (word starts x≈348.65, baseline pdf-lib y≈560).
+  const azCounty = ARIZONA_COUNTIES.find((c) => c.id === (d as CaseData).countyId);
+  const courtName = azCounty ? `${azCounty.name.toUpperCase()} COUNTY` : "";
+  if (courtName) {
+    const cw = font.widthOfTextAtSize(courtName, 10);
+    page.drawText(courtName, { x: 344 - cw, y: 560, size: 10, font, color: BLACK });
+  }
+
   // ── Person Filing (top-left section) ─────────────────────────────────────────
   t(d.plaintiffName ?? "", 200, 706);
   t(d.plaintiffAddress ?? "", 200, 689);
@@ -104,23 +121,15 @@ export async function buildAZSummons(
   t(defCSZ, 365, 408);
   t(d.defendantPhone ?? "", 400, 387);
 
-  // ── Signature ─────────────────────────────────────────────────────────────────
-  if (opts?.signatureBytes) {
-    try {
-      const sigImg =
-        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
-        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
-      if (sigImg) {
-        page.drawImage(sigImg, { x: 72, y: 165, width: 180, height: 24, opacity: 1 });
-      }
-    } catch { /* ignore */ }
-  }
-  // Plaintiff printed name and date near signature line
-  t(d.plaintiffName ?? "", 72, 153);
+  // ── Issue date (CLERK-ISSUED form: no plaintiff signature) ───────────────────
+  // The plaintiff never signs the AZ summons, so we intentionally ignore
+  // opts.signatureBytes here. Only the issue date is drawn, above the bottom
+  // "Date" line (label baseline pdf-lib y≈111; underline just above at y≈128).
+  void opts;
   const today = new Date().toLocaleDateString("en-US", {
     month: "2-digit", day: "2-digit", year: "numeric",
   });
-  t(today, 310, 153);
+  t(today, 80, 128);
 
   return Buffer.from(await doc.save());
 }

@@ -37,7 +37,7 @@ interface FormSpec {
 const FORMS: FormSpec[] = [
   {
     label:    "az-summons-current",
-    countyId: "az-maricopa",
+    countyId: "az-maricopa-phoenix",
     state:    "AZ",
     endpoint: (id, tok) => `${BASE}/api/cases/${id}/forms/az/summons/signed?token=${tok}`,
     method:   "POST",
