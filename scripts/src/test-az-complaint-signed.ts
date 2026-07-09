@@ -1,31 +1,22 @@
 /**
- * End-to-end test: FL Statement of Claim (generic statewide) signed form download
+ * End-to-end test: AZ Small Claims Complaint (LJSC00001F) signed form download
  *
  * Run with:
- *   pnpm --filter @workspace/scripts run test:fl-statement-of-claim-signed
+ *   pnpm --filter @workspace/scripts run test:az-complaint-signed
  *
  * What this tests:
- *   - Creates a temporary case with county fl-leon, claimType "goods",
- *     and full plaintiff/defendant/contact data
+ *   - Creates a temporary AZ case (county az-maricopa) with full party data
  *   - Creates a download token directly in the DB (bypasses Clerk auth)
- *   - Calls POST /api/cases/:id/forms/fl/statement-of-claim/signed?token=...
+ *   - Calls POST /api/cases/:id/forms/az/complaint/signed?token=...
  *     with a solid-black PNG signatureDataUrl in the request body
  *   - Asserts HTTP 200 + Content-Type: application/pdf + PDF magic bytes + body size
- *   - Uses pdftotext to confirm plaintiff name and amount appear in the output
- *   - TYPED-SIGNATURE GUARD: Form 7.340 has a single signature line, so the signed
- *     variant draws a TYPED "/Plaintiff Name/" block (NOT an embedded signature
- *     image). This test asserts (a) the typed "/name/" block is present in the text
- *     layer, and (b) even when a maximally-visible solid-black PNG is posted, the
- *     signature region stays bright — i.e. NO floating signature image is embedded.
- *   - Cleans up test cases in the database afterwards
+ *   - Uses pdftotext to confirm plaintiff/defendant names + amount appear
+ *   - Uses pdftoppm + ImageMagick to confirm the signature image was placed at the
+ *     expected coordinates on PAGE 2 (pixel-level placement check)
+ *   - Cleans up the test case afterwards
  *
- * Note: buildFLStatementOfClaim is the shared generic FL Statement of Claim builder.
- * All FL counties without a county-specific definition (e.g. broward, palm-beach,
- * leon) render through this same builder, so this single test guards them all.
- *
- * Typed-signature block coords (pdf-lib): "/name/" at x=54, y=97, size 7 (page 1).
- * Rendered image-space crop (72 DPI, 612×792 page): 300x40+54+675 stays bright
- * (typed thin text only ≈0.95); a solid image block would drop it toward 0.
+ * Signature coords (pdf-lib, y from bottom): x=326, y=513, w=180, h=28, page=2
+ * (calibrated from az-complaint-definition.ts drawImage call)
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";
@@ -40,15 +31,27 @@ import { join, basename } from "path";
 
 const execFileAsync = promisify(execFile);
 
-const TEST_USER_ID        = "test-fl-statement-of-claim-signed-e2e";
-const EXPECTED_PLAINTIFF  = "Diana Reyes";
-const EXPECTED_DEFENDANT  = "Leon County Flooring LLC";
-const EXPECTED_AMOUNT     = "2,100.00";
-const EXPECTED_DESC_CHUNK = "Defendant failed to install";
+// ─── Test data ────────────────────────────────────────────────────────────────
+const TEST_USER_ID       = "test-az-complaint-signed-e2e";
+const EXPECTED_PLAINTIFF = "Marcus Delgado";
+const EXPECTED_DEFENDANT = "Sonoran Desert Roofing LLC";
+const EXPECTED_AMOUNT    = "3,250.00";
+const EXPECTED_DESC_CHUNK = "Defendant abandoned the roofing";
+
+// Signature placement (pdf-lib coords: x/y from bottom-left, y is bottom edge of image)
+const SIG_PAGE = 2;
+const SIG_X    = 326;
+const SIG_Y    = 513;
+const SIG_W    = 180;
+const SIG_H    = 28;
 
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:80";
 
-function buildSolidPngDataUrl(width: number, height: number, r: number, g: number, b: number): string {
+// ─── PNG generator ────────────────────────────────────────────────────────────
+function buildSolidPngDataUrl(
+  width: number, height: number,
+  r: number, g: number, b: number,
+): string {
   const rowBytes = 1 + width * 3;
   const raw = Buffer.alloc(height * rowBytes);
   for (let row = 0; row < height; row++) {
@@ -59,7 +62,9 @@ function buildSolidPngDataUrl(width: number, height: number, r: number, g: numbe
       raw[row * rowBytes + 1 + col * 3 + 2] = b;
     }
   }
+
   const compressed = zlib.deflateSync(raw);
+
   const crcTable: number[] = [];
   for (let n = 0; n < 256; n++) {
     let c = n;
@@ -77,10 +82,11 @@ function buildSolidPngDataUrl(width: number, height: number, r: number, g: numbe
     const crcBuf = Buffer.alloc(4); crcBuf.writeUInt32BE(crc32(Buffer.concat([tb, data])));
     return Buffer.concat([len, tb, data, crcBuf]);
   }
+
   const ihdrData = Buffer.alloc(13);
   ihdrData.writeUInt32BE(width, 0);
   ihdrData.writeUInt32BE(height, 4);
-  ihdrData[8] = 8; ihdrData[9] = 2;
+  ihdrData[8] = 8; ihdrData[9] = 2; // bit depth 8, RGB
   const pngBuf = Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
     chunk("IHDR", ihdrData),
@@ -90,14 +96,16 @@ function buildSolidPngDataUrl(width: number, height: number, r: number, g: numbe
   return `data:image/png;base64,${pngBuf.toString("base64")}`;
 }
 
-const SIGNATURE_DATA_URL = buildSolidPngDataUrl(180, 36, 0, 0, 0);
+// Solid black PNG — maximally visible signature for pixel detection
+const SIGNATURE_DATA_URL = buildSolidPngDataUrl(SIG_W, SIG_H, 0, 0, 0);
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 function assert(condition: boolean, message: string): void {
   if (!condition) throw new Error(`FAIL: ${message}`);
 }
 
 async function extractPdfText(pdfBuf: Buffer): Promise<string> {
-  const tmpPdf = join(tmpdir(), `fl-statement-of-claim-signed-test-${Date.now()}.pdf`);
+  const tmpPdf = join(tmpdir(), `az-complaint-signed-test-${Date.now()}.pdf`);
   try {
     await writeFile(tmpPdf, pdfBuf);
     const { stdout } = await execFileAsync("pdftotext", [tmpPdf, "-"]);
@@ -111,43 +119,54 @@ async function extractPdfText(pdfBuf: Buffer): Promise<string> {
 }
 
 /**
- * Render page 1 at 72 DPI and assert the signature region stays BRIGHT — i.e. it
- * contains only thin typed text, NOT a solid embedded signature image. If the
- * generator ever regressed to embed the posted (solid-black) PNG here, the
- * region's mean brightness would collapse toward 0.
+ * Render a PDF page to PNG at 72 DPI and verify that the signature bounding box
+ * (given in pdf-lib coords: x/y from bottom-left) contains dark pixels.
  *
- * Crop is in rendered image-space (top-left origin, 612×792 page at 72 DPI):
- * the typed "/name/" block draws at pdf-lib x=54, y=97 → image row ≈ 675.
+ * pdf-lib coord → image coord: imgX = pdfX, imgY = pageH - pdfY - sigH
  */
-async function assertNoFloatingSignatureImage(pdfBuf: Buffer): Promise<void> {
-  const ts = `${Date.now()}-${Math.random()}`;
-  const pdfPath = join(tmpdir(), `soc-noimg-${ts}.pdf`);
-  const pngBase = join(tmpdir(), `soc-noimg-page-${ts}`);
-  const MIN_BRIGHTNESS = 0.80; // typed text ≈0.95; a solid image block ≈0
-  const crop = "300x40+54+675";
+async function assertSignaturePlaced(
+  pdfBuf: Buffer,
+  page: number,
+  pdfX: number, pdfY: number, w: number, h: number,
+  formLabel: string,
+): Promise<void> {
+  const ts = Date.now();
+  const pdfPath = join(tmpdir(), `sig-check-${ts}.pdf`);
+  const pngBase = join(tmpdir(), `sig-check-page-${ts}`);
   try {
     await writeFile(pdfPath, pdfBuf);
-    await execFileAsync("pdftoppm", ["-png", "-r", "72", "-f", "1", "-l", "1", pdfPath, pngBase]);
+    await execFileAsync("pdftoppm", ["-png", "-r", "72", "-f", String(page), "-l", String(page), pdfPath, pngBase]);
+
     const tmpFiles = await readdir(tmpdir());
     const pngName = tmpFiles.find(f => f.startsWith(basename(pngBase)) && f.endsWith(".png"));
     if (!pngName) throw new Error("pdftoppm produced no PNG file");
     const pngPath = join(tmpdir(), pngName);
+
     try {
-      const { stdout } = await execFileAsync("magick", [
+      const { stdout: hStr } = await execFileAsync("magick", ["identify", "-format", "%h", pngPath]);
+      const pageH = parseInt(hStr.trim(), 10);
+      assert(!isNaN(pageH) && pageH > 0, `Could not determine page height, got: "${hStr}"`);
+
+      const imgX = pdfX;
+      const imgY = pageH - pdfY - h;
+      const crop = `${w}x${h}+${imgX}+${imgY}`;
+
+      const { stdout: meanStr } = await execFileAsync("magick", [
         "convert", pngPath,
         "-crop", crop, "+repage",
         "-colorspace", "gray",
         "-format", "%[fx:mean]",
         "info:",
       ]);
-      const mean = parseFloat(stdout.trim());
-      console.log(`  Signature region mean brightness: ${mean.toFixed(4)} (crop: ${crop})`);
+      const mean = parseFloat(meanStr.trim());
+      console.log(`  Signature region mean brightness: ${mean.toFixed(4)} (crop: ${crop}, page H: ${pageH}px)`);
+
       assert(
-        mean >= MIN_BRIGHTNESS,
-        `FL-STATEMENT-OF-CLAIM: signature region too dark (mean=${mean.toFixed(4)} < ${MIN_BRIGHTNESS}). ` +
-        `A floating signature image appears to have been embedded — this form uses a TYPED "/name/" block, not an image.`,
+        mean < 0.98,
+        `${formLabel}: No dark pixels in signature region (mean=${mean.toFixed(4)} ≥ 0.98). ` +
+        `Signature may not have been placed at coords x=${pdfX}, y=${pdfY}, w=${w}, h=${h}, page=${page}.`,
       );
-      console.log(`  ✓ No floating signature image — region is thin typed text only (mean=${mean.toFixed(4)} ≥ ${MIN_BRIGHTNESS})`);
+      console.log(`  ✓ Signature pixels confirmed in expected region (mean=${mean.toFixed(4)} < 0.98)`);
     } finally {
       await unlink(pngPath).catch(() => {});
     }
@@ -156,34 +175,36 @@ async function assertNoFloatingSignatureImage(pdfBuf: Buffer): Promise<void> {
   }
 }
 
+// ─── Main ─────────────────────────────────────────────────────────────────────
 async function run() {
   let caseId: number | null = null;
+
   try {
     console.log("Creating test case in database…");
     const [inserted] = await db.insert(casesTable).values({
       userId:           TEST_USER_ID,
-      title:            "FL Statement of Claim Signed Test Case (auto-cleanup)",
+      title:            "AZ Complaint Signed Test Case (auto-cleanup)",
       status:           "draft",
-      countyId:         "fl-leon",
+      countyId:         "az-maricopa",
 
       plaintiffName:    EXPECTED_PLAINTIFF,
-      plaintiffAddress: "200 S Monroe St",
-      plaintiffCity:    "Tallahassee",
-      plaintiffState:   "FL",
-      plaintiffZip:     "32301",
-      plaintiffPhone:   "850-555-0111",
-      plaintiffEmail:   "diana.reyes@example.com",
+      plaintiffAddress: "1200 W Washington St",
+      plaintiffCity:    "Phoenix",
+      plaintiffState:   "AZ",
+      plaintiffZip:     "85007",
+      plaintiffPhone:   "602-555-0134",
+      plaintiffEmail:   "marcus.delgado@example.com",
 
       defendantName:    EXPECTED_DEFENDANT,
-      defendantAddress: "1500 Apalachee Pkwy",
-      defendantCity:    "Tallahassee",
-      defendantState:   "FL",
-      defendantZip:     "32301",
-      defendantPhone:   "850-555-0222",
+      defendantAddress: "4455 E Camelback Rd",
+      defendantCity:    "Phoenix",
+      defendantState:   "AZ",
+      defendantZip:     "85018",
+      defendantPhone:   "602-555-0245",
 
-      claimType:        "goods",
-      claimAmount:      2100,
-      claimDescription: "Defendant failed to install the flooring as agreed under a written contract. Plaintiff paid in full upfront and defendant abandoned the job halfway through without issuing a refund.",
+      claimType:        "services",
+      claimAmount:      3250,
+      claimDescription: "Defendant abandoned the roofing repair job after receiving a full deposit and never returned to complete the work or issue a refund despite repeated requests.",
     }).returning({ id: casesTable.id });
 
     caseId = inserted.id;
@@ -192,18 +213,20 @@ async function run() {
     console.log("Creating download token…");
     const token = randomUUID();
     await db.insert(downloadTokensTable).values({
-      token, caseId, userId: TEST_USER_ID,
+      token,
+      caseId,
+      userId:    TEST_USER_ID,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
     console.log(`  Token: ${token.slice(0, 8)}…`);
 
-    const url = `${BASE_URL}/api/cases/${caseId}/forms/fl/statement-of-claim/signed?token=${token}`;
+    const url = `${BASE_URL}/api/cases/${caseId}/forms/az/complaint/signed?token=${token}`;
     console.log(`Calling POST ${url.replace(token, token.slice(0, 8) + "…")}…`);
 
     const response = await fetch(url, {
-      method: "POST",
+      method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ signatureDataUrl: SIGNATURE_DATA_URL }),
+      body:    JSON.stringify({ signatureDataUrl: SIGNATURE_DATA_URL }),
     });
 
     assert(response.status === 200, `Expected HTTP 200, got ${response.status}`);
@@ -231,18 +254,15 @@ async function run() {
       console.log(`  ✓ Claim amount "${EXPECTED_AMOUNT}" found`);
       assert(pdfText.includes(EXPECTED_DESC_CHUNK), `Description chunk "${EXPECTED_DESC_CHUNK}" not found`);
       console.log(`  ✓ Claim description chunk "${EXPECTED_DESC_CHUNK}" found`);
-      // Typed "/name/" signature block present (Form 7.340 has a single sig line)
-      const typedSig = `/${EXPECTED_PLAINTIFF}/`;
-      assert(pdfText.includes(typedSig), `Typed signature block "${typedSig}" not found`);
-      console.log(`  ✓ Typed signature block "${typedSig}" found`);
     } else {
       console.log("  ⚠ pdftotext unavailable — text-layer assertions skipped");
     }
 
-    console.log("Verifying NO floating signature image (typed-signature form)…");
-    await assertNoFloatingSignatureImage(pdfBuf);
+    console.log("Checking signature pixel placement…");
+    await assertSignaturePlaced(pdfBuf, SIG_PAGE, SIG_X, SIG_Y, SIG_W, SIG_H, "AZ-COMPLAINT");
 
-    console.log("\n✅ All assertions passed — FL Statement of Claim signed PDF is correct.");
+    console.log("\n✅ All assertions passed — AZ Complaint signed PDF is correct.");
+
   } finally {
     if (caseId !== null) {
       console.log(`\nCleaning up: deleting test case ${caseId}…`);
