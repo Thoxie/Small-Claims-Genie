@@ -161,6 +161,7 @@ export async function buildTXPetitionJP5(
   // signature image when signed (both widgets are Signature-type — not fillable).
   const pdfDoc = await PDFDocument.load(filled);
   const page = pdfDoc.getPages()[0]!;
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
   let drewImage = false;
   if (opts?.signatureBytes) {
@@ -177,7 +178,6 @@ export async function buildTXPetitionJP5(
     }
   }
   if (!drewImage && d.plaintiffName) {
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     page.drawText(String(d.plaintiffName), {
       x: SIG_X,
       y: SIG_Y,
@@ -186,6 +186,16 @@ export async function buildTXPetitionJP5(
       color: rgb(0, 0, 0),
     });
   }
+
+  // Signature date — JP5's only AcroForm date fields are the notary "Sworn to"
+  // jurat (completed when the petitioner swears before the clerk/notary), so
+  // overlay today's date on the petitioner's own date line by the signature.
+  const today = new Date().toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
+  page.drawText(today, { x: 310, y: 132, size: 8, font, color: rgb(0, 0, 0) });
 
   return Buffer.from(await pdfDoc.save({ updateFieldAppearances: false, useObjectStreams: false }));
 }

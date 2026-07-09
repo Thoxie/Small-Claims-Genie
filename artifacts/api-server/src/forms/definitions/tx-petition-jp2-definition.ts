@@ -37,7 +37,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
@@ -210,6 +210,19 @@ export async function buildTXPetitionJP2(
       /* ignore invalid image data */
     }
   }
+
+  // Signature date — JP2 has no AcroForm date field and no dedicated date box, so
+  // overlay today's date on the signature line to the right of the signature
+  // (signed-and-dated convention). The clear right portion of that underline is
+  // the only open spot; the page-bottom slot used previously overlapped the
+  // "Phone or Fax No." label.
+  const dateFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const today = new Date().toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
+  page.drawText(today, { x: 505, y: 154, size: 8.5, font: dateFont, color: rgb(0, 0, 0) });
 
   return Buffer.from(await pdfDoc.save({ updateFieldAppearances: false, useObjectStreams: false }));
 }
