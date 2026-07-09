@@ -17,6 +17,14 @@ const execFileAsync = promisify(execFile);
 const BASE = process.env.API_BASE_URL ?? "http://localhost:80";
 const OUT  = "/tmp/form-check";
 
+const LOC: Record<string, { pCity: string; pZip: string; dCity: string; dZip: string }> = {
+  FL: { pCity: "Miami",   pZip: "33101", dCity: "Miami",    dZip: "33132" },
+  WA: { pCity: "Seattle", pZip: "98101", dCity: "Bellevue", dZip: "98004" },
+  AZ: { pCity: "Phoenix", pZip: "85003", dCity: "Mesa",     dZip: "85201" },
+  TX: { pCity: "Austin",  pZip: "78701", dCity: "Austin",   dZip: "78702" },
+  IL: { pCity: "Chicago", pZip: "60601", dCity: "Chicago",  dZip: "60602" },
+};
+
 interface FormSpec {
   label:    string;
   countyId: string;
@@ -27,6 +35,14 @@ interface FormSpec {
 }
 
 const FORMS: FormSpec[] = [
+  {
+    label:    "az-summons-current",
+    countyId: "az-maricopa",
+    state:    "AZ",
+    endpoint: (id, tok) => `${BASE}/api/cases/${id}/forms/az/summons/signed?token=${tok}`,
+    method:   "POST",
+    pages:    [1, 2],
+  },
   {
     label:    "fl-clkct333-miami-dade",
     countyId: "fl-miami-dade",
@@ -119,16 +135,16 @@ async function run() {
         countyId:         spec.countyId,
         plaintiffName:    "Patricia A. Ramirez",
         plaintiffAddress: "1234 Main Street Apt 5B",
-        plaintiffCity:    spec.state === "WA" ? "Seattle" : "Miami",
+        plaintiffCity:    LOC[spec.state]?.pCity ?? "Miami",
         plaintiffState:   spec.state,
-        plaintiffZip:     spec.state === "WA" ? "98101" : "33101",
+        plaintiffZip:     LOC[spec.state]?.pZip ?? "33101",
         plaintiffPhone:   "555-123-4567",
         plaintiffEmail:   "patricia.ramirez@example.com",
         defendantName:    "Acme Property Services LLC",
         defendantAddress: "9876 Commerce Boulevard Suite 200",
-        defendantCity:    spec.state === "WA" ? "Bellevue" : "Miami",
+        defendantCity:    LOC[spec.state]?.dCity ?? "Miami",
         defendantState:   spec.state,
-        defendantZip:     spec.state === "WA" ? "98004" : "33132",
+        defendantZip:     LOC[spec.state]?.dZip ?? "33132",
         defendantPhone:   "555-987-6543",
         claimType:        "services",
         claimAmount:      4750,
