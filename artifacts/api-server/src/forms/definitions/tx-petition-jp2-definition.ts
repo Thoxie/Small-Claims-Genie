@@ -2,27 +2,31 @@
  * TX Small Claims Petition — Travis County Precinct 2 (J2-CV)
  *
  * Fills the official Travis County Justice Court Precinct 2 "Petition: Small
- * Claims Case" PDF via pdf-lib coordinate overlay.
+ * Claims Case" PDF by populating its AcroForm fields via pdftk FDF fill, then
+ * flattening. A pdf-lib pass overlays the signature image for the signed variant.
  *
  * Source PDF: assets/forms/tx-small-claims-petition-jp2.pdf (1 page, 612×792)
- * No AcroForm fields (flat PDF).
+ * AcroForm fields verified via: pdftk tx-small-claims-petition-jp2.pdf dump_data_fields
  *
- * Coordinate reference (pdftotext -bbox-layout, y from top of 792pt page):
- *   pdf-lib y = 792 − pdftotext_yMax
+ * Field mapping (verified field names + widget positions):
+ *   Cause Number                                        — case number (label "J2-CV-")
+ *   Plaintiffs                                          — plaintiff name(s)
+ *   Defendants                                          — defendant name(s)
+ *   Text2 / Text3                                       — defendant address (street; city/state/zip)
+ *   Name of person to be served                         — agent name (business defendant only)
+ *   To be served at                                     — defendant service address (full)
+ *   Complaint Line 1..7                                 — claim description (wrapped)
+ *   damages in the amount of                            — claim amount
+ *   DEFENDANT'S PHONE NUMBER                            — defendant phone
+ *   Petitioner's Printed Name                           — plaintiff name (typed signature)
+ *   Address of Plaintiff or Plaintiffs Attorney if any  — plaintiff street address
+ *   City / State / Zip Code                             — plaintiff city / state / zip
+ *   Phone and Fax Number of Plaintiff ...               — plaintiff phone
+ *   Signature of Plaintiff or Attorney (Signature fld)  — signature image overlay (signed only)
  *
- * Key label positions:
- *   "Plaintiff(s):"    yMax=107.476  → pdf-lib y=684; name at x=110, y=684
- *   "Defendant(s):"    yMax=147.801  → pdf-lib y=644; name at x=125, y=644
- *   "Address:"         yMax=167.964  → pdf-lib y=624; def street at x=95, y=624
- *   "COMPLAINT:"       yMax=287.794  → pdf-lib y=504; description below
- *   "RELIEF: ... $"    xMax=281.987, yMax=448.303  → amount at x=290, y=344
- *
- *   Signature area (right col):
- *   "Signature of Plt" yMax=654.338  → pdf-lib y=138; sig image at x=313, y=150
- *   "Petitioner Printed Name" yMax=653.627 → pdf-lib y=138; name at x=48, y=150
- *   "Address of Plt"           → data at x=313, y=118
- *   City/State/Zip             → data at x=313, y=100
- *   "Phone & Fax"   yMax=757.964 → pdf-lib y=34 ; phone at x=313, y=56
+ * Left blank (filer/notary/court completes): consent-to-email checkbox + address,
+ * Role of person in the entity radio, defendant DOB / last-3 DL / last-3 SSN,
+ * personal-property description + value, additional damages, other service addresses.
  *
  * Legal basis:
  *   Texas Rules of Civil Procedure, Part V — Rules of Practice in Justice Courts
@@ -30,113 +34,191 @@
  *   Filed in Travis County Justice Court Precinct 2 (Case No. J2-CV-XXXXXX)
  */
 
-import * as fs from "fs";
 import * as path from "path";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import * as fs from "fs";
+import * as os from "os";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
+import { pdftk_fill_form } from "../pdftk-fdf";
 
 const PDF_PATH = path.join(FORMS_DIR, "tx-small-claims-petition-jp2.pdf");
-const BLACK = rgb(0, 0, 0);
+
+/**
+ * The official JP2 template leaves the 7 "Complaint Line" fields at DA font size 0
+ * (auto-size), so pdftk renders short lines much larger than long ones — producing
+ * an inconsistent complaint block. We derive a one-time template variant with those
+ * fields pinned to 9pt (matching the wrap measurement) so every line renders at the
+ * same size. Cached to a temp file and regenerated if the OS clears it.
+ */
+let complaintFontTemplatePath: string | null = null;
+async function ensureComplaintFontTemplate(): Promise<string> {
+  const finalPath = path.join(os.tmpdir(), "scg-tx-jp2-complaint9.pdf");
+  if (complaintFontTemplatePath && fs.existsSync(complaintFontTemplatePath)) {
+    return complaintFontTemplatePath;
+  }
+  const doc = await PDFDocument.load(fs.readFileSync(PDF_PATH));
+  const form = doc.getForm();
+  for (let i = 1; i <= 7; i++) form.getTextField(`Complaint Line ${i}`).setFontSize(9);
+  const bytes = await doc.save();
+  // Atomic publish: write to a unique temp file, then rename into place. rename
+  // is atomic on the same filesystem, so a concurrent pdftk read never sees a
+  // partially-written PDF. If two first requests race, each writes its own temp
+  // and the last rename wins — readers always observe a complete file.
+  const tmp = path.join(
+    os.tmpdir(),
+    `scg-tx-jp2-complaint9.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`,
+  );
+  fs.writeFileSync(tmp, bytes);
+  fs.renameSync(tmp, finalPath);
+  complaintFontTemplatePath = finalPath;
+  return finalPath;
+}
+
+// Signature field "Signature of Plaintiff or Attorney" widget: y=149 x=313 w=270 h=26.
+const SIG_X = 316;
+const SIG_Y = 151;
+const SIG_W = 180;
+const SIG_H = 22;
+
+function fmtAmount(amount: number | null | undefined): string {
+  if (!amount) return "";
+  return Number(amount).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function fullAddress(
+  street?: string | null,
+  city?: string | null,
+  state?: string | null,
+  zip?: string | null,
+): string {
+  const line2 = [city, state, zip].filter(Boolean).join(", ").replace(/, (\S+)$/, " $1");
+  return [street, line2].filter(Boolean).join(", ");
+}
+
+/**
+ * Wraps `text` across sequential single-line fields, measuring with a pdf-lib
+ * font so each line fits `maxWidth` at `size`. Returns a name→line map.
+ * Text beyond the available fields is dropped (matches prior overlay behavior).
+ */
+function wrapToFields(
+  text: string | null | undefined,
+  fieldNames: string[],
+  font: import("pdf-lib").PDFFont,
+  size: number,
+  maxWidth: number,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!text) return out;
+  const words = text.replace(/\r/g, "").split(/\s+/).filter(Boolean);
+  let cur = "";
+  let i = 0;
+  for (const w of words) {
+    const cand = cur ? `${cur} ${w}` : w;
+    if (font.widthOfTextAtSize(cand, size) > maxWidth && cur) {
+      out[fieldNames[i]!] = cur;
+      i++;
+      if (i >= fieldNames.length) return out;
+      cur = w;
+    } else {
+      cur = cand;
+    }
+  }
+  if (cur && i < fieldNames.length) out[fieldNames[i]!] = cur;
+  return out;
+}
 
 export async function buildTXPetitionJP2(
   d: CaseData,
   _body: FormBody,
   opts?: GenerateOptions,
 ): Promise<Buffer> {
-  const pdfBytes = fs.readFileSync(PDF_PATH);
-  const doc = await PDFDocument.load(pdfBytes);
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const page = doc.getPages()[0]!;
+  const measureDoc = await PDFDocument.create();
+  const measureFont = await measureDoc.embedFont(StandardFonts.Helvetica);
 
-  const t = (
-    text: string | null | undefined,
-    x: number,
-    y: number,
-    size = 8.5,
-  ) => {
-    if (!text) return;
-    page.drawText(String(text), { x, y, size, font, color: BLACK });
+  const defIsBiz = !!d.defendantIsBusinessOrEntity;
+  const defState = d.defendantState ?? "TX";
+  const pltState = d.plaintiffState ?? "TX";
+
+  const textFields: Record<string, string> = {
+    Plaintiffs: d.plaintiffName ?? "",
+    Defendants: d.defendantName ?? "",
+
+    // Defendant address (Text2 = street, Text3 = city/state/zip)
+    Text2: d.defendantAddress ?? "",
+    Text3: [d.defendantCity, defState, d.defendantZip].filter(Boolean).join(", ").replace(/, (\S+)$/, " $1"),
+
+    // Service address (where the citation is served)
+    "To be served at": fullAddress(d.defendantAddress, d.defendantCity, defState, d.defendantZip),
+
+    "damages in the amount of": fmtAmount(d.claimAmount),
+    "DEFENDANT'S PHONE NUMBER": d.defendantPhone ?? "",
+
+    // Plaintiff signature block
+    "Petitioner's Printed Name": d.plaintiffName ?? "",
+    "Address of Plaintiff or Plaintiffs Attorney if any": d.plaintiffAddress ?? "",
+    City: d.plaintiffCity ?? "",
+    State: pltState,
+    "Zip Code": d.plaintiffZip ?? "",
+    "Phone and Fax Number of Plaintiff or Plaintiff's Attorney": d.plaintiffPhone ?? "",
   };
 
-  // ── Plaintiff name ────────────────────────────────────────────────────────────
-  t(d.plaintiffName ?? "", 110, 684);
-
-  // ── Defendant name ────────────────────────────────────────────────────────────
-  t(d.defendantName ?? "", 125, 644);
-
-  // ── Defendant address ─────────────────────────────────────────────────────────
-  t(d.defendantAddress ?? "", 95, 624);
-  const defCSZ = [d.defendantCity, d.defendantState ?? "TX", d.defendantZip]
-    .filter(Boolean).join(", ");
-  t(defCSZ, 95, 606);
-
-  // ── Claim description (lines below "COMPLAINT:", ~17pt spacing) ───────────────
-  const desc = d.claimDescription ?? "";
-  const lineYs = [490, 473, 456, 439, 422, 405, 388, 371, 354];
-  if (desc) {
-    const words = desc.replace(/\r/g, "").split(/\s+/).filter(Boolean);
-    let cur = "";
-    let li = 0;
-    const maxLineW = 540;
-    for (const w of words) {
-      const candidate = cur ? `${cur} ${w}` : w;
-      if (font.widthOfTextAtSize(candidate, 8.5) > maxLineW && cur) {
-        if (li < lineYs.length) { t(cur, 48, lineYs[li]!); li++; }
-        cur = w;
-      } else {
-        cur = candidate;
-      }
-    }
-    if (cur && li < lineYs.length) t(cur, 48, lineYs[li]!);
+  // Case number: the form pre-prints the "J2-CV-" prefix beside the field, so strip
+  // any leading "J2-CV-" from the stored value to avoid doubling it (e.g. a stored
+  // "J2-CV-24-001234" renders as "24-001234" beside the pre-printed "J2-CV-").
+  if (d.caseNumber) {
+    textFields["Cause Number"] = d.caseNumber.replace(/^\s*J2[-\s]?CV[-\s]?/i, "").trim();
   }
 
-  // ── Claim amount ──────────────────────────────────────────────────────────────
-  const amt = d.claimAmount
-    ? Number(d.claimAmount).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    : "";
-  t(amt, 290, 344);
+  // Business-entity defendant: name the person served (registered agent, etc.).
+  if (defIsBiz && d.defendantAgentName) {
+    textFields["Name of person to be served"] = d.defendantAgentName;
+  }
 
-  // ── Signature area ────────────────────────────────────────────────────────────
+  // Complaint description across the 7 lines.
+  const complaintLines = [
+    "Complaint Line 1", "Complaint Line 2", "Complaint Line 3", "Complaint Line 4",
+    "Complaint Line 5", "Complaint Line 6", "Complaint Line 7",
+  ];
+  Object.assign(
+    textFields,
+    wrapToFields(d.claimDescription, complaintLines, measureFont, 9, 525),
+  );
+
+  const templatePath = await ensureComplaintFontTemplate();
+  const filled = await pdftk_fill_form(templatePath, { text: textFields });
+
+  // Reload through pdf-lib (both variants) so the signed PDF is reliably larger
+  // than the unsigned one, and overlay the signature image when signed.
+  const pdfDoc = await PDFDocument.load(filled);
+  const page = pdfDoc.getPages()[0]!;
+
   if (opts?.signatureBytes) {
     try {
       const sigImg =
-        (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
-        (await doc.embedJpg(opts.signatureBytes).catch(() => null));
+        (await pdfDoc.embedPng(opts.signatureBytes).catch(() => null)) ??
+        (await pdfDoc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        // Right column: "Signature of Plaintiff or Attorney"
-        page.drawImage(sigImg, { x: 313, y: 150, width: 175, height: 22, opacity: 1 });
+        page.drawImage(sigImg, { x: SIG_X, y: SIG_Y, width: SIG_W, height: SIG_H });
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore invalid image data */
+    }
   }
 
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "2-digit", day: "2-digit", year: "numeric",
-  });
-
-  // Left: Petitioner's Printed Name
-  t(d.plaintiffName ?? "", 48, 150);
-
-  // Right column: Address of Plaintiff
-  t(d.plaintiffAddress ?? "", 313, 118);
-  const pltCSZ = [d.plaintiffCity, d.plaintiffState ?? "TX", d.plaintiffZip]
-    .filter(Boolean).join(", ");
-  t(pltCSZ, 313, 100);
-  t(d.plaintiffPhone ?? "", 313, 56);
-  t(today, 313, 34);
-
-  return Buffer.from(await doc.save());
+  return Buffer.from(await pdfDoc.save({ updateFieldAppearances: false, useObjectStreams: false }));
 }
 
 const txPetitionJP2Definition: FormDefinition = {
   state: "TX",
   formId: "TX-PETITION-JP2",
-  renderingTechnique: "pdf-overlay",
+  assetPath: PDF_PATH,
+  renderingTechnique: "acroform-pdftk",
   async generate(d: CaseData, b: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     return buildTXPetitionJP2(d, b, opts);
   },

@@ -29,4 +29,6 @@
 - [VA official form PDFs](va-official-forms.md) — DC-402 and DC-409 are real AcroForm PDFs; pdftk FDF fill confirmed working; DC-402 page rotation=90 but pdftk handles it correctly
 - [Govt PDF download blockers](govt-pdf-download-blockers.md) — NC blocks via Cloudflare WAF (403); WA/IL return HTML; TX OCA media IDs rotate on form revision (all tried = 404)
 - [PDF revision field-name drift](pdf-revision-field-drift.md) — court form PDFs can completely rename all AcroForm fields across revisions; always re-verify field names with pdftk dump_data_fields against the new asset before shipping
+- [pdf-lib embedPng sync-hang](pdf-lib-embedpng-sync-hang.md) — degenerate-but-valid signature PNGs make embedPng spin synchronously and DoS the server; try/catch can't rescue it; test fixtures must be real PNGs
+- [AcroForm auto-size font](acroform-autosize-font.md) — DA font size 0 makes short wrapped lines balloon under pdftk flatten; pin size via pdf-lib setFontSize on a derived template (pdftk honors it)
 # Last pushed: 2026-06-30 20:04 UTC
