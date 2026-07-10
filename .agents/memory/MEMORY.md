@@ -37,5 +37,6 @@
 - [Heavy CI validations OOM in parallel](heavy-validation-parallel-oom.md) — mark-complete runs all validations at once; SIGABRT/exit-134 + API 500s = resource exhaustion, not per-test bugs; verify heavy tests in small batches
 - [Signed-form pixel drift tests](signed-form-sigcheck-tests.md) — calibrate `image` regions from the signed-vs-unsigned diff bbox so Δ=0 baseline catches future coordinate drift; prefer over "some-dark-on-page" checks
 - [Download tokens single-use](download-token-single-use.md) — form-download `?token=` is consumed on first use; multi-fetch harnesses must mint a fresh token per request or later fetches 403
+- [Deploy server-libs tsconfig](deploy-libs-server-tsconfig.md) — new @workspace lib used by api-server must be in tsconfig.libs-server.json (not just root tsconfig) or publish fails "Could not resolve"
 # Last pushed: 2026-06-30 20:04 UTC
 - [Signature placement single source](signature-placement-source.md) — signed-test sig crop coords live in lib/form-signatures, consumed by both form definitions and tests; never duplicate magic numbers in test files
