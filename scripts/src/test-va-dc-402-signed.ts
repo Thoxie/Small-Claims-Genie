@@ -23,6 +23,11 @@
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";
+import {
+  FORM_SIGNATURE_PLACEMENTS,
+  resolveTestCrop,
+  type FormSignaturePlacement,
+} from "@workspace/form-signatures";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import * as zlib from "zlib";
@@ -40,13 +45,16 @@ const EXPECTED_PLAINTIFF = "Jane Smith";
 const EXPECTED_DEFENDANT = "ABC Hardware LLC";
 const EXPECTED_AMOUNT    = "3,500.00";
 
-// Signature placement in RENDERED IMAGE-SPACE coords (page renders rotated to
-// landscape 792×612 at 72 DPI). Cropped directly — no pdf-lib→image conversion.
-const SIG_PAGE  = 1;
-const SIG_IMG_X = 200;
-const SIG_IMG_Y = 317;
-const SIG_IMG_W = 156;
-const SIG_IMG_H = 23;
+// Signature placement — single source of truth lives in @workspace/form-signatures,
+// co-located with the form definition's draw coords. DC-402 renders rotated to
+// landscape (792×612), so the placement carries an explicit image-space crop the
+// test uses directly (no pdf-lib→image conversion). See that package for how to
+// re-calibrate when the official form PDF is reissued with a shifted layout.
+const PLACEMENT = FORM_SIGNATURE_PLACEMENTS["va-dc-402"];
+if (PLACEMENT.testCrop.mode !== "image-space") {
+  throw new Error("VA DC-402 placement must use an image-space test crop (rotated page)");
+}
+const TEST_CROP = PLACEMENT.testCrop;
 
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:80";
 
@@ -100,7 +108,7 @@ function buildSolidPngDataUrl(
 }
 
 // Solid black PNG — maximally visible signature for pixel detection
-const SIGNATURE_DATA_URL = buildSolidPngDataUrl(SIG_IMG_W, SIG_IMG_H, 0, 0, 0);
+const SIGNATURE_DATA_URL = buildSolidPngDataUrl(TEST_CROP.width, TEST_CROP.height, 0, 0, 0);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function assert(condition: boolean, message: string): void {
@@ -122,16 +130,20 @@ async function extractPdfText(pdfBuf: Buffer): Promise<string> {
 }
 
 /**
- * Render a PDF page to PNG at 72 DPI and verify the signature bounding box —
- * given in RENDERED IMAGE-SPACE coords (top-left origin) — contains dark pixels.
- * Used for rotated pages where the pdf-lib→image formula does not apply.
+ * Render a PDF page to PNG at 72 DPI and verify that the signature region for the
+ * given placement contains dark pixels. The crop box is resolved from the shared
+ * placement (via `resolveTestCrop`); for DC-402 this yields the calibrated
+ * image-space box, since the rotated page defeats the pdf-lib→image formula. No
+ * magic numbers are duplicated here.
  */
-async function assertSignaturePlacedImageSpace(
+async function assertSignaturePlaced(
   pdfBuf: Buffer,
-  page: number,
-  imgX: number, imgY: number, w: number, h: number,
-  formLabel: string,
+  placement: FormSignaturePlacement,
 ): Promise<void> {
+  const page =
+    placement.testCrop.mode === "image-space"
+      ? placement.testCrop.page
+      : placement.draw.pageIndex + 1;
   const ts = Date.now();
   const pdfPath = join(tmpdir(), `sig-check-${ts}.pdf`);
   const pngBase = join(tmpdir(), `sig-check-page-${ts}`);
@@ -147,8 +159,10 @@ async function assertSignaturePlacedImageSpace(
     try {
       const { stdout: dimStr } = await execFileAsync("magick", ["identify", "-format", "%wx%h", pngPath]);
       console.log(`  Rendered page size: ${dimStr.trim()}px`);
+      const pageH = parseInt(dimStr.trim().split("x")[1] ?? "0", 10);
 
-      const crop = `${w}x${h}+${imgX}+${imgY}`;
+      const box = resolveTestCrop(placement, pageH);
+      const crop = `${box.width}x${box.height}+${box.x}+${box.y}`;
       const { stdout: meanStr } = await execFileAsync("magick", [
         "convert", pngPath,
         "-crop", crop, "+repage",
@@ -161,8 +175,9 @@ async function assertSignaturePlacedImageSpace(
 
       assert(
         mean < 0.98,
-        `${formLabel}: No dark pixels in signature region (mean=${mean.toFixed(4)} ≥ 0.98). ` +
-        `Signature may not have been placed at image coords x=${imgX}, y=${imgY}, w=${w}, h=${h}, page=${page}.`,
+        `${placement.label}: No dark pixels in signature region (mean=${mean.toFixed(4)} ≥ 0.98). ` +
+        `Signature may not have been placed at crop ${crop} on page ${page}. ` +
+        `If the court reissued this form PDF, re-calibrate the placement in @workspace/form-signatures.`,
       );
       console.log(`  ✓ Signature pixels confirmed in expected region (mean=${mean.toFixed(4)} < 0.98)`);
     } finally {
@@ -256,7 +271,7 @@ async function run() {
     }
 
     console.log("Checking signature pixel placement (rotated page, image-space crop)…");
-    await assertSignaturePlacedImageSpace(pdfBuf, SIG_PAGE, SIG_IMG_X, SIG_IMG_Y, SIG_IMG_W, SIG_IMG_H, "VA-DC-402");
+    await assertSignaturePlaced(pdfBuf, PLACEMENT);
 
     console.log("\n✅ All assertions passed — VA DC-402 signed PDF is correct.");
 

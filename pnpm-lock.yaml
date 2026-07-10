@@ -412,6 +412,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
+      '@workspace/form-signatures':
+        specifier: workspace:*
+        version: link:../../lib/form-signatures
       '@workspace/integrations-openai-ai-server':
         specifier: workspace:*
         version: link:../../lib/integrations-openai-ai-server
@@ -1321,6 +1324,8 @@ importers:
         specifier: ^0.31.9
         version: 0.31.9
 
+  lib/form-signatures: {}
+
   lib/integrations-openai-ai-react:
     devDependencies:
       '@types/react':
@@ -1350,6 +1355,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../lib/db
+      '@workspace/form-signatures':
+        specifier: workspace:*
+        version: link:../lib/form-signatures
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.2(@types/pg@8.18.0)(pg@8.20.0)

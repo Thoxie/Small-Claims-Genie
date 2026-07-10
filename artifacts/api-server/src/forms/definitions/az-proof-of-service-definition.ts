@@ -40,6 +40,7 @@ import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
+import { FORM_SIGNATURE_PLACEMENTS } from "@workspace/form-signatures";
 
 const PDF_PATH = path.join(FORMS_DIR, "az-ljsc00003f-proof-of-service.pdf");
 const BLACK = rgb(0, 0, 0);
@@ -116,7 +117,9 @@ export async function buildAZProofOfService(
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, { x: 74, y: sigLineY + 2, width: 190, height: 24, opacity: 1 });
+        const { x, y, width, height } =
+          FORM_SIGNATURE_PLACEMENTS["az-proof-of-service"].draw;
+        page.drawImage(sigImg, { x, y, width, height, opacity: 1 });
         sigDrawn = true;
       }
     } catch { /* ignore */ }

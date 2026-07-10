@@ -19,6 +19,7 @@
     "@types/react": "catalog:",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/form-signatures": "workspace:*",
     "@workspace/integrations-openai-ai-server": "workspace:*",
     "@workspace/state-facts": "workspace:*",
     "cookie-parser": "^1.4.7",

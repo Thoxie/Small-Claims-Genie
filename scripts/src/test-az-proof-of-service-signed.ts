@@ -20,6 +20,11 @@
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";
+import {
+  FORM_SIGNATURE_PLACEMENTS,
+  resolveTestCrop,
+  type FormSignaturePlacement,
+} from "@workspace/form-signatures";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import * as zlib from "zlib";
@@ -36,12 +41,10 @@ const TEST_USER_ID       = "test-az-proof-of-service-signed-e2e";
 const EXPECTED_PLAINTIFF = "Marcus Delgado";
 const EXPECTED_DEFENDANT = "Sonoran Desert Roofing LLC";
 
-// Signature placement (pdf-lib coords: x/y from bottom-left, y is bottom edge of image)
-const SIG_PAGE = 1;
-const SIG_X    = 74;
-const SIG_Y    = 98;
-const SIG_W    = 190;
-const SIG_H    = 24;
+// Signature placement — single source of truth lives in @workspace/form-signatures,
+// co-located with the form definition's draw coords. See that package for how to
+// re-calibrate when the official form PDF is reissued with a shifted layout.
+const PLACEMENT = FORM_SIGNATURE_PLACEMENTS["az-proof-of-service"];
 
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:80";
 
@@ -95,7 +98,11 @@ function buildSolidPngDataUrl(
 }
 
 // Solid black PNG — maximally visible signature for pixel detection
-const SIGNATURE_DATA_URL = buildSolidPngDataUrl(SIG_W, SIG_H, 0, 0, 0);
+const SIGNATURE_DATA_URL = buildSolidPngDataUrl(
+  PLACEMENT.draw.width,
+  PLACEMENT.draw.height,
+  0, 0, 0,
+);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function assert(condition: boolean, message: string): void {
@@ -117,17 +124,19 @@ async function extractPdfText(pdfBuf: Buffer): Promise<string> {
 }
 
 /**
- * Render a PDF page to PNG at 72 DPI and verify that the signature bounding box
- * (given in pdf-lib coords: x/y from bottom-left) contains dark pixels.
- *
- * pdf-lib coord → image coord: imgX = pdfX, imgY = pageH - pdfY - sigH
+ * Render a PDF page to PNG at 72 DPI and verify that the signature region for the
+ * given placement contains dark pixels. The crop box is resolved from the shared
+ * placement (via `resolveTestCrop`) so the coordinates always match what the form
+ * definition drew — no magic numbers duplicated here.
  */
 async function assertSignaturePlaced(
   pdfBuf: Buffer,
-  page: number,
-  pdfX: number, pdfY: number, w: number, h: number,
-  formLabel: string,
+  placement: FormSignaturePlacement,
 ): Promise<void> {
+  const page =
+    placement.testCrop.mode === "image-space"
+      ? placement.testCrop.page
+      : placement.draw.pageIndex + 1;
   const ts = Date.now();
   const pdfPath = join(tmpdir(), `sig-check-${ts}.pdf`);
   const pngBase = join(tmpdir(), `sig-check-page-${ts}`);
@@ -145,9 +154,8 @@ async function assertSignaturePlaced(
       const pageH = parseInt(hStr.trim(), 10);
       assert(!isNaN(pageH) && pageH > 0, `Could not determine page height, got: "${hStr}"`);
 
-      const imgX = pdfX;
-      const imgY = pageH - pdfY - h;
-      const crop = `${w}x${h}+${imgX}+${imgY}`;
+      const box = resolveTestCrop(placement, pageH);
+      const crop = `${box.width}x${box.height}+${box.x}+${box.y}`;
 
       const { stdout: meanStr } = await execFileAsync("magick", [
         "convert", pngPath,
@@ -161,8 +169,9 @@ async function assertSignaturePlaced(
 
       assert(
         mean < 0.98,
-        `${formLabel}: No dark pixels in signature region (mean=${mean.toFixed(4)} ≥ 0.98). ` +
-        `Signature may not have been placed at coords x=${pdfX}, y=${pdfY}, w=${w}, h=${h}, page=${page}.`,
+        `${placement.label}: No dark pixels in signature region (mean=${mean.toFixed(4)} ≥ 0.98). ` +
+        `Signature may not have been placed at crop ${crop} on page ${page}. ` +
+        `If the court reissued this form PDF, re-calibrate the placement in @workspace/form-signatures.`,
       );
       console.log(`  ✓ Signature pixels confirmed in expected region (mean=${mean.toFixed(4)} < 0.98)`);
     } finally {
@@ -253,7 +262,7 @@ async function run() {
     }
 
     console.log("Checking signature pixel placement…");
-    await assertSignaturePlaced(pdfBuf, SIG_PAGE, SIG_X, SIG_Y, SIG_W, SIG_H, "AZ-PROOF-OF-SERVICE");
+    await assertSignaturePlaced(pdfBuf, PLACEMENT);
 
     console.log("\n✅ All assertions passed — AZ Proof of Service signed PDF is correct.");
 

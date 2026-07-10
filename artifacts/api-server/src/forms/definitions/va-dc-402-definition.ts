@@ -44,6 +44,7 @@ import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
 import { ASSET_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
+import { FORM_SIGNATURE_PLACEMENTS } from "@workspace/form-signatures";
 
 const PDF_PATH = path.join(ASSET_DIR, "va-forms", "dc-402.pdf");
 
@@ -163,12 +164,14 @@ const vaDc402Definition: FormDefinition = {
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
+        const { x, y, width, height, rotate } =
+          FORM_SIGNATURE_PLACEMENTS["va-dc-402"].draw;
         sigPage.drawImage(sigImg, {
-          x: 339,
-          y: 200,
-          width: 155,
-          height: 22,
-          rotate: degrees(90),
+          x,
+          y,
+          width,
+          height,
+          rotate: degrees(rotate ?? 0),
           opacity: 1,
         });
       }

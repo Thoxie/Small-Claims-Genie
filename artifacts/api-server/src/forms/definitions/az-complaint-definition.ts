@@ -36,6 +36,7 @@ import { FormRegistry } from "../registry";
 import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
 import { pdftkFlatten } from "../acroform-filler";
+import { FORM_SIGNATURE_PLACEMENTS } from "@workspace/form-signatures";
 
 const PDF_PATH = path.join(FORMS_DIR, "az-ljsc00001f-complaint.pdf");
 
@@ -181,13 +182,9 @@ const azComplaintDefinition: FormDefinition = {
           (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
           (await doc.embedJpg(opts.signatureBytes).catch(() => null));
         if (sigImg) {
-          azSigPage.drawImage(sigImg, {
-            x: 326,
-            y: 513,
-            width: 180,
-            height: 28,
-            opacity: 1,
-          });
+          const { x, y, width, height } =
+            FORM_SIGNATURE_PLACEMENTS["az-complaint"].draw;
+          azSigPage.drawImage(sigImg, { x, y, width, height, opacity: 1 });
         }
       } catch {
         /* ignore invalid signature data */

@@ -20,6 +20,9 @@
     },
     {
       "path": "./lib/state-facts"
+    },
+    {
+      "path": "./lib/form-signatures"
     }
   ]
 }
