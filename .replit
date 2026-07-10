@@ -82,6 +82,126 @@ args = "test-fl-clkct423-signed"
 task = "workflow.run"
 args = "test-fl-statement-of-claim-signed"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-tx-petition-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-tx-petition-jp2-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-tx-petition-jp5-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-tx-return-of-service-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-tx-fee-waiver-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-il-proof-of-service-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-il-fee-waiver-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-proof-of-service-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-fee-waiver-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-cl219-volusia-pdf-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-nc-aoc-cvm-200-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-nc-aoc-g-106-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-nj-complaint-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-wa-notice-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-va-dc-409-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-broward-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-orange-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-hillsborough-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-palm-beach-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-az-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-il-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-nc-aoc-cvm-100-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-tx-citation-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-volusia-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-broward-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-orange-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-hillsborough-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-palm-beach-summons-sigcheck"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-wa-service-sigcheck"
+
 [[workflows.workflow]]
 name = "api-server-build"
 author = "agent"
@@ -243,6 +363,336 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "pnpm --filter @workspace/scripts run test:fl-statement-of-claim-signed"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-tx-petition-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:tx-petition-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-tx-petition-jp2-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:tx-petition-jp2-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-tx-petition-jp5-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:tx-petition-jp5-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-tx-return-of-service-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:tx-return-of-service-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-tx-fee-waiver-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:tx-fee-waiver-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-il-proof-of-service-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:il-proof-of-service-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-il-fee-waiver-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:il-fee-waiver-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-proof-of-service-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-proof-of-service-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-fee-waiver-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-fee-waiver-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-cl219-volusia-pdf-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-cl219-volusia-pdf-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-nc-aoc-cvm-200-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:nc-aoc-cvm-200-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-nc-aoc-g-106-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:nc-aoc-g-106-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-nj-complaint-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:nj-complaint-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-wa-notice-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:wa-notice-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-va-dc-409-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:va-dc-409-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-broward-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-broward-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-orange-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-orange-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-hillsborough-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-hillsborough-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-palm-beach-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-palm-beach-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-az-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:az-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-il-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:il-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-nc-aoc-cvm-100-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:nc-aoc-cvm-100-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-tx-citation-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:tx-citation-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-volusia-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-volusia-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-broward-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-broward-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-orange-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-orange-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-hillsborough-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-hillsborough-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-palm-beach-summons-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-palm-beach-summons-sigcheck"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "test-wa-service-sigcheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:wa-service-sigcheck"
 
 [workflows.workflow.metadata]
 isValidation = true

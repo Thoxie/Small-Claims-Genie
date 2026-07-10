@@ -34,4 +34,7 @@
 - [pdf-lib embedPng sync-hang](pdf-lib-embedpng-sync-hang.md) — degenerate-but-valid signature PNGs make embedPng spin synchronously and DoS the server; try/catch can't rescue it; test fixtures must be real PNGs
 - [AcroForm auto-size font](acroform-autosize-font.md) — DA font size 0 makes short wrapped lines balloon under pdftk flatten; pin size via pdf-lib setFontSize on a derived template (pdftk honors it)
 - [Clerk-signed summons](clerk-signed-summons.md) — some non-CA forms (e.g. FL CLK-CT-423) are filed by plaintiff but signed by the clerk; render caption/contact only, NO plaintiff signature — don't "fix" the absence
+- [Heavy CI validations OOM in parallel](heavy-validation-parallel-oom.md) — mark-complete runs all validations at once; SIGABRT/exit-134 + API 500s = resource exhaustion, not per-test bugs; verify heavy tests in small batches
+- [Signed-form pixel drift tests](signed-form-sigcheck-tests.md) — calibrate `image` regions from the signed-vs-unsigned diff bbox so Δ=0 baseline catches future coordinate drift; prefer over "some-dark-on-page" checks
+- [Download tokens single-use](download-token-single-use.md) — form-download `?token=` is consumed on first use; multi-fetch harnesses must mint a fresh token per request or later fetches 403
 # Last pushed: 2026-06-30 20:04 UTC
