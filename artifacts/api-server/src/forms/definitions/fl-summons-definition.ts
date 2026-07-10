@@ -147,19 +147,30 @@ export async function buildFLSummons(
   t(d.caseNumber ?? "", MR - 110, 742, 8.5);
   if (d.plaintiffPhone) t(d.plaintiffPhone, MR - 165, 731, 7.5);
 
-  t("vs.", ML, 711, 8.5);
-  t(d.defendantName ?? "________________", ML, 701, 9, bold);
-  page.drawLine({
-    start: { x: ML, y: 693 },
-    end: { x: MR, y: 693 },
-    thickness: 0.5,
-    color: BLACK,
+  // ── Defendant block — white-out the placeholder zone then draw cleanly ─────
+  // The template's "…..(Defendant's Names(s) and addresses(es))….." sits at
+  // pdftotext y=71–87 (pdf-lib y≈704–720). Covering it with a white rectangle
+  // prevents the template guidance text from showing through our overlay.
+  // The form body "YOU ARE HEREBY NOTIFIED" begins at pdftotext yMin=103.836
+  // (pdf-lib y≈688); the white zone stops at y=690 to leave a clean gap.
+  //
+  // Drawing order — top to bottom (decreasing pdf-lib y):
+  //   y=721 "Plaintiff(s),"  [drawn above, in header]
+  //   y=711 "vs."
+  //   y=702 defendant name   (9pt bold)
+  //   y=692 defendant address (7.5pt)
+  //   [y≈688 form body "YOU ARE HEREBY NOTIFIED" — untouched]
+  page.drawRectangle({
+    x: ML - 2,
+    y: 690,
+    width: MR - ML + 4,
+    height: 31,
+    color: rgb(1, 1, 1),
   });
 
-  // ── Defendant address at the form's fill-in placeholder ───────────────────
-  // "…..(Defendant's Names(s) and addresses(es))….." placeholder is at
-  // pdftotext y=71–87 (pdf-lib y≈704–720).  Draw the defendant address at
-  // pdf-lib y≈704 (same baseline as the form placeholder text).
+  t("vs.", ML, 711, 8.5);
+  t(d.defendantName ?? "________________", ML, 702, 9, bold);
+
   const defAddrParts: string[] = [];
   if (d.defendantAddress) defAddrParts.push(d.defendantAddress);
   const defCSZ = [
@@ -171,7 +182,7 @@ export async function buildFLSummons(
     .join(", ");
   if (defCSZ) defAddrParts.push(defCSZ);
   if (defAddrParts.length > 0) {
-    t(defAddrParts.join(", "), ML, 704, 8.5);
+    t(defAddrParts.join(", "), ML, 692, 7.5);
   }
 
   // ── Hearing date at ".....(date)....." blank ──────────────────────────────
@@ -185,10 +196,11 @@ export async function buildFLSummons(
   t(hearingTimeStr, 165, 640, 8.5);
 
   // ── Court address at "located at .........." blank ────────────────────────
-  // pdftotext y=120–135, x=363–443 → pdf-lib y = 792 − 135.756 ≈ 656
-  // Space is ≈80pt; draw at 7pt to maximise visible characters.
+  // pdftotext y=120–135, x=363.36–443.94 → pdf-lib y = 792 − 135.756 ≈ 656
+  // Usable blank width = 443.94 − 363.36 ≈ 80pt.
+  // Using 6.5pt font to fit as many characters as possible within the blank.
   if (clerkAddr) {
-    t(truncate(clerkAddr, 78, 7), 363, 656, 7);
+    t(truncate(clerkAddr, 80, 6.5), 363, 656, 6.5);
   }
 
   // ── No plaintiff signature ─────────────────────────────────────────────────
