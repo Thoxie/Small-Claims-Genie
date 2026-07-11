@@ -3,21 +3,12 @@
  *
  * Florida statewide Statement of Claim forms — Forms 7.330 through 7.337.
  * All 8 forms use the automation-ready AcroForm PDFs from the FL forms package.
- * Filling technique: pdf-lib field setValue for all text fields.
- * Signature: overlaid as a PNG image at the plaintiff_signature widget rect.
+ * Filling technique: pdf-lib field setValue for all text fields, then form.flatten(),
+ * then signature PNG overlay drawn directly on flattened page content.
  *
- * Routing: a single "FL-SOC" registry entry dispatches to the correct AcroForm
- * based on d.claimType. All 67 FL counties use the same statewide forms.
- *
- * Form → Claim Type mapping (Florida Small Claims Rules 7.330–7.337):
- *   7.330 Auto Negligence
- *   7.331 Goods Sold
- *   7.332 Work Done / Materials Furnished
- *   7.333 Money Lent
- *   7.334 Promissory Note
- *   7.335 Stolen Property from Pawnbroker
- *   7.336 Return of Property from Government (Replevin)
- *   7.337 Account Stated
+ * Signature strategy: capture plaintiff_signature widget rect BEFORE flatten, call
+ * form.flatten() to remove interactive widgets, then drawImage at saved rect so the
+ * signature is never covered by a field widget appearance stream.
  */
 
 import * as path from "path";
@@ -40,7 +31,7 @@ import {
 
 const FL_FORMS_DIR = path.join(ASSET_DIR, "fl-forms");
 
-// ─── Field setters ─────────────────────────────────────────────────────────────
+// ─── Field setter ──────────────────────────────────────────────────────────────
 
 function safeSet(
   form: ReturnType<PDFDocument["getForm"]>,
@@ -54,37 +45,6 @@ function safeSet(
   }
 }
 
-// ─── Signature overlay ─────────────────────────────────────────────────────────
-
-async function overlaySignature(
-  doc: PDFDocument,
-  form: ReturnType<PDFDocument["getForm"]>,
-  sigBytes: Buffer,
-  fieldName: string,
-  todayStr: string,
-): Promise<void> {
-  try {
-    const sigField = form.getTextField(fieldName);
-    const widgets = sigField.acroField.getWidgets();
-    if (widgets.length === 0) return;
-    const rect = widgets[0]!.getRectangle();
-    const sigImg = await doc.embedPng(sigBytes);
-    const page = doc.getPage(0);
-    page.drawImage(sigImg, {
-      x: rect.x,
-      y: rect.y,
-      width: rect.width,
-      height: rect.height,
-    });
-    sigField.setText("");
-    // Draw typed date below the signature area if space allows
-    const helv = await doc.embedFont(StandardFonts.Helvetica);
-    page.drawText(todayStr, { x: rect.x, y: rect.y - 10, size: 7, font: helv });
-  } catch {
-    /* if image embed fails, leave blank */
-  }
-}
-
 // ─── Common caption fields (all SOC forms share these) ────────────────────────
 
 function fillCaption(
@@ -93,17 +53,16 @@ function fillCaption(
 ): void {
   safeSet(form, "judicial_circuit", flJudicialCircuit((d as any).countyId));
   safeSet(form, "county", flCountyDisplay((d as any).countyId));
-  safeSet(form, "case_number", ""); // assigned by clerk after filing
+  safeSet(form, "case_number", "");
   safeSet(form, "plaintiff_name", d.plaintiffName ?? "");
   safeSet(form, "plaintiff_address", flPlaintiffAddress(d));
   safeSet(form, "defendant_name", flDefendantName(d));
   safeSet(form, "defendant_address", flDefendantAddress(d));
 }
 
-// ─── Per-form field fill functions ────────────────────────────────────────────
+// ─── Per-form field fill functions (no signature overlay — handled centrally) ──
 
-async function fill7330(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7330(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "collision_date", fmtDate(d.incidentDate));
   safeSet(form, "collision_location", d.claimDescription?.slice(0, 120) ?? "");
@@ -113,14 +72,9 @@ async function fill7330(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): 
   safeSet(form, "defendant_driver", flDefendantName(d));
   safeSet(form, "claim_amount", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "plaintiff_signature", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
-async function fill7331(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7331(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
@@ -128,14 +82,9 @@ async function fill7331(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): 
   safeSet(form, "last_sale_date", fmtDate(d.incidentDate));
   safeSet(form, "goods_and_prices", d.claimDescription ?? "");
   safeSet(form, "plaintiff_signature", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
-async function fill7332(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7332(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
@@ -143,28 +92,18 @@ async function fill7332(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): 
   safeSet(form, "work_end_date", fmtDate(d.incidentDate));
   safeSet(form, "labor_materials_credits", d.claimDescription ?? "");
   safeSet(form, "plaintiff_signature", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
-async function fill7333(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7333(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "loan_date", fmtDate(d.incidentDate));
   safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
   safeSet(form, "loan_description", d.claimDescription ?? "");
   safeSet(form, "plaintiff_signature", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
-async function fill7334(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7334(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "note_date", fmtDate(d.incidentDate));
   safeSet(form, "note_county", flCountyDisplay((d as any).countyId));
@@ -175,14 +114,9 @@ async function fill7334(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): 
   safeSet(form, "interest_rate", "");
   safeSet(form, "attorney_fees", "");
   safeSet(form, "plaintiff_signature", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
-async function fill7335(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7335(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "pawnbroker_name", flDefendantName(d));
   safeSet(form, "pawnbroker_address", flDefendantAddress(d));
@@ -195,14 +129,9 @@ async function fill7335(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): 
   safeSet(form, "plaintiff_signature", "");
   safeSet(form, "notary_name", "");
   safeSet(form, "notary_date", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
-async function fill7336(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7336(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "government_entity", flDefendantName(d));
   safeSet(form, "government_address", flDefendantAddress(d));
@@ -215,29 +144,20 @@ async function fill7336(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): 
   safeSet(form, "plaintiff_signature", "");
   safeSet(form, "notary_name", "");
   safeSet(form, "notary_date", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
-async function fill7337(d: CaseData, doc: PDFDocument, opts?: GenerateOptions): Promise<void> {
-  const form = doc.getForm();
+function fill7337(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "account_statement_date", fmtDate(d.incidentDate));
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
   safeSet(form, "account_details", d.claimDescription ?? "");
   safeSet(form, "plaintiff_signature", "");
-  if (opts?.signatureBytes) {
-    const today = new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
-    await overlaySignature(doc, form, opts.signatureBytes, "plaintiff_signature", today);
-  }
 }
 
 // ─── Filler dispatch map ──────────────────────────────────────────────────────
 
-type FormFiller = (d: CaseData, doc: PDFDocument, opts?: GenerateOptions) => Promise<void>;
+type FormFiller = (d: CaseData, form: ReturnType<PDFDocument["getForm"]>) => void;
 
 const FILLERS: Record<string, FormFiller> = {
   "fl-7330-auto-negligence.pdf": fill7330,
@@ -268,17 +188,59 @@ export async function buildFlSocForm(
   const pdfPath = path.join(FL_FORMS_DIR, meta.assetFile);
   const pdfBytes = fs.readFileSync(pdfPath);
   const doc = await PDFDocument.load(pdfBytes);
+  const form = doc.getForm();
 
+  // 1. Fill all text fields
   const filler = FILLERS[meta.assetFile];
   if (!filler) throw new Error(`No filler registered for ${meta.assetFile}`);
-  await filler(d, doc, opts);
+  filler(d, form);
 
-  let saved: Uint8Array;
+  // 2. Capture plaintiff_signature widget rect BEFORE flattening
+  //    (after flatten the widget is gone and cannot be queried)
+  let sigRect: { x: number; y: number; width: number; height: number } | null = null;
   try {
-    saved = await doc.save({ updateFieldAppearances: true });
+    const sigField = form.getTextField("plaintiff_signature");
+    const widgets = sigField.acroField.getWidgets();
+    if (widgets.length > 0) sigRect = widgets[0]!.getRectangle();
   } catch {
-    saved = await doc.save({ updateFieldAppearances: false });
+    /* field absent — proceed without signature */
   }
+
+  // 3. Flatten form — converts all interactive field widgets to static page content
+  //    so the signature image drawn afterward is never obscured by a widget appearance
+  form.flatten();
+
+  // 4. Draw signature image on the flattened page
+  if (opts?.signatureBytes && sigRect) {
+    try {
+      const sigImg = await doc.embedPng(opts.signatureBytes);
+      const page = doc.getPage(0);
+      page.drawImage(sigImg, {
+        x: sigRect.x,
+        y: sigRect.y,
+        width: sigRect.width,
+        height: sigRect.height,
+      });
+      // Draw today's date just below the signature
+      const helv = await doc.embedFont(StandardFonts.Helvetica);
+      const today = new Date().toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      });
+      page.drawText(today, {
+        x: sigRect.x,
+        y: sigRect.y - 11,
+        size: 7,
+        font: helv,
+      });
+    } catch {
+      /* if image embed fails, leave blank */
+    }
+  }
+
+  // 5. Save — form is already flattened so no appearance stream regeneration needed
+  const saved = await doc.save();
   return Buffer.from(saved);
 }
 

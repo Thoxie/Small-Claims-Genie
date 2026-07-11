@@ -66,7 +66,7 @@ export async function buildFlStatewideummons(
   safeSet(form, "judicial_circuit", flJudicialCircuit((d as any).countyId));
   safeSet(form, "county", flCountyDisplay((d as any).countyId));
   safeSet(form, "case_number", "");
-  safeSet(form, "division", "");
+  safeSet(form, "division", "Small Claims");
   safeSet(form, "plaintiff_name", d.plaintiffName ?? "");
   safeSet(form, "defendant_name", flDefendantName(d));
   safeSet(form, "defendant_address", flDefendantAddress(d));
