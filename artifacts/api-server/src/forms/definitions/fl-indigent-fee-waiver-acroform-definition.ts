@@ -22,7 +22,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFName, PDFNumber, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { ASSET_DIR } from "../../routes/forms-common";
@@ -87,30 +87,48 @@ export async function buildFlIndigentFeeWaiver(
   safeSet(form, "applicant_signature", "");
   safeSet(form, "signature_date", "");
 
+  // Hide the applicant_signature widget (it sits on page 2) and draw the image
+  // on page 2 at the widget's exact position.  Using F=2 (Hidden) instead of
+  // form.flatten() keeps every other field interactive.
+  //
+  // Widget position confirmed via pdf-lib introspection:
+  //   applicant_signature: page 2, x=220 y=535 w=330 h=20  (pdf-lib coords, y from bottom)
+  // pdftotext "Applicant Signature" label on page 2: pdftotext y=245–254 from top
+  //   → pdf-lib y = 792-254 = 538 (bottom), 792-245 = 547 (top)  ✓ matches widget
+  const SIG_PAGE = 1; // 0-indexed; applicant_signature is on page 2
+  const SIG_X = 220;
+  const SIG_Y = 535;
+  const SIG_W = 330;
+  const SIG_H = 20;
+
+  try {
+    const sigField = form.getTextField("applicant_signature");
+    const widgets = sigField.acroField.getWidgets();
+    if (widgets.length > 0) {
+      // Hide the widget so it doesn't obscure the drawn image
+      (widgets[0]! as any).dict.set(PDFName.of("F"), PDFNumber.of(2));
+    }
+  } catch {
+    /* field absent — ignore */
+  }
+
   if (opts?.signatureBytes) {
     try {
-      const sigField = form.getTextField("applicant_signature");
-      const widgets = sigField.acroField.getWidgets();
-      if (widgets.length > 0) {
-        const rect = widgets[0]!.getRectangle();
-        const sigImg = await doc.embedPng(opts.signatureBytes);
-        const page = doc.getPage(0);
-        page.drawImage(sigImg, {
-          x: rect.x,
-          y: rect.y,
-          width: rect.width,
-          height: rect.height,
-        });
-        sigField.setText("");
-        const today = new Date().toLocaleDateString("en-US", {
-          month: "2-digit",
-          day: "2-digit",
-          year: "numeric",
-        });
-        safeSet(form, "signature_date", today);
-        const helv = await doc.embedFont(StandardFonts.Helvetica);
-        page.drawText(today, { x: rect.x, y: rect.y - 10, size: 7, font: helv });
-      }
+      const sigImg = await doc.embedPng(opts.signatureBytes);
+      const sigPage = doc.getPage(SIG_PAGE);
+      sigPage.drawImage(sigImg, {
+        x: SIG_X,
+        y: SIG_Y,
+        width: SIG_W,
+        height: SIG_H,
+      });
+      // Fill the date field — it's also on page 2 and will render via AcroForm
+      const today = new Date().toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      });
+      safeSet(form, "signature_date", today);
     } catch {
       /* if image embed fails, leave blank */
     }
