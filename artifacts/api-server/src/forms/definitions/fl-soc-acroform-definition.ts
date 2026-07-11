@@ -13,7 +13,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFName, PDFNumber, StandardFonts } from "pdf-lib";
 import type { FormDefinition, FormBody, GenerateOptions } from "../registry";
 import { FormRegistry } from "../registry";
 import { ASSET_DIR } from "../../routes/forms-common";
@@ -195,22 +195,25 @@ export async function buildFlSocForm(
   if (!filler) throw new Error(`No filler registered for ${meta.assetFile}`);
   filler(d, form);
 
-  // 2. Capture plaintiff_signature widget rect BEFORE flattening
-  //    (after flatten the widget is gone and cannot be queried)
+  // 2. Locate the plaintiff_signature widget, hide it (F=2 Hidden), and record its rect.
+  //    Hiding only this one widget leaves all other fields interactive while ensuring
+  //    the signature image drawn on the page content layer is never covered by the widget.
   let sigRect: { x: number; y: number; width: number; height: number } | null = null;
   try {
     const sigField = form.getTextField("plaintiff_signature");
     const widgets = sigField.acroField.getWidgets();
-    if (widgets.length > 0) sigRect = widgets[0]!.getRectangle();
+    if (widgets.length > 0) {
+      const widget = widgets[0]!;
+      sigRect = widget.getRectangle();
+      // PDF annotation flag F=2 → Hidden: viewer skips rendering this widget entirely.
+      // The image drawn on the content stream below is what the user sees instead.
+      (widget as any).dict.set(PDFName.of("F"), PDFNumber.of(2));
+    }
   } catch {
     /* field absent — proceed without signature */
   }
 
-  // 3. Flatten form — converts all interactive field widgets to static page content
-  //    so the signature image drawn afterward is never obscured by a widget appearance
-  form.flatten();
-
-  // 4. Draw signature image on the flattened page
+  // 3. Draw signature image at the original widget position
   if (opts?.signatureBytes && sigRect) {
     try {
       const sigImg = await doc.embedPng(opts.signatureBytes);
@@ -221,7 +224,7 @@ export async function buildFlSocForm(
         width: sigRect.width,
         height: sigRect.height,
       });
-      // Draw today's date just below the signature
+      // Draw today's date just below the signature block
       const helv = await doc.embedFont(StandardFonts.Helvetica);
       const today = new Date().toLocaleDateString("en-US", {
         month: "2-digit",
@@ -239,8 +242,13 @@ export async function buildFlSocForm(
     }
   }
 
-  // 5. Save — form is already flattened so no appearance stream regeneration needed
-  const saved = await doc.save();
+  // 4. Save — updateFieldAppearances keeps all other interactive fields rendering correctly
+  let saved: Uint8Array;
+  try {
+    saved = await doc.save({ updateFieldAppearances: true });
+  } catch {
+    saved = await doc.save({ updateFieldAppearances: false });
+  }
   return Buffer.from(saved);
 }
 
