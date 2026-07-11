@@ -96,52 +96,55 @@ export async function buildFLFeeWaiver(
 
   // ── Signature section ────────────────────────────────────────────────────────
   // "Signed on ________________________, 20____." at screen yMax=554.600
-  // underscore visual line is at pdf-lib y = 792 − 554.600 = 237.4
-  // → draw at y=237 so the text baseline sits on the blank line (not above it)
-  draw(today, 95, 237, 9);
+  // y=239: text yMax = (792-239)+1.863 = 554.863 ≈ template yMax=554.600 → on signed line
+  draw(today, 95, 239, 9);
 
-  // Signature image — placed right of the date, spanning the signature blank.
-  // Signature zone confirmed from pdftotext -bbox-layout on annotated PDF:
-  //   yMin=539.344, yMax=563.187 → pdf-lib bottom = 792 − 563.187 = 228.8 → y=227
-  //   x=332 (starts after "20____." xMax≈229)
+  // Signature area — right of "Signed on..., 20____." line.
+  // Derived from pdftotext -bbox-layout on user-annotated PDF (X markers):
+  //   X marker "xxyxy...": xMin=332.508 yMin=539.344 yMax=555.724
+  //   lower marker "ssssss22222": yMin=556.362 yMax=563.187
+  //   → pdf-lib y_bottom = 792 − 563.187 = 229   (bottom of zone)
+  //   → pdf-lib y_top    = 792 − 539.344 = 253   (top of zone)
+  //   "20____." xMax=229 → signature starts at x=332 (right of date)
   if (opts?.signatureBytes) {
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        page.drawImage(sigImg, { x: 332, y: 227, width: 190, height: 24, opacity: 1 });
+        page.drawImage(sigImg, { x: 332, y: 229, width: 190, height: 24, opacity: 1 });
       }
     } catch { /* ignore */ }
   }
 
   // ── Print Full Legal Name ────────────────────────────────────────────────────
-  // "Print Full Legal Name" label row: screen yMax=576.620
-  // underscore visual line: pdf-lib y = 792 − 576.620 = 215.4 → draw at y=215
+  // "Print Full Legal Name" label: screen yMax=576.620
+  // → pdf-lib y = 792 − (576.620 − 1.863) = 217.24 → 217
   if (plaintiffName) {
-    draw(plaintiffName, 382, 215, 9);
+    draw(plaintiffName, 382, 217, 9);
   }
 
   // ── Email ────────────────────────────────────────────────────────────────────
-  // "Email address:" row: screen yMax=587.620
-  // pdf-lib y = 792 − 587.620 = 204.4 → draw at y=204
+  // "Email address:" label: screen yMax=587.620
+  // → pdf-lib y = 792 − (587.620 − 1.863) = 206.24 → 206
   if (email) {
-    draw(email, 130, 204, 8.5);
+    draw(email, 130, 206, 8.5);
   }
 
   // ── Phone ────────────────────────────────────────────────────────────────────
-  // Same row as email (screen yMax=587.620) → y=204
+  // "Phone Number/s:" label: screen yMax=587.620 (same row as email)
+  // → pdf-lib y = 206
   if (phone) {
-    draw(phone, 370, 204, 8.5);
+    draw(phone, 370, 206, 8.5);
   }
 
   // ── Address ─────────────────────────────────────────────────────────────────
-  // Long "___" rule: screen yMax=600.620
-  // underscore visual line: pdf-lib y = 792 − 600.620 = 191.4 → draw at y=191
+  // The long "___" rule: screen yMax=600.620
+  // → pdf-lib y = 792 − (600.620 − 1.863) = 193.24 → 193
   // "Address: Street, City, State, Zip Code" label is one line BELOW at ~y=180 — do not use.
   const fullAddr = [addr, cityStateZip].filter(Boolean).join(", ");
   if (fullAddr) {
-    draw(fullAddr.slice(0, 95), 84, 191, 8.5);
+    draw(fullAddr.slice(0, 95), 84, 193, 8.5);
   }
 
   return Buffer.from(await doc.save({ updateFieldAppearances: false }));
