@@ -484,6 +484,43 @@ router.post(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Florida statewide AcroForm routes — all 67 counties, Forms 7.330–7.337, 7.322, INDIGENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+// FL Statewide SOC — dispatches to the correct 7.330–7.337 form based on claimType
+router.post(
+  "/cases/:id/forms/fl/soc",
+  makeFormHandler("FL-SOC", (id) => `FL-Statement-of-Claim-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/fl/soc/signed",
+  makeFormHandler("FL-SOC", (id) => `FL-Statement-of-Claim-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// FL Statewide Summons — Form 7.322 (AcroForm, all 67 counties; clerk completes dates/courtroom)
+router.post(
+  "/cases/:id/forms/fl/7322-summons",
+  makeFormHandler("FL-7322-SUMMONS", (id) => `FL-Summons-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/fl/7322-summons/signed",
+  makeFormHandler("FL-7322-SUMMONS", (id) => `FL-Summons-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// FL INDIGENT fee waiver — Application for Civil Indigent Status (AcroForm)
+router.post(
+  "/cases/:id/forms/fl/indigent-fee-waiver",
+  makeFormHandler("FL-INDIGENT-FEE-WAIVER", (id) => `FL-Indigent-Fee-Waiver-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/fl/indigent-fee-waiver/signed",
+  makeFormHandler("FL-INDIGENT-FEE-WAIVER", (id) => `FL-Indigent-Fee-Waiver-Case-${id}-signed.pdf`, { signed: true }),
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Texas forms — programmatic pdf-lib generation (no template PDF required)
 // ─────────────────────────────────────────────────────────────────────────────
 

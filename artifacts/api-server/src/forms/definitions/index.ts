@@ -42,6 +42,12 @@ export * from "./il-proof-of-service-definition";
 export * from "./il-fee-waiver-definition";
 export * from "./il-letter-to-sheriff-definition";
 
+// ─── Florida AcroForm fills (pdf-lib, automation-ready AcroForm PDFs) ─────────
+export * from "./fl-acroform-util";
+export * from "./fl-soc-acroform-definition";
+export * from "./fl-statewide-summons-definition";
+export * from "./fl-indigent-fee-waiver-acroform-definition";
+
 // ─── Florida programmatic forms (pdf-lib, no template PDF) ────────────────────
 // Statewide form must be exported first — county-specific forms import from it
 export * from "./fl-statement-of-claim-definition";

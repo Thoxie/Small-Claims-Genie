@@ -5,7 +5,22 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
   import { FL_WIZARD_STEPS } from "../forms-tab";
   import type { FormsTabCtx } from "../forms-tab";
 
+  // FL SOC claim types that map to statewide numbered AcroForms (7.330–7.337)
+  const FL_SOC_TYPES: Record<string, { formNo: string; formName: string }> = {
+    "Auto Negligence": { formNo: "7.330", formName: "Statement of Claim (Auto Negligence)" },
+    "Goods Sold": { formNo: "7.331", formName: "Statement of Claim (For Goods Sold)" },
+    "Work Done / Materials Furnished": { formNo: "7.332", formName: "Statement of Claim (For Work Done and Materials Furnished)" },
+    "Money Lent": { formNo: "7.333", formName: "Statement of Claim (For Money Lent)" },
+    "Promissory Note": { formNo: "7.334", formName: "Statement of Claim (Promissory Note)" },
+    "Stolen Property from Pawnbroker": { formNo: "7.335", formName: "Statement of Claim (For Return of Stolen Property from Pawnbroker)" },
+    "Return of Property from Government": { formNo: "7.336", formName: "Statement of Claim for Replevin (Return of Property from Government Entity)" },
+    "Account Stated": { formNo: "7.337", formName: "Statement of Claim (Account Stated)" },
+  };
+
   export function FloridaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
+    const claimType = ctx.currentCase.claimType ?? "";
+    const socMeta = FL_SOC_TYPES[claimType] ?? null;
+
     return (
           <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -24,235 +39,278 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
           {ctx.flWizardIndex === 0 && (
             <div className="space-y-3">
 
-              {ctx.currentCase.countyId === "fl-miami-dade" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    File with the Miami-Dade County Court Clerk — 73 W. Flagler St., Suite 133, Miami.
-                  </p>
-                  <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">CLK/CT. 333</span>
-                        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
-                      </div>
-                      <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
-                      <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
-                      {ctx.downloadError && ctx.downloadingForm === "fl/clkct333" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+              {/* ── Statewide numbered form (7.330–7.337) when claim type is specific ── */}
+              {socMeta ? (
+                <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form {socMeta.formNo}</span>
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                      <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Statewide — All 67 Counties</span>
                     </div>
-                    <div className="shrink-0 flex flex-col items-end gap-1.5">
-                      <button type="button" disabled={ctx.downloadingForm === "fl/clkct333/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/clkct333", filename: `Statement-of-Claim-Miami-Dade-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                        {ctx.downloadingForm === "fl/clkct333/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                        Sign &amp; Download
-                      </button>
-                      <button type="button" disabled={ctx.downloadingForm === "fl/clkct333"} onClick={() => ctx.downloadSignedFLForm("fl/clkct333", `Statement-of-Claim-Miami-Dade-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                        {ctx.downloadingForm === "fl/clkct333" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                        Skip signing
-                      </button>
-                    </div>
+                    <p className="text-base font-bold leading-snug text-foreground">{socMeta.formName}</p>
+                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                      Florida statewide AcroForm pre-filled with your case details. Sign and file with your county clerk.
+                    </p>
+                    {ctx.downloadError && (ctx.downloadingForm === "fl/soc" || ctx.downloadingForm === "fl/soc/signed") && (
+                      <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>
+                    )}
+                  </div>
+                  <div className="shrink-0 flex flex-col items-end gap-1.5">
+                    <button
+                      type="button"
+                      disabled={!!ctx.downloadingForm}
+                      onClick={() => ctx.openFlSigModal({ endpoint: "fl/soc", filename: `FL-Statement-of-Claim-Case-${ctx.caseId}.pdf` })}
+                      className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                    >
+                      {ctx.downloadingForm === "fl/soc/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                      Sign &amp; Download
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!!ctx.downloadingForm}
+                      onClick={() => ctx.downloadSignedFLForm("fl/soc", `FL-Statement-of-Claim-Case-${ctx.caseId}.pdf`)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+                    >
+                      {ctx.downloadingForm === "fl/soc" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                      Skip signing
+                    </button>
                   </div>
                 </div>
-              )}
-
-              {ctx.currentCase.countyId === "fl-volusia" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">File with the Volusia County Court Clerk — 101 N. Alabama Ave., DeLand.</p>
-                  <div className="rounded-xl border bg-card p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">CL-219</span>
-                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+              ) : (
+                /* ── County-specific fallback (General / Other or claim type not set) ── */
+                <>
+                  {ctx.currentCase.countyId === "fl-miami-dade" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        File with the Miami-Dade County Court Clerk — 73 W. Flagler St., Suite 133, Miami.
+                      </p>
+                      <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">CLK/CT. 333</span>
+                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                          </div>
+                          <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                          <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
+                          {ctx.downloadError && ctx.downloadingForm === "fl/clkct333" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
                         </div>
-                        <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
-                        <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
-                      </div>
-                      <div className="shrink-0 flex flex-col items-end gap-1.5">
-                        <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia-pdf/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/cl219-volusia-pdf", filename: `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                          {ctx.downloadingForm === "fl/cl219-volusia-pdf/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                          Sign &amp; Download
-                        </button>
-                        <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia-pdf"} onClick={() => ctx.downloadSignedFLForm("fl/cl219-volusia-pdf", `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                          {ctx.downloadingForm === "fl/cl219-volusia-pdf" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                          Skip signing
-                        </button>
-                      </div>
-                    </div>
-                    {ctx.downloadError && (ctx.downloadingForm === "fl/cl219-volusia-pdf" || ctx.downloadingForm === "fl/cl219-volusia") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                    <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
-                      <p className="text-xs text-muted-foreground">Prefer the standard layout? Use the programmatic version.</p>
-                      <div className="flex items-center gap-2">
-                        <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/cl219-volusia", filename: `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors">
-                          {ctx.downloadingForm === "fl/cl219-volusia/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
-                          Sign alternate
-                        </button>
-                        <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia"} onClick={() => ctx.downloadSignedFLForm("fl/cl219-volusia", `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                          {ctx.downloadingForm === "fl/cl219-volusia" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                          Skip
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {ctx.currentCase.countyId === "fl-broward" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">File with the Broward County Clerk of Courts — 201 SE 6th St., Room 01250, Fort Lauderdale.</p>
-                  <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
-                      </div>
-                      <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
-                      <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled with your case details and Broward County Court header.</p>
-                      {ctx.downloadError && ctx.downloadingForm === "fl/broward" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                    </div>
-                    <div className="shrink-0 flex flex-col items-end gap-1.5">
-                      <button type="button" disabled={ctx.downloadingForm === "fl/broward/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/broward", filename: `Statement-of-Claim-Broward-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                        {ctx.downloadingForm === "fl/broward/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                        Sign &amp; Download
-                      </button>
-                      <button type="button" disabled={ctx.downloadingForm === "fl/broward"} onClick={() => ctx.downloadSignedFLForm("fl/broward", `Statement-of-Claim-Broward-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                        {ctx.downloadingForm === "fl/broward" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                        Skip signing
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {ctx.currentCase.countyId === "fl-orange" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">File with the Orange County Clerk of Courts — 425 N. Orange Ave., Suite 100, Orlando.</p>
-                  <div className="rounded-xl border bg-card p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                        <div className="shrink-0 flex flex-col items-end gap-1.5">
+                          <button type="button" disabled={ctx.downloadingForm === "fl/clkct333/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/clkct333", filename: `Statement-of-Claim-Miami-Dade-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                            {ctx.downloadingForm === "fl/clkct333/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                            Sign &amp; Download
+                          </button>
+                          <button type="button" disabled={ctx.downloadingForm === "fl/clkct333"} onClick={() => ctx.downloadSignedFLForm("fl/clkct333", `Statement-of-Claim-Miami-Dade-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                            {ctx.downloadingForm === "fl/clkct333" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                            Skip signing
+                          </button>
                         </div>
-                        <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
-                        <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
-                      </div>
-                      <div className="shrink-0 flex flex-col items-end gap-1.5">
-                        <button type="button" disabled={ctx.downloadingForm === "fl/plain-soc-orange/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/plain-soc-orange", filename: `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                          {ctx.downloadingForm === "fl/plain-soc-orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                          Sign &amp; Download
-                        </button>
-                        <button type="button" disabled={ctx.downloadingForm === "fl/plain-soc-orange"} onClick={() => ctx.downloadSignedFLForm("fl/plain-soc-orange", `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                          {ctx.downloadingForm === "fl/plain-soc-orange" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                          Skip signing
-                        </button>
                       </div>
                     </div>
-                    {ctx.downloadError && (ctx.downloadingForm === "fl/plain-soc-orange" || ctx.downloadingForm === "fl/orange") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                    <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
-                      <p className="text-xs text-muted-foreground">Prefer the standard layout? Use the programmatic version.</p>
-                      <div className="flex items-center gap-2">
-                        <button type="button" disabled={ctx.downloadingForm === "fl/orange/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/orange", filename: `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors">
-                          {ctx.downloadingForm === "fl/orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
-                          Sign alternate
-                        </button>
-                        <button type="button" disabled={ctx.downloadingForm === "fl/orange"} onClick={() => ctx.downloadSignedFLForm("fl/orange", `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                          {ctx.downloadingForm === "fl/orange" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                          Skip
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              {ctx.currentCase.countyId === "fl-hillsborough" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">File with the Hillsborough County Clerk of Courts — 800 E. Twiggs St., Tampa.</p>
-                  <div className="rounded-xl border bg-card p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  {ctx.currentCase.countyId === "fl-volusia" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">File with the Volusia County Court Clerk — 101 N. Alabama Ave., DeLand.</p>
+                      <div className="rounded-xl border bg-card p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">CL-219</span>
+                              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                            </div>
+                            <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                            <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
+                          </div>
+                          <div className="shrink-0 flex flex-col items-end gap-1.5">
+                            <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia-pdf/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/cl219-volusia-pdf", filename: `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                              {ctx.downloadingForm === "fl/cl219-volusia-pdf/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                              Sign &amp; Download
+                            </button>
+                            <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia-pdf"} onClick={() => ctx.downloadSignedFLForm("fl/cl219-volusia-pdf", `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                              {ctx.downloadingForm === "fl/cl219-volusia-pdf" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                              Skip signing
+                            </button>
+                          </div>
                         </div>
-                        <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
-                        <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
-                      </div>
-                      <div className="shrink-0 flex flex-col items-end gap-1.5">
-                        <button type="button" disabled={ctx.downloadingForm === "fl/soc-hillsborough/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/soc-hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                          {ctx.downloadingForm === "fl/soc-hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                          Sign &amp; Download
-                        </button>
-                        <button type="button" disabled={ctx.downloadingForm === "fl/soc-hillsborough"} onClick={() => ctx.downloadSignedFLForm("fl/soc-hillsborough", `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                          {ctx.downloadingForm === "fl/soc-hillsborough" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                          Skip signing
-                        </button>
-                      </div>
-                    </div>
-                    {ctx.downloadError && (ctx.downloadingForm === "fl/soc-hillsborough" || ctx.downloadingForm === "fl/hillsborough") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                    <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
-                      <p className="text-xs text-muted-foreground">Prefer the standard layout? Use the programmatic version.</p>
-                      <div className="flex items-center gap-2">
-                        <button type="button" disabled={ctx.downloadingForm === "fl/hillsborough/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors">
-                          {ctx.downloadingForm === "fl/hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
-                          Sign alternate
-                        </button>
-                        <button type="button" disabled={ctx.downloadingForm === "fl/hillsborough"} onClick={() => ctx.downloadSignedFLForm("fl/hillsborough", `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                          {ctx.downloadingForm === "fl/hillsborough" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                          Skip
-                        </button>
+                        {ctx.downloadError && (ctx.downloadingForm === "fl/cl219-volusia-pdf" || ctx.downloadingForm === "fl/cl219-volusia") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                        <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
+                          <p className="text-xs text-muted-foreground">Prefer the standard layout? Use the programmatic version.</p>
+                          <div className="flex items-center gap-2">
+                            <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/cl219-volusia", filename: `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors">
+                              {ctx.downloadingForm === "fl/cl219-volusia/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
+                              Sign alternate
+                            </button>
+                            <button type="button" disabled={ctx.downloadingForm === "fl/cl219-volusia"} onClick={() => ctx.downloadSignedFLForm("fl/cl219-volusia", `Statement-of-Claim-Volusia-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                              {ctx.downloadingForm === "fl/cl219-volusia" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                              Skip
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              {ctx.currentCase.countyId === "fl-palm-beach" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">File with the Palm Beach County Clerk &amp; Comptroller — 205 N. Dixie Hwy., West Palm Beach.</p>
-                  <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  {ctx.currentCase.countyId === "fl-broward" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">File with the Broward County Clerk of Courts — 201 SE 6th St., Room 01250, Fort Lauderdale.</p>
+                      <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                          </div>
+                          <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                          <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled with your case details and Broward County Court header.</p>
+                          {ctx.downloadError && ctx.downloadingForm === "fl/broward" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                        </div>
+                        <div className="shrink-0 flex flex-col items-end gap-1.5">
+                          <button type="button" disabled={ctx.downloadingForm === "fl/broward/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/broward", filename: `Statement-of-Claim-Broward-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                            {ctx.downloadingForm === "fl/broward/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                            Sign &amp; Download
+                          </button>
+                          <button type="button" disabled={ctx.downloadingForm === "fl/broward"} onClick={() => ctx.downloadSignedFLForm("fl/broward", `Statement-of-Claim-Broward-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                            {ctx.downloadingForm === "fl/broward" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                            Skip signing
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
-                      <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled with your case details and Palm Beach County Court header.</p>
-                      {ctx.downloadError && ctx.downloadingForm === "fl/palm-beach" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
                     </div>
-                    <div className="shrink-0 flex flex-col items-end gap-1.5">
-                      <button type="button" disabled={ctx.downloadingForm === "fl/palm-beach/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/palm-beach", filename: `Statement-of-Claim-Palm-Beach-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                        {ctx.downloadingForm === "fl/palm-beach/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                        Sign &amp; Download
-                      </button>
-                      <button type="button" disabled={ctx.downloadingForm === "fl/palm-beach"} onClick={() => ctx.downloadSignedFLForm("fl/palm-beach", `Statement-of-Claim-Palm-Beach-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                        {ctx.downloadingForm === "fl/palm-beach" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                        Skip signing
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              {ctx.currentCase.countyId !== "fl-miami-dade" && ctx.currentCase.countyId !== "fl-volusia" && ctx.currentCase.countyId !== "fl-broward" && ctx.currentCase.countyId !== "fl-orange" && ctx.currentCase.countyId !== "fl-hillsborough" && ctx.currentCase.countyId !== "fl-palm-beach" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">File with your county clerk. Check your county's clerk website for the filing address and any local instructions.</p>
-                  <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                  {ctx.currentCase.countyId === "fl-orange" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">File with the Orange County Clerk of Courts — 425 N. Orange Ave., Suite 100, Orlando.</p>
+                      <div className="rounded-xl border bg-card p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                            </div>
+                            <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                            <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
+                          </div>
+                          <div className="shrink-0 flex flex-col items-end gap-1.5">
+                            <button type="button" disabled={ctx.downloadingForm === "fl/plain-soc-orange/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/plain-soc-orange", filename: `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                              {ctx.downloadingForm === "fl/plain-soc-orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                              Sign &amp; Download
+                            </button>
+                            <button type="button" disabled={ctx.downloadingForm === "fl/plain-soc-orange"} onClick={() => ctx.downloadSignedFLForm("fl/plain-soc-orange", `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                              {ctx.downloadingForm === "fl/plain-soc-orange" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                              Skip signing
+                            </button>
+                          </div>
+                        </div>
+                        {ctx.downloadError && (ctx.downloadingForm === "fl/plain-soc-orange" || ctx.downloadingForm === "fl/orange") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                        <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
+                          <p className="text-xs text-muted-foreground">Prefer the standard layout? Use the programmatic version.</p>
+                          <div className="flex items-center gap-2">
+                            <button type="button" disabled={ctx.downloadingForm === "fl/orange/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/orange", filename: `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors">
+                              {ctx.downloadingForm === "fl/orange/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
+                              Sign alternate
+                            </button>
+                            <button type="button" disabled={ctx.downloadingForm === "fl/orange"} onClick={() => ctx.downloadSignedFLForm("fl/orange", `Statement-of-Claim-Orange-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                              {ctx.downloadingForm === "fl/orange" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                              Skip
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
-                      <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled with your case details and county court header.</p>
-                      {ctx.downloadError && ctx.downloadingForm === "fl/statement-of-claim" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
                     </div>
-                    <div className="shrink-0 flex flex-col items-end gap-1.5">
-                      <button type="button" disabled={ctx.downloadingForm === "fl/statement-of-claim/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/statement-of-claim", filename: `Florida-Statement-of-Claim-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                        {ctx.downloadingForm === "fl/statement-of-claim/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                        Sign &amp; Download
-                      </button>
-                      <button type="button" disabled={ctx.downloadingForm === "fl/statement-of-claim"} onClick={() => ctx.downloadSignedFLForm("fl/statement-of-claim", `Florida-Statement-of-Claim-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                        {ctx.downloadingForm === "fl/statement-of-claim" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                        Skip signing
-                      </button>
+                  )}
+
+                  {ctx.currentCase.countyId === "fl-hillsborough" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">File with the Hillsborough County Clerk of Courts — 800 E. Twiggs St., Tampa.</p>
+                      <div className="rounded-xl border bg-card p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                            </div>
+                            <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                            <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled from your case details.</p>
+                          </div>
+                          <div className="shrink-0 flex flex-col items-end gap-1.5">
+                            <button type="button" disabled={ctx.downloadingForm === "fl/soc-hillsborough/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/soc-hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                              {ctx.downloadingForm === "fl/soc-hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                              Sign &amp; Download
+                            </button>
+                            <button type="button" disabled={ctx.downloadingForm === "fl/soc-hillsborough"} onClick={() => ctx.downloadSignedFLForm("fl/soc-hillsborough", `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                              {ctx.downloadingForm === "fl/soc-hillsborough" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                              Skip signing
+                            </button>
+                          </div>
+                        </div>
+                        {ctx.downloadError && (ctx.downloadingForm === "fl/soc-hillsborough" || ctx.downloadingForm === "fl/hillsborough") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                        <div className="mt-2 pt-2 border-t flex items-center justify-between gap-3">
+                          <p className="text-xs text-muted-foreground">Prefer the standard layout? Use the programmatic version.</p>
+                          <div className="flex items-center gap-2">
+                            <button type="button" disabled={ctx.downloadingForm === "fl/hillsborough/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/hillsborough", filename: `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors">
+                              {ctx.downloadingForm === "fl/hillsborough/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3 w-3" />}
+                              Sign alternate
+                            </button>
+                            <button type="button" disabled={ctx.downloadingForm === "fl/hillsborough"} onClick={() => ctx.downloadSignedFLForm("fl/hillsborough", `Statement-of-Claim-Hillsborough-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                              {ctx.downloadingForm === "fl/hillsborough" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                              Skip
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
+
+                  {ctx.currentCase.countyId === "fl-palm-beach" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">File with the Palm Beach County Clerk &amp; Comptroller — 205 N. Dixie Hwy., West Palm Beach.</p>
+                      <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                          </div>
+                          <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                          <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled with your case details and Palm Beach County Court header.</p>
+                          {ctx.downloadError && ctx.downloadingForm === "fl/palm-beach" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                        </div>
+                        <div className="shrink-0 flex flex-col items-end gap-1.5">
+                          <button type="button" disabled={ctx.downloadingForm === "fl/palm-beach/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/palm-beach", filename: `Statement-of-Claim-Palm-Beach-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                            {ctx.downloadingForm === "fl/palm-beach/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                            Sign &amp; Download
+                          </button>
+                          <button type="button" disabled={ctx.downloadingForm === "fl/palm-beach"} onClick={() => ctx.downloadSignedFLForm("fl/palm-beach", `Statement-of-Claim-Palm-Beach-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                            {ctx.downloadingForm === "fl/palm-beach" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                            Skip signing
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {ctx.currentCase.countyId !== "fl-miami-dade" && ctx.currentCase.countyId !== "fl-volusia" && ctx.currentCase.countyId !== "fl-broward" && ctx.currentCase.countyId !== "fl-orange" && ctx.currentCase.countyId !== "fl-hillsborough" && ctx.currentCase.countyId !== "fl-palm-beach" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">File with your county clerk. Check your county's clerk website for the filing address and any local instructions.</p>
+                      <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
+                          </div>
+                          <p className="text-base font-bold leading-snug text-foreground">Statement of Claim</p>
+                          <p className="text-xs text-muted-foreground leading-snug mt-0.5">Initiates your small claims case. Pre-filled with your case details and county court header.</p>
+                          {ctx.downloadError && ctx.downloadingForm === "fl/statement-of-claim" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                        </div>
+                        <div className="shrink-0 flex flex-col items-end gap-1.5">
+                          <button type="button" disabled={ctx.downloadingForm === "fl/statement-of-claim/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/statement-of-claim", filename: `Florida-Statement-of-Claim-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                            {ctx.downloadingForm === "fl/statement-of-claim/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                            Sign &amp; Download
+                          </button>
+                          <button type="button" disabled={ctx.downloadingForm === "fl/statement-of-claim"} onClick={() => ctx.downloadSignedFLForm("fl/statement-of-claim", `Florida-Statement-of-Claim-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                            {ctx.downloadingForm === "fl/statement-of-claim" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                            Skip signing
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Filing fee recoverability notice — always visible in FL step 0 */}
@@ -277,6 +335,7 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground leading-relaxed">Bring this form to the clerk when you file your Statement of Claim. The clerk assigns the case number, hearing date, and courtroom, then issues the summons to the defendant.</p>
 
+              {/* Miami-Dade uses its own county summons (CLK/CT. 423) */}
               {ctx.currentCase.countyId === "fl-miami-dade" && (
                 <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -301,145 +360,28 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
                 </div>
               )}
 
-              {ctx.currentCase.countyId === "fl-volusia" && (
+              {/* All other counties use the statewide Form 7.322 AcroForm */}
+              {ctx.currentCase.countyId !== "fl-miami-dade" && (
                 <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
                       <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
+                      <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Statewide — All 67 Counties</span>
                     </div>
                     <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
                     <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.</p>
-                    {ctx.downloadError && ctx.downloadingForm === "fl/volusia-summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                    {ctx.downloadError && ctx.downloadingForm === "fl/7322-summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
                   </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <button type="button" disabled={ctx.downloadingForm === "fl/volusia-summons/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/volusia-summons", filename: `Summons-Volusia-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                      {ctx.downloadingForm === "fl/volusia-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                      Sign &amp; Download
-                    </button>
-                    <button type="button" disabled={ctx.downloadingForm === "fl/volusia-summons"} onClick={() => ctx.downloadSignedFLForm("fl/volusia-summons", `Summons-Volusia-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                      {ctx.downloadingForm === "fl/volusia-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                      Skip signing
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {ctx.currentCase.countyId === "fl-broward" && (
-                <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
-                      <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
-                    </div>
-                    <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
-                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.</p>
-                    {ctx.downloadError && ctx.downloadingForm === "fl/broward-summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <button type="button" disabled={ctx.downloadingForm === "fl/broward-summons/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/broward-summons", filename: `Summons-Broward-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                      {ctx.downloadingForm === "fl/broward-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                      Sign &amp; Download
-                    </button>
-                    <button type="button" disabled={ctx.downloadingForm === "fl/broward-summons"} onClick={() => ctx.downloadSignedFLForm("fl/broward-summons", `Summons-Broward-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                      {ctx.downloadingForm === "fl/broward-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                      Skip signing
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {ctx.currentCase.countyId === "fl-orange" && (
-                <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
-                      <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
-                    </div>
-                    <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
-                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.</p>
-                    {ctx.downloadError && ctx.downloadingForm === "fl/orange-summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <button type="button" disabled={ctx.downloadingForm === "fl/orange-summons/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/orange-summons", filename: `Summons-Orange-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                      {ctx.downloadingForm === "fl/orange-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                      Sign &amp; Download
-                    </button>
-                    <button type="button" disabled={ctx.downloadingForm === "fl/orange-summons"} onClick={() => ctx.downloadSignedFLForm("fl/orange-summons", `Summons-Orange-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                      {ctx.downloadingForm === "fl/orange-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                      Skip signing
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {ctx.currentCase.countyId === "fl-hillsborough" && (
-                <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
-                      <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
-                    </div>
-                    <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
-                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.</p>
-                    {ctx.downloadError && ctx.downloadingForm === "fl/hillsborough-summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <button type="button" disabled={ctx.downloadingForm === "fl/hillsborough-summons/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/hillsborough-summons", filename: `Summons-Hillsborough-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                      {ctx.downloadingForm === "fl/hillsborough-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                      Sign &amp; Download
-                    </button>
-                    <button type="button" disabled={ctx.downloadingForm === "fl/hillsborough-summons"} onClick={() => ctx.downloadSignedFLForm("fl/hillsborough-summons", `Summons-Hillsborough-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                      {ctx.downloadingForm === "fl/hillsborough-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                      Skip signing
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {ctx.currentCase.countyId === "fl-palm-beach" && (
-                <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
-                      <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
-                    </div>
-                    <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
-                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.</p>
-                    {ctx.downloadError && ctx.downloadingForm === "fl/palm-beach-summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <button type="button" disabled={ctx.downloadingForm === "fl/palm-beach-summons/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/palm-beach-summons", filename: `Summons-Palm-Beach-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                      {ctx.downloadingForm === "fl/palm-beach-summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                      Sign &amp; Download
-                    </button>
-                    <button type="button" disabled={ctx.downloadingForm === "fl/palm-beach-summons"} onClick={() => ctx.downloadSignedFLForm("fl/palm-beach-summons", `Summons-Palm-Beach-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                      {ctx.downloadingForm === "fl/palm-beach-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                      Skip signing
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {ctx.currentCase.countyId !== "fl-miami-dade" && ctx.currentCase.countyId !== "fl-volusia" && ctx.currentCase.countyId !== "fl-broward" && ctx.currentCase.countyId !== "fl-orange" && ctx.currentCase.countyId !== "fl-hillsborough" && ctx.currentCase.countyId !== "fl-palm-beach" && (
-                <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">Form 7.322</span>
-                      <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Clerk Completes</span>
-                    </div>
-                    <p className="text-base font-bold leading-snug text-foreground">Summons / Notice to Appear</p>
-                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk — they will assign the case number, hearing date, and courtroom, then issue it to the defendant.</p>
-                    {ctx.downloadError && ctx.downloadingForm === "fl/summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <button type="button" disabled={ctx.downloadingForm === "fl/summons/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/summons", filename: `Florida-Summons-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                      {ctx.downloadingForm === "fl/summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                      Sign &amp; Download
-                    </button>
-                    <button type="button" disabled={ctx.downloadingForm === "fl/summons"} onClick={() => ctx.downloadSignedFLForm("fl/summons", `Florida-Summons-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                      {ctx.downloadingForm === "fl/summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                      Skip signing
+                  <div className="shrink-0">
+                    <button
+                      type="button"
+                      disabled={!!ctx.downloadingForm}
+                      onClick={() => ctx.downloadSignedFLForm("fl/7322-summons", `FL-Summons-Case-${ctx.caseId}.pdf`)}
+                      className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                    >
+                      {ctx.downloadingForm === "fl/7322-summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
+                      Download
                     </button>
                   </div>
                 </div>
@@ -601,15 +543,15 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">Application for Civil Indigent Status</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
-                  {ctx.downloadError && (ctx.downloadingForm === "fl/fee-waiver" || ctx.downloadingForm === "fl/fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                  {ctx.downloadError && (ctx.downloadingForm === "fl/indigent-fee-waiver" || ctx.downloadingForm === "fl/indigent-fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={ctx.downloadingForm === "fl/fee-waiver/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/fee-waiver", filename: `FL-Fee-Waiver-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {ctx.downloadingForm === "fl/fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                  <button type="button" disabled={ctx.downloadingForm === "fl/indigent-fee-waiver/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "fl/indigent-fee-waiver", filename: `FL-Fee-Waiver-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {ctx.downloadingForm === "fl/indigent-fee-waiver/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
                     Sign &amp; Download
                   </button>
-                  <button type="button" disabled={ctx.downloadingForm === "fl/fee-waiver"} onClick={() => ctx.downloadSignedFLForm("fl/fee-waiver", `FL-Fee-Waiver-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {ctx.downloadingForm === "fl/fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                  <button type="button" disabled={ctx.downloadingForm === "fl/indigent-fee-waiver"} onClick={() => ctx.downloadSignedFLForm("fl/indigent-fee-waiver", `FL-Fee-Waiver-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                    {ctx.downloadingForm === "fl/indigent-fee-waiver" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
                     Skip signing
                   </button>
                 </div>
@@ -630,4 +572,3 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
         </div>
     );
   }
-  

@@ -657,7 +657,7 @@ router.get("/admin/genie-conversions", async (_req: Request, res: Response): Pro
 
 // ── Test Case seed data helpers ───────────────────────────────────────────────
 const CA_CLAIM_TYPES = ["Property Damage", "Breach of Contract", "Security Deposit", "Unpaid Wages", "Loan Repayment"];
-const FL_CLAIM_TYPES = ["Property Damage", "Breach of Contract", "Security Deposit", "Unpaid Wages", "Loan Repayment"];
+const FL_CLAIM_TYPES = ["Auto Negligence", "Goods Sold", "Work Done / Materials Furnished", "Money Lent", "Promissory Note", "Stolen Property from Pawnbroker", "Return of Property from Government", "Account Stated", "General / Other"];
 
 const CA_SAMPLE_DEFENDANTS = [
   { name: "Pacific Properties LLC", address: "500 Commerce Dr", isBusinessOrEntity: true },

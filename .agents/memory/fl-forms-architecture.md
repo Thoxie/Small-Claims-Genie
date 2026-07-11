@@ -1,6 +1,6 @@
 ---
-name: FL Forms Architecture
-description: FL small claims form definitions — programmatic (pdf-lib) only; pdftk removed from all 4 signed forms due to JVM timeout
+name: FL forms architecture
+description: Florida court form generation — statewide AcroForms (7.330–7.337, 7.322, INDIGENT) for specific claim types; legacy county-specific programmatic/AcroForm for General/Other
 ---
 
 # FL Forms Architecture
@@ -9,81 +9,75 @@ description: FL small claims form definitions — programmatic (pdf-lib) only; p
 
 **Runtime asset directory:** `artifacts/api-server/assets/fl-forms/` (NOT `src/assets/fl-forms/`)
 
-`ASSET_DIR` is defined as `path.join(__dirname, "..", "assets")` in `forms-common.ts`. At runtime the bundle lives in `dist/`, so `ASSET_DIR` resolves to `artifacts/api-server/assets/`. The `src/assets/fl-forms/` directory is a development copy that is NOT used at runtime — only `assets/fl-forms/` (at the artifact root, outside `src/`) matters.
+`ASSET_DIR` is defined as `path.join(__dirname, "..", "assets")` in `forms-common.ts`. At runtime the bundle lives in `dist/`, so `ASSET_DIR` resolves to `artifacts/api-server/assets/`. The `src/assets/fl-forms/` directory is a development copy NOT used at runtime.
 
-**Why:** esbuild bundles everything into `dist/index.mjs`, so `__dirname` is `dist/`, and `../assets` resolves to `artifacts/api-server/assets/` — not `src/assets/`.
+## Layer 1: Statewide AcroForm PDFs (all 67 counties, primary for specific claim types)
 
-**How to apply:** When adding or renaming a PDF asset for an FL pdftk form, always place or rename the file in `artifacts/api-server/assets/fl-forms/`. Never change code paths to match a filename only in `src/assets/`.
+Forms in `assets/fl-forms/` using pdf-lib AcroForm fill:
 
-## Pattern
+| FormId | PDF asset | Claim types / purpose |
+|--------|-----------|----------------------|
+| FL-SOC | fl-7330 through fl-7337 | 8 specific claim types; dispatches to correct PDF in `fl-soc-acroform-definition.ts` based on `d.claimType` |
+| FL-7322-SUMMONS | fl-7322-summons.pdf | All 67 counties (except Miami-Dade which uses CLK/CT.423); clerk fills dates/courtroom — **no plaintiff_signature field**, render as Download-only |
+| FL-INDIGENT-FEE-WAIVER | fl-indigent-fee-waiver.pdf | Application for Civil Indigent Status; financial fields left blank; `applicant_signature` overlay |
 
-FL forms are split into two groups:
+Shared utilities: `fl-acroform-util.ts`
+- `flJudicialCircuit(countyId)` — all 67 counties → 1st–20th circuit string
+- `FL_SOC_FORM_META` — 8 claim types → `{formNo, formName, assetFile}`
+- `flSocFormMeta(claimType)` — returns meta or null for General/Other
+- `FL_CLAIM_TYPES_UI` — 8 specific types + "General / Other" (for intake dropdown)
 
-### 1. Programmatic (pdf-lib, no template PDF)
-- `fl-statement-of-claim-definition.ts` → `buildFLStatementOfClaim()` — covers Broward, Orange (programmatic), Hillsborough (programmatic), Palm Beach, Volusia (programmatic), and statewide FL SOC
-- `fl-summons-definition.ts` → `buildFLSummons()` — covers all county summons variants
-- Both accept optional `countyOverride` / `clerkAddressOverride`
-- Date is drawn inline: `new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })` replacing placeholder text
+Signature overlay pattern (FL-SOC forms):
+1. `form.getTextField('plaintiff_signature').acroField.getWidgets()[0].getRectangle()`
+2. `doc.embedPng(opts.signatureBytes)` → `page.drawImage(sigImg, rect)`
+3. `sigField.setText("")`
 
-### 2. pdf-lib AcroForm (template PDFs in `assets/fl-forms/`) — formerly pdftk
-- `fl-clkct333-miami-dade-definition.ts` → `clkct333-miami-dade.pdf`
+## Layer 2: County-specific programmatic/AcroForm (legacy, for General/Other claim type)
+
+### pdf-lib AcroForm fills (template PDFs)
+- `fl-clkct333-miami-dade-definition.ts` → `clkct333-miami-dade.pdf` — `disableMultiline()` before setText for header fields
 - `fl-cl219-volusia-pdf-definition.ts` → `cl-219-volusia.pdf`
 - `fl-plain-soc-orange-definition.ts` → `plain-statement-of-claim-orange.pdf`
 - `fl-soc-hillsborough-definition.ts` → `statement-of-claim-hillsborough.pdf`
 
-**Why migrated from pdftk:** pdftk-java JVM cold start = 6+ seconds per call; Replit proxy timeout is ~1 second → 502 on every form download. pdf-lib AcroForm fill + flatten = 78–189ms.
+**Key detail:** For multiline AcroForm fields in headers, call `f.disableMultiline()` BEFORE `f.setText()` or pdf-lib word-wraps text causing test assertion failures.
 
-All 4 forms follow this pattern:
-1. `PDFDocument.load(pdfBytes)` → `doc.getForm()` → `safeSetText()` / `safeSetSingleLine()` / `safeCheck()` helpers
-2. **Critical:** For header/party name fields that are typed as multiline in the PDF, call `f.disableMultiline()` BEFORE `f.setText()`. Without this, pdf-lib wraps the text at word boundaries and pdftotext extracts it as separate lines (e.g. "South Florida\nContractors LLC"), causing test assertions like `.includes("South Florida Contractors LLC")` to fail.
-3. `form.flatten()` → then pdf-lib overlay: embed font, `page.drawText()` for today's date, and embed signature image bytes if provided.
-4. `renderingTechnique: "acroform-pdflib"` in the definition.
-5. Date positions (pdf-lib y = from bottom of page):
-   - CLK/CT.333: x=54, y=244 (left column of three-column sig row)
-   - CL-219 Volusia PDF: x=54, y=126 (left of right-aligned sig at x=342)
-   - Plain SOC Orange: x=54, y=78 (left of right-aligned sig at x=378)
-   - SOC Hillsborough (page 2): x=54, y=598 (left of sig at x=346)
+### Programmatic (pdf-lib, no template)
+- `fl-statement-of-claim-definition.ts` — statewide SOC fallback
+- `fl-summons-definition.ts` — old county summons variants (kept for CLK/CT.423 Miami-Dade)
 
-## Signature overlay coords (pdftk forms, visually confirmed 2026-06-21/22)
-- CLK/CT.333: x=323, y=235, width=130, height=36 (middle column)
-- CL-219 Volusia PDF page 1 ("Plaintiff's Signature"): x=342, y=120, width=180, height=20
-- CL-219 Volusia PDF page 2 ("Signature of Plaintiff(s)"): x=295, y=640, width=180, height=25
-  — page 2 has NO AcroForm fields; "Signature of Plaintiff(s)" is a printed blank at y≈641 from bottom
-- Plain SOC Orange: x=378, y=68, width=150, height=28
-- SOC Hillsborough (page 2): x=346, y=582, width=180, height=36
+## UI routing (florida-forms-section.tsx)
 
-## CL-219 Volusia caption field naming quirk
-The two caption fields at y=631 have misleading pdf-lib-generated names:
-- `STATEMENT OF CLAIM` (x=31, y=631) = plaintiff name (LEFT of "Sues")
-- `undefined` (x=337, y=631) = defendant name (RIGHT of "Sues")
-These were previously left blank as "court-use" fields. They must be filled with plaintiffName / defendantName.
-Also: `undefined_2` (x=28, y=590) and `undefined_3` (x=334, y=590) are secondary party name lines — leave blank unless there are multiple parties.
-All 22 AcroForm fields in the CL-219 Volusia form are on page 1. Page 2 and 3 are print-only.
+```tsx
+const socMeta = FL_SOC_TYPES[ctx.currentCase.claimType ?? ""] ?? null;
+// Step 0: socMeta ? statewide AcroForm (fl/soc) : county-specific fallbacks
+// Step 1: miami-dade → CLK/CT.423 (fl/clkct423); all others → statewide 7.322 (Download-only)
+// Step 3: fl/indigent-fee-waiver (replaced old fl/fee-waiver overlay)
+```
 
-## Form IDs and Routes
+## Intake (intake-step-2.tsx)
 
-| Form ID | Route | County |
-|---|---|---|
-| CLK-CT-333 | `fl/clkct333` | Miami-Dade |
-| CL-219-VOLUSIA-PDF | `fl/cl219-volusia-pdf` | Volusia (PDF) |
-| PLAIN-SOC-ORANGE | `fl/plain-soc-orange` | Orange (PDF) |
-| SOC-HILLSBOROUGH | `fl/soc-hillsborough` | Hillsborough (PDF) |
-| FL-STATEMENT-OF-CLAIM | `fl/statement-of-claim` | Statewide |
-| FL-BROWARD-SOC | `fl/broward` | Broward |
-| FL-ORANGE-SOC | `fl/orange` | Orange (programmatic) |
-| FL-HILLSBOROUGH-SOC | `fl/hillsborough` | Hillsborough (programmatic) |
-| FL-PALM-BEACH-SOC | `fl/palm-beach` | Palm Beach |
+When `jurisdictionState === "FL"`: show FL_CLAIM_TYPES_UI (8 specific + General/Other).
+All other states: show the generic claim type list.
 
-## Adding a new FL county
+## Date positions for legacy county AcroForm signature overlays
 
-1. Create `forms/definitions/fl-<county>-definition.ts` (delegate to `buildFLStatementOfClaim()` or new pdftk form)
-2. Register in `forms/definitions/index.ts`
-3. Add POST route in `routes/forms-unified.ts`
-4. Add county ID check block in `forms-tab.tsx` FL section
+- CLK/CT.333: sig x=323, y=235, w=130, h=36; date x=54, y=244
+- CL-219 Volusia PDF page 1: sig x=342, y=120, w=180, h=20; date x=54, y=126
+- CL-219 Volusia PDF page 2: sig x=295, y=640, w=180, h=25 (no AcroForm fields on page 2)
+- Plain SOC Orange: sig x=378, y=68, w=150, h=28; date x=54, y=78
+- SOC Hillsborough (page 2): sig x=346, y=582, w=180, h=36; date x=54, y=598
+
+**Why:** pdftk-java JVM cold start = 6+ seconds; Replit proxy timeout ~1s → 502. pdf-lib AcroForm = 78–189ms. New statewide AcroForms use the official FL court PDFs and cover all 67 counties uniformly.
+
+## Adding a new FL statewide form type
+
+1. Add PDF to `artifacts/api-server/assets/fl-forms/`
+2. Add entry to `FL_SOC_FORM_META` in `fl-acroform-util.ts`
+3. Handle in `fl-soc-acroform-definition.ts` generate() switch
+4. Add to `FL_CLAIM_TYPES_UI` array and `admin.ts FL_CLAIM_TYPES`
 5. Update AI prompts in `routes/chat.ts` and `routes/help-chat.ts`
-6. For pdftk forms: put PDF in `artifacts/api-server/assets/fl-forms/` (NOT `src/assets/`)
 
-## Counties data
+## All FL counties
 
-All 67 FL counties in `artifacts/api-server/src/routes/counties.ts` as `FLORIDA_COUNTIES`.
-Served at `/api/counties?state=FL`. County IDs follow `fl-<name>` pattern.
+All 67 FL counties in `artifacts/api-server/src/routes/counties.ts` as `FLORIDA_COUNTIES`. Served at `/api/counties?state=FL`. County IDs follow `fl-<name>` pattern. Circuit map in `fl-acroform-util.ts` covers all 67.
