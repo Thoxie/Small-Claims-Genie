@@ -52,6 +52,14 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
       autoCollisionLocation: initialData.autoCollisionLocation || "",
       autoHighwayName: initialData.autoHighwayName || "",
       autoCollisionCounty: initialData.autoCollisionCounty || "",
+      noteInterestRate: initialData.noteInterestRate || "",
+      noteInterestDue: initialData.noteInterestDue || "",
+      noteAttorneyFees: initialData.noteAttorneyFees || "",
+      pawnbrokerLawEnforcementAgency: initialData.pawnbrokerLawEnforcementAgency || "",
+      pawnbrokerReportNumber: initialData.pawnbrokerReportNumber || "",
+      pawnbrokerWrittenDemandDate: initialData.pawnbrokerWrittenDemandDate || "",
+      replevinSeizureReason: initialData.replevinSeizureReason || "",
+      replevinDemandDate: initialData.replevinDemandDate || "",
     }
   });
 
@@ -132,6 +140,14 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     watchedValues.autoCollisionLocation,
     watchedValues.autoHighwayName,
     watchedValues.autoCollisionCounty,
+    watchedValues.noteInterestRate,
+    watchedValues.noteInterestDue,
+    watchedValues.noteAttorneyFees,
+    watchedValues.pawnbrokerLawEnforcementAgency,
+    watchedValues.pawnbrokerReportNumber,
+    watchedValues.pawnbrokerWrittenDemandDate,
+    watchedValues.replevinSeizureReason,
+    watchedValues.replevinDemandDate,
     autoSave,
   ]);
 
@@ -610,6 +626,126 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
                   <FormMessage />
                 </FormItem>
               )} />
+            </div>
+          )}
+
+          {/* Money Lent — contextual hint card for Form 7.333 */}
+          {claimTypeValue === "Money Lent" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-2">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Money Lent — Form 7.333</p>
+              <p className="text-xs text-muted-foreground">Your FL Form 7.333 will be filled using the fields above:</p>
+              <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
+                <li><strong>Date of Loan:</strong> from "When did this happen?" above.</li>
+                <li><strong>Loan Description:</strong> from your "What happened?" description above — include the loan terms and why payment was not made.</li>
+                <li><strong>Principal Amount:</strong> from "Amount Requested" above.</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">The "Interest Start Date" on Form 7.333 is left blank — hand-fill it on the printed form if you are claiming prejudgment interest.</p>
+            </div>
+          )}
+
+          {/* Promissory Note Details — Form 7.334 */}
+          {claimTypeValue === "Promissory Note" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Promissory Note Details — Form 7.334</p>
+              <p className="text-xs text-muted-foreground">The note date and principal amount come from the fields above. Add any additional amounts that apply below.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField control={form.control} name="noteInterestRate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Interest Rate <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
+                    <FormControl><Input className="h-11" placeholder="e.g. 6% per year" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="noteInterestDue" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Interest Due <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
+                    <FormControl><Input className="h-11" placeholder="e.g. 150.00" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={form.control} name="noteAttorneyFees" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Attorney Fees Claimed <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
+                  <FormControl><Input className="h-11" placeholder="e.g. 500.00" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">Only include if the promissory note explicitly provides for attorney fees.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <p className="text-xs text-muted-foreground">The "Default Date" and "Acceleration Election" fields on Form 7.334 require a legal judgment about when default occurred — hand-fill them on the printed form.</p>
+            </div>
+          )}
+
+          {/* Stolen Property from Pawnbroker — Form 7.335 */}
+          {claimTypeValue === "Stolen Property from Pawnbroker" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Stolen Property from Pawnbroker — Form 7.335</p>
+              <p className="text-xs text-muted-foreground">The theft date, property description, and value come from the fields above. Add the police report details below.</p>
+              <FormField control={form.control} name="pawnbrokerLawEnforcementAgency" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Law Enforcement Agency</FormLabel>
+                  <FormControl><Input className="h-11" placeholder="e.g. Miami Police Department" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The police or sheriff's department that received your stolen property report.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField control={form.control} name="pawnbrokerReportNumber" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Police Report Number</FormLabel>
+                    <FormControl><Input className="h-11" placeholder="e.g. 2024-123456" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="pawnbrokerWrittenDemandDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Written Demand Date <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
+                    <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                    <p className="text-xs text-muted-foreground">Date you sent written demand to the pawnbroker, if applicable.</p>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <p className="text-xs text-muted-foreground">The Notary section on Form 7.335 must be completed in person at the courthouse clerk's office.</p>
+            </div>
+          )}
+
+          {/* Return of Property from Government — Form 7.336 */}
+          {claimTypeValue === "Return of Property from Government" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Return of Property from Government — Form 7.336</p>
+              <p className="text-xs text-muted-foreground">The seizure date, property description, and value come from the fields above. Add the additional details below.</p>
+              <FormField control={form.control} name="replevinSeizureReason" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Reason Given for Seizure <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
+                  <FormControl><Input className="h-11" placeholder="e.g. alleged drug evidence, tax lien" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The reason the government agency gave for seizing your property, if stated.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="replevinDemandDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Demand Date <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">Date you formally demanded the property be returned, if applicable.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <p className="text-xs text-muted-foreground">The Notary section on Form 7.336 must be completed in person at the courthouse clerk's office.</p>
+            </div>
+          )}
+
+          {/* Account Stated — contextual hint card for Form 7.337 */}
+          {claimTypeValue === "Account Stated" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-2">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Account Stated — Form 7.337</p>
+              <p className="text-xs text-muted-foreground">Your FL Form 7.337 will be filled using the fields above:</p>
+              <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
+                <li><strong>Account Statement Date:</strong> from "When did this happen?" above.</li>
+                <li><strong>Account Details:</strong> from your "What happened?" description above — include the account balance, how it was calculated, and any payments already made.</li>
+                <li><strong>Principal Amount:</strong> from "Amount Requested" above.</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">The "Interest Start Date" on Form 7.337 is left blank — hand-fill it on the printed form if you are claiming prejudgment interest.</p>
             </div>
           )}
 

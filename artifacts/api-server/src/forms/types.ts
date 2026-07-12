@@ -136,6 +136,20 @@ export interface CaseData {
   autoHighwayName?: string | null;
   autoCollisionCounty?: string | null;
 
+  // ── Promissory Note claim-specific (Form 7.334) ───────────────────────────
+  noteInterestRate?: string | null;
+  noteInterestDue?: string | null;
+  noteAttorneyFees?: string | null;
+
+  // ── Stolen Property from Pawnbroker claim-specific (Form 7.335) ──────────
+  pawnbrokerLawEnforcementAgency?: string | null;
+  pawnbrokerReportNumber?: string | null;
+  pawnbrokerWrittenDemandDate?: string | null;
+
+  // ── Return of Property from Government claim-specific (Form 7.336) ────────
+  replevinSeizureReason?: string | null;
+  replevinDemandDate?: string | null;
+
   // ── Venue / courthouse ──────────────────────────────────────────────────────
   countyId?: string | null;
   venueBasis?: string | null;

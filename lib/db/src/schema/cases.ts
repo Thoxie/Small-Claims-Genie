@@ -167,6 +167,17 @@ export const casesTable = pgTable("cases", {
   autoCollisionLocation: text("auto_collision_location"),
   autoHighwayName: text("auto_highway_name"),
   autoCollisionCounty: text("auto_collision_county"),
+  // ── Promissory Note claim-specific fields (Form 7.334) ────────────────────
+  noteInterestRate: text("note_interest_rate"),
+  noteInterestDue: text("note_interest_due"),
+  noteAttorneyFees: text("note_attorney_fees"),
+  // ── Stolen Property from Pawnbroker claim-specific fields (Form 7.335) ────
+  pawnbrokerLawEnforcementAgency: text("pawnbroker_law_enforcement_agency"),
+  pawnbrokerReportNumber: text("pawnbroker_report_number"),
+  pawnbrokerWrittenDemandDate: text("pawnbroker_written_demand_date"),
+  // ── Return of Property from Government claim-specific fields (Form 7.336) ─
+  replevinSeizureReason: text("replevin_seizure_reason"),
+  replevinDemandDate: text("replevin_demand_date"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (t) => [

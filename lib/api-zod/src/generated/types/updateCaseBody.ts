@@ -99,6 +99,14 @@ export interface UpdateCaseBody {
   autoCollisionLocation?: string | null;
   autoHighwayName?: string | null;
   autoCollisionCounty?: string | null;
+  noteInterestRate?: string | null;
+  noteInterestDue?: string | null;
+  noteAttorneyFees?: string | null;
+  pawnbrokerLawEnforcementAgency?: string | null;
+  pawnbrokerReportNumber?: string | null;
+  pawnbrokerWrittenDemandDate?: string | null;
+  replevinSeizureReason?: string | null;
+  replevinDemandDate?: string | null;
   priorDemandMade?: boolean;
   priorDemandDate?: string;
   priorDemandMethod?: string;

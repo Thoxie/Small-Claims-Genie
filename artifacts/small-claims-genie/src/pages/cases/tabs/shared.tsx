@@ -213,6 +213,14 @@ export const intakeStep2Schema = z.object({
   autoCollisionLocation: z.string().optional().or(z.literal("")),
   autoHighwayName: z.string().optional().or(z.literal("")),
   autoCollisionCounty: z.string().optional().or(z.literal("")),
+  noteInterestRate: z.string().optional().or(z.literal("")),
+  noteInterestDue: z.string().optional().or(z.literal("")),
+  noteAttorneyFees: z.string().optional().or(z.literal("")),
+  pawnbrokerLawEnforcementAgency: z.string().optional().or(z.literal("")),
+  pawnbrokerReportNumber: z.string().optional().or(z.literal("")),
+  pawnbrokerWrittenDemandDate: z.string().optional().or(z.literal("")),
+  replevinSeizureReason: z.string().optional().or(z.literal("")),
+  replevinDemandDate: z.string().optional().or(z.literal("")),
 });
 
 // Step 3 is now the Demand Letter tool — no form fields to validate.

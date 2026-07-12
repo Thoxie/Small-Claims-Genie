@@ -113,12 +113,12 @@ function fill7334(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "note_date", fmtDate(d.incidentDate));
   safeSet(form, "note_county", flCountyDisplay((d as any).countyId));
-  safeSet(form, "default_date", ""); // intentionally blank — default date differs from note date; user hand-fills
-  safeSet(form, "acceleration_election", "");
+  safeSet(form, "default_date", ""); // intentionally blank — default date is a legal event distinct from note date; user hand-fills
+  safeSet(form, "acceleration_election", ""); // intentionally blank — legal election; user hand-fills
   safeSet(form, "principal_due", fmtAmountNumeric(d.claimAmount));
-  safeSet(form, "interest_due", "");
-  safeSet(form, "interest_rate", "");
-  safeSet(form, "attorney_fees", "");
+  safeSet(form, "interest_due", d.noteInterestDue ?? "");
+  safeSet(form, "interest_rate", d.noteInterestRate ?? "");
+  safeSet(form, "attorney_fees", d.noteAttorneyFees ?? "");
   safeSet(form, "plaintiff_signature", "");
 }
 
@@ -128,12 +128,12 @@ function fill7335(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   safeSet(form, "pawnbroker_address", flDefendantAddress(d));
   safeSet(form, "property_description", d.claimDescription ?? "");
   safeSet(form, "theft_date", fmtDate(d.incidentDate));
-  safeSet(form, "law_enforcement_agency", "");
-  safeSet(form, "report_number", "");
-  safeSet(form, "written_demand_date", "");
+  safeSet(form, "law_enforcement_agency", d.pawnbrokerLawEnforcementAgency ?? "");
+  safeSet(form, "report_number", d.pawnbrokerReportNumber ?? "");
+  safeSet(form, "written_demand_date", d.pawnbrokerWrittenDemandDate ? fmtDate(d.pawnbrokerWrittenDemandDate) ?? "" : "");
   safeSet(form, "property_value", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "plaintiff_signature", "");
-  safeSet(form, "notary_name", "");
+  safeSet(form, "notary_name", ""); // completed in-person at clerk's office
   safeSet(form, "notary_date", "");
 }
 
@@ -144,11 +144,11 @@ function fill7336(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   safeSet(form, "property_description", d.claimDescription ?? "");
   safeSet(form, "property_value", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "seizure_date", fmtDate(d.incidentDate));
-  safeSet(form, "seizure_reason", "");
-  safeSet(form, "demand_date", "");
+  safeSet(form, "seizure_reason", d.replevinSeizureReason ?? "");
+  safeSet(form, "demand_date", d.replevinDemandDate ? fmtDate(d.replevinDemandDate) ?? "" : "");
   safeSet(form, "wrongful_detention_facts", d.claimDescription ?? "");
   safeSet(form, "plaintiff_signature", "");
-  safeSet(form, "notary_name", "");
+  safeSet(form, "notary_name", ""); // completed in-person at clerk's office
   safeSet(form, "notary_date", "");
 }
 

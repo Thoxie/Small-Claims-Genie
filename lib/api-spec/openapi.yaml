@@ -892,6 +892,30 @@ components:
         autoCollisionCounty:
           type: string
           nullable: true
+        noteInterestRate:
+          type: string
+          nullable: true
+        noteInterestDue:
+          type: string
+          nullable: true
+        noteAttorneyFees:
+          type: string
+          nullable: true
+        pawnbrokerLawEnforcementAgency:
+          type: string
+          nullable: true
+        pawnbrokerReportNumber:
+          type: string
+          nullable: true
+        pawnbrokerWrittenDemandDate:
+          type: string
+          nullable: true
+        replevinSeizureReason:
+          type: string
+          nullable: true
+        replevinDemandDate:
+          type: string
+          nullable: true
         priorDemandMade:
           type: boolean
         priorDemandDate:
@@ -1213,6 +1237,30 @@ components:
           type: string
           nullable: true
         autoCollisionCounty:
+          type: string
+          nullable: true
+        noteInterestRate:
+          type: string
+          nullable: true
+        noteInterestDue:
+          type: string
+          nullable: true
+        noteAttorneyFees:
+          type: string
+          nullable: true
+        pawnbrokerLawEnforcementAgency:
+          type: string
+          nullable: true
+        pawnbrokerReportNumber:
+          type: string
+          nullable: true
+        pawnbrokerWrittenDemandDate:
+          type: string
+          nullable: true
+        replevinSeizureReason:
+          type: string
+          nullable: true
+        replevinDemandDate:
           type: string
           nullable: true
         priorDemandMade:
