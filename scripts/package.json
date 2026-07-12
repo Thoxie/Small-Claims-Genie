@@ -26,6 +26,7 @@
     "test:fl-statement-of-claim-signed": "tsx ./src/test-fl-statement-of-claim-signed.ts",
     "test:fl-clkct423-signed": "tsx ./src/test-fl-clkct423-signed.ts",
     "test:fl-cl219-volusia-soc-signed": "tsx ./src/test-fl-cl219-volusia-soc-signed.ts",
+    "test:fl-soc-7330-signed": "tsx ./src/test-fl-soc-7330-signed.ts",
     "test:fl-broward-signed": "tsx ./src/test-fl-broward-signed.ts",
     "test:fl-orange-signed": "tsx ./src/test-fl-orange-signed.ts",
     "test:fl-hillsborough-soc-signed": "tsx ./src/test-fl-hillsborough-soc-signed.ts",

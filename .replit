@@ -202,6 +202,10 @@ args = "test-fl-palm-beach-summons-sigcheck"
 task = "workflow.run"
 args = "test-wa-service-sigcheck"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7330-signed"
+
 [[workflows.workflow]]
 name = "api-server-build"
 author = "agent"
@@ -696,6 +700,17 @@ args = "pnpm --filter @workspace/scripts run test:wa-service-sigcheck"
 
 [workflows.workflow.metadata]
 isValidation = true
+
+[[workflows.workflow]]
+name = "test-fl-soc-7330-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7330-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [agent]
 stack = "PNPM_WORKSPACE"
