@@ -120,6 +120,11 @@ export interface CaseData {
   priorDemandDescription?: string | null;
   priorDemandWhyNot?: string | null;
 
+  // ── Work Done / Materials Furnished claim-specific ───────────────────────────
+  workDoneStartDate?: string | null;
+  workDoneEndDate?: string | null;
+  workDoneLaborMaterials?: string | null;
+
   // ── Venue / courthouse ──────────────────────────────────────────────────────
   countyId?: string | null;
   venueBasis?: string | null;

@@ -862,6 +862,15 @@ components:
           type: string
         howAmountCalculated:
           type: string
+        workDoneStartDate:
+          type: string
+          nullable: true
+        workDoneEndDate:
+          type: string
+          nullable: true
+        workDoneLaborMaterials:
+          type: string
+          nullable: true
         priorDemandMade:
           type: boolean
         priorDemandDate:
@@ -1155,6 +1164,15 @@ components:
           type: string
         howAmountCalculated:
           type: string
+        workDoneStartDate:
+          type: string
+          nullable: true
+        workDoneEndDate:
+          type: string
+          nullable: true
+        workDoneLaborMaterials:
+          type: string
+          nullable: true
         priorDemandMade:
           type: boolean
         priorDemandDate:

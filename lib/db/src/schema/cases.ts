@@ -154,6 +154,10 @@ export const casesTable = pgTable("cases", {
   reminderNoHearingDateSent: boolean("reminder_no_hearing_date_sent").default(false),
   confirmationEmailSent: boolean("confirmation_email_sent").default(false),
   weeklyReminderLastSent: timestamp("weekly_reminder_last_sent", { withTimezone: true }),
+  // ── Work Done / Materials Furnished claim-specific fields ────────────────────
+  workDoneStartDate: text("work_done_start_date"),
+  workDoneEndDate: text("work_done_end_date"),
+  workDoneLaborMaterials: text("work_done_labor_materials"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (t) => [

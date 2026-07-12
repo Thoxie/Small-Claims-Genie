@@ -203,6 +203,9 @@ export const intakeStep2Schema = z.object({
   claimDescription: z.string().min(10, "Please describe what happened"),
   incidentDate: z.string().min(1, "Date is required"),
   howAmountCalculated: z.string().min(5, "Please explain how you calculated the amount"),
+  workDoneStartDate: z.string().optional().or(z.literal("")),
+  workDoneEndDate: z.string().optional().or(z.literal("")),
+  workDoneLaborMaterials: z.string().optional(),
 });
 
 // Step 3 is now the Demand Letter tool — no form fields to validate.

@@ -42,6 +42,9 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
       claimDescription: initialData.claimDescription || "",
       incidentDate: initialData.incidentDate || "",
       howAmountCalculated: initialData.howAmountCalculated || "",
+      workDoneStartDate: initialData.workDoneStartDate || "",
+      workDoneEndDate: initialData.workDoneEndDate || "",
+      workDoneLaborMaterials: initialData.workDoneLaborMaterials || "",
     }
   });
 
@@ -112,6 +115,9 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     watchedValues.claimDescription,
     watchedValues.incidentDate,
     watchedValues.howAmountCalculated,
+    watchedValues.workDoneStartDate,
+    watchedValues.workDoneEndDate,
+    watchedValues.workDoneLaborMaterials,
     autoSave,
   ]);
 
@@ -467,6 +473,45 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
               <FormMessage />
             </FormItem>
           )} />
+
+          {/* Work Done Details — conditional section for Work Done / Materials Furnished claims */}
+          {claimTypeValue === "Work Done / Materials Furnished" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Work Done Details</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField control={form.control} name="workDoneStartDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Work Start Date</FormLabel>
+                    <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                    <p className="text-xs text-muted-foreground">The date you began the work or furnished materials.</p>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="workDoneEndDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Work End Date</FormLabel>
+                    <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                    <p className="text-xs text-muted-foreground">The date the work was completed or materials were last delivered.</p>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={form.control} name="workDoneLaborMaterials" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Labor, Materials, Charges and Credits</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      className="min-h-[120px]"
+                      placeholder="e.g. Labor (10 hrs × $50/hr) = $500; Materials = $200; Payment received = −$100; Balance due = $600"
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">Itemize the work performed, materials furnished, their costs, any payments received, and the remaining balance.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          )}
 
           {/* How did you calculate — compact, above What happened */}
           <FormField control={form.control} name="howAmountCalculated" render={({ field }) => (

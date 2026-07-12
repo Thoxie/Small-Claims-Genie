@@ -168,6 +168,9 @@ export interface Case {
   claimDescription?: string;
   incidentDate?: string;
   howAmountCalculated?: string;
+  workDoneStartDate?: string | null;
+  workDoneEndDate?: string | null;
+  workDoneLaborMaterials?: string | null;
   priorDemandMade?: boolean;
   priorDemandDate?: string;
   priorDemandMethod?: string;
@@ -372,6 +375,9 @@ export interface UpdateCaseBody {
   claimDescription?: string;
   incidentDate?: string;
   howAmountCalculated?: string;
+  workDoneStartDate?: string | null;
+  workDoneEndDate?: string | null;
+  workDoneLaborMaterials?: string | null;
   priorDemandMade?: boolean;
   priorDemandDate?: string;
   priorDemandMethod?: string;

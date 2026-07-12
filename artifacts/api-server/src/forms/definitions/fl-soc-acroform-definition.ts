@@ -87,10 +87,10 @@ function fill7331(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
 function fill7332(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
-  safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
-  safeSet(form, "work_start_date", fmtDate(d.incidentDate));
-  safeSet(form, "work_end_date", fmtDate(d.incidentDate));
-  safeSet(form, "labor_materials_credits", d.claimDescription ?? "");
+  safeSet(form, "interest_start_date", ""); // intentionally blank — user hand-fills if claiming prejudgment interest
+  safeSet(form, "work_start_date", fmtDate(d.workDoneStartDate) ?? "");
+  safeSet(form, "work_end_date", fmtDate(d.workDoneEndDate) ?? "");
+  safeSet(form, "labor_materials_credits", d.workDoneLaborMaterials ?? "");
   safeSet(form, "plaintiff_signature", "");
 }
 

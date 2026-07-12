@@ -387,7 +387,7 @@ WHAT THIS PAGE COLLECTS:
 
 FORM POPULATED BY THIS PAGE (state-dependent):
 - CALIFORNIA: SC-100 (Plaintiff's Claim and ORDER to Go to Small Claims Court). The claim description auto-fills Section 3. Do NOT reference SC-100 for FL or TX cases.
-- FLORIDA: Statement of Claim — the claim description, incident date, and amount auto-fill the FL court form fields.
+- FLORIDA: Statement of Claim — the claim description, incident date, and amount auto-fill the FL court form fields. For **Work Done / Materials Furnished** claims (Form 7.332): Step 2 also collects Work Start Date, Work End Date, and an itemized "Labor, Materials, Charges and Credits" field — these pre-fill Form 7.332 directly. The interest start date field on the form is intentionally left blank for the user to hand-fill if claiming prejudgment interest.
 - TEXAS: TX Small Claims Petition — the claim description auto-fills the TX JP court petition fields.
 
 Anticipate: claim type selection, how to calculate the amount, what the AI writing assistant does.
