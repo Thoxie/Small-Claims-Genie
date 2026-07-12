@@ -131,6 +131,11 @@ export interface CaseData {
   goodsSoldLastSaleDate?: string | null;
   goodsSoldGoodsAndPrices?: string | null;
 
+  // ── Auto Negligence claim-specific (Form 7.330) ───────────────────────────
+  autoCollisionLocation?: string | null;
+  autoHighwayName?: string | null;
+  autoCollisionCounty?: string | null;
+
   // ── Venue / courthouse ──────────────────────────────────────────────────────
   countyId?: string | null;
   venueBasis?: string | null;

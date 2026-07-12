@@ -65,9 +65,11 @@ function fillCaption(
 function fill7330(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "collision_date", fmtDate(d.incidentDate));
-  safeSet(form, "collision_location", d.claimDescription?.slice(0, 120) ?? "");
-  safeSet(form, "highway_name", "");
-  safeSet(form, "collision_county", flCountyDisplay((d as any).countyId));
+  // collision_location: dedicated intake field, NOT a slice of claimDescription
+  safeSet(form, "collision_location", d.autoCollisionLocation ?? "");
+  safeSet(form, "highway_name", d.autoHighwayName ?? "");
+  // collision_county: where the accident happened — never default to the court county
+  safeSet(form, "collision_county", d.autoCollisionCounty ?? "");
   safeSet(form, "plaintiff_driver", d.plaintiffName ?? "");
   safeSet(form, "defendant_driver", flDefendantName(d));
   safeSet(form, "claim_amount", fmtAmountNumeric(d.claimAmount));

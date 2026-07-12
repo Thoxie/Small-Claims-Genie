@@ -163,6 +163,10 @@ export const casesTable = pgTable("cases", {
   goodsSoldFirstSaleDate: text("goods_sold_first_sale_date"),
   goodsSoldLastSaleDate: text("goods_sold_last_sale_date"),
   goodsSoldGoodsAndPrices: text("goods_sold_goods_and_prices"),
+  // ── Auto Negligence claim-specific fields (Form 7.330) ────────────────────
+  autoCollisionLocation: text("auto_collision_location"),
+  autoHighwayName: text("auto_highway_name"),
+  autoCollisionCounty: text("auto_collision_county"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (t) => [

@@ -49,6 +49,9 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
       goodsSoldFirstSaleDate: initialData.goodsSoldFirstSaleDate || "",
       goodsSoldLastSaleDate: initialData.goodsSoldLastSaleDate || "",
       goodsSoldGoodsAndPrices: initialData.goodsSoldGoodsAndPrices || "",
+      autoCollisionLocation: initialData.autoCollisionLocation || "",
+      autoHighwayName: initialData.autoHighwayName || "",
+      autoCollisionCounty: initialData.autoCollisionCounty || "",
     }
   });
 
@@ -126,6 +129,9 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     watchedValues.goodsSoldFirstSaleDate,
     watchedValues.goodsSoldLastSaleDate,
     watchedValues.goodsSoldGoodsAndPrices,
+    watchedValues.autoCollisionLocation,
+    watchedValues.autoHighwayName,
+    watchedValues.autoCollisionCounty,
     autoSave,
   ]);
 
@@ -481,6 +487,45 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
               <FormMessage />
             </FormItem>
           )} />
+
+          {/* Auto Accident Details — conditional section for Auto Negligence claims */}
+          {claimTypeValue === "Auto Negligence" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Auto Accident Details</p>
+              <FormField control={form.control} name="incidentDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Collision</FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The date the accident occurred.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="autoCollisionLocation" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Collision Location</FormLabel>
+                  <FormControl><Input className="h-11" placeholder="e.g. Main St & Oak Ave, Anytown" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The intersection or street address where the collision happened.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="autoHighwayName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Public Highway <span className="text-xs font-normal text-muted-foreground">(if applicable)</span></FormLabel>
+                  <FormControl><Input className="h-11" placeholder="e.g. I-95, SR-826, US-1" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">Name of the highway or road, if the accident was on a named highway. Leave blank if not applicable.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="autoCollisionCounty" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>County Where Collision Occurred</FormLabel>
+                  <FormControl><Input className="h-11" placeholder="e.g. Broward, Dade, Orange" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The county where the accident happened — may differ from the county where you are filing.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          )}
 
           {/* Goods Sold Details — conditional section for Goods Sold claims */}
           {claimTypeValue === "Goods Sold" && (

@@ -96,6 +96,9 @@ export interface UpdateCaseBody {
   goodsSoldFirstSaleDate?: string | null;
   goodsSoldLastSaleDate?: string | null;
   goodsSoldGoodsAndPrices?: string | null;
+  autoCollisionLocation?: string | null;
+  autoHighwayName?: string | null;
+  autoCollisionCounty?: string | null;
   priorDemandMade?: boolean;
   priorDemandDate?: string;
   priorDemandMethod?: string;

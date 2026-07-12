@@ -883,6 +883,15 @@ components:
         goodsSoldGoodsAndPrices:
           type: string
           nullable: true
+        autoCollisionLocation:
+          type: string
+          nullable: true
+        autoHighwayName:
+          type: string
+          nullable: true
+        autoCollisionCounty:
+          type: string
+          nullable: true
         priorDemandMade:
           type: boolean
         priorDemandDate:
@@ -1195,6 +1204,15 @@ components:
           type: string
           nullable: true
         goodsSoldGoodsAndPrices:
+          type: string
+          nullable: true
+        autoCollisionLocation:
+          type: string
+          nullable: true
+        autoHighwayName:
+          type: string
+          nullable: true
+        autoCollisionCounty:
           type: string
           nullable: true
         priorDemandMade:
