@@ -29,6 +29,7 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
               <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">CS-C 702.1</span>
                     <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Required</span>
                   </div>
                   <p className="text-base font-bold leading-snug text-foreground">Small Claims Complaint</p>
@@ -179,6 +180,7 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                       <div className="mx-3 mb-2 rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">CS-L 706.1</span>
                             <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Sheriff Service</span>
                           </div>
                           <p className="text-sm font-semibold text-foreground">Letter to the Sheriff</p>
@@ -252,6 +254,9 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
               </p>
               <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">ATJ 601.9</span>
+                  </div>
                   <p className="text-sm font-semibold text-foreground">Application for Waiver of Court Fees</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
                   <p className="text-xs text-muted-foreground mt-1">Editable fields require Adobe Acrobat.</p>

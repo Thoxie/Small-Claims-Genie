@@ -285,6 +285,9 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
               </p>
               <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Rule 145</span>
+                  </div>
                   <p className="text-sm font-semibold text-foreground">Affidavit of Inability to Pay</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
                   <p className="text-xs text-muted-foreground mt-1">Editable fields require Adobe Acrobat.</p>

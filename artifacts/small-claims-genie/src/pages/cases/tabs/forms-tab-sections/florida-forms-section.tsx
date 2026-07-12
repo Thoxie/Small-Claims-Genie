@@ -541,6 +541,9 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
               </p>
               <div className="rounded-xl border bg-muted/20 p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Form 1.998</span>
+                  </div>
                   <p className="text-sm font-semibold text-foreground">Application for Civil Indigent Status</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your name and case information. Complete the financial eligibility section after downloading.</p>
                   {ctx.downloadError && (ctx.downloadingForm === "fl/indigent-fee-waiver" || ctx.downloadingForm === "fl/indigent-fee-waiver/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
