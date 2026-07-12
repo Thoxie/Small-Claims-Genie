@@ -158,12 +158,6 @@ const ilSmcComplaintDefinition: FormDefinition = {
   async generate(d: import("../types").CaseData, _body: FormBody, opts?: GenerateOptions): Promise<Buffer> {
     const defendantAddr = fmtAddr(d.defendantAddress, d.defendantCity, d.defendantState, d.defendantZip);
 
-    // Build the claim narrative for section 3 (reason lines).
-    // Split across the two reason lines if needed.
-    const claimDesc = d.claimDescription ?? "";
-    const reasonLine1 = claimDesc.slice(0, 120);
-    const reasonLine2 = claimDesc.slice(120, 240);
-
     // Build the "facts" narrative for section 5 (up to 20 lines).
     // Combine description, amount calculation, and prior demand info.
     const facts: string[] = [];
@@ -194,8 +188,6 @@ const ilSmcComplaintDefinition: FormDefinition = {
       "2 - Defendant's Name and Address - Line 2": defendantAddr,
 
       "3 - Amount":      fmtAmount(d.claimAmount),
-      "3 - Reason - Line 1": reasonLine1,
-      "3 - Reason - Line 2": reasonLine2,
 
       ...narrativeLines,
     };

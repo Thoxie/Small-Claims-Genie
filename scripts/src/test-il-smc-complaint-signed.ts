@@ -16,7 +16,10 @@
  *   - Asserts signed PDF is >= unsigned PDF (signature bytes were added)
  *   - Cleans up test case in the database afterwards
  *
- * Signature coords (pdf-lib, y from bottom): x=97, y=110, w=200, h=22, page=1
+ * Signature coords (pdf-lib, y from bottom): x=142, y=358, w=200, h=22, page=1
+ *
+ * Calibration: pdftotext -bbox-layout "/s/" on page 2 → xMin=142.44, yMin=411.682
+ * pdf-lib y = 792 − 411.682 − 22 (image height) = 358
  */
 
 import { db, casesTable, downloadTokensTable } from "@workspace/db";
@@ -39,8 +42,8 @@ const EXPECTED_AMOUNT    = "3,500.00";
 
 // Signature placement (pdf-lib coords: x/y from bottom-left, y is bottom edge of image)
 const SIG_PAGE = 1;
-const SIG_X    = 97;
-const SIG_Y    = 110;
+const SIG_X    = 142;
+const SIG_Y    = 358;
 const SIG_W    = 200;
 const SIG_H    = 22;
 
