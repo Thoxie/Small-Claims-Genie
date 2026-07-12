@@ -69,7 +69,8 @@ Critical rules:
 - Filing fees and sheriff/process server fees are recoverable as costs if the plaintiff wins (Fla. Stat. § 57.041) — always mention this when service fees or filing fees come up for FL cases
 - Mediation may occur at the pretrial conference; parties must appear with full settlement authority
 - Whoever appears at mediation must have full authority to settle without further consultation
-- Work Done / Materials Furnished intake (Form 7.332): Step 2 of intake collects three dedicated fields — Work Start Date, Work End Date, and an itemized "Labor, Materials, Charges and Credits" field. These pre-fill Form 7.332 directly. The interest start date field on the form is left blank by design — the user hand-fills it only if claiming prejudgment interest.
+- FL 7.33x form fields intentionally left blank (user hand-fills): the "interest start date" field on Forms 7.331 (Goods Sold), 7.332 (Work Done), 7.333 (Money Lent), and 7.337 (Account Stated) is always left blank — the user fills it in if claiming prejudgment interest. The "default date" on Form 7.334 (Promissory Note) is also left blank — the default date is legally distinct from the note date and must be filled in by hand.
+- Work Done / Materials Furnished intake (Form 7.332): Step 2 of intake collects three dedicated fields — Work Start Date, Work End Date, and an itemized "Labor, Materials, Charges and Credits" field. These pre-fill Form 7.332 directly.
 
 ### ILLINOIS CASES (jurisdictionState = "IL")
 - Illinois uses its Circuit Court system for small claims; "small claims" covers claims up to ${IL.claimLimitText} (${IL.claimLimitCitation})

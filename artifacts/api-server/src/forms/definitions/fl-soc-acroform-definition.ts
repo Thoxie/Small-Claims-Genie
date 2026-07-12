@@ -77,7 +77,7 @@ function fill7330(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
 function fill7331(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
-  safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
+  safeSet(form, "interest_start_date", ""); // intentionally blank — user hand-fills if claiming prejudgment interest
   safeSet(form, "first_sale_date", fmtDate(d.incidentDate));
   safeSet(form, "last_sale_date", fmtDate(d.incidentDate));
   safeSet(form, "goods_and_prices", d.claimDescription ?? "");
@@ -98,7 +98,7 @@ function fill7333(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "loan_date", fmtDate(d.incidentDate));
-  safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
+  safeSet(form, "interest_start_date", ""); // intentionally blank — user hand-fills if claiming prejudgment interest
   safeSet(form, "loan_description", d.claimDescription ?? "");
   safeSet(form, "plaintiff_signature", "");
 }
@@ -107,7 +107,7 @@ function fill7334(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "note_date", fmtDate(d.incidentDate));
   safeSet(form, "note_county", flCountyDisplay((d as any).countyId));
-  safeSet(form, "default_date", fmtDate(d.incidentDate));
+  safeSet(form, "default_date", ""); // intentionally blank — default date differs from note date; user hand-fills
   safeSet(form, "acceleration_election", "");
   safeSet(form, "principal_due", fmtAmountNumeric(d.claimAmount));
   safeSet(form, "interest_due", "");
@@ -150,7 +150,7 @@ function fill7337(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "account_statement_date", fmtDate(d.incidentDate));
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
-  safeSet(form, "interest_start_date", fmtDate(d.incidentDate));
+  safeSet(form, "interest_start_date", ""); // intentionally blank — user hand-fills if claiming prejudgment interest
   safeSet(form, "account_details", d.claimDescription ?? "");
   safeSet(form, "plaintiff_signature", "");
 }
