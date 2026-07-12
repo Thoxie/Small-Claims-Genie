@@ -206,6 +206,34 @@ args = "test-wa-service-sigcheck"
 task = "workflow.run"
 args = "test-fl-soc-7330-signed"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7331-signed"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7332-signed"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7333-signed"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7334-signed"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7335-signed"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7336-signed"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test-fl-soc-7337-signed"
+
 [[workflows.workflow]]
 name = "api-server-build"
 author = "agent"
@@ -708,6 +736,83 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "pnpm --filter @workspace/scripts run test:fl-soc-7330-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "test-fl-soc-7331-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7331-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "test-fl-soc-7332-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7332-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "test-fl-soc-7333-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7333-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "test-fl-soc-7334-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7334-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "test-fl-soc-7335-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7335-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "test-fl-soc-7336-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7336-signed"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "test-fl-soc-7337-signed"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/scripts run test:fl-soc-7337-signed"
 
 [workflows.workflow.metadata]
 outputType = "console"
