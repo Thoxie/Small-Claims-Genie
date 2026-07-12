@@ -629,17 +629,19 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
             </div>
           )}
 
-          {/* Money Lent — contextual hint card for Form 7.333 */}
+          {/* Money Lent — Form 7.333 */}
           {claimTypeValue === "Money Lent" && (
-            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-2">
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
               <p className="font-semibold text-sm text-[#0d6b5e]">Money Lent — Form 7.333</p>
-              <p className="text-xs text-muted-foreground">Your FL Form 7.333 will be filled using the fields above:</p>
-              <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
-                <li><strong>Date of Loan:</strong> from "When did this happen?" above.</li>
-                <li><strong>Loan Description:</strong> from your "What happened?" description above — include the loan terms and why payment was not made.</li>
-                <li><strong>Principal Amount:</strong> from "Amount Requested" above.</li>
-              </ul>
-              <p className="text-xs text-muted-foreground">The "Interest Start Date" on Form 7.333 is left blank — hand-fill it on the printed form if you are claiming prejudgment interest.</p>
+              <FormField control={form.control} name="incidentDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Loan</FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The date you lent the money — fills the "Loan Date" on Form 7.333.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <p className="text-xs text-muted-foreground">The loan description and principal amount come from "What happened?" and "Amount Requested" above. The "Interest Start Date" on Form 7.333 is left blank — hand-fill it on the printed form if you are claiming prejudgment interest.</p>
             </div>
           )}
 
@@ -647,7 +649,15 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
           {claimTypeValue === "Promissory Note" && (
             <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
               <p className="font-semibold text-sm text-[#0d6b5e]">Promissory Note Details — Form 7.334</p>
-              <p className="text-xs text-muted-foreground">The note date and principal amount come from the fields above. Add any additional amounts that apply below.</p>
+              <FormField control={form.control} name="incidentDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Note</FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The date the promissory note was signed — fills the "Note Date" on Form 7.334.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <p className="text-xs text-muted-foreground">The principal amount comes from "Amount Requested" above. Add any additional amounts below.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name="noteInterestRate" render={({ field }) => (
                   <FormItem>
@@ -680,7 +690,15 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
           {claimTypeValue === "Stolen Property from Pawnbroker" && (
             <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
               <p className="font-semibold text-sm text-[#0d6b5e]">Stolen Property from Pawnbroker — Form 7.335</p>
-              <p className="text-xs text-muted-foreground">The theft date, property description, and value come from the fields above. Add the police report details below.</p>
+              <FormField control={form.control} name="incidentDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Theft</FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The date the property was stolen — fills the "Theft Date" on Form 7.335.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <p className="text-xs text-muted-foreground">The property description and value come from "What happened?" and "Amount Requested" above. Add the police report details below.</p>
               <FormField control={form.control} name="pawnbrokerLawEnforcementAgency" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Law Enforcement Agency</FormLabel>
@@ -714,7 +732,15 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
           {claimTypeValue === "Return of Property from Government" && (
             <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
               <p className="font-semibold text-sm text-[#0d6b5e]">Return of Property from Government — Form 7.336</p>
-              <p className="text-xs text-muted-foreground">The seizure date, property description, and value come from the fields above. Add the additional details below.</p>
+              <FormField control={form.control} name="incidentDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Seizure</FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The date the government seized your property — fills the "Seizure Date" on Form 7.336.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <p className="text-xs text-muted-foreground">The property description and value come from "What happened?" and "Amount Requested" above. Add the additional details below.</p>
               <FormField control={form.control} name="replevinSeizureReason" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Reason Given for Seizure <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
@@ -735,17 +761,19 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
             </div>
           )}
 
-          {/* Account Stated — contextual hint card for Form 7.337 */}
+          {/* Account Stated — Form 7.337 */}
           {claimTypeValue === "Account Stated" && (
-            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-2">
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
               <p className="font-semibold text-sm text-[#0d6b5e]">Account Stated — Form 7.337</p>
-              <p className="text-xs text-muted-foreground">Your FL Form 7.337 will be filled using the fields above:</p>
-              <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
-                <li><strong>Account Statement Date:</strong> from "When did this happen?" above.</li>
-                <li><strong>Account Details:</strong> from your "What happened?" description above — include the account balance, how it was calculated, and any payments already made.</li>
-                <li><strong>Principal Amount:</strong> from "Amount Requested" above.</li>
-              </ul>
-              <p className="text-xs text-muted-foreground">The "Interest Start Date" on Form 7.337 is left blank — hand-fill it on the printed form if you are claiming prejudgment interest.</p>
+              <FormField control={form.control} name="incidentDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Account Statement Date</FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The date of the account statement showing the balance owed — fills the "Account Statement Date" on Form 7.337.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <p className="text-xs text-muted-foreground">The account details and principal amount come from "What happened?" and "Amount Requested" above. The "Interest Start Date" on Form 7.337 is left blank — hand-fill it on the printed form if you are claiming prejudgment interest.</p>
             </div>
           )}
 
