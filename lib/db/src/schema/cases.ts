@@ -158,6 +158,11 @@ export const casesTable = pgTable("cases", {
   workDoneStartDate: text("work_done_start_date"),
   workDoneEndDate: text("work_done_end_date"),
   workDoneLaborMaterials: text("work_done_labor_materials"),
+  // ── Goods Sold claim-specific fields (Form 7.331) ─────────────────────────
+  goodsSoldInterestStartDate: text("goods_sold_interest_start_date"),
+  goodsSoldFirstSaleDate: text("goods_sold_first_sale_date"),
+  goodsSoldLastSaleDate: text("goods_sold_last_sale_date"),
+  goodsSoldGoodsAndPrices: text("goods_sold_goods_and_prices"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (t) => [

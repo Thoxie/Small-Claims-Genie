@@ -871,6 +871,18 @@ components:
         workDoneLaborMaterials:
           type: string
           nullable: true
+        goodsSoldInterestStartDate:
+          type: string
+          nullable: true
+        goodsSoldFirstSaleDate:
+          type: string
+          nullable: true
+        goodsSoldLastSaleDate:
+          type: string
+          nullable: true
+        goodsSoldGoodsAndPrices:
+          type: string
+          nullable: true
         priorDemandMade:
           type: boolean
         priorDemandDate:
@@ -1171,6 +1183,18 @@ components:
           type: string
           nullable: true
         workDoneLaborMaterials:
+          type: string
+          nullable: true
+        goodsSoldInterestStartDate:
+          type: string
+          nullable: true
+        goodsSoldFirstSaleDate:
+          type: string
+          nullable: true
+        goodsSoldLastSaleDate:
+          type: string
+          nullable: true
+        goodsSoldGoodsAndPrices:
           type: string
           nullable: true
         priorDemandMade:

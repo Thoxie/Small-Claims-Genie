@@ -95,6 +95,10 @@ export interface Case {
   workDoneStartDate?: string | null;
   workDoneEndDate?: string | null;
   workDoneLaborMaterials?: string | null;
+  goodsSoldInterestStartDate?: string | null;
+  goodsSoldFirstSaleDate?: string | null;
+  goodsSoldLastSaleDate?: string | null;
+  goodsSoldGoodsAndPrices?: string | null;
   priorDemandMade?: boolean;
   priorDemandDate?: string;
   priorDemandMethod?: string;

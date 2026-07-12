@@ -125,6 +125,12 @@ export interface CaseData {
   workDoneEndDate?: string | null;
   workDoneLaborMaterials?: string | null;
 
+  // ── Goods Sold claim-specific (Form 7.331) ────────────────────────────────
+  goodsSoldInterestStartDate?: string | null;
+  goodsSoldFirstSaleDate?: string | null;
+  goodsSoldLastSaleDate?: string | null;
+  goodsSoldGoodsAndPrices?: string | null;
+
   // ── Venue / courthouse ──────────────────────────────────────────────────────
   countyId?: string | null;
   venueBasis?: string | null;

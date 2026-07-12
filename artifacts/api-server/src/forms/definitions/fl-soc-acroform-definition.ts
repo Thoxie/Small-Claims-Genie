@@ -77,10 +77,14 @@ function fill7330(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
 function fill7331(d: CaseData, form: ReturnType<PDFDocument["getForm"]>): void {
   fillCaption(form, d);
   safeSet(form, "principal_amount", fmtAmountNumeric(d.claimAmount));
-  safeSet(form, "interest_start_date", ""); // intentionally blank — user hand-fills if claiming prejudgment interest
-  safeSet(form, "first_sale_date", fmtDate(d.incidentDate));
-  safeSet(form, "last_sale_date", fmtDate(d.incidentDate));
-  safeSet(form, "goods_and_prices", d.claimDescription ?? "");
+  // interest_start_date: from intake if provided; blank if not — user hand-fills when claiming prejudgment interest
+  safeSet(form, "interest_start_date", d.goodsSoldInterestStartDate ? fmtDate(d.goodsSoldInterestStartDate) ?? "" : "");
+  safeSet(form, "first_sale_date", d.goodsSoldFirstSaleDate ? fmtDate(d.goodsSoldFirstSaleDate) ?? "" : "");
+  safeSet(form, "last_sale_date", d.goodsSoldLastSaleDate ? fmtDate(d.goodsSoldLastSaleDate) ?? "" : "");
+  // goods_and_prices: dedicated itemized field — NOT the general claim description
+  // NOTE: PDF template has a stray "4" after the field label — this is a visual artifact
+  // baked into the page content layer and cannot be removed without rebuilding the template.
+  safeSet(form, "goods_and_prices", d.goodsSoldGoodsAndPrices ?? "");
   safeSet(form, "plaintiff_signature", "");
 }
 

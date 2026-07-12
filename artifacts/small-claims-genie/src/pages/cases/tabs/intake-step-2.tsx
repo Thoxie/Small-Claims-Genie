@@ -45,6 +45,10 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
       workDoneStartDate: initialData.workDoneStartDate || "",
       workDoneEndDate: initialData.workDoneEndDate || "",
       workDoneLaborMaterials: initialData.workDoneLaborMaterials || "",
+      goodsSoldInterestStartDate: initialData.goodsSoldInterestStartDate || "",
+      goodsSoldFirstSaleDate: initialData.goodsSoldFirstSaleDate || "",
+      goodsSoldLastSaleDate: initialData.goodsSoldLastSaleDate || "",
+      goodsSoldGoodsAndPrices: initialData.goodsSoldGoodsAndPrices || "",
     }
   });
 
@@ -118,6 +122,10 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
     watchedValues.workDoneStartDate,
     watchedValues.workDoneEndDate,
     watchedValues.workDoneLaborMaterials,
+    watchedValues.goodsSoldInterestStartDate,
+    watchedValues.goodsSoldFirstSaleDate,
+    watchedValues.goodsSoldLastSaleDate,
+    watchedValues.goodsSoldGoodsAndPrices,
     autoSave,
   ]);
 
@@ -473,6 +481,53 @@ export function IntakeStep2({ caseId, initialData, onNext, saving, autoOpenAdvis
               <FormMessage />
             </FormItem>
           )} />
+
+          {/* Goods Sold Details — conditional section for Goods Sold claims */}
+          {claimTypeValue === "Goods Sold" && (
+            <div className="rounded-xl border border-[#a8e6df] bg-[#f0fffe] p-4 space-y-4">
+              <p className="font-semibold text-sm text-[#0d6b5e]">Goods Sold Details</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField control={form.control} name="goodsSoldFirstSaleDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Sale Date</FormLabel>
+                    <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                    <p className="text-xs text-muted-foreground">The date of the first sale or delivery.</p>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="goodsSoldLastSaleDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Sale Date</FormLabel>
+                    <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                    <p className="text-xs text-muted-foreground">The date of the last sale or delivery.</p>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={form.control} name="goodsSoldInterestStartDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Interest Start Date <span className="text-xs font-normal text-muted-foreground">(optional)</span></FormLabel>
+                  <FormControl><Input type="date" className="h-11" {...field} /></FormControl>
+                  <p className="text-xs text-muted-foreground">The date interest began — usually the invoice due date or when payment was demanded. Leave blank if not requesting interest.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="goodsSoldGoodsAndPrices" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Goods / Prices / Credits</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      className="min-h-[120px]"
+                      placeholder="e.g. 10 units Widget A × $50 = $500; Payment received = −$100; Balance due = $400"
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">List what was sold, the price, any payments received, and the remaining balance.</p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          )}
 
           {/* Work Done Details — conditional section for Work Done / Materials Furnished claims */}
           {claimTypeValue === "Work Done / Materials Furnished" && (
