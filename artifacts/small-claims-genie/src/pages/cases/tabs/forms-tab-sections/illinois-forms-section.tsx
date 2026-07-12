@@ -74,16 +74,12 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                   </div>
                   <p className="text-base font-bold leading-snug text-foreground">Summons — Small Claims</p>
                   <p className="text-xs text-muted-foreground leading-snug mt-0.5">Pre-filled with your case details. Bring to the clerk when you file your Complaint — the clerk assigns the return date and signs it.</p>
-                  {ctx.downloadError && (ctx.downloadingForm === "il/summons" || ctx.downloadingForm === "il/summons/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+                  {ctx.downloadError && ctx.downloadingForm === "il/summons" && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
                 </div>
-                <div className="shrink-0 flex flex-col items-end gap-1.5">
-                  <button type="button" disabled={ctx.downloadingForm === "il/summons/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "il/summons", filename: `IL-Summons-Signed-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                    {ctx.downloadingForm === "il/summons/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                    Sign &amp; Download
-                  </button>
-                  <button type="button" disabled={ctx.downloadingForm === "il/summons"} onClick={() => ctx.downloadSignedFLForm("il/summons", `IL-Summons-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                    {ctx.downloadingForm === "il/summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                    Skip signing
+                <div className="shrink-0">
+                  <button type="button" disabled={ctx.downloadingForm === "il/summons"} onClick={() => ctx.downloadSignedFLForm("il/summons", `IL-Summons-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                    {ctx.downloadingForm === "il/summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
+                    Download
                   </button>
                 </div>
               </div>
