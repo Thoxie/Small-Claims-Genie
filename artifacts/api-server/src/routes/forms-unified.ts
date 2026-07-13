@@ -728,6 +728,19 @@ router.post(
   makeFormHandler("NJ-CN10532", (id) => `NJ-Small-Claims-Complaint-Signed-Case-${id}.pdf`, { signed: true }),
 );
 
+// New Jersey — CN 10148 Motor Vehicle Complaint (CN 10532 packet for MV cases)
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.post(
+  "/cases/:id/forms/nj/mv-complaint",
+  makeFormHandler("NJ-MV-COMPLAINT", (id) => `NJ-MV-Complaint-Case-${id}.pdf`),
+);
+
+router.post(
+  "/cases/:id/forms/nj/mv-complaint/signed",
+  makeFormHandler("NJ-MV-COMPLAINT", (id) => `NJ-MV-Complaint-Signed-Case-${id}.pdf`, { signed: true }),
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Washington — MISC 05.0100 (Notice of Small Claim), MISC 05.0200 (Certificate of Service)
 // ─────────────────────────────────────────────────────────────────────────────

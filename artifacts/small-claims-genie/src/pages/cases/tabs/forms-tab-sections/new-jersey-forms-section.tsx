@@ -2,32 +2,65 @@ import { Download, Info, PenLine, ExternalLink } from "lucide-react";
 import type { FormsTabCtx } from "../forms-tab";
 
 export function NewJerseyFormsSection({ ctx }: { ctx: FormsTabCtx }) {
+  const claimType = (ctx.currentCase as any).claimType ?? "";
+  const isMVCase = claimType === "Auto Negligence";
+
   return (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-xl">🌊</span>
             <h3 className="text-base font-bold text-foreground">New Jersey Court Forms</h3>
           </div>
-          <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">CN 10532</span>
+
+          {/* ── CN 10532 Standard Complaint — shown for all NON-motor-vehicle cases ── */}
+          {!isMVCase && (
+            <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">CN 10532</span>
+                </div>
+                <p className="text-sm font-semibold text-foreground">Small Claims Complaint</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details — plaintiff, defendant, county, amount claimed, and basis of claim. Sign and file with the Special Civil Part clerk.</p>
+                {ctx.downloadError && (ctx.downloadingForm === "nj/complaint" || ctx.downloadingForm === "nj/complaint/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
               </div>
-              <p className="text-sm font-semibold text-foreground">Small Claims Complaint</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details — plaintiff, defendant, county, amount claimed, and basis of claim. Sign and file with the Special Civil Part clerk.</p>
-              {ctx.downloadError && (ctx.downloadingForm === "nj/complaint" || ctx.downloadingForm === "nj/complaint/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                <button type="button" disabled={ctx.downloadingForm === "nj/complaint/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "nj/complaint", filename: `NJ-Small-Claims-Complaint-Signed-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                  {ctx.downloadingForm === "nj/complaint/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                  Sign &amp; Download
+                </button>
+                <button type="button" disabled={ctx.downloadingForm === "nj/complaint"} onClick={() => ctx.downloadSignedFLForm("nj/complaint", `NJ-Small-Claims-Complaint-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                  {ctx.downloadingForm === "nj/complaint" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                  Skip signing
+                </button>
+              </div>
             </div>
-            <div className="shrink-0 flex flex-col items-end gap-1.5">
-              <button type="button" disabled={ctx.downloadingForm === "nj/complaint/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "nj/complaint", filename: `NJ-Small-Claims-Complaint-Signed-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                {ctx.downloadingForm === "nj/complaint/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                Sign &amp; Download
-              </button>
-              <button type="button" disabled={ctx.downloadingForm === "nj/complaint"} onClick={() => ctx.downloadSignedFLForm("nj/complaint", `NJ-Small-Claims-Complaint-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                {ctx.downloadingForm === "nj/complaint" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                Skip signing
-              </button>
+          )}
+
+          {/* ── CN 10148 Motor Vehicle Complaint — shown only for Auto Negligence cases ── */}
+          {isMVCase && (
+            <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">CN 10532</span>
+                  <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Motor Vehicle</span>
+                </div>
+                <p className="text-sm font-semibold text-foreground">Small Claims Complaint — Motor Vehicle</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with your case details for a motor vehicle accident claim. Part of the CN 10148 packet. Sign and file with the Special Civil Part clerk.</p>
+                {ctx.downloadError && (ctx.downloadingForm === "nj/mv-complaint" || ctx.downloadingForm === "nj/mv-complaint/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                <button type="button" disabled={ctx.downloadingForm === "nj/mv-complaint/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "nj/mv-complaint", filename: `NJ-MV-Complaint-Signed-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                  {ctx.downloadingForm === "nj/mv-complaint/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
+                  Sign &amp; Download
+                </button>
+                <button type="button" disabled={ctx.downloadingForm === "nj/mv-complaint"} onClick={() => ctx.downloadSignedFLForm("nj/mv-complaint", `NJ-MV-Complaint-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
+                  {ctx.downloadingForm === "nj/mv-complaint" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
+                  Skip signing
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
             <div className="flex gap-2.5">
               <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />

@@ -77,6 +77,8 @@ export * from "./va-dc-409-definition";
 
 // ─── New Jersey — CN 10532 (AcroForm, official njcourts.gov PDF) ──────────────
 export * from "./nj-complaint-definition";
+// ─── New Jersey — CN 10532 / CN 10148 Motor Vehicle Complaint ────────────────
+export * from "./nj-mv-complaint-definition";
 
 // ─── Washington programmatic forms (pdf-lib, no template PDF) ─────────────────
 export * from "./wa-notice-definition";
