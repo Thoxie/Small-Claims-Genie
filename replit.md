@@ -2,7 +2,15 @@
 
 ## Overview
 
-Small Claims Genie is a California small claims court SaaS application designed to assist lower-income individuals and small businesses in navigating the CA small claims court system. It is a full-stack pnpm monorepo featuring an Express API, a React+Vite frontend, a PostgreSQL database, and integrates advanced AI capabilities including OCR, chat, and voice. The project aims to simplify legal processes, making them accessible and understandable, especially for mobile-first, non-technical users. The business vision is to offer a freemium model where users can prepare cases for free and pay to download final court forms.
+Small Claims Genie is a multi-state small claims court SaaS designed to help lower-income individuals and small businesses navigate small claims court across the United States. It is a full-stack pnpm monorepo featuring an Express API, a React+Vite frontend, a PostgreSQL database, and integrates advanced AI capabilities including OCR, chat, and voice. The project simplifies legal processes, making them accessible and understandable for mobile-first, non-technical users.
+
+**Business model:** Freemium — users prepare their case for free and pay to download the final signed court forms.
+
+**Currently supported states (9):** California, Florida, Texas, Illinois, New Jersey, North Carolina, Virginia, Washington, Arizona.
+
+See `FORMS_MANIFEST.md` for the complete, up-to-date inventory of every implemented form by state.
+
+---
 
 ## User Preferences
 
@@ -33,9 +41,57 @@ Small Claims Genie is a California small claims court SaaS application designed 
 
 5.  **UI content-fit check — always verify before coding.** Before implementing any UI change that places text or content into a constrained space (pill labels, badges, truncated containers, fixed-width elements, single-line fields), check whether the content will actually fit. If it will not fit without clipping or truncation, stop and tell the user clearly — do not silently truncate or clip. Either: (a) confirm the content fits as-is, (b) warn the user it won't fit and ask them to shorten the content, or (c) warn the user and propose a layout change to accommodate it. Never ship truncated content without flagging it first.
 
+10. **FORMS_MANIFEST.md is the living source of truth for forms.** Whenever a new state, form, or route is added or removed, update `FORMS_MANIFEST.md` immediately as part of the same task. Do not wait for a documentation pass. The manifest records: state name, claim limit, form name, form ID/number, route, rendering method, and signed-variant availability.
+
+11. **Source archive command.** To generate a downloadable zip of all source code for external analysis, run:
+    ```bash
+    bash scripts/archive-source.sh
+    ```
+    This produces `/tmp/small-claims-genie-source.zip` (source files only, no node_modules/dist/git). Copy it to the workspace root and present it using the `present_asset` tool.
+
+---
+
+## Supported States
+
+| State | Court | Claim Limit | Added |
+|---|---|---|---|
+| California (CA) | Small Claims Court | $12,500 individual / $6,250 business | v1 |
+| Florida (FL) | County Court Small Claims | $8,000 | v1 |
+| Texas (TX) | Justice of the Peace (JP) Courts | $20,000 | early |
+| Illinois (IL) | Circuit Court Small Claims | $10,000 | early |
+| New Jersey (NJ) | Special Civil Part — Small Claims Section | $5,000 | mid |
+| North Carolina (NC) | District Court — Small Claims / Magistrate Court | $10,000 | mid |
+| Virginia (VA) | General District Court — Small Claims Division | $5,000 | mid |
+| Washington (WA) | District Court — Small Claims Department | $10,000 individual / $5,000 business | mid |
+| Arizona (AZ) | Small Claims Division of the Justice Court | $5,000 | mid |
+
+**Adding a new state** requires: (1) entry in `lib/state-facts/src/index.ts`, (2) county seed data in `artifacts/api-server/src/data/counties-<st>.ts`, (3) form definition(s) in `artifacts/api-server/src/forms/definitions/`, (4) registration in `definitions/index.ts`, (5) routes in `routes/forms-unified.ts`, (6) UI section in `artifacts/small-claims-genie/src/pages/cases/tabs/forms-tab-sections/<state>-forms-section.tsx`, (7) `STATE_ORDER` and `STATE_OPTIONS` updated in both `new.tsx` and `intake-step-1.tsx`, (8) `FORMS_MANIFEST.md` updated. See `.agents/skills/state-expansion/SKILL.md` for the full checklist.
+
+---
+
 ## System Architecture
 
 The project is built as a pnpm monorepo. The backend is an Express 5 API server, and the frontend is a React+Vite application. Data is stored in a PostgreSQL database managed with Drizzle ORM. Validation is handled by Zod.
+
+**Monorepo structure:**
+```
+artifacts/
+  api-server/          — Express 5 API (esbuild, Node 24)
+  small-claims-genie/  — React + Vite frontend (main user app)
+  admin/               — Admin dashboard (data app)
+  mobile/              — Expo React Native mobile app
+  mockup-sandbox/      — Canvas component preview server (dev only)
+lib/
+  api-client-react/    — React Query hooks (generated from OpenAPI via Orval)
+  api-spec/            — OpenAPI spec (source of truth for all endpoints)
+  api-zod/             — Zod schemas (generated from OpenAPI via Orval)
+  db/                  — Drizzle ORM schema + migrations (PostgreSQL)
+  form-signatures/     — Signature placement coordinates (single source of truth for all forms)
+  integrations-openai-ai-react/   — OpenAI React integration (Replit proxy)
+  integrations-openai-ai-server/  — OpenAI server integration (Replit proxy)
+  state-facts/         — Per-state legal facts: claim limits, filing fees, SOL, forms list
+scripts/               — Utility/test scripts (tsx, runs against the dev server)
+```
 
 **UI Design Principles:**
 -   **Consolidate, don't spread:** Related fields and controls should be grouped into compact, readable layouts to minimize scrolling.
@@ -54,16 +110,18 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
 -   **Demand Letter:** SSE streaming generation with PDF download.
 -   **PDF Generation — Unified Form Engine:**
     All form download endpoints in `routes/forms-unified.ts` dispatch through `FormRegistry` (`forms/registry.ts`) using `makeFormHandler()` (`forms/generic-handler.ts`). Every form is a `FormDefinition` with a `generate(data, body, opts)` method registered at startup. There are no inline download handlers — `makeFormHandler` provides all auth, ownership, PDF streaming, and disposition logic.
-    -   **Rendering technique per form** (chosen by inspecting the official Judicial Council PDF):
-        1. **AcroForm via pdf-lib** (usable fields found by pdf-lib): SC-104, SC-105, SC-112A, FW-001
-        2. **XFA via pdftk FDF fill** (fields found only by pdftk, not pdf-lib): SC-103, SC-103-SECONDARY, SC-120, SC-150
-        3. **PNG overlay via pdf-lib drawing** (no usable fields OR dynamic content required): SC-100, SC-100A, SC-140, MC-030
+    -   **Rendering technique per form** (chosen by inspecting the official court PDF):
+        1. **AcroForm via pdf-lib** (usable AcroForm fields): SC-104, SC-105, SC-112A, FW-001, AZ Complaint, VA DC-402, VA DC-409, NC forms, NJ forms, TX Petition/Citation/Fee Waiver, FL AcroForm statewide (7.330–7.337, 7.322), FL Indigent Fee Waiver
+        2. **XFA via pdftk FDF fill** (fields only visible to pdftk): SC-103, SC-103-SECONDARY, SC-120, SC-150, IL Complaint, IL Summons, IL Fee Waiver, IL Letter to Sheriff
+        3. **Coordinate overlay via pdf-lib drawing** (no usable fields or dynamic layout required): SC-100, SC-100A, SC-140, MC-030, AZ Summons, AZ Proof of Service, TX county-specific petitions, FL county SOC/summons overlays, WA forms
     -   **SC-100:** pdf-lib AcroForm overlay (PNG background + coordinate drawing), then `pdftkFlatten`. Deterministic + AI enrichment (`enrichForSC100`, `aiEnrichForSC100`) runs inside `sc100Definition.generate()`. All three variants (basic GET, signed POST, with-overrides POST) use `makeFormHandler`; with-overrides uses `{ downloadParam: "download" }` to drive inline/attachment from `?download=1`.
     -   **SC-100A:** Overlay (XFA fields have non-descriptive positional IDs; dual-signature embedding requires image placement). Both sig bytes decoded from body inside `sc100aDefinition.generate()`.
     -   **MC-030:** Overlay with AI declaration generation and optional exhibit assembly (`routes/forms-mc030.ts`). All three variants (basic, signed, with-exhibits) route through one registry entry — `mc030Definition.generate()` inspects opts/body to pick the correct generation function. All three routes use `makeFormHandler`.
     -   **SC-140:** Overlay — no usable AcroForm fields detected by either pdf-lib or pdftk.
     -   **Chromium pool:** `forms/chromium-pool.ts` — singleton warm browser for SC-100 HTML-to-PDF rendering. Pre-warmed at server start; auto-relaunches on disconnect.
     -   **pdftk:** Used by `pdftkFlatten` to flatten XFA/AcroForm fields. Fails fast with logging on any error — no silent fallback to unfilled PDF.
+    -   **Form asset path:** All template PDFs live in `artifacts/api-server/assets/forms/`. Never place them in `src/assets/forms/` or downloads will silently fail.
+    -   **Signature placement:** Coordinates for every signed form live in `lib/form-signatures/`. This is the single source of truth — never hardcode coordinates in form definitions or test files.
 -   **Readiness Score:** A metric (0-100) based on intake completeness (60pts), document submission (30pts), and prior demand letters (10pts).
 
 **TypeScript typecheck ordering — non-negotiable:**
@@ -79,6 +137,8 @@ The project is built as a pnpm monorepo. The backend is an Express 5 API server,
     -   **Call sites** pass `{ query: { enabled: !!id } }` without needing to supply `queryKey` — the generated helpers already provide a default.
 -   The API build uses esbuild, while the frontend uses Vite.
 -   Monorepo structure is enforced by pnpm workspaces and TypeScript composite projects.
+
+---
 
 ## Staging vs Production Environments
 
@@ -103,19 +163,27 @@ This project uses Replit's two-environment model. The development workspace **is
 4. Confirm the production URL has no staging banner and is working correctly.
 5. Never push to GitHub automatically — always do so explicitly per user preference #1.
 
+---
+
 ## External Dependencies
 
--   **Database:** PostgreSQL
--   **Cloud Storage:** Google Cloud Storage (GCS)
--   **Authentication:** Clerk
+-   **Database:** PostgreSQL (Replit managed)
+-   **Cloud Storage:** Google Cloud Storage (GCS) — presigned URLs for user document uploads
+-   **Authentication:** Clerk (separate dev and production tenants)
 -   **AI Services:** OpenAI (via Replit proxy: `@workspace/integrations-openai-ai-server`, `@workspace/integrations-openai-ai-react`)
-    -   OpenAI Vision API for OCR
-    -   Whisper for audio transcription
-    -   GPT-4o-mini for AI declaration generation
+    -   GPT-4o and GPT-4o-mini for Case Advisor, Help Genie, demand letter, declaration, SC-105 draft
+    -   OpenAI Vision API for OCR on uploaded documents
+    -   Whisper for audio transcription (voice push-to-talk)
 -   **PDF Libraries:**
-    -   Playwright + Chromium for SC-100 generation
-    -   `pdf-lib` for MC-030, SC-105, and other form manipulations
--   **Frontend UI:** Shadcn UI component library
+    -   Playwright + Chromium — SC-100 HTML-to-PDF rendering (Chromium pool, pre-warmed)
+    -   `pdf-lib` — AcroForm fills, coordinate overlays, signature image embedding
+    -   `pdftk` — FDF fill and flatten for XFA-only forms (IL, some FL)
+    -   `pdftotext` — text extraction for AI enrichment and signature coordinate lookup
+-   **Payments:** Stripe (via `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` secrets directly — not via Replit connector UI)
+-   **Email:** Resend (Replit integration)
+-   **Frontend UI:** Shadcn UI component library + Tailwind CSS
+
+---
 
 ## SEO Roadmap
 
