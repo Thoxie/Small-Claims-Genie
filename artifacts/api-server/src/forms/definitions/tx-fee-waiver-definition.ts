@@ -97,16 +97,25 @@ export async function buildTXFeeWaiver(
       d.plaintiffIsBusiness && d.plaintiffDbaName ? `d/b/a ${d.plaintiffDbaName}` : null,
     ].filter(Boolean).join(" ");
     if (plaintiffLine) {
-      // Plaintiff blank space: pdftotext yMin=399 for the first underline → pdf-lib y=393.
-      // Draw at y=396 so the baseline sits 3pt above the underline top, clearly in the
-      // blank field area above it (the "writing on the line" zone).
-      captionPage.drawText(plaintiffLine, { x: 84, y: 396, size: 9, font: helvetica });
+      // Plaintiff writing area: template instruction text ends at pdftotext yMax=364.140;
+      // first underline top is at pdftotext yMin=399.168. That is a 35pt blank space.
+      // y=413 (pdf-lib) places the baseline near the center-top of that space (≈18pt above
+      // the underline, ≈8pt below the instruction text) — visually "on top of the line."
+      captionPage.drawText(plaintiffLine, { x: 84, y: 413, size: 9, font: helvetica });
     }
     if (d.defendantName) {
       // Defendant space sits below the second underline (pdftotext yMax=468 → pdf-lib y=324).
       // Draw at y=320 so the name appears just below the second underline.
       captionPage.drawText(d.defendantName, { x: 84, y: 320, size: 9, font: helvetica });
     }
+
+    // ── Court type checkbox ─────────────────────────────────────────────────────
+    // Court type boxes are graphical (not AcroForm) — no checkbox fields in pdftk dump.
+    // TX small claims are always filed in Justice Court (JP Courts).
+    // Justice Court checkbox square: pdftotext xMin=395.28, yMin=648.972, xMax=405.972,
+    // yMax=662.292 → pdf-lib x=395-406, y_bottom=129.708, y_top=143.028 (box 10.7×13.3pt).
+    // Draw "X" centered in box: x=398, y=133 at 8pt gives caps centered in the square.
+    captionPage.drawText("X", { x: 398, y: 133, size: 8, font: helvetica });
   }
 
   if (opts?.signatureBytes) {
