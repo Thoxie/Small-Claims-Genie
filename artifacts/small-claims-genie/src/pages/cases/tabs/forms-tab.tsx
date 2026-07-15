@@ -648,7 +648,7 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
   const [flSigModal, setFlSigModal] = useState<{ endpoint: string; filename: string; title?: string; extraBody?: Record<string, unknown> } | null>(null);
   const [txServiceMethod, setTxServiceMethod] = useState<string>("");
-  const [txClaimType, setTxClaimType] = useState<string>("damages");
+  const [txSeeksProperty, setTxSeeksProperty] = useState<boolean>(false);
   const [txPersonalPropertyDesc, setTxPersonalPropertyDesc] = useState<string>("");
   const [txPersonalPropertyValue, setTxPersonalPropertyValue] = useState<string>("");
   const [txInterestPref, setTxInterestPref] = useState<string>("doesnot");
@@ -2044,7 +2044,7 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
     sc100aFormBody, setSc100aFormBody,
     flSigModal, setFlSigModal,
     txServiceMethod, setTxServiceMethod,
-    txClaimType, setTxClaimType,
+    txSeeksProperty, setTxSeeksProperty,
     txPersonalPropertyDesc, setTxPersonalPropertyDesc,
     txPersonalPropertyValue, setTxPersonalPropertyValue,
     txInterestPref, setTxInterestPref,

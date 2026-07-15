@@ -13,11 +13,13 @@
  * the silent catch leaves everything blank. pdftk handles these fields fine.
  *
  * Body params (from UI):
- *   claimType             — "damages" | "property" | "both" (default "damages")
- *   personalPropertyDesc  — description of personal property
+ *   personalPropertyDesc  — description of personal property (non-empty = also seeks property)
  *   personalPropertyValue — estimated value in dollars
  *   interestPref          — "does" | "doesnot" (default "doesnot")
  *   juryPref              — "request" | "none" (default "none")
+ *
+ * Damages are always derived from d.claimAmount (set at intake — no need to ask again).
+ * Property is included only when personalPropertyDesc is non-empty.
  *
  * Rendering technique:
  *   pdftk FDF fill + flatten, then pdf-lib signature image overlay.
@@ -54,15 +56,24 @@ function deriveCountyName(countyId: string | null | undefined): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function sanitizeText(s: string): string {
+  return s
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u2013/g, "-")
+    .replace(/\u2014/g, "--")
+    .replace(/\u2026/g, "...")
+    .replace(/[^\x00-\x7F]/g, "?");
+}
+
 export async function buildTXPetitionOCA(
   d: CaseData,
   body: FormBody,
   opts?: GenerateOptions,
 ): Promise<Buffer> {
-  const claimType    = body.claimType    ?? "damages";
   const interestPref = body.interestPref ?? "doesnot";
   const juryPref     = body.juryPref     ?? "none";
-  const propDesc     = body.personalPropertyDesc  ?? "";
+  const propDesc     = (body.personalPropertyDesc  ?? "").trim();
   const propValue    = body.personalPropertyValue ?? "";
 
   const defIsBiz   = !!d.defendantIsBusinessOrEntity;
@@ -70,8 +81,8 @@ export async function buildTXPetitionOCA(
   const pltState   = d.plaintiffState ?? "TX";
   const countyName = deriveCountyName(d.countyId);
 
-  const seeksDamages  = claimType === "damages"  || claimType === "both";
-  const seeksProperty = claimType === "property" || claimType === "both";
+  const seeksDamages  = !!(d.claimAmount && d.claimAmount > 0);
+  const seeksProperty = propDesc.length > 0;
 
   let defAddressLine1 = d.defendantAddress ?? "";
   let defAddressLine2 = [d.defendantCity, defState, d.defendantZip].filter(Boolean).join(", ");
@@ -102,7 +113,7 @@ export async function buildTXPetitionOCA(
       defendant_address_line1: defAddressLine1,
       defendant_address_line2: defAddressLine2,
 
-      complaint_facts: d.claimDescription ?? "",
+      complaint_facts: sanitizeText(d.claimDescription ?? ""),
 
       damages_amount:                      seeksDamages  ? fmtAmount(d.claimAmount) : "",
       personal_property_description_line1: seeksProperty ? propDesc.slice(0, 80)   : "",
