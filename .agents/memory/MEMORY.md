@@ -40,3 +40,4 @@
 - [Deploy server-libs tsconfig](deploy-libs-server-tsconfig.md) — new @workspace lib used by api-server must be in tsconfig.libs-server.json (not just root tsconfig) or publish fails "Could not resolve"
 # Last pushed: 2026-06-30 20:04 UTC
 - [Signature placement single source](signature-placement-source.md) — signed-test sig crop coords live in lib/form-signatures, consumed by both form definitions and tests; never duplicate magic numbers in test files
+- [OCA AcroForm broken DA strings](oca-pdf-broken-da.md) — TX OCA PDF has 36/53 fields with no Tf in DA; pdf-lib fill silently blanks them; always use pdftk_fill_form instead
