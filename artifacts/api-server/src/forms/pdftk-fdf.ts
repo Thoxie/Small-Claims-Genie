@@ -30,6 +30,35 @@ function fdfEscape(s: string): string {
 }
 
 /**
+ * Escapes a field NAME for use in the FDF /T entry.
+ *
+ * Field names in bilingual PDF forms (e.g. TX Rule 145) are stored in
+ * PDFDocEncoding (ISO-8859-1 compatible).  Writing them as raw UTF-8 causes
+ * pdftk to silently fail to match field names that contain accented characters
+ * such as "Mi dirección es" (ó = 0xF3 Latin-1 ≠ 0xC3 0xB3 UTF-8).
+ *
+ * This function emits non-ASCII code-points (U+0080–U+00FF) as single-byte
+ * octal escapes using their Latin-1/PDFDocEncoding values so that pdftk can
+ * compare bytes correctly.  Characters outside U+00FF are left unchanged
+ * (they should not appear in PDF AcroForm field names).
+ */
+function fdfEscapeFieldName(s: string): string {
+  let out = "";
+  for (const ch of s) {
+    const code = ch.charCodeAt(0);
+    if (code === 0x5c) { out += "\\\\"; continue; }  // backslash
+    if (code === 0x28) { out += "\\(";  continue; }  // (
+    if (code === 0x29) { out += "\\)";  continue; }  // )
+    if (code < 0x80)   { out += ch;     continue; }  // plain ASCII
+    // Non-ASCII (U+0080–U+00FF): write as octal using the Latin-1 byte value.
+    // Buffer.from(ch, "latin1") gives exactly one byte for any char in this range.
+    const byte = Buffer.from(ch, "latin1")[0] ?? code;
+    out += "\\" + byte.toString(8).padStart(3, "0");
+  }
+  return out;
+}
+
+/**
  * Escapes a string for use as a PDF name object — the `/Name` written after
  * `/V /` for checkbox and radio-button export values.
  *
@@ -83,7 +112,7 @@ export function generateFdf(fields: FdfFields): string {
   for (const [name, value] of Object.entries(fields.text ?? {})) {
     if (value == null) continue;
     entries.push(
-      `<<\n/T(${fdfEscape(name)})\n/V(${fdfEscape(String(value))})\n>>`
+      `<<\n/T(${fdfEscapeFieldName(name)})\n/V(${fdfEscape(String(value))})\n>>`
     );
   }
 
@@ -95,7 +124,7 @@ export function generateFdf(fields: FdfFields): string {
       exportVal = value ? "Yes" : "Off";   // standard AcroForm
     }
     entries.push(
-      `<<\n/T(${fdfEscape(name)})\n/V /${fdfNameEscape(exportVal)}\n>>`
+      `<<\n/T(${fdfEscapeFieldName(name)})\n/V /${fdfNameEscape(exportVal)}\n>>`
     );
   }
 

@@ -97,10 +97,15 @@ export async function buildTXFeeWaiver(
       d.plaintiffIsBusiness && d.plaintiffDbaName ? `d/b/a ${d.plaintiffDbaName}` : null,
     ].filter(Boolean).join(" ");
     if (plaintiffLine) {
-      captionPage.drawText(plaintiffLine, { x: 84, y: 392, size: 9, font: helvetica });
+      // Plaintiff blank space: pdftotext yMin=399 for the first underline → pdf-lib y=393.
+      // Draw at y=396 so the baseline sits 3pt above the underline top, clearly in the
+      // blank field area above it (the "writing on the line" zone).
+      captionPage.drawText(plaintiffLine, { x: 84, y: 396, size: 9, font: helvetica });
     }
     if (d.defendantName) {
-      captionPage.drawText(d.defendantName, { x: 84, y: 318, size: 9, font: helvetica });
+      // Defendant space sits below the second underline (pdftotext yMax=468 → pdf-lib y=324).
+      // Draw at y=320 so the name appears just below the second underline.
+      captionPage.drawText(d.defendantName, { x: 84, y: 320, size: 9, font: helvetica });
     }
   }
 
