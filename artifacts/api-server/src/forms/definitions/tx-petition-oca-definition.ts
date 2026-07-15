@@ -17,6 +17,8 @@
  *   personalPropertyValue — estimated value in dollars
  *   interestPref          — "does" | "doesnot" (default "doesnot")
  *   juryPref              — "request" | "none" (default "none")
+ *   phonePref             — "yes" | "no" (default "yes") — Section VIII phone call
+ *   videoPref             — "yes" | "no" (default "yes") — Section VIII video conference
  *
  * Damages are always derived from d.claimAmount (set at intake — no need to ask again).
  * Property is included only when personalPropertyDesc is non-empty.
@@ -73,6 +75,8 @@ export async function buildTXPetitionOCA(
 ): Promise<Buffer> {
   const interestPref = body.interestPref ?? "doesnot";
   const juryPref     = body.juryPref     ?? "none";
+  const phonePref    = body.phonePref    ?? "yes";
+  const videoPref    = body.videoPref    ?? "yes";
   const propDesc     = (body.personalPropertyDesc  ?? "").trim();
   const propValue    = body.personalPropertyValue ?? "";
 
@@ -145,8 +149,10 @@ export async function buildTXPetitionOCA(
       email_yes_check: !!d.plaintiffEmail,
       email_no_check:  !d.plaintiffEmail,
 
-      phone_yes_check: true,
-      video_yes_check: true,
+      phone_yes_check: phonePref === "yes",
+      phone_no_check:  phonePref === "no",
+      video_yes_check: videoPref === "yes",
+      video_no_check:  videoPref === "no",
     },
   });
 

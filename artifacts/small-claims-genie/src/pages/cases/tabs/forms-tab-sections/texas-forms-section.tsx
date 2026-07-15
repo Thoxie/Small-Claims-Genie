@@ -97,6 +97,38 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                     ))}
                   </RadioGroup>
                 </div>
+
+                {/* 5. Remote participation — phone */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-foreground">Can you attend hearings by phone call?</p>
+                  <RadioGroup value={ctx.txPhonePref} onValueChange={ctx.setTxPhonePref} className="flex flex-col gap-1">
+                    {[
+                      { val: "yes", label: "Yes — I can attend hearings by phone call" },
+                      { val: "no",  label: "No — I cannot attend hearings by phone" },
+                    ].map(({ val, label }) => (
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txPhonePref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                        <RadioGroupItem value={val} />
+                        <span className="text-xs text-foreground">{label}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                {/* 6. Remote participation — video */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-foreground">Can you attend hearings by video conference?</p>
+                  <RadioGroup value={ctx.txVideoPref} onValueChange={ctx.setTxVideoPref} className="flex flex-col gap-1">
+                    {[
+                      { val: "yes", label: "Yes — I can attend hearings by video conference" },
+                      { val: "no",  label: "No — I cannot attend hearings by video conference" },
+                    ].map(({ val, label }) => (
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txVideoPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                        <RadioGroupItem value={val} />
+                        <span className="text-xs text-foreground">{label}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                </div>
               </div>
 
               {/* ── Download card ───────────────────────────────────────────── */}
@@ -109,10 +141,10 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled petition to open your case in Texas JP court. File this with the justice court clerk in your precinct.</p>
                 </div>
                 <div className="flex flex-col gap-2 shrink-0">
-                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => ctx.downloadFormPost("tx/petition", `TX-Small-Claims-Petition-Case-${ctx.caseId}.pdf`, { interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, personalPropertyDesc: ctx.txSeeksProperty ? ctx.txPersonalPropertyDesc : "", personalPropertyValue: ctx.txSeeksProperty ? ctx.txPersonalPropertyValue : "" })}>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => ctx.downloadFormPost("tx/petition", `TX-Small-Claims-Petition-Case-${ctx.caseId}.pdf`, { interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, phonePref: ctx.txPhonePref, videoPref: ctx.txVideoPref, personalPropertyDesc: ctx.txSeeksProperty ? ctx.txPersonalPropertyDesc : "", personalPropertyValue: ctx.txSeeksProperty ? ctx.txPersonalPropertyValue : "" })}>
                     <Download className="h-3.5 w-3.5" /> Download
                   </Button>
-                  <Button size="sm" className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => ctx.openFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${ctx.caseId}-signed.pdf`, extraBody: { interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, personalPropertyDesc: ctx.txSeeksProperty ? ctx.txPersonalPropertyDesc : "", personalPropertyValue: ctx.txSeeksProperty ? ctx.txPersonalPropertyValue : "" } })}>
+                  <Button size="sm" className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => ctx.openFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${ctx.caseId}-signed.pdf`, extraBody: { interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, phonePref: ctx.txPhonePref, videoPref: ctx.txVideoPref, personalPropertyDesc: ctx.txSeeksProperty ? ctx.txPersonalPropertyDesc : "", personalPropertyValue: ctx.txSeeksProperty ? ctx.txPersonalPropertyValue : "" } })}>
                     <PenLine className="h-3.5 w-3.5" /> Sign &amp; Download
                   </Button>
                 </div>

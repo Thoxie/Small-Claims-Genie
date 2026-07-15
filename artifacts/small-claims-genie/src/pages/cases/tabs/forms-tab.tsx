@@ -653,6 +653,8 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
   const [txPersonalPropertyValue, setTxPersonalPropertyValue] = useState<string>("");
   const [txInterestPref, setTxInterestPref] = useState<string>("doesnot");
   const [txJuryPref, setTxJuryPref] = useState<string>("none");
+  const [txPhonePref, setTxPhonePref] = useState<string>("yes");
+  const [txVideoPref, setTxVideoPref] = useState<string>("yes");
   const [flServiceMethod, setFlServiceMethod] = useState<string>("");
 
 
@@ -2049,6 +2051,8 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
     txPersonalPropertyValue, setTxPersonalPropertyValue,
     txInterestPref, setTxInterestPref,
     txJuryPref, setTxJuryPref,
+    txPhonePref, setTxPhonePref,
+    txVideoPref, setTxVideoPref,
     flServiceMethod, setFlServiceMethod,
     viewingPdf, setViewingPdf,
     sc100EditOpen, setSc100EditOpen,
