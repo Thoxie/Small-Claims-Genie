@@ -66,8 +66,6 @@
     "test:help-chat-mode-b": "tsx ./src/test-help-chat-mode-b.ts",
     "check:state-completeness": "tsx ./src/check-state-completeness.ts",
     "test:tx-petition-sigcheck": "tsx ./src/test-tx-petition-sigcheck.ts",
-    "test:tx-petition-jp2-sigcheck": "tsx ./src/test-tx-petition-jp2-sigcheck.ts",
-    "test:tx-petition-jp5-sigcheck": "tsx ./src/test-tx-petition-jp5-sigcheck.ts",
     "test:tx-return-of-service-sigcheck": "tsx ./src/test-tx-return-of-service-sigcheck.ts",
     "test:tx-fee-waiver-sigcheck": "tsx ./src/test-tx-fee-waiver-sigcheck.ts",
     "test:il-proof-of-service-sigcheck": "tsx ./src/test-il-proof-of-service-sigcheck.ts",

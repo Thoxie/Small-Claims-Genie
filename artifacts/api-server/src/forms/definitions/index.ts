@@ -29,8 +29,8 @@ export * from "./sc100a-definition";
 export * from "./sc140-definition";
 export * from "./mc030-definition";
 
-// ─── Texas programmatic forms (pdf-lib, no template PDF) ─────────────────────
-export * from "./tx-petition-definition";
+// ─── Texas forms (OCA statewide AcroForm petition + programmatic ancillaries) ──
+export * from "./tx-petition-oca-definition";
 export * from "./tx-citation-definition";
 export * from "./tx-return-of-service-definition";
 export * from "./tx-fee-waiver-definition";
@@ -89,6 +89,3 @@ export * from "./az-complaint-definition";
 export * from "./az-summons-definition";
 export * from "./az-proof-of-service-definition";
 
-// ─── Texas Travis County official court PDFs (coordinate overlay) ─────────────
-export * from "./tx-petition-jp2-definition";
-export * from "./tx-petition-jp5-definition";

@@ -82,15 +82,15 @@ Court: Justice of the Peace (JP) Courts | Claim limit: $20,000 | Filing fee: $46
 
 | Form | Name | Route | Render | Signed? | Asset |
 |---|---|---|---|---|---|
-| TX Petition | Small Claims Petition (statewide, all 254 counties) | `tx/petition`, `tx/petition/signed` | acroform | ✅ | `tx-small-claims-petition.pdf` |
+| TX Petition (OCA) | Small Claims Petition — official OCA statewide AcroForm (3 pp, 57 fields, all 254 counties) | `tx/petition`, `tx/petition/signed` | acroform | ✅ | `tx-small-claims-petition-oca.pdf` |
 | TX Citation | Citation — issued by clerk after petition (Tex. R. Civ. P. 502.5) | `tx/citation`, `tx/citation/signed` | acroform | ✅ | *(programmatic)* |
 | TX Return of Service | Return of Service — filed after defendant served | `tx/return-of-service`, `tx/return-of-service/signed` | overlay | ✅ | `tx-return-of-service.pdf` |
 | TX Fee Waiver | Affidavit of Inability to Pay (Tex. R. Civ. P. 145) | `tx/fee-waiver`, `tx/fee-waiver/signed` | acroform | ✅ | *(programmatic)* |
-| Travis Co. JP2 | Precinct 2 Petition (J2-CV) | `tx/petition-jp2`, `tx/petition-jp2/signed` | overlay | ✅ | `tx-small-claims-petition-jp2.pdf` |
-| Travis Co. JP5 | Precinct 5 Petition (J5-CV) | `tx/petition-jp5`, `tx/petition-jp5/signed` | overlay | ✅ | `tx-small-claims-petition-jp5.pdf` |
 | Denton Co. | Request for Service of Process / Citation | `tx/denton-citation-request` | acroform | — | *(programmatic)* |
 
-**Definition files:** `tx-petition-definition.ts`, `tx-citation-definition.ts`, `tx-return-of-service-definition.ts`, `tx-fee-waiver-definition.ts`, `tx-petition-jp2-definition.ts`, `tx-petition-jp5-definition.ts`, `denton-citation-request-definition.ts`
+**UI body params (petition):** `claimType` (damages/property/both), `personalPropertyDesc`, `personalPropertyValue`, `interestPref` (does/doesnot), `juryPref` (request/none). All default gracefully.
+
+**Definition files:** `tx-petition-oca-definition.ts`, `tx-citation-definition.ts`, `tx-return-of-service-definition.ts`, `tx-fee-waiver-definition.ts`, `denton-citation-request-definition.ts`
 
 ---
 

@@ -524,15 +524,15 @@ router.post(
 // Texas forms — programmatic pdf-lib generation (no template PDF required)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// TX Small Claims Petition — works for all 254 TX counties
+// TX Small Claims Petition — OCA statewide AcroForm, all 254 TX counties
 router.post(
   "/cases/:id/forms/tx/petition",
-  makeFormHandler("TX-PETITION", (id) => `TX-Small-Claims-Petition-Case-${id}.pdf`),
+  makeFormHandler("TX-PETITION-OCA", (id) => `TX-Small-Claims-Petition-Case-${id}.pdf`),
 );
 
 router.post(
   "/cases/:id/forms/tx/petition/signed",
-  makeFormHandler("TX-PETITION", (id) => `TX-Small-Claims-Petition-Case-${id}-signed.pdf`, { signed: true }),
+  makeFormHandler("TX-PETITION-OCA", (id) => `TX-Small-Claims-Petition-Case-${id}-signed.pdf`, { signed: true }),
 );
 
 // TX Citation — issued by clerk after petition filing (Tex. R. Civ. P. 502.5)
@@ -800,32 +800,6 @@ router.post(
 router.post(
   "/cases/:id/forms/az/proof-of-service/signed",
   makeFormHandler("AZ-PROOF-OF-SERVICE", (id) => `AZ-Proof-of-Service-Signed-Case-${id}.pdf`, { signed: true }),
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Texas — Travis County official court PDFs (Precinct 2 & 5)
-// ─────────────────────────────────────────────────────────────────────────────
-
-// TX Travis County Precinct 2 Petition (J2-CV) — coordinate overlay
-router.post(
-  "/cases/:id/forms/tx/petition-jp2",
-  makeFormHandler("TX-PETITION-JP2", (id) => `TX-Petition-JP2-Case-${id}.pdf`),
-);
-
-router.post(
-  "/cases/:id/forms/tx/petition-jp2/signed",
-  makeFormHandler("TX-PETITION-JP2", (id) => `TX-Petition-JP2-Signed-Case-${id}.pdf`, { signed: true }),
-);
-
-// TX Travis County Precinct 5 Petition (J5-CV) — coordinate overlay
-router.post(
-  "/cases/:id/forms/tx/petition-jp5",
-  makeFormHandler("TX-PETITION-JP5", (id) => `TX-Petition-JP5-Case-${id}.pdf`),
-);
-
-router.post(
-  "/cases/:id/forms/tx/petition-jp5/signed",
-  makeFormHandler("TX-PETITION-JP5", (id) => `TX-Petition-JP5-Signed-Case-${id}.pdf`, { signed: true }),
 );
 
 export default router;

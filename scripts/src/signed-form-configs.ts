@@ -75,17 +75,9 @@ const FL: PartyOverrides = {
 
 export const CONFIGS: Record<string, FormTestConfig> = {
   // ─── Texas (image) ──────────────────────────────────────────────────────────
-  "tx-petition": mk("tx-petition", "TX Small Claims Petition", "tx/petition", true,
-    { kind: "image", regions: [{ page: 1, pdfX: 307, pdfY: 166, w: 175, h: 20 }] },
-    { ...TX, county: "tx-harris", sigW: 175, sigH: 20 }),
-
-  "tx-petition-jp2": mk("tx-petition-jp2", "TX Travis JP2 Petition", "tx/petition-jp2", true,
-    { kind: "image", regions: [{ page: 1, pdfX: 316, pdfY: 151, w: 180, h: 22 }] },
-    { ...TX, county: "tx-travis", plaintiffCity: "Austin", plaintiffZip: "78701", defendantCity: "Austin", defendantZip: "78701", sigW: 180, sigH: 22 }),
-
-  "tx-petition-jp5": mk("tx-petition-jp5", "TX Travis JP5 Petition", "tx/petition-jp5", true,
-    { kind: "image", regions: [{ page: 1, pdfX: 40, pdfY: 156, w: 175, h: 20 }] },
-    { ...TX, county: "tx-travis", plaintiffCity: "Austin", plaintiffZip: "78701", defendantCity: "Austin", defendantZip: "78701", sigW: 175, sigH: 20 }),
+  "tx-petition": mk("tx-petition", "TX Small Claims Petition (OCA)", "tx/petition", true,
+    { kind: "image", regions: [{ page: 3, pdfX: 69, pdfY: 414, w: 221, h: 35 }] },
+    { ...TX, county: "tx-harris", sigW: 221, sigH: 35 }),
 
   "tx-return-of-service": mk("tx-return-of-service", "TX Return of Service", "tx/return-of-service", true,
     { kind: "image", regions: [{ page: 1, pdfX: 219, pdfY: 195, w: 141, h: 25 }], tolPx: 40 },

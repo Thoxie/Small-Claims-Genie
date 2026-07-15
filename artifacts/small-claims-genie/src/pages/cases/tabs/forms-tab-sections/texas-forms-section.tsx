@@ -1,6 +1,7 @@
 import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, UserCheck, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 import { FormWizardStepper } from "@/components/form-wizard-stepper";
 import { TX_WIZARD_STEPS, TX_JP_PRECINCTS } from "../forms-tab";
 import type { FormsTabCtx } from "../forms-tab";
@@ -27,6 +28,85 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 File with the Justice of the Peace court in the precinct where the defendant lives or where the transaction occurred. The petition below is pre-filled with your case information.
               </p>
 
+              {/* ── Petition questions ──────────────────────────────────────── */}
+              <div className="rounded-xl border bg-card p-4 space-y-4">
+                <p className="text-xs font-semibold text-foreground">Answer a few questions to complete your petition</p>
+
+                {/* 1. Claim type */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-foreground">What are you seeking from the defendant?</p>
+                  <RadioGroup value={ctx.txClaimType} onValueChange={ctx.setTxClaimType} className="gap-0">
+                    {[
+                      { val: "damages",  label: "Money (damages only)" },
+                      { val: "property", label: "Return of personal property" },
+                      { val: "both",     label: "Both — money and return of personal property" },
+                    ].map(({ val, label }) => (
+                      <label key={val} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txClaimType === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                        <RadioGroupItem value={val} />
+                        <span className="text-xs text-foreground">{label}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                {/* 2. Personal property (conditional) */}
+                {(ctx.txClaimType === "property" || ctx.txClaimType === "both") && (
+                  <div className="space-y-2 pl-1">
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-foreground">Describe the personal property</p>
+                      <Input
+                        className="h-8 text-xs"
+                        placeholder="e.g., iPhone 13 Pro, Black, serial #ABC123"
+                        value={ctx.txPersonalPropertyDesc}
+                        onChange={(e) => ctx.setTxPersonalPropertyDesc(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-foreground">Estimated value ($)</p>
+                      <Input
+                        className="h-8 text-xs w-32"
+                        placeholder="0.00"
+                        value={ctx.txPersonalPropertyValue}
+                        onChange={(e) => ctx.setTxPersonalPropertyValue(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Interest preference */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-foreground">Do you want to seek interest on your damages?</p>
+                  <RadioGroup value={ctx.txInterestPref} onValueChange={ctx.setTxInterestPref} className="flex flex-row gap-3">
+                    {[
+                      { val: "doesnot", label: "No interest" },
+                      { val: "does",    label: "Yes, seek interest" },
+                    ].map(({ val, label }) => (
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txInterestPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                        <RadioGroupItem value={val} />
+                        <span className="text-xs text-foreground">{label}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                {/* 4. Jury preference */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-foreground">Do you want a jury trial?</p>
+                  <RadioGroup value={ctx.txJuryPref} onValueChange={ctx.setTxJuryPref} className="flex flex-row gap-3">
+                    {[
+                      { val: "none",    label: "No (bench trial)" },
+                      { val: "request", label: "Yes, request jury" },
+                    ].map(({ val, label }) => (
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txJuryPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                        <RadioGroupItem value={val} />
+                        <span className="text-xs text-foreground">{label}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                </div>
+              </div>
+
+              {/* ── Download card ───────────────────────────────────────────── */}
               <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -36,10 +116,10 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled petition to open your case in Texas JP court. File this with the justice court clerk in your precinct.</p>
                 </div>
                 <div className="flex flex-col gap-2 shrink-0">
-                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => ctx.downloadSignedFLForm("tx/petition", `TX-Small-Claims-Petition-Case-${ctx.caseId}.pdf`)}>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => ctx.downloadFormPost("tx/petition", `TX-Small-Claims-Petition-Case-${ctx.caseId}.pdf`, { claimType: ctx.txClaimType, interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, personalPropertyDesc: ctx.txPersonalPropertyDesc, personalPropertyValue: ctx.txPersonalPropertyValue })}>
                     <Download className="h-3.5 w-3.5" /> Download
                   </Button>
-                  <Button size="sm" className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => ctx.openFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${ctx.caseId}-signed.pdf` })}>
+                  <Button size="sm" className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => ctx.openFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${ctx.caseId}-signed.pdf`, extraBody: { claimType: ctx.txClaimType, interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, personalPropertyDesc: ctx.txPersonalPropertyDesc, personalPropertyValue: ctx.txPersonalPropertyValue } })}>
                     <PenLine className="h-3.5 w-3.5" /> Sign &amp; Download
                   </Button>
                 </div>

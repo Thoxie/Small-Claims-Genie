@@ -387,6 +387,18 @@ export interface FormBody {
   postponeReason?: string;
   withinTenDaysReason?: string;
 
+  // ── TX Petition (OCA) fields ─────────────────────────────────────────────────
+  /** "damages" | "property" | "both" */
+  claimType?: string;
+  /** Free-text description of personal property sought (TX petition) */
+  personalPropertyDesc?: string;
+  /** Estimated value of personal property in dollars, as a string (TX petition) */
+  personalPropertyValue?: string;
+  /** "does" | "doesnot" — whether plaintiff seeks prejudgment interest (TX petition) */
+  interestPref?: string;
+  /** "request" | "none" — whether plaintiff requests a jury trial (TX petition) */
+  juryPref?: string;
+
   // ── Common signing fields ────────────────────────────────────────────────────
   signDate?: string;
   declarationDate?: string;

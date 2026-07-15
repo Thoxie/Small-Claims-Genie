@@ -646,8 +646,13 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
   const [sc103SigModalOpen, setSc103SigModalOpen] = useState(false);
   const [sc103bSigModalOpen, setSc103bSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
-  const [flSigModal, setFlSigModal] = useState<{ endpoint: string; filename: string; title?: string } | null>(null);
+  const [flSigModal, setFlSigModal] = useState<{ endpoint: string; filename: string; title?: string; extraBody?: Record<string, unknown> } | null>(null);
   const [txServiceMethod, setTxServiceMethod] = useState<string>("");
+  const [txClaimType, setTxClaimType] = useState<string>("damages");
+  const [txPersonalPropertyDesc, setTxPersonalPropertyDesc] = useState<string>("");
+  const [txPersonalPropertyValue, setTxPersonalPropertyValue] = useState<string>("");
+  const [txInterestPref, setTxInterestPref] = useState<string>("doesnot");
+  const [txJuryPref, setTxJuryPref] = useState<string>("none");
   const [flServiceMethod, setFlServiceMethod] = useState<string>("");
 
 
@@ -845,7 +850,7 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
   const guideDialogForm = FORMS_CATALOG.find(f => f.id === guideDialogFormId) ?? null;
 
   // ── Download utilities ─────────────────────────────────────────────────────
-  async function downloadSignedFLForm(endpoint: string, filename: string, signatureDataUrl?: string) {
+  async function downloadSignedFLForm(endpoint: string, filename: string, signatureDataUrl?: string, extraBody?: Record<string, unknown>) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
     const formKey = signatureDataUrl ? `${endpoint}/signed` : endpoint;
     setDownloadingForm(formKey); setDownloadError(null);
@@ -855,7 +860,7 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
       if (!tokenRes.ok) { setDownloadError("Could not authorize download — please try again."); return; }
       const { token } = await tokenRes.json();
       const apiEndpoint = signatureDataUrl ? `${endpoint}/signed` : endpoint;
-      const body: Record<string, unknown> = { token };
+      const body: Record<string, unknown> = { token, ...extraBody };
       if (signatureDataUrl) body.signatureDataUrl = signatureDataUrl;
       const res = await fetch(`/api/cases/${caseId}/forms/${apiEndpoint}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!res.ok) { const err = await res.json().catch(() => ({})); setDownloadError(err.error || "Failed to generate PDF — please try again."); return; }
@@ -887,7 +892,7 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
       return "Statement of Claim";
     }
 
-  function openFlSigModal(modal: { endpoint: string; filename: string; title?: string }) {
+  function openFlSigModal(modal: { endpoint: string; filename: string; title?: string; extraBody?: Record<string, unknown> }) {
     if (isDraftMode) { toast({ title: "Subscribe to Download", description: "Start your subscription to download court forms." }); return; }
     setFlSigModal({ ...modal, title: modal.title ?? deriveFlSigTitle(modal.endpoint) });
   }
@@ -2039,6 +2044,11 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
     sc100aFormBody, setSc100aFormBody,
     flSigModal, setFlSigModal,
     txServiceMethod, setTxServiceMethod,
+    txClaimType, setTxClaimType,
+    txPersonalPropertyDesc, setTxPersonalPropertyDesc,
+    txPersonalPropertyValue, setTxPersonalPropertyValue,
+    txInterestPref, setTxInterestPref,
+    txJuryPref, setTxJuryPref,
     flServiceMethod, setFlServiceMethod,
     viewingPdf, setViewingPdf,
     sc100EditOpen, setSc100EditOpen,
@@ -3129,10 +3139,10 @@ const {
         formTitle={flSigModal?.title ?? "Court Form"}
         disclaimer="By signing, you certify that the information in this form is true and correct to the best of your knowledge."
         onSign={(dataUrl) => {
-          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename, dataUrl);
+          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename, dataUrl, flSigModal.extraBody);
         }}
         onSkipSign={() => {
-          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename);
+          if (flSigModal) downloadSignedFLForm(flSigModal.endpoint, flSigModal.filename, undefined, flSigModal.extraBody);
         }}
       />
 
