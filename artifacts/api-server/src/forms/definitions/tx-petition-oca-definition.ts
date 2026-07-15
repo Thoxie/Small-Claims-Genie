@@ -115,7 +115,7 @@ export async function buildTXPetitionOCA(
 
       complaint_facts: sanitizeText(d.claimDescription ?? ""),
 
-      damages_amount:                      seeksDamages  ? fmtAmount(d.claimAmount) : "",
+      damages_amount:                      "",  // drawn via pdf-lib below (pdftk x overlaps printed "$")
       personal_property_description_line1: seeksProperty ? propDesc.slice(0, 80)   : "",
       personal_property_description_line2: seeksProperty && propDesc.length > 80  ? propDesc.slice(80, 160) : "",
       personal_property_description_cont:  seeksProperty && propDesc.length > 160 ? propDesc.slice(160)     : "",
@@ -150,15 +150,24 @@ export async function buildTXPetitionOCA(
     },
   });
 
-  // ── Signature overlay (pdf-lib) ────────────────────────────────────────────
-  if (!opts?.signatureBytes) {
-    return filled;
-  }
-
+  // ── pdf-lib post-processing (always) ──────────────────────────────────────
+  // NOTE: damages_amount is NOT filled by pdftk above because the field widget
+  // starts at x=234.4, which overlaps the printed "$" glyph (x≈234–240). pdftk
+  // places the flattened text at x≈236.4 (inside "$"), and the page content
+  // renders on top, hiding the "5," prefix. We draw it here at x=241 instead.
   const pdfDoc = await PDFDocument.load(filled);
   const pages  = pdfDoc.getPages();
+  const page1  = pages[0];
+  if (page1 && seeksDamages) {
+    const font1 = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    page1.drawText(fmtAmount(d.claimAmount), {
+      x: 241, y: 265, size: 8, font: font1, color: rgb(0, 0, 0),
+    });
+  }
+
+  // ── Signature overlay (signed variant only) ────────────────────────────────
   const page3  = pages[2];
-  if (page3 && opts.signatureBytes) {
+  if (page3 && opts?.signatureBytes) {
     const sigImg =
       (await pdfDoc.embedPng(opts.signatureBytes).catch(() => null)) ??
       (await pdfDoc.embedJpg(opts.signatureBytes).catch(() => null));
