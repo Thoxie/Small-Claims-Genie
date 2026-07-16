@@ -1221,7 +1221,7 @@ router.delete("/admin/beta/:userId", async (req: Request, res: Response): Promis
 });
 
 // ── GET /admin/counties ───────────────────────────────────────────────────────
-router.get("/admin/counties", requireAdmin, async (req: Request, res: Response): Promise<void> => {
+router.get("/admin/counties", async (req: Request, res: Response): Promise<void> => {
   const { state } = req.query as { state?: string };
   try {
     const rows = state
@@ -1235,7 +1235,7 @@ router.get("/admin/counties", requireAdmin, async (req: Request, res: Response):
 });
 
 // ── POST /admin/counties/import ───────────────────────────────────────────────
-router.post("/admin/counties/import", requireAdmin, async (req: Request, res: Response): Promise<void> => {
+router.post("/admin/counties/import", async (req: Request, res: Response): Promise<void> => {
   const { counties } = req.body as { counties?: unknown[] };
   if (!Array.isArray(counties) || counties.length === 0) {
     res.status(400).json({ error: "Expected { counties: [...] }" });

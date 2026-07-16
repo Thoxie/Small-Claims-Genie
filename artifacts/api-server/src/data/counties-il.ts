@@ -46,7 +46,9 @@ export const IL_SERVICE_OVERRIDES: Record<string, Partial<typeof IL_SERVICE_DEFA
 };
 
 export function enrichIlCounty<T extends { id: string }>(c: T) {
-  return { ...c, ...IL_SERVICE_DEFAULTS, ...(IL_SERVICE_OVERRIDES[c.id] ?? {}) };
+  const staticFee = ILLINOIS_COUNTIES.find((x) => x.id === c.id)?.filingFeeUnder10000;
+  const feeData = staticFee != null ? { filingFeeUnder10000: staticFee } : {};
+  return { ...c, ...feeData, ...IL_SERVICE_DEFAULTS, ...(IL_SERVICE_OVERRIDES[c.id] ?? {}) };
 }
 
 /**
