@@ -93,7 +93,9 @@
     "test:fl-hillsborough-summons-sigcheck": "tsx ./src/test-fl-hillsborough-summons-sigcheck.ts",
     "test:fl-palm-beach-summons-sigcheck": "tsx ./src/test-fl-palm-beach-summons-sigcheck.ts",
     "test:wa-service-sigcheck": "tsx ./src/test-wa-service-sigcheck.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate:form-fields": "tsx ./src/validate-form-fields.ts",
+    "seed:counties": "tsx ./src/seed-counties.ts"
   },
   "dependencies": {
     "@workspace/db": "workspace:*",

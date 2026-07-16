@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Download, Info, PenLine, CheckCircle2, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormWizardStepper } from "@/components/form-wizard-stepper";
@@ -5,6 +6,10 @@ import { NC_WIZARD_STEPS } from "../forms-tab";
 import type { FormsTabCtx } from "../forms-tab";
 
 export function NorthCarolinaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
+  const [ncWizardIndex, setNcWizardIndex] = useState(() => {
+    try { const s = localStorage.getItem(`nc_forms_step_${ctx.caseId}`); const n = s !== null ? parseInt(s, 10) : 0; return isNaN(n) ? 0 : n; } catch { return 0; }
+  });
+  useEffect(() => { try { localStorage.setItem(`nc_forms_step_${ctx.caseId}`, String(ncWizardIndex)); } catch {} }, [ncWizardIndex, ctx.caseId]);
   return (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -14,13 +19,13 @@ export function NorthCarolinaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           <FormWizardStepper
             steps={NC_WIZARD_STEPS}
-            currentIndex={ctx.ncWizardIndex}
-            onStepClick={ctx.setNcWizardIndex}
+            currentIndex={ncWizardIndex}
+            onStepClick={setNcWizardIndex}
             stepLabel="Form"
           />
 
           {/* ── Step 0: AOC-CVM-200 Complaint ─────────────────────────────────── */}
-          {ctx.ncWizardIndex === 0 && (
+          {ncWizardIndex === 0 && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 File this Complaint with your county District Court clerk. The magistrate will hear your case and issue a judgment. Claim limit: $10,000 (G.S. 7A-210). Filing fee: <strong>$96 flat</strong> statewide (G.S. 7A-311).
@@ -59,7 +64,7 @@ export function NorthCarolinaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 1: AOC-CVM-100 Summons ────────────────────────────────────── */}
-          {ctx.ncWizardIndex === 1 && (
+          {ncWizardIndex === 1 && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 The Magistrate's Summons is prepared and issued by the court clerk — you do not serve the defendant yourself. Bring this pre-filled form to the clerk when you file your Complaint. The clerk signs, seals, and forwards it to the county sheriff for service.
@@ -94,7 +99,7 @@ export function NorthCarolinaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 2: Service info ─────────────────────────────────────────────── */}
-          {ctx.ncWizardIndex === 2 && (
+          {ncWizardIndex === 2 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -138,7 +143,7 @@ export function NorthCarolinaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 3: Fee Waiver (optional) ─────────────────────────────────── */}
-          {ctx.ncWizardIndex === 3 && (
+          {ncWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
@@ -178,8 +183,8 @@ export function NorthCarolinaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           {/* Wizard nav */}
           <div className="flex justify-between items-center">
-            <Button variant="outline" size="sm" disabled={ctx.ncWizardIndex === 0} onClick={() => ctx.setNcWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
-            <Button variant="outline" size="sm" disabled={ctx.ncWizardIndex === NC_WIZARD_STEPS.length - 1} onClick={() => ctx.setNcWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
+            <Button variant="outline" size="sm" disabled={ncWizardIndex === 0} onClick={() => setNcWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
+            <Button variant="outline" size="sm" disabled={ncWizardIndex === NC_WIZARD_STEPS.length - 1} onClick={() => setNcWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
           </div>
         </div>
   );

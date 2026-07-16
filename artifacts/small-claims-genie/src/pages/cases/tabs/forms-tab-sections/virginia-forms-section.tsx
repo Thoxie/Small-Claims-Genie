@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Download, Info, PenLine, CheckCircle2, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormWizardStepper } from "@/components/form-wizard-stepper";
@@ -5,6 +6,10 @@ import { VA_WIZARD_STEPS } from "../forms-tab";
 import type { FormsTabCtx } from "../forms-tab";
 
 export function VirginiaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
+  const [vaWizardIndex, setVaWizardIndex] = useState(() => {
+    try { const s = localStorage.getItem(`va_forms_step_${ctx.caseId}`); const n = s !== null ? parseInt(s, 10) : 0; return isNaN(n) ? 0 : n; } catch { return 0; }
+  });
+  useEffect(() => { try { localStorage.setItem(`va_forms_step_${ctx.caseId}`, String(vaWizardIndex)); } catch {} }, [vaWizardIndex, ctx.caseId]);
   return (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -14,13 +19,13 @@ export function VirginiaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           <FormWizardStepper
             steps={VA_WIZARD_STEPS}
-            currentIndex={ctx.vaWizardIndex}
-            onStepClick={ctx.setVaWizardIndex}
+            currentIndex={vaWizardIndex}
+            onStepClick={setVaWizardIndex}
             stepLabel="Form"
           />
 
           {/* ── Step 0: DC-402 Warrant in Debt ────────────────────────────────── */}
-          {ctx.vaWizardIndex === 0 && (
+          {vaWizardIndex === 0 && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 File this Warrant in Debt with your General District Court clerk. Claim limit: $5,000 (Va. Code § 16.1-122.2). Filing fees vary by county — check with your local clerk or the GDC Civil Filing Fee Calculator before filing.
@@ -58,7 +63,7 @@ export function VirginiaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 1: Service info ─────────────────────────────────────────────── */}
-          {ctx.vaWizardIndex === 1 && (
+          {vaWizardIndex === 1 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -101,7 +106,7 @@ export function VirginiaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 2: Fee Waiver (optional) ─────────────────────────────────── */}
-          {ctx.vaWizardIndex === 2 && (
+          {vaWizardIndex === 2 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
@@ -141,8 +146,8 @@ export function VirginiaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           {/* Wizard nav */}
           <div className="flex justify-between items-center">
-            <Button variant="outline" size="sm" disabled={ctx.vaWizardIndex === 0} onClick={() => ctx.setVaWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
-            <Button variant="outline" size="sm" disabled={ctx.vaWizardIndex === VA_WIZARD_STEPS.length - 1} onClick={() => ctx.setVaWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
+            <Button variant="outline" size="sm" disabled={vaWizardIndex === 0} onClick={() => setVaWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
+            <Button variant="outline" size="sm" disabled={vaWizardIndex === VA_WIZARD_STEPS.length - 1} onClick={() => setVaWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
           </div>
         </div>
   );

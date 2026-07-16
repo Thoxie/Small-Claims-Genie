@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, UserCheck } from "lucide-react";
   import { Button } from "@/components/ui/button";
   import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -18,6 +19,11 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
   };
 
   export function FloridaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
+    const [flWizardIndex, setFlWizardIndex] = useState(() => {
+      try { const s = localStorage.getItem(`fl_forms_step_${ctx.caseId}`); const n = s !== null ? parseInt(s, 10) : 0; return isNaN(n) ? 0 : n; } catch { return 0; }
+    });
+    useEffect(() => { try { localStorage.setItem(`fl_forms_step_${ctx.caseId}`, String(flWizardIndex)); } catch {} }, [flWizardIndex, ctx.caseId]);
+    const [flServiceMethod, setFlServiceMethod] = useState<string>("");
     const claimType = ctx.currentCase.claimType ?? "";
     const socMeta = FL_SOC_TYPES[claimType] ?? null;
 
@@ -30,13 +36,13 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
 
           <FormWizardStepper
             steps={FL_WIZARD_STEPS}
-            currentIndex={ctx.flWizardIndex}
-            onStepClick={ctx.setFlWizardIndex}
+            currentIndex={flWizardIndex}
+            onStepClick={setFlWizardIndex}
             stepLabel="Form"
           />
 
           {/* ── Step 0: Statement of Claim ──────────────────────────────────── */}
-          {ctx.flWizardIndex === 0 && (
+          {flWizardIndex === 0 && (
             <div className="space-y-3">
 
               {/* ── Statewide numbered form (7.330–7.337) when claim type is specific ── */}
@@ -331,7 +337,7 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
           )}
 
           {/* ── Step 1: Summons / Notice to Appear ─────────────────────────────── */}
-          {ctx.flWizardIndex === 1 && (
+          {flWizardIndex === 1 && (
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground leading-relaxed">Bring this form to the clerk when you file your Statement of Claim. The clerk assigns the case number, hearing date, and courtroom, then issues the summons to the defendant.</p>
 
@@ -391,7 +397,7 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
           )}
 
           {/* ── Step 2: Serve Defendant ─────────────────────────────────────────── */}
-          {ctx.flWizardIndex === 2 && (
+          {flWizardIndex === 2 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -401,9 +407,9 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
                 After the clerk signs and stamps your summons, you must have it served on the defendant before the pretrial conference date shown on the summons. You have up to <strong>120 days from filing</strong> to complete service before the court may dismiss your case (Fla. R. Civ. P. 1.070). Serve early — sheriff and certified mail service can take weeks. Choose the method that works best for your situation.
               </p>
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
-                <RadioGroup value={ctx.flServiceMethod} onValueChange={ctx.setFlServiceMethod} className="gap-0">
+                <RadioGroup value={flServiceMethod} onValueChange={setFlServiceMethod} className="gap-0">
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.flServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.flServiceMethod === "process_server") { e.preventDefault(); ctx.setFlServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (flServiceMethod === "process_server") { e.preventDefault(); setFlServiceMethod(""); } }}>
                     <RadioGroupItem value="process_server" id="fl-serve-ps" className="mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -422,7 +428,7 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
                       </p>
                     </div>
                   </label>
-                  {ctx.flServiceMethod === "process_server" && (
+                  {flServiceMethod === "process_server" && (
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
                         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
@@ -450,13 +456,13 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
                     </div>
                   )}
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.flServiceMethod === "sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.flServiceMethod === "sheriff") { e.preventDefault(); ctx.setFlServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (flServiceMethod === "sheriff") { e.preventDefault(); setFlServiceMethod(""); } }}>
                     <RadioGroupItem value="sheriff" id="fl-serve-sheriff" className="mt-0.5 shrink-0" />
                     <p className="text-sm text-foreground leading-relaxed">
                       <span className="font-semibold">Sheriff Service</span> — Contact your county sheriff's civil division to request service. The sheriff serves the defendant and files a Return of Service with the court. More affordable than a private process server, but may take longer to complete.
                     </p>
                   </label>
-                  {ctx.flServiceMethod === "sheriff" && (
+                  {flServiceMethod === "sheriff" && (
                     <>
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
@@ -498,13 +504,13 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
                     </>
                   )}
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.flServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.flServiceMethod === "certified_mail") { e.preventDefault(); ctx.setFlServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${flServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (flServiceMethod === "certified_mail") { e.preventDefault(); setFlServiceMethod(""); } }}>
                     <RadioGroupItem value="certified_mail" id="fl-serve-mail" className="mt-0.5 shrink-0" />
                     <p className="text-sm text-foreground leading-relaxed">
                       <span className="font-semibold">Certified Mail — Least Reliable.</span> Available for <strong>Florida residents only</strong> (Fla. Sm. Cl. R. 7.070). The clerk sends the summons and Statement of Claim by certified mail. Service is valid only if the defendant — or someone authorized to receive mail at their residence or business — signs the return receipt. Not valid for out-of-state defendants.
                     </p>
                   </label>
-                  {ctx.flServiceMethod === "certified_mail" && (
+                  {flServiceMethod === "certified_mail" && (
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
                         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -529,7 +535,7 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
           )}
 
           {/* ── Step 3: Fee Waiver (optional) ──────────────────────────────────── */}
-          {ctx.flWizardIndex === 3 && (
+          {flWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
@@ -569,8 +575,8 @@ import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, Use
 
           {/* Wizard nav */}
           <div className="flex justify-between items-center">
-            <Button variant="outline" size="sm" disabled={ctx.flWizardIndex === 0} onClick={() => ctx.setFlWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
-            <Button variant="outline" size="sm" disabled={ctx.flWizardIndex === FL_WIZARD_STEPS.length - 1} onClick={() => ctx.setFlWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
+            <Button variant="outline" size="sm" disabled={flWizardIndex === 0} onClick={() => setFlWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
+            <Button variant="outline" size="sm" disabled={flWizardIndex === FL_WIZARD_STEPS.length - 1} onClick={() => setFlWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
           </div>
         </div>
     );

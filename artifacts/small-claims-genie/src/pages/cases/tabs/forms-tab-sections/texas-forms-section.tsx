@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, UserCheck, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -8,6 +9,18 @@ import { TX_WIZARD_STEPS, TX_JP_PRECINCTS } from "../forms-tab";
 import type { FormsTabCtx } from "../forms-tab";
 
 export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
+  const [txWizardIndex, setTxWizardIndex] = useState(() => {
+    try { const s = localStorage.getItem(`tx_forms_step_${ctx.caseId}`); const n = s !== null ? parseInt(s, 10) : 0; return isNaN(n) ? 0 : n; } catch { return 0; }
+  });
+  useEffect(() => { try { localStorage.setItem(`tx_forms_step_${ctx.caseId}`, String(txWizardIndex)); } catch {} }, [txWizardIndex, ctx.caseId]);
+  const [txServiceMethod, setTxServiceMethod] = useState<string>("");
+  const [txSeeksProperty, setTxSeeksProperty] = useState<boolean>(false);
+  const [txPersonalPropertyDesc, setTxPersonalPropertyDesc] = useState<string>("");
+  const [txPersonalPropertyValue, setTxPersonalPropertyValue] = useState<string>("");
+  const [txInterestPref, setTxInterestPref] = useState<string>("doesnot");
+  const [txJuryPref, setTxJuryPref] = useState<string>("none");
+  const [txPhonePref, setTxPhonePref] = useState<string>("yes");
+  const [txVideoPref, setTxVideoPref] = useState<string>("yes");
   return (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -17,13 +30,13 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           <FormWizardStepper
             steps={TX_WIZARD_STEPS}
-            currentIndex={ctx.txWizardIndex}
-            onStepClick={ctx.setTxWizardIndex}
+            currentIndex={txWizardIndex}
+            onStepClick={setTxWizardIndex}
             stepLabel="Form"
           />
 
           {/* ── Step 0: TX Petition ────────────────────────────────────────────── */}
-          {ctx.txWizardIndex === 0 && (
+          {txWizardIndex === 0 && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 File with the Justice of the Peace court in the precinct where the defendant lives or where the transaction occurred. The petition below is pre-filled with your case information.
@@ -37,20 +50,20 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 <div className="space-y-2">
                   <label className="flex items-center gap-2.5 cursor-pointer">
                     <Checkbox
-                      checked={ctx.txSeeksProperty}
-                      onCheckedChange={(v) => ctx.setTxSeeksProperty(!!v)}
+                      checked={txSeeksProperty}
+                      onCheckedChange={(v) => setTxSeeksProperty(!!v)}
                     />
                     <span className="text-xs font-medium text-foreground">I am also seeking return of personal property</span>
                   </label>
-                  {ctx.txSeeksProperty && (
+                  {txSeeksProperty && (
                     <div className="space-y-2 pl-6">
                       <div className="space-y-1">
                         <p className="text-xs font-medium text-foreground">Describe the property</p>
                         <Input
                           className="h-8 text-xs"
                           placeholder="e.g., iPhone 13 Pro, Black, serial #ABC123"
-                          value={ctx.txPersonalPropertyDesc}
-                          onChange={(e) => ctx.setTxPersonalPropertyDesc(e.target.value)}
+                          value={txPersonalPropertyDesc}
+                          onChange={(e) => setTxPersonalPropertyDesc(e.target.value)}
                         />
                       </div>
                       <div className="space-y-1">
@@ -58,8 +71,8 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                         <Input
                           className="h-8 text-xs w-32"
                           placeholder="0.00"
-                          value={ctx.txPersonalPropertyValue}
-                          onChange={(e) => ctx.setTxPersonalPropertyValue(e.target.value)}
+                          value={txPersonalPropertyValue}
+                          onChange={(e) => setTxPersonalPropertyValue(e.target.value)}
                         />
                       </div>
                     </div>
@@ -69,12 +82,12 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 {/* 2. Interest preference */}
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-foreground">Do you want to seek interest on your damages?</p>
-                  <RadioGroup value={ctx.txInterestPref} onValueChange={ctx.setTxInterestPref} className="flex flex-row gap-3">
+                  <RadioGroup value={txInterestPref} onValueChange={setTxInterestPref} className="flex flex-row gap-3">
                     {[
                       { val: "doesnot", label: "No interest" },
                       { val: "does",    label: "Yes, seek interest" },
                     ].map(({ val, label }) => (
-                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txInterestPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${txInterestPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                         <RadioGroupItem value={val} />
                         <span className="text-xs text-foreground">{label}</span>
                       </label>
@@ -85,12 +98,12 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 {/* 4. Jury preference */}
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-foreground">Do you want a jury trial?</p>
-                  <RadioGroup value={ctx.txJuryPref} onValueChange={ctx.setTxJuryPref} className="flex flex-row gap-3">
+                  <RadioGroup value={txJuryPref} onValueChange={setTxJuryPref} className="flex flex-row gap-3">
                     {[
                       { val: "none",    label: "No (bench trial)" },
                       { val: "request", label: "Yes, request jury" },
                     ].map(({ val, label }) => (
-                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txJuryPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${txJuryPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                         <RadioGroupItem value={val} />
                         <span className="text-xs text-foreground">{label}</span>
                       </label>
@@ -101,12 +114,12 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 {/* 5. Remote participation — phone */}
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-foreground">Can you attend hearings by phone call?</p>
-                  <RadioGroup value={ctx.txPhonePref} onValueChange={ctx.setTxPhonePref} className="flex flex-col gap-1">
+                  <RadioGroup value={txPhonePref} onValueChange={setTxPhonePref} className="flex flex-col gap-1">
                     {[
                       { val: "yes", label: "Yes — I can attend hearings by phone call" },
                       { val: "no",  label: "No — I cannot attend hearings by phone" },
                     ].map(({ val, label }) => (
-                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txPhonePref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${txPhonePref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                         <RadioGroupItem value={val} />
                         <span className="text-xs text-foreground">{label}</span>
                       </label>
@@ -117,12 +130,12 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 {/* 6. Remote participation — video */}
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-foreground">Can you attend hearings by video conference?</p>
-                  <RadioGroup value={ctx.txVideoPref} onValueChange={ctx.setTxVideoPref} className="flex flex-col gap-1">
+                  <RadioGroup value={txVideoPref} onValueChange={setTxVideoPref} className="flex flex-col gap-1">
                     {[
                       { val: "yes", label: "Yes — I can attend hearings by video conference" },
                       { val: "no",  label: "No — I cannot attend hearings by video conference" },
                     ].map(({ val, label }) => (
-                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${ctx.txVideoPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
+                      <label key={val} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors border ${txVideoPref === val ? "border-[#0d6b5e]/30 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`}>
                         <RadioGroupItem value={val} />
                         <span className="text-xs text-foreground">{label}</span>
                       </label>
@@ -141,10 +154,10 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                   <p className="text-xs text-muted-foreground mt-0.5">Pre-filled petition to open your case in Texas JP court. File this with the justice court clerk in your precinct.</p>
                 </div>
                 <div className="flex flex-col gap-2 shrink-0">
-                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => ctx.downloadFormPost("tx/petition", `TX-Small-Claims-Petition-Case-${ctx.caseId}.pdf`, { interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, phonePref: ctx.txPhonePref, videoPref: ctx.txVideoPref, personalPropertyDesc: ctx.txSeeksProperty ? ctx.txPersonalPropertyDesc : "", personalPropertyValue: ctx.txSeeksProperty ? ctx.txPersonalPropertyValue : "" })}>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => ctx.downloadFormPost("tx/petition", `TX-Small-Claims-Petition-Case-${ctx.caseId}.pdf`, { interestPref: txInterestPref, juryPref: txJuryPref, phonePref: txPhonePref, videoPref: txVideoPref, personalPropertyDesc: txSeeksProperty ? txPersonalPropertyDesc : "", personalPropertyValue: txSeeksProperty ? txPersonalPropertyValue : "" })}>
                     <Download className="h-3.5 w-3.5" /> Download
                   </Button>
-                  <Button size="sm" className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => ctx.openFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${ctx.caseId}-signed.pdf`, extraBody: { interestPref: ctx.txInterestPref, juryPref: ctx.txJuryPref, phonePref: ctx.txPhonePref, videoPref: ctx.txVideoPref, personalPropertyDesc: ctx.txSeeksProperty ? ctx.txPersonalPropertyDesc : "", personalPropertyValue: ctx.txSeeksProperty ? ctx.txPersonalPropertyValue : "" } })}>
+                  <Button size="sm" className="gap-1.5 h-8 text-xs bg-[#0d6b5e] hover:bg-[#0a5449] text-white" onClick={() => ctx.openFlSigModal({ endpoint: "tx/petition", filename: `TX-Small-Claims-Petition-Case-${ctx.caseId}-signed.pdf`, extraBody: { interestPref: txInterestPref, juryPref: txJuryPref, phonePref: txPhonePref, videoPref: txVideoPref, personalPropertyDesc: txSeeksProperty ? txPersonalPropertyDesc : "", personalPropertyValue: txSeeksProperty ? txPersonalPropertyValue : "" } })}>
                     <PenLine className="h-3.5 w-3.5" /> Sign &amp; Download
                   </Button>
                 </div>
@@ -190,7 +203,7 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 1: Citation ───────────────────────────────────────────────── */}
-          {ctx.txWizardIndex === 1 && (
+          {txWizardIndex === 1 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-[#0d6b5e]" />
@@ -219,7 +232,7 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 2: Serve Defendant ─────────────────────────────────────────── */}
-          {ctx.txWizardIndex === 2 && (
+          {txWizardIndex === 2 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -229,9 +242,9 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 After you file and pay the filing fee, the clerk issues a Citation (summons) for you to have served on the defendant. Once served, the defendant has <strong>14 days to file an answer</strong> (TRCP Rule 502). The court then schedules trial <strong>20–45 days after service</strong> (TRCP Rule 503). Serve as early as possible — the hearing date is not set until after the answer period closes.
               </p>
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
-                <RadioGroup value={ctx.txServiceMethod} onValueChange={ctx.setTxServiceMethod} className="gap-0">
+                <RadioGroup value={txServiceMethod} onValueChange={setTxServiceMethod} className="gap-0">
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.txServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.txServiceMethod === "process_server") { e.preventDefault(); ctx.setTxServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${txServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (txServiceMethod === "process_server") { e.preventDefault(); setTxServiceMethod(""); } }}>
                     <RadioGroupItem value="process_server" id="tx-serve-ps" className="mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -250,7 +263,7 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                       </p>
                     </div>
                   </label>
-                  {ctx.txServiceMethod === "process_server" && (
+                  {txServiceMethod === "process_server" && (
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
                         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
@@ -277,13 +290,13 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                     </div>
                   )}
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.txServiceMethod === "constable_sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.txServiceMethod === "constable_sheriff") { e.preventDefault(); ctx.setTxServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${txServiceMethod === "constable_sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (txServiceMethod === "constable_sheriff") { e.preventDefault(); setTxServiceMethod(""); } }}>
                     <RadioGroupItem value="constable_sheriff" id="tx-serve-constable" className="mt-0.5 shrink-0" />
                     <p className="text-sm text-foreground leading-relaxed">
                       <span className="font-semibold">Constable / Sheriff Service</span> — Standard option. Request constable or sheriff service at the clerk's window when you file. The court forwards the citation to the constable's or sheriff's office, which attempts service and files a Return of Service when complete.
                     </p>
                   </label>
-                  {ctx.txServiceMethod === "constable_sheriff" && (
+                  {txServiceMethod === "constable_sheriff" && (
                     <>
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
@@ -331,13 +344,13 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                     </>
                   )}
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.txServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.txServiceMethod === "certified_mail") { e.preventDefault(); ctx.setTxServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${txServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (txServiceMethod === "certified_mail") { e.preventDefault(); setTxServiceMethod(""); } }}>
                     <RadioGroupItem value="certified_mail" id="tx-serve-mail" className="mt-0.5 shrink-0" />
                     <p className="text-sm text-foreground leading-relaxed">
                       <span className="font-semibold">Certified Mail — Least Reliable.</span> Available in some Texas JP courts. The clerk sends the citation by certified mail. Service only counts if the defendant personally signs for it.
                     </p>
                   </label>
-                  {ctx.txServiceMethod === "certified_mail" && (
+                  {txServiceMethod === "certified_mail" && (
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
                         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -378,7 +391,7 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 3: Fee Waiver (optional) ──────────────────────────────────── */}
-          {ctx.txWizardIndex === 3 && (
+          {txWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
@@ -419,8 +432,8 @@ export function TexasFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           {/* Wizard nav */}
           <div className="flex justify-between items-center">
-            <Button variant="outline" size="sm" disabled={ctx.txWizardIndex === 0} onClick={() => ctx.setTxWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
-            <Button variant="outline" size="sm" disabled={ctx.txWizardIndex === TX_WIZARD_STEPS.length - 1} onClick={() => ctx.setTxWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
+            <Button variant="outline" size="sm" disabled={txWizardIndex === 0} onClick={() => setTxWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
+            <Button variant="outline" size="sm" disabled={txWizardIndex === TX_WIZARD_STEPS.length - 1} onClick={() => setTxWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
           </div>
         </div>
   );

@@ -3,7 +3,7 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { checkHelpChatRateLimit } from "../lib/rate-limiter";
 import { db, genieConversionsTable } from "@workspace/db";
 import { VISITOR_PROMPT, VISITOR_SUGGESTIONS_INSTRUCTION, HELP_BASE_PROMPT, PAGE_CONTEXT_PROMPTS, SUGGESTIONS_INSTRUCTION } from "../prompts/help-chat-prompt";
-import { STATE_FACTS, type StateCode } from "@workspace/state-facts";
+import { STATE_FACTS, formatFilingFeeTiersPipe, formatSolLine, type StateCode } from "@workspace/state-facts";
 
 const router: IRouter = Router();
 
@@ -103,8 +103,11 @@ router.post("/help", async (req, res): Promise<void> => {
   const hearingTitleNote = stateFacts
     ? ` The official who presides over the hearing in ${stateName} is called a "${stateFacts.hearingOfficialTitle}" — always use that exact term (not "judge") when referring to who presides over the hearing, in this and every part of your answer.`
     : "";
+  const stateFactsNote = stateFacts
+    ? ` Key ${stateName} facts for reference: claim limit — ${stateFacts.claimLimitText}; filing fees — ${formatFilingFeeTiersPipe(stateFacts)}; statute of limitations — ${formatSolLine(stateFacts, { lowercaseFirst: true })}; serve defendant ${stateFacts.serviceDeadlineText}; judgment valid for ${stateFacts.judgmentValidityYears} years.`
+    : "";
   const stateNote = jurisdictionState
-    ? `\n\nUser's selected jurisdiction: ${countyPhrase}${stateName} (${jurisdictionState}). Answer using ONLY ${stateName}-specific rules, limits, fees, and procedures — do NOT list or compare other states' rules unless the user explicitly asks to compare states. If a detail (e.g. filing fee, local form) varies by county within ${stateName}${jurisdictionCounty ? `, note anything specific to ${jurisdictionCounty} County when you know it and otherwise` : ""}, tell the user to verify with their local county court/clerk rather than guessing a number.${hearingTitleNote}`
+    ? `\n\nUser's selected jurisdiction: ${countyPhrase}${stateName} (${jurisdictionState}). Answer using ONLY ${stateName}-specific rules, limits, fees, and procedures — do NOT list or compare other states' rules unless the user explicitly asks to compare states. If a detail (e.g. filing fee, local form) varies by county within ${stateName}${jurisdictionCounty ? `, note anything specific to ${jurisdictionCounty} County when you know it and otherwise` : ""}, tell the user to verify with their local county court/clerk rather than guessing a number.${hearingTitleNote}${stateFactsNote}`
     : "";
 
   let systemPrompt: string;

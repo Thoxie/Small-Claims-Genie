@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Download, Info, PenLine, CheckCircle2, AlertTriangle, ExternalLink, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -6,6 +7,11 @@ import { IL_WIZARD_STEPS } from "../forms-tab";
 import type { FormsTabCtx } from "../forms-tab";
 
 export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
+  const [ilWizardIndex, setIlWizardIndex] = useState(() => {
+    try { const s = localStorage.getItem(`il_forms_step_${ctx.caseId}`); const n = s !== null ? parseInt(s, 10) : 0; return isNaN(n) ? 0 : n; } catch { return 0; }
+  });
+  useEffect(() => { try { localStorage.setItem(`il_forms_step_${ctx.caseId}`, String(ilWizardIndex)); } catch {} }, [ilWizardIndex, ctx.caseId]);
+  const [ilServiceMethod, setIlServiceMethod] = useState<string>("");
   return (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -15,13 +21,13 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           <FormWizardStepper
             steps={IL_WIZARD_STEPS}
-            currentIndex={ctx.ilWizardIndex}
-            onStepClick={ctx.setIlWizardIndex}
+            currentIndex={ilWizardIndex}
+            onStepClick={setIlWizardIndex}
             stepLabel="Form"
           />
 
           {/* ── Step 0: Small Claims Complaint ─────────────────────────────────── */}
-          {ctx.ilWizardIndex === 0 && (
+          {ilWizardIndex === 0 && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 File this standardized complaint form with your county Circuit Court clerk. Illinois uses a uniform statewide small claims complaint (735 ILCS 5/2-209 et seq.). Claim limit: $10,000.
@@ -62,7 +68,7 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 1: Summons ────────────────────────────────────────────────── */}
-          {ctx.ilWizardIndex === 1 && (
+          {ilWizardIndex === 1 && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 File this summons with your complaint. The clerk assigns the return date (hearing date) and issues the summons — you then have it served on the defendant before the return date.
@@ -90,7 +96,7 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 2: Serve Defendant ─────────────────────────────────────────── */}
-          {ctx.ilWizardIndex === 2 && (
+          {ilWizardIndex === 2 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#0d6b5e]" />
@@ -100,9 +106,9 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                 After the clerk issues the summons, you must have it served on the defendant. The clerk sets a return date <strong>21–40 days after the summons is issued</strong>. Illinois requires service at least <strong>3 days before the return date</strong>. The process server must be at least 18 years old and not a party to the case.
               </p>
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
-                <RadioGroup value={ctx.ilServiceMethod} onValueChange={ctx.setIlServiceMethod} className="gap-0">
+                <RadioGroup value={ilServiceMethod} onValueChange={setIlServiceMethod} className="gap-0">
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.ilServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.ilServiceMethod === "process_server") { e.preventDefault(); ctx.setIlServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ilServiceMethod === "process_server" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ilServiceMethod === "process_server") { e.preventDefault(); setIlServiceMethod(""); } }}>
                     <RadioGroupItem value="process_server" id="il-serve-ps" className="mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -121,7 +127,7 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                       </p>
                     </div>
                   </label>
-                  {ctx.ilServiceMethod === "process_server" && (
+                  {ilServiceMethod === "process_server" && (
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
                         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
@@ -149,13 +155,13 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                     </div>
                   )}
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.ilServiceMethod === "sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.ilServiceMethod === "sheriff") { e.preventDefault(); ctx.setIlServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ilServiceMethod === "sheriff" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ilServiceMethod === "sheriff") { e.preventDefault(); setIlServiceMethod(""); } }}>
                     <RadioGroupItem value="sheriff" id="il-serve-sheriff" className="mt-0.5 shrink-0" />
                     <p className="text-sm text-foreground leading-relaxed">
                       <span className="font-semibold">Sheriff Service</span> — Contact your county sheriff's civil division to arrange service. The sheriff serves the defendant and files a Return of Service with the court. More affordable but may take longer.
                     </p>
                   </label>
-                  {ctx.ilServiceMethod === "sheriff" && (
+                  {ilServiceMethod === "sheriff" && (
                     <>
                       <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                         <div className="flex gap-2.5">
@@ -198,13 +204,13 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
                     </>
                   )}
 
-                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ctx.ilServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ctx.ilServiceMethod === "certified_mail") { e.preventDefault(); ctx.setIlServiceMethod(""); } }}>
+                  <label className={`flex items-start gap-3 rounded-lg px-3 py-3 cursor-pointer transition-colors border ${ilServiceMethod === "certified_mail" ? "border-[#0d6b5e]/40 bg-[#0d6b5e]/5" : "border-transparent hover:bg-muted/40"}`} onClick={(e) => { if (ilServiceMethod === "certified_mail") { e.preventDefault(); setIlServiceMethod(""); } }}>
                     <RadioGroupItem value="certified_mail" id="il-serve-mail" className="mt-0.5 shrink-0" />
                     <p className="text-sm text-foreground leading-relaxed">
                       <span className="font-semibold">Certified Mail — Least Reliable.</span> The clerk may send the summons by certified mail at your request. Service is only complete if the defendant signs for it. Not recommended if the defendant is likely to refuse delivery.
                     </p>
                   </label>
-                  {ctx.ilServiceMethod === "certified_mail" && (
+                  {ilServiceMethod === "certified_mail" && (
                     <div className="mx-3 mb-2 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <div className="flex gap-2.5">
                         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -238,7 +244,7 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
           )}
 
           {/* ── Step 3: Fee Waiver (optional) ──────────────────────────────────── */}
-          {ctx.ilWizardIndex === 3 && (
+          {ilWizardIndex === 3 && (
             <div className="rounded-xl border bg-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0d6b5e]" />
@@ -279,8 +285,8 @@ export function IllinoisFormsSection({ ctx }: { ctx: FormsTabCtx }) {
 
           {/* Wizard nav */}
           <div className="flex justify-between items-center">
-            <Button variant="outline" size="sm" disabled={ctx.ilWizardIndex === 0} onClick={() => ctx.setIlWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
-            <Button variant="outline" size="sm" disabled={ctx.ilWizardIndex === IL_WIZARD_STEPS.length - 1} onClick={() => ctx.setIlWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
+            <Button variant="outline" size="sm" disabled={ilWizardIndex === 0} onClick={() => setIlWizardIndex(i => i - 1)} className="gap-1.5">← Previous</Button>
+            <Button variant="outline" size="sm" disabled={ilWizardIndex === IL_WIZARD_STEPS.length - 1} onClick={() => setIlWizardIndex(i => i + 1)} className="gap-1.5">Next →</Button>
           </div>
         </div>
   );

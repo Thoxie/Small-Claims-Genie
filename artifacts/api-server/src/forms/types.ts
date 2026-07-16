@@ -398,6 +398,10 @@ export interface FormBody {
   interestPref?: string;
   /** "request" | "none" — whether plaintiff requests a jury trial (TX petition) */
   juryPref?: string;
+  /** "yes" | "no" — whether plaintiff consents to phone testimony (TX petition Section VIII) */
+  phonePref?: string;
+  /** "yes" | "no" — whether plaintiff consents to video conference (TX petition Section VIII) */
+  videoPref?: string;
 
   // ── Common signing fields ────────────────────────────────────────────────────
   signDate?: string;

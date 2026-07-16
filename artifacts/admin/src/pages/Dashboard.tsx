@@ -26,6 +26,8 @@ import {
   clearErrors,
   setNotifications,
   clearStoredKey,
+  fetchAdminCounties,
+  importAdminCounties,
   type UserRow,
   type CaseRow,
   type CaseDetail,
@@ -37,6 +39,7 @@ import {
   type StuckCaseRow,
   type GenieConversionRow,
   type TestCaseRow,
+  type CountyRow,
 } from "@/lib/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2472,6 +2475,152 @@ function TestCasesTab() {
   );
 }
 
+// ── Counties Tab ──────────────────────────────────────────────────────────────
+function parseCsvToCounties(csv: string): Partial<CountyRow>[] {
+  const lines = csv.trim().split("\n").filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
+  return lines.slice(1).flatMap((line) => {
+    const vals = line.split(",").map((v) => v.trim().replace(/"/g, ""));
+    const obj: Record<string, string> = {};
+    headers.forEach((h, i) => { obj[h] = vals[i] ?? ""; });
+    if (!obj.id || !obj.name || !obj.state) return [];
+    return [{
+      id: obj.id,
+      name: obj.name,
+      state: obj.state,
+      courthouseName: obj.courthouseName || null,
+      courthouseAddress: obj.courthouseAddress || null,
+      courthouseCity: obj.courthouseCity || null,
+      courthouseZip: obj.courthouseZip || null,
+      filingFeeUnder1500: obj.filingFeeUnder1500 ? parseInt(obj.filingFeeUnder1500, 10) : null,
+      filingFee1500to5000: obj.filingFee1500to5000 ? parseInt(obj.filingFee1500to5000, 10) : null,
+      filingFeeOver5000: obj.filingFeeOver5000 ? parseInt(obj.filingFeeOver5000, 10) : null,
+      phone: obj.phone || null,
+      clerkWebsite: obj.clerkWebsite || null,
+      notes: obj.notes || null,
+    }];
+  });
+}
+
+function CountiesTab() {
+  const queryClient = useQueryClient();
+  const [stateFilter, setStateFilter] = useState<string>("all");
+  const [csvStatus, setCsvStatus] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const { data: counties = [], isLoading } = useQuery({
+    queryKey: ["admin-counties", stateFilter],
+    queryFn: () => fetchAdminCounties(stateFilter === "all" ? undefined : stateFilter),
+  });
+
+  const byState = (counties as CountyRow[]).reduce<Record<string, number>>((acc, c) => {
+    acc[c.state] = (acc[c.state] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  async function handleCsvUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvStatus("Parsing CSV…");
+    try {
+      const text = await file.text();
+      const rows = parseCsvToCounties(text);
+      if (rows.length === 0) { setCsvStatus("No valid rows found in CSV."); return; }
+      setIsImporting(true);
+      setCsvStatus(`Importing ${rows.length} counties…`);
+      const result = await importAdminCounties(rows);
+      setCsvStatus(`✓ Imported ${result.imported} counties.`);
+      void queryClient.invalidateQueries({ queryKey: ["admin-counties"] });
+    } catch (err) {
+      setCsvStatus(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setIsImporting(false);
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Counties Database</span>
+            <Badge variant="outline">{(counties as CountyRow[]).length} counties</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <select
+              className="border rounded px-2 py-1 text-sm"
+              value={stateFilter}
+              onChange={(e) => setStateFilter(e.target.value)}
+            >
+              <option value="all">All States</option>
+              {["AZ","CA","FL","IL","NC","NJ","TX","VA","WA"].map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <label className={`cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded border font-medium ${isImporting ? "opacity-50 cursor-not-allowed" : "hover:bg-muted"}`}>
+              {isImporting ? "Importing…" : "Upload CSV"}
+              <input type="file" accept=".csv,.txt" className="hidden" onChange={handleCsvUpload} disabled={isImporting} />
+            </label>
+            {csvStatus && <span className="text-sm text-muted-foreground">{csvStatus}</span>}
+          </div>
+
+          {stateFilter === "all" && Object.keys(byState).length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(byState).sort(([a], [b]) => a.localeCompare(b)).map(([state, ct]) => (
+                <Badge key={state} variant="secondary">{state}: {ct}</Badge>
+              ))}
+            </div>
+          )}
+
+          {isLoading ? (
+            <LoadingSkeleton rows={5} />
+          ) : (
+            <div className="overflow-x-auto rounded border">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-muted text-left">
+                    <th className="px-2 py-1.5 border-b font-medium">ID</th>
+                    <th className="px-2 py-1.5 border-b font-medium">State</th>
+                    <th className="px-2 py-1.5 border-b font-medium">Name</th>
+                    <th className="px-2 py-1.5 border-b font-medium">City</th>
+                    <th className="px-2 py-1.5 border-b font-medium">Fee &lt;$1,500</th>
+                    <th className="px-2 py-1.5 border-b font-medium">Fee $1,500–$5k</th>
+                    <th className="px-2 py-1.5 border-b font-medium">Fee &gt;$5k</th>
+                    <th className="px-2 py-1.5 border-b font-medium">Phone</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(counties as CountyRow[]).slice(0, 200).map((c) => (
+                    <tr key={c.id} className="hover:bg-muted/40 border-b last:border-0">
+                      <td className="px-2 py-1 font-mono text-[10px] text-muted-foreground">{c.id}</td>
+                      <td className="px-2 py-1">{c.state}</td>
+                      <td className="px-2 py-1">{c.name}</td>
+                      <td className="px-2 py-1">{c.courthouseCity ?? "—"}</td>
+                      <td className="px-2 py-1">{c.filingFeeUnder1500 != null ? `$${c.filingFeeUnder1500}` : "—"}</td>
+                      <td className="px-2 py-1">{c.filingFee1500to5000 != null ? `$${c.filingFee1500to5000}` : "—"}</td>
+                      <td className="px-2 py-1">{c.filingFeeOver5000 != null ? `$${c.filingFeeOver5000}` : "—"}</td>
+                      <td className="px-2 py-1">{c.phone ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {(counties as CountyRow[]).length > 200 && (
+                <p className="text-xs text-muted-foreground px-2 py-1">
+                  Showing 200 of {(counties as CountyRow[]).length} — use state filter to narrow.
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 function LoadingSkeleton({ rows = 3, cols = 1 }: { rows?: number; cols?: number }) {
   return (
@@ -2555,6 +2704,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
             <TabsTrigger value="status" className="text-xs sm:text-sm">Status</TabsTrigger>
             <TabsTrigger value="conversions" className="text-xs sm:text-sm">Conversions</TabsTrigger>
             <TabsTrigger value="test-cases" className="text-xs sm:text-sm">🧪 Test Cases</TabsTrigger>
+            <TabsTrigger value="counties" className="text-xs sm:text-sm">Counties</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview"><OverviewTab /></TabsContent>
@@ -2577,6 +2727,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
           <TabsContent value="status"><StatusTab /></TabsContent>
           <TabsContent value="conversions"><GenieConversionsTab /></TabsContent>
           <TabsContent value="test-cases"><TestCasesTab /></TabsContent>
+          <TabsContent value="counties"><CountiesTab /></TabsContent>
         </Tabs>
       </div>
 

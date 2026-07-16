@@ -1,7 +1,7 @@
 import { Router, type Request, type Response, type NextFunction, type RequestHandler } from "express";
 import { Readable } from "stream";
-import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable, documentsTable } from "@workspace/db";
-import { sql, count, sum, eq, gte, lt, desc, and, isNotNull, like } from "drizzle-orm";
+import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable, documentsTable, countiesTable } from "@workspace/db";
+import { sql, count, sum, eq, gte, lt, desc, asc, and, isNotNull, like } from "drizzle-orm";
 import { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES } from "./counties";
 import { logger } from "../lib/logger";
 import { FormRegistry } from "../forms/registry";
@@ -1216,6 +1216,58 @@ router.delete("/admin/beta/:userId", async (req: Request, res: Response): Promis
     res.json({ total: rows.length, limit: BETA_LIMIT, rows });
   } catch (err) {
     logger.error({ err }, "Admin beta revoke error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── GET /admin/counties ───────────────────────────────────────────────────────
+router.get("/admin/counties", requireAdmin, async (req: Request, res: Response): Promise<void> => {
+  const { state } = req.query as { state?: string };
+  try {
+    const rows = state
+      ? await db.select().from(countiesTable).where(eq(countiesTable.state, state)).orderBy(asc(countiesTable.name))
+      : await db.select().from(countiesTable).orderBy(asc(countiesTable.state), asc(countiesTable.name));
+    res.json(rows);
+  } catch (err) {
+    logger.error({ err }, "Admin counties fetch error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── POST /admin/counties/import ───────────────────────────────────────────────
+router.post("/admin/counties/import", requireAdmin, async (req: Request, res: Response): Promise<void> => {
+  const { counties } = req.body as { counties?: unknown[] };
+  if (!Array.isArray(counties) || counties.length === 0) {
+    res.status(400).json({ error: "Expected { counties: [...] }" });
+    return;
+  }
+  try {
+    const rows = counties as Array<typeof countiesTable.$inferInsert>;
+    await db
+      .insert(countiesTable)
+      .values(rows)
+      .onConflictDoUpdate({
+        target: countiesTable.id,
+        set: {
+          name:               sql`excluded.name`,
+          state:              sql`excluded.state`,
+          courthouseName:     sql`excluded.courthouse_name`,
+          courthouseAddress:  sql`excluded.courthouse_address`,
+          courthouseCity:     sql`excluded.courthouse_city`,
+          courthouseZip:      sql`excluded.courthouse_zip`,
+          filingFeeUnder1500: sql`excluded.filing_fee_under1500`,
+          filingFee1500to5000: sql`excluded.filing_fee_1500to5000`,
+          filingFeeOver5000:  sql`excluded.filing_fee_over5000`,
+          phone:              sql`excluded.phone`,
+          clerkWebsite:       sql`excluded.clerk_website`,
+          notes:              sql`excluded.notes`,
+          updatedAt:          sql`now()`,
+        },
+      });
+    logger.info({ count: counties.length }, "Admin imported counties");
+    res.json({ imported: counties.length });
+  } catch (err) {
+    logger.error({ err }, "Admin counties import error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -647,15 +647,6 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
   const [sc103bSigModalOpen, setSc103bSigModalOpen] = useState(false);
   const [sc100aFormBody, setSc100aFormBody] = useState<Record<string, unknown> | null>(null);
   const [flSigModal, setFlSigModal] = useState<{ endpoint: string; filename: string; title?: string; extraBody?: Record<string, unknown> } | null>(null);
-  const [txServiceMethod, setTxServiceMethod] = useState<string>("");
-  const [txSeeksProperty, setTxSeeksProperty] = useState<boolean>(false);
-  const [txPersonalPropertyDesc, setTxPersonalPropertyDesc] = useState<string>("");
-  const [txPersonalPropertyValue, setTxPersonalPropertyValue] = useState<string>("");
-  const [txInterestPref, setTxInterestPref] = useState<string>("doesnot");
-  const [txJuryPref, setTxJuryPref] = useState<string>("none");
-  const [txPhonePref, setTxPhonePref] = useState<string>("yes");
-  const [txVideoPref, setTxVideoPref] = useState<string>("yes");
-  const [flServiceMethod, setFlServiceMethod] = useState<string>("");
 
 
   // ── SC-100 view / edit overrides state ─────────────────────────────────────
@@ -691,57 +682,6 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
   useEffect(() => {
     try { localStorage.setItem(`sc_forms_step_${caseId}`, String(wizardIndex)); } catch {}
   }, [wizardIndex, caseId]);
-    const [flWizardIndex, setFlWizardIndex] = useState(() => {
-      try {
-        const stored = localStorage.getItem(`fl_forms_step_${caseId}`);
-        const n = stored !== null ? parseInt(stored, 10) : 0;
-        return isNaN(n) ? 0 : n;
-      } catch { return 0; }
-    });
-    useEffect(() => {
-      try { localStorage.setItem(`fl_forms_step_${caseId}`, String(flWizardIndex)); } catch {}
-    }, [flWizardIndex, caseId]);
-    const [txWizardIndex, setTxWizardIndex] = useState(() => {
-      try {
-        const stored = localStorage.getItem(`tx_forms_step_${caseId}`);
-        const n = stored !== null ? parseInt(stored, 10) : 0;
-        return isNaN(n) ? 0 : n;
-      } catch { return 0; }
-    });
-    useEffect(() => {
-      try { localStorage.setItem(`tx_forms_step_${caseId}`, String(txWizardIndex)); } catch {}
-    }, [txWizardIndex, caseId]);
-    const [ilWizardIndex, setIlWizardIndex] = useState(() => {
-      try {
-        const stored = localStorage.getItem(`il_forms_step_${caseId}`);
-        const n = stored !== null ? parseInt(stored, 10) : 0;
-        return isNaN(n) ? 0 : n;
-      } catch { return 0; }
-    });
-    useEffect(() => {
-      try { localStorage.setItem(`il_forms_step_${caseId}`, String(ilWizardIndex)); } catch {}
-    }, [ilWizardIndex, caseId]);
-    const [ncWizardIndex, setNcWizardIndex] = useState(() => {
-      try {
-        const stored = localStorage.getItem(`nc_forms_step_${caseId}`);
-        const n = stored !== null ? parseInt(stored, 10) : 0;
-        return isNaN(n) ? 0 : n;
-      } catch { return 0; }
-    });
-    useEffect(() => {
-      try { localStorage.setItem(`nc_forms_step_${caseId}`, String(ncWizardIndex)); } catch {}
-    }, [ncWizardIndex, caseId]);
-    const [vaWizardIndex, setVaWizardIndex] = useState(() => {
-      try {
-        const stored = localStorage.getItem(`va_forms_step_${caseId}`);
-        const n = stored !== null ? parseInt(stored, 10) : 0;
-        return isNaN(n) ? 0 : n;
-      } catch { return 0; }
-    });
-    useEffect(() => {
-      try { localStorage.setItem(`va_forms_step_${caseId}`, String(vaWizardIndex)); } catch {}
-    }, [vaWizardIndex, caseId]);
-    const [ilServiceMethod, setIlServiceMethod] = useState<string>("");
     const [notifyMethod, setNotifyMethod] = useState<string>(currentCase.notifyMethod ?? "");
 
   // ── Documents for exhibit selector ────────────────────────────────────────
@@ -2045,15 +1985,6 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
     sc103bSigModalOpen, setSc103bSigModalOpen,
     sc100aFormBody, setSc100aFormBody,
     flSigModal, setFlSigModal,
-    txServiceMethod, setTxServiceMethod,
-    txSeeksProperty, setTxSeeksProperty,
-    txPersonalPropertyDesc, setTxPersonalPropertyDesc,
-    txPersonalPropertyValue, setTxPersonalPropertyValue,
-    txInterestPref, setTxInterestPref,
-    txJuryPref, setTxJuryPref,
-    txPhonePref, setTxPhonePref,
-    txVideoPref, setTxVideoPref,
-    flServiceMethod, setFlServiceMethod,
     viewingPdf, setViewingPdf,
     sc100EditOpen, setSc100EditOpen,
     sc100Fields, setSc100Fields,
@@ -2068,12 +1999,6 @@ function useFormsTabState({ caseId, currentCase, isDraftMode }: { caseId: number
     buildingPacket, setBuildingPacket,
     tutorialOpen, setTutorialOpen,
     wizardIndex, setWizardIndex,
-    flWizardIndex, setFlWizardIndex,
-    txWizardIndex, setTxWizardIndex,
-    ilWizardIndex, setIlWizardIndex,
-    ncWizardIndex, setNcWizardIndex,
-    vaWizardIndex, setVaWizardIndex,
-    ilServiceMethod, setIlServiceMethod,
     notifyMethod, setNotifyMethod,
     documents, setDocuments,
     docsLoading, setDocsLoading,

@@ -116,6 +116,18 @@ export async function deleteTestCase(id: number): Promise<void> {
   await apiFetch<{ ok: boolean }>(`/admin/test-cases/${id}`, { method: "DELETE" });
 }
 
+export async function fetchAdminCounties(state?: string): Promise<CountyRow[]> {
+  const qs = state ? `?state=${encodeURIComponent(state)}` : "";
+  return apiFetch<CountyRow[]>(`/admin/counties${qs}`);
+}
+
+export async function importAdminCounties(counties: Partial<CountyRow>[]): Promise<{ imported: number }> {
+  return apiFetch<{ imported: number }>("/admin/counties/import", {
+    method: "POST",
+    body: JSON.stringify({ counties }),
+  });
+}
+
 export async function fetchCaseDetail(caseId: number): Promise<CaseDetail> {
   return apiFetch<CaseDetail>(`/admin/cases/${caseId}`);
 }
@@ -384,6 +396,23 @@ export interface StuckCaseRow {
   updatedAt: string;
   createdAt: string;
   daysSinceActivity: number;
+}
+
+export interface CountyRow {
+  id: string;
+  name: string;
+  state: string;
+  courthouseName: string | null;
+  courthouseAddress: string | null;
+  courthouseCity: string | null;
+  courthouseZip: string | null;
+  filingFeeUnder1500: number | null;
+  filingFee1500to5000: number | null;
+  filingFeeOver5000: number | null;
+  phone: string | null;
+  clerkWebsite: string | null;
+  notes: string | null;
+  updatedAt: string;
 }
 
 export interface CaseDetail {

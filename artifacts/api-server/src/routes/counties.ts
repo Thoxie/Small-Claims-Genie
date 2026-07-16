@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { db, countiesTable } from "@workspace/db";
+import { eq, asc } from "drizzle-orm";
 
 import { CALIFORNIA_COUNTIES, enrichCaCounty } from "../data/counties-ca";
 import { FLORIDA_COUNTIES, enrichFlCounty } from "../data/counties-fl";
@@ -10,42 +12,73 @@ import { NEW_JERSEY_COUNTIES } from "../data/counties-nj";
 import { WASHINGTON_COUNTIES } from "../data/counties-wa";
 import { ARIZONA_COUNTIES } from "../data/counties-az";
 
+// Re-export static arrays — used by admin.ts (buildTestCaseData) and form definitions
+export {
+  CALIFORNIA_COUNTIES,
+  FLORIDA_COUNTIES,
+  TEXAS_COUNTIES,
+  ILLINOIS_COUNTIES,
+  NORTH_CAROLINA_COUNTIES,
+  VIRGINIA_COUNTIES,
+  NEW_JERSEY_COUNTIES,
+  WASHINGTON_COUNTIES,
+  ARIZONA_COUNTIES,
+  getIlSheriffAddress,
+};
+
 const router: IRouter = Router();
 
-export { CALIFORNIA_COUNTIES, FLORIDA_COUNTIES, TEXAS_COUNTIES, ILLINOIS_COUNTIES, NORTH_CAROLINA_COUNTIES, VIRGINIA_COUNTIES, NEW_JERSEY_COUNTIES, WASHINGTON_COUNTIES, ARIZONA_COUNTIES, getIlSheriffAddress };
+type AnyCounty = Record<string, unknown>;
 
-router.get("/counties", (req, res): void => {
-  const { state } = req.query;
-  if (state === "CA") {
-    res.json(CALIFORNIA_COUNTIES.map(enrichCaCounty));
-  } else if (state === "FL") {
-    res.json(FLORIDA_COUNTIES.map(enrichFlCounty));
-  } else if (state === "IL") {
-    res.json(ILLINOIS_COUNTIES.map(enrichIlCounty));
-  } else if (state === "TX") {
-    res.json(TEXAS_COUNTIES);
-  } else if (state === "NC") {
-    res.json(NORTH_CAROLINA_COUNTIES);
-  } else if (state === "VA") {
-    res.json(VIRGINIA_COUNTIES);
-  } else if (state === "NJ") {
-    res.json(NEW_JERSEY_COUNTIES);
-  } else if (state === "WA") {
-    res.json(WASHINGTON_COUNTIES);
-  } else if (state === "AZ") {
-    res.json(ARIZONA_COUNTIES);
-  } else {
-    res.json([
-      ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
-      ...FLORIDA_COUNTIES.map(enrichFlCounty),
-      ...ILLINOIS_COUNTIES.map(enrichIlCounty),
-      ...TEXAS_COUNTIES,
-      ...NORTH_CAROLINA_COUNTIES,
-      ...VIRGINIA_COUNTIES,
-      ...NEW_JERSEY_COUNTIES,
-      ...WASHINGTON_COUNTIES,
-      ...ARIZONA_COUNTIES,
-    ]);
+function applyEnrich(rows: AnyCounty[], state: string): AnyCounty[] {
+  if (state === "CA") return rows.map((r) => enrichCaCounty(r as { id: string }));
+  if (state === "FL") return rows.map((r) => enrichFlCounty(r as { id: string }));
+  if (state === "IL") return rows.map((r) => enrichIlCounty(r as { id: string }));
+  return rows;
+}
+
+function fallback(state?: string): AnyCounty[] {
+  const all = [
+    ...CALIFORNIA_COUNTIES.map(enrichCaCounty),
+    ...FLORIDA_COUNTIES.map(enrichFlCounty),
+    ...ILLINOIS_COUNTIES.map(enrichIlCounty),
+    ...TEXAS_COUNTIES,
+    ...NORTH_CAROLINA_COUNTIES,
+    ...VIRGINIA_COUNTIES,
+    ...NEW_JERSEY_COUNTIES,
+    ...WASHINGTON_COUNTIES,
+    ...ARIZONA_COUNTIES,
+  ] as AnyCounty[];
+  return state ? all.filter((c) => c["state"] === state) : all;
+}
+
+router.get("/counties", async (req, res): Promise<void> => {
+  const { state } = req.query as { state?: string };
+  try {
+    if (state) {
+      const rows = await db
+        .select()
+        .from(countiesTable)
+        .where(eq(countiesTable.state, state))
+        .orderBy(asc(countiesTable.name));
+      if (rows.length === 0) {
+        res.json(fallback(state));
+        return;
+      }
+      res.json(applyEnrich(rows as AnyCounty[], state));
+    } else {
+      const rows = await db
+        .select()
+        .from(countiesTable)
+        .orderBy(asc(countiesTable.state), asc(countiesTable.name));
+      if (rows.length === 0) {
+        res.json(fallback());
+        return;
+      }
+      res.json(rows.map((r) => applyEnrich([r as AnyCounty], r.state ?? "")[0]));
+    }
+  } catch {
+    res.json(fallback(state));
   }
 });
 
