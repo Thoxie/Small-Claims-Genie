@@ -123,7 +123,7 @@ export async function buildTXPetitionOCA(
       personal_property_description_line1: seeksProperty ? propDesc.slice(0, 80)   : "",
       personal_property_description_line2: seeksProperty && propDesc.length > 80  ? propDesc.slice(80, 160) : "",
       personal_property_description_cont:  seeksProperty && propDesc.length > 160 ? propDesc.slice(160)     : "",
-      personal_property_value:             seeksProperty ? propValue : "",
+      personal_property_value:             "",  // drawn via pdf-lib below (same appearance-stream issue as damages_amount)
 
       email_address: d.plaintiffEmail ?? "",
 
@@ -164,11 +164,21 @@ export async function buildTXPetitionOCA(
   const pdfDoc = await PDFDocument.load(filled);
   const pages  = pdfDoc.getPages();
   const page1  = pages[0];
-  if (page1 && seeksDamages) {
+  if (page1 && (seeksDamages || seeksProperty)) {
     const font1 = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    page1.drawText(fmtAmount(d.claimAmount), {
-      x: 241, y: 265, size: 8, font: font1, color: rgb(0, 0, 0),
-    });
+    if (seeksDamages) {
+      // damages_amount: field widget starts at x=234.4 (overlaps printed "$"); draw just after
+      page1.drawText(fmtAmount(d.claimAmount), {
+        x: 241, y: 265, size: 8, font: font1, color: rgb(0, 0, 0),
+      });
+    }
+    if (seeksProperty && propValue) {
+      // personal_property_value: printed "$________________." starts at x≈430;
+      // draw just after the "$" glyph (~7pt wide at 9pt body text)
+      page1.drawText(String(propValue), {
+        x: 437, y: 213, size: 8, font: font1, color: rgb(0, 0, 0),
+      });
+    }
   }
 
   // ── Signature overlay (signed variant only) ────────────────────────────────
