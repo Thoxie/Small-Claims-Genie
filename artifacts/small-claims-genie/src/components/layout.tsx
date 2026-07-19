@@ -3,20 +3,23 @@ import { Link, useLocation } from "wouter";
 import { i18n } from "@/lib/i18n";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { Button } from "@/components/ui/button";
-import { Wand2, Menu, X, LogIn, Sparkles, ChevronDown } from "lucide-react";
+import { Wand2, Menu, X, LogIn, Sparkles, ChevronDown, Globe } from "lucide-react";
 import { UserButton, useAuth } from "@clerk/clerk-react";
 import { SignUpModal } from "@/components/sign-up-modal";
 import { ContactDialog } from "@/components/contact-dialog";
+import { useLanguage } from "@/contexts/language-context";
 
-const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/how-it-works", label: "How It Works" },
-  { href: "/types-of-cases", label: "Types of Cases" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/resources", label: "Resources" },
-  { href: "/blog", label: "Blog" },
-];
+function getNavLinks(lang: "en" | "es") {
+  return [
+    { href: "/", label: lang === "es" ? "Inicio" : "Home" },
+    { href: "/how-it-works", label: lang === "es" ? "Cómo Funciona" : "How It Works" },
+    { href: "/types-of-cases", label: lang === "es" ? "Tipos de Casos" : "Types of Cases" },
+    { href: "/pricing", label: lang === "es" ? "Precios" : "Pricing" },
+    { href: "/faq", label: lang === "es" ? "Preguntas Frecuentes" : "FAQ" },
+    { href: "/resources", label: lang === "es" ? "Recursos" : "Resources" },
+    { href: "/blog", label: "Blog" },
+  ];
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -25,6 +28,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [signUpOpen, setSignUpOpen] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
   const { isSignedIn, isLoaded } = useAuth();
+  const { lang, setLang } = useLanguage();
+
+  const NAV_LINKS = getNavLinks(lang);
+  const es = lang === "es";
 
   // Close mobile menu whenever the route changes
   useEffect(() => {
@@ -82,6 +89,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Right side actions */}
           <div className="flex items-center gap-2 md:gap-3">
 
+            {/* Language toggle — desktop */}
+            <div className="hidden md:flex items-center rounded-full border border-primary/20 text-xs font-bold overflow-hidden shrink-0">
+              <button
+                onClick={() => setLang("en")}
+                className={`px-2.5 py-1 transition-colors ${lang === "en" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                aria-label="Switch to English"
+              >EN</button>
+              <button
+                onClick={() => setLang("es")}
+                className={`px-2.5 py-1 transition-colors ${lang === "es" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                aria-label="Cambiar a español"
+              >ES</button>
+            </div>
+
             {isLoaded && (
               isSignedIn ? (
                 /* ── Signed-in: go straight to cases ── */
@@ -90,9 +111,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   size="sm"
                   className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-sm rounded-full px-4 md:px-6 text-xs md:text-sm h-8 md:h-9"
                 >
-                  <Link href="/start" aria-label="My Cases">
+                  <Link href="/start" aria-label={es ? "Mis Casos" : "My Cases"}>
                     <Wand2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
-                    <span>My Cases</span>
+                    <span>{es ? "Mis Casos" : "My Cases"}</span>
                   </Link>
                 </Button>
               ) : (
@@ -106,8 +127,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     aria-haspopup="true"
                   >
                     <Wand2 className="h-3.5 w-3.5 md:h-4 md:w-4 shrink-0" />
-                    <span className="hidden sm:inline">Start or Resume Your Case</span>
-                    <span className="sm:hidden">Start</span>
+                    <span className="hidden sm:inline">{es ? "Iniciar o Retomar tu Caso" : "Start or Resume Your Case"}</span>
+                    <span className="sm:hidden">{es ? "Iniciar" : "Start"}</span>
                     <ChevronDown className={`h-3 w-3 shrink-0 transition-transform ${ctaOpen ? "rotate-180" : ""}`} />
                   </Button>
 
@@ -119,8 +140,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       >
                         <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-sm font-bold text-[#20304f] group-hover:text-primary transition-colors">Start free</p>
-                          <p className="text-[11px] text-[#8a96a8] leading-snug">No credit card required</p>
+                          <p className="text-sm font-bold text-[#20304f] group-hover:text-primary transition-colors">
+                            {es ? "Comenzar gratis" : "Start free"}
+                          </p>
+                          <p className="text-[11px] text-[#8a96a8] leading-snug">
+                            {es ? "Sin tarjeta de crédito" : "No credit card required"}
+                          </p>
                         </div>
                       </button>
                       <div className="border-t border-gray-100" />
@@ -131,8 +156,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       >
                         <LogIn className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-sm font-bold text-[#20304f] group-hover:text-primary transition-colors">I have an account — sign in</p>
-                          <p className="text-[11px] text-[#8a96a8] leading-snug">Resume where you left off</p>
+                          <p className="text-sm font-bold text-[#20304f] group-hover:text-primary transition-colors">
+                            {es ? "Tengo una cuenta — iniciar sesión" : "I have an account — sign in"}
+                          </p>
+                          <p className="text-[11px] text-[#8a96a8] leading-snug">
+                            {es ? "Continúa donde lo dejaste" : "Resume where you left off"}
+                          </p>
                         </div>
                       </Link>
                     </div>
@@ -176,6 +205,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
 
             <div className="border-t border-gray-100 pt-2 pb-1 space-y-2">
+              {/* Language toggle — mobile */}
+              <div className="flex items-center gap-2 px-3 py-1">
+                <Globe className="h-4 w-4 text-primary/50 shrink-0" />
+                <div className="flex items-center rounded-full border border-primary/20 text-xs font-bold overflow-hidden">
+                  <button
+                    onClick={() => setLang("en")}
+                    className={`px-3 py-1.5 transition-colors ${lang === "en" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                  >EN</button>
+                  <button
+                    onClick={() => setLang("es")}
+                    className={`px-3 py-1.5 transition-colors ${lang === "es" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                  >ES</button>
+                </div>
+              </div>
+
               {isLoaded && (
                 isSignedIn ? (
                   <Button
@@ -184,7 +228,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   >
                     <Link href="/start">
                       <Wand2 className="mr-2 h-4 w-4" />
-                      My Cases
+                      {es ? "Mis Casos" : "My Cases"}
                     </Link>
                   </Button>
                 ) : (
@@ -194,7 +238,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-full"
                     >
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Start free — claim your spot
+                      {es ? "Comenzar gratis" : "Start free — claim your spot"}
                     </Button>
                     <Button
                       asChild
@@ -203,7 +247,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     >
                       <Link href="/sign-in?redirect=/start">
                         <LogIn className="mr-2 h-4 w-4" />
-                        I have an account — sign in
+                        {es ? "Tengo una cuenta — iniciar sesión" : "I have an account — sign in"}
                       </Link>
                     </Button>
                   </>
@@ -227,12 +271,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
               href="/copyright"
               className="text-xs text-primary/50 hover:text-primary transition-colors"
             >
-              © {new Date().getFullYear()} {i18n.brand.name}. All rights reserved.
+              © {new Date().getFullYear()} {i18n.brand.name}. {es ? "Todos los derechos reservados." : "All rights reserved."}
             </Link>
 
             {/* Social media */}
             <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-primary/60">Follow us:</span>
+              <span className="text-xs font-semibold text-primary/60">{es ? "Síguenos:" : "Follow us:"}</span>
 
               {/* Instagram */}
               <a
@@ -281,13 +325,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 href="/terms"
                 className="text-xs text-primary/50 hover:text-primary underline underline-offset-2 transition-colors"
               >
-                Terms of Service
+                {es ? "Términos de Servicio" : "Terms of Service"}
               </Link>
               <Link
                 href="/payment-terms"
                 className="text-xs text-primary/50 hover:text-primary underline underline-offset-2 transition-colors"
               >
-                Payment Terms
+                {es ? "Términos de Pago" : "Payment Terms"}
               </Link>
               <ContactDialog />
             </div>

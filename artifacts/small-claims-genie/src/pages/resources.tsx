@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExternalLink, FileText, Scale, BookOpen, HelpCircle, Wand2, Play, X, ChevronRight, MapPin, Phone, Globe, Landmark, Gavel, Clock, Send } from "lucide-react";
 import { STATE_RESOURCES, STATE_ORDER, type ResourceStateCode } from "@/lib/state-resources";
+import { useLanguage } from "@/contexts/language-context";
 
 const resourcesSchema = {
   "@context": "https://schema.org",
@@ -27,6 +28,8 @@ const CA_SELF_HELP_LINKS = [
 ];
 
 export default function Resources() {
+  const { lang } = useLanguage();
+  const es = lang === "es";
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [selectedState, setSelectedState] = useState<ResourceStateCode>("CA");
   const [selectedCountyId, setSelectedCountyId] = useState<string>("");
@@ -81,7 +84,7 @@ export default function Resources() {
         <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold tracking-tight mb-2">{i18n.landing.resourcesTitle}</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Official court forms, state Judicial Branch guides, and answers to the most common small claims questions — all in one place.
+            {es ? "Formularios oficiales del tribunal, guías de la Rama Judicial estatal y respuestas a las preguntas más comunes sobre reclamaciones menores — todo en un solo lugar." : "Official court forms, state Judicial Branch guides, and answers to the most common small claims questions — all in one place."}
           </p>
         </div>
 
@@ -97,13 +100,13 @@ export default function Resources() {
               <div className="w-12 h-12 rounded-full bg-[#14b8a6] flex items-center justify-center shadow-lg group-hover:bg-[#0d9488] transition-colors">
                 <Play className="w-[18px] h-[18px] text-white ml-1" fill="white" />
               </div>
-              <span className="text-white text-xs font-semibold opacity-90">Watch Video Guide</span>
+              <span className="text-white text-xs font-semibold opacity-90">{es ? "Ver Guía de Video" : "Watch Video Guide"}</span>
             </div>
           </div>
           <div className="bg-background px-3 py-2 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold">Small Claims Overview</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">How to win your case</p>
+              <p className="text-xs font-bold">{es ? "Resumen de Reclamaciones Menores" : "Small Claims Overview"}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{es ? "Cómo ganar tu caso" : "How to win your case"}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-[#14b8a6] shrink-0" />
           </div>
@@ -112,7 +115,7 @@ export default function Resources() {
 
       {/* State & county selector */}
       <div className="rounded-xl border bg-muted/20 p-4 mb-8">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Find Resources for Your State &amp; County</h3>
+        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">{es ? "Encuentra Recursos para tu Estado y Condado" : "Find Resources for Your State & County"}</h3>
         <div className="flex flex-wrap gap-2 mb-3">
           {STATE_ORDER.map((code) => (
             <button
@@ -136,10 +139,10 @@ export default function Resources() {
             onValueChange={(v) => setSelectedCountyId(v === "__all__" ? "" : v)}
           >
             <SelectTrigger className="h-10 w-full" data-testid="select-resource-county">
-              <SelectValue placeholder={countiesLoading ? "Loading counties..." : "Select your county (optional)"} />
+              <SelectValue placeholder={countiesLoading ? (es ? "Cargando condados..." : "Loading counties...") : (es ? "Selecciona tu condado (opcional)" : "Select your county (optional)")} />
             </SelectTrigger>
             <SelectContent className="max-h-72 overflow-y-auto">
-              <SelectItem value="__all__">All {info.name} counties</SelectItem>
+              <SelectItem value="__all__">{es ? `Todos los condados de ${info.name}` : `All ${info.name} counties`}</SelectItem>
               {sortedCounties.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.name} County</SelectItem>
               ))}
@@ -179,13 +182,13 @@ export default function Resources() {
                     rel="noopener noreferrer"
                     className="hover:text-primary hover:underline truncate"
                   >
-                    County Court / Clerk Website
+                    {es ? "Sitio del Tribunal del Condado" : "County Court / Clerk Website"}
                   </a>
                 </div>
               )}
             </div>
             <div className="bg-muted/50 rounded-md p-3 text-sm h-fit">
-              <p className="font-semibold mb-1">Filing Fees</p>
+              <p className="font-semibold mb-1">{es ? "Tarifas de Presentación" : "Filing Fees"}</p>
               <p className="text-muted-foreground">{info.filingFeeSummary}</p>
             </div>
           </CardContent>
@@ -199,7 +202,7 @@ export default function Resources() {
             <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary" />
             </div>
-            <h2 className="text-xl font-bold">Official Court Forms — {info.name}</h2>
+            <h2 className="text-xl font-bold">{es ? `Formularios Oficiales del Tribunal — ${info.name}` : `Official Court Forms — ${info.name}`}</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             {formsSection.map((item) => (
@@ -228,8 +231,11 @@ export default function Resources() {
           </div>
           {selectedState !== "CA" && (
             <p className="text-xs text-muted-foreground mt-3">
-              Small Claims Genie prepares and fills in these forms for you automatically —{" "}
-              <Link href="/cases/new" className="text-primary hover:underline font-medium">start your case</Link> to generate them.
+              {es ? (
+                <>Small Claims Genie prepara y llena estos formularios automáticamente —{" "}<Link href="/cases/new" className="text-primary hover:underline font-medium">inicia tu caso</Link> para generarlos.</>
+              ) : (
+                <>Small Claims Genie prepares and fills in these forms for you automatically —{" "}<Link href="/cases/new" className="text-primary hover:underline font-medium">start your case</Link> to generate them.</>
+              )}
             </p>
           )}
         </div>
@@ -239,7 +245,7 @@ export default function Resources() {
             <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
               <Scale className="h-5 w-5 text-primary" />
             </div>
-            <h2 className="text-xl font-bold">{info.name} Courts Self-Help</h2>
+            <h2 className="text-xl font-bold">{es ? `Autoayuda — Tribunales de ${info.name}` : `${info.name} Courts Self-Help`}</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Card className="hover:border-primary/40 transition-colors">
@@ -258,7 +264,7 @@ export default function Resources() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-4">
-                <p className="text-sm text-muted-foreground leading-relaxed">Official {info.name} Judicial Branch website — small claims self-help information and court locations.</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{es ? `Sitio web oficial de la Rama Judicial de ${info.name} — información de autoayuda sobre reclamaciones menores y ubicaciones de tribunales.` : `Official ${info.name} Judicial Branch website — small claims self-help information and court locations.`}</p>
               </CardContent>
             </Card>
             {selectedState === "CA" && CA_SELF_HELP_LINKS.map((item) => (
@@ -290,13 +296,13 @@ export default function Resources() {
             <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
               <BookOpen className="h-5 w-5 text-primary" />
             </div>
-            <h2 className="text-xl font-bold">Know the Rules — {info.name}</h2>
+            <h2 className="text-xl font-bold">{es ? `Conoce las Reglas — ${info.name}` : `Know the Rules — ${info.name}`}</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Card className="hover:border-primary/40 transition-colors">
               <CardHeader className="pb-2 pt-4 px-5">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Gavel className="h-4 w-4 text-primary shrink-0" /> Claim Limit
+                  <Gavel className="h-4 w-4 text-primary shrink-0" /> {es ? "Límite de Reclamación" : "Claim Limit"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-4">
@@ -306,7 +312,7 @@ export default function Resources() {
             <Card className="hover:border-primary/40 transition-colors">
               <CardHeader className="pb-2 pt-4 px-5">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary shrink-0" /> Statute of Limitations
+                  <Clock className="h-4 w-4 text-primary shrink-0" /> {es ? "Plazo de Prescripción" : "Statute of Limitations"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-4">
@@ -323,7 +329,7 @@ export default function Resources() {
             <Card className="hover:border-primary/40 transition-colors">
               <CardHeader className="pb-2 pt-4 px-5">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary shrink-0" /> Filing Fees
+                  <FileText className="h-4 w-4 text-primary shrink-0" /> {es ? "Tarifas de Presentación" : "Filing Fees"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-4">
@@ -333,7 +339,7 @@ export default function Resources() {
             <Card className="hover:border-primary/40 transition-colors">
               <CardHeader className="pb-2 pt-4 px-5">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Send className="h-4 w-4 text-primary shrink-0" /> Service of Process
+                  <Send className="h-4 w-4 text-primary shrink-0" /> {es ? "Notificación al Demandado" : "Service of Process"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-4">
@@ -348,15 +354,20 @@ export default function Resources() {
             <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center">
               <HelpCircle className="h-5 w-5 text-primary" />
             </div>
-            <h2 className="text-xl font-bold">Common FAQs</h2>
+            <h2 className="text-xl font-bold">{es ? "Preguntas Frecuentes" : "Common FAQs"}</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
-            {[
+            {(es ? [
+              { title: "¿Puedo llevar a un abogado al tribunal de reclamaciones menores?", desc: "En la mayoría de los estados, los abogados NO pueden representar clientes en las audiencias de reclamaciones menores." },
+              { title: "¿Qué pasa si el demandado no se presenta?", desc: "Si fue debidamente notificado, el juez probablemente fallará a tu favor en rebeldía." },
+              { title: "¿Qué pasa si pierdo?", desc: info.appealNote },
+              { title: "¿Cómo cobro mi dinero después de ganar?", desc: "Ganar un fallo no significa automáticamente que te pagarán. Puede que necesites embargar salarios o cuentas bancarias." },
+            ] : [
               { title: "Can I bring a lawyer to small claims court?", desc: "In most states, lawyers are NOT allowed to represent clients in small claims hearings." },
               { title: "What if the defendant doesn't show up?", desc: "If properly served, the judge will likely rule in your favor by default." },
               { title: "What if I lose?", desc: info.appealNote },
               { title: "How do I collect my money after winning?", desc: "Winning a judgment doesn't automatically mean you'll be paid. You may need to garnish wages or levy a bank account." },
-            ].map((item) => (
+            ]).map((item) => (
               <Card key={item.title} className="hover:border-primary/40 transition-colors">
                 <CardHeader className="pb-2 pt-4 px-5">
                   <CardTitle className="text-base font-semibold">{item.title}</CardTitle>
@@ -371,10 +382,9 @@ export default function Resources() {
       </div>
 
       <div className="mt-14 p-8 bg-primary rounded-2xl text-primary-foreground text-center">
-        <h2 className="text-2xl font-bold mb-3">Have a question about your situation?</h2>
+        <h2 className="text-2xl font-bold mb-3">{es ? "¿Tienes preguntas sobre tu situación?" : "Have a question about your situation?"}</h2>
         <p className="text-primary-foreground/80 mb-6">
-          Describe what happened — by voice or text. The Genie will tell you if you have a case,
-          what evidence you need, and how to win. No account required.
+          {es ? "Describe qué pasó — por voz o texto. El Genie te dirá si tienes un caso, qué evidencia necesitas y cómo ganar. Sin necesidad de cuenta." : "Describe what happened — by voice or text. The Genie will tell you if you have a case, what evidence you need, and how to win. No account required."}
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button
@@ -383,11 +393,11 @@ export default function Resources() {
             className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg"
           >
             <Wand2 className="mr-2 h-5 w-5" />
-            Ask the Genie — Free
+            {es ? "Pregunta al Genie — Gratis" : "Ask the Genie — Free"}
           </Button>
           <Button asChild size="lg" className="h-12 px-8 text-base bg-white/10 hover:bg-white/20 text-white rounded-full font-bold border border-white/30">
             <Link href="/cases/new">
-              <Wand2 className="mr-2 h-5 w-5" />Start Your Case
+              <Wand2 className="mr-2 h-5 w-5" />{es ? "Comenzar tu Caso" : "Start Your Case"}
             </Link>
           </Button>
         </div>
@@ -409,8 +419,8 @@ export default function Resources() {
                   <Play className="w-3 h-3 text-white ml-0.5" fill="white" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-800">Video Guide — Small Claims Overview</p>
-                  <p className="text-[10px] text-gray-500">Small Claims Genie Training Video</p>
+                  <p className="text-sm font-bold text-gray-800">{es ? "Guía de Video — Resumen de Reclamaciones Menores" : "Video Guide — Small Claims Overview"}</p>
+                  <p className="text-[10px] text-gray-500">{es ? "Video de Capacitación de Small Claims Genie" : "Small Claims Genie Training Video"}</p>
                 </div>
               </div>
               <button
@@ -432,13 +442,13 @@ export default function Resources() {
             />
             <div className="px-5 py-3 bg-[#f0fdf9] border-t flex items-center justify-between gap-3 flex-wrap">
               <p className="text-xs text-gray-600 flex-1 min-w-[200px]">
-                Video plays above — click X or anywhere outside to close.
+                {es ? "El video se reproduce arriba — haz clic en X o en cualquier lugar fuera para cerrar." : "Video plays above — click X or anywhere outside to close."}
               </p>
               <button
                 onClick={() => setTutorialOpen(false)}
                 className="text-xs font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors"
               >
-                Close
+                {es ? "Cerrar" : "Close"}
               </button>
             </div>
           </div>

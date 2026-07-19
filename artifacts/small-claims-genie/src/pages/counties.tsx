@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Globe, Landmark, Search, Wand2 } from "lucide-react";
 import { i18n } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/language-context";
 
 // State list/order comes from the canonical @workspace/state-facts registry
 // (see .agents/skills/state-expansion/SKILL.md) so a new state only needs to
@@ -40,17 +41,20 @@ type CountyItem = {
 // rely on the county's free-text `notes` field). Never fabricate numbers for a
 // state that doesn't have them — fall back to notes/statewide facts instead.
 function FilingFeesPanel({ state, county }: { state: StateTab; county: CountyItem }) {
+  const { lang } = useLanguage();
+  const es = lang === "es";
+
   if (state === "FL") {
     return (
       <>
-        <h4 className="font-semibold mb-2">Filing Fees (Fla. Stat. 34.041)</h4>
+        <h4 className="font-semibold mb-2">{es ? "Tarifas de Presentación (Fla. Stat. 34.041)" : "Filing Fees (Fla. Stat. 34.041)"}</h4>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-          <div className="flex justify-between"><span className="text-muted-foreground">Under $100</span><span className="font-medium">$55</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">{es ? "Menos de $100" : "Under $100"}</span><span className="font-medium">$55</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">$101–$500</span><span className="font-medium">$80</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">$501–$2,500</span><span className="font-medium">$175</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Over $2,500</span><span className="font-medium">$300</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">{es ? "Más de $2,500" : "Over $2,500"}</span><span className="font-medium">$300</span></div>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">+ summons, service, and e-filing fees</p>
+        <p className="text-xs text-muted-foreground mt-2">{es ? "+ citación, notificación y cargos de presentación electrónica" : "+ summons, service, and e-filing fees"}</p>
       </>
     );
   }
@@ -63,18 +67,18 @@ function FilingFeesPanel({ state, county }: { state: StateTab; county: CountyIte
   if (hasTiers) {
     return (
       <>
-        <h4 className="font-semibold mb-2">{i18n.counties.filingFees || "Filing Fees"}</h4>
+        <h4 className="font-semibold mb-2">{es ? "Tarifas de Presentación" : (i18n.counties.filingFees || "Filing Fees")}</h4>
         <div className="grid grid-cols-3 gap-2 text-center">
           <div>
-            <div className="text-xs text-muted-foreground mb-1">{i18n.counties.under1500 || "Under $1.5k"}</div>
+            <div className="text-xs text-muted-foreground mb-1">{es ? "Hasta $1.5k" : (i18n.counties.under1500 || "Under $1.5k")}</div>
             <div className="font-medium">${county.filingFeeUnder1500}</div>
           </div>
           <div className="border-x border-border/50">
-            <div className="text-xs text-muted-foreground mb-1">{i18n.counties.upTo5000 || "$1.5k–$5k"}</div>
+            <div className="text-xs text-muted-foreground mb-1">{es ? "$1.5k–$5k" : (i18n.counties.upTo5000 || "$1.5k–$5k")}</div>
             <div className="font-medium">${county.filingFee1500to5000}</div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground mb-1">{i18n.counties.over5000 || "Over $5k"}</div>
+            <div className="text-xs text-muted-foreground mb-1">{es ? "Más de $5k" : (i18n.counties.over5000 || "Over $5k")}</div>
             <div className="font-medium">${county.filingFeeOver5000}</div>
           </div>
         </div>
@@ -85,7 +89,7 @@ function FilingFeesPanel({ state, county }: { state: StateTab; county: CountyIte
   if (county.filingFeeUnder10000 != null) {
     return (
       <>
-        <h4 className="font-semibold mb-2">Filing Fee</h4>
+        <h4 className="font-semibold mb-2">{es ? "Tarifa de Presentación" : "Filing Fee"}</h4>
         <div className="text-center">
           <span className="text-lg font-semibold">${county.filingFeeUnder10000}</span>
         </div>
@@ -100,15 +104,17 @@ function FilingFeesPanel({ state, county }: { state: StateTab; county: CountyIte
   // under a "Filing Fee" heading is misleading.
   return (
     <>
-      <h4 className="font-semibold mb-2">Filing Fee</h4>
+      <h4 className="font-semibold mb-2">{es ? "Tarifa de Presentación" : "Filing Fee"}</h4>
       <p className="text-xs text-muted-foreground">
-        {STATE_FACTS[state].filingFeeNote || "Varies — check with the local court before filing."}
+        {STATE_FACTS[state].filingFeeNote || (es ? "Varía — consulta con el tribunal local antes de presentar." : "Varies — check with the local court before filing.")}
       </p>
     </>
   );
 }
 
 export default function Counties() {
+  const { lang } = useLanguage();
+  const es = lang === "es";
   const [selectedState, setSelectedState] = useState<StateTab>("CA");
   const { data: counties, isLoading, isError } = useListCounties({ state: selectedState } as Parameters<typeof useListCounties>[0]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -215,7 +221,7 @@ export default function Counties() {
         </div>
       ) : isError ? (
         <div className="p-8 text-center bg-destructive/10 text-destructive rounded-lg">
-          <p>Failed to load counties. Please try again later.</p>
+          <p>{es ? "Error al cargar los condados. Por favor intenta de nuevo más tarde." : "Failed to load counties. Please try again later."}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -258,7 +264,7 @@ export default function Counties() {
                         rel="noopener noreferrer"
                         className="hover:text-primary hover:underline truncate"
                       >
-                        {county.website ? "Court Website" : "Clerk Website"}
+                        {county.website ? (es ? "Sitio del Tribunal" : "Court Website") : (es ? "Sitio del Secretario" : "Clerk Website")}
                       </a>
                     </div>
                   )}
@@ -272,7 +278,7 @@ export default function Counties() {
           ))}
           {filteredCounties.length === 0 && (
             <div className="col-span-full p-12 text-center text-muted-foreground bg-muted/30 rounded-lg">
-              No counties found matching "{searchTerm}"
+              {es ? `No se encontraron condados que coincidan con "${searchTerm}"` : `No counties found matching "${searchTerm}"`}
             </div>
           )}
         </div>
@@ -280,10 +286,9 @@ export default function Counties() {
 
       {/* ── Bottom CTA ── */}
       <div className="mt-12 border-2 border-[#a8e6df] rounded-xl px-8 py-8 text-center bg-[#f0fffe]">
-        <h2 className="text-lg font-black text-primary mb-1.5">Not sure which county to file in?</h2>
+        <h2 className="text-lg font-black text-primary mb-1.5">{es ? "¿No estás seguro en qué condado presentar?" : "Not sure which county to file in?"}</h2>
         <p className="text-sm text-muted-foreground mb-2">
-          Describe your situation in plain English — by voice or text. The Genie will help you figure out
-          where to file, what to expect, and how Small Claims Genie can help you prepare.
+          {es ? "Describe tu situación — por voz o texto. El Genie te ayudará a determinar dónde presentar, qué esperar y cómo Small Claims Genie puede ayudarte a prepararte." : "Describe your situation in plain English — by voice or text. The Genie will help you figure out where to file, what to expect, and how Small Claims Genie can help you prepare."}
         </p>
         <Button
           size="lg"
@@ -291,7 +296,7 @@ export default function Counties() {
           className="h-11 px-7 text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-sm"
         >
           <Wand2 className="mr-2 h-4 w-4" />
-          Ask the Genie — Free
+          {es ? "Pregunta al Genie — Gratis" : "Ask the Genie — Free"}
         </Button>
       </div>
     </div>

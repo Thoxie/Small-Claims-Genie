@@ -1,4 +1,5 @@
 import { HelmetProvider } from 'react-helmet-async';
+import { LanguageProvider } from "@/contexts/language-context";
 import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo, useState } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -326,13 +327,15 @@ function App() {
         </div>
       )}
       <div className={import.meta.env.DEV ? "pt-8" : ""}>
-        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <AppShell />
-            </TooltipProvider>
-          </QueryClientProvider>
-        </ClerkProvider>
+        <LanguageProvider>
+          <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+            <QueryClientProvider client={queryClient}>
+              <TooltipProvider>
+                <AppShell />
+              </TooltipProvider>
+            </QueryClientProvider>
+          </ClerkProvider>
+        </LanguageProvider>
       </div>
     </ErrorBoundary>
     </HelmetProvider>
