@@ -76,7 +76,7 @@ async function fetchArticleContent(articleId: string): Promise<string> {
 // ── Routes ───────────────────────────────────────────────────────────────────
 
 /** GET /api/blog/articles — returns the full article list (metadata only, no body HTML) */
-router.get("/api/blog/articles", async (_req, res) => {
+router.get("/blog/articles", async (_req, res) => {
   try {
     const articles = await fetchArticleList();
     res.json({ articles });
@@ -87,7 +87,7 @@ router.get("/api/blog/articles", async (_req, res) => {
 });
 
 /** GET /api/blog/articles/:slug — returns metadata + full HTML content for one article */
-router.get("/api/blog/articles/:slug", async (req, res) => {
+router.get("/blog/articles/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
     const articles = await fetchArticleList();
