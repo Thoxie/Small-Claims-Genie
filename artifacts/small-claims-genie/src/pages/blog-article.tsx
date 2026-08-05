@@ -130,6 +130,114 @@ export default function BlogArticle() {
 
             {article && !loading && (
               <article>
+                {/*
+                  Soro's embed script normally injects CSS for .soro-blog-article-content
+                  via a <style> tag at runtime. Since we render article HTML directly from
+                  the API (without loading the Soro embed script), we inject equivalent
+                  styles here, adapted to the site's typography and color system.
+                */}
+                <style>{`
+                  .soro-blog-article-content {
+                    font-size: 1rem;
+                    line-height: 1.75;
+                    color: hsl(220 45% 15%);
+                  }
+                  .soro-blog-article-content h1,
+                  .soro-blog-article-content h2,
+                  .soro-blog-article-content h3,
+                  .soro-blog-article-content h4,
+                  .soro-blog-article-content h5,
+                  .soro-blog-article-content h6 {
+                    margin-top: 2rem;
+                    margin-bottom: 1rem;
+                    line-height: 1.3;
+                    font-weight: 700;
+                    color: hsl(220 45% 15%);
+                  }
+                  .soro-blog-article-content h2 { font-size: 1.5rem; }
+                  .soro-blog-article-content h3 { font-size: 1.25rem; }
+                  .soro-blog-article-content h4 { font-size: 1.125rem; }
+                  .soro-blog-article-content p {
+                    margin: 0 0 1rem 0;
+                  }
+                  .soro-blog-article-content ul,
+                  .soro-blog-article-content ol {
+                    margin: 0 0 1rem 0;
+                    padding-left: 1.5rem;
+                  }
+                  .soro-blog-article-content ul { list-style-type: disc; }
+                  .soro-blog-article-content ol { list-style-type: decimal; }
+                  .soro-blog-article-content li {
+                    margin-bottom: 0.5rem;
+                  }
+                  .soro-blog-article-content a {
+                    color: #0066cc;
+                  }
+                  .soro-blog-article-content a:hover {
+                    text-decoration: underline;
+                  }
+                  .soro-blog-article-content strong {
+                    font-weight: 700;
+                    color: hsl(220 45% 15%);
+                  }
+                  .soro-blog-article-content em {
+                    font-style: italic;
+                  }
+                  .soro-blog-article-content img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 8px;
+                    margin: 1rem 0;
+                  }
+                  .soro-blog-article-content blockquote {
+                    border-left: 4px solid hsl(220 15% 80%);
+                    padding-left: 1rem;
+                    margin: 1.5rem 0;
+                    color: hsl(220 15% 32%);
+                    font-style: italic;
+                  }
+                  .soro-blog-article-content code {
+                    background: hsl(220 15% 94%);
+                    padding: 0.15em 0.4em;
+                    border-radius: 4px;
+                    font-size: 0.875em;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+                  }
+                  .soro-blog-article-content pre {
+                    background: hsl(220 15% 94%);
+                    padding: 1rem 1.25rem;
+                    border-radius: 8px;
+                    overflow-x: auto;
+                    margin: 1rem 0;
+                  }
+                  .soro-blog-article-content pre code {
+                    background: none;
+                    padding: 0;
+                    font-size: 0.875rem;
+                  }
+                  .soro-blog-article-content hr {
+                    border: none;
+                    border-top: 1px solid hsl(220 15% 88%);
+                    margin: 2rem 0;
+                  }
+                  .soro-blog-article-content table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 1.5rem 0;
+                    font-size: 0.9375rem;
+                  }
+                  .soro-blog-article-content th,
+                  .soro-blog-article-content td {
+                    border: 1px solid hsl(220 15% 88%);
+                    padding: 0.5rem 0.75rem;
+                    text-align: left;
+                  }
+                  .soro-blog-article-content th {
+                    background: hsl(220 15% 96%);
+                    font-weight: 600;
+                  }
+                `}</style>
+
                 {/* Hero image */}
                 {article.image && (
                   <img
@@ -148,7 +256,7 @@ export default function BlogArticle() {
 
                 {/* Article HTML from Soro */}
                 <div
-                  className="soro-blog-article-content prose prose-sm max-w-none text-foreground"
+                  className="soro-blog-article-content max-w-none"
                   dangerouslySetInnerHTML={{ __html: article.content }}
                 />
               </article>
