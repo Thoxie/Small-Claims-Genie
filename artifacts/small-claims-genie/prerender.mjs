@@ -211,6 +211,70 @@ function createStaticServer(port) {
   return new Promise((resolve) => server.listen(port, "127.0.0.1", () => resolve(server)));
 }
 
+// ── 4a. Sitemap updater ──────────────────────────────────────────────────────
+
+/**
+ * Regenerates the /blog/* entries in sitemap.xml from the live Soro article
+ * list. Replaces the block between the "Blog articles" XML comment and the
+ * first non-blog <url> that follows it, so static entries (home, pricing, etc.)
+ * are left untouched.
+ *
+ * Writes to two locations:
+ *   • public/sitemap.xml  — the committed source file (kept fresh for next build)
+ *   • dist/public/sitemap.xml — the copy that is actually served in production
+ */
+function updateSitemapBlogEntries(articles) {
+  if (!articles || articles.length === 0) {
+    console.warn("[prerender] ⚠ No articles — sitemap blog entries not updated.");
+    return;
+  }
+
+  const SITE = "https://smallclaimsgenie.com";
+
+  const blogXml = [
+    "  <!-- Blog articles — individual indexable pages -->",
+    ...articles.map((a) => {
+      // isoDate is "2026-08-05T00:00:00Z" or similar; take the date part only
+      const lastmod = (a.isoDate ?? a.date ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10);
+      return [
+        "  <url>",
+        `    <loc>${SITE}/blog/${a.slug}</loc>`,
+        `    <lastmod>${lastmod}</lastmod>`,
+        "    <changefreq>monthly</changefreq>",
+        "    <priority>0.7</priority>",
+        "  </url>",
+      ].join("\n");
+    }),
+  ].join("\n");
+
+  // Regex: match from the blog-articles comment up to (but not including) the
+  // next <url> block that does NOT belong to /blog/ (i.e. the /startup entry).
+  const BLOG_SECTION_RE =
+    /[ \t]*<!--\s*Blog articles[^>]*-->\s*\n(?:[\s\S]*?<url>[\s\S]*?<\/url>\s*\n)*(?=\s*<url>)/;
+
+  for (const dest of [
+    path.join(__dirname, "public", "sitemap.xml"),
+    path.join(distDir, "sitemap.xml"),
+  ]) {
+    try {
+      if (!fs.existsSync(dest)) {
+        console.warn(`[prerender] sitemap not found at ${dest} — skipping.`);
+        continue;
+      }
+      const original = fs.readFileSync(dest, "utf-8");
+      const updated = original.replace(BLOG_SECTION_RE, `${blogXml}\n\n`);
+      if (updated === original) {
+        console.warn(`[prerender] ⚠ Blog section pattern not matched in ${dest} — sitemap unchanged.`);
+        continue;
+      }
+      fs.writeFileSync(dest, updated, "utf-8");
+      console.log(`[prerender] ✓ sitemap updated with ${articles.length} blog entries → ${dest}`);
+    } catch (err) {
+      console.warn(`[prerender] ⚠ Failed to update sitemap at ${dest}: ${err.message}`);
+    }
+  }
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 const chromiumPath = resolveChromiumPath();
@@ -238,6 +302,9 @@ if (soroArticles.length === 0) {
   await Promise.all(soroArticles.map((a) => fetchSoroArticleContent(a)));
   console.log(`[prerender] Article content cached for ${soroArticleCache.size} articles.`);
 }
+
+// Regenerate sitemap.xml blog entries from the live article list.
+updateSitemapBlogEntries(soroArticles);
 
 const blogArticleRoutes = soroArticles.map((a) => `/blog/${a.slug}`);
 const allRoutes = [...PUBLIC_ROUTES, ...blogArticleRoutes];
