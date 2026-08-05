@@ -28,6 +28,7 @@ const PUBLIC_ROUTES = [
   "/pricing",
   "/types-of-cases",
   "/faq",
+  "/blog",
   "/resources",
   "/counties",
   "/startup",

@@ -57,6 +57,29 @@ export default function Blog() {
           </div>
         </section>
 
+        {/* ── Static topic summary — visible to search crawlers before the Soro
+              embed executes. Describes the blog's content scope so Google can
+              index the page with meaningful content even without JS. ── */}
+        <section className="px-6 pb-4 bg-[#f5fdfb]">
+          <div className="max-w-3xl mx-auto space-y-3">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {es
+                ? "Nuestro blog cubre los temas de reclamaciones menores más importantes: cómo presentar una demanda en el tribunal de reclamaciones menores, qué evidencia necesitas para ganar, cómo redactar una carta de demanda efectiva, y qué esperar el día de tu audiencia."
+                : "Our blog covers the most important small claims court topics: how to file a small claims lawsuit, what evidence you need to win, how to write an effective demand letter, and what to expect on your hearing day."}
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {es
+                ? "También encontrarás guías específicas por estado para California, Florida, Texas, Illinois, Nueva Jersey, Carolina del Norte, Virginia, Washington y Arizona — incluyendo límites de reclamación, tarifas de presentación, plazos para notificar al demandado y reglas de prueba de servicio."
+                : "You'll also find state-specific guides for California, Florida, Texas, Illinois, New Jersey, North Carolina, Virginia, Washington, and Arizona — including claim limits, filing fees, deadlines for serving the defendant, and proof-of-service rules."}
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {es
+                ? "Temas populares incluyen: disputas de depósito de seguridad, fraude de contratistas, daños a la propiedad, préstamos impagados, disputas con aerolíneas y reembolsos de Airbnb."
+                : "Popular topics include: security deposit disputes, contractor fraud, property damage, unpaid loans, airline disputes, and Airbnb refunds."}
+            </p>
+          </div>
+        </section>
+
         {/* ── Soro Blog Embed ── */}
         <section className="px-6 pb-10 bg-[#f5fdfb]">
           <div className="max-w-3xl mx-auto">
