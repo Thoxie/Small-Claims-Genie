@@ -4,6 +4,7 @@ import { requiresPurchase } from "../middlewares/requiresPurchase";
 import healthRouter from "./health";
 import adminRouter from "./admin";
 import countiesRouter from "./counties";
+import blogRouter from "./blog";
 import helpChatRouter from "./help-chat";
 import caseClassifierRouter from "./case-classifier";
 import casesRouter from "./cases";
@@ -30,6 +31,7 @@ router.use(adminRouter);
 // ── Public routes — no auth required ─────────────────────────────────────────
 router.use(healthRouter);
 router.use(countiesRouter);
+router.use(blogRouter);
 router.use(storageRouter);
 router.use(helpChatRouter);
 router.use(caseClassifierRouter);

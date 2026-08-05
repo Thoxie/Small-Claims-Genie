@@ -37,6 +37,9 @@ const PUBLIC_ROUTES = [
   "/payment-terms",
 ];
 
+const SORO_EMBED_TOKEN = "e4dea211-234e-485c-b304-ce18ef8d21f0";
+const SORO_API_BASE = "https://app.trysoro.com";
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".js": "application/javascript",
@@ -115,11 +118,71 @@ function loadPlaywright() {
   return null;
 }
 
-// ── 3. Static file server ────────────────────────────────────────────────────
+// ── 3. Soro article helpers ──────────────────────────────────────────────────
+
+/** In-memory cache of Soro article metadata keyed by slug */
+const soroArticleCache = new Map();
+
+async function fetchSoroArticleList() {
+  const url = `${SORO_API_BASE}/api/embed/${SORO_EMBED_TOKEN}`;
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": "SmallClaimsGenie/prerender" } });
+    if (!res.ok) return [];
+    const js = await res.text();
+    const m = js.match(/var SORO_ARTICLES = (\[[\s\S]*?\]);/);
+    if (!m) return [];
+    return JSON.parse(m[1]);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchSoroArticleContent(article) {
+  if (soroArticleCache.has(article.slug)) return soroArticleCache.get(article.slug);
+  const url = `${SORO_API_BASE}/api/embed/${SORO_EMBED_TOKEN}/article/${article.id}`;
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": "SmallClaimsGenie/prerender" } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const full = { ...article, content: data.content ?? "" };
+    soroArticleCache.set(article.slug, full);
+    return full;
+  } catch {
+    return null;
+  }
+}
+
+// ── 4. Static file server (with local blog API proxy) ────────────────────────
 
 function createStaticServer(port) {
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
     const urlPath = new URL(req.url, "http://localhost").pathname;
+
+    // ── Local blog API mock so the BlogArticle React component can fetch
+    //    article data during pre-render without the real API server running.
+    if (urlPath === "/api/blog/articles") {
+      res.setHeader("Content-Type", "application/json");
+      res.writeHead(200);
+      const articles = [...soroArticleCache.values()].map(({ content: _c, ...meta }) => meta);
+      res.end(JSON.stringify({ articles }));
+      return;
+    }
+
+    const articleSlugMatch = urlPath.match(/^\/api\/blog\/articles\/(.+)$/);
+    if (articleSlugMatch) {
+      const slug = decodeURIComponent(articleSlugMatch[1]);
+      const article = soroArticleCache.get(slug);
+      if (article) {
+        res.setHeader("Content-Type", "application/json");
+        res.writeHead(200);
+        res.end(JSON.stringify({ article }));
+      } else {
+        res.writeHead(404);
+        res.end(JSON.stringify({ error: "Article not found" }));
+      }
+      return;
+    }
+
     const rel = path.normalize(urlPath === "/" ? "/index.html" : urlPath);
     const filePath = path.join(distDir, rel);
 
@@ -164,6 +227,21 @@ if (!pw) {
 
 console.log(`[prerender] Chromium: ${chromiumPath}`);
 
+// ── Fetch Soro article list before starting the server so the mock API is
+//    populated when Playwright requests it during blog article pre-renders.
+console.log("[prerender] Fetching Soro article list…");
+const soroArticles = await fetchSoroArticleList();
+if (soroArticles.length === 0) {
+  console.warn("[prerender] ⚠ Could not fetch Soro article list — blog articles will not be pre-rendered.");
+} else {
+  console.log(`[prerender] Found ${soroArticles.length} articles — fetching content…`);
+  await Promise.all(soroArticles.map((a) => fetchSoroArticleContent(a)));
+  console.log(`[prerender] Article content cached for ${soroArticleCache.size} articles.`);
+}
+
+const blogArticleRoutes = soroArticles.map((a) => `/blog/${a.slug}`);
+const allRoutes = [...PUBLIC_ROUTES, ...blogArticleRoutes];
+
 const PORT = 19876;
 const server = await createStaticServer(PORT);
 console.log(`[prerender] Static server on http://127.0.0.1:${PORT}`);
@@ -183,14 +261,19 @@ try {
 let success = 0;
 let failed = 0;
 
-for (const route of PUBLIC_ROUTES) {
+for (const route of allRoutes) {
   const url = `http://127.0.0.1:${PORT}${route}`;
   const page = await browser.newPage();
 
   // Block network calls that would slow the snapshot or require auth.
+  // Allow local /api/blog/* so the blog article component can fetch content
+  // from the local static server's mock API handler.
   await page.route("**", async (r) => {
     const u = r.request().url();
-    if (
+    if (u.includes(`127.0.0.1:${PORT}/api/blog/`)) {
+      // Allow — served by our local mock handler
+      await r.continue();
+    } else if (
       u.includes("/api/") ||
       u.includes("clerk.") ||
       u.includes("googleapis") ||
