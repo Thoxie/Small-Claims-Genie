@@ -281,7 +281,8 @@ for (const route of allRoutes) {
       u.includes("googletagmanager") ||
       u.includes("heygen") ||
       u.includes("stripe.com") ||
-      u.includes("resend.com")
+      u.includes("resend.com") ||
+      u.includes("trysoro.com")
     ) {
       await r.abort();
     } else {
