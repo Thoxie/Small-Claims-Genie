@@ -327,12 +327,12 @@ export default function BetaPage() {
     <>
     <div className="px-4 pt-4 pb-10" style={{ backgroundColor: TEAL_BG }}>
       <Helmet>
-        <title>Join Small Claims Genie — California's AI-Powered Small Claims Court Help</title>
-        <meta name="description" content="Get early access to Small Claims Genie. AI-powered tools to file, win, and collect in California small claims court — no lawyer needed." />
+        <title>Small Claims Court Help Without a Lawyer — Small Claims Genie</title>
+        <meta name="description" content="Answer a few questions. Get a demand letter, AI case guidance, and court-ready forms — all in one place. Available in 9 states." />
         <link rel="canonical" href="https://smallclaimsgenie.com/startup" />
         <meta property="og:url" content="https://smallclaimsgenie.com/startup" />
-        <meta property="og:title" content="Join Small Claims Genie — California's AI-Powered Small Claims Court Help" />
-        <meta property="og:description" content="Get early access to Small Claims Genie. AI-powered tools to file, win, and collect in California small claims court — no lawyer needed." />
+        <meta property="og:title" content="Small Claims Court Help Without a Lawyer — Small Claims Genie" />
+        <meta property="og:description" content="Answer a few questions. Get a demand letter, AI case guidance, and court-ready forms — all in one place. Available in 9 states." />
         <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
       </Helmet>
       <div className="mx-auto w-full max-w-6xl">
