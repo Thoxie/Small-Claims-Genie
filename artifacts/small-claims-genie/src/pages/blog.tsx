@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
+import { Wand2, Maximize2, X } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
 const SORO_EMBED_SRC = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
@@ -13,6 +13,7 @@ export default function Blog() {
   const [, setLocation] = useLocation();
   const { lang } = useLanguage();
   const es = lang === "es";
+  const [enlarged, setEnlarged] = useState(false);
 
   useEffect(() => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${SORO_EMBED_SRC}"]`);
@@ -23,6 +24,24 @@ export default function Blog() {
     document.body.appendChild(script);
     return () => { script.remove(); };
   }, []);
+
+  // Close lightbox on Escape
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") setEnlarged(false);
+  }, []);
+  useEffect(() => {
+    if (enlarged) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [enlarged, handleKeyDown]);
 
   return (
     <>
@@ -42,6 +61,38 @@ export default function Blog() {
         <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
       </Helmet>
 
+      {/* ── Lightbox overlay ── */}
+      {enlarged && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 sm:p-8"
+          onClick={() => setEnlarged(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setEnlarged(false)}
+              className="absolute -top-10 right-0 text-white/80 hover:text-white flex items-center gap-1.5 text-sm font-medium"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" /> Close
+            </button>
+            {/* Video at same 16:9 ratio */}
+            <div className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-black" style={{ aspectRatio: "16/9" }}>
+              <iframe
+                src={`${YOUTUBE_EMBED}?autoplay=1`}
+                title="Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
 
         {/* ── Blog header ── */}
@@ -58,24 +109,35 @@ export default function Blog() {
           </div>
         </section>
 
-        {/* ── Featured Podcast — compact card with smaller YouTube embed ── */}
+        {/* ── Featured Podcast card — same width as article list ── */}
         <section className="px-6 pb-8 bg-[#f5fdfb]">
           <div className="max-w-3xl mx-auto">
-            <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden max-w-xl">
+            <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
 
               {/* Card header */}
-              <div className="px-5 pt-5 pb-3">
-                <p className="text-[10px] font-bold tracking-widest text-primary/50 uppercase mb-1">
-                  {es ? "EPISODIO DE PODCAST DESTACADO" : "FEATURED PODCAST EPISODE"}
-                </p>
-                <h2 className="text-sm sm:text-base font-bold text-primary leading-snug">
-                  {es
-                    ? "Why Small Claims Founder Podcast — Legal AI Founder and Applications"
-                    : "Why Small Claims Founder Podcast — Legal AI Founder and Applications"}
-                </h2>
+              <div className="px-5 pt-4 pb-2 flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-bold tracking-widest text-primary/50 uppercase mb-1">
+                    {es ? "EPISODIO DE PODCAST DESTACADO" : "FEATURED PODCAST EPISODE"}
+                  </p>
+                  <h2 className="text-sm sm:text-base font-bold text-primary leading-snug">
+                    {es
+                      ? "Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+                      : "Why Small Claims Founder Podcast — Legal AI Founder and Applications"}
+                  </h2>
+                </div>
+                {/* Enlarge button */}
+                <button
+                  onClick={() => setEnlarged(true)}
+                  className="shrink-0 mt-0.5 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
+                  aria-label={es ? "Ampliar video" : "Enlarge video"}
+                  title={es ? "Ampliar video" : "Enlarge video"}
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </button>
               </div>
 
-              {/* YouTube embed */}
+              {/* YouTube embed — compact height, same 16:9 */}
               <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
                 <iframe
                   src={YOUTUBE_EMBED}
