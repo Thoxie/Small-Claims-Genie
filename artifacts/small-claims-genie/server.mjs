@@ -63,6 +63,7 @@ const STATIC_SITEMAP_PAGES = [
   { loc: "https://smallclaimsgenie.com/how-it-works",   priority: "0.9", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/faq",            priority: "0.9", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/blog",           priority: "0.8", changefreq: "weekly"  },
+  { loc: "https://smallclaimsgenie.com/blog/paul-andrew-small-claims-genie-podcast", priority: "0.8", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/counties",       priority: "0.8", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/types-of-cases", priority: "0.8", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/resources",      priority: "0.7", changefreq: "monthly" },

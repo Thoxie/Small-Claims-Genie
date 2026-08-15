@@ -29,6 +29,7 @@ const PUBLIC_ROUTES = [
   "/types-of-cases",
   "/faq",
   "/blog",
+  "/blog/paul-andrew-small-claims-genie-podcast",
   "/resources",
   "/counties",
   "/startup",

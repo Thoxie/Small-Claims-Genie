@@ -23,6 +23,7 @@ import HowItWorks from "@/pages/how-it-works";
 import FAQ from "@/pages/faq";
 import Blog from "@/pages/blog";
 import BlogArticle from "@/pages/blog-article";
+import PodcastPage from "@/pages/podcast-page";
 import TypesOfCases from "@/pages/types-of-cases";
 import Terms from "@/pages/terms";
 import TermsOfService from "@/pages/tos";
@@ -275,6 +276,7 @@ function Router() {
               <Route path="/how-it-works" component={HowItWorks} />
               <Route path="/faq" component={FAQ} />
               <Route path="/blog" component={Blog} />
+              <Route path="/blog/paul-andrew-small-claims-genie-podcast" component={PodcastPage} />
               <Route path="/blog/:slug" component={BlogArticle} />
               <Route path="/types-of-cases" component={TypesOfCases} />
               <Route path="/pricing" component={Pricing} />
