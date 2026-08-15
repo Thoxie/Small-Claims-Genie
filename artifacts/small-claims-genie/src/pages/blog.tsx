@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
+import { Wand2, Play } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
 const SORO_EMBED_SRC  = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
@@ -14,6 +14,7 @@ export default function Blog() {
   const [, setLocation] = useLocation();
   const { lang } = useLanguage();
   const es = lang === "es";
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${SORO_EMBED_SRC}"]`);
@@ -27,113 +28,108 @@ export default function Blog() {
 
   return (
     <>
+      <Helmet>
+        <title>Blog — Small Claims Genie</title>
+        <meta
+          name="description"
+          content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
+        />
+        <link rel="canonical" href="https://smallclaimsgenie.com/blog" />
+        <meta property="og:url" content="https://smallclaimsgenie.com/blog" />
+        <meta property="og:title" content="Blog — Small Claims Genie" />
+        <meta
+          property="og:description"
+          content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
+        />
+        <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
+      </Helmet>
+
       <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
-        <Helmet>
-          <title>Blog — Small Claims Genie</title>
-          <meta
-            name="description"
-            content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
-          />
-          <link rel="canonical" href="https://smallclaimsgenie.com/blog" />
-          <meta property="og:url" content="https://smallclaimsgenie.com/blog" />
-          <meta property="og:title" content="Blog — Small Claims Genie" />
-          <meta
-            property="og:description"
-            content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
-          />
-          <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
-        </Helmet>
 
-        {/* ── Featured Podcast ── */}
-        <section className="px-4 sm:px-6 pt-10 pb-6 bg-[#f5fdfb]">
-          <div className="max-w-[1100px] mx-auto">
-
-            {/* Eyebrow */}
-            <p className="text-xs font-bold tracking-widest text-primary/60 uppercase mb-3">
-              FEATURED PODCAST
-            </p>
-
-            {/* H1 — replaces the old standalone "Blog" heading */}
-            <h1 className="text-2xl sm:text-3xl font-black text-primary mb-4 leading-tight max-w-3xl">
-              {es
-                ? "El Fundador de Small Claims Genie, Paul Andrew, sobre Facilitar los Tribunales de Reclamaciones Menores"
-                : "Small Claims Genie Founder Paul Andrew on Making Small Claims Court Easier"}
+        {/* ── Blog header ── */}
+        <section className="px-6 pt-10 pb-4 bg-[#f5fdfb]">
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl font-black text-primary mb-2">
+              {es ? "Blog" : "Blog"}
             </h1>
-
-            {/* Intro */}
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl mb-6">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {es
-                ? "Ve esta entrevista de podcast de 16 minutos con Paul Andrew, fundador de SmallClaimsGenie.com, donde habla sobre por qué creó Small Claims Genie y cómo la IA diseñada específicamente puede ayudar a las personas a comprender sus disputas, organizar su evidencia, prepararse para el tribunal y presentar sus casos con mayor claridad y confianza."
-                : "Watch this 16-minute podcast interview with Paul Andrew, founder of SmallClaimsGenie.com, discussing why he created Small Claims Genie and how purpose-built AI can help people understand their disputes, organize their evidence, prepare for court, and present their cases with greater clarity and confidence."}
-            </p>
-
-            {/* Video player — dominant, centered, max 1100px, 16:9 */}
-            <div
-              className="relative w-full rounded-xl overflow-hidden shadow-lg bg-black mb-4"
-              style={{ aspectRatio: "16/9" }}
-            >
-              <video
-                className="w-full h-full"
-                controls
-                playsInline
-                preload="metadata"
-                poster={POSTER_URL}
-                aria-label="Podcast interview with Paul Andrew, founder of Small Claims Genie"
-              >
-                <source src={VIDEO_URL} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            {/* Meta line */}
-            <p className="text-xs text-muted-foreground text-center mb-5">
-              {es
-                ? "Conversación de 16 minutos con el fundador • IA legal a medida • Preparación práctica para reclamaciones menores"
-                : "16-minute founder conversation • Purpose-built legal AI • Practical small claims preparation"}
-            </p>
-
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-              <Button
-                size="lg"
-                onClick={() => setLocation("/cases/new")}
-                className="h-12 px-10 text-base bg-primary text-white hover:bg-primary/90 rounded-full font-bold shadow-md"
-              >
-                <Wand2 className="mr-2 h-5 w-5" />
-                {es ? "COMENZAR MI CASO GRATIS" : "START MY CASE FREE"}
-              </Button>
-            </div>
-
-            {/* Description link */}
-            <p className="text-center text-sm">
-              <a
-                href={PODCAST_PAGE}
-                onClick={(e) => { e.preventDefault(); setLocation(PODCAST_PAGE); }}
-                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
-              >
-                {es
-                  ? "Leer la descripción completa del podcast →"
-                  : "Read the complete podcast description →"}
-              </a>
+                ? "Guías y consejos para navegar el tribunal de reclamaciones menores, directamente del equipo de Small Claims Genie."
+                : "Guides and tips to navigate small claims court, directly from the Small Claims Genie team."}
             </p>
           </div>
         </section>
 
-        {/* ── Divider + "Prefer to Read?" heading ── */}
-        <section className="px-4 sm:px-6 pt-6 pb-3 bg-[#f5fdfb]">
-          <div className="max-w-[1100px] mx-auto">
-            <hr className="border-border mb-6" />
-            <h2 className="text-lg sm:text-xl font-bold text-primary mb-4">
-              {es
-                ? "¿Prefieres Leer? Explora Nuestras Guías de Reclamaciones Menores"
-                : "Prefer to Read? Explore Our Small Claims Guides"}
-            </h2>
+        {/* ── Featured Podcast — compact, proportionate ── */}
+        <section className="px-6 pb-8 bg-[#f5fdfb]">
+          <div className="max-w-3xl mx-auto">
+            <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
+
+              {/* Card header */}
+              <div className="px-5 pt-5 pb-3">
+                <p className="text-[10px] font-bold tracking-widest text-primary/50 uppercase mb-1">
+                  {es ? "EPISODIO DE PODCAST DESTACADO" : "FEATURED PODCAST EPISODE"}
+                </p>
+                <h2 className="text-base sm:text-lg font-bold text-primary leading-snug">
+                  {es
+                    ? "Paul Andrew: Por qué creé Small Claims Genie"
+                    : "Paul Andrew: Why I Created Small Claims Genie"}
+                </h2>
+              </div>
+
+              {/* Video player */}
+              <div className="relative w-full bg-[#0f1b2d]" style={{ aspectRatio: "16/9" }}>
+                {!videoError ? (
+                  <video
+                    className="w-full h-full"
+                    controls
+                    playsInline
+                    preload="metadata"
+                    poster={POSTER_URL}
+                    onError={() => setVideoError(true)}
+                    aria-label={es
+                      ? "Entrevista de podcast con Paul Andrew, fundador de Small Claims Genie"
+                      : "Podcast interview with Paul Andrew, founder of Small Claims Genie"}
+                  >
+                    <source src={VIDEO_URL} type="video/mp4" />
+                  </video>
+                ) : (
+                  /* Fallback when video can't load */
+                  <button
+                    onClick={() => setLocation(PODCAST_PAGE)}
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/80 hover:text-white transition-colors"
+                    aria-label={es ? "Ver episodio completo del podcast" : "Watch full podcast episode"}
+                  >
+                    <div className="w-16 h-16 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center">
+                      <Play className="h-7 w-7 fill-white text-white" />
+                    </div>
+                    <p className="text-sm font-medium">
+                      {es ? "Ver episodio completo →" : "Watch full episode →"}
+                    </p>
+                  </button>
+                )}
+              </div>
+
+              {/* Card footer */}
+              <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {es ? "16 minutos • Conversación con el fundador" : "16 minutes • Founder conversation"}
+                </p>
+                <a
+                  href={PODCAST_PAGE}
+                  onClick={(e) => { e.preventDefault(); setLocation(PODCAST_PAGE); }}
+                  className="text-xs font-semibold text-primary hover:underline shrink-0"
+                >
+                  {es ? "Descripción completa →" : "Full description →"}
+                </a>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* ── Soro Blog Embed ── */}
         <section className="px-4 sm:px-6 pb-10 bg-[#f5fdfb]">
-          <div className="max-w-[1100px] mx-auto">
+          <div className="max-w-3xl mx-auto">
             <div id="soro-blog" />
           </div>
         </section>
