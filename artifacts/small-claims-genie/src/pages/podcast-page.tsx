@@ -3,24 +3,25 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Wand2 } from "lucide-react";
 
-const VIDEO_URL    = "/form-assets/media/paul-andrew-podcast.mp4";
-const POSTER_URL   = "/form-assets/media/paul-andrew-podcast-poster.webp";
-const CANONICAL    = "https://smallclaimsgenie.com/blog/paul-andrew-small-claims-genie-podcast";
-const CONTENT_URL  = "https://smallclaimsgenie.com/form-assets/media/paul-andrew-podcast.mp4";
-const THUMBNAIL_URL = "https://smallclaimsgenie.com/form-assets/media/paul-andrew-podcast-poster.webp";
-const LOGO_URL     = "https://smallclaimsgenie.com/opengraph.jpg";
-const UPLOAD_DATE  = "2026-08-15";
+const YOUTUBE_URL    = "https://www.youtube.com/watch?v=EkzyvijKN6E";
+const YOUTUBE_EMBED  = "https://www.youtube.com/embed/EkzyvijKN6E";
+const THUMBNAIL_URL  = "https://img.youtube.com/vi/EkzyvijKN6E/maxresdefault.jpg";
+const CANONICAL      = "https://smallclaimsgenie.com/blog/paul-andrew-small-claims-genie-podcast";
+const LOGO_URL       = "https://smallclaimsgenie.com/opengraph.jpg";
+const UPLOAD_DATE    = "2026-08-15";
+const TITLE          = "Why Small Claims Founder Podcast — Legal AI Founder and Applications";
 
 const structuredData = [
   {
     "@context": "https://schema.org",
     "@type": "VideoObject",
-    "name": "Why Paul Andrew Created Small Claims Genie",
-    "description": "Paul Andrew, founder of SmallClaimsGenie.com, discusses the experiences and ideas behind Small Claims Genie — a purpose-built AI platform designed to make small claims preparation clearer, more organized, and more accessible.",
+    "name": TITLE,
+    "description": "Paul Andrew, founder of SmallClaimsGenie.com, discusses the experiences and ideas behind Small Claims Genie — a purpose-built AI platform designed to make small claims preparation clearer, more organized, and more accessible. This podcast covers legal AI applications and how purpose-built tools help self-represented litigants.",
     "thumbnailUrl": THUMBNAIL_URL,
     "uploadDate": UPLOAD_DATE,
     "duration": "PT15M44S",
-    "contentUrl": CONTENT_URL,
+    "contentUrl": YOUTUBE_URL,
+    "embedUrl": YOUTUBE_EMBED,
     "publisher": {
       "@type": "Organization",
       "name": "Small Claims Genie",
@@ -31,8 +32,8 @@ const structuredData = [
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "Why Paul Andrew Created Small Claims Genie",
-    "description": "Watch Paul Andrew, founder of Small Claims Genie, explain how purpose-built AI can help people organize evidence and prepare for small claims court.",
+    "headline": TITLE,
+    "description": "Watch Paul Andrew, founder of Small Claims Genie, discuss legal AI applications and how purpose-built tools help people organize evidence and prepare for small claims court.",
     "url": CANONICAL,
     "datePublished": UPLOAD_DATE,
     "image": THUMBNAIL_URL,
@@ -55,7 +56,7 @@ const structuredData = [
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://smallclaimsgenie.com/" },
       { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://smallclaimsgenie.com/blog" },
-      { "@type": "ListItem", "position": 3, "name": "Paul Andrew Founder Podcast", "item": CANONICAL },
+      { "@type": "ListItem", "position": 3, "name": TITLE, "item": CANONICAL },
     ],
   },
 ];
@@ -66,22 +67,22 @@ export default function PodcastPage() {
   return (
     <>
       <Helmet>
-        <title>Small Claims Genie Founder Podcast | Paul Andrew</title>
+        <title>{TITLE} | Small Claims Genie</title>
         <meta
           name="description"
-          content="Watch Paul Andrew, founder of Small Claims Genie, explain how purpose-built AI can help people organize evidence and prepare for small claims court."
+          content="Watch Paul Andrew, founder of Small Claims Genie, discuss legal AI applications and how purpose-built tools help people organize evidence and prepare for small claims court."
         />
         <link rel="canonical" href={CANONICAL} />
         <meta name="robots" content="index, follow" />
         <meta property="og:url" content={CANONICAL} />
-        <meta property="og:title" content="Small Claims Genie Founder Podcast | Paul Andrew" />
+        <meta property="og:title" content={`${TITLE} | Small Claims Genie`} />
         <meta
           property="og:description"
-          content="Watch Paul Andrew, founder of Small Claims Genie, explain how purpose-built AI can help people organize evidence and prepare for small claims court."
+          content="Watch Paul Andrew, founder of Small Claims Genie, discuss legal AI applications and how purpose-built tools help people organize evidence and prepare for small claims court."
         />
         <meta property="og:image" content={THUMBNAIL_URL} />
         <meta property="og:type" content="video.other" />
-        <meta property="og:video" content={CONTENT_URL} />
+        <meta property="og:video" content={YOUTUBE_URL} />
         {structuredData.map((sd, i) => (
           <script key={i} type="application/ld+json">{JSON.stringify(sd)}</script>
         ))}
@@ -108,31 +109,28 @@ export default function PodcastPage() {
               FOUNDER PODCAST
             </p>
             <h1 className="text-2xl sm:text-3xl font-black text-primary mb-4 leading-tight max-w-3xl">
-              Why Paul Andrew Created Small Claims Genie
+              {TITLE}
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
-              In this podcast interview, Paul Andrew, founder of SmallClaimsGenie.com, discusses the
-              experiences and ideas behind Small Claims Genie — a purpose-built AI platform designed to
-              make small claims preparation clearer, more organized, and more accessible.
+              Paul Andrew, founder of SmallClaimsGenie.com, discusses the experiences and ideas behind
+              Small Claims Genie — a purpose-built AI platform designed to make small claims preparation
+              clearer, more organized, and more accessible. The conversation covers legal AI applications
+              and how guided tools differ from general-purpose chatbots.
             </p>
           </div>
         </section>
 
-        {/* ── Video player ── */}
+        {/* ── YouTube embed ── */}
         <section className="px-4 sm:px-6 pb-6 bg-[#f5fdfb]">
           <div className="max-w-[1100px] mx-auto">
             <div className="relative w-full rounded-xl overflow-hidden shadow-lg bg-black" style={{ aspectRatio: "16/9" }}>
-              <video
-                className="w-full h-full"
-                controls
-                playsInline
-                preload="metadata"
-                poster={POSTER_URL}
-                aria-label="Podcast interview with Paul Andrew, founder of Small Claims Genie"
-              >
-                <source src={VIDEO_URL} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <iframe
+                src={YOUTUBE_EMBED}
+                title={TITLE}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
             </div>
           </div>
         </section>
@@ -156,7 +154,7 @@ export default function PodcastPage() {
           <div className="max-w-[1100px] mx-auto">
             <details className="border border-border rounded-xl overflow-hidden">
               <summary className="cursor-pointer px-6 py-4 font-semibold text-primary text-sm select-none hover:bg-primary/5 transition-colors list-none flex items-center gap-2">
-                <span className="flex-1">About This Small Claims Genie Podcast</span>
+                <span className="flex-1">About This Podcast</span>
                 <span className="text-muted-foreground text-xs shrink-0">Read more ↓</span>
               </summary>
               <div className="px-6 pb-6 pt-2 space-y-4 text-sm text-muted-foreground leading-relaxed">

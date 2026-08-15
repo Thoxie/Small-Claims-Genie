@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Wand2, Play } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
-const SORO_EMBED_SRC  = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
-const VIDEO_URL       = "/form-assets/media/paul-andrew-podcast.mp4";
-const POSTER_URL      = "/form-assets/media/paul-andrew-podcast-poster.webp";
-const PODCAST_PAGE    = "/blog/paul-andrew-small-claims-genie-podcast";
+const SORO_EMBED_SRC = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
+const YOUTUBE_EMBED  = "https://www.youtube.com/embed/EkzyvijKN6E";
+const PODCAST_PAGE   = "/blog/paul-andrew-small-claims-genie-podcast";
 
 export default function Blog() {
   const [, setLocation] = useLocation();
   const { lang } = useLanguage();
   const es = lang === "es";
-  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${SORO_EMBED_SRC}"]`);
@@ -60,67 +58,46 @@ export default function Blog() {
           </div>
         </section>
 
-        {/* ── Featured Podcast — compact, proportionate ── */}
+        {/* ── Featured Podcast — compact card with smaller YouTube embed ── */}
         <section className="px-6 pb-8 bg-[#f5fdfb]">
           <div className="max-w-3xl mx-auto">
-            <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden max-w-xl">
 
               {/* Card header */}
               <div className="px-5 pt-5 pb-3">
                 <p className="text-[10px] font-bold tracking-widest text-primary/50 uppercase mb-1">
                   {es ? "EPISODIO DE PODCAST DESTACADO" : "FEATURED PODCAST EPISODE"}
                 </p>
-                <h2 className="text-base sm:text-lg font-bold text-primary leading-snug">
+                <h2 className="text-sm sm:text-base font-bold text-primary leading-snug">
                   {es
-                    ? "Paul Andrew: Por qué creé Small Claims Genie"
-                    : "Paul Andrew: Why I Created Small Claims Genie"}
+                    ? "Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+                    : "Why Small Claims Founder Podcast — Legal AI Founder and Applications"}
                 </h2>
               </div>
 
-              {/* Video player */}
-              <div className="relative w-full bg-[#0f1b2d]" style={{ aspectRatio: "16/9" }}>
-                {!videoError ? (
-                  <video
-                    className="w-full h-full"
-                    controls
-                    playsInline
-                    preload="metadata"
-                    poster={POSTER_URL}
-                    onError={() => setVideoError(true)}
-                    aria-label={es
-                      ? "Entrevista de podcast con Paul Andrew, fundador de Small Claims Genie"
-                      : "Podcast interview with Paul Andrew, founder of Small Claims Genie"}
-                  >
-                    <source src={VIDEO_URL} type="video/mp4" />
-                  </video>
-                ) : (
-                  /* Fallback when video can't load */
-                  <button
-                    onClick={() => setLocation(PODCAST_PAGE)}
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/80 hover:text-white transition-colors"
-                    aria-label={es ? "Ver episodio completo del podcast" : "Watch full podcast episode"}
-                  >
-                    <div className="w-16 h-16 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center">
-                      <Play className="h-7 w-7 fill-white text-white" />
-                    </div>
-                    <p className="text-sm font-medium">
-                      {es ? "Ver episodio completo →" : "Watch full episode →"}
-                    </p>
-                  </button>
-                )}
+              {/* YouTube embed */}
+              <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
+                <iframe
+                  src={YOUTUBE_EMBED}
+                  title="Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full"
+                  loading="lazy"
+                />
               </div>
 
               {/* Card footer */}
-              <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="px-5 py-3 flex items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">
-                  {es ? "16 minutos • Conversación con el fundador" : "16 minutes • Founder conversation"}
+                  {es ? "Conversación con el fundador" : "Founder conversation"}
                 </p>
                 <a
                   href={PODCAST_PAGE}
                   onClick={(e) => { e.preventDefault(); setLocation(PODCAST_PAGE); }}
                   className="text-xs font-semibold text-primary hover:underline shrink-0"
                 >
-                  {es ? "Descripción completa →" : "Full description →"}
+                  {es ? "Ver página completa →" : "Full episode page →"}
                 </a>
               </div>
             </div>
