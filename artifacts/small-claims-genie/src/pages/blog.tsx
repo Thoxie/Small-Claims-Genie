@@ -1,18 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
-import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Wand2, Maximize2, X } from "lucide-react";
-import { useLanguage } from "@/contexts/language-context";
+import { Wand2, Play, X } from "lucide-react";
 
-const SORO_EMBED_SRC = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
-const YOUTUBE_EMBED  = "https://www.youtube.com/embed/EkzyvijKN6E";
-const PODCAST_PAGE   = "/blog/paul-andrew-small-claims-genie-podcast";
+const SORO_EMBED_SRC  = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
+const YT_THUMB        = "https://img.youtube.com/vi/EkzyvijKN6E/maxresdefault.jpg";
+const YT_EMBED        = "https://www.youtube.com/embed/EkzyvijKN6E";
 
 export default function Blog() {
-  const [, setLocation] = useLocation();
-  const { lang } = useLanguage();
-  const es = lang === "es";
   const [enlarged, setEnlarged] = useState(false);
 
   useEffect(() => {
@@ -45,44 +40,23 @@ export default function Blog() {
 
   return (
     <>
-      <Helmet>
-        <title>Blog — Small Claims Genie</title>
-        <meta
-          name="description"
-          content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
-        />
-        <link rel="canonical" href="https://smallclaimsgenie.com/blog" />
-        <meta property="og:url" content="https://smallclaimsgenie.com/blog" />
-        <meta property="og:title" content="Blog — Small Claims Genie" />
-        <meta
-          property="og:description"
-          content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
-        />
-        <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
-      </Helmet>
-
-      {/* ── Lightbox overlay ── */}
+      {/* ── Lightbox ── */}
       {enlarged && (
         <div
-          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 sm:p-8"
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 sm:p-10"
           onClick={() => setEnlarged(false)}
         >
-          <div
-            className="relative w-full max-w-4xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
+          <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setEnlarged(false)}
-              className="absolute -top-10 right-0 text-white/80 hover:text-white flex items-center gap-1.5 text-sm font-medium"
+              className="absolute -top-9 right-0 text-white/80 hover:text-white flex items-center gap-1.5 text-sm font-medium"
               aria-label="Close"
             >
               <X className="h-4 w-4" /> Close
             </button>
-            {/* Video at same 16:9 ratio */}
             <div className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-black" style={{ aspectRatio: "16/9" }}>
               <iframe
-                src={`${YOUTUBE_EMBED}?autoplay=1`}
+                src={`${YT_EMBED}?autoplay=1`}
                 title="Why Small Claims Founder Podcast — Legal AI Founder and Applications"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -94,80 +68,73 @@ export default function Blog() {
       )}
 
       <div className="flex flex-col w-full bg-[#f5fdfb] pb-[80px]">
+        <Helmet>
+          <title>Blog — Small Claims Genie</title>
+          <meta
+            name="description"
+            content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
+          />
+          <link rel="canonical" href="https://smallclaimsgenie.com/blog" />
+          <meta property="og:url" content="https://smallclaimsgenie.com/blog" />
+          <meta property="og:title" content="Blog — Small Claims Genie" />
+          <meta
+            property="og:description"
+            content="Guides, tips, and insights on filing and winning small claims court cases — from Small Claims Genie."
+          />
+          <meta property="og:image" content="https://smallclaimsgenie.com/opengraph.jpg" />
+        </Helmet>
 
-        {/* ── Blog header ── */}
-        <section className="px-6 pt-10 pb-4 bg-[#f5fdfb]">
+        {/* ── Header ── */}
+        <section className="px-6 pt-10 pb-6 bg-[#f5fdfb]">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-2xl sm:text-3xl font-black text-primary mb-2">
-              {es ? "Blog" : "Blog"}
-            </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {es
-                ? "Guías y consejos para navegar el tribunal de reclamaciones menores, directamente del equipo de Small Claims Genie."
-                : "Guides and tips to navigate small claims court, directly from the Small Claims Genie team."}
+            <h1 className="text-2xl sm:text-3xl font-black text-primary mb-2">Blog</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+              Guides and tips for navigating small claims court, straight from the Small Claims Genie team.
             </p>
           </div>
         </section>
 
-        {/* ── Featured Podcast card — same width as article list ── */}
-        <section className="px-6 pb-8 bg-[#f5fdfb]">
+        {/* ── Video post — first item, styled like a blog article card ── */}
+        <section className="px-6 pb-4 bg-[#f5fdfb]">
           <div className="max-w-3xl mx-auto">
-            <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
-
-              {/* Card header */}
-              <div className="px-5 pt-4 pb-2 flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-[10px] font-bold tracking-widest text-primary/50 uppercase mb-1">
-                    {es ? "EPISODIO DE PODCAST DESTACADO" : "FEATURED PODCAST EPISODE"}
-                  </p>
-                  <h2 className="text-sm sm:text-base font-bold text-primary leading-snug">
-                    {es
-                      ? "Why Small Claims Founder Podcast — Legal AI Founder and Applications"
-                      : "Why Small Claims Founder Podcast — Legal AI Founder and Applications"}
-                  </h2>
-                </div>
-                {/* Enlarge button */}
-                <button
-                  onClick={() => setEnlarged(true)}
-                  className="shrink-0 mt-0.5 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
-                  aria-label={es ? "Ampliar video" : "Enlarge video"}
-                  title={es ? "Ampliar video" : "Enlarge video"}
-                >
-                  <Maximize2 className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* YouTube embed — compact height, same 16:9 */}
-              <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
-                <iframe
-                  src={YOUTUBE_EMBED}
-                  title="Why Small Claims Founder Podcast — Legal AI Founder and Applications"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full"
-                  loading="lazy"
+            <button
+              onClick={() => setEnlarged(true)}
+              className="w-full text-left bg-white rounded-xl border border-border shadow-sm overflow-hidden flex hover:shadow-md transition-shadow group"
+              aria-label="Watch: Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+            >
+              {/* Thumbnail */}
+              <div className="relative shrink-0 w-[110px] sm:w-[152px] bg-black self-stretch">
+                <img
+                  src={YT_THUMB}
+                  alt="Podcast video thumbnail"
+                  className="w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                  <div className="w-9 h-9 rounded-full bg-black/60 flex items-center justify-center">
+                    <Play className="h-4 w-4 fill-white text-white ml-0.5" />
+                  </div>
+                </div>
               </div>
 
-              {/* Card footer */}
-              <div className="px-5 py-3 flex items-center justify-between gap-3">
-                <p className="text-xs text-muted-foreground">
-                  {es ? "Conversación con el fundador" : "Founder conversation"}
-                </p>
-                <a
-                  href={PODCAST_PAGE}
-                  onClick={(e) => { e.preventDefault(); setLocation(PODCAST_PAGE); }}
-                  className="text-xs font-semibold text-primary hover:underline shrink-0"
-                >
-                  {es ? "Ver página completa →" : "Full episode page →"}
-                </a>
+              {/* Text */}
+              <div className="flex flex-col justify-between p-4 min-w-0">
+                <div>
+                  <p className="text-sm font-bold text-primary leading-snug mb-1.5">
+                    Why Small Claims Founder Podcast — Legal AI Founder and Applications
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                    Paul Andrew, founder of Small Claims Genie, discusses legal AI applications and how
+                    purpose-built tools help people prepare for small claims court.
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground/60 mt-3">August 15, 2026</p>
               </div>
-            </div>
+            </button>
           </div>
         </section>
 
         {/* ── Soro Blog Embed ── */}
-        <section className="px-4 sm:px-6 pb-10 bg-[#f5fdfb]">
+        <section className="px-6 pb-10 bg-[#f5fdfb]">
           <div className="max-w-3xl mx-auto">
             <div id="soro-blog" />
           </div>
@@ -175,33 +142,13 @@ export default function Blog() {
 
         {/* ── Bottom CTA ── */}
         <section className="px-6 pb-12 bg-[#f5fdfb]">
-          <div className="max-w-3xl mx-auto rounded-xl px-8 py-10 text-center bg-[#0f1b2d]">
-            <h2 className="text-xl sm:text-2xl font-black text-white mb-3">
-              {es ? "¿Tienes preguntas sobre tu situación?" : "Have a question about your situation?"}
-            </h2>
-            <p className="text-sm text-white/70 mb-6 max-w-2xl mx-auto leading-relaxed">
-              {es
-                ? "Describe qué pasó — por voz o texto. El Genie te dirá si tienes un caso, qué evidencia necesitas y cómo ganar. Sin necesidad de cuenta."
-                : "Describe what happened — by voice or text. The Genie will tell you if you have a case, what evidence you need, and how to win. No account required."}
+          <div className="max-w-3xl mx-auto border-2 border-[#a8e6df] rounded-xl px-8 py-8 text-center bg-[#f0fffe]">
+            <h2 className="text-lg font-black text-primary mb-1.5">Have a small claims question?</h2>
+            <p className="text-sm text-muted-foreground mb-2">
+              Describe your situation in plain English — by voice or text. The Genie will tell you if you have a
+              case, what evidence you need, and exactly how Small Claims Genie can help you win.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button
-                size="lg"
-                onClick={() => window.dispatchEvent(new Event("open-help-genie"))}
-                className="h-12 px-8 text-base bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg"
-              >
-                <Wand2 className="mr-2 h-5 w-5" />
-                {es ? "Pregunta al Genie — Gratis" : "Ask the Genie — Free"}
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => setLocation("/cases/new")}
-                className="h-12 px-8 text-base bg-white/10 hover:bg-white/20 text-white rounded-full font-bold border border-white/30"
-              >
-                <Wand2 className="mr-2 h-5 w-5" />
-                {es ? "Comenzar tu Caso" : "Start Your Case"}
-              </Button>
-            </div>
+            <p className="text-xs text-[#0d6b5e] font-semibold">Free to use — no account required.</p>
           </div>
         </section>
       </div>
@@ -217,7 +164,7 @@ export default function Blog() {
           className="h-[43px] px-[29px] text-sm bg-amber-500 text-white hover:bg-amber-600 rounded-full font-bold shadow-lg pointer-events-auto"
         >
           <Wand2 className="mr-2 h-[18px] w-[18px]" />
-          {es ? "Pregunta al Genie — Gratis" : "Ask the Genie — Free"}
+          Ask the Genie — Free
         </Button>
       </div>
     </>
