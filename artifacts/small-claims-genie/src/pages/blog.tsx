@@ -1,23 +1,36 @@
 import { useEffect, useState, useCallback } from "react";
+import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Wand2, Play, X } from "lucide-react";
+import { Wand2, Play, X, ExternalLink } from "lucide-react";
 
-const SORO_EMBED_SRC  = "https://app.trysoro.com/api/embed/e4dea211-234e-485c-b304-ce18ef8d21f0";
-const YT_THUMB        = "https://img.youtube.com/vi/EkzyvijKN6E/maxresdefault.jpg";
-const YT_EMBED        = "https://www.youtube.com/embed/EkzyvijKN6E";
+const YT_THUMB = "https://img.youtube.com/vi/EkzyvijKN6E/maxresdefault.jpg";
+const YT_EMBED = "https://www.youtube.com/embed/EkzyvijKN6E";
+
+interface ArticleMeta {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  date: string;
+  isoDate: string;
+  image: string | null;
+}
 
 export default function Blog() {
   const [enlarged, setEnlarged] = useState(false);
+  const [, setLocation] = useLocation();
+  const [articles, setArticles] = useState<ArticleMeta[]>([]);
+  const [articlesLoading, setArticlesLoading] = useState(true);
 
+  // Fetch article list from our API proxy (no Soro client-side embed script needed)
   useEffect(() => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SORO_EMBED_SRC}"]`);
-    if (existing) return;
-    const script = document.createElement("script");
-    script.src = SORO_EMBED_SRC;
-    script.defer = true;
-    document.body.appendChild(script);
-    return () => { script.remove(); };
+    let cancelled = false;
+    fetch("/api/blog/articles")
+      .then((r) => r.ok ? r.json() as Promise<{ articles: ArticleMeta[] }> : Promise.reject())
+      .then(({ articles }) => { if (!cancelled) { setArticles(articles); setArticlesLoading(false); } })
+      .catch(() => { if (!cancelled) setArticlesLoading(false); });
+    return () => { cancelled = true; };
   }, []);
 
   // Close lightbox on Escape
@@ -57,7 +70,7 @@ export default function Blog() {
             <div className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-black" style={{ aspectRatio: "16/9" }}>
               <iframe
                 src={`${YT_EMBED}?autoplay=1`}
-                title="Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+                title="Paul Andrew: Why I Created Small Claims Genie — Founder Podcast Interview"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="absolute inset-0 w-full h-full"
@@ -100,7 +113,7 @@ export default function Blog() {
             <button
               onClick={() => setEnlarged(true)}
               className="w-full text-left bg-white rounded-xl border border-border shadow-sm overflow-hidden flex hover:shadow-md transition-shadow group"
-              aria-label="Watch: Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+              aria-label="Watch: Paul Andrew: Why I Created Small Claims Genie — Founder Podcast Interview"
             >
               {/* Thumbnail */}
               <div className="relative shrink-0 w-[110px] sm:w-[152px] bg-black self-stretch">
@@ -120,7 +133,7 @@ export default function Blog() {
               <div className="flex flex-col justify-between p-4 min-w-0">
                 <div>
                   <p className="text-sm font-bold text-primary leading-snug mb-1.5">
-                    Why Legal AI and Benefits Work In Your Favor Podcast — Legal AI Applications Understanding
+                    Paul Andrew: Why I Created Small Claims Genie
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                     Paul Andrew, founder of Small Claims Genie, discusses legal AI applications and how
@@ -133,10 +146,43 @@ export default function Blog() {
           </div>
         </section>
 
-        {/* ── Soro Blog Embed ── */}
+        {/* ── Blog article list ── */}
         <section className="px-6 pb-10 bg-[#f5fdfb]">
-          <div className="max-w-3xl mx-auto">
-            <div id="soro-blog" />
+          <div className="max-w-3xl mx-auto space-y-3">
+            {articlesLoading && (
+              <div className="text-sm text-muted-foreground py-4 text-center">Loading articles…</div>
+            )}
+            {!articlesLoading && articles.length === 0 && (
+              <div className="text-sm text-muted-foreground py-4 text-center">No articles found.</div>
+            )}
+            {articles.map((article) => (
+              <button
+                key={article.id}
+                onClick={() => setLocation(`/blog/${article.slug}`)}
+                className="w-full text-left bg-white rounded-xl border border-border shadow-sm overflow-hidden flex hover:shadow-md transition-shadow group"
+              >
+                {article.image && (
+                  <div className="relative shrink-0 w-[110px] sm:w-[152px] bg-muted self-stretch">
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-col justify-between p-4 min-w-0">
+                  <div>
+                    <p className="text-sm font-bold text-primary leading-snug mb-1.5 group-hover:underline">
+                      {article.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      {article.excerpt}
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground/60 mt-3">{article.date}</p>
+                </div>
+              </button>
+            ))}
           </div>
         </section>
 
