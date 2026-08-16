@@ -120,7 +120,7 @@ export default function Blog() {
               <div className="flex flex-col justify-between p-4 min-w-0">
                 <div>
                   <p className="text-sm font-bold text-primary leading-snug mb-1.5">
-                    Why Small Claims Founder Podcast — Legal AI Founder and Applications
+                    Why Legal AI and Benefits Work In Your Favor Podcast — Legal AI Applications Understanding
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                     Paul Andrew, founder of Small Claims Genie, discusses legal AI applications and how

@@ -9,7 +9,7 @@ const THUMBNAIL_URL  = "https://img.youtube.com/vi/EkzyvijKN6E/maxresdefault.jpg
 const CANONICAL      = "https://smallclaimsgenie.com/blog/paul-andrew-small-claims-genie-podcast";
 const LOGO_URL       = "https://smallclaimsgenie.com/opengraph.jpg";
 const UPLOAD_DATE    = "2026-08-15";
-const TITLE          = "Why Small Claims Founder Podcast — Legal AI Founder and Applications";
+const TITLE          = "Why Legal AI and Benefits Work In Your Favor Podcast — Legal AI Applications Understanding";
 
 const structuredData = [
   {
