@@ -29,7 +29,7 @@ import path from "node:path";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
 
-const STATE_ORDER = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA"] as const;
+const STATE_ORDER = ["CA", "FL", "IL", "NJ", "NC", "TX", "VA", "WA", "AZ"] as const;
 type StateCode = (typeof STATE_ORDER)[number];
 
 const STATE_NAMES: Record<StateCode, string> = {
@@ -41,6 +41,7 @@ const STATE_NAMES: Record<StateCode, string> = {
   VA: "Virginia",
   NJ: "New Jersey",
   WA: "Washington",
+  AZ: "Arizona",
 };
 
 // CA is the original/default state and is intentionally handled as the
@@ -96,6 +97,7 @@ const STATE_SLUG: Record<StateCode, string> = {
   VA: "virginia",
   NJ: "new-jersey",
   WA: "washington",
+  AZ: "arizona",
 };
 
 for (const state of STATES_REQUIRING_EXPLICIT_WIRING) {

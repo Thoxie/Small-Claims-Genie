@@ -37,6 +37,24 @@ import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
 import { pdftkFlatten } from "../acroform-filler";
 import { FORM_SIGNATURE_PLACEMENTS } from "@workspace/form-signatures";
+import { ARIZONA_COUNTIES } from "../../data/counties-az";
+
+/**
+ * Maps county IDs (from the user's precinct selection) to the exact string
+ * that appears in the Dropdown1 AcroForm field of the LJSC00001F complaint PDF.
+ *
+ * NOTE: The current asset (az-ljsc00001f-complaint.pdf) was obtained from the
+ * Pinal County justice court and only contains Pinal County precinct options.
+ * When a statewide LJSC form is obtained (with all ~85 justice courts), expand
+ * this map accordingly. For counties not listed here the dropdown is left at
+ * its placeholder and the courthouse info is drawn as a text note at the top.
+ */
+const COUNTY_ID_TO_DROPDOWN: Record<string, string> = {
+  "az-pinal-casagrande":
+    "Casa Grande Justice #1102 - 820 E. Cottonwood Ln., Bldg. B, Casa Grande, AZ. 85122 (520) 836-5471",
+  "az-pinal-apachejunction":
+    "Apache Junction Justice Court #1107 - 575 N. Idaho Rd., Ste. 200, Apache Junction, AZ. 85119 (480) 982-2921",
+};
 
 const PDF_PATH = path.join(FORMS_DIR, "az-ljsc00001f-complaint.pdf");
 
@@ -128,6 +146,23 @@ const azComplaintDefinition: FormDefinition = {
     safeSetText(form, "Defendant Address City/State/Zip", defCSZ);
     safeSetText(form, "Defendant Phone number", d.defendantPhone ?? "");
     // "Defendant Email address" — not collected in intake; left blank
+
+    // ── Court selection — auto-select Dropdown1 from the selected precinct ───
+    // The current PDF asset was obtained from the Pinal County justice court and
+    // only contains Pinal County precinct options in Dropdown1. For those courts,
+    // we auto-select the matching option so the filer doesn't have to. For all
+    // other counties the dropdown retains its placeholder; the filer selects
+    // their court manually before printing.
+    if (d.countyId) {
+      const dropdownValue = COUNTY_ID_TO_DROPDOWN[d.countyId];
+      if (dropdownValue) {
+        try {
+          form.getDropdown("Dropdown1").select(dropdownValue);
+        } catch {
+          /* option not present — leave at placeholder */
+        }
+      }
+    }
 
     // ── Claim details ──────────────────────────────────────────────────────────
     safeSetText(form, "Claim Amount", claimAmt);
