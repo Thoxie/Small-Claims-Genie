@@ -78,7 +78,7 @@ function FilingSummaryPanel({
   jurisdictionState,
 }: {
   c: ExtendedCase | undefined;
-  jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC";
+  jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC" | "AZ";
 }) {
   const stateAbbr = jurisdictionState;
   return (
@@ -2384,6 +2384,81 @@ function NcEFilingPanel({
   );
 }
 
+// ─── AZ case info (E-File & Serve tab body — in-person only, no e-filing) ─────
+
+function AzEFilingPanel({ c }: { c: ExtendedCase | undefined }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {/* LEFT — Case info */}
+      <FilingSummaryPanel c={c} jurisdictionState="AZ" />
+
+      {/* RIGHT — AZ-specific filing & service content */}
+      <div className="space-y-5">
+        {/* No e-filing notice */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-amber-600 shrink-0" />
+            <p className="text-sm font-semibold text-amber-900">Arizona small claims — in-person filing only</p>
+          </div>
+          <p className="text-xs text-amber-800 leading-relaxed">
+            Arizona Justice Courts do not offer online e-filing for small claims cases. File your Complaint (LJSC00001F) in person at the justice court clerk's office in the precinct where the defendant lives or where the transaction occurred. Pay the $25 filing fee at the window.
+          </p>
+          <a
+            href="https://www.azcourts.gov/selfservicecenter/small-claims"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:underline"
+          >
+            Arizona Courts Small Claims Self-Help ↗
+          </a>
+        </div>
+
+        {/* Service methods */}
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-[#0d6b5e] border-b border-[#0d6b5e]/20 pb-1.5 flex items-center gap-1.5">
+            <Send className="h-3.5 w-3.5" /> Serving the Defendant
+          </h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <strong>You must arrange service — the court does not serve for you</strong> (A.R.S. § 22-513). File Proof of Service (LJSC00003F) within 45 days of filing your Complaint (Ariz. R. Small Claims P. 5).
+          </p>
+          {[
+            { icon: Mail, title: "Certified / Registered Mail (easiest)", desc: "Send summons and complaint by registered or certified mail with return receipt. If refused or unclaimed, use personal service." },
+            { icon: Shield, title: "Constable or Sheriff", desc: "Contact the constable or sheriff's office in the defendant's precinct or county to schedule personal service and pay the service fee." },
+            { icon: User, title: "Licensed Process Server", desc: "Hire a licensed process server (must be 18+ and not a party). Get an affidavit of service for your records and file it with the court." },
+          ].map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="flex gap-3 items-start">
+              <div className="h-7 w-7 rounded-lg bg-[#0d6b5e]/10 flex items-center justify-center shrink-0 mt-0.5">
+                <Icon className="h-3.5 w-3.5 text-[#0d6b5e]" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground">{title}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Key rules */}
+        <div className="rounded-xl border bg-card p-4 space-y-2">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-[#0d6b5e] border-b border-[#0d6b5e]/20 pb-1.5">Key Arizona Rules</h3>
+          {[
+            "Claim limit: $5,000 (A.R.S. § 22-503, excluding interest and court costs)",
+            "Hearing typically within 30–70 days of filing",
+            "No attorneys allowed unless all parties stipulate (A.R.S. § 22-512)",
+            "Judgments are final — no appeal from a small claims decision (A.R.S. § 22-519)",
+            "10-year judgment validity; post-judgment interest at 10%/yr (A.R.S. § 44-1201)",
+          ].map((rule) => (
+            <div key={rule} className="flex items-start gap-2">
+              <CheckCircle className="h-3.5 w-3.5 text-[#0d6b5e] shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{rule}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── CA case info (AI E-Filing System tab body) ───────────────────────────────
 
 function CaEFilingPanel({
@@ -3096,6 +3171,8 @@ function EFilingPanel({
   serviceMethod: string | null | undefined;
   onSelectService: (method: string) => void;
 }) {
+  const isAZ = (c?.jurisdictionState as string) === "AZ";
+
   const statePanel = (() => {
     if (c?.jurisdictionState === "FL") {
       return <FlEFilingPanel c={c} caseId={caseId} getToken={getToken} onProcessServerClick={onProcessServerClick} serviceMethod={serviceMethod} onSelectService={onSelectService} />;
@@ -3109,12 +3186,15 @@ function EFilingPanel({
     if ((c?.jurisdictionState as string) === "NC") {
       return <NcEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
     }
+    if (isAZ) {
+      return <AzEFilingPanel c={c} />;
+    }
     return <CaEFilingPanel c={c} caseId={caseId} getToken={getToken} />;
   })();
 
   return (
     <div className="space-y-6">
-      <TylerEFilingSection caseId={caseId} getToken={getToken} />
+      {!isAZ && <TylerEFilingSection caseId={caseId} getToken={getToken} />}
       {statePanel}
     </div>
   );
@@ -3225,11 +3305,12 @@ function ProcessServerPanel() {
   );
 }
 
-function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC" }) {
+function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC" | "AZ" }) {
   const isFL = jurisdictionState === "FL";
   const isTX = jurisdictionState === "TX";
   const isIL = jurisdictionState === "IL";
   const isNC = jurisdictionState === "NC";
+  const isAZ = jurisdictionState === "AZ";
 
   const caSteps = [
     {
@@ -3396,7 +3477,40 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | 
     },
   ];
 
-  const steps = isNC ? ncSteps : isIL ? ilSteps : isTX ? txSteps : isFL ? flSteps : caSteps;
+  const azSteps = [
+    {
+      icon: Gavel,
+      title: "Obtain your judgment",
+      desc: "After you win, the justice court enters a judgment in your favor. Get a certified copy from the clerk — you will need it for every collection step.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Debtor's Examination (A.R.S. § 12-1631)",
+      desc: "File a request for a Debtor's Examination to compel the defendant to appear in court and disclose bank accounts, employer, and property under oath. The justice court schedules the hearing.",
+    },
+    {
+      icon: FileCheck2,
+      title: "Wage garnishment",
+      desc: "File a Writ of Garnishment with the court and serve the defendant's employer. Arizona limits garnishment to 25% of disposable earnings per pay period (A.R.S. § 33-1131).",
+    },
+    {
+      icon: Shield,
+      title: "Bank levy",
+      desc: "Use a Writ of Execution to direct the constable or sheriff to levy the defendant's bank account. Identify the bank and branch during the Debtor's Examination.",
+    },
+    {
+      icon: MapPin,
+      title: "Judgment lien on real estate",
+      desc: "Record a certified copy of your judgment with the County Recorder in any Arizona county where the defendant owns real property to create a judgment lien on their real estate.",
+    },
+    {
+      icon: RefreshCw,
+      title: "Valid for 10 years — renew before expiration",
+      desc: "Arizona judgments are enforceable for 10 years and may be renewed for an additional 10-year term before expiration (A.R.S. § 12-1551, § 12-1611). Post-judgment interest accrues at 10% per year (A.R.S. § 44-1201).",
+    },
+  ];
+
+  const steps = isAZ ? azSteps : isNC ? ncSteps : isIL ? ilSteps : isTX ? txSteps : isFL ? flSteps : caSteps;
   const iconBg = "bg-amber-100";
   const iconColor = "text-amber-700";
 
@@ -3413,7 +3527,7 @@ function CollectPanel({ jurisdictionState }: { jurisdictionState: "CA" | "FL" | 
           </h2>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             A judgment in your favor is a powerful legal tool — but it does not automatically put money
-            in your pocket. {isNC ? "North Carolina" : isIL ? "Illinois" : isTX ? "Texas" : isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
+            in your pocket. {isAZ ? "Arizona" : isNC ? "North Carolina" : isIL ? "Illinois" : isTX ? "Texas" : isFL ? "Florida" : "California"} gives you several enforcement methods to collect what you are owed.
             Here is how to use them.
           </p>
         </div>
@@ -3479,7 +3593,7 @@ export function EFileServePage({ caseIdParam }: { caseIdParam: string }) {
   const { data: caseData, refetch: refetchCase } = useGetCase(caseId, { query: { enabled: !!caseId } });
   const c = caseData as ExtendedCase | undefined;
 
-  const jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : (c?.jurisdictionState as string) === "IL" ? "IL" : (c?.jurisdictionState as string) === "NC" ? "NC" : "CA";
+  const jurisdictionState: "CA" | "FL" | "TX" | "IL" | "NC" | "AZ" = c?.jurisdictionState === "FL" ? "FL" : c?.jurisdictionState === "TX" ? "TX" : (c?.jurisdictionState as string) === "IL" ? "IL" : (c?.jurisdictionState as string) === "NC" ? "NC" : (c?.jurisdictionState as string) === "AZ" ? "AZ" : "CA";
 
   // Sync local state from case data once loaded (only initialises — does not override in-flight changes)
   const [serviceMethodInitialised, setServiceMethodInitialised] = useState(false);
