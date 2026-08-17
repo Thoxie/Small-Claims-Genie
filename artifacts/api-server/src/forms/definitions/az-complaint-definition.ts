@@ -83,6 +83,7 @@ function cityStateZip(
   return parts.join(", ");
 }
 
+
 /**
  * Resolve the court text to print on the "Dropdown1" court line.
  * Preference order:

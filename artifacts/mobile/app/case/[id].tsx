@@ -70,6 +70,15 @@ const TAB_LABELS_ES: Record<string, string> = {
 
 const CASE_REVIEW_PROMPT = "Please do a full review of my case. Check my venue, eligibility, prior demand, and overall readiness. Let me know if anything looks wrong or could hurt my case.";
 
+const AZ_PINAL_PRECINCTS = [
+  { id: "az-pinal-pioneer",       label: "Pioneer Justice Court #1109 — San Tan Valley" },
+  { id: "az-pinal-casagrande",    label: "Casa Grande Justice Court #1102 — Casa Grande" },
+  { id: "az-pinal-coolidge",      label: "Central Pinal Justice Court #1103 — Coolidge" },
+  { id: "az-pinal-maricopa",      label: "Western Pinal Justice Court #1108 — Maricopa" },
+  { id: "az-pinal-superior",      label: "Copper Corridor Justice Court #1105 — Superior" },
+  { id: "az-pinal-oracle",        label: "Copper Corridor Satellite #1105 — Oracle" },
+  { id: "az-pinal-apachejunction",label: "Apache Junction Justice Court #1107 — Apache Junction" },
+] as const;
 function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData: CaseWithDetails; onCheckCase?: () => void }) {
   const colors = useColors();
   const save = useSaveIntakeProgress();
@@ -90,6 +99,7 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
     defendantState: caseData.defendantState ?? "CA",
     defendantZip: caseData.defendantZip ?? "",
     jurisdictionState: caseData.jurisdictionState ?? "CA",
+    countyId: caseData.countyId ?? "",
     claimType: caseData.claimType ?? "",
     claimAmount: caseData.claimAmount != null ? String(caseData.claimAmount) : "",
     claimDescription: caseData.claimDescription ?? "",
@@ -269,6 +279,45 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* AZ precinct picker — only visible when Arizona is selected */}
+          {form.jurisdictionState === "AZ" && (
+            <>
+              <Section title="PINAL COUNTY JUSTICE COURT" />
+              <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>
+                Which justice court will you file in? (Pinal County cases)
+              </Text>
+              {AZ_PINAL_PRECINCTS.map((precinct) => {
+                const selected = form.countyId === precinct.id;
+                return (
+                  <TouchableOpacity
+                    key={precinct.id}
+                    style={[
+                      styles.precinctRow,
+                      {
+                        borderColor: selected ? colors.primary : colors.border,
+                        backgroundColor: selected ? colors.primary + "18" : colors.secondary,
+                      },
+                    ]}
+                    onPress={() => setForm((prev) => ({ ...prev, countyId: precinct.id }))}
+                  >
+                    <View
+                      style={[
+                        styles.precinctRadio,
+                        {
+                          borderColor: selected ? colors.primary : colors.border,
+                          backgroundColor: selected ? colors.primary : "transparent",
+                        },
+                      ]}
+                    />
+                    <Text style={[styles.precinctLabel, { color: colors.foreground }]}>
+                      {precinct.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </>
+          )}
 
           <TouchableOpacity
             style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 }]}
@@ -2647,6 +2696,10 @@ const styles = StyleSheet.create({
   statePickerRow: { flexDirection: "column", gap: 8, marginBottom: 8 },
   statePill: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1.5, alignItems: "center" },
   statePillText: { fontSize: 14, fontFamily: "PlusJakartaSans_600SemiBold", fontWeight: "600" },
+
+  precinctRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 11, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1.5, marginBottom: 6 },
+  precinctRadio: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, flexShrink: 0 },
+  precinctLabel: { flex: 1, fontSize: 13, fontFamily: "PlusJakartaSans_400Regular", lineHeight: 18 },
 
   claimLimitWarn: { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 4, marginBottom: 4 },
   claimLimitWarnText: { flex: 1, fontSize: 12, fontFamily: "PlusJakartaSans_400Regular", lineHeight: 17 },
