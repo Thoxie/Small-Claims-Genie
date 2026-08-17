@@ -58,6 +58,21 @@ function csz(
   return parts.join(", ");
 }
 
+/**
+ * Split a phone string into area code and local number so each part can be
+ * drawn independently around the form's pre-printed ( ) brackets.
+ * "(650) 533-2222" → { areaCode: "650", rest: " 533-2222" }
+ */
+function splitPhone(phone: string | null | undefined): { areaCode: string; rest: string } {
+  const p = (phone ?? "").trim();
+  const m = p.match(/^\(?\s*(\d{3})\s*\)(.*)$/);
+  if (m) return { areaCode: m[1], rest: m[2] };
+  const digits = p.replace(/\D/g, "");
+  if (digits.length >= 10)
+    return { areaCode: digits.slice(0, 3), rest: ` ${digits.slice(3, 6)}-${digits.slice(6, 10)}` };
+  return { areaCode: p, rest: "" };
+}
+
 export async function buildAZProofOfService(
   d: CaseData,
   _body: FormBody,
@@ -89,18 +104,23 @@ export async function buildAZProofOfService(
   t(d.plaintiffEmail ?? "", 160, 641);
 
   // ── Plaintiff party box (left column, ~15pt higher than Summons) ─────────────
-  t(d.plaintiffName ?? "", 77, 591);
-  t(d.plaintiffAddress ?? "", 77, 574);
-  t(pltCSZ, 77, 558);
-  // Phone in the "(  )" row — strip leading "(" so area code sits inside the pre-printed bracket
-  t((d.plaintiffPhone ?? "").replace(/^\(/, ""), 88, 405);
+  // Name/address/CSZ are already in the "Person Filing" section at the top —
+  // leave those lines blank here and only fill the phone row.
+  // Phone: area code sits between pre-printed ( at x≈77–81 and ) at x≈111–115;
+  // the rest of the number goes after the closing bracket at x≈118.
+  const { areaCode: pltAC, rest: pltRest } = splitPhone(d.plaintiffPhone);
+  t(pltAC, 84, 401);
+  t(pltRest, 118, 401);
 
   // ── Defendant party box (right column, below form title) ─────────────────────
   t(d.defendantName ?? "", 365, 454);
   t(d.defendantAddress ?? "", 365, 440);
   t(defCSZ, 365, 426);
-  // Phone in the "(  )" row — strip leading "(" so area code sits inside the pre-printed bracket
-  t((d.defendantPhone ?? "").replace(/^\(/, ""), 393, 405);
+  // Phone: area code between pre-printed ( at x≈365–370 and ) at x≈399–403;
+  // rest of number after the closing bracket at x≈406.
+  const { areaCode: defAC, rest: defRest } = splitPhone(d.defendantPhone);
+  t(defAC, 372, 401);
+  t(defRest, 406, 401);
 
   // ── Signature block (plaintiff affirms service) ──────────────────────────────
   // LJSC00003F has no pre-printed signature line; the area below the

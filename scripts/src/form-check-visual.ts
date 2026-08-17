@@ -44,6 +44,14 @@ const FORMS: FormSpec[] = [
     pages:    [1, 2],
   },
   {
+    label:    "az-proof-of-service-current",
+    countyId: "az-maricopa-phoenix",
+    state:    "AZ",
+    endpoint: (id, tok) => `${BASE}/api/cases/${id}/forms/az/proof-of-service/signed?token=${tok}`,
+    method:   "POST",
+    pages:    [1],
+  },
+  {
     label:    "fl-clkct333-miami-dade",
     countyId: "fl-miami-dade",
     state:    "FL",
