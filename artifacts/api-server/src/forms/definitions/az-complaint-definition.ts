@@ -15,9 +15,15 @@
  *   "Defendant Phone number" / "Defendant Email address"
  *   "Claim Amount" / "is the total amount owed to me by the defendant because 1"
  *   "Case Number" / "Date17_af_date"
+ *   "Dropdown1" (court) — the source PDF is Pinal County's copy of LJSC00001F,
+ *     so its built-in dropdown options list only Pinal County precincts. To
+ *     avoid showing wrong courts to users in other counties, the dropdown is
+ *     bypassed: its options are replaced programmatically with the user's own
+ *     court (from case venue data or the AZ court directory) and that value is
+ *     selected before flattening. When no court can be determined the
+ *     placeholder text is cleared so the flattened PDF shows a blank line.
  *
  * Fields left blank for filer/court to complete:
- *   "Dropdown1" (court selection — filer selects from drop-down)
  *   "1_4" (overflow description, page 2)
  *   "Check Box18" / "Language Needed"
  *
@@ -37,6 +43,7 @@ import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
 import { pdftkFlatten } from "../acroform-filler";
 import { FORM_SIGNATURE_PLACEMENTS } from "@workspace/form-signatures";
+import { ARIZONA_COUNTIES } from "../../data/counties-az";
 
 const PDF_PATH = path.join(FORMS_DIR, "az-ljsc00001f-complaint.pdf");
 
@@ -74,6 +81,88 @@ function cityStateZip(
   else if (state) parts.push(state);
   else if (zip) parts.push(zip);
   return parts.join(", ");
+}
+
+/**
+ * Resolve the court text to print on the "Dropdown1" court line.
+ * Preference order:
+ *   1. Case venue data (courthouseName + address/city/zip/phone)
+ *   2. AZ court directory lookup by courthouseId, then countyId
+ *   3. Generic "<County> County Justice Court" when only a county is known
+ *   4. null — no court determinable; the dropdown placeholder is cleared
+ */
+export function resolveAzCourtLine(d: CaseData): string | null {
+  const compose = (
+    name: string,
+    addr?: string | null,
+    city?: string | null,
+    zip?: string | null,
+    phone?: string | null,
+  ): string => {
+    let out = name;
+    const loc = [addr, city ? `${city}, AZ${zip ? ` ${zip}` : ""}` : ""]
+      .filter(Boolean)
+      .join(", ");
+    if (loc) out += ` - ${loc}`;
+    if (phone) out += ` ${phone}`;
+    return out;
+  };
+
+  if (d.courthouseName) {
+    return compose(
+      d.courthouseName,
+      d.courthouseAddress,
+      d.courthouseCity,
+      d.courthouseZip,
+      d.courthousePhone,
+    );
+  }
+
+  const rec =
+    ARIZONA_COUNTIES.find((c) => c.id === d.courthouseId) ??
+    ARIZONA_COUNTIES.find((c) => c.id === d.countyId);
+  if (rec) {
+    return compose(
+      rec.courthouseName,
+      rec.courthouseAddress,
+      rec.courthouseCity,
+      rec.courthouseZip,
+      rec.phone || null,
+    );
+  }
+
+  const countyName = resolveAzCountyName(d);
+  if (countyName) return `${countyName} County Justice Court`;
+
+  return null;
+}
+
+/**
+ * Resolve the user's AZ county name ("Maricopa", "Pinal", ...) from case data,
+ * or null when it cannot be determined.
+ */
+export function resolveAzCountyName(d: CaseData): string | null {
+  const rec =
+    ARIZONA_COUNTIES.find((c) => c.id === d.courthouseId) ??
+    ARIZONA_COUNTIES.find((c) => c.id === d.countyId);
+  if (rec) return rec.name;
+  const m = (d.courthouseName ?? "").match(/^([A-Za-z ]+?) County\b/);
+  if (m) return m[1].trim();
+  // countyId may be a county-level slug like "az-maricopa" or "az-santa-cruz"
+  // rather than a precinct record id — match it against known county names.
+  const slug = (d.countyId ?? "").toLowerCase();
+  if (slug.startsWith("az-")) {
+    const seen = new Set<string>();
+    for (const c of ARIZONA_COUNTIES) {
+      if (seen.has(c.name)) continue;
+      seen.add(c.name);
+      const countySlug = `az-${c.name.toLowerCase().replace(/\s+/g, "-")}`;
+      if (slug === countySlug || slug.startsWith(`${countySlug}-`)) {
+        return c.name;
+      }
+    }
+  }
+  return null;
 }
 
 const azComplaintDefinition: FormDefinition = {
@@ -129,6 +218,21 @@ const azComplaintDefinition: FormDefinition = {
     safeSetText(form, "Defendant Phone number", d.defendantPhone ?? "");
     // "Defendant Email address" — not collected in intake; left blank
 
+    // ── Court line ("Dropdown1") ───────────────────────────────────────────────
+    // The stock PDF's dropdown lists only Pinal County precincts; bypass it by
+    // replacing the options with the user's actual court and selecting it (or a
+    // blank when no court is known, so the "SELECT A COURT..." placeholder
+    // never prints on the flattened output).
+    try {
+      const dd = form.getDropdown("Dropdown1");
+      const courtLine = resolveAzCourtLine(d) ?? "";
+      dd.setOptions([courtLine]);
+      dd.select(courtLine);
+      dd.setFontSize(7);
+    } catch {
+      /* field absent */
+    }
+
     // ── Claim details ──────────────────────────────────────────────────────────
     safeSetText(form, "Claim Amount", claimAmt);
     safeSetText(form, "Case Number", d.caseNumber ?? "");
@@ -166,6 +270,51 @@ const azComplaintDefinition: FormDefinition = {
     // entirely in the primary field above.
     if (overflowDesc) {
       safeSetText(form, "1_4", overflowDesc);
+    }
+
+    // ── Page 1 header ("Pinal County Justice Courts, State of Arizona") ───────
+    // The stock PDF is Pinal County's copy, with a static Pinal header printed
+    // on page 1 (pdftotext bbox: x 196.9–469.5, y 44.3–56.9). For users in any
+    // other county — or when the county is unknown — cover it with a white
+    // rectangle and print the correct heading in its place.
+    const azCountyName = resolveAzCountyName(d);
+    if (azCountyName?.toLowerCase() !== "pinal") {
+      try {
+        const page1 = doc.getPages()[0];
+        const pageH = page1.getHeight(); // 792
+        page1.drawRectangle({
+          x: 188,
+          y: pageH - 58.5, // covers y 44.3–56.9 from top
+          width: 292,
+          height: 16,
+          color: rgb(1, 1, 1),
+        });
+        // Also cover the Pinal County seal image at the top-left of the header
+        // (circular seal reading "THE SEAL OF PINAL COUNTY ARIZONA",
+        // approx. x 84–166pt, y 7–91pt from the top of the page).
+        page1.drawRectangle({
+          x: 78,
+          y: pageH - 95,
+          width: 96,
+          height: 92,
+          color: rgb(1, 1, 1),
+        });
+        const heading = azCountyName
+          ? `${azCountyName} County Justice Courts, State of Arizona`
+          : "Justice Courts, State of Arizona";
+        const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+        const size = 12;
+        const w = bold.widthOfTextAtSize(heading, size);
+        page1.drawText(heading, {
+          x: 333.2 - w / 2, // center of the original header block
+          y: pageH - 56, // baseline aligned with original text
+          size,
+          font: bold,
+          color: rgb(0, 0, 0),
+        });
+      } catch {
+        /* header replacement is best-effort */
+      }
     }
 
     // ── Signature overlay (plaintiff signs Page 2 of the form) ──────────────
