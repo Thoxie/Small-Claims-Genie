@@ -82,23 +82,25 @@ export async function buildAZProofOfService(
   const defCSZ = csz(d.defendantCity, d.defendantState ?? "AZ", d.defendantZip);
 
   // ── Person Filing (top-left section) ─────────────────────────────────────────
-  t(d.plaintiffName ?? "", 200, 706);
-  t(d.plaintiffAddress ?? "", 200, 689);
-  t(pltCSZ, 200, 672);
-  t(d.plaintiffPhone ?? "", 145, 654);
-  t(d.plaintiffEmail ?? "", 160, 637);
+  t(d.plaintiffName ?? "", 200, 710);
+  t(d.plaintiffAddress ?? "", 200, 693);
+  t(pltCSZ, 200, 676);
+  t(d.plaintiffPhone ?? "", 145, 658);
+  t(d.plaintiffEmail ?? "", 160, 641);
 
   // ── Plaintiff party box (left column, ~15pt higher than Summons) ─────────────
-  t(d.plaintiffName ?? "", 77, 587);
-  t(d.plaintiffAddress ?? "", 77, 570);
-  t(pltCSZ, 77, 554);
-  t(d.plaintiffPhone ?? "", 95, 401);
+  t(d.plaintiffName ?? "", 77, 591);
+  t(d.plaintiffAddress ?? "", 77, 574);
+  t(pltCSZ, 77, 558);
+  // Phone in the "(  )" row — strip leading "(" so area code sits inside the pre-printed bracket
+  t((d.plaintiffPhone ?? "").replace(/^\(/, ""), 88, 405);
 
   // ── Defendant party box (right column, below form title) ─────────────────────
-  t(d.defendantName ?? "", 365, 450);
-  t(d.defendantAddress ?? "", 365, 436);
-  t(defCSZ, 365, 422);
-  t(d.defendantPhone ?? "", 400, 401);
+  t(d.defendantName ?? "", 365, 454);
+  t(d.defendantAddress ?? "", 365, 440);
+  t(defCSZ, 365, 426);
+  // Phone in the "(  )" row — strip leading "(" so area code sits inside the pre-printed bracket
+  t((d.defendantPhone ?? "").replace(/^\(/, ""), 393, 405);
 
   // ── Signature block (plaintiff affirms service) ──────────────────────────────
   // LJSC00003F has no pre-printed signature line; the area below the
