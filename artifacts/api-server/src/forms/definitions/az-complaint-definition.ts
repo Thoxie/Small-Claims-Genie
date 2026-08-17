@@ -235,7 +235,9 @@ const azComplaintDefinition: FormDefinition = {
     }
 
     // ── Claim details ──────────────────────────────────────────────────────────
-    safeSetText(form, "Claim Amount", claimAmt);
+    // The PDF has a pre-printed "$" before the AcroForm field, so strip the
+    // leading "$" that formatAmount() adds to avoid printing "$$5,000.00".
+    safeSetText(form, "Claim Amount", claimAmt.replace(/^\$/, ""));
     safeSetText(form, "Case Number", d.caseNumber ?? "");
     safeSetText(form, "Date17_af_date", todayStr);
 
@@ -271,6 +273,11 @@ const azComplaintDefinition: FormDefinition = {
     // entirely in the primary field above.
     if (overflowDesc) {
       safeSetText(form, "1_4", overflowDesc);
+      try {
+        form.getTextField("1_4").setFontSize(9);
+      } catch {
+        /* field absent */
+      }
     }
 
     // ── Page 1 header ("Pinal County Justice Courts, State of Arizona") ───────
