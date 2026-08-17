@@ -177,6 +177,20 @@ export const FORM_SIGNATURE_PLACEMENTS = {
     draw: { pageIndex: 0, x: 339, y: 200, width: 155, height: 22, rotate: 90 },
     testCrop: { mode: "image-space", page: 1, x: 200, y: 317, width: 156, height: 23 },
   },
+  /**
+   * AZ Fee Waiver (AOCDFGF1F). Applicant signs on the last page.
+   * ⚠️  Coordinates are placeholders — calibrate after placing the PDF asset.
+   * Non-rotated AcroForm; test crop derives from `draw`.
+   */
+  "az-fee-waiver": {
+    label: "AZ-FEE-WAIVER",
+    // ⚠️  pageIndex and draw coords are placeholders — calibrate after placing
+    // the PDF asset and running `pdftk dump_data_fields` to find the signature
+    // page number and position. Update draw here AND in az-fee-waiver-definition.ts
+    // AND in signed-form-configs.ts (regions array).
+    draw: { pageIndex: 0, x: 97, y: 110, width: 180, height: 18 },
+    testCrop: { mode: "derive-from-draw" },
+  },
 } satisfies Record<string, FormSignaturePlacement>;
 
 export type FormSignatureId = keyof typeof FORM_SIGNATURE_PLACEMENTS;

@@ -83,6 +83,7 @@
     "test:fl-orange-sigcheck": "tsx ./src/test-fl-orange-sigcheck.ts",
     "test:fl-hillsborough-sigcheck": "tsx ./src/test-fl-hillsborough-sigcheck.ts",
     "test:fl-palm-beach-sigcheck": "tsx ./src/test-fl-palm-beach-sigcheck.ts",
+    "test:az-fee-waiver-sigcheck": "tsx ./src/test-az-fee-waiver-sigcheck.ts",
     "test:az-summons-sigcheck": "tsx ./src/test-az-summons-sigcheck.ts",
     "test:il-summons-sigcheck": "tsx ./src/test-il-summons-sigcheck.ts",
     "test:nc-aoc-cvm-100-sigcheck": "tsx ./src/test-nc-aoc-cvm-100-sigcheck.ts",

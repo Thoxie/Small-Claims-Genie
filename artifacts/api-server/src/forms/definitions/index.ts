@@ -35,6 +35,12 @@ export * from "./tx-citation-definition";
 export * from "./tx-return-of-service-definition";
 export * from "./tx-fee-waiver-definition";
 
+// ─── Arizona forms ────────────────────────────────────────────────────────────
+export * from "./az-complaint-definition";
+export * from "./az-summons-definition";
+export * from "./az-proof-of-service-definition";
+export * from "./az-fee-waiver-definition";
+
 // ─── Illinois forms ───────────────────────────────────────────────────────────
 export * from "./il-smc-complaint-definition";
 export * from "./il-summons-definition";
@@ -84,8 +90,5 @@ export * from "./nj-mv-complaint-definition";
 export * from "./wa-notice-definition";
 export * from "./wa-service-definition";
 
-// ─── Arizona official court PDFs (coordinate overlay) ────────────────────────
-export * from "./az-complaint-definition";
-export * from "./az-summons-definition";
-export * from "./az-proof-of-service-definition";
+// (AZ exports consolidated in the Arizona section above)
 

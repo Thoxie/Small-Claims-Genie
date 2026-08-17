@@ -82,9 +82,11 @@ export function ArizonaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">AOCDFGF1F</span>
+            <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Optional</span>
           </div>
           <p className="text-sm font-semibold text-foreground">Application for Deferral or Waiver of Court Fees</p>
-          <p className="text-xs text-muted-foreground mt-0.5">If you cannot afford the $25 filing fee, ask the clerk for this form — or download it from the Arizona Courts website. File with your Complaint. The court decides whether to waive or defer your fees.</p>
+          <p className="text-xs text-muted-foreground mt-0.5">If you cannot afford the $25 filing fee, download this form from the Arizona Courts website. File with your Complaint. The court decides whether to waive or defer your fees.</p>
+          <p className="text-xs text-blue-600 mt-1 font-medium">Pre-filled in-app download coming soon.</p>
         </div>
         <div className="shrink-0">
           <a

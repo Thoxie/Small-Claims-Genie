@@ -802,4 +802,19 @@ router.post(
   makeFormHandler("AZ-PROOF-OF-SERVICE", (id) => `AZ-Proof-of-Service-Signed-Case-${id}.pdf`, { signed: true }),
 );
 
+// ── AZ Fee Waiver (AOCDFGF1F) ──────────────────────────────────────────────
+// ⚠️  Requires az-aocdfgf1f-fee-waiver.pdf in assets/forms/.
+//     Routes are registered so the frontend endpoint exists; the handler returns
+//     a 503 with a clear message until the PDF asset is placed and field names
+//     are calibrated (see az-fee-waiver-definition.ts).
+router.post(
+  "/cases/:id/forms/az/fee-waiver",
+  makeFormHandler("AZ-FEE-WAIVER", (id) => `AZ-Fee-Waiver-AOCDFGF1F-Case-${id}.pdf`, { inline: true }),
+);
+
+router.post(
+  "/cases/:id/forms/az/fee-waiver/signed",
+  makeFormHandler("AZ-FEE-WAIVER", (id) => `AZ-Fee-Waiver-AOCDFGF1F-Case-${id}-signed.pdf`, { signed: true, inline: true }),
+);
+
 export default router;

@@ -165,6 +165,17 @@ export const CONFIGS: Record<string, FormTestConfig> = {
     { kind: "typed-bright", page: 1, crop: "300x40+54+675" },
     { ...FL, county: "fl-palm-beach", plaintiffCity: "West Palm Beach", plaintiffZip: "33401", defendantCity: "West Palm Beach", defendantZip: "33401" }),
 
+  // ─── Arizona (image) ──────────────────────────────────────────────────────────
+  // ⚠️  az-fee-waiver coords are placeholders — calibrate after the PDF asset
+  // (az-aocdfgf1f-fee-waiver.pdf) is placed and field names are verified.
+  // Update pdfX/pdfY/w/h to match the calibrated draw coords in:
+  //   lib/form-signatures/src/index.ts  AND  az-fee-waiver-definition.ts
+  "az-fee-waiver": mk("az-fee-waiver", "AZ Fee Waiver (AOCDFGF1F)", "az/fee-waiver", true,
+    { kind: "image", regions: [{ page: 1, pdfX: 97, pdfY: 110, w: 180, h: 18 }] },
+    { county: "az-maricopa", plaintiffState: "AZ", plaintiffCity: "Phoenix", plaintiffZip: "85007",
+      defendantState: "AZ", defendantCity: "Phoenix", defendantZip: "85018",
+      sigW: 180, sigH: 18 }),
+
   // ─── Clerk-issued / signature-ignored (signed must equal unsigned) ──────────
   "az-summons": mk("az-summons", "AZ Summons", "az/summons", true,
     { kind: "clerk-blank", pages: [1] },
