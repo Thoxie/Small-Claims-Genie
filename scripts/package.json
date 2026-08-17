@@ -59,6 +59,7 @@
     "test:il-smc-complaint-signed": "tsx ./src/test-il-smc-complaint-signed.ts",
     "test:va-forms": "tsx ./src/test-va-forms.ts",
     "test:az-complaint-signed": "tsx ./src/test-az-complaint-signed.ts",
+    "test:az-court-line-validation": "tsx ./src/test-az-court-line-validation.ts",
     "test:az-proof-of-service-signed": "tsx ./src/test-az-proof-of-service-signed.ts",
     "test:va-dc-402-signed": "tsx ./src/test-va-dc-402-signed.ts",
     "test:nj-wa-forms": "tsx ./src/test-nj-wa-forms.ts",
