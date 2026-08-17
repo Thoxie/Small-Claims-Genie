@@ -82,7 +82,10 @@ export default function PodcastPage() {
         />
         <meta property="og:image" content={THUMBNAIL_URL} />
         <meta property="og:type" content="video.other" />
-        <meta property="og:video" content={YOUTUBE_URL} />
+        <meta property="og:video" content={YOUTUBE_EMBED} />
+        <meta property="og:video:type" content="text/html" />
+        <meta property="og:video:width" content="1280" />
+        <meta property="og:video:height" content="720" />
         {structuredData.map((sd, i) => (
           <script key={i} type="application/ld+json">{JSON.stringify(sd)}</script>
         ))}
