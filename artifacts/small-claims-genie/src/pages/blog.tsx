@@ -11,13 +11,22 @@ export default function Blog() {
   const [enlarged, setEnlarged] = useState(false);
 
   useEffect(() => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SORO_EMBED_SRC}"]`);
-    if (existing) return;
+    // Always tear down any previous Soro script so its initialization guard
+    // doesn't prevent re-rendering after a hard refresh or Clerk auth load.
+    document.querySelectorAll<HTMLScriptElement>(`script[src*="trysoro.com"]`)
+      .forEach(s => s.remove());
+
+    // Clear the container so Soro writes into a clean div every time.
+    const container = document.getElementById("soro-blog");
+    if (container) container.innerHTML = "";
+
     const script = document.createElement("script");
     script.src = SORO_EMBED_SRC;
-    script.defer = true;
+    script.async = true;
     document.body.appendChild(script);
-    return () => { script.remove(); };
+
+    // No cleanup — removing the script before Soro finishes rendering is what
+    // caused posts to disappear on hard refresh.
   }, []);
 
   // Close lightbox on Escape
