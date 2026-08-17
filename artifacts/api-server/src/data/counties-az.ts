@@ -5,13 +5,25 @@
  * precincts, and small claims cases are filed in the justice court for the
  * precinct where the defendant lives or where the events occurred.
  *
- * Data status:
- *  - Batch 2A (verified): Apache, Cochise, Coconino, Gila, Graham, Greenlee, La Paz, Santa Cruz (22 courts)
- *  - Batch 2B stubs: Mohave, Navajo, Pinal, Yavapai, Yuma (addresses approximate — verify before production)
- *  - Batch 2C stubs: Pima, Maricopa (26 precincts — addresses approximate, full precinct list TBD)
+ * Data status (August 2026):
+ *  - Batch 2A (verified): Apache, Cochise, Coconino, Gila, Graham, Greenlee, La Paz, Santa Cruz
+ *  - Batch 2B (verified): Mohave (3 precincts), Navajo (3 precincts), Pinal (3 precincts),
+ *      Yavapai (2 precincts), Yuma (3 precincts)
+ *  - Batch 2C (verified): Pima (consolidated — all filings at 240 N Stone Ave),
+ *      Maricopa (12 of ~26 precincts verified; see note below)
  *
- * Phone numbers left blank where unverified. Update from:
+ * Maricopa County has 26 justice court precincts. The entries below cover the
+ * most populous courts with verified addresses from clerkofcourt.maricopa.gov
+ * (August 2026). Users MUST verify their specific precinct at
+ * justicecourts.maricopa.gov — filing in the wrong Maricopa precinct is a
+ * common mistake that requires re-filing.
+ *
+ * Sources:
  *   https://www.azcourts.gov/AZ-Courts/Search-for-a-Court
+ *   https://www.clerkofcourt.maricopa.gov/about/office-hours-locations/justice-court-locations
+ *   https://justicecourts.maricopa.gov/about-us/court-locations/
+ *   https://courts.yavapaiaz.gov/Contact-Us/Yavapai-County-Justice-Courts
+ *   Individual county court websites (see website field on each entry)
  */
 
 export interface AZCounty {
@@ -270,18 +282,19 @@ export const ARIZONA_COUNTIES: AZCounty[] = [
     phone: "",
   },
 
-  // ── MOHAVE COUNTY (Batch 2B stub) ───────────────────────────────────────────
+  // ── MOHAVE COUNTY ───────────────────────────────────────────────────────────
+  // Source: mohave.gov legal-offices map + mohavecourts.com official pages (August 2026)
   {
     id: "az-mohave-kingman",
     name: "Mohave",
-    courthouseName: "Mohave County Justice Court — Kingman Precinct",
-    courthouseAddress: "401 E Spring St",
+    courthouseName: "Mohave County Justice Court — Kingman/Cerbat Precinct",
+    courthouseAddress: "524 W Beale St",
     courthouseCity: "Kingman",
     courthouseZip: "86401",
     state: "AZ",
-    phone: "(928) 753-0726",
-    website: "https://www.mohavecounty.us",
-    notes: "Additional Mohave County precincts include Bullhead City and Lake Havasu City. Verify the correct precinct for your case at azcourts.gov.",
+    phone: "(928) 753-0710",
+    website: "https://www.mohavecourts.com",
+    notes: "Mohave County has three justice court precincts: Kingman/Cerbat, Bullhead City, and Lake Havasu City. Verify the correct precinct for your case at azcourts.gov.",
   },
   {
     id: "az-mohave-bullheadcity",
@@ -291,224 +304,241 @@ export const ARIZONA_COUNTIES: AZCounty[] = [
     courthouseCity: "Bullhead City",
     courthouseZip: "86442",
     state: "AZ",
-    phone: "(928) 758-0726",
+    phone: "(928) 758-0717",
+    website: "https://www.mohavecourts.com/bullhead-city-justice-court",
   },
   {
     id: "az-mohave-lakehavasucity",
     name: "Mohave",
     courthouseName: "Mohave County Justice Court — Lake Havasu City Precinct",
-    courthouseAddress: "2001 College Dr",
+    courthouseAddress: "2001 College Dr, Suite 148",
     courthouseCity: "Lake Havasu City",
     courthouseZip: "86403",
     state: "AZ",
-    phone: "(928) 453-0726",
+    phone: "(928) 453-0705",
+    website: "https://www.mohavecourts.com/court-departments/justice-courts/lake-havasu-justice-court",
   },
 
-  // ── NAVAJO COUNTY (Batch 2B stub) ───────────────────────────────────────────
+  // ── NAVAJO COUNTY ───────────────────────────────────────────────────────────
+  // Source: navajocountyaz.gov/Directory.aspx?did=19 (August 2026)
   {
     id: "az-navajo-holbrook",
     name: "Navajo",
-    courthouseName: "Navajo County Justice Court — Holbrook Precinct",
-    courthouseAddress: "100 E Code Talker Dr",
+    courthouseName: "Navajo County Justice Court — Holbrook Precinct (Precinct 1)",
+    courthouseAddress: "121 W Buffalo",
     courthouseCity: "Holbrook",
     courthouseZip: "86025",
     state: "AZ",
     phone: "(928) 524-4188",
-    website: "https://www.navajocountyaz.gov",
-    notes: "Additional Navajo County precincts include Show Low and Winslow. Verify the correct precinct at azcourts.gov.",
+    website: "https://www.navajocountyaz.gov/241/Justice-Court",
+    notes: "Navajo County has three justice court precincts: Holbrook (Precinct 1), Winslow (Precinct 2), and Show Low (Precinct 5). Verify the correct precinct for your case at azcourts.gov.",
+  },
+  {
+    id: "az-navajo-winslow",
+    name: "Navajo",
+    courthouseName: "Navajo County Justice Court — Winslow Precinct (Precinct 2)",
+    courthouseAddress: "605 E Third St",
+    courthouseCity: "Winslow",
+    courthouseZip: "86047",
+    state: "AZ",
+    phone: "",
+    website: "https://www.navajocountyaz.gov/241/Justice-Court",
   },
   {
     id: "az-navajo-showlow",
     name: "Navajo",
-    courthouseName: "Navajo County Justice Court — Show Low Precinct",
-    courthouseAddress: "1000 W Deuce of Clubs Ave",
+    courthouseName: "Navajo County Justice Court — Show Low Precinct (Precinct 5)",
+    courthouseAddress: "550 N 9th Place",
     courthouseCity: "Show Low",
     courthouseZip: "85901",
     state: "AZ",
-    phone: "",
+    phone: "(928) 532-6030",
+    website: "https://www.navajocountyaz.gov/241/Justice-Court",
   },
 
-  // ── PINAL COUNTY (Batch 2B stub) ────────────────────────────────────────────
+  // ── PINAL COUNTY ────────────────────────────────────────────────────────────
+  // Source: pinalcourtsaz.gov (August 2026)
+  // JP numbering: JP2=Casa Grande, JP3=Central Pinal (Coolidge), JP6=Apache Junction
   {
     id: "az-pinal-florence",
     name: "Pinal",
-    courthouseName: "Pinal County Justice Court — Florence Precinct",
-    courthouseAddress: "971 N Jason Lopez Cir Bldg A",
-    courthouseCity: "Florence",
-    courthouseZip: "85132",
+    courthouseName: "Pinal County Justice Court — Central Pinal Precinct (JP3)",
+    courthouseAddress: "119 W Central Ave",
+    courthouseCity: "Coolidge",
+    courthouseZip: "85128",
     state: "AZ",
-    phone: "(520) 866-5400",
-    website: "https://www.pinalcountyaz.gov",
-    notes: "Additional Pinal County precincts include Casa Grande, Apache Junction, and Coolidge. Verify the correct precinct for your case at azcourts.gov.",
+    phone: "(520) 866-7900",
+    website: "https://www.pinalcourtsaz.gov",
+    notes: "JP3 serves the Florence, Coolidge, and Eloy area. The court is located in Coolidge. Additional Pinal County precincts include Casa Grande (JP2) and Apache Junction (JP6). Verify the correct precinct for your case at azcourts.gov.",
   },
   {
     id: "az-pinal-casagrande",
     name: "Pinal",
-    courthouseName: "Pinal County Justice Court — Casa Grande Precinct",
+    courthouseName: "Pinal County Justice Court — Casa Grande Precinct (JP2)",
     courthouseAddress: "820 E Cottonwood Ln",
     courthouseCity: "Casa Grande",
     courthouseZip: "85122",
     state: "AZ",
     phone: "(520) 866-6840",
+    website: "https://www.pinalcourtsaz.gov",
   },
   {
     id: "az-pinal-apachejunction",
     name: "Pinal",
-    courthouseName: "Pinal County Justice Court — Apache Junction Precinct",
+    courthouseName: "Pinal County Justice Court — Apache Junction Precinct (JP6)",
     courthouseAddress: "575 N Idaho Rd",
     courthouseCity: "Apache Junction",
     courthouseZip: "85119",
     state: "AZ",
     phone: "(480) 982-3440",
+    website: "https://www.pinalcourtsaz.gov",
   },
 
-  // ── YAVAPAI COUNTY (Batch 2B stub) ──────────────────────────────────────────
+  // ── YAVAPAI COUNTY ──────────────────────────────────────────────────────────
+  // Source: courts.yavapaiaz.gov/Contact-Us/Yavapai-County-Justice-Courts (August 2026)
   {
     id: "az-yavapai-prescott",
     name: "Yavapai",
     courthouseName: "Yavapai County Justice Court — Prescott Precinct",
-    courthouseAddress: "255 E Gurley St",
+    courthouseAddress: "120 S Cortez St",
     courthouseCity: "Prescott",
-    courthouseZip: "86301",
+    courthouseZip: "86303",
     state: "AZ",
-    phone: "(928) 771-3280",
-    website: "https://www.yavapai.us",
-    notes: "Additional Yavapai County precincts include Cottonwood, Camp Verde, and Prescott Valley. Verify the correct precinct at azcourts.gov.",
+    phone: "(928) 771-3300",
+    website: "https://courts.yavapaiaz.gov",
+    notes: "Yavapai County precincts include Prescott, Verde Valley (Cottonwood), Bagdad-Yarnell, Mayer, and Seligman. Verify the correct precinct for your case at azcourts.gov.",
   },
   {
     id: "az-yavapai-cottonwood",
     name: "Yavapai",
-    courthouseName: "Yavapai County Justice Court — Cottonwood Precinct",
+    courthouseName: "Yavapai County Justice Court — Verde Valley Precinct",
     courthouseAddress: "10 S 6th St",
     courthouseCity: "Cottonwood",
     courthouseZip: "86326",
     state: "AZ",
-    phone: "(928) 639-8700",
+    phone: "(928) 639-5820",
+    website: "https://courts.yavapaiaz.gov/Departments/Justice-Courts/Justice-Court-Precincts/Verde-Valley-JC",
   },
 
-  // ── YUMA COUNTY (Batch 2B stub) ─────────────────────────────────────────────
+  // ── YUMA COUNTY ─────────────────────────────────────────────────────────────
+  // Source: yumacountyaz.gov + azcourthelp.org + azcourts.gov/Electronic-Hearings/Yuma-Hearings (August 2026)
   {
     id: "az-yuma-yuma",
     name: "Yuma",
-    courthouseName: "Yuma County Justice Court — Yuma Precinct",
-    courthouseAddress: "168 S Second Ave",
+    courthouseName: "Yuma County Justice Court — Yuma Precinct (Precinct 1)",
+    courthouseAddress: "168 S 2nd Ave, Ste A",
     courthouseCity: "Yuma",
     courthouseZip: "85364",
     state: "AZ",
-    phone: "(928) 817-4240",
-    website: "https://www.yumacountyaz.gov",
-    notes: "Additional Yuma County precincts include San Luis and Somerton. Verify the correct precinct at azcourts.gov.",
+    phone: "(928) 817-4100",
+    website: "https://www.yumacountyaz.gov/government/courts/justice-courts",
+    notes: "Yuma County has three justice court precincts: Yuma (Precinct 1), South County/San Luis (Precinct 2), and Wellton (Precinct 3). Verify the correct precinct for your case at azcourts.gov.",
   },
   {
     id: "az-yuma-sanluis",
     name: "Yuma",
-    courthouseName: "Yuma County Justice Court — San Luis Precinct",
-    courthouseAddress: "1427 E 21st St",
+    courthouseName: "Yuma County Justice Court — South County Precinct (Precinct 2)",
+    courthouseAddress: "10260 Dome St",
     courthouseCity: "San Luis",
     courthouseZip: "85349",
     state: "AZ",
     phone: "",
+    website: "https://www.yumacountyaz.gov/government/courts/justice-courts",
+  },
+  {
+    id: "az-yuma-wellton",
+    name: "Yuma",
+    courthouseName: "Yuma County Justice Court — Wellton Precinct (Precinct 3)",
+    courthouseAddress: "PO Box 384",
+    courthouseCity: "Wellton",
+    courthouseZip: "85356",
+    state: "AZ",
+    phone: "(928) 785-3321",
+    website: "https://www.yumacountyaz.gov/government/courts/justice-courts",
+    notes: "Physical street address not publicly listed; contact the court or Yuma County before mailing documents. Mailing address: PO Box 384, Wellton, AZ 85356.",
   },
 
-  // ── PIMA COUNTY (Batch 2C stub — full precinct list TBD) ────────────────────
+  // ── PIMA COUNTY ─────────────────────────────────────────────────────────────
+  // Source: jp.pima.gov (August 2026)
+  // Pima County operates a single Consolidated Justice Court. All case filings
+  // go to 240 N Stone Ave; precincts are administrative districts, not separate
+  // physical courthouses. Hearings may be scheduled at the central courthouse.
   {
     id: "az-pima-tucson",
     name: "Pima",
-    courthouseName: "Pima County Justice Court — Tucson Precinct 1",
-    courthouseAddress: "240 N Court Ave",
+    courthouseName: "Pima County Consolidated Justice Court",
+    courthouseAddress: "240 N Stone Ave",
     courthouseCity: "Tucson",
     courthouseZip: "85701",
     state: "AZ",
     phone: "(520) 724-3171",
-    website: "https://www.pima.gov/government/justice-courts",
-    notes: "Pima County has multiple justice court precincts. Verify the correct precinct for your case at pima.gov or azcourts.gov.",
-  },
-  {
-    id: "az-pima-tucson-green-valley",
-    name: "Pima",
-    courthouseName: "Pima County Justice Court — Green Valley Precinct",
-    courthouseAddress: "601 N La Canada Dr",
-    courthouseCity: "Green Valley",
-    courthouseZip: "85614",
-    state: "AZ",
-    phone: "(520) 724-9351",
-  },
-  {
-    id: "az-pima-tucson-eastside",
-    name: "Pima",
-    courthouseName: "Pima County Justice Court — Rincon Precinct (East Tucson)",
-    courthouseAddress: "2225 E Ajo Way",
-    courthouseCity: "Tucson",
-    courthouseZip: "85713",
-    state: "AZ",
-    phone: "(520) 740-5010",
-  },
-  {
-    id: "az-pima-tucson-foothills",
-    name: "Pima",
-    courthouseName: "Pima County Justice Court — Foothills Precinct",
-    courthouseAddress: "38355 S Craycroft Rd",
-    courthouseCity: "Tucson",
-    courthouseZip: "85739",
-    state: "AZ",
-    phone: "(520) 724-8750",
+    website: "https://www.jp.pima.gov",
+    notes: "Pima County operates a single Consolidated Justice Court. All small claims filings go to 240 N Stone Ave, Tucson, AZ 85701. The court has multiple precincts (1, 2, 4, etc.) but cases are centrally filed. Verify your precinct at pima.gov.",
   },
 
-  // ── MARICOPA COUNTY (Batch 2C stub — 26 precincts, full list TBD) ───────────
+  // ── MARICOPA COUNTY ─────────────────────────────────────────────────────────
+  // Source: clerkofcourt.maricopa.gov/about/office-hours-locations/justice-court-locations
+  //         + justicecourts.maricopa.gov/about-us/court-locations/ (August 2026)
+  //
+  // IMPORTANT: Maricopa County has 26 justice court precincts. Users MUST verify
+  // their specific precinct at justicecourts.maricopa.gov — file in the precinct
+  // where the defendant lives or the events occurred.
+  //
+  // Verified precincts (12 of 26):
   {
-    id: "az-maricopa-phoenix",
+    id: "az-maricopa-aguafria",
     name: "Maricopa",
-    courthouseName: "Maricopa County Justice Court — Phoenix Precinct 1",
-    courthouseAddress: "1700 W Washington St",
-    courthouseCity: "Phoenix",
-    courthouseZip: "85007",
+    courthouseName: "Maricopa County Justice Court — Agua Fria Precinct",
+    courthouseAddress: "10420 W Van Buren St",
+    courthouseCity: "Avondale",
+    courthouseZip: "85323",
     state: "AZ",
-    phone: "(602) 372-5375",
+    phone: "(602) 372-8001",
     website: "https://justicecourts.maricopa.gov",
     notes: "Maricopa County has 26 justice court precincts. Find your correct precinct at justicecourts.maricopa.gov — file in the precinct where the defendant lives or where the events occurred.",
   },
   {
-    id: "az-maricopa-mesa",
+    id: "az-maricopa-arrowhead",
     name: "Maricopa",
-    courthouseName: "Maricopa County Justice Court — Mesa Precinct",
-    courthouseAddress: "222 E Javelina Ave",
-    courthouseCity: "Mesa",
-    courthouseZip: "85210",
+    courthouseName: "Maricopa County Justice Court — Arrowhead Precinct",
+    courthouseAddress: "14264 W Tierra Buena Ln",
+    courthouseCity: "Surprise",
+    courthouseZip: "85374",
     state: "AZ",
-    phone: "(480) 926-3600",
+    phone: "(602) 372-2000",
     website: "https://justicecourts.maricopa.gov",
   },
   {
-    id: "az-maricopa-scottsdale",
+    id: "az-maricopa-countrymead",
     name: "Maricopa",
-    courthouseName: "Maricopa County Justice Court — Scottsdale Precinct",
-    courthouseAddress: "18380 N 40th St",
+    courthouseName: "Maricopa County Justice Court — Country Meadows Precinct",
+    courthouseAddress: "10420 W Van Buren St",
+    courthouseCity: "Avondale",
+    courthouseZip: "85323",
+    state: "AZ",
+    phone: "(602) 372-8000",
+    website: "https://justicecourts.maricopa.gov",
+  },
+  {
+    id: "az-maricopa-desertridge",
+    name: "Maricopa",
+    courthouseName: "Maricopa County Justice Court — Desert Ridge Precinct",
+    courthouseAddress: "18380 N 40th St, Suite 130",
     courthouseCity: "Phoenix",
     courthouseZip: "85032",
     state: "AZ",
-    phone: "(480) 946-4521",
+    phone: "(602) 372-7100",
     website: "https://justicecourts.maricopa.gov",
   },
   {
-    id: "az-maricopa-chandler",
+    id: "az-maricopa-eastmesa",
     name: "Maricopa",
-    courthouseName: "Maricopa County Justice Court — Chandler Precinct",
-    courthouseAddress: "1837 S Mesa Dr",
+    courthouseName: "Maricopa County Justice Court — East Mesa Precinct",
+    courthouseAddress: "222 E Javelina Ave, Suite C",
     courthouseCity: "Mesa",
     courthouseZip: "85210",
     state: "AZ",
-    phone: "(480) 926-3600",
-    website: "https://justicecourts.maricopa.gov",
-  },
-  {
-    id: "az-maricopa-glendale",
-    name: "Maricopa",
-    courthouseName: "Maricopa County Justice Court — Glendale Precinct",
-    courthouseAddress: "8311 N 35th Ave",
-    courthouseCity: "Phoenix",
-    courthouseZip: "85051",
-    state: "AZ",
-    phone: "(602) 372-5375",
+    phone: "(602) 506-8117",
     website: "https://justicecourts.maricopa.gov",
   },
   {
@@ -519,30 +549,74 @@ export const ARIZONA_COUNTIES: AZCounty[] = [
     courthouseCity: "Gilbert",
     courthouseZip: "85296",
     state: "AZ",
-    phone: "(480) 926-3600",
+    phone: "(602) 372-8300",
     website: "https://justicecourts.maricopa.gov",
   },
   {
-    id: "az-maricopa-tempe",
+    id: "az-maricopa-highland",
     name: "Maricopa",
-    courthouseName: "Maricopa County Justice Court — Tempe Precinct",
-    courthouseAddress: "1837 S Mesa Dr",
+    courthouseName: "Maricopa County Justice Court — Highland Precinct",
+    courthouseAddress: "222 E Javelina Ave, Suite A",
     courthouseCity: "Mesa",
     courthouseZip: "85210",
     state: "AZ",
-    phone: "(480) 926-3600",
+    phone: "(602) 372-8300",
     website: "https://justicecourts.maricopa.gov",
-    notes: "Maricopa County has 26 justice court precincts. Verify your exact precinct at justicecourts.maricopa.gov.",
   },
   {
-    id: "az-maricopa-peoria",
+    id: "az-maricopa-ironwood",
     name: "Maricopa",
-    courthouseName: "Maricopa County Justice Court — Peoria Precinct",
-    courthouseAddress: "8311 N 35th Ave",
+    courthouseName: "Maricopa County Justice Court — Ironwood Precinct",
+    courthouseAddress: "209 E Pima",
+    courthouseCity: "Gila Bend",
+    courthouseZip: "85337",
+    state: "AZ",
+    phone: "(602) 506-1589",
+    website: "https://justicecourts.maricopa.gov",
+  },
+  {
+    id: "az-maricopa-kyrene",
+    name: "Maricopa",
+    courthouseName: "Maricopa County Justice Court — Kyrene Precinct",
+    courthouseAddress: "201 E Chicago St, Suite 104",
+    courthouseCity: "Chandler",
+    courthouseZip: "85225",
+    state: "AZ",
+    phone: "(602) 372-3400",
+    website: "https://justicecourts.maricopa.gov",
+  },
+  {
+    id: "az-maricopa-maryvale",
+    name: "Maricopa",
+    courthouseName: "Maricopa County Justice Court — Maryvale Precinct",
+    courthouseAddress: "10420 W Van Buren St",
+    courthouseCity: "Avondale",
+    courthouseZip: "85323",
+    state: "AZ",
+    phone: "(602) 372-8002",
+    website: "https://justicecourts.maricopa.gov",
+  },
+  {
+    id: "az-maricopa-phoenix",
+    name: "Maricopa",
+    courthouseName: "Maricopa County Justice Court — Central Phoenix / Arcadia-Biltmore Precinct",
+    courthouseAddress: "620 W Jackson St",
     courthouseCity: "Phoenix",
-    courthouseZip: "85051",
+    courthouseZip: "85003",
     state: "AZ",
     phone: "(602) 372-5375",
+    website: "https://justicecourts.maricopa.gov",
+    notes: "The Downtown Justice Center (620 W Jackson St) and Central Court Complex (201 W Jefferson St) are co-located in the same Phoenix campus and serve central Phoenix precincts. Maricopa County has 26 total precincts — verify yours at justicecourts.maricopa.gov.",
+  },
+  {
+    id: "az-maricopa-universitylakes",
+    name: "Maricopa",
+    courthouseName: "Maricopa County Justice Court — University Lakes Precinct",
+    courthouseAddress: "201 E Chicago St",
+    courthouseCity: "Chandler",
+    courthouseZip: "85225",
+    state: "AZ",
+    phone: "(602) 372-3400",
     website: "https://justicecourts.maricopa.gov",
   },
 ];
