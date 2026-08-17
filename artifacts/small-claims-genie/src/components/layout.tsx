@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { i18n } from "@/lib/i18n";
 import logoPath from "@assets/2small-claims-genie-logo_1775074104796.png";
 import { Button } from "@/components/ui/button";
-import { Wand2, Menu, X, LogIn, Sparkles, ChevronDown, Globe } from "lucide-react";
+import { Wand2, Menu, X, LogIn, Sparkles, ChevronDown } from "lucide-react";
 import { UserButton, useAuth } from "@clerk/clerk-react";
 import { SignUpModal } from "@/components/sign-up-modal";
 import { ContactDialog } from "@/components/contact-dialog";
@@ -99,6 +99,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <button
                 onClick={() => setLang("es")}
                 className={`px-3 py-1 rounded-r-full transition-colors ${lang === "es" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                aria-label="Cambiar a español"
+              >ES</button>
+            </div>
+
+            {/* Language toggle — mobile (always visible in nav, not buried in hamburger) */}
+            <div className="flex md:hidden items-center rounded-full border border-primary/20 text-[11px] font-bold shrink-0">
+              <button
+                onClick={() => setLang("en")}
+                className={`px-2 py-0.5 rounded-l-full transition-colors ${lang === "en" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                aria-label="Switch to English"
+              >EN</button>
+              <button
+                onClick={() => setLang("es")}
+                className={`px-2 py-0.5 rounded-r-full transition-colors ${lang === "es" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
                 aria-label="Cambiar a español"
               >ES</button>
             </div>
@@ -205,21 +219,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
 
             <div className="border-t border-gray-100 pt-2 pb-1 space-y-2">
-              {/* Language toggle — mobile */}
-              <div className="flex items-center gap-2 px-3 py-1">
-                <Globe className="h-4 w-4 text-primary/50 shrink-0" />
-                <div className="flex items-center rounded-full border border-primary/20 text-xs font-bold overflow-hidden">
-                  <button
-                    onClick={() => setLang("en")}
-                    className={`px-3 py-1.5 transition-colors ${lang === "en" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
-                  >EN</button>
-                  <button
-                    onClick={() => setLang("es")}
-                    className={`px-3 py-1.5 transition-colors ${lang === "es" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
-                  >ES</button>
-                </div>
-              </div>
-
               {isLoaded && (
                 isSignedIn ? (
                   <Button
