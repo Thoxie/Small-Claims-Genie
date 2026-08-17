@@ -5,6 +5,7 @@ import React from "react";
 import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StagingBanner } from "@/components/StagingBanner";
+import { useLanguage } from "@/contexts/language-context";
 import { useColors } from "@/hooks/useColors";
 
 export default function ProfileScreen() {
@@ -13,21 +14,27 @@ export default function ProfileScreen() {
   const { signOut } = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const { lang, setLang } = useLanguage();
+  const es = lang === "es";
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
   const onSignOut = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          await signOut();
-          router.replace("/(auth)/sign-in");
+    Alert.alert(
+      es ? "Cerrar Sesión" : "Sign Out",
+      es ? "¿Estás seguro de que quieres cerrar sesión?" : "Are you sure you want to sign out?",
+      [
+        { text: es ? "Cancelar" : "Cancel", style: "cancel" },
+        {
+          text: es ? "Cerrar Sesión" : "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            await signOut();
+            router.replace("/(auth)/sign-in");
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const initials = user?.firstName
@@ -52,31 +59,98 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        {/* Account */}
         <View style={[styles.section, { borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>ACCOUNT</Text>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            {es ? "CUENTA" : "ACCOUNT"}
+          </Text>
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <TouchableOpacity style={styles.row}>
               <Feather name="mail" size={18} color={colors.mutedForeground} />
               <View style={styles.rowContent}>
-                <Text style={[styles.rowLabel, { color: colors.foreground }]}>Email</Text>
+                <Text style={[styles.rowLabel, { color: colors.foreground }]}>
+                  {es ? "Correo electrónico" : "Email"}
+                </Text>
                 <Text style={[styles.rowValue, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {user?.emailAddresses?.[0]?.emailAddress}
                 </Text>
               </View>
               <View style={[styles.verifiedBadge, { backgroundColor: colors.tealLight }]}>
-                <Text style={[styles.verifiedText, { color: colors.teal }]}>Verified</Text>
+                <Text style={[styles.verifiedText, { color: colors.teal }]}>
+                  {es ? "Verificado" : "Verified"}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
         </View>
 
+        {/* Language */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>ABOUT</Text>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            {es ? "IDIOMA" : "LANGUAGE"}
+          </Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.row, { paddingVertical: 10 }]}>
+              <Feather name="globe" size={18} color={colors.mutedForeground} />
+              <View style={styles.rowContent}>
+                <Text style={[styles.rowLabel, { color: colors.foreground }]}>
+                  {es ? "Idioma de la app" : "App language"}
+                </Text>
+              </View>
+              <View style={styles.langPills}>
+                <TouchableOpacity
+                  style={[
+                    styles.langPill,
+                    !es
+                      ? { backgroundColor: colors.primary }
+                      : { backgroundColor: colors.secondary, borderColor: colors.border, borderWidth: 1 },
+                  ]}
+                  onPress={() => setLang("en")}
+                >
+                  <Text
+                    style={[
+                      styles.langPillText,
+                      { color: !es ? colors.primaryForeground : colors.mutedForeground },
+                    ]}
+                  >
+                    EN
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.langPill,
+                    es
+                      ? { backgroundColor: colors.primary }
+                      : { backgroundColor: colors.secondary, borderColor: colors.border, borderWidth: 1 },
+                  ]}
+                  onPress={() => setLang("es")}
+                >
+                  <Text
+                    style={[
+                      styles.langPillText,
+                      { color: es ? colors.primaryForeground : colors.mutedForeground },
+                    ]}
+                  >
+                    ES
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* About */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            {es ? "ACERCA DE" : "ABOUT"}
+          </Text>
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.row}>
               <Feather name="info" size={18} color={colors.mutedForeground} />
               <View style={styles.rowContent}>
-                <Text style={[styles.rowLabel, { color: colors.foreground }]}>App Version</Text>
+                <Text style={[styles.rowLabel, { color: colors.foreground }]}>
+                  {es ? "Versión de la App" : "App Version"}
+                </Text>
                 <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>1.0.0</Text>
               </View>
             </View>
@@ -84,8 +158,10 @@ export default function ProfileScreen() {
             <View style={styles.row}>
               <Feather name="shield" size={18} color={colors.mutedForeground} />
               <View style={styles.rowContent}>
-                <Text style={[styles.rowLabel, { color: colors.foreground }]}>Small Claims Court</Text>
-                <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>CA · FL · TX</Text>
+                <Text style={[styles.rowLabel, { color: colors.foreground }]}>
+                  {es ? "Corte de Reclamos Menores" : "Small Claims Court"}
+                </Text>
+                <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>CA · FL · TX · IL · NC · AZ</Text>
               </View>
             </View>
           </View>
@@ -97,11 +173,15 @@ export default function ProfileScreen() {
           testID="sign-out-btn"
         >
           <Feather name="log-out" size={18} color={colors.destructive} />
-          <Text style={[styles.signOutText, { color: colors.destructive }]}>Sign Out</Text>
+          <Text style={[styles.signOutText, { color: colors.destructive }]}>
+            {es ? "Cerrar Sesión" : "Sign Out"}
+          </Text>
         </TouchableOpacity>
 
         <Text style={[styles.legal, { color: colors.mutedForeground }]}>
-          Small Claims Genie provides general legal information, not legal advice. For advice about your specific situation, consult a licensed attorney.
+          {es
+            ? "Small Claims Genie proporciona información legal general, no asesoramiento legal. Para asesoramiento sobre su situación específica, consulte a un abogado con licencia."
+            : "Small Claims Genie provides general legal information, not legal advice. For advice about your specific situation, consult a licensed attorney."}
         </Text>
       </ScrollView>
     </View>
@@ -126,6 +206,9 @@ const styles = StyleSheet.create({
   verifiedBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   verifiedText: { fontSize: 11, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold" },
   divider: { height: 1, marginHorizontal: 14 },
+  langPills: { flexDirection: "row", gap: 6 },
+  langPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  langPillText: { fontSize: 13, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold" },
   signOutBtn: {
     flexDirection: "row",
     alignItems: "center",

@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateCase, useGetCaseStats, useListCases } from "@workspace/api-client-react";
 import { CaseCard } from "@/components/CaseCard";
 import { StagingBanner } from "@/components/StagingBanner";
+import { useLanguage } from "@/contexts/language-context";
 import { useColors } from "@/hooks/useColors";
 
 export default function DashboardScreen() {
@@ -27,6 +28,8 @@ export default function DashboardScreen() {
   const { data: cases, isLoading, refetch, isRefetching } = useListCases();
   const { data: stats } = useGetCaseStats();
   const createCase = useCreateCase();
+  const { lang } = useLanguage();
+  const es = lang === "es";
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -40,12 +43,20 @@ export default function DashboardScreen() {
       refetch();
       router.push(`/case/${newCase.id}`);
     } catch {
-      Alert.alert("Error", "Could not create a new case. Please try again.");
+      Alert.alert(
+        es ? "Error" : "Error",
+        es ? "No se pudo crear el caso. Por favor inténtalo de nuevo." : "Could not create a new case. Please try again.",
+      );
     }
-  }, [createCase, router, refetch]);
+  }, [createCase, router, refetch, es]);
 
   const greeting = (() => {
     const hour = new Date().getHours();
+    if (es) {
+      if (hour < 12) return "Buenos días";
+      if (hour < 17) return "Buenas tardes";
+      return "Buenas noches";
+    }
     if (hour < 12) return "Good morning";
     if (hour < 17) return "Good afternoon";
     return "Good evening";
@@ -72,7 +83,7 @@ export default function DashboardScreen() {
               <View>
                 <Text style={[styles.greeting, { color: colors.mutedForeground }]}>{greeting}</Text>
                 <Text style={[styles.name, { color: colors.foreground }]}>
-                  {firstName ? firstName : "Welcome back"}
+                  {firstName ? firstName : es ? "Bienvenido" : "Welcome back"}
                 </Text>
               </View>
               <View style={[styles.shieldBadge, { backgroundColor: colors.primary }]}>
@@ -85,21 +96,21 @@ export default function DashboardScreen() {
               <View style={styles.statsRow}>
                 <View style={[styles.statCard, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
                   <Text style={[styles.statNum, { color: colors.foreground }]}>{stats.total ?? 0}</Text>
-                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Total</Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{es ? "Total" : "Total"}</Text>
                 </View>
                 <View style={[styles.statCard, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
                   <Text style={[styles.statNum, { color: colors.teal }]}>{stats.byStatus?.['intake_complete'] ?? 0}</Text>
-                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Ready</Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{es ? "Listo" : "Ready"}</Text>
                 </View>
                 <View style={[styles.statCard, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
                   <Text style={[styles.statNum, { color: colors.accent }]}>{stats.byStatus?.['filed'] ?? 0}</Text>
-                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Filed</Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{es ? "Presentado" : "Filed"}</Text>
                 </View>
               </View>
             )}
 
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              {caseList.length > 0 ? "Your Cases" : ""}
+              {caseList.length > 0 ? (es ? "Tus Casos" : "Your Cases") : ""}
             </Text>
           </>
         }
@@ -113,9 +124,13 @@ export default function DashboardScreen() {
               <View style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}>
                 <Feather name="briefcase" size={36} color={colors.mutedForeground} />
               </View>
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No cases yet</Text>
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+                {es ? "Sin casos aún" : "No cases yet"}
+              </Text>
               <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>
-                Create your first case to get started. It takes about 5 minutes to complete the intake form.
+                {es
+                  ? "Crea tu primer caso para comenzar. Toma unos 5 minutos completar el formulario."
+                  : "Create your first case to get started. It takes about 5 minutes to complete the intake form."}
               </Text>
               <TouchableOpacity
                 style={[styles.startBtn, { backgroundColor: colors.primary }]}
@@ -125,7 +140,9 @@ export default function DashboardScreen() {
                 {createCase.isPending ? (
                   <ActivityIndicator color={colors.primaryForeground} />
                 ) : (
-                  <Text style={[styles.startBtnText, { color: colors.primaryForeground }]}>Start a New Case</Text>
+                  <Text style={[styles.startBtnText, { color: colors.primaryForeground }]}>
+                    {es ? "Iniciar Nuevo Caso" : "Start a New Case"}
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>

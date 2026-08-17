@@ -36,6 +36,7 @@ import {
 import { AIGeniePanel } from "@/components/AIGeniePanel";
 import { HelpGenieSheet } from "@/components/HelpGenieSheet";
 import { StatusBadge } from "@/components/StatusBadge";
+import { useLanguage } from "@/contexts/language-context";
 import { useColors } from "@/hooks/useColors";
 import { appendRNFile } from "@/lib/rn-form-data";
 import { streamSSE } from "@/lib/stream";
@@ -54,6 +55,16 @@ const TABS = [
   { key: "deadlines", label: "Deadlines", icon: "calendar" as const },
   { key: "ai-chat", label: "AI Chat", icon: "message-circle" as const },
 ];
+
+const TAB_LABELS_ES: Record<string, string> = {
+  "intake": "Datos",
+  "documents": "Documentos",
+  "demand-letter": "Carta",
+  "court-forms": "Formularios",
+  "hearing-prep": "Preparación",
+  "deadlines": "Plazos",
+  "ai-chat": "Chat IA",
+};
 
 // ─── Intake Tab ──────────────────────────────────────────────────────────────
 
@@ -107,6 +118,13 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
         );
         return;
       }
+      if (form.jurisdictionState === "AZ" && form.claimAmount && amt > 3500) {
+        Alert.alert(
+          "Claim Amount Too High",
+          "Arizona small claims court has a $3,500 limit. Please reduce your claim amount or file in superior court instead.",
+        );
+        return;
+      }
     }
     setSaving(true);
     try {
@@ -116,7 +134,7 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
           data: {
             ...form,
             claimAmount: form.claimAmount ? Number(form.claimAmount) : undefined,
-            jurisdictionState: form.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC",
+            jurisdictionState: form.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC" | "AZ",
           },
         },
       });
@@ -234,6 +252,7 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
               { value: "CA", label: "California (CA)" },
               { value: "FL", label: "Florida (FL)" },
               { value: "TX", label: "Texas (TX)" },
+              { value: "AZ", label: "Arizona (AZ)" },
             ] as const).map((opt) => (
               <TouchableOpacity
                 key={opt.value}
@@ -789,6 +808,27 @@ const NC_COLLECT_STEPS = [
   { icon: "refresh-cw" as const, title: "Valid for 10 years — renew before expiration", body: "North Carolina judgments are enforceable for 10 years from entry and can be renewed. Post-judgment interest accrues at 8% per year (G.S. 24-1)." },
 ];
 
+const AZ_FORMS = [
+  { key: "az-complaint", label: "AZ Complaint (LJSC00001F)", desc: "Arizona Small Claims Complaint — file with the justice court clerk to start your case", path: "az/complaint", method: "POST" as const },
+  { key: "az-summons", label: "AZ Summons (LJSC00002F)", desc: "Arizona Summons — pre-fill and bring to the clerk; the court issues it and handles service on the defendant", path: "az/summons", method: "GET" as const },
+  { key: "az-proof-of-service", label: "AZ Proof of Service (LJSC00003F)", desc: "Completed by the server after serving the defendant — file with the justice court", path: "az/proof-of-service", method: "POST" as const },
+];
+
+const AZ_FEE_SCHEDULE = [
+  { range: "$0 – $500", fee: "~$29" },
+  { range: "$501 – $1,000", fee: "~$43" },
+  { range: "$1,001 – $3,500", fee: "~$73" },
+];
+
+const AZ_COLLECT_STEPS = [
+  { icon: "award" as const, title: "Obtain your judgment", body: "After you win, the justice court enters a judgment in your favor. Get a certified copy from the court clerk — you'll need it for every collection step." },
+  { icon: "trending-up" as const, title: "Debtor's Examination (A.R.S. § 12-1631)", body: "File a request for a Debtor's Examination to compel the defendant to appear in court and disclose bank accounts, employer, and property under oath. The court schedules the hearing." },
+  { icon: "file-text" as const, title: "Wage garnishment", body: "File a Writ of Garnishment with the court and serve the defendant's employer. Arizona limits garnishment to 25% of disposable earnings per pay period (A.R.S. § 33-1131)." },
+  { icon: "shield" as const, title: "Bank levy", body: "Use a Writ of Execution to direct the constable or sheriff to levy the defendant's bank account. Identify the bank and branch from the Debtor's Examination." },
+  { icon: "map-pin" as const, title: "Judgment lien on real estate", body: "Record a certified copy of your judgment with the County Recorder in any Arizona county where the defendant owns real property to create a judgment lien on their real estate." },
+  { icon: "refresh-cw" as const, title: "Valid for 5 years — renew before expiration", body: "Arizona judgments are enforceable for 5 years and can be renewed for additional 5-year periods before expiration (A.R.S. § 12-1551). Post-judgment interest accrues at 10% per year (A.R.S. § 44-1201)." },
+];
+
 function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDetails }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -801,6 +841,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
   const isFL = caseData.jurisdictionState === "FL";
   const isIL = caseData.jurisdictionState === "IL";
   const isNC = caseData.jurisdictionState === "NC";
+  const isAZ = caseData.jurisdictionState === "AZ";
 
   const { data: ilCounties } = useListCounties(
     { state: "IL" },
@@ -833,7 +874,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
     },
   ];
 
-  const FORMS = isTX ? TX_FORMS : isFL ? FL_FORMS : isIL ? IL_FORMS : isNC ? NC_FORMS : CA_FORMS;
+  const FORMS = isAZ ? AZ_FORMS : isTX ? TX_FORMS : isFL ? FL_FORMS : isIL ? IL_FORMS : isNC ? NC_FORMS : CA_FORMS;
 
   const downloadForm = async (formKey: string, formPath: string, method: "GET" | "POST" = "GET") => {
     setReviewForm(null);
@@ -1010,6 +1051,27 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
               </Text>
             </View>
           </>
+        ) : isAZ ? (
+          <>
+            <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+              <Feather name="info" size={14} color={colors.mutedForeground} />
+              <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
+                File the Complaint (LJSC00001F) at the justice court clerk in the precinct where the defendant lives or the transaction occurred. The court issues the Summons and arranges service on the defendant. Defendant must be served at least 12 days before the hearing (A.R.S. § 22-513).
+              </Text>
+            </View>
+            <View style={[styles.txFeeCard, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}>
+              <Text style={[styles.txFeeTitle, { color: "#92400e" }]}>AZ Filing Fees — A.R.S. § 22-281 (approximate)</Text>
+              {AZ_FEE_SCHEDULE.map((row) => (
+                <View key={row.range} style={styles.txFeeRow}>
+                  <Text style={[styles.txFeeRange, { color: "#b45309" }]}>{row.range}</Text>
+                  <Text style={[styles.txFeeAmt, { color: "#92400e" }]}>{row.fee}</Text>
+                </View>
+              ))}
+              <Text style={[styles.txFeeNote, { color: "#b45309" }]}>
+                Claim limit: $3,500 (A.R.S. § 22-503). Fees vary by county justice court.
+              </Text>
+            </View>
+          </>
         ) : (
           <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
             <Feather name="info" size={14} color={colors.mutedForeground} />
@@ -1032,9 +1094,11 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
             ? "Winning is only step one. Here's how to enforce your Illinois judgment and actually collect."
             : isNC
             ? "Winning is only step one. Here's how to enforce your North Carolina judgment and actually collect."
+            : isAZ
+            ? "Winning is only step one. Here's how to enforce your Arizona judgment and actually collect."
             : "Winning is only step one. Here's how to enforce your California judgment and actually collect."}
         </Text>
-        {(isTX ? TX_COLLECT_STEPS : isFL ? FL_COLLECT_STEPS : isIL ? IL_COLLECT_STEPS : isNC ? NC_COLLECT_STEPS : CA_COLLECT_STEPS).map((step) => (
+        {(isTX ? TX_COLLECT_STEPS : isFL ? FL_COLLECT_STEPS : isIL ? IL_COLLECT_STEPS : isNC ? NC_COLLECT_STEPS : isAZ ? AZ_COLLECT_STEPS : CA_COLLECT_STEPS).map((step) => (
           <View key={step.title} style={[styles.collectCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.collectIcon, { backgroundColor: "#fef3c7" }]}>
               <Feather name={step.icon} size={16} color="#d97706" />
@@ -1436,12 +1500,28 @@ const NC_CHECKLIST = [
   { id: "11", label: "Arrive 30 minutes early on hearing day", done: false },
 ];
 
+const AZ_CHECKLIST = [
+  { id: "1", label: "Complete intake form", done: false },
+  { id: "2", label: "Upload all evidence documents", done: false },
+  { id: "3", label: "Send demand letter to defendant", done: false },
+  { id: "4", label: "Download and review AZ Complaint (LJSC00001F)", done: false },
+  { id: "5", label: "File complaint at justice court clerk's office", done: false },
+  { id: "6", label: "Pay filing fee at clerk's window", done: false },
+  { id: "7", label: "Court issues summons and arranges service on defendant", done: false },
+  { id: "8", label: "Confirm defendant served at least 12 days before hearing (A.R.S. § 22-513)", done: false },
+  { id: "9", label: "File Proof of Service (LJSC00003F) with the court", done: false },
+  { id: "10", label: "Prepare opening statement (2-3 min)", done: false },
+  { id: "11", label: "Organize evidence copies (3 sets)", done: false },
+  { id: "12", label: "Arrive 30 minutes early on hearing day", done: false },
+];
+
 function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId: number }) {
   const colors = useColors();
   const { getToken } = useAuth();
   const baseUrl = getBaseUrl();
   const isNC = caseData.jurisdictionState === "NC";
-  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : caseData.jurisdictionState === "FL" ? FL_CHECKLIST : caseData.jurisdictionState === "IL" ? IL_CHECKLIST : caseData.jurisdictionState === "NC" ? NC_CHECKLIST : CA_CHECKLIST;
+  const isAZ = caseData.jurisdictionState === "AZ";
+  const DEFAULT_CHECKLIST = caseData.jurisdictionState === "TX" ? TX_CHECKLIST : caseData.jurisdictionState === "FL" ? FL_CHECKLIST : caseData.jurisdictionState === "IL" ? IL_CHECKLIST : caseData.jurisdictionState === "NC" ? NC_CHECKLIST : caseData.jurisdictionState === "AZ" ? AZ_CHECKLIST : CA_CHECKLIST;
   const [checklist, setChecklist] = useState(DEFAULT_CHECKLIST);
   const [dateInput, setDateInput] = useState(caseData.hearingDate ? String(caseData.hearingDate) : "");
   const [savingDate, setSavingDate] = useState(false);
@@ -1659,6 +1739,30 @@ function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId:
                 </View>
               </View>
             </>
+          ) : isAZ ? (
+            <>
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: colors.tealLight }]}>
+                  <Feather name="user-check" size={13} color={colors.teal} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Defendant served (at least 12 days before hearing — A.R.S. § 22-513)</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.teal }]}>By {fmt(addDays(hearingDate, -12))}</Text>
+                </View>
+              </View>
+              <View style={[styles.deadlineLine, { backgroundColor: colors.border }]} />
+              <View style={styles.deadlineRow}>
+                <View style={[styles.deadlineDot, { backgroundColor: "#fef3c7" }]}>
+                  <Feather name="calendar" size={13} color="#d97706" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Hearing</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.foreground }]}>
+                    {fmt(hearingDate)}{caseData.hearingTime ? ` at ${caseData.hearingTime}` : ""}
+                  </Text>
+                </View>
+              </View>
+            </>
           ) : (
             <>
               <View style={styles.deadlineRow}>
@@ -1788,7 +1892,7 @@ function AIChatTab({
 }: {
   caseId: number;
   initialMessage?: string;
-  jurisdictionState?: "CA" | "FL" | "TX" | "IL" | "NC";
+  jurisdictionState?: "CA" | "FL" | "TX" | "IL" | "NC" | "AZ";
   onNavigateToTab?: (tab: string, question?: string) => void;
 }) {
   const colors = useColors();
@@ -2112,6 +2216,8 @@ export default function CaseWorkspace() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { lang } = useLanguage();
+  const es = lang === "es";
   const { id } = useLocalSearchParams<{ id: string }>();
   const caseId = parseInt(id ?? "0", 10);
   const [activeTab, setActiveTab] = useState("intake");
@@ -2188,7 +2294,7 @@ export default function CaseWorkspace() {
                   activeTab === tab.key && styles.tabLabelActive,
                 ]}
               >
-                {tab.label}
+                {es ? (TAB_LABELS_ES[tab.key] ?? tab.label) : tab.label}
               </Text>
             </TouchableOpacity>
           ))}
@@ -2217,7 +2323,7 @@ export default function CaseWorkspace() {
             caseId={caseId}
             initialMessage={pendingAiMessage}
             key={pendingAiMessage ?? "default"}
-            jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC") ?? "CA"}
+            jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC" | "AZ") ?? "CA"}
             onNavigateToTab={(tab, question) => {
               const validTabs = TABS.map((t) => t.key);
               if (validTabs.includes(tab)) {
@@ -2237,7 +2343,7 @@ export default function CaseWorkspace() {
           caseId={caseId}
           caseTitle={caseData.title ?? ""}
           pageContext={activeTab}
-          jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC") ?? "CA"}
+          jurisdictionState={(caseData.jurisdictionState as "CA" | "FL" | "TX" | "IL" | "NC" | "AZ") ?? "CA"}
           onNavigateToTab={(tab, question) => {
             const validTabs = TABS.map((t) => t.key);
             if (validTabs.includes(tab)) {

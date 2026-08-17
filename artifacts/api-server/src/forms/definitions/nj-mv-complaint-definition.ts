@@ -164,8 +164,8 @@ export async function buildNJMVComplaint(
   setTextField(form, "defendant_name",     defName);
   setTextField(form, "defendant_address1", defAddr1);
   setTextField(form, "defendant_address2", defAddr2);
-  setTextField(form, "defendant_email",    d.defendantEmail ?? "");
-  setTextField(form, "defendant_phone",    d.defendantPhone ?? "");
+  setTextField(form, "defendant_email",    (d as any).defendantEmail ?? "");
+  setTextField(form, "defendant_phone",    (d as any).defendantPhone ?? "");
 
   // ── Demand ────────────────────────────────────────────────────────────────
   setTextField(form, "demand", fmtAmount(d.claimAmount as number | null));

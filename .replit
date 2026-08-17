@@ -847,27 +847,3 @@ ADMIN_EMAIL = "paul@thoxie.com"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-fbe13e76-2c09-46f1-9698-68ef867b76ca"
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 18115
-externalPort = 3002
-
-[[ports]]
-localPort = 18304
-externalPort = 3001
-
-[[ports]]
-localPort = 20902
-externalPort = 80
-
-[[ports]]
-localPort = 23744
-externalPort = 3000

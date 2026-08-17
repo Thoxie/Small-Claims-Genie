@@ -41,6 +41,8 @@ See `FORMS_MANIFEST.md` for the complete, up-to-date inventory of every implemen
 
 5.  **UI content-fit check — always verify before coding.** Before implementing any UI change that places text or content into a constrained space (pill labels, badges, truncated containers, fixed-width elements, single-line fields), check whether the content will actually fit. If it will not fit without clipping or truncation, stop and tell the user clearly — do not silently truncate or clip. Either: (a) confirm the content fits as-is, (b) warn the user it won't fit and ask them to shorten the content, or (c) warn the user and propose a layout change to accommodate it. Never ship truncated content without flagging it first.
 
+11. **Mobile parity — always apply web changes to mobile too.** Whenever a change is made to the web app (PC/Mac, `artifacts/small-claims-genie`), the same change must also be applied to the mobile app (`artifacts/mobile`) in the same task. This includes: new states/jurisdictions, new features on any tab, UI copy changes, language/translation additions, form wiring, checklist/deadline updates, and any new section or option visible to users. Do not ship a web change without its mobile equivalent.
+
 10. **FORMS_MANIFEST.md is the living source of truth for forms.** Whenever a new state, form, or route is added or removed, update `FORMS_MANIFEST.md` immediately as part of the same task. Do not wait for a documentation pass. The manifest records: state name, claim limit, form name, form ID/number, route, rendering method, and signed-variant availability.
 
 11. **Source archive command.** To generate a downloadable zip of all source code for external analysis, run:

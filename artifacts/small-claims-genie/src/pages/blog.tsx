@@ -57,7 +57,7 @@ export default function Blog() {
             <div className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-black" style={{ aspectRatio: "16/9" }}>
               <iframe
                 src={`${YT_EMBED}?autoplay=1`}
-                title="Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+                title="Why Small Claims Court Is So Difficult—and How AI Can Help"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="absolute inset-0 w-full h-full"
@@ -100,7 +100,7 @@ export default function Blog() {
             <button
               onClick={() => setEnlarged(true)}
               className="w-full text-left bg-white rounded-xl border border-border shadow-sm overflow-hidden flex hover:shadow-md transition-shadow group"
-              aria-label="Watch: Why Small Claims Founder Podcast — Legal AI Founder and Applications"
+              aria-label="Watch: Why Small Claims Court Is So Difficult—and How AI Can Help"
             >
               {/* Thumbnail */}
               <div className="relative shrink-0 w-[110px] sm:w-[152px] bg-black self-stretch">
@@ -120,11 +120,10 @@ export default function Blog() {
               <div className="flex flex-col justify-between p-4 min-w-0">
                 <div>
                   <p className="text-sm font-bold text-primary leading-snug mb-1.5">
-                    Why Legal AI and Benefits Work In Your Favor Podcast — Legal AI Applications Understanding
+                    Why Small Claims Court Is So Difficult—and How AI Can Help
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    Paul Andrew, founder of Small Claims Genie, discusses legal AI applications and how
-                    purpose-built tools help people prepare for small claims court.
+                    with our Legal AI Founder
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground/60 mt-3">August 15, 2026</p>
