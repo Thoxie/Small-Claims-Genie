@@ -8,7 +8,7 @@
  * Data status (August 2026):
  *  - Batch 2A (verified): Apache, Cochise, Coconino, Gila, Graham, Greenlee, La Paz, Santa Cruz
  *  - Batch 2B (verified): Mohave (3 precincts), Navajo (3 precincts), Pinal (3 precincts),
- *      Yavapai (2 precincts), Yuma (3 precincts)
+ *      Yavapai (5 precincts), Yuma (3 precincts)
  *  - Batch 2C (verified): Pima (consolidated — all filings at 240 N Stone Ave),
  *      Maricopa (12 of ~26 precincts verified; see note below)
  *
@@ -406,7 +406,7 @@ export const ARIZONA_COUNTIES: AZCounty[] = [
     state: "AZ",
     phone: "(928) 771-3300",
     website: "https://courts.yavapaiaz.gov",
-    notes: "Yavapai County precincts include Prescott, Verde Valley (Cottonwood), Bagdad-Yarnell, Mayer, and Seligman. Verify the correct precinct for your case at azcourts.gov.",
+    notes: "Yavapai County has five justice court precincts: Prescott, Verde Valley (Cottonwood), Bagdad-Yarnell, Mayer, and Seligman. Verify the correct precinct for your case at azcourts.gov.",
   },
   {
     id: "az-yavapai-cottonwood",
@@ -418,6 +418,39 @@ export const ARIZONA_COUNTIES: AZCounty[] = [
     state: "AZ",
     phone: "(928) 639-5820",
     website: "https://courts.yavapaiaz.gov/Departments/Justice-Courts/Justice-Court-Precincts/Verde-Valley-JC",
+  },
+  {
+    id: "az-yavapai-bagdad-yarnell",
+    name: "Yavapai",
+    courthouseName: "Yavapai County Justice Court — Bagdad-Yarnell Precinct",
+    courthouseAddress: "22591 Looka Way",
+    courthouseCity: "Yarnell",
+    courthouseZip: "85362",
+    state: "AZ",
+    phone: "(928) 771-3357",
+    website: "https://courts.yavapaiaz.gov",
+  },
+  {
+    id: "az-yavapai-mayer",
+    name: "Yavapai",
+    courthouseName: "Yavapai County Justice Court — Mayer Precinct",
+    courthouseAddress: "12840 Central Ave",
+    courthouseCity: "Mayer",
+    courthouseZip: "86333",
+    state: "AZ",
+    phone: "(928) 771-3355",
+    website: "https://courts.yavapaiaz.gov",
+  },
+  {
+    id: "az-yavapai-seligman",
+    name: "Yavapai",
+    courthouseName: "Yavapai County Justice Court — Seligman Precinct",
+    courthouseAddress: "54150 Floyd St",
+    courthouseCity: "Seligman",
+    courthouseZip: "86337",
+    state: "AZ",
+    phone: "(928) 422-3281",
+    website: "https://courts.yavapaiaz.gov",
   },
 
   // ── YUMA COUNTY ─────────────────────────────────────────────────────────────
