@@ -98,28 +98,29 @@ export async function buildAZSummons(
   const courtName = azCounty ? `${azCounty.name.toUpperCase()} COUNTY` : "";
   if (courtName) {
     const cw = font.widthOfTextAtSize(courtName, 10);
-    page.drawText(courtName, { x: 344 - cw, y: 560, size: 10, font, color: BLACK });
+    page.drawText(courtName, { x: 344 - cw, y: 564, size: 10, font, color: BLACK });
   }
 
   // ── Person Filing (top-left section) ─────────────────────────────────────────
-  t(d.plaintiffName ?? "", 200, 706);
-  t(d.plaintiffAddress ?? "", 200, 689);
-  t(pltCSZ, 200, 672);
-  t(d.plaintiffPhone ?? "", 145, 654);
-  t(d.plaintiffEmail ?? "", 160, 637);
+  t(d.plaintiffName ?? "", 200, 710);
+  t(d.plaintiffAddress ?? "", 200, 693);
+  t(pltCSZ, 200, 676);
+  t(d.plaintiffPhone ?? "", 145, 658);
+  t(d.plaintiffEmail ?? "", 160, 641);
 
   // ── Plaintiff party box (left column) ────────────────────────────────────────
-  t(d.plaintiffName ?? "", 77, 572);
-  t(d.plaintiffAddress ?? "", 77, 554);
-  t(pltCSZ, 77, 537);
-  // Phone in the "(  )" row
-  t(d.plaintiffPhone ?? "", 95, 387);
+  t(d.plaintiffName ?? "", 77, 576);
+  t(d.plaintiffAddress ?? "", 77, 558);
+  t(pltCSZ, 77, 541);
+  // Phone in the "(  )" row — strip leading "(" so area code sits inside the pre-printed bracket
+  t((d.plaintiffPhone ?? "").replace(/^\(/, ""), 88, 391);
 
   // ── Defendant party box (right column, below form title) ─────────────────────
-  t(d.defendantName ?? "", 365, 437);
-  t(d.defendantAddress ?? "", 365, 422);
-  t(defCSZ, 365, 408);
-  t(d.defendantPhone ?? "", 400, 387);
+  t(d.defendantName ?? "", 365, 441);
+  t(d.defendantAddress ?? "", 365, 426);
+  t(defCSZ, 365, 412);
+  // Phone in the "(  )" row — strip leading "(" so area code sits inside the pre-printed bracket
+  t((d.defendantPhone ?? "").replace(/^\(/, ""), 393, 391);
 
   // ── Issue date (CLERK-ISSUED form: no plaintiff signature) ───────────────────
   // The plaintiff never signs the AZ summons, so we intentionally ignore
@@ -129,7 +130,7 @@ export async function buildAZSummons(
   const today = new Date().toLocaleDateString("en-US", {
     month: "2-digit", day: "2-digit", year: "numeric",
   });
-  t(today, 80, 128);
+  t(today, 80, 132);
 
   return Buffer.from(await doc.save());
 }
