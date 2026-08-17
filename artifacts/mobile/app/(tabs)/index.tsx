@@ -12,6 +12,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Pressable,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateCase, useGetCaseStats, useListCases } from "@workspace/api-client-react";
@@ -28,7 +29,7 @@ export default function DashboardScreen() {
   const { data: cases, isLoading, refetch, isRefetching } = useListCases();
   const { data: stats } = useGetCaseStats();
   const createCase = useCreateCase();
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
   const es = lang === "es";
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
@@ -80,14 +81,36 @@ export default function DashboardScreen() {
           <>
             {/* Greeting header */}
             <View style={styles.header}>
-              <View>
-                <Text style={[styles.greeting, { color: colors.mutedForeground }]}>{greeting}</Text>
-                <Text style={[styles.name, { color: colors.foreground }]}>
-                  {firstName ? firstName : es ? "Bienvenido" : "Welcome back"}
-                </Text>
+              {/* Left: shield icon + greeting */}
+              <View style={styles.headerLeft}>
+                <View style={[styles.shieldBadge, { backgroundColor: colors.primary }]}>
+                  <Feather name="shield" size={20} color={colors.accent} />
+                </View>
+                <View>
+                  <Text style={[styles.greeting, { color: colors.mutedForeground }]}>{greeting}</Text>
+                  <Text style={[styles.name, { color: colors.foreground }]}>
+                    {firstName ? firstName : es ? "Bienvenido" : "Welcome back"}
+                  </Text>
+                </View>
               </View>
-              <View style={[styles.shieldBadge, { backgroundColor: colors.primary }]}>
-                <Feather name="shield" size={20} color={colors.accent} />
+              {/* Right: EN / ES language toggle */}
+              <View style={[styles.langToggle, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+                <Pressable
+                  onPress={() => setLang("en")}
+                  style={[styles.langBtn, styles.langBtnLeft, !es && { backgroundColor: colors.primary }]}
+                >
+                  <Text style={[styles.langBtnText, { color: !es ? colors.primaryForeground : colors.mutedForeground }]}>
+                    EN
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setLang("es")}
+                  style={[styles.langBtn, styles.langBtnRight, es && { backgroundColor: colors.primary }]}
+                >
+                  <Text style={[styles.langBtnText, { color: es ? colors.primaryForeground : colors.mutedForeground }]}>
+                    ES
+                  </Text>
+                </Pressable>
               </View>
             </View>
 
@@ -185,9 +208,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
   greeting: { fontSize: 13, fontFamily: "PlusJakartaSans_400Regular" },
   name: { fontSize: 24, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold" },
   shieldBadge: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  langToggle: {
+    flexDirection: "row",
+    borderRadius: 10,
+    borderWidth: 1,
+    marginLeft: 12,
+  },
+  langBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  langBtnLeft: {
+    borderTopLeftRadius: 9,
+    borderBottomLeftRadius: 9,
+  },
+  langBtnRight: {
+    borderTopRightRadius: 9,
+    borderBottomRightRadius: 9,
+  },
+  langBtnText: {
+    fontSize: 13,
+    fontWeight: "700",
+    fontFamily: "PlusJakartaSans_700Bold",
+    letterSpacing: 0.5,
+  },
   statsRow: { flexDirection: "row", paddingHorizontal: 16, gap: 10, marginBottom: 24 },
   statCard: { flex: 1, padding: 14, borderRadius: 12, borderWidth: 1, alignItems: "center", gap: 4 },
   statNum: { fontSize: 22, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold" },

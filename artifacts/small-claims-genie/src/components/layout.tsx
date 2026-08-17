@@ -90,15 +90,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 md:gap-3">
 
             {/* Language toggle — desktop */}
-            <div className="hidden md:flex items-center rounded-full border border-primary/20 text-xs font-bold overflow-hidden shrink-0">
+            <div className="hidden md:flex items-center rounded-full border border-primary/20 text-xs font-bold shrink-0">
               <button
                 onClick={() => setLang("en")}
-                className={`px-2.5 py-1 transition-colors ${lang === "en" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                className={`px-3 py-1 rounded-l-full transition-colors ${lang === "en" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
                 aria-label="Switch to English"
               >EN</button>
               <button
                 onClick={() => setLang("es")}
-                className={`px-2.5 py-1 transition-colors ${lang === "es" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
+                className={`px-3 py-1 rounded-r-full transition-colors ${lang === "es" ? "bg-primary text-white" : "text-primary/50 hover:text-primary"}`}
                 aria-label="Cambiar a español"
               >ES</button>
             </div>
