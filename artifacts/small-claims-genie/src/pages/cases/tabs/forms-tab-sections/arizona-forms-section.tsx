@@ -34,7 +34,7 @@ export function ArizonaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
               <div>
                 <p className="text-xs font-semibold text-blue-900 mb-0.5">Filing, service, and important Arizona rules</p>
                 <p className="text-xs text-blue-800 leading-relaxed">
-                  File the signed Complaint with your Justice Court clerk and pay the $30 filing fee (A.R.S. § 22-281). The court will set a hearing date — typically within 30–70 days. <strong>You are responsible for serving the defendant</strong> by registered/certified mail with return receipt, constable, sheriff, or licensed process server (A.R.S. § 22-513). File proof of service within 45 days of filing. <strong>Important: Arizona small claims judgments are final — there is no appeal (A.R.S. § 22-519).</strong>
+                  File the signed Complaint with your Justice Court clerk and pay the $25 filing fee (A.R.S. § 22-281). The court will set a hearing date — typically within 30–70 days. <strong>You are responsible for serving the defendant</strong> by registered/certified mail with return receipt, constable, sheriff, or licensed process server (A.R.S. § 22-513). File proof of service within 45 days of filing (Ariz. R. Small Claims P. 5). <strong>Important: Arizona small claims judgments are final — there is no appeal (A.R.S. § 22-519).</strong>
                 </p>
               </div>
             </div>

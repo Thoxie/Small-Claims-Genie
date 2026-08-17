@@ -169,7 +169,7 @@ Court: District Court — Small Claims Department | Claim limit: $10,000 individ
 
 ## Arizona (AZ)
 
-Court: Small Claims Division of the Justice Court | Claim limit: $5,000 | Filing fee: $30 flat (A.R.S. § 22-281)
+Court: Small Claims Division of the Justice Court | Claim limit: $5,000 | Filing fee: $25 flat (A.R.S. § 22-281)
 
 | Form | Name | Route | Render | Signed? | Asset |
 |---|---|---|---|---|---|

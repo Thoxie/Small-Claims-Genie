@@ -118,10 +118,10 @@ function IntakeTab({ caseId, caseData, onCheckCase }: { caseId: number; caseData
         );
         return;
       }
-      if (form.jurisdictionState === "AZ" && form.claimAmount && amt > 3500) {
+      if (form.jurisdictionState === "AZ" && form.claimAmount && amt > 5000) {
         Alert.alert(
           "Claim Amount Too High",
-          "Arizona small claims court has a $3,500 limit. Please reduce your claim amount or file in superior court instead.",
+          "Arizona small claims court has a $5,000 limit. Please reduce your claim amount or file in superior court instead.",
         );
         return;
       }
@@ -810,14 +810,14 @@ const NC_COLLECT_STEPS = [
 
 const AZ_FORMS = [
   { key: "az-complaint", label: "AZ Complaint (LJSC00001F)", desc: "Arizona Small Claims Complaint — file with the justice court clerk to start your case", path: "az/complaint", method: "POST" as const },
-  { key: "az-summons", label: "AZ Summons (LJSC00002F)", desc: "Arizona Summons — pre-fill and bring to the clerk; the court issues it and handles service on the defendant", path: "az/summons", method: "GET" as const },
+  { key: "az-summons", label: "AZ Summons (LJSC00002F)", desc: "Arizona Summons — pre-fill and bring to the clerk; the court issues it. You must then arrange service on the defendant yourself.", path: "az/summons", method: "POST" as const },
   { key: "az-proof-of-service", label: "AZ Proof of Service (LJSC00003F)", desc: "Completed by the server after serving the defendant — file with the justice court", path: "az/proof-of-service", method: "POST" as const },
 ];
 
 const AZ_FEE_SCHEDULE = [
-  { range: "$0 – $500", fee: "~$29" },
-  { range: "$501 – $1,000", fee: "~$43" },
-  { range: "$1,001 – $3,500", fee: "~$73" },
+  { range: "Filing fee (all claims)", fee: "$25 statewide" },
+  { range: "Service by mail (optional)", fee: "+$8" },
+  { range: "Constable/sheriff/process server", fee: "varies by county" },
 ];
 
 const AZ_COLLECT_STEPS = [
@@ -826,7 +826,7 @@ const AZ_COLLECT_STEPS = [
   { icon: "file-text" as const, title: "Wage garnishment", body: "File a Writ of Garnishment with the court and serve the defendant's employer. Arizona limits garnishment to 25% of disposable earnings per pay period (A.R.S. § 33-1131)." },
   { icon: "shield" as const, title: "Bank levy", body: "Use a Writ of Execution to direct the constable or sheriff to levy the defendant's bank account. Identify the bank and branch from the Debtor's Examination." },
   { icon: "map-pin" as const, title: "Judgment lien on real estate", body: "Record a certified copy of your judgment with the County Recorder in any Arizona county where the defendant owns real property to create a judgment lien on their real estate." },
-  { icon: "refresh-cw" as const, title: "Valid for 5 years — renew before expiration", body: "Arizona judgments are enforceable for 5 years and can be renewed for additional 5-year periods before expiration (A.R.S. § 12-1551). Post-judgment interest accrues at 10% per year (A.R.S. § 44-1201)." },
+  { icon: "refresh-cw" as const, title: "Valid for 10 years — renew before expiration", body: "Arizona judgments are enforceable for 10 years and may be renewed for an additional 10-year term before expiration (A.R.S. § 12-1551, § 12-1611). Post-judgment interest accrues at 10% per year (A.R.S. § 44-1201)." },
 ];
 
 function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWithDetails }) {
@@ -875,6 +875,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
   ];
 
   const FORMS = isAZ ? AZ_FORMS : isTX ? TX_FORMS : isFL ? FL_FORMS : isIL ? IL_FORMS : isNC ? NC_FORMS : CA_FORMS;
+
 
   const downloadForm = async (formKey: string, formPath: string, method: "GET" | "POST" = "GET") => {
     setReviewForm(null);
@@ -1056,7 +1057,7 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
             <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
               <Feather name="info" size={14} color={colors.mutedForeground} />
               <Text style={[styles.infoBoxText, { color: colors.mutedForeground }]}>
-                File the Complaint (LJSC00001F) at the justice court clerk in the precinct where the defendant lives or the transaction occurred. The court issues the Summons and arranges service on the defendant. Defendant must be served at least 12 days before the hearing (A.R.S. § 22-513).
+                File the Complaint (LJSC00001F) at the justice court clerk in the precinct where the defendant lives or the transaction occurred. The court issues the Summons, but you must arrange service on the defendant yourself — the court does NOT do this automatically. Check your hearing notice for the required service deadline.
               </Text>
             </View>
             <View style={[styles.txFeeCard, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}>
@@ -1068,7 +1069,45 @@ function CourtFormsTab({ caseId, caseData }: { caseId: number; caseData: CaseWit
                 </View>
               ))}
               <Text style={[styles.txFeeNote, { color: "#b45309" }]}>
-                Claim limit: $3,500 (A.R.S. § 22-503). Fees vary by county justice court.
+                Claim limit: $5,000 (A.R.S. § 22-503, exclusive of interest and court costs). Service fees vary by county justice court.
+              </Text>
+            </View>
+
+            {/* ── AZ Serving the Defendant ─────────────────────────────── */}
+            <Text style={[styles.tabSectionTitle, { color: colors.foreground, marginTop: 16 }]}>
+              Serving the Defendant
+            </Text>
+            <View style={[styles.infoBox, { backgroundColor: "#fef3c7", borderColor: "#f59e0b", marginBottom: 6 }]}>
+              <Feather name="alert-triangle" size={14} color="#b45309" />
+              <Text style={[styles.infoBoxText, { color: "#b45309" }]}>
+                You (the plaintiff) must arrange service — the court does NOT serve the defendant automatically (A.R.S. § 22-513; Ariz. R. Small Claims P. 5).
+              </Text>
+            </View>
+            <View style={[styles.infoBox, { backgroundColor: "#fef9c3", borderColor: "#fde047", marginBottom: 8 }]}>
+              <Feather name="clock" size={14} color="#a16207" />
+              <Text style={[styles.infoBoxText, { color: "#a16207" }]}>
+  {"Two deadlines: serve the defendant before the hearing date per court instructions \u2022 file Proof of Service with the court within 45 days of filing your complaint (per AZ Small Claims Rules)."}
+              </Text>
+            </View>
+            {([
+              { icon: "mail" as const, title: "Certified / Registered Mail (easiest)", body: "Send the summons and complaint by registered or certified mail with return receipt requested. If the defendant refuses or the mail is returned unclaimed, use personal service instead." },
+              { icon: "shield" as const, title: "Constable or Sheriff", body: "You may arrange service through the local constable or county sheriff. Contact the constable or sheriff's office in the defendant's precinct/county to schedule and pay the service fee." },
+              { icon: "user" as const, title: "Licensed Private Process Server", body: "You may hire a licensed private process server. They must be at least 18 years old and not a party to the case. Ask the server to provide an affidavit of service for your records." },
+            ] as { icon: "mail" | "shield" | "user"; title: string; body: string }[]).map((method) => (
+              <View key={method.title} style={[styles.collectCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.collectIcon, { backgroundColor: colors.tealLight }]}>
+                  <Feather name={method.icon} size={16} color={colors.teal} />
+                </View>
+                <View style={styles.collectContent}>
+                  <Text style={[styles.collectTitle, { color: colors.foreground }]}>{method.title}</Text>
+                  <Text style={[styles.collectBody, { color: colors.mutedForeground }]}>{method.body}</Text>
+                </View>
+              </View>
+            ))}
+            <View style={[styles.infoBox, { backgroundColor: colors.tealLight, borderColor: colors.teal, marginTop: 4 }]}>
+              <Feather name="file-text" size={14} color={colors.teal} />
+              <Text style={[styles.infoBoxText, { color: colors.teal }]}>
+                After service, file the Proof of Service (LJSC00003F) with the justice court within 45 days of filing your complaint — use the form in the Court Forms list above.
               </Text>
             </View>
           </>
@@ -1507,8 +1546,8 @@ const AZ_CHECKLIST = [
   { id: "4", label: "Download and review AZ Complaint (LJSC00001F)", done: false },
   { id: "5", label: "File complaint at justice court clerk's office", done: false },
   { id: "6", label: "Pay filing fee at clerk's window", done: false },
-  { id: "7", label: "Court issues summons and arranges service on defendant", done: false },
-  { id: "8", label: "Confirm defendant served at least 12 days before hearing (A.R.S. § 22-513)", done: false },
+  { id: "7", label: "Court issues summons — you must arrange service on defendant yourself", done: false },
+  { id: "8", label: "Confirm defendant served before hearing — check your hearing notice for the required deadline", done: false },
   { id: "9", label: "File Proof of Service (LJSC00003F) with the court", done: false },
   { id: "10", label: "Prepare opening statement (2-3 min)", done: false },
   { id: "11", label: "Organize evidence copies (3 sets)", done: false },
@@ -1746,8 +1785,8 @@ function DeadlinesTab({ caseData, caseId }: { caseData: CaseWithDetails; caseId:
                   <Feather name="user-check" size={13} color={colors.teal} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Defendant served (at least 12 days before hearing — A.R.S. § 22-513)</Text>
-                  <Text style={[styles.deadlineItemDate, { color: colors.teal }]}>By {fmt(addDays(hearingDate, -12))}</Text>
+                  <Text style={[styles.deadlineItemLabel, { color: colors.foreground }]}>Defendant served before hearing</Text>
+                  <Text style={[styles.deadlineItemDate, { color: colors.teal }]}>See your hearing notice for the required service deadline</Text>
                 </View>
               </View>
               <View style={[styles.deadlineLine, { backgroundColor: colors.border }]} />

@@ -531,7 +531,7 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     attorneysNote: "Attorneys may NOT appear, prosecute, or defend a small claims case (A.R.S. § 22-512) unless all parties stipulate in writing before the hearing — businesses appear through an authorized officer or employee, not a lawyer. Never suggest hiring an attorney for an AZ small claims hearing",
 
     filingFeeTiers: [
-      { label: "flat statewide fee", fee: "$30" },
+      { label: "flat statewide fee", fee: "$25" },
     ],
     filingFeeCitation: "A.R.S. § 22-281",
     filingFeeNote: "plus $8 service-by-mail fee; constable, sheriff, or process server fees vary by county. Fee waiver form: AOCDFGF1F (Application for Deferral or Waiver of Court Fees or Costs)",
@@ -544,9 +544,9 @@ export const STATE_FACTS: Record<StateCode, StateFacts> = {
     ],
     statuteOfLimitationsCitation: "written A.R.S. § 12-548; oral A.R.S. § 12-543; property damage and personal injury A.R.S. § 12-542",
 
-    serviceDeadlineText: "proof of service must be filed with the court within 45 days after filing the complaint",
+    serviceDeadlineText: "proof of service must be filed with the court within 45 days after filing the complaint; defendant must be served sufficiently in advance of the hearing date per court instructions",
     serviceMethodsText: "Registered or certified mail with return receipt requested, constable, sheriff, or licensed private process server — the plaintiff arranges service; the court does NOT serve the defendant automatically",
-    serviceOfProcessCitation: "A.R.S. § 22-513",
+    serviceOfProcessCitation: "A.R.S. § 22-513; Ariz. R. Small Claims P. 5 (ARSCP 5)",
 
     forms: [
       { id: "", name: "Small Claims Complaint", desc: "The main form you file to start your case in the Small Claims Division of the Justice Court." },

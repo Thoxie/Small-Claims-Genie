@@ -388,7 +388,7 @@ VIRGINIA:
 
 ARIZONA:
 - Statute of limitations: written contracts ${AZ.statuteOfLimitations[0].period} (A.R.S. § 12-548), oral contracts ${AZ.statuteOfLimitations[1].period} (§ 12-543), property damage ${AZ.statuteOfLimitations[2].period} (§ 12-542), personal injury ${AZ.statuteOfLimitations[3].period} (§ 12-542).
-- Proof of service deadline: must be filed with the court within 45 days of filing the complaint (A.R.S. § 22-513).
+- Proof of service deadline: must be filed with the court within 45 days of filing the complaint (Ariz. R. Small Claims P. 5).
 - Hearing timeline: typically set within 30–70 days of filing.
 - No appeal: Arizona small claims judgments are FINAL — there is NO appeal (A.R.S. § 22-519). This is critical to tell users before they file.
 - Post-judgment collection window: ${AZ.judgmentValidityYears} years (renewable).
