@@ -63,10 +63,25 @@ const STATIC_SITEMAP_PAGES = [
   { loc: "https://smallclaimsgenie.com/how-it-works",   priority: "0.9", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/faq",            priority: "0.9", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/blog",           priority: "0.8", changefreq: "weekly"  },
-  { loc: "https://smallclaimsgenie.com/blog/paul-andrew-small-claims-genie-podcast", priority: "0.8", changefreq: "monthly" },
+  {
+    loc: "https://smallclaimsgenie.com/blog/paul-andrew-small-claims-genie-podcast",
+    priority: "0.8",
+    changefreq: "monthly",
+    extra: `    <video:video>
+      <video:thumbnail_loc>https://img.youtube.com/vi/EkzyvijKN6E/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>Why Legal AI and Benefits Work In Your Favor Podcast — Legal AI Applications Understanding</video:title>
+      <video:description>Paul Andrew joins the podcast to discuss how Small Claims Genie uses legal AI to help everyday people navigate small claims court without a lawyer — from intake to court-ready forms.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/EkzyvijKN6E</video:player_loc>
+      <video:duration>944</video:duration>
+      <video:publication_date>2026-08-15</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:live>no</video:live>
+    </video:video>`,
+  },
   { loc: "https://smallclaimsgenie.com/counties",       priority: "0.8", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/types-of-cases", priority: "0.8", changefreq: "monthly" },
   { loc: "https://smallclaimsgenie.com/resources",      priority: "0.7", changefreq: "monthly" },
+  { loc: "https://smallclaimsgenie.com/startup",        priority: "0.7", changefreq: "monthly" },
 ];
 
 // ── Sitemap: Soro article fetch ───────────────────────────────────────────────

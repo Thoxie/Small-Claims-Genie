@@ -8,12 +8,9 @@ export function ArizonaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
             <span className="text-xl">🌵</span>
             <h3 className="text-base font-bold text-foreground">Arizona Court Forms</h3>
           </div>
-
-          {/* ── Small Claims Complaint ──────────────────────────────────────── */}
           <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">LJSC00001F</span>
                 <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">A.R.S. § 22-504</span>
               </div>
               <p className="text-sm font-semibold text-foreground">Small Claims Complaint</p>
@@ -31,50 +28,6 @@ export function ArizonaFormsSection({ ctx }: { ctx: FormsTabCtx }) {
               </button>
             </div>
           </div>
-
-          {/* ── Summons ────────────────────────────────────────────────────── */}
-          <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">LJSC00002F</span>
-                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">A.R.S. § 22-513</span>
-              </div>
-              <p className="text-sm font-semibold text-foreground">Summons</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Pre-filled with party details. The clerk stamps and dates this form after you file — you then serve it on the defendant.</p>
-              {ctx.downloadError && (ctx.downloadingForm === "az/summons") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-            </div>
-            <div className="shrink-0 flex flex-col items-end gap-1.5">
-              <button type="button" disabled={ctx.downloadingForm === "az/summons"} onClick={() => ctx.downloadSignedFLForm("az/summons", `AZ-Summons-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                {ctx.downloadingForm === "az/summons" ? <span className="animate-spin">⏳</span> : <Download className="h-3.5 w-3.5" />}
-                Download
-              </button>
-            </div>
-          </div>
-
-          {/* ── Proof of Service ───────────────────────────────────────────── */}
-          <div className="rounded-xl border bg-card p-4 flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">LJSC00003F</span>
-                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">A.R.S. § 22-513</span>
-              </div>
-              <p className="text-sm font-semibold text-foreground">Proof of Service by Registered/Certified Mail</p>
-              <p className="text-xs text-muted-foreground mt-0.5">File this with the court after serving the defendant. Must be filed within 45 days of filing your Complaint.</p>
-              {ctx.downloadError && (ctx.downloadingForm === "az/proof-of-service" || ctx.downloadingForm === "az/proof-of-service/signed") && <p className="mt-1 text-xs text-destructive">{ctx.downloadError}</p>}
-            </div>
-            <div className="shrink-0 flex flex-col items-end gap-1.5">
-              <button type="button" disabled={ctx.downloadingForm === "az/proof-of-service/signed"} onClick={() => ctx.openFlSigModal({ endpoint: "az/proof-of-service", filename: `AZ-Proof-of-Service-Signed-Case-${ctx.caseId}.pdf` })} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
-                {ctx.downloadingForm === "az/proof-of-service/signed" ? <span className="animate-spin">⏳</span> : <PenLine className="h-3.5 w-3.5" />}
-                Sign &amp; Download
-              </button>
-              <button type="button" disabled={ctx.downloadingForm === "az/proof-of-service"} onClick={() => ctx.downloadSignedFLForm("az/proof-of-service", `AZ-Proof-of-Service-Case-${ctx.caseId}.pdf`)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60">
-                {ctx.downloadingForm === "az/proof-of-service" ? <span className="animate-spin">⏳</span> : <Download className="h-3 w-3" />}
-                Skip signing
-              </button>
-            </div>
-          </div>
-
-          {/* ── Filing info box ─────────────────────────────────────────────── */}
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
             <div className="flex gap-2.5">
               <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
