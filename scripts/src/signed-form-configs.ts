@@ -178,7 +178,22 @@ export const CONFIGS: Record<string, FormTestConfig> = {
 
   // ─── Clerk-issued / signature-ignored (signed must equal unsigned) ──────────
   "az-summons": mk("az-summons", "AZ Summons", "az/summons", true,
-    { kind: "clerk-blank", pages: [1] },
+    { kind: "clerk-blank", pages: [1], contentRegions: [
+      // ── Phone row (y≈391) ────────────────────────────────────────────────────
+      // Area code sits between the pre-printed ( ) brackets; must be present.
+      // darkThreshold=0.89: blank template (pre-printed brackets only) measures
+      // mean≈0.905 at this crop; filled text drops it to ≈0.839 → clear separation.
+      { page: 1, pdfX: 80, pdfY: 387, w: 34, h: 12, expectDark: true, darkThreshold: 0.89, label: "plt area-code (84,391)" },
+      // Rest of the number (e.g. " 555-0101") follows the closing bracket.
+      // darkThreshold=0.89: blank template measures ≈0.917; filled text ≈0.859.
+      { page: 1, pdfX: 115, pdfY: 387, w: 90, h: 12, expectDark: true, darkThreshold: 0.89, label: "plt phone-rest (118,391)" },
+      // ── Left party column (name / address / CSZ) — intentionally blank ───────
+      // Task #535 removed the duplicate plaintiff block from the left column.
+      // If it is ever re-introduced, this region will darken and the test fails.
+      // brightThreshold=0.96: pre-printed form underlines produce mean≈0.978 here;
+      // adding "Alice Johnson" style text would drop the mean to ~0.92 → FAIL.
+      { page: 1, pdfX: 77, pdfY: 534, w: 200, h: 46, expectDark: false, brightThreshold: 0.96, label: "left-col name/addr/CSZ (should be blank)" },
+    ]},
     { county: "az-maricopa", plaintiffState: "AZ", plaintiffCity: "Phoenix", plaintiffZip: "85007",
       defendantState: "AZ", defendantCity: "Phoenix", defendantZip: "85018" }),
 

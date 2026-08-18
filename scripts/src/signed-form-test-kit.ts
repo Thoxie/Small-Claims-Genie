@@ -153,11 +153,33 @@ export async function diffBBox(signedPng: string, unsignedPng: string): Promise<
 // ─── Config types ──────────────────────────────────────────────────────────────
 export interface Region { page: number; pdfX: number; pdfY: number; w: number; h: number }
 
+/**
+ * A pixel-content check on the rendered unsigned PDF page.
+ *   expectDark = true  → the region must contain ink (mean < darkThreshold, default 0.95).
+ *                        Use to assert that a specific field was filled.
+ *   expectDark = false → the region must be blank / white (mean > brightThreshold, default 0.98).
+ *                        Use to assert that a previously-populated field is now intentionally empty.
+ */
+export interface ContentRegion {
+  page: number;
+  pdfX: number;
+  pdfY: number;
+  w: number;
+  h: number;
+  expectDark: boolean;
+  /** Human-readable name shown in assertion messages. */
+  label?: string;
+  /** Override the darkness threshold (mean < darkThreshold → dark). Default 0.95. */
+  darkThreshold?: number;
+  /** Override the brightness threshold (mean > brightThreshold → bright). Default 0.98. */
+  brightThreshold?: number;
+}
+
 export type Guard =
   | { kind: "image"; regions: Region[]; tolPx?: number }
   | { kind: "image-dynamic"; page: number; xBand?: [number, number] }
   | { kind: "typed-bright"; page: number; crop: string; minBrightness?: number }
-  | { kind: "clerk-blank"; pages: number[] };
+  | { kind: "clerk-blank"; pages: number[]; contentRegions?: ContentRegion[] };
 
 export interface FormTestConfig {
   /** unique short key, also used for the test user id */
@@ -322,6 +344,7 @@ async function guardTypedBright(
 
 async function guardClerkBlank(
   label: string, signed: Buffer, unsigned: Buffer, pages: number[],
+  contentRegions?: ContentRegion[],
 ): Promise<void> {
   const MAX_AREA = 24; // px² — anything larger means content was added on signing
   for (const page of pages) {
@@ -342,6 +365,46 @@ async function guardClerkBlank(
     }
   }
   console.log(`  ✓ signed output is pixel-identical to unsigned — no plaintiff signature embedded`);
+
+  // ── Content-region spot-checks (rendered against the unsigned PDF) ────────────
+  // These catch layout drift in static filled fields (e.g. phone bracket position,
+  // intentionally-blank columns) without requiring a signature to be embedded.
+  if (contentRegions && contentRegions.length > 0) {
+    // Group by page so we only render each page once.
+    const pageSet = [...new Set(contentRegions.map(r => r.page))];
+    for (const page of pageSet) {
+      const u = await renderPage(unsigned, page);
+      try {
+        for (const cr of contentRegions.filter(r => r.page === page)) {
+          const darkThreshold   = cr.darkThreshold   ?? 0.95;
+          const brightThreshold = cr.brightThreshold ?? 0.98;
+          const imgY = u.height - cr.pdfY - cr.h;
+          const crop = `${cr.w}x${cr.h}+${cr.pdfX}+${imgY}`;
+          const mean = await cropMean(u.pngPath, crop);
+          const regionLabel = cr.label ? `"${cr.label}"` : `pdfX=${cr.pdfX} pdfY=${cr.pdfY}`;
+          if (cr.expectDark) {
+            console.log(`  page ${page} content-region ${regionLabel}: mean=${mean.toFixed(4)} (expect dark < ${darkThreshold})`);
+            assert(
+              mean < darkThreshold,
+              `${label}: content region ${regionLabel} on page ${page} is too bright (mean=${mean.toFixed(4)} ≥ ${darkThreshold}) — ` +
+              `expected filled content but the area appears blank; possible coordinate drift or missing field fill.`,
+            );
+            console.log(`  ✓ ${regionLabel}: dark content present (mean=${mean.toFixed(4)})`);
+          } else {
+            console.log(`  page ${page} content-region ${regionLabel}: mean=${mean.toFixed(4)} (expect blank > ${brightThreshold})`);
+            assert(
+              mean > brightThreshold,
+              `${label}: content region ${regionLabel} on page ${page} is too dark (mean=${mean.toFixed(4)} ≤ ${brightThreshold}) — ` +
+              `expected blank area but content was found; a previously-removed field may have been re-introduced.`,
+            );
+            console.log(`  ✓ ${regionLabel}: area is blank as expected (mean=${mean.toFixed(4)})`);
+          }
+        }
+      } finally {
+        await unlink(u.pngPath).catch(() => {});
+      }
+    }
+  }
 }
 
 // ─── Main runner ────────────────────────────────────────────────────────────────
@@ -405,7 +468,7 @@ export async function runSignedFormTest(cfg: FormTestConfig): Promise<void> {
       await guardTypedBright(cfg.label, signed, cfg.guard.page, cfg.guard.crop, cfg.guard.minBrightness ?? 0.8);
     } else if (cfg.guard.kind === "clerk-blank") {
       const unsigned = await fetchPdf(caseId, testUserId, cfg.formPath, {});
-      await guardClerkBlank(cfg.label, signed, unsigned, cfg.guard.pages);
+      await guardClerkBlank(cfg.label, signed, unsigned, cfg.guard.pages, cfg.guard.contentRegions);
     }
 
     console.log(`\n✅ ${cfg.label}: all signature-placement assertions passed.`);
