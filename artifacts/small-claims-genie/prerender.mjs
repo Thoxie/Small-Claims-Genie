@@ -397,7 +397,17 @@ for (const route of allRoutes) {
   await page.close();
 }
 
-await browser.close();
+// browser.close() can hang indefinitely if a page left an open connection in
+// the browser's connection pool (e.g. a pending fetch / WebSocket / SSE retry
+// that wasn't fully intercepted by page.route).  Race it against a 10-second
+// timeout so the build never silently stalls here.
+await Promise.race([
+  browser.close(),
+  new Promise((resolve) => setTimeout(resolve, 10_000)),
+]);
 server.close();
 
 console.log(`[prerender] Done — ${success} rendered, ${failed} skipped.`);
+
+// Guarantee the process exits even if Chromium left a daemon thread alive.
+process.exit(0);
