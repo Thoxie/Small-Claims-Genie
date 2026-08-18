@@ -192,6 +192,18 @@ export const CONFIGS: Record<string, FormTestConfig> = {
       // brightThreshold=0.96: pre-printed form underlines produce mean≈0.978 here;
       // adding "Alice Johnson" style text would drop the mean to ~0.92 → FAIL.
       { page: 1, pdfX: 77, pdfY: 534, w: 200, h: 46, expectDark: false, brightThreshold: 0.96, label: "left-col name/addr/CSZ (should be blank)" },
+      // ── Defendant party box (right column, x≈365–571) ────────────────────────
+      // Defendant name drawn at x=365, y=441 in az-summons-definition.ts.
+      // h=8 targets the cap-height band (imgY=343, rows 343–350) where blank=1.0
+      // and filled text drops to ≈0.927; threshold=0.94 gives clear separation.
+      { page: 1, pdfX: 365, pdfY: 441, w: 150, h: 8, expectDark: true, darkThreshold: 0.94, label: "def name (365,441)" },
+      // Defendant address drawn at x=365, y=426. h=8 → imgY=358 (rows 358–365);
+      // blank=1.0, filled≈0.934 → threshold=0.94 correctly separates.
+      { page: 1, pdfX: 365, pdfY: 426, w: 150, h: 8, expectDark: true, darkThreshold: 0.94, label: "def address (365,426)" },
+      // Defendant phone area code drawn at x=372, y=391 (same baseline as plaintiff
+      // phone row). h=12 → imgY=393 (rows 393–404); blank≈0.940, filled≈0.875;
+      // darkThreshold=0.89 matches the calibrated plaintiff area-code check.
+      { page: 1, pdfX: 372, pdfY: 387, w: 34, h: 12, expectDark: true, darkThreshold: 0.89, label: "def area-code (372,391)" },
     ]},
     { county: "az-maricopa", plaintiffState: "AZ", plaintiffCity: "Phoenix", plaintiffZip: "85007",
       defendantState: "AZ", defendantCity: "Phoenix", defendantZip: "85018" }),
