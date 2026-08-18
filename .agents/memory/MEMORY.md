@@ -44,3 +44,4 @@
 - [OCA AcroForm broken DA strings](oca-pdf-broken-da.md) — TX OCA PDF has 36/53 fields with no Tf in DA; pdf-lib fill silently blanks them; always use pdftk_fill_form instead
 - [Mobile parity rule](mobile-parity-rule.md) — every web change must ship a matching mobile change in the same task; saved as User Preference #11 in replit.md
 - [Pill toggle overflow-hidden glyph clipping](pill-toggle-clipping.md) — overflow:hidden + rounded pill clips "E" horizontal bars → renders as "I"; fix: remove overflow:hidden, use per-button border-radius instead
+- [Prerender browser.close hang](prerender-browser-close-hang.md) — browser.close() in prerender.mjs has no timeout; open connection silently stalls build; fix: Promise.race with 10s + process.exit(0)
