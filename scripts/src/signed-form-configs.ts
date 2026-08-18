@@ -166,12 +166,11 @@ export const CONFIGS: Record<string, FormTestConfig> = {
     { ...FL, county: "fl-palm-beach", plaintiffCity: "West Palm Beach", plaintiffZip: "33401", defendantCity: "West Palm Beach", defendantZip: "33401" }),
 
   // ─── Arizona (image) ──────────────────────────────────────────────────────────
-  // ⚠️  az-fee-waiver coords are placeholders — calibrate after the PDF asset
-  // (az-aocdfgf1f-fee-waiver.pdf) is placed and field names are verified.
-  // Update pdfX/pdfY/w/h to match the calibrated draw coords in:
-  //   lib/form-signatures/src/index.ts  AND  az-fee-waiver-definition.ts
+  // Coords calibrated from the Applicant_Signature AcroForm widget on page 5
+  // (index 4) of az-aocdfgf1f-fee-waiver.pdf: widget rect x=324, y=293.5, w=252, h=18.7.
+  // Matches draw spec in lib/form-signatures/src/index.ts and az-fee-waiver-definition.ts.
   "az-fee-waiver": mk("az-fee-waiver", "AZ Fee Waiver (AOCDFGF1F)", "az/fee-waiver", true,
-    { kind: "image", regions: [{ page: 1, pdfX: 97, pdfY: 110, w: 180, h: 18 }] },
+    { kind: "image", regions: [{ page: 5, pdfX: 324, pdfY: 294, w: 180, h: 18 }] },
     { county: "az-maricopa", plaintiffState: "AZ", plaintiffCity: "Phoenix", plaintiffZip: "85007",
       defendantState: "AZ", defendantCity: "Phoenix", defendantZip: "85018",
       sigW: 180, sigH: 18 }),

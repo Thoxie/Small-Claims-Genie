@@ -1,34 +1,29 @@
 /**
  * AZ Application for Deferral or Waiver of Court Fees — AOCDFGF1F
  *
- * Fills the official Arizona Courts "Application for Deferral or Waiver of
- * Court Fees" (AOCDFGF1F) AcroForm PDF using pdftk FDF fill, then
- * post-processes with pdf-lib to embed the optional signature image.
+ * Fills the Arizona Courts "Application for Deferral or Waiver of Court Fees
+ * or Costs and Consent to Entry of Judgment" (AOCDFGF1F) AcroForm PDF using
+ * pdftk FDF fill, then post-processes with pdf-lib to embed the optional
+ * signature image.
  *
  * Template PDF: assets/forms/az-aocdfgf1f-fee-waiver.pdf
- * Source: https://www.azcourts.gov/selfservicecenter/Forms
+ * Source: Pima County Consolidated Justice Court distribution of the statewide
+ *   AOCDFGF1F form (https://www.jp.pima.gov/Forms/), which carries the full
+ *   AZ county dropdown and identical field schema.
  *
- * ⚠️  FIELD NAMES NEED VERIFICATION
- * Once the PDF is placed at the path above, run:
+ * Field names verified with:
  *   pdftk artifacts/api-server/assets/forms/az-aocdfgf1f-fee-waiver.pdf dump_data_fields
- * and update the field name strings in the pdftk_fill_form call below to match
- * the actual AcroForm field names. The current names are best-guess placeholders.
- *
- * ⚠️  SIGNATURE COORDINATES NEED CALIBRATION
- * After the PDF is placed and filled, calibrate the signature overlay coords:
- *   1. Generate a signed PDF (hit az/fee-waiver/signed with a black PNG sig)
- *   2. pdftoppm -png -r 72 signed.pdf out
- *   3. Check the pixel bounding box of the signature line
- *   4. Update FORM_SIGNATURE_PLACEMENTS["az-fee-waiver"].draw in lib/form-signatures/src/index.ts
- *      AND the draw coords in the opts.signatureBytes block below
- *   5. Update the sigcheck config region in scripts/src/signed-form-configs.ts
  *
  * Pre-filled fields (case data):
- *   Applicant / plaintiff name, defendant name, case number, county,
- *   plaintiff address, plaintiff phone
+ *   Case Number, Petitioner (plaintiff), Respondent (defendant),
+ *   Person Filing (applicant name), City State Zip Code, Telephone
  *
  * Left blank for user to complete:
- *   All financial eligibility sections
+ *   All financial eligibility sections, COUNTY dropdown, COURT name
+ *
+ * Signature placement (calibrated):
+ *   Page 5 (index 4), Applicant_Signature widget: x=324, y=294, w=180, h=18
+ *   Derived from pdf-lib widget walk — see lib/form-signatures/src/index.ts
  *
  * Legal basis:
  *   A.R.S. § 12-302 — waiver/deferral of court fees for qualified persons
@@ -42,7 +37,6 @@ import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
 import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
-import { resolveAzCountyName } from "./az-complaint-definition";
 
 const PDF_PATH = path.join(FORMS_DIR, "az-aocdfgf1f-fee-waiver.pdf");
 
@@ -64,41 +58,26 @@ export async function buildAZFeeWaiver(
   _body: FormBody,
   opts?: GenerateOptions,
 ): Promise<Buffer> {
-  // Guard: return a clear error until the PDF asset is placed.
-  // Once az-aocdfgf1f-fee-waiver.pdf is committed, remove this block and
-  // verify field names with `pdftk dump_data_fields` (see header comment).
-  const { existsSync } = await import("fs");
-  if (!existsSync(PDF_PATH)) {
-    throw new Error(
-      "AZ fee waiver PDF asset not yet available. " +
-      "Place az-aocdfgf1f-fee-waiver.pdf in artifacts/api-server/assets/forms/ " +
-      "and calibrate field names per az-fee-waiver-definition.ts.",
-    );
-  }
-
-  const countyName = resolveAzCountyName(d) ?? "";
   const pltAddr = d.plaintiffAddress ?? "";
   const pltCSZ = cityStateZip(d.plaintiffCity, d.plaintiffState ?? "AZ", d.plaintiffZip);
-  const fullAddr = [pltAddr, pltCSZ].filter(Boolean).join(", ");
 
   // ── pdftk FDF fill ─────────────────────────────────────────────────────────
-  // Field names below are placeholders — verify with `pdftk dump_data_fields`
-  // once the PDF asset is in place and update to the actual AcroForm field names.
+  // Field names verified against the placed PDF with `pdftk dump_data_fields`.
   const filled = await pdftk_fill_form(PDF_PATH, {
     text: {
-      // Caption / header fields
-      "County":         countyName,
-      "Case Number":    d.caseNumber ?? "",
-      "Plaintiff":      d.plaintiffName ?? "",
-      "Defendant":      d.defendantName ?? "",
+      // Caption
+      "Case Number":            d.caseNumber ?? "",
+      "Petitioner":             d.plaintiffName ?? "",
+      "Respondent":             d.defendantName ?? "",
 
-      // Applicant information (applicant = plaintiff)
-      "Applicant Name": d.plaintiffName ?? "",
-      "Address":        fullAddr,
-      "Phone":          d.plaintiffPhone ?? "",
+      // Applicant / person filing (applicant = plaintiff in small claims)
+      "Person Filing":          d.plaintiffName ?? "",
+      "Address if not protected": pltAddr,
+      "City State Zip Code":    pltCSZ,
+      "Telephone":              d.plaintiffPhone ?? "",
 
-      // Print name on signature line
-      "Print Name":     d.plaintiffName ?? "",
+      // Print name on signature line (page 5)
+      "ApplicantName":          d.plaintiffName ?? "",
     },
   }, { flatten: false });
 
@@ -118,18 +97,18 @@ export async function buildAZFeeWaiver(
   }
 
   if (opts?.signatureBytes) {
-    // ⚠️  Signature page/coordinates need calibration against the actual PDF.
-    // Current values are placeholders matching the IL fee waiver pattern.
-    // See header comment above for calibration steps.
+    // Signature placement calibrated from the Applicant_Signature AcroForm widget
+    // on page 5 (index 4): widget rect x=324, y=293.5, w=252, h=18.7.
+    // We draw the image at w=180 (sigW) × h=18 (sigH), left-aligned within the field.
+    // Matches FORM_SIGNATURE_PLACEMENTS["az-fee-waiver"] in lib/form-signatures/src/index.ts.
     const pages = doc.getPages();
-    const sigPage = pages[pages.length - 1] ?? pages[0];
+    const sigPage = pages[4] ?? pages[pages.length - 1] ?? pages[0];
     try {
       const sigImg =
         (await doc.embedPng(opts.signatureBytes).catch(() => null)) ??
         (await doc.embedJpg(opts.signatureBytes).catch(() => null));
       if (sigImg) {
-        // PLACEHOLDER coords — update after calibrating against the actual PDF
-        sigPage.drawImage(sigImg, { x: 97, y: 110, width: 180, height: 18, opacity: 1 });
+        sigPage.drawImage(sigImg, { x: 324, y: 294, width: 180, height: 18, opacity: 1 });
       }
     } catch { /* ignore invalid signature data */ }
   }
