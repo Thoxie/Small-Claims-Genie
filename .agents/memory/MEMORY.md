@@ -1,6 +1,6 @@
 - [Document upload flow](document-upload-flow.md) — presigned URL flow bypasses Replit proxy; direct multipart upload gives 403 on large files
 - [iOS file input](ios-file-input.md) — display:none blocks .click() on iOS Safari; use opacity-0 positional hiding instead
-- [GitHub push method](github-push.md) — use `nohup git push --force origin main > /tmp/git-push.log 2>&1 &` then verify log; foreground push gets killed mid-transfer
+- [GitHub push method](github-push.md) — use the non-force push script and credential helper; never extract a token from a remote URL
 - [GitHub API force-push fallback](github-api-force-push.md) — when Git transport credentials fail, use the authorized GitHub connector to mirror the local Git tree and force-update the branch
 - [Plaintiff-only system](plaintiff-only.md) — SC-120, SC-140 and any defendant-side forms are out of scope; never implement or surface them
 - [Form engine architecture](form-engine.md) — unified FormRegistry + makeFormHandler; all forms go through definitions/; acroform-filler.ts for pdftk flatten
@@ -47,3 +47,4 @@
 - [Pill toggle overflow-hidden glyph clipping](pill-toggle-clipping.md) — overflow:hidden + rounded pill clips "E" horizontal bars → renders as "I"; fix: remove overflow:hidden, use per-button border-radius instead
 - [Prerender browser.close hang](prerender-browser-close-hang.md) — browser.close() in prerender.mjs has no timeout; open connection silently stalls build; fix: Promise.race with 10s + process.exit(0)
 - [Portable backup scope](portable-backup-scope.md) — source/schema are portable, but Replit object storage, AI proxy, and Stripe sync need deliberate replacement before an off-Replit launch
+- [Secret scanning](secret-scanning.md) — synchronized provider metadata can carry live secrets into a committed data export; redact and scan before versioning

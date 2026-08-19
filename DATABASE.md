@@ -1,5 +1,11 @@
 # Database Portability Record
 
+> **Credential boundary:** `small-claims-genie-db.sql` is a reference-data
+> export, not a secret backup. `scripts/refresh-db-export.sh` redacts
+> credential-shaped values from synchronized third-party metadata before the
+> file is committed. Recreate webhook signing secrets and provider credentials
+> in Replit Secrets after restoring the database.
+
 ## Verified source database
 
 | Item | Value |

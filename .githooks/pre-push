@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+zero_sha='0000000000000000000000000000000000000000'
+status=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # Deleting a remote ref introduces no new commits to scan.
+  [ "$local_sha" = "$zero_sha" ] && continue
+
+  # API-created remote commits are not always present in a local object store.
+  # When that base is unavailable, scan every local ancestor instead of failing
+  # open or assuming the missing remote SHA is safe.
+  if [ "$remote_sha" = "$zero_sha" ] || ! git cat-file -e "${remote_sha}^{commit}" 2>/dev/null; then
+    revision_range="$local_sha"
+  else
+    revision_range="$remote_sha..$local_sha"
+  fi
+
+  if ! python3 scripts/scan-secrets.py --range "$revision_range"; then
+    status=1
+  fi
+done
+
+exit "$status"

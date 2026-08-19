@@ -14,6 +14,7 @@
 # What it does NOT dump:
 #   - Uploaded user documents (stored in Replit object storage / GCS)
 #   - Clerk user accounts (managed by Clerk, not the database)
+#   - Live credentials or webhook signing secrets (redacted before writing)
 #
 # When to run:
 #   - Before generating a new portable backup archive
@@ -47,6 +48,11 @@ pg_dump \
   --no-privileges \
   "$DATABASE_URL" \
   > "$TMPFILE"
+
+# Stripe's synchronized cache can contain webhook signing secrets. Keep the
+# data structure but replace credential values with explicit redaction markers
+# before this export becomes a tracked file.
+python3 scripts/redact-db-export-secrets.py "$TMPFILE"
 
 # Verify the export contains the critical counties reference data
 if ! grep -q 'Data for Name: counties' "$TMPFILE"; then

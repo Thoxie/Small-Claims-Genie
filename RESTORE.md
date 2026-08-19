@@ -140,7 +140,11 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f small-claims-genie-db.sql
 
 This file is kept current with `scripts/refresh-db-export.sh`. Run that script
 and commit the result whenever the reference data changes significantly (e.g.
-counties updated, Stripe product catalog changed).
+counties updated, Stripe product catalog changed). The refresh script redacts
+credential-shaped values from synchronized external-service metadata before
+writing the committed export. In particular, webhook signing secrets are not
+portable backup data; recreate those in the provider and Replit Secrets after a
+restore.
 
 For a heavier custom-format archive workflow:
 

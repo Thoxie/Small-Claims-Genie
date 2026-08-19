@@ -1,42 +1,30 @@
 ---
-name: GitHub force push
-description: How to force-push to GitHub from this sandbox without the push being killed mid-transfer
+name: GitHub push method
+description: Safe GitHub push guidance that never puts a token in a URL or defaults to rewriting remote history
 ---
 
-# GitHub force push
+# GitHub push method
 
-## The rule (updated July 2026)
+## The rule
 
-Run `git push --force origin main` directly in the bash tool with a **119-second timeout**. This is the approach that has been confirmed working.
+Use the repository's `push.sh` script for routine pushes:
 
-**Why:** The bash tool's long timeout (119000ms) gives the push enough time to complete the full pack transfer. The nohup background approach has been unreliable — it silently fails to create the log file and leaves the remote unchanged.
+```bash
+bash push.sh
+```
+
+The script uses Git's credential helper by default, or receives a token through
+the process environment when a non-interactive credential helper is required.
+It never puts a credential in the remote URL or in the command line.
+
+**Why:** URL and command-line credentials can leak through shell history,
+process listings, or copied configuration. A non-force default prevents an
+accidental remote-history overwrite.
 
 **How to apply:**
-```bash
-git push --force origin main 2>&1
-```
-With `timeout: 119000` on the bash tool call.
-
-Confirm the output shows `main -> main` ref update. A trailing lock-file error (`refs/remotes/origin/main.lock`) is **harmless** — the remote update already completed before the lock cleanup failed.
-
-Then verify with:
-```bash
-git --no-optional-locks ls-remote origin refs/heads/main
-```
-Confirm the SHA matches local `HEAD`.
-
-## What does NOT work
-- `nohup git push --force origin main > /tmp/git-push.log 2>&1 &` — process gets killed immediately, produces no log file, remote unchanged (observed July 2026)
-- `git push origin main` (non-force) — fails silently when branches have diverged
-- GitHub API `PATCH /git/refs/heads/main` alone — fails with "Object does not exist" if commits aren't on GitHub yet
-
-## Lock file cleanup
-The `.git/refs/remotes/origin/main.lock` leftover cannot be removed via bash (sandbox blocks `rm` on `.git/` paths). It is harmless and clears itself on the next git operation or restart.
-
-## Token location
-The GitHub token is embedded in the `origin` remote URL. Extract programmatically if needed:
-```js
-const remoteUrl = execSync('git --no-optional-locks remote get-url origin').toString().trim();
-const token = remoteUrl.match(/x-access-token:([^@]+)@/)[1];
-```
-Never print the token.
+- Confirm the push output reports a normal ref update and verify the remote
+  branch SHA afterward.
+- Do not bypass the pre-push scanner. A historical finding needs remediation,
+  not a bypass.
+- If Git transport cannot authenticate, use the GitHub connector fallback
+  documented separately; it must not embed a token in a URL.

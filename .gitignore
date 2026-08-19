@@ -52,6 +52,14 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+credentials.json
+replit-secrets*
+.replit/secrets*
 *.dump
 *.backup
 *.sql.gz
