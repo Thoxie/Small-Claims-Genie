@@ -2,9 +2,78 @@
 
 This manifest is generated from `git ls-files -co --exclude-standard` for the portable backup. It includes every Git-tracked file in the finalized portable-backup source tree. Each row has a one-line purpose.
 
-- Repository files listed: **1510**
+- Repository files listed: **964**
 - No non-ignored workspace files remained when this manifest was finalized.
 - Ignored runtime/cache/archive/data-export paths are intentionally not treated as repository source. Their categories and recovery requirements are documented below.
+- `.git-rewrite/` (546 files of filter-branch plumbing) was removed from tracking in this update.
+
+## Court form PDF audit
+
+All 57 court form PDFs used by the application are committed directly to the
+repository under `artifacts/api-server/assets/`. **No form PDF is fetched at
+runtime from object storage, a CDN, or a government website.** The form
+handlers load every PDF from the local filesystem at the path returned by
+`path.join(__dirname, '../assets/...')`.
+
+| Path |
+| --- |
+| `artifacts/api-server/assets/fl-forms/cl-219-volusia.pdf` |
+| `artifacts/api-server/assets/fl-forms/clkct333-miami-dade.pdf` |
+| `artifacts/api-server/assets/fl-forms/clkct423-miami-dade-summons.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7322-summons.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7330-auto-negligence.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7331-goods-sold.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7332-work-materials.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7333-money-lent.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7334-promissory-note.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7335-pawnbroker.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7336-replevin-govt.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-7337-account-stated.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-fee-waiver-1998.pdf` |
+| `artifacts/api-server/assets/fl-forms/fl-indigent-fee-waiver.pdf` |
+| `artifacts/api-server/assets/fl-forms/florida-small-claims-rules-2026.pdf` |
+| `artifacts/api-server/assets/fl-forms/plain-statement-of-claim-orange.pdf` |
+| `artifacts/api-server/assets/fl-forms/statement-of-claim-hillsborough.pdf` |
+| `artifacts/api-server/assets/forms/az-aocdfgf1f-fee-waiver.pdf` |
+| `artifacts/api-server/assets/forms/az-ljsc00001f-complaint.pdf` |
+| `artifacts/api-server/assets/forms/az-ljsc00002f-summons.pdf` |
+| `artifacts/api-server/assets/forms/az-ljsc00003f-proof-of-service.pdf` |
+| `artifacts/api-server/assets/forms/fl-clkct423-summons.pdf` |
+| `artifacts/api-server/assets/forms/fl-soc-7340.pdf` |
+| `artifacts/api-server/assets/forms/fl-soc-form7340.pdf` |
+| `artifacts/api-server/assets/forms/fl-summons-7322.pdf` |
+| `artifacts/api-server/assets/forms/fw001_acroform.pdf` |
+| `artifacts/api-server/assets/forms/il-letter-to-sheriff.pdf` |
+| `artifacts/api-server/assets/forms/il-smc-complaint.pdf` |
+| `artifacts/api-server/assets/forms/mc030_acroform.pdf` |
+| `artifacts/api-server/assets/forms/nc-aoc-cvm-100.pdf` |
+| `artifacts/api-server/assets/forms/nc-aoc-g-106.pdf` |
+| `artifacts/api-server/assets/forms/nj_complaint_acroform.pdf` |
+| `artifacts/api-server/assets/forms/nj_mv_complaint_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc100a_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc100_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc103_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc104_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc105_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc112a_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc120_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc140_acroform.pdf` |
+| `artifacts/api-server/assets/forms/sc150_acroform.pdf` |
+| `artifacts/api-server/assets/forms/tx-return-of-service.pdf` |
+| `artifacts/api-server/assets/forms/tx-small-claims-petition-jp2.pdf` |
+| `artifacts/api-server/assets/forms/tx-small-claims-petition-jp5.pdf` |
+| `artifacts/api-server/assets/forms/tx-small-claims-petition-oca.pdf` |
+| `artifacts/api-server/assets/forms/tx-small-claims-petition.pdf` |
+| `artifacts/api-server/assets/forms/wa-misc-05-0200.pdf` |
+| `artifacts/api-server/assets/il-forms/il-fee-waiver-civil.pdf` |
+| `artifacts/api-server/assets/il-forms/il-smc-summons.pdf` |
+| `artifacts/api-server/assets/nc-forms/nc-aoc-cvm-200.pdf` |
+| `artifacts/api-server/assets/sc104_form.pdf` |
+| `artifacts/api-server/assets/tx-forms/denton-citation-request.pdf` |
+| `artifacts/api-server/assets/tx-forms/tx-rule145-statement.pdf` |
+| `artifacts/api-server/assets/va-forms/dc-402.pdf` |
+| `artifacts/api-server/assets/va-forms/dc-409.pdf` |
+| `artifacts/api-server/assets/wa-forms/wa-misc-05-0100.pdf` |
 
 ## Repository file inventory
 
@@ -1400,7 +1469,7 @@ This manifest is generated from `git ls-files -co --exclude-standard` for the po
 | `push.sh` | Shell utility script. |
 | `replit.md` | Project architecture, operating guidance, and team conventions. |
 | `replit.nix` | Replit Nix system-package configuration. |
-| `restore.sh` | Shell utility script. |
+| `setup-replit.sh` | Replit-only setup script (installs deps, checks secrets, pushes Drizzle schema; does NOT import the database — see RESTORE.md). |
 | `sc100_coordinate_mockup.html` | Tracked HTML reference or preview artifact. |
 | `scripts/archive-source.sh` | Script workspace configuration or source-archive utility. |
 | `scripts/generate-review-doc.mjs` | Script workspace configuration or source-archive utility. |

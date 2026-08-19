@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 9Svb33I4S0KWaQAZefAuqtHek7VYENBSKs1StiKEGYoP8le4dgwS3m0CAZZGG2t
+\restrict GE9dOGJM8WViXS4eRFfkdhIU5UxfcZ2Vl751pm7uck4lKn3CJD3IxdJU6Kg73hI
 
 -- Dumped from database version 16.10
 -- Dumped by pg_dump version 16.10
@@ -18,3685 +18,2105 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE IF EXISTS ONLY stripe.tax_ids DROP CONSTRAINT IF EXISTS fk_tax_ids_account;
-ALTER TABLE IF EXISTS ONLY stripe._sync_status DROP CONSTRAINT IF EXISTS fk_sync_status_account;
-ALTER TABLE IF EXISTS ONLY stripe.subscriptions DROP CONSTRAINT IF EXISTS fk_subscriptions_account;
-ALTER TABLE IF EXISTS ONLY stripe.subscription_schedules DROP CONSTRAINT IF EXISTS fk_subscription_schedules_account;
-ALTER TABLE IF EXISTS ONLY stripe.subscription_items DROP CONSTRAINT IF EXISTS fk_subscription_items_account;
-ALTER TABLE IF EXISTS ONLY stripe.setup_intents DROP CONSTRAINT IF EXISTS fk_setup_intents_account;
-ALTER TABLE IF EXISTS ONLY stripe.reviews DROP CONSTRAINT IF EXISTS fk_reviews_account;
-ALTER TABLE IF EXISTS ONLY stripe.refunds DROP CONSTRAINT IF EXISTS fk_refunds_account;
-ALTER TABLE IF EXISTS ONLY stripe.products DROP CONSTRAINT IF EXISTS fk_products_account;
-ALTER TABLE IF EXISTS ONLY stripe.prices DROP CONSTRAINT IF EXISTS fk_prices_account;
-ALTER TABLE IF EXISTS ONLY stripe.plans DROP CONSTRAINT IF EXISTS fk_plans_account;
-ALTER TABLE IF EXISTS ONLY stripe.payment_methods DROP CONSTRAINT IF EXISTS fk_payment_methods_account;
-ALTER TABLE IF EXISTS ONLY stripe.payment_intents DROP CONSTRAINT IF EXISTS fk_payment_intents_account;
-ALTER TABLE IF EXISTS ONLY stripe._managed_webhooks DROP CONSTRAINT IF EXISTS fk_managed_webhooks_account;
-ALTER TABLE IF EXISTS ONLY stripe.invoices DROP CONSTRAINT IF EXISTS fk_invoices_account;
-ALTER TABLE IF EXISTS ONLY stripe.features DROP CONSTRAINT IF EXISTS fk_features_account;
-ALTER TABLE IF EXISTS ONLY stripe.early_fraud_warnings DROP CONSTRAINT IF EXISTS fk_early_fraud_warnings_account;
-ALTER TABLE IF EXISTS ONLY stripe.disputes DROP CONSTRAINT IF EXISTS fk_disputes_account;
-ALTER TABLE IF EXISTS ONLY stripe.customers DROP CONSTRAINT IF EXISTS fk_customers_account;
-ALTER TABLE IF EXISTS ONLY stripe.credit_notes DROP CONSTRAINT IF EXISTS fk_credit_notes_account;
-ALTER TABLE IF EXISTS ONLY stripe.checkout_sessions DROP CONSTRAINT IF EXISTS fk_checkout_sessions_account;
-ALTER TABLE IF EXISTS ONLY stripe.checkout_session_line_items DROP CONSTRAINT IF EXISTS fk_checkout_session_line_items_account;
-ALTER TABLE IF EXISTS ONLY stripe.charges DROP CONSTRAINT IF EXISTS fk_charges_account;
-ALTER TABLE IF EXISTS ONLY stripe.active_entitlements DROP CONSTRAINT IF EXISTS fk_active_entitlements_account;
-ALTER TABLE IF EXISTS ONLY public.messages DROP CONSTRAINT IF EXISTS messages_conversation_id_conversations_id_fk;
-ALTER TABLE IF EXISTS ONLY public.documents DROP CONSTRAINT IF EXISTS documents_case_id_cases_id_fk;
-ALTER TABLE IF EXISTS ONLY public.chat_messages DROP CONSTRAINT IF EXISTS chat_messages_case_id_cases_id_fk;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.subscriptions;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.reviews;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.refunds;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.products;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.prices;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.plans;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.payouts;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.invoices;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.features;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.events;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.early_fraud_warnings;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.disputes;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.customers;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.coupons;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.checkout_sessions;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.checkout_session_line_items;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.charges;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.active_entitlements;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe.accounts;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe._sync_status;
-DROP TRIGGER IF EXISTS handle_updated_at ON stripe._managed_webhooks;
-DROP INDEX IF EXISTS stripe.stripe_tax_ids_customer_idx;
-DROP INDEX IF EXISTS stripe.stripe_setup_intents_customer_idx;
-DROP INDEX IF EXISTS stripe.stripe_reviews_payment_intent_idx;
-DROP INDEX IF EXISTS stripe.stripe_reviews_charge_idx;
-DROP INDEX IF EXISTS stripe.stripe_refunds_payment_intent_idx;
-DROP INDEX IF EXISTS stripe.stripe_refunds_charge_idx;
-DROP INDEX IF EXISTS stripe.stripe_payment_methods_customer_idx;
-DROP INDEX IF EXISTS stripe.stripe_payment_intents_invoice_idx;
-DROP INDEX IF EXISTS stripe.stripe_payment_intents_customer_idx;
-DROP INDEX IF EXISTS stripe.stripe_managed_webhooks_status_idx;
-DROP INDEX IF EXISTS stripe.stripe_managed_webhooks_enabled_idx;
-DROP INDEX IF EXISTS stripe.stripe_invoices_subscription_idx;
-DROP INDEX IF EXISTS stripe.stripe_invoices_customer_idx;
-DROP INDEX IF EXISTS stripe.stripe_early_fraud_warnings_payment_intent_idx;
-DROP INDEX IF EXISTS stripe.stripe_early_fraud_warnings_charge_idx;
-DROP INDEX IF EXISTS stripe.stripe_dispute_created_idx;
-DROP INDEX IF EXISTS stripe.stripe_credit_notes_invoice_idx;
-DROP INDEX IF EXISTS stripe.stripe_credit_notes_customer_idx;
-DROP INDEX IF EXISTS stripe.stripe_checkout_sessions_subscription_idx;
-DROP INDEX IF EXISTS stripe.stripe_checkout_sessions_payment_intent_idx;
-DROP INDEX IF EXISTS stripe.stripe_checkout_sessions_invoice_idx;
-DROP INDEX IF EXISTS stripe.stripe_checkout_sessions_customer_idx;
-DROP INDEX IF EXISTS stripe.stripe_checkout_session_line_items_session_idx;
-DROP INDEX IF EXISTS stripe.stripe_checkout_session_line_items_price_idx;
-DROP INDEX IF EXISTS stripe.stripe_active_entitlements_feature_idx;
-DROP INDEX IF EXISTS stripe.stripe_active_entitlements_customer_idx;
-DROP INDEX IF EXISTS stripe.idx_sync_status_resource_account;
-DROP INDEX IF EXISTS stripe.idx_accounts_business_name;
-DROP INDEX IF EXISTS stripe.idx_accounts_api_key_hashes;
-DROP INDEX IF EXISTS stripe.features_lookup_key_key;
-DROP INDEX IF EXISTS stripe.active_entitlements_lookup_key_key;
-DROP INDEX IF EXISTS public.purchases_user_id_idx;
-DROP INDEX IF EXISTS public.efile_submissions_user_id_idx;
-DROP INDEX IF EXISTS public.efile_submissions_envelope_id_idx;
-DROP INDEX IF EXISTS public.efile_submissions_case_id_idx;
-DROP INDEX IF EXISTS public.efile_court_locations_state_idx;
-DROP INDEX IF EXISTS public.efile_court_locations_courthouse_idx;
-DROP INDEX IF EXISTS public.efile_court_locations_cli_state_uidx;
-DROP INDEX IF EXISTS public.documents_ocr_status_idx;
-DROP INDEX IF EXISTS public.documents_case_id_idx;
-DROP INDEX IF EXISTS public.chat_messages_case_id_idx;
-DROP INDEX IF EXISTS public.cases_user_id_idx;
-DROP INDEX IF EXISTS public.cases_intake_complete_idx;
-DROP INDEX IF EXISTS public.cases_hearing_date_idx;
-DROP INDEX IF EXISTS public.cases_confirmation_email_sent_idx;
-ALTER TABLE IF EXISTS ONLY stripe.tax_ids DROP CONSTRAINT IF EXISTS tax_ids_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.subscriptions DROP CONSTRAINT IF EXISTS subscriptions_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.subscription_schedules DROP CONSTRAINT IF EXISTS subscription_schedules_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.subscription_items DROP CONSTRAINT IF EXISTS subscription_items_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.setup_intents DROP CONSTRAINT IF EXISTS setup_intents_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.reviews DROP CONSTRAINT IF EXISTS reviews_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.refunds DROP CONSTRAINT IF EXISTS refunds_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.products DROP CONSTRAINT IF EXISTS products_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.prices DROP CONSTRAINT IF EXISTS prices_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.plans DROP CONSTRAINT IF EXISTS plans_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.payouts DROP CONSTRAINT IF EXISTS payouts_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.payment_methods DROP CONSTRAINT IF EXISTS payment_methods_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.payment_intents DROP CONSTRAINT IF EXISTS payment_intents_pkey;
-ALTER TABLE IF EXISTS ONLY stripe._managed_webhooks DROP CONSTRAINT IF EXISTS managed_webhooks_url_account_unique;
-ALTER TABLE IF EXISTS ONLY stripe._managed_webhooks DROP CONSTRAINT IF EXISTS managed_webhooks_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.invoices DROP CONSTRAINT IF EXISTS invoices_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.features DROP CONSTRAINT IF EXISTS features_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.events DROP CONSTRAINT IF EXISTS events_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.early_fraud_warnings DROP CONSTRAINT IF EXISTS early_fraud_warnings_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.disputes DROP CONSTRAINT IF EXISTS disputes_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.customers DROP CONSTRAINT IF EXISTS customers_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.credit_notes DROP CONSTRAINT IF EXISTS credit_notes_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.coupons DROP CONSTRAINT IF EXISTS coupons_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.checkout_sessions DROP CONSTRAINT IF EXISTS checkout_sessions_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.checkout_session_line_items DROP CONSTRAINT IF EXISTS checkout_session_line_items_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.charges DROP CONSTRAINT IF EXISTS charges_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.active_entitlements DROP CONSTRAINT IF EXISTS active_entitlements_pkey;
-ALTER TABLE IF EXISTS ONLY stripe.accounts DROP CONSTRAINT IF EXISTS accounts_pkey;
-ALTER TABLE IF EXISTS ONLY stripe._sync_status DROP CONSTRAINT IF EXISTS _sync_status_resource_account_key;
-ALTER TABLE IF EXISTS ONLY stripe._sync_status DROP CONSTRAINT IF EXISTS _sync_status_pkey;
-ALTER TABLE IF EXISTS ONLY stripe._migrations DROP CONSTRAINT IF EXISTS _migrations_pkey;
-ALTER TABLE IF EXISTS ONLY stripe._migrations DROP CONSTRAINT IF EXISTS _migrations_name_key;
-ALTER TABLE IF EXISTS ONLY public.purchases DROP CONSTRAINT IF EXISTS purchases_stripe_session_id_unique;
-ALTER TABLE IF EXISTS ONLY public.purchases DROP CONSTRAINT IF EXISTS purchases_pkey;
-ALTER TABLE IF EXISTS ONLY public.messages DROP CONSTRAINT IF EXISTS messages_pkey;
-ALTER TABLE IF EXISTS ONLY public.genie_conversions DROP CONSTRAINT IF EXISTS genie_conversions_pkey;
-ALTER TABLE IF EXISTS ONLY public.efile_submissions DROP CONSTRAINT IF EXISTS efile_submissions_pkey;
-ALTER TABLE IF EXISTS ONLY public.efile_court_locations DROP CONSTRAINT IF EXISTS efile_court_locations_pkey;
-ALTER TABLE IF EXISTS ONLY public.download_tokens DROP CONSTRAINT IF EXISTS download_tokens_pkey;
-ALTER TABLE IF EXISTS ONLY public.documents DROP CONSTRAINT IF EXISTS documents_pkey;
-ALTER TABLE IF EXISTS ONLY public.conversations DROP CONSTRAINT IF EXISTS conversations_pkey;
-ALTER TABLE IF EXISTS ONLY public.chat_messages DROP CONSTRAINT IF EXISTS chat_messages_pkey;
-ALTER TABLE IF EXISTS ONLY public.cases DROP CONSTRAINT IF EXISTS cases_pkey;
-ALTER TABLE IF EXISTS ONLY public.beta_access DROP CONSTRAINT IF EXISTS beta_access_user_id_unique;
-ALTER TABLE IF EXISTS ONLY public.beta_access DROP CONSTRAINT IF EXISTS beta_access_pkey;
-ALTER TABLE IF EXISTS ONLY public.ai_rate_limits DROP CONSTRAINT IF EXISTS ai_rate_limits_pkey;
-ALTER TABLE IF EXISTS stripe._sync_status ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.messages ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.efile_submissions ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.efile_court_locations ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.documents ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.conversations ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.chat_messages ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.cases ALTER COLUMN id DROP DEFAULT;
-DROP TABLE IF EXISTS stripe.tax_ids;
-DROP TABLE IF EXISTS stripe.subscriptions;
-DROP TABLE IF EXISTS stripe.subscription_schedules;
-DROP TABLE IF EXISTS stripe.subscription_items;
-DROP TABLE IF EXISTS stripe.setup_intents;
-DROP TABLE IF EXISTS stripe.reviews;
-DROP TABLE IF EXISTS stripe.refunds;
-DROP TABLE IF EXISTS stripe.products;
-DROP TABLE IF EXISTS stripe.prices;
-DROP TABLE IF EXISTS stripe.plans;
-DROP TABLE IF EXISTS stripe.payouts;
-DROP TABLE IF EXISTS stripe.payment_methods;
-DROP TABLE IF EXISTS stripe.payment_intents;
-DROP TABLE IF EXISTS stripe.invoices;
-DROP TABLE IF EXISTS stripe.features;
-DROP TABLE IF EXISTS stripe.events;
-DROP TABLE IF EXISTS stripe.early_fraud_warnings;
-DROP TABLE IF EXISTS stripe.disputes;
-DROP TABLE IF EXISTS stripe.customers;
-DROP TABLE IF EXISTS stripe.credit_notes;
-DROP TABLE IF EXISTS stripe.coupons;
-DROP TABLE IF EXISTS stripe.checkout_sessions;
-DROP TABLE IF EXISTS stripe.checkout_session_line_items;
-DROP TABLE IF EXISTS stripe.charges;
-DROP TABLE IF EXISTS stripe.active_entitlements;
-DROP TABLE IF EXISTS stripe.accounts;
-DROP SEQUENCE IF EXISTS stripe._sync_status_id_seq;
-DROP TABLE IF EXISTS stripe._sync_status;
-DROP TABLE IF EXISTS stripe._migrations;
-DROP TABLE IF EXISTS stripe._managed_webhooks;
-DROP TABLE IF EXISTS public.purchases;
-DROP SEQUENCE IF EXISTS public.messages_id_seq;
-DROP TABLE IF EXISTS public.messages;
-DROP TABLE IF EXISTS public.genie_conversions;
-DROP SEQUENCE IF EXISTS public.efile_submissions_id_seq;
-DROP TABLE IF EXISTS public.efile_submissions;
-DROP SEQUENCE IF EXISTS public.efile_court_locations_id_seq;
-DROP TABLE IF EXISTS public.efile_court_locations;
-DROP TABLE IF EXISTS public.download_tokens;
-DROP SEQUENCE IF EXISTS public.documents_id_seq;
-DROP TABLE IF EXISTS public.documents;
-DROP SEQUENCE IF EXISTS public.conversations_id_seq;
-DROP TABLE IF EXISTS public.conversations;
-DROP SEQUENCE IF EXISTS public.chat_messages_id_seq;
-DROP TABLE IF EXISTS public.chat_messages;
-DROP SEQUENCE IF EXISTS public.cases_id_seq;
-DROP TABLE IF EXISTS public.cases;
-DROP TABLE IF EXISTS public.beta_access;
-DROP TABLE IF EXISTS public.ai_rate_limits;
-DROP FUNCTION IF EXISTS public.set_updated_at_metadata();
-DROP FUNCTION IF EXISTS public.set_updated_at();
-DROP TYPE IF EXISTS stripe.subscription_status;
-DROP TYPE IF EXISTS stripe.subscription_schedule_status;
-DROP TYPE IF EXISTS stripe.pricing_type;
-DROP TYPE IF EXISTS stripe.pricing_tiers;
-DROP TYPE IF EXISTS stripe.invoice_status;
-DROP SCHEMA IF EXISTS stripe;
---
--- Name: stripe; Type: SCHEMA; Schema: -; Owner: postgres
---
-
-CREATE SCHEMA stripe;
-
-
-ALTER SCHEMA stripe OWNER TO postgres;
-
---
--- Name: invoice_status; Type: TYPE; Schema: stripe; Owner: postgres
---
-
-CREATE TYPE stripe.invoice_status AS ENUM (
-    'draft',
-    'open',
-    'paid',
-    'uncollectible',
-    'void',
-    'deleted'
-);
-
-
-ALTER TYPE stripe.invoice_status OWNER TO postgres;
-
---
--- Name: pricing_tiers; Type: TYPE; Schema: stripe; Owner: postgres
---
-
-CREATE TYPE stripe.pricing_tiers AS ENUM (
-    'graduated',
-    'volume'
-);
-
-
-ALTER TYPE stripe.pricing_tiers OWNER TO postgres;
-
---
--- Name: pricing_type; Type: TYPE; Schema: stripe; Owner: postgres
---
-
-CREATE TYPE stripe.pricing_type AS ENUM (
-    'one_time',
-    'recurring'
-);
-
-
-ALTER TYPE stripe.pricing_type OWNER TO postgres;
-
---
--- Name: subscription_schedule_status; Type: TYPE; Schema: stripe; Owner: postgres
---
-
-CREATE TYPE stripe.subscription_schedule_status AS ENUM (
-    'not_started',
-    'active',
-    'completed',
-    'released',
-    'canceled'
-);
-
-
-ALTER TYPE stripe.subscription_schedule_status OWNER TO postgres;
-
---
--- Name: subscription_status; Type: TYPE; Schema: stripe; Owner: postgres
---
-
-CREATE TYPE stripe.subscription_status AS ENUM (
-    'trialing',
-    'active',
-    'canceled',
-    'incomplete',
-    'incomplete_expired',
-    'past_due',
-    'unpaid',
-    'paused'
-);
-
-
-ALTER TYPE stripe.subscription_status OWNER TO postgres;
-
---
--- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION public.set_updated_at() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-begin
-  new._updated_at = now();
-  return NEW;
-end;
-$$;
-
-
-ALTER FUNCTION public.set_updated_at() OWNER TO postgres;
-
---
--- Name: set_updated_at_metadata(); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION public.set_updated_at_metadata() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-begin
-  new.updated_at = now();
-  return NEW;
-end;
-$$;
-
-
-ALTER FUNCTION public.set_updated_at_metadata() OWNER TO postgres;
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- Name: ai_rate_limits; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.ai_rate_limits (
-    user_id text NOT NULL,
-    count integer DEFAULT 0 NOT NULL,
-    reset_at timestamp with time zone NOT NULL
-);
-
-
-ALTER TABLE public.ai_rate_limits OWNER TO postgres;
-
---
--- Name: beta_access; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.beta_access (
-    id integer NOT NULL,
-    user_id text NOT NULL,
-    email text,
-    claimed_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.beta_access OWNER TO postgres;
-
---
--- Name: beta_access_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public.beta_access ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.beta_access_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- Name: cases; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.cases (
-    id integer NOT NULL,
-    title text NOT NULL,
-    status text DEFAULT 'draft'::text NOT NULL,
-    county_id text,
-    claim_amount real,
-    claim_type text,
-    plaintiff_name text,
-    plaintiff_phone text,
-    plaintiff_address text,
-    plaintiff_city text,
-    plaintiff_state text DEFAULT 'CA'::text,
-    plaintiff_zip text,
-    plaintiff_email text,
-    defendant_name text,
-    defendant_phone text,
-    defendant_address text,
-    defendant_city text,
-    defendant_state text DEFAULT 'CA'::text,
-    defendant_zip text,
-    defendant_is_business_or_entity boolean DEFAULT false,
-    defendant_agent_name text,
-    claim_description text,
-    incident_date text,
-    how_amount_calculated text,
-    prior_demand_made boolean,
-    prior_demand_description text,
-    venue_reason text,
-    venue_basis text,
-    is_suing_public_entity boolean DEFAULT false,
-    public_entity_claim_filed_date text,
-    is_atty_fee_dispute boolean DEFAULT false,
-    filed_more_than_12_claims boolean DEFAULT false,
-    claim_over_2500 boolean DEFAULT false,
-    intake_step integer DEFAULT 1,
-    intake_complete boolean DEFAULT false,
-    document_count integer DEFAULT 0,
-    readiness_score integer DEFAULT 0,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    courthouse_id text,
-    user_id text,
-    demand_letter_text text,
-    demand_letter_tone text,
-    courthouse_name text,
-    courthouse_address text,
-    courthouse_city text,
-    courthouse_zip text,
-    courthouse_phone text,
-    courthouse_website text,
-    filing_fee integer,
-    evidence_checklist jsonb,
-    case_number text,
-    hearing_date text,
-    hearing_time text,
-    hearing_judge text,
-    hearing_courtroom text,
-    hearing_notes text,
-    reminder_14_day_sent boolean DEFAULT false,
-    reminder_3_day_sent boolean DEFAULT false,
-    reminder_no_hearing_date_sent boolean DEFAULT false,
-    courthouse_clerk_email text,
-    confirmation_email_sent boolean DEFAULT false,
-    weekly_reminder_last_sent timestamp with time zone,
-    reminder_30_day_sent boolean DEFAULT false,
-    reminder_7_day_sent boolean DEFAULT false,
-    reminder_1_day_sent boolean DEFAULT false,
-    settlement_letter_text text,
-    settlement_letter_tone text,
-    settlement_agreement_text text,
-    plaintiff_is_business boolean DEFAULT false,
-    plaintiff_title text,
-    second_plaintiff_name text,
-    plaintiff_mailing_address text,
-    plaintiff_mailing_city text,
-    plaintiff_mailing_state text,
-    plaintiff_mailing_zip text,
-    second_plaintiff_phone text,
-    second_plaintiff_address text,
-    second_plaintiff_city text,
-    second_plaintiff_state text,
-    second_plaintiff_zip text,
-    second_plaintiff_email text,
-    second_plaintiff_mailing_address text,
-    second_plaintiff_mailing_city text,
-    second_plaintiff_mailing_state text,
-    second_plaintiff_mailing_zip text,
-    defendant_mailing_address text,
-    defendant_mailing_city text,
-    defendant_mailing_state text,
-    defendant_mailing_zip text,
-    defendant_agent_title text,
-    defendant_agent_street text,
-    defendant_agent_city text,
-    defendant_agent_state text,
-    defendant_agent_zip text,
-    prior_demand_why_not text,
-    had_arbitration boolean DEFAULT false,
-    mc030_declaration_title text,
-    demand_letter_text_formal text,
-    demand_letter_text_firm text,
-    demand_letter_text_friendly text,
-    has_additional_plaintiff boolean DEFAULT false,
-    additional_plaintiff_name text,
-    additional_plaintiff_is_fictitious boolean DEFAULT false,
-    more_than_four_plaintiffs boolean DEFAULT false,
-    more_than_two_defendants boolean DEFAULT false,
-    mc030_exhibit_doc_ids jsonb,
-    sc104_data jsonb,
-    notify_method text,
-    prior_demand_date text,
-    prior_demand_method text,
-    statement_text text,
-    no_show_statement_text text,
-    plaintiff_is_fictitious boolean DEFAULT false,
-    plaintiff_dba_name text,
-    plaintiff_dba_address text,
-    plaintiff_dba_city text,
-    plaintiff_dba_state text,
-    plaintiff_dba_zip text,
-    plaintiff_dba_mailing_address text,
-    plaintiff_business_type text,
-    plaintiff_business_type_other text,
-    plaintiff_fbn_number text,
-    plaintiff_fbn_expiry text,
-    plaintiff_fbn_sign_date text,
-    second_plaintiff_dba_name text,
-    second_plaintiff_dba_address text,
-    second_plaintiff_dba_city text,
-    second_plaintiff_dba_state text,
-    second_plaintiff_dba_zip text,
-    second_plaintiff_dba_mailing_address text,
-    second_plaintiff_business_type text,
-    second_plaintiff_business_type_other text,
-    second_plaintiff_fbn_number text,
-    second_plaintiff_fbn_expiry text,
-    second_plaintiff_fbn_sign_date text,
-    second_plaintiff_title text,
-    plaintiff_fbn_county text,
-    second_plaintiff_fbn_county text,
-    mc030_declaration_text text,
-    jurisdiction_state text DEFAULT 'CA'::text NOT NULL,
-    efiling_eligible boolean,
-    efiling_status text,
-    efiling_envelope_id text,
-    guided_intake_data jsonb
-);
-
-
-ALTER TABLE public.cases OWNER TO postgres;
-
---
--- Name: cases_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.cases_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.cases_id_seq OWNER TO postgres;
-
---
--- Name: cases_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.cases_id_seq OWNED BY public.cases.id;
-
-
---
--- Name: chat_messages; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.chat_messages (
-    id integer NOT NULL,
-    case_id integer NOT NULL,
-    role text NOT NULL,
-    content text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.chat_messages OWNER TO postgres;
-
---
--- Name: chat_messages_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.chat_messages_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.chat_messages_id_seq OWNER TO postgres;
-
---
--- Name: chat_messages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.chat_messages_id_seq OWNED BY public.chat_messages.id;
-
-
---
--- Name: conversations; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.conversations (
-    id integer NOT NULL,
-    title text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.conversations OWNER TO postgres;
-
---
--- Name: conversations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.conversations_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.conversations_id_seq OWNER TO postgres;
-
---
--- Name: conversations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.conversations_id_seq OWNED BY public.conversations.id;
-
-
---
--- Name: documents; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.documents (
-    id integer NOT NULL,
-    case_id integer NOT NULL,
-    filename text NOT NULL,
-    original_name text NOT NULL,
-    label text,
-    mime_type text NOT NULL,
-    file_size integer NOT NULL,
-    file_data text,
-    ocr_text text,
-    ocr_status text DEFAULT 'pending'::text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    storage_object_path text,
-    description text
-);
-
-
-ALTER TABLE public.documents OWNER TO postgres;
-
---
--- Name: documents_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.documents_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.documents_id_seq OWNER TO postgres;
-
---
--- Name: documents_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.documents_id_seq OWNED BY public.documents.id;
-
-
---
--- Name: download_tokens; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.download_tokens (
-    token text NOT NULL,
-    case_id integer NOT NULL,
-    user_id text NOT NULL,
-    expires_at timestamp with time zone NOT NULL
-);
-
-
-ALTER TABLE public.download_tokens OWNER TO postgres;
-
---
--- Name: efile_court_locations; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.efile_court_locations (
-    id integer NOT NULL,
-    cli_code text NOT NULL,
-    jurisdiction_state text NOT NULL,
-    courthouse_id text,
-    court_name text,
-    filing_fee_amount integer,
-    supports_small_claims boolean DEFAULT true,
-    toga_url text,
-    review_tool_url text,
-    last_refreshed timestamp with time zone,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.efile_court_locations OWNER TO postgres;
-
---
--- Name: efile_court_locations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.efile_court_locations_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.efile_court_locations_id_seq OWNER TO postgres;
-
---
--- Name: efile_court_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.efile_court_locations_id_seq OWNED BY public.efile_court_locations.id;
-
-
---
--- Name: efile_submissions; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.efile_submissions (
-    id integer NOT NULL,
-    case_id integer NOT NULL,
-    user_id text NOT NULL,
-    jurisdiction_state text NOT NULL,
-    court_cli text,
-    envelope_id text,
-    status text DEFAULT 'submitted'::text NOT NULL,
-    fees_charged integer,
-    court_fee_amount integer,
-    convenience_fee_amount integer,
-    stripe_payment_intent_id text,
-    rejection_reason text,
-    submitted_at timestamp with time zone,
-    accepted_at timestamp with time zone,
-    rejected_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.efile_submissions OWNER TO postgres;
-
---
--- Name: efile_submissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.efile_submissions_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.efile_submissions_id_seq OWNER TO postgres;
-
---
--- Name: efile_submissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.efile_submissions_id_seq OWNED BY public.efile_submissions.id;
-
-
---
--- Name: genie_conversions; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.genie_conversions (
-    id integer NOT NULL,
-    question text NOT NULL,
-    answer_snippet text,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.genie_conversions OWNER TO postgres;
-
---
--- Name: genie_conversions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public.genie_conversions ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.genie_conversions_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- Name: messages; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.messages (
-    id integer NOT NULL,
-    conversation_id integer NOT NULL,
-    role text NOT NULL,
-    content text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.messages OWNER TO postgres;
-
---
--- Name: messages_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.messages_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.messages_id_seq OWNER TO postgres;
-
---
--- Name: messages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.messages_id_seq OWNED BY public.messages.id;
-
-
---
--- Name: purchases; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.purchases (
-    id integer NOT NULL,
-    user_id text NOT NULL,
-    stripe_session_id text NOT NULL,
-    stripe_price_id text,
-    stripe_product_id text,
-    plan_key text,
-    amount_total integer,
-    currency text,
-    status text DEFAULT 'complete'::text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE public.purchases OWNER TO postgres;
-
---
--- Name: purchases_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public.purchases ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.purchases_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- Name: _managed_webhooks; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe._managed_webhooks (
-    id text NOT NULL,
-    object text,
-    url text NOT NULL,
-    enabled_events jsonb NOT NULL,
-    description text,
-    enabled boolean,
-    livemode boolean,
-    metadata jsonb,
-    secret text NOT NULL,
-    status text,
-    api_version text,
-    created integer,
-    updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    last_synced_at timestamp with time zone,
-    account_id text NOT NULL
-);
-
-
-ALTER TABLE stripe._managed_webhooks OWNER TO postgres;
-
---
--- Name: _migrations; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe._migrations (
-    id integer NOT NULL,
-    name character varying(100) NOT NULL,
-    hash character varying(40) NOT NULL,
-    executed_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE stripe._migrations OWNER TO postgres;
-
---
--- Name: _sync_status; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe._sync_status (
-    id integer NOT NULL,
-    resource text NOT NULL,
-    status text DEFAULT 'idle'::text,
-    last_synced_at timestamp with time zone DEFAULT now(),
-    last_incremental_cursor timestamp with time zone,
-    error_message text,
-    updated_at timestamp with time zone DEFAULT now(),
-    account_id text NOT NULL,
-    CONSTRAINT _sync_status_status_check CHECK ((status = ANY (ARRAY['idle'::text, 'running'::text, 'complete'::text, 'error'::text])))
-);
-
-
-ALTER TABLE stripe._sync_status OWNER TO postgres;
-
 --
--- Name: _sync_status_id_seq; Type: SEQUENCE; Schema: stripe; Owner: postgres
+-- Data for Name: ai_rate_limits; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE stripe._sync_status_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+INSERT INTO public.ai_rate_limits VALUES ('ip:::ffff:127.0.0.1', 3, '2026-05-13 16:03:54.232+00');
+INSERT INTO public.ai_rate_limits VALUES ('ip:127.0.0.1', 28, '2026-07-06 02:06:08.225+00');
 
 
-ALTER SEQUENCE stripe._sync_status_id_seq OWNER TO postgres;
-
---
--- Name: _sync_status_id_seq; Type: SEQUENCE OWNED BY; Schema: stripe; Owner: postgres
---
-
-ALTER SEQUENCE stripe._sync_status_id_seq OWNED BY stripe._sync_status.id;
-
-
---
--- Name: accounts; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.accounts (
-    _raw_data jsonb NOT NULL,
-    first_synced_at timestamp with time zone DEFAULT now() NOT NULL,
-    _last_synced_at timestamp with time zone DEFAULT now() NOT NULL,
-    _updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    business_name text GENERATED ALWAYS AS (((_raw_data -> 'business_profile'::text) ->> 'name'::text)) STORED,
-    email text GENERATED ALWAYS AS ((_raw_data ->> 'email'::text)) STORED,
-    type text GENERATED ALWAYS AS ((_raw_data ->> 'type'::text)) STORED,
-    charges_enabled boolean GENERATED ALWAYS AS (((_raw_data ->> 'charges_enabled'::text))::boolean) STORED,
-    payouts_enabled boolean GENERATED ALWAYS AS (((_raw_data ->> 'payouts_enabled'::text))::boolean) STORED,
-    details_submitted boolean GENERATED ALWAYS AS (((_raw_data ->> 'details_submitted'::text))::boolean) STORED,
-    country text GENERATED ALWAYS AS ((_raw_data ->> 'country'::text)) STORED,
-    default_currency text GENERATED ALWAYS AS ((_raw_data ->> 'default_currency'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    api_key_hashes text[] DEFAULT '{}'::text[],
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.accounts OWNER TO postgres;
-
---
--- Name: active_entitlements; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.active_entitlements (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    feature text GENERATED ALWAYS AS ((_raw_data ->> 'feature'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    lookup_key text GENERATED ALWAYS AS ((_raw_data ->> 'lookup_key'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.active_entitlements OWNER TO postgres;
-
---
--- Name: charges; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.charges (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    paid boolean GENERATED ALWAYS AS (((_raw_data ->> 'paid'::text))::boolean) STORED,
-    "order" text GENERATED ALWAYS AS ((_raw_data ->> 'order'::text)) STORED,
-    amount bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount'::text))::bigint) STORED,
-    review text GENERATED ALWAYS AS ((_raw_data ->> 'review'::text)) STORED,
-    source jsonb GENERATED ALWAYS AS ((_raw_data -> 'source'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    dispute text GENERATED ALWAYS AS ((_raw_data ->> 'dispute'::text)) STORED,
-    invoice text GENERATED ALWAYS AS ((_raw_data ->> 'invoice'::text)) STORED,
-    outcome jsonb GENERATED ALWAYS AS ((_raw_data -> 'outcome'::text)) STORED,
-    refunds jsonb GENERATED ALWAYS AS ((_raw_data -> 'refunds'::text)) STORED,
-    updated integer GENERATED ALWAYS AS (((_raw_data ->> 'updated'::text))::integer) STORED,
-    captured boolean GENERATED ALWAYS AS (((_raw_data ->> 'captured'::text))::boolean) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    refunded boolean GENERATED ALWAYS AS (((_raw_data ->> 'refunded'::text))::boolean) STORED,
-    shipping jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping'::text)) STORED,
-    application text GENERATED ALWAYS AS ((_raw_data ->> 'application'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    destination text GENERATED ALWAYS AS ((_raw_data ->> 'destination'::text)) STORED,
-    failure_code text GENERATED ALWAYS AS ((_raw_data ->> 'failure_code'::text)) STORED,
-    on_behalf_of text GENERATED ALWAYS AS ((_raw_data ->> 'on_behalf_of'::text)) STORED,
-    fraud_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'fraud_details'::text)) STORED,
-    receipt_email text GENERATED ALWAYS AS ((_raw_data ->> 'receipt_email'::text)) STORED,
-    payment_intent text GENERATED ALWAYS AS ((_raw_data ->> 'payment_intent'::text)) STORED,
-    receipt_number text GENERATED ALWAYS AS ((_raw_data ->> 'receipt_number'::text)) STORED,
-    transfer_group text GENERATED ALWAYS AS ((_raw_data ->> 'transfer_group'::text)) STORED,
-    amount_refunded bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount_refunded'::text))::bigint) STORED,
-    application_fee text GENERATED ALWAYS AS ((_raw_data ->> 'application_fee'::text)) STORED,
-    failure_message text GENERATED ALWAYS AS ((_raw_data ->> 'failure_message'::text)) STORED,
-    source_transfer text GENERATED ALWAYS AS ((_raw_data ->> 'source_transfer'::text)) STORED,
-    balance_transaction text GENERATED ALWAYS AS ((_raw_data ->> 'balance_transaction'::text)) STORED,
-    statement_descriptor text GENERATED ALWAYS AS ((_raw_data ->> 'statement_descriptor'::text)) STORED,
-    payment_method_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'payment_method_details'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.charges OWNER TO postgres;
-
---
--- Name: checkout_session_line_items; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.checkout_session_line_items (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    amount_discount integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_discount'::text))::integer) STORED,
-    amount_subtotal integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_subtotal'::text))::integer) STORED,
-    amount_tax integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_tax'::text))::integer) STORED,
-    amount_total integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_total'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    price text GENERATED ALWAYS AS ((_raw_data ->> 'price'::text)) STORED,
-    quantity integer GENERATED ALWAYS AS (((_raw_data ->> 'quantity'::text))::integer) STORED,
-    checkout_session text GENERATED ALWAYS AS ((_raw_data ->> 'checkout_session'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.checkout_session_line_items OWNER TO postgres;
-
---
--- Name: checkout_sessions; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.checkout_sessions (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    adaptive_pricing jsonb GENERATED ALWAYS AS ((_raw_data -> 'adaptive_pricing'::text)) STORED,
-    after_expiration jsonb GENERATED ALWAYS AS ((_raw_data -> 'after_expiration'::text)) STORED,
-    allow_promotion_codes boolean GENERATED ALWAYS AS (((_raw_data ->> 'allow_promotion_codes'::text))::boolean) STORED,
-    amount_subtotal integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_subtotal'::text))::integer) STORED,
-    amount_total integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_total'::text))::integer) STORED,
-    automatic_tax jsonb GENERATED ALWAYS AS ((_raw_data -> 'automatic_tax'::text)) STORED,
-    billing_address_collection text GENERATED ALWAYS AS ((_raw_data ->> 'billing_address_collection'::text)) STORED,
-    cancel_url text GENERATED ALWAYS AS ((_raw_data ->> 'cancel_url'::text)) STORED,
-    client_reference_id text GENERATED ALWAYS AS ((_raw_data ->> 'client_reference_id'::text)) STORED,
-    client_secret text GENERATED ALWAYS AS ((_raw_data ->> 'client_secret'::text)) STORED,
-    collected_information jsonb GENERATED ALWAYS AS ((_raw_data -> 'collected_information'::text)) STORED,
-    consent jsonb GENERATED ALWAYS AS ((_raw_data -> 'consent'::text)) STORED,
-    consent_collection jsonb GENERATED ALWAYS AS ((_raw_data -> 'consent_collection'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    currency_conversion jsonb GENERATED ALWAYS AS ((_raw_data -> 'currency_conversion'::text)) STORED,
-    custom_fields jsonb GENERATED ALWAYS AS ((_raw_data -> 'custom_fields'::text)) STORED,
-    custom_text jsonb GENERATED ALWAYS AS ((_raw_data -> 'custom_text'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    customer_creation text GENERATED ALWAYS AS ((_raw_data ->> 'customer_creation'::text)) STORED,
-    customer_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'customer_details'::text)) STORED,
-    customer_email text GENERATED ALWAYS AS ((_raw_data ->> 'customer_email'::text)) STORED,
-    discounts jsonb GENERATED ALWAYS AS ((_raw_data -> 'discounts'::text)) STORED,
-    expires_at integer GENERATED ALWAYS AS (((_raw_data ->> 'expires_at'::text))::integer) STORED,
-    invoice text GENERATED ALWAYS AS ((_raw_data ->> 'invoice'::text)) STORED,
-    invoice_creation jsonb GENERATED ALWAYS AS ((_raw_data -> 'invoice_creation'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    locale text GENERATED ALWAYS AS ((_raw_data ->> 'locale'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    mode text GENERATED ALWAYS AS ((_raw_data ->> 'mode'::text)) STORED,
-    optional_items jsonb GENERATED ALWAYS AS ((_raw_data -> 'optional_items'::text)) STORED,
-    payment_intent text GENERATED ALWAYS AS ((_raw_data ->> 'payment_intent'::text)) STORED,
-    payment_link text GENERATED ALWAYS AS ((_raw_data ->> 'payment_link'::text)) STORED,
-    payment_method_collection text GENERATED ALWAYS AS ((_raw_data ->> 'payment_method_collection'::text)) STORED,
-    payment_method_configuration_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'payment_method_configuration_details'::text)) STORED,
-    payment_method_options jsonb GENERATED ALWAYS AS ((_raw_data -> 'payment_method_options'::text)) STORED,
-    payment_method_types jsonb GENERATED ALWAYS AS ((_raw_data -> 'payment_method_types'::text)) STORED,
-    payment_status text GENERATED ALWAYS AS ((_raw_data ->> 'payment_status'::text)) STORED,
-    permissions jsonb GENERATED ALWAYS AS ((_raw_data -> 'permissions'::text)) STORED,
-    phone_number_collection jsonb GENERATED ALWAYS AS ((_raw_data -> 'phone_number_collection'::text)) STORED,
-    presentment_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'presentment_details'::text)) STORED,
-    recovered_from text GENERATED ALWAYS AS ((_raw_data ->> 'recovered_from'::text)) STORED,
-    redirect_on_completion text GENERATED ALWAYS AS ((_raw_data ->> 'redirect_on_completion'::text)) STORED,
-    return_url text GENERATED ALWAYS AS ((_raw_data ->> 'return_url'::text)) STORED,
-    saved_payment_method_options jsonb GENERATED ALWAYS AS ((_raw_data -> 'saved_payment_method_options'::text)) STORED,
-    setup_intent text GENERATED ALWAYS AS ((_raw_data ->> 'setup_intent'::text)) STORED,
-    shipping_address_collection jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping_address_collection'::text)) STORED,
-    shipping_cost jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping_cost'::text)) STORED,
-    shipping_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping_details'::text)) STORED,
-    shipping_options jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping_options'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    submit_type text GENERATED ALWAYS AS ((_raw_data ->> 'submit_type'::text)) STORED,
-    subscription text GENERATED ALWAYS AS ((_raw_data ->> 'subscription'::text)) STORED,
-    success_url text GENERATED ALWAYS AS ((_raw_data ->> 'success_url'::text)) STORED,
-    tax_id_collection jsonb GENERATED ALWAYS AS ((_raw_data -> 'tax_id_collection'::text)) STORED,
-    total_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'total_details'::text)) STORED,
-    ui_mode text GENERATED ALWAYS AS ((_raw_data ->> 'ui_mode'::text)) STORED,
-    url text GENERATED ALWAYS AS ((_raw_data ->> 'url'::text)) STORED,
-    wallet_options jsonb GENERATED ALWAYS AS ((_raw_data -> 'wallet_options'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.checkout_sessions OWNER TO postgres;
-
---
--- Name: coupons; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.coupons (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    name text GENERATED ALWAYS AS ((_raw_data ->> 'name'::text)) STORED,
-    valid boolean GENERATED ALWAYS AS (((_raw_data ->> 'valid'::text))::boolean) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    updated integer GENERATED ALWAYS AS (((_raw_data ->> 'updated'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    duration text GENERATED ALWAYS AS ((_raw_data ->> 'duration'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    redeem_by integer GENERATED ALWAYS AS (((_raw_data ->> 'redeem_by'::text))::integer) STORED,
-    amount_off bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount_off'::text))::bigint) STORED,
-    percent_off double precision GENERATED ALWAYS AS (((_raw_data ->> 'percent_off'::text))::double precision) STORED,
-    times_redeemed bigint GENERATED ALWAYS AS (((_raw_data ->> 'times_redeemed'::text))::bigint) STORED,
-    max_redemptions bigint GENERATED ALWAYS AS (((_raw_data ->> 'max_redemptions'::text))::bigint) STORED,
-    duration_in_months bigint GENERATED ALWAYS AS (((_raw_data ->> 'duration_in_months'::text))::bigint) STORED,
-    percent_off_precise double precision GENERATED ALWAYS AS (((_raw_data ->> 'percent_off_precise'::text))::double precision) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.coupons OWNER TO postgres;
-
---
--- Name: credit_notes; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.credit_notes (
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    amount integer GENERATED ALWAYS AS (((_raw_data ->> 'amount'::text))::integer) STORED,
-    amount_shipping integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_shipping'::text))::integer) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    customer_balance_transaction text GENERATED ALWAYS AS ((_raw_data ->> 'customer_balance_transaction'::text)) STORED,
-    discount_amount integer GENERATED ALWAYS AS (((_raw_data ->> 'discount_amount'::text))::integer) STORED,
-    discount_amounts jsonb GENERATED ALWAYS AS ((_raw_data -> 'discount_amounts'::text)) STORED,
-    invoice text GENERATED ALWAYS AS ((_raw_data ->> 'invoice'::text)) STORED,
-    lines jsonb GENERATED ALWAYS AS ((_raw_data -> 'lines'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    memo text GENERATED ALWAYS AS ((_raw_data ->> 'memo'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    number text GENERATED ALWAYS AS ((_raw_data ->> 'number'::text)) STORED,
-    out_of_band_amount integer GENERATED ALWAYS AS (((_raw_data ->> 'out_of_band_amount'::text))::integer) STORED,
-    pdf text GENERATED ALWAYS AS ((_raw_data ->> 'pdf'::text)) STORED,
-    reason text GENERATED ALWAYS AS ((_raw_data ->> 'reason'::text)) STORED,
-    refund text GENERATED ALWAYS AS ((_raw_data ->> 'refund'::text)) STORED,
-    shipping_cost jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping_cost'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    subtotal integer GENERATED ALWAYS AS (((_raw_data ->> 'subtotal'::text))::integer) STORED,
-    subtotal_excluding_tax integer GENERATED ALWAYS AS (((_raw_data ->> 'subtotal_excluding_tax'::text))::integer) STORED,
-    tax_amounts jsonb GENERATED ALWAYS AS ((_raw_data -> 'tax_amounts'::text)) STORED,
-    total integer GENERATED ALWAYS AS (((_raw_data ->> 'total'::text))::integer) STORED,
-    total_excluding_tax integer GENERATED ALWAYS AS (((_raw_data ->> 'total_excluding_tax'::text))::integer) STORED,
-    type text GENERATED ALWAYS AS ((_raw_data ->> 'type'::text)) STORED,
-    voided_at text GENERATED ALWAYS AS ((_raw_data ->> 'voided_at'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.credit_notes OWNER TO postgres;
-
---
--- Name: customers; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.customers (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    address jsonb GENERATED ALWAYS AS ((_raw_data -> 'address'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    email text GENERATED ALWAYS AS ((_raw_data ->> 'email'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    name text GENERATED ALWAYS AS ((_raw_data ->> 'name'::text)) STORED,
-    phone text GENERATED ALWAYS AS ((_raw_data ->> 'phone'::text)) STORED,
-    shipping jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping'::text)) STORED,
-    balance integer GENERATED ALWAYS AS (((_raw_data ->> 'balance'::text))::integer) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    default_source text GENERATED ALWAYS AS ((_raw_data ->> 'default_source'::text)) STORED,
-    delinquent boolean GENERATED ALWAYS AS (((_raw_data ->> 'delinquent'::text))::boolean) STORED,
-    discount jsonb GENERATED ALWAYS AS ((_raw_data -> 'discount'::text)) STORED,
-    invoice_prefix text GENERATED ALWAYS AS ((_raw_data ->> 'invoice_prefix'::text)) STORED,
-    invoice_settings jsonb GENERATED ALWAYS AS ((_raw_data -> 'invoice_settings'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    next_invoice_sequence integer GENERATED ALWAYS AS (((_raw_data ->> 'next_invoice_sequence'::text))::integer) STORED,
-    preferred_locales jsonb GENERATED ALWAYS AS ((_raw_data -> 'preferred_locales'::text)) STORED,
-    tax_exempt text GENERATED ALWAYS AS ((_raw_data ->> 'tax_exempt'::text)) STORED,
-    deleted boolean GENERATED ALWAYS AS (((_raw_data ->> 'deleted'::text))::boolean) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.customers OWNER TO postgres;
-
---
--- Name: disputes; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.disputes (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    amount bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount'::text))::bigint) STORED,
-    charge text GENERATED ALWAYS AS ((_raw_data ->> 'charge'::text)) STORED,
-    reason text GENERATED ALWAYS AS ((_raw_data ->> 'reason'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    updated integer GENERATED ALWAYS AS (((_raw_data ->> 'updated'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    evidence jsonb GENERATED ALWAYS AS ((_raw_data -> 'evidence'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    evidence_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'evidence_details'::text)) STORED,
-    balance_transactions jsonb GENERATED ALWAYS AS ((_raw_data -> 'balance_transactions'::text)) STORED,
-    is_charge_refundable boolean GENERATED ALWAYS AS (((_raw_data ->> 'is_charge_refundable'::text))::boolean) STORED,
-    payment_intent text GENERATED ALWAYS AS ((_raw_data ->> 'payment_intent'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.disputes OWNER TO postgres;
-
---
--- Name: early_fraud_warnings; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.early_fraud_warnings (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    actionable boolean GENERATED ALWAYS AS (((_raw_data ->> 'actionable'::text))::boolean) STORED,
-    charge text GENERATED ALWAYS AS ((_raw_data ->> 'charge'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    fraud_type text GENERATED ALWAYS AS ((_raw_data ->> 'fraud_type'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    payment_intent text GENERATED ALWAYS AS ((_raw_data ->> 'payment_intent'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.early_fraud_warnings OWNER TO postgres;
-
---
--- Name: events; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.events (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    data jsonb GENERATED ALWAYS AS ((_raw_data -> 'data'::text)) STORED,
-    type text GENERATED ALWAYS AS ((_raw_data ->> 'type'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    request text GENERATED ALWAYS AS ((_raw_data ->> 'request'::text)) STORED,
-    updated integer GENERATED ALWAYS AS (((_raw_data ->> 'updated'::text))::integer) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    api_version text GENERATED ALWAYS AS ((_raw_data ->> 'api_version'::text)) STORED,
-    pending_webhooks bigint GENERATED ALWAYS AS (((_raw_data ->> 'pending_webhooks'::text))::bigint) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.events OWNER TO postgres;
-
---
--- Name: features; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.features (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    name text GENERATED ALWAYS AS ((_raw_data ->> 'name'::text)) STORED,
-    lookup_key text GENERATED ALWAYS AS ((_raw_data ->> 'lookup_key'::text)) STORED,
-    active boolean GENERATED ALWAYS AS (((_raw_data ->> 'active'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.features OWNER TO postgres;
-
---
--- Name: invoices; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.invoices (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    auto_advance boolean GENERATED ALWAYS AS (((_raw_data ->> 'auto_advance'::text))::boolean) STORED,
-    collection_method text GENERATED ALWAYS AS ((_raw_data ->> 'collection_method'::text)) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    hosted_invoice_url text GENERATED ALWAYS AS ((_raw_data ->> 'hosted_invoice_url'::text)) STORED,
-    lines jsonb GENERATED ALWAYS AS ((_raw_data -> 'lines'::text)) STORED,
-    period_end integer GENERATED ALWAYS AS (((_raw_data ->> 'period_end'::text))::integer) STORED,
-    period_start integer GENERATED ALWAYS AS (((_raw_data ->> 'period_start'::text))::integer) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    total bigint GENERATED ALWAYS AS (((_raw_data ->> 'total'::text))::bigint) STORED,
-    account_country text GENERATED ALWAYS AS ((_raw_data ->> 'account_country'::text)) STORED,
-    account_name text GENERATED ALWAYS AS ((_raw_data ->> 'account_name'::text)) STORED,
-    account_tax_ids jsonb GENERATED ALWAYS AS ((_raw_data -> 'account_tax_ids'::text)) STORED,
-    amount_due bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount_due'::text))::bigint) STORED,
-    amount_paid bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount_paid'::text))::bigint) STORED,
-    amount_remaining bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount_remaining'::text))::bigint) STORED,
-    application_fee_amount bigint GENERATED ALWAYS AS (((_raw_data ->> 'application_fee_amount'::text))::bigint) STORED,
-    attempt_count integer GENERATED ALWAYS AS (((_raw_data ->> 'attempt_count'::text))::integer) STORED,
-    attempted boolean GENERATED ALWAYS AS (((_raw_data ->> 'attempted'::text))::boolean) STORED,
-    billing_reason text GENERATED ALWAYS AS ((_raw_data ->> 'billing_reason'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    custom_fields jsonb GENERATED ALWAYS AS ((_raw_data -> 'custom_fields'::text)) STORED,
-    customer_address jsonb GENERATED ALWAYS AS ((_raw_data -> 'customer_address'::text)) STORED,
-    customer_email text GENERATED ALWAYS AS ((_raw_data ->> 'customer_email'::text)) STORED,
-    customer_name text GENERATED ALWAYS AS ((_raw_data ->> 'customer_name'::text)) STORED,
-    customer_phone text GENERATED ALWAYS AS ((_raw_data ->> 'customer_phone'::text)) STORED,
-    customer_shipping jsonb GENERATED ALWAYS AS ((_raw_data -> 'customer_shipping'::text)) STORED,
-    customer_tax_exempt text GENERATED ALWAYS AS ((_raw_data ->> 'customer_tax_exempt'::text)) STORED,
-    customer_tax_ids jsonb GENERATED ALWAYS AS ((_raw_data -> 'customer_tax_ids'::text)) STORED,
-    default_tax_rates jsonb GENERATED ALWAYS AS ((_raw_data -> 'default_tax_rates'::text)) STORED,
-    discount jsonb GENERATED ALWAYS AS ((_raw_data -> 'discount'::text)) STORED,
-    discounts jsonb GENERATED ALWAYS AS ((_raw_data -> 'discounts'::text)) STORED,
-    due_date integer GENERATED ALWAYS AS (((_raw_data ->> 'due_date'::text))::integer) STORED,
-    ending_balance integer GENERATED ALWAYS AS (((_raw_data ->> 'ending_balance'::text))::integer) STORED,
-    footer text GENERATED ALWAYS AS ((_raw_data ->> 'footer'::text)) STORED,
-    invoice_pdf text GENERATED ALWAYS AS ((_raw_data ->> 'invoice_pdf'::text)) STORED,
-    last_finalization_error jsonb GENERATED ALWAYS AS ((_raw_data -> 'last_finalization_error'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    next_payment_attempt integer GENERATED ALWAYS AS (((_raw_data ->> 'next_payment_attempt'::text))::integer) STORED,
-    number text GENERATED ALWAYS AS ((_raw_data ->> 'number'::text)) STORED,
-    paid boolean GENERATED ALWAYS AS (((_raw_data ->> 'paid'::text))::boolean) STORED,
-    payment_settings jsonb GENERATED ALWAYS AS ((_raw_data -> 'payment_settings'::text)) STORED,
-    post_payment_credit_notes_amount integer GENERATED ALWAYS AS (((_raw_data ->> 'post_payment_credit_notes_amount'::text))::integer) STORED,
-    pre_payment_credit_notes_amount integer GENERATED ALWAYS AS (((_raw_data ->> 'pre_payment_credit_notes_amount'::text))::integer) STORED,
-    receipt_number text GENERATED ALWAYS AS ((_raw_data ->> 'receipt_number'::text)) STORED,
-    starting_balance integer GENERATED ALWAYS AS (((_raw_data ->> 'starting_balance'::text))::integer) STORED,
-    statement_descriptor text GENERATED ALWAYS AS ((_raw_data ->> 'statement_descriptor'::text)) STORED,
-    status_transitions jsonb GENERATED ALWAYS AS ((_raw_data -> 'status_transitions'::text)) STORED,
-    subtotal integer GENERATED ALWAYS AS (((_raw_data ->> 'subtotal'::text))::integer) STORED,
-    tax integer GENERATED ALWAYS AS (((_raw_data ->> 'tax'::text))::integer) STORED,
-    total_discount_amounts jsonb GENERATED ALWAYS AS ((_raw_data -> 'total_discount_amounts'::text)) STORED,
-    total_tax_amounts jsonb GENERATED ALWAYS AS ((_raw_data -> 'total_tax_amounts'::text)) STORED,
-    transfer_data jsonb GENERATED ALWAYS AS ((_raw_data -> 'transfer_data'::text)) STORED,
-    webhooks_delivered_at integer GENERATED ALWAYS AS (((_raw_data ->> 'webhooks_delivered_at'::text))::integer) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    subscription text GENERATED ALWAYS AS ((_raw_data ->> 'subscription'::text)) STORED,
-    payment_intent text GENERATED ALWAYS AS ((_raw_data ->> 'payment_intent'::text)) STORED,
-    default_payment_method text GENERATED ALWAYS AS ((_raw_data ->> 'default_payment_method'::text)) STORED,
-    default_source text GENERATED ALWAYS AS ((_raw_data ->> 'default_source'::text)) STORED,
-    on_behalf_of text GENERATED ALWAYS AS ((_raw_data ->> 'on_behalf_of'::text)) STORED,
-    charge text GENERATED ALWAYS AS ((_raw_data ->> 'charge'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.invoices OWNER TO postgres;
-
---
--- Name: payment_intents; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.payment_intents (
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    amount integer GENERATED ALWAYS AS (((_raw_data ->> 'amount'::text))::integer) STORED,
-    amount_capturable integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_capturable'::text))::integer) STORED,
-    amount_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'amount_details'::text)) STORED,
-    amount_received integer GENERATED ALWAYS AS (((_raw_data ->> 'amount_received'::text))::integer) STORED,
-    application text GENERATED ALWAYS AS ((_raw_data ->> 'application'::text)) STORED,
-    application_fee_amount integer GENERATED ALWAYS AS (((_raw_data ->> 'application_fee_amount'::text))::integer) STORED,
-    automatic_payment_methods text GENERATED ALWAYS AS ((_raw_data ->> 'automatic_payment_methods'::text)) STORED,
-    canceled_at integer GENERATED ALWAYS AS (((_raw_data ->> 'canceled_at'::text))::integer) STORED,
-    cancellation_reason text GENERATED ALWAYS AS ((_raw_data ->> 'cancellation_reason'::text)) STORED,
-    capture_method text GENERATED ALWAYS AS ((_raw_data ->> 'capture_method'::text)) STORED,
-    client_secret text GENERATED ALWAYS AS ((_raw_data ->> 'client_secret'::text)) STORED,
-    confirmation_method text GENERATED ALWAYS AS ((_raw_data ->> 'confirmation_method'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    invoice text GENERATED ALWAYS AS ((_raw_data ->> 'invoice'::text)) STORED,
-    last_payment_error text GENERATED ALWAYS AS ((_raw_data ->> 'last_payment_error'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    next_action text GENERATED ALWAYS AS ((_raw_data ->> 'next_action'::text)) STORED,
-    on_behalf_of text GENERATED ALWAYS AS ((_raw_data ->> 'on_behalf_of'::text)) STORED,
-    payment_method text GENERATED ALWAYS AS ((_raw_data ->> 'payment_method'::text)) STORED,
-    payment_method_options jsonb GENERATED ALWAYS AS ((_raw_data -> 'payment_method_options'::text)) STORED,
-    payment_method_types jsonb GENERATED ALWAYS AS ((_raw_data -> 'payment_method_types'::text)) STORED,
-    processing text GENERATED ALWAYS AS ((_raw_data ->> 'processing'::text)) STORED,
-    receipt_email text GENERATED ALWAYS AS ((_raw_data ->> 'receipt_email'::text)) STORED,
-    review text GENERATED ALWAYS AS ((_raw_data ->> 'review'::text)) STORED,
-    setup_future_usage text GENERATED ALWAYS AS ((_raw_data ->> 'setup_future_usage'::text)) STORED,
-    shipping jsonb GENERATED ALWAYS AS ((_raw_data -> 'shipping'::text)) STORED,
-    statement_descriptor text GENERATED ALWAYS AS ((_raw_data ->> 'statement_descriptor'::text)) STORED,
-    statement_descriptor_suffix text GENERATED ALWAYS AS ((_raw_data ->> 'statement_descriptor_suffix'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    transfer_data jsonb GENERATED ALWAYS AS ((_raw_data -> 'transfer_data'::text)) STORED,
-    transfer_group text GENERATED ALWAYS AS ((_raw_data ->> 'transfer_group'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.payment_intents OWNER TO postgres;
-
---
--- Name: payment_methods; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.payment_methods (
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    type text GENERATED ALWAYS AS ((_raw_data ->> 'type'::text)) STORED,
-    billing_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'billing_details'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    card jsonb GENERATED ALWAYS AS ((_raw_data -> 'card'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.payment_methods OWNER TO postgres;
-
---
--- Name: payouts; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.payouts (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    date text GENERATED ALWAYS AS ((_raw_data ->> 'date'::text)) STORED,
-    type text GENERATED ALWAYS AS ((_raw_data ->> 'type'::text)) STORED,
-    amount bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount'::text))::bigint) STORED,
-    method text GENERATED ALWAYS AS ((_raw_data ->> 'method'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    updated integer GENERATED ALWAYS AS (((_raw_data ->> 'updated'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    automatic boolean GENERATED ALWAYS AS (((_raw_data ->> 'automatic'::text))::boolean) STORED,
-    recipient text GENERATED ALWAYS AS ((_raw_data ->> 'recipient'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    destination text GENERATED ALWAYS AS ((_raw_data ->> 'destination'::text)) STORED,
-    source_type text GENERATED ALWAYS AS ((_raw_data ->> 'source_type'::text)) STORED,
-    arrival_date text GENERATED ALWAYS AS ((_raw_data ->> 'arrival_date'::text)) STORED,
-    bank_account jsonb GENERATED ALWAYS AS ((_raw_data -> 'bank_account'::text)) STORED,
-    failure_code text GENERATED ALWAYS AS ((_raw_data ->> 'failure_code'::text)) STORED,
-    transfer_group text GENERATED ALWAYS AS ((_raw_data ->> 'transfer_group'::text)) STORED,
-    amount_reversed bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount_reversed'::text))::bigint) STORED,
-    failure_message text GENERATED ALWAYS AS ((_raw_data ->> 'failure_message'::text)) STORED,
-    source_transaction text GENERATED ALWAYS AS ((_raw_data ->> 'source_transaction'::text)) STORED,
-    balance_transaction text GENERATED ALWAYS AS ((_raw_data ->> 'balance_transaction'::text)) STORED,
-    statement_descriptor text GENERATED ALWAYS AS ((_raw_data ->> 'statement_descriptor'::text)) STORED,
-    statement_description text GENERATED ALWAYS AS ((_raw_data ->> 'statement_description'::text)) STORED,
-    failure_balance_transaction text GENERATED ALWAYS AS ((_raw_data ->> 'failure_balance_transaction'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.payouts OWNER TO postgres;
-
---
--- Name: plans; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.plans (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    name text GENERATED ALWAYS AS ((_raw_data ->> 'name'::text)) STORED,
-    tiers jsonb GENERATED ALWAYS AS ((_raw_data -> 'tiers'::text)) STORED,
-    active boolean GENERATED ALWAYS AS (((_raw_data ->> 'active'::text))::boolean) STORED,
-    amount bigint GENERATED ALWAYS AS (((_raw_data ->> 'amount'::text))::bigint) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    product text GENERATED ALWAYS AS ((_raw_data ->> 'product'::text)) STORED,
-    updated integer GENERATED ALWAYS AS (((_raw_data ->> 'updated'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    "interval" text GENERATED ALWAYS AS ((_raw_data ->> 'interval'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    nickname text GENERATED ALWAYS AS ((_raw_data ->> 'nickname'::text)) STORED,
-    tiers_mode text GENERATED ALWAYS AS ((_raw_data ->> 'tiers_mode'::text)) STORED,
-    usage_type text GENERATED ALWAYS AS ((_raw_data ->> 'usage_type'::text)) STORED,
-    billing_scheme text GENERATED ALWAYS AS ((_raw_data ->> 'billing_scheme'::text)) STORED,
-    interval_count bigint GENERATED ALWAYS AS (((_raw_data ->> 'interval_count'::text))::bigint) STORED,
-    aggregate_usage text GENERATED ALWAYS AS ((_raw_data ->> 'aggregate_usage'::text)) STORED,
-    transform_usage text GENERATED ALWAYS AS ((_raw_data ->> 'transform_usage'::text)) STORED,
-    trial_period_days bigint GENERATED ALWAYS AS (((_raw_data ->> 'trial_period_days'::text))::bigint) STORED,
-    statement_descriptor text GENERATED ALWAYS AS ((_raw_data ->> 'statement_descriptor'::text)) STORED,
-    statement_description text GENERATED ALWAYS AS ((_raw_data ->> 'statement_description'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.plans OWNER TO postgres;
-
---
--- Name: prices; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.prices (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    active boolean GENERATED ALWAYS AS (((_raw_data ->> 'active'::text))::boolean) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    nickname text GENERATED ALWAYS AS ((_raw_data ->> 'nickname'::text)) STORED,
-    recurring jsonb GENERATED ALWAYS AS ((_raw_data -> 'recurring'::text)) STORED,
-    type text GENERATED ALWAYS AS ((_raw_data ->> 'type'::text)) STORED,
-    unit_amount integer GENERATED ALWAYS AS (((_raw_data ->> 'unit_amount'::text))::integer) STORED,
-    billing_scheme text GENERATED ALWAYS AS ((_raw_data ->> 'billing_scheme'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    lookup_key text GENERATED ALWAYS AS ((_raw_data ->> 'lookup_key'::text)) STORED,
-    tiers_mode text GENERATED ALWAYS AS ((_raw_data ->> 'tiers_mode'::text)) STORED,
-    transform_quantity jsonb GENERATED ALWAYS AS ((_raw_data -> 'transform_quantity'::text)) STORED,
-    unit_amount_decimal text GENERATED ALWAYS AS ((_raw_data ->> 'unit_amount_decimal'::text)) STORED,
-    product text GENERATED ALWAYS AS ((_raw_data ->> 'product'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.prices OWNER TO postgres;
-
---
--- Name: products; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.products (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    active boolean GENERATED ALWAYS AS (((_raw_data ->> 'active'::text))::boolean) STORED,
-    default_price text GENERATED ALWAYS AS ((_raw_data ->> 'default_price'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    name text GENERATED ALWAYS AS ((_raw_data ->> 'name'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    images jsonb GENERATED ALWAYS AS ((_raw_data -> 'images'::text)) STORED,
-    marketing_features jsonb GENERATED ALWAYS AS ((_raw_data -> 'marketing_features'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    package_dimensions jsonb GENERATED ALWAYS AS ((_raw_data -> 'package_dimensions'::text)) STORED,
-    shippable boolean GENERATED ALWAYS AS (((_raw_data ->> 'shippable'::text))::boolean) STORED,
-    statement_descriptor text GENERATED ALWAYS AS ((_raw_data ->> 'statement_descriptor'::text)) STORED,
-    unit_label text GENERATED ALWAYS AS ((_raw_data ->> 'unit_label'::text)) STORED,
-    updated integer GENERATED ALWAYS AS (((_raw_data ->> 'updated'::text))::integer) STORED,
-    url text GENERATED ALWAYS AS ((_raw_data ->> 'url'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.products OWNER TO postgres;
-
---
--- Name: refunds; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.refunds (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    amount integer GENERATED ALWAYS AS (((_raw_data ->> 'amount'::text))::integer) STORED,
-    balance_transaction text GENERATED ALWAYS AS ((_raw_data ->> 'balance_transaction'::text)) STORED,
-    charge text GENERATED ALWAYS AS ((_raw_data ->> 'charge'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    currency text GENERATED ALWAYS AS ((_raw_data ->> 'currency'::text)) STORED,
-    destination_details jsonb GENERATED ALWAYS AS ((_raw_data -> 'destination_details'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    payment_intent text GENERATED ALWAYS AS ((_raw_data ->> 'payment_intent'::text)) STORED,
-    reason text GENERATED ALWAYS AS ((_raw_data ->> 'reason'::text)) STORED,
-    receipt_number text GENERATED ALWAYS AS ((_raw_data ->> 'receipt_number'::text)) STORED,
-    source_transfer_reversal text GENERATED ALWAYS AS ((_raw_data ->> 'source_transfer_reversal'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    transfer_reversal text GENERATED ALWAYS AS ((_raw_data ->> 'transfer_reversal'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.refunds OWNER TO postgres;
-
---
--- Name: reviews; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.reviews (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    billing_zip text GENERATED ALWAYS AS ((_raw_data ->> 'billing_zip'::text)) STORED,
-    charge text GENERATED ALWAYS AS ((_raw_data ->> 'charge'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    closed_reason text GENERATED ALWAYS AS ((_raw_data ->> 'closed_reason'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    ip_address text GENERATED ALWAYS AS ((_raw_data ->> 'ip_address'::text)) STORED,
-    ip_address_location jsonb GENERATED ALWAYS AS ((_raw_data -> 'ip_address_location'::text)) STORED,
-    open boolean GENERATED ALWAYS AS (((_raw_data ->> 'open'::text))::boolean) STORED,
-    opened_reason text GENERATED ALWAYS AS ((_raw_data ->> 'opened_reason'::text)) STORED,
-    payment_intent text GENERATED ALWAYS AS ((_raw_data ->> 'payment_intent'::text)) STORED,
-    reason text GENERATED ALWAYS AS ((_raw_data ->> 'reason'::text)) STORED,
-    session text GENERATED ALWAYS AS ((_raw_data ->> 'session'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.reviews OWNER TO postgres;
-
---
--- Name: setup_intents; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.setup_intents (
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    description text GENERATED ALWAYS AS ((_raw_data ->> 'description'::text)) STORED,
-    payment_method text GENERATED ALWAYS AS ((_raw_data ->> 'payment_method'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    usage text GENERATED ALWAYS AS ((_raw_data ->> 'usage'::text)) STORED,
-    cancellation_reason text GENERATED ALWAYS AS ((_raw_data ->> 'cancellation_reason'::text)) STORED,
-    latest_attempt text GENERATED ALWAYS AS ((_raw_data ->> 'latest_attempt'::text)) STORED,
-    mandate text GENERATED ALWAYS AS ((_raw_data ->> 'mandate'::text)) STORED,
-    single_use_mandate text GENERATED ALWAYS AS ((_raw_data ->> 'single_use_mandate'::text)) STORED,
-    on_behalf_of text GENERATED ALWAYS AS ((_raw_data ->> 'on_behalf_of'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.setup_intents OWNER TO postgres;
-
---
--- Name: subscription_items; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.subscription_items (
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    billing_thresholds jsonb GENERATED ALWAYS AS ((_raw_data -> 'billing_thresholds'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    deleted boolean GENERATED ALWAYS AS (((_raw_data ->> 'deleted'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    quantity integer GENERATED ALWAYS AS (((_raw_data ->> 'quantity'::text))::integer) STORED,
-    price text GENERATED ALWAYS AS ((_raw_data ->> 'price'::text)) STORED,
-    subscription text GENERATED ALWAYS AS ((_raw_data ->> 'subscription'::text)) STORED,
-    tax_rates jsonb GENERATED ALWAYS AS ((_raw_data -> 'tax_rates'::text)) STORED,
-    current_period_end integer GENERATED ALWAYS AS (((_raw_data ->> 'current_period_end'::text))::integer) STORED,
-    current_period_start integer GENERATED ALWAYS AS (((_raw_data ->> 'current_period_start'::text))::integer) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.subscription_items OWNER TO postgres;
-
---
--- Name: subscription_schedules; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.subscription_schedules (
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    application text GENERATED ALWAYS AS ((_raw_data ->> 'application'::text)) STORED,
-    canceled_at integer GENERATED ALWAYS AS (((_raw_data ->> 'canceled_at'::text))::integer) STORED,
-    completed_at integer GENERATED ALWAYS AS (((_raw_data ->> 'completed_at'::text))::integer) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    current_phase jsonb GENERATED ALWAYS AS ((_raw_data -> 'current_phase'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    default_settings jsonb GENERATED ALWAYS AS ((_raw_data -> 'default_settings'::text)) STORED,
-    end_behavior text GENERATED ALWAYS AS ((_raw_data ->> 'end_behavior'::text)) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    phases jsonb GENERATED ALWAYS AS ((_raw_data -> 'phases'::text)) STORED,
-    released_at integer GENERATED ALWAYS AS (((_raw_data ->> 'released_at'::text))::integer) STORED,
-    released_subscription text GENERATED ALWAYS AS ((_raw_data ->> 'released_subscription'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    subscription text GENERATED ALWAYS AS ((_raw_data ->> 'subscription'::text)) STORED,
-    test_clock text GENERATED ALWAYS AS ((_raw_data ->> 'test_clock'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.subscription_schedules OWNER TO postgres;
-
---
--- Name: subscriptions; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.subscriptions (
-    _updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    cancel_at_period_end boolean GENERATED ALWAYS AS (((_raw_data ->> 'cancel_at_period_end'::text))::boolean) STORED,
-    current_period_end integer GENERATED ALWAYS AS (((_raw_data ->> 'current_period_end'::text))::integer) STORED,
-    current_period_start integer GENERATED ALWAYS AS (((_raw_data ->> 'current_period_start'::text))::integer) STORED,
-    default_payment_method text GENERATED ALWAYS AS ((_raw_data ->> 'default_payment_method'::text)) STORED,
-    items jsonb GENERATED ALWAYS AS ((_raw_data -> 'items'::text)) STORED,
-    metadata jsonb GENERATED ALWAYS AS ((_raw_data -> 'metadata'::text)) STORED,
-    pending_setup_intent text GENERATED ALWAYS AS ((_raw_data ->> 'pending_setup_intent'::text)) STORED,
-    pending_update jsonb GENERATED ALWAYS AS ((_raw_data -> 'pending_update'::text)) STORED,
-    status text GENERATED ALWAYS AS ((_raw_data ->> 'status'::text)) STORED,
-    application_fee_percent double precision GENERATED ALWAYS AS (((_raw_data ->> 'application_fee_percent'::text))::double precision) STORED,
-    billing_cycle_anchor integer GENERATED ALWAYS AS (((_raw_data ->> 'billing_cycle_anchor'::text))::integer) STORED,
-    billing_thresholds jsonb GENERATED ALWAYS AS ((_raw_data -> 'billing_thresholds'::text)) STORED,
-    cancel_at integer GENERATED ALWAYS AS (((_raw_data ->> 'cancel_at'::text))::integer) STORED,
-    canceled_at integer GENERATED ALWAYS AS (((_raw_data ->> 'canceled_at'::text))::integer) STORED,
-    collection_method text GENERATED ALWAYS AS ((_raw_data ->> 'collection_method'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    days_until_due integer GENERATED ALWAYS AS (((_raw_data ->> 'days_until_due'::text))::integer) STORED,
-    default_source text GENERATED ALWAYS AS ((_raw_data ->> 'default_source'::text)) STORED,
-    default_tax_rates jsonb GENERATED ALWAYS AS ((_raw_data -> 'default_tax_rates'::text)) STORED,
-    discount jsonb GENERATED ALWAYS AS ((_raw_data -> 'discount'::text)) STORED,
-    ended_at integer GENERATED ALWAYS AS (((_raw_data ->> 'ended_at'::text))::integer) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    next_pending_invoice_item_invoice integer GENERATED ALWAYS AS (((_raw_data ->> 'next_pending_invoice_item_invoice'::text))::integer) STORED,
-    pause_collection jsonb GENERATED ALWAYS AS ((_raw_data -> 'pause_collection'::text)) STORED,
-    pending_invoice_item_interval jsonb GENERATED ALWAYS AS ((_raw_data -> 'pending_invoice_item_interval'::text)) STORED,
-    start_date integer GENERATED ALWAYS AS (((_raw_data ->> 'start_date'::text))::integer) STORED,
-    transfer_data jsonb GENERATED ALWAYS AS ((_raw_data -> 'transfer_data'::text)) STORED,
-    trial_end jsonb GENERATED ALWAYS AS ((_raw_data -> 'trial_end'::text)) STORED,
-    trial_start jsonb GENERATED ALWAYS AS ((_raw_data -> 'trial_start'::text)) STORED,
-    schedule text GENERATED ALWAYS AS ((_raw_data ->> 'schedule'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    latest_invoice text GENERATED ALWAYS AS ((_raw_data ->> 'latest_invoice'::text)) STORED,
-    plan text GENERATED ALWAYS AS ((_raw_data ->> 'plan'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.subscriptions OWNER TO postgres;
-
---
--- Name: tax_ids; Type: TABLE; Schema: stripe; Owner: postgres
---
-
-CREATE TABLE stripe.tax_ids (
-    _last_synced_at timestamp with time zone,
-    _raw_data jsonb,
-    _account_id text NOT NULL,
-    object text GENERATED ALWAYS AS ((_raw_data ->> 'object'::text)) STORED,
-    country text GENERATED ALWAYS AS ((_raw_data ->> 'country'::text)) STORED,
-    customer text GENERATED ALWAYS AS ((_raw_data ->> 'customer'::text)) STORED,
-    type text GENERATED ALWAYS AS ((_raw_data ->> 'type'::text)) STORED,
-    value text GENERATED ALWAYS AS ((_raw_data ->> 'value'::text)) STORED,
-    created integer GENERATED ALWAYS AS (((_raw_data ->> 'created'::text))::integer) STORED,
-    livemode boolean GENERATED ALWAYS AS (((_raw_data ->> 'livemode'::text))::boolean) STORED,
-    owner jsonb GENERATED ALWAYS AS ((_raw_data -> 'owner'::text)) STORED,
-    id text GENERATED ALWAYS AS ((_raw_data ->> 'id'::text)) STORED NOT NULL
-);
-
-
-ALTER TABLE stripe.tax_ids OWNER TO postgres;
-
---
--- Name: cases id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.cases ALTER COLUMN id SET DEFAULT nextval('public.cases_id_seq'::regclass);
-
-
---
--- Name: chat_messages id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.chat_messages ALTER COLUMN id SET DEFAULT nextval('public.chat_messages_id_seq'::regclass);
-
-
---
--- Name: conversations id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.conversations ALTER COLUMN id SET DEFAULT nextval('public.conversations_id_seq'::regclass);
-
-
---
--- Name: documents id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.documents ALTER COLUMN id SET DEFAULT nextval('public.documents_id_seq'::regclass);
-
-
---
--- Name: efile_court_locations id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.efile_court_locations ALTER COLUMN id SET DEFAULT nextval('public.efile_court_locations_id_seq'::regclass);
-
-
 --
--- Name: efile_submissions id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Data for Name: beta_access; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.efile_submissions ALTER COLUMN id SET DEFAULT nextval('public.efile_submissions_id_seq'::regclass);
 
 
 --
--- Name: messages id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Data for Name: cases; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.messages ALTER COLUMN id SET DEFAULT nextval('public.messages_id_seq'::regclass);
-
-
---
--- Name: _sync_status id; Type: DEFAULT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._sync_status ALTER COLUMN id SET DEFAULT nextval('stripe._sync_status_id_seq'::regclass);
-
-
---
--- Data for Name: ai_rate_limits; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.ai_rate_limits (user_id, count, reset_at) FROM stdin;
-ip:::ffff:127.0.0.1	3	2026-05-13 16:03:54.232+00
-ip:127.0.0.1	28	2026-07-06 02:06:08.225+00
-\.
-
-
---
--- Data for Name: beta_access; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.beta_access (id, user_id, email, claimed_at) FROM stdin;
-1	user_3BoJEKLMEnNE7gBJq3aar3LkTx2	\N	2026-05-19 16:17:13.966733+00
-\.
-
-
---
--- Data for Name: cases; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.cases (id, title, status, county_id, claim_amount, claim_type, plaintiff_name, plaintiff_phone, plaintiff_address, plaintiff_city, plaintiff_state, plaintiff_zip, plaintiff_email, defendant_name, defendant_phone, defendant_address, defendant_city, defendant_state, defendant_zip, defendant_is_business_or_entity, defendant_agent_name, claim_description, incident_date, how_amount_calculated, prior_demand_made, prior_demand_description, venue_reason, venue_basis, is_suing_public_entity, public_entity_claim_filed_date, is_atty_fee_dispute, filed_more_than_12_claims, claim_over_2500, intake_step, intake_complete, document_count, readiness_score, created_at, updated_at, courthouse_id, user_id, demand_letter_text, demand_letter_tone, courthouse_name, courthouse_address, courthouse_city, courthouse_zip, courthouse_phone, courthouse_website, filing_fee, evidence_checklist, case_number, hearing_date, hearing_time, hearing_judge, hearing_courtroom, hearing_notes, reminder_14_day_sent, reminder_3_day_sent, reminder_no_hearing_date_sent, courthouse_clerk_email, confirmation_email_sent, weekly_reminder_last_sent, reminder_30_day_sent, reminder_7_day_sent, reminder_1_day_sent, settlement_letter_text, settlement_letter_tone, settlement_agreement_text, plaintiff_is_business, plaintiff_title, second_plaintiff_name, plaintiff_mailing_address, plaintiff_mailing_city, plaintiff_mailing_state, plaintiff_mailing_zip, second_plaintiff_phone, second_plaintiff_address, second_plaintiff_city, second_plaintiff_state, second_plaintiff_zip, second_plaintiff_email, second_plaintiff_mailing_address, second_plaintiff_mailing_city, second_plaintiff_mailing_state, second_plaintiff_mailing_zip, defendant_mailing_address, defendant_mailing_city, defendant_mailing_state, defendant_mailing_zip, defendant_agent_title, defendant_agent_street, defendant_agent_city, defendant_agent_state, defendant_agent_zip, prior_demand_why_not, had_arbitration, mc030_declaration_title, demand_letter_text_formal, demand_letter_text_firm, demand_letter_text_friendly, has_additional_plaintiff, additional_plaintiff_name, additional_plaintiff_is_fictitious, more_than_four_plaintiffs, more_than_two_defendants, mc030_exhibit_doc_ids, sc104_data, notify_method, prior_demand_date, prior_demand_method, statement_text, no_show_statement_text, plaintiff_is_fictitious, plaintiff_dba_name, plaintiff_dba_address, plaintiff_dba_city, plaintiff_dba_state, plaintiff_dba_zip, plaintiff_dba_mailing_address, plaintiff_business_type, plaintiff_business_type_other, plaintiff_fbn_number, plaintiff_fbn_expiry, plaintiff_fbn_sign_date, second_plaintiff_dba_name, second_plaintiff_dba_address, second_plaintiff_dba_city, second_plaintiff_dba_state, second_plaintiff_dba_zip, second_plaintiff_dba_mailing_address, second_plaintiff_business_type, second_plaintiff_business_type_other, second_plaintiff_fbn_number, second_plaintiff_fbn_expiry, second_plaintiff_fbn_sign_date, second_plaintiff_title, plaintiff_fbn_county, second_plaintiff_fbn_county, mc030_declaration_text, jurisdiction_state, efiling_eligible, efiling_status, efiling_envelope_id, guided_intake_data) FROM stdin;
-6	unpaid	intake_complete	mariposa	5000	Money Owed	Paul AAAAA	(213) 643-3670	3020 Bridgeway	Sausalito	CA	94965-1439		Jeff Everson	(650) 322-4328	Alternative HVAC	San Carlos	CA	94070	t		Mock Small Claims Case Summary\nTenant security deposit dispute - test upload packet\nThis mock file is designed for system testing. All names, dates, amounts, addresses, and events below are fictional.\nCase Field\tDetails\nCourt / Case Number\tMaricopa County Justice Court - SC-25-10482\nPlaintiff (Tenant)\tMaya Thompson\nDefendant (Landlord)\tDaniel Ruiz\nRental Property\t2148 East Willow Street, Unit 3, Mesa, Arizona 85203\nLease Term\tFebruary 1, 2024 through January 31, 2025\nMonthly Rent\t$1,850\nDeposits Paid\t$2,200 security + $300 pet\nMove-Out Date\tJanuary 31, 2025\nClaimed Deductions\t$1,450 without receipts\nAmount Tenant Seeks\t$2,693 including filing/service costs\nCase Description\nMaya Thompson rented 2148 East Willow Street, Unit 3, Mesa, Arizona 85203 from Daniel Ruiz under a one-year written lease. At move-in, the tenant paid first month's rent, a $2,200 security deposit, and a separate $300 refundable pet deposit.\nThe tenant gave written notice of non-renewal on December 29, 2024 and surrendered the unit on January 31, 2025 after a final cleaning. She returned all keys, provided a forwarding address, and requested the deposit refund in writing.\nUnder the mock facts, the landlord did not send a timely itemized statement or refund by February 14, 2025. On February 28, 2025, he emailed that he intended to keep $1,450 for repainting, carpet treatment, and miscellaneous cleaning, but he did not attach invoices, photographs, or a lawful accounting.\nThe tenant contends the apartment was left in substantially the same condition, minus normal wear and tear, and that repainting and carpet refresh were routine turnover costs.\nAfter sending a formal demand letter dated March 5, 2025 and receiving no payment, the tenant filed a small claims action on April 9, 2025 seeking return of the deposits, court costs, and service fees.\nChronology\nDate\tEvent\nFebruary 1, 2024\tLease begins. Tenant pays deposits and takes possession.\nDecember 29, 2024\tTenant emails written notice of non-renewal and requests move-out instructions.\nJanuary 31, 2025\tTenant vacates, returns keys, and provides forwarding address.\nFebruary 14, 2025\tMock statutory deadline passes without refund or proper accounting.\nFebruary 28, 2025\tLandlord claims deductions by email but provides no receipts.\nMarch 5, 2025\tTenant sends demand letter requesting return of deposits within 10 days.\nApril 9, 2025\tSmall claims complaint filed.\nRequested Upload Items for Testing\n• Case summary document (this file)\n• Sample residential lease\n• Detailed case narrative PDF (2-3 pages)\n• Demand letter from tenant to landlord\n• Move-out condition checklist\nTheory of the Claim\nThe tenant's theory is that the landlord wrongfully withheld the refundable deposits, failed to provide a timely and adequate itemization, and attempted to charge ordinary turnover expenses as tenant-caused damage.\nDamages Breakdown\nClaim Component\tAmount\nSecurity deposit refund sought\t$2,200\nPet deposit refund sought\t$300\nEstimated filing fee\t$129\nEstimated service cost\t$64\nTotal sought\t$2,693\n\n	03/30/2026 – 03/30/2026	from LEASE and cancelled check	t	demand letter		where_defendant_lives	f	\N	f	f	f	3	t	7	70	2026-04-02 20:21:59.87046+00	2026-06-19 23:37:34.102+00		user_3BoJEKLMEnNE7gBJq3aar3LkTx2	Paul AAAAA  \n3020 Bridgeway  \nSausalito, CA 94965-1439  \n(213) 643-3670  \n\nApril 3, 2026  \n\nJeff Everson  \nAlternative HVAC  \nSan Carlos, CA 94070  \n\nRE: Demand for Payment — Money Owed in the Amount of $5,000 (Incident Date: March 30, 2026)  \n\nYou owe me $5,000, and this is my final demand for payment before filing in court. This letter concerns the unpaid amount due as of March 30, 2026.\n\nThe factual basis for this claim is as follows: Maya Thompson rented 2148 East Willow Street, Unit 3, Mesa, Arizona 85203 from Daniel Ruiz under a one-year written lease for the term February 1, 2024 through January 31, 2025 at $1,850 per month. At move-in, the tenant paid a $2,200 security deposit and a separate $300 refundable pet deposit, then gave written notice of non-renewal on December 29, 2024 and surrendered the unit on January 31, 2025 after a final cleaning, returning all keys and providing a forwarding address. No timely itemized statement or refund was sent by February 14, 2025, and on February 28, 2025 the landlord emailed that he intended to keep $1,450 for repainting, carpet treatment, and miscellaneous cleaning, but did not attach invoices, photographs, or a lawful accounting. A formal demand letter dated March 5, 2025 requested return of the deposits within 10 days; no payment was made, and a small claims action was filed on April 9, 2025 seeking return of the deposits, court costs, and service fees.\n\nI demand payment in the total amount of $5,000.00. You have until April 17, 2026 to remit payment in full.\n\nFailure to pay by this date will result in a court action filed against you in Mariposa County Small Claims Court. I will seek the full amount owed, plus court filing fees, service costs, and any other relief the court deems appropriate. I am prepared to file immediately upon expiration of this deadline.\n\nSincerely,  \n\nPaul AAAAA	firm	Mariposa County Superior Court	5088 Bullion St	Mariposa	95338	(209) 966-2005	https://www.mariposa.courts.ca.gov	\N	\N	\N	\N	\N	\N	\N	\N	f	f	f	\N	f	\N	f	f	f	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	f	\N	f	f	f	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	CA	\N	\N	\N	\N
-8	Brought my car to ACME auto Repair because of an engine noise when I picked the car and drove off I noticed the noise still existed when I returned to the dealership for the repair to be fixed they refused to do anymore work or or refund my money I took the car to another mechanic and received an estimate of the same amount $5000	intake_complete	san-diego	1542.42	Money Owed	Paul Andrew	(555) 555-5555	1 Main Street	Corte Madera	CA	94925	paul.innit.street.wear@gmail.com	ACME AUTO REPAIR	(560) 555-5555	1 Main Street	SAN DIEGO	CA	94965	t	JOE JOE MCJOE	I am the plaintiff, Paul Andrew. Defendant ACME AUTO REPAIR is an auto repair business. On April 1, 2026, I brought my 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456) to ACME AUTO REPAIR for diagnosis and engine work to correct an engine “lifter noise.” ACME AUTO REPAIR agreed to perform the work and represented the engine noise would be fixed as part of the repair.\n\nOn April 1, 2026, ACME AUTO REPAIR told me the work was completed and released the vehicle to me. Immediately after leaving, I could still hear the same engine noise. About two hours later, I returned to ACME AUTO REPAIR with a witness who heard the noise, and I told them the problem was not fixed. I asked ACME AUTO REPAIR to complete the repair or refund my payment, but they refused to do any further work and refused to refund me.\n\nI am asking for $1,542.42, which is the amount I paid ACME AUTO REPAIR for the diagnosis and engine work that did not fix the engine noise. I demanded that ACME AUTO REPAIR repair the vehicle or refund me by returning to the shop on April 1, 2026, and by email on April 2, 2026, but ACME AUTO REPAIR did not provide a repair or refund.	04/01/2026 – 04/01/2026	 $1,542.42 FROM CONTRACT AND CANCELLED CHECK	t	EMAIL AND VISIT BACK T SITE ON 4-1-26		where_contract_made_broken	f	\N	f	f	f	4	t	4	100	2026-04-05 14:18:40.066557+00	2026-05-21 16:57:39.094+00	sd-chula-vista	user_3Bti2v3Lju4bFfnrNdXfnq83Q3J	Paul Andrew  \n1 Main Street  \nCorte Madera, CA 94925  \npaul.innit.street.wear@gmail.com | (555) 555-5555  \n\nApril 6, 2026  \n\nACME AUTO REPAIR  \n1 Main Street  \nSausalito, CA 94965  \n\nRE: Demand for Payment — 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456) / Engine “Lifter Noise” Repair  \n\nYou owe me $5,000.00 due to your failure to correct the engine “lifter noise” you represented would be fixed, and your refusal to complete the repair or refund my payment. This letter is my final demand before filing in court.  \n\nI am the plaintiff, Paul Andrew. I paid Acme Auto Body, located at 100 Main Street, Menlo Park, California 94025, $1,542.42 to diagnose and perform engine work to repair an engine “lifter noise” on my 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456), and Acme represented that it would fix the engine noise as part of the work. On April 1, 2026, I picked up my vehicle after the shop stated the work was completed, but immediately after leaving I could still hear the same engine noise; I returned to Acme about two hours later, spoke with the manager, John Doe, and demanded that Acme finish the repair or refund my money, and he refused to do either. A few days later, I took the vehicle to ABC Auto Body Repair for a second opinion and an estimate to correct the same engine noise, and ABC quoted $5,000.00 (Invoice No. ABC-040626-208 dated April 6, 2026) for corrective engine repair after verifying the noise remained.  \n\nDemand is hereby made for payment in the total amount of $5,000.00, representing the reasonable cost quoted/charged by ABC Auto Body Repair to repair the problem that remained after Acme’s work. You have until April 20, 2026 to remit payment in full.  \n\nFailure to pay by this date will result in a court action filed against you in San-Diego County Small Claims Court. I will seek the full amount owed, plus court filing fees, service costs, and any other relief the court deems appropriate. I am prepared to file immediately upon expiration of this deadline.  \n\nSincerely,  \n\nPaul Andrew	firm	South County Division — Chula Vista Courthouse	500 3rd Ave	Chula Vista	91910	(619) 746-6060	https://www.sdcourt.ca.gov	\N	[{"id": "e1", "item": "Written repair authorization / estimate you approved", "description": "Shows what Acme agreed to do and that you authorized it (paper form, email, text, or e-sign). Include anything describing the engine noise complaint and the promised fix."}, {"id": "e2", "item": "Proof the noise remained right after pickup", "description": "Same-day audio/video of the engine noise, dashcam clip, or a written statement from a passenger/witness who heard it when you drove away and when you returned."}, {"id": "e3", "item": "Any texts/emails/call logs with Acme about refusing to fix or refund", "description": "Helps show you promptly reported the problem and they refused. Include messages with the manager/service writer and any notes you wrote down with dates/times of in-person conversations."}, {"id": "e4", "item": "Independent mechanic report tying the problem to the same issue", "description": "A written diagnosis from the second shop stating the same engine lifter noise was still present and what repair is needed (not just a price)."}, {"id": "e5", "item": "Itemized quote (or receipt if you paid) for the follow-up repair", "description": "Shows the reasonable cost to correct what wasn’t fixed. Best if it lists labor hours, parts, and a clear description of the work."}, {"id": "e6", "item": "Vehicle history showing the noise wasn’t fixed by Acme", "description": "Any maintenance/repair history around that time (service records, dealer notes, or OBD scan reports) that supports the noise existed before Acme, remained immediately after, and was later diagnosed as needing further work."}]		2026-05-17	09:00				t	t	f	\N	t	\N	f	t	t	Paul Andrew  \n1 Main Street  \nCorte Madera, CA 94925  \npaul.innit.street.wear@gmail.com  \n(555) 555-5555  \n\nApril 6, 2026  \n\nACME AUTO REPAIR  \n1 Main Street  \nSausalito, CA 94965  \n\nRE: Settlement Offer — $1,156.82  \n\nI am Paul Andrew. I have a money-owed dispute with ACME AUTO REPAIR and I have filed (or am ready to file) this matter in California small claims court. I am making this settlement offer to resolve the dispute without a hearing as a practical business decision to avoid the time and cost of court. My hearing is currently scheduled for Friday, April 17, 2026.  \n\nOn April 1, 2026, I brought my 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456) to ACME AUTO REPAIR for diagnosis and engine work to correct an engine “lifter noise.” ACME AUTO REPAIR agreed to perform the work and represented the engine noise would be fixed as part of the repair. Later that day, ACME AUTO REPAIR told me the work was completed and released the vehicle to me, but the same engine noise was still present immediately after leaving. About two hours later, I returned with a witness who heard the noise and asked ACME AUTO REPAIR to complete the repair or refund my payment, but ACME AUTO REPAIR refused. I am claiming $1,542.42, the amount I paid for the diagnosis and engine work that did not fix the engine noise, and I previously made a written demand (including by email on April 2, 2026) that was not resolved. This settlement offer is for less than my full claim amount to close the matter efficiently.  \n\nI will settle this dispute for $1,156.82, payable in 4 equal monthly installments of $289.20 each, with the first payment due within 30 days of your written acceptance and the remaining payments due monthly after that until paid in full. To accept, please send written confirmation by April 20, 2026 that you agree to the payment terms and the date you will make the first payment.  \n\nIf you do not accept, I will continue to pursue the full amount of my claim of $1,542.42 in my small claims case and proceed toward the scheduled hearing on Friday, April 17, 2026. If I do not receive a response by April 20, 2026, I will proceed with my court case.  \n\nSincerely,  \n\nPaul Andrew	firm	## 1. TITLE  \n**SETTLEMENT AGREEMENT AND MUTUAL RELEASE**\n\n---\n\n## 2. PREAMBLE  \nThis Settlement Agreement and Mutual Release (“**Agreement**”) is entered into as of **April 6, 2026** (“**Effective Date**”), by and between **Paul Andrew** (“**Plaintiff**” or “**Claimant**”), whose address is **1 Main Street, Corte Madera, CA 94925**, and **ACME AUTO REPAIR** (“**Defendant**” or “**Respondent**”), whose address is **1 Main Street, San Diego, CA 94965**. Plaintiff and Defendant may be referred to individually as a “**Party**” and collectively as the “**Parties**.”\n\nThe purpose of this Agreement is to fully and finally resolve and settle all claims and disputes between the Parties arising out of or relating to the events described below and the pending or threatened California small claims action.\n\n---\n\n## 3. RECITALS  \nA. Plaintiff contends that on or about **April 1, 2026**, Plaintiff brought a **2021 Mercedes-Benz CLA**, VIN **W1K5J4GB7MN123456** (the “Vehicle”), to Defendant, an auto repair business, for diagnosis and engine work to correct an engine “lifter noise.” Plaintiff contends Defendant agreed to perform work and represented the engine noise would be fixed as part of the repair.\n\nB. Plaintiff contends that Defendant advised the work was completed on or about **April 1, 2026** and released the Vehicle to Plaintiff; Plaintiff contends the same engine noise remained immediately upon leaving, and Plaintiff returned to Defendant approximately two (2) hours later with a witness who also heard the noise. Plaintiff contends Plaintiff requested completion of the repair or a refund, and Defendant refused to do further work and refused to refund.\n\nC. Plaintiff contends Plaintiff paid Defendant **$1,542.42** for the diagnosis and engine work and demanded repair or refund on April 1, 2026 and by email on April 2, 2026, without satisfactory resolution.\n\nD. A dispute exists between the Parties. Plaintiff has filed or threatened a claim in **California Small Claims Court**, **San Diego County Small Claims Court**, regarding “money owed,” related to the above events, with a scheduled hearing date of **Friday, April 17, 2026** (the “Action”). Case number: **[BLANK]**.\n\nE. The Parties desire to compromise and settle all disputes between them arising out of or relating to the above-described events and the Action, without further litigation, and with the understanding that this settlement is a compromise of disputed claims.\n\nTherefore, in consideration of the mutual promises and covenants contained in this Agreement, the Parties agree as follows:\n\n---\n\n## 4. SETTLEMENT PAYMENT  \n4.1 **Settlement Amount.** Defendant shall pay Plaintiff a total settlement amount of **One Thousand One Hundred Fifty-Six Dollars and Eighty-Two Cents ($1,156.82)** (“**Settlement Amount**”).\n\n4.2 **Installment Schedule.** The Settlement Amount shall be paid in **four (4) equal monthly installments** of **Two Hundred Eighty-Nine Dollars and Twenty Cents ($289.20)** each (the “Installment Payments”), due and payable as follows:\n\n- **1st Installment:** $289.20 due **within thirty (30) days after execution** of this Agreement (the “Execution Date”).  \n- **2nd Installment:** $289.20 due on the **same day-of-month** as the 1st Installment in the following month.  \n- **3rd Installment:** $289.20 due on the **same day-of-month** as the 1st Installment in the second following month.  \n- **4th Installment:** $289.20 due on the **same day-of-month** as the 1st Installment in the third following month.\n\nIf a due date falls on a weekend or court holiday, payment shall be due the next business day.\n\n4.3 **Method and Address for Payment.** All Installment Payments shall be made by **check** payable to **Paul Andrew** and delivered to: **Paul Andrew, 1 Main Street, Corte Madera, CA 94925**, or to such other address as Plaintiff designates in writing.\n\n4.4 **Application of Payments.** Payments shall be credited upon receipt. Plaintiff may provide a written receipt upon request, but failure to provide a receipt does not affect the validity of payment.\n\n4.5 **Late Payments; Notice and Cure.** An Installment Payment is late if not received within **five (5) calendar days** after its due date. If a payment is late, Plaintiff shall provide written notice of default to Defendant (email and/or mail acceptable; notice address in Section 12). Defendant shall have **ten (10) calendar days** after Defendant’s receipt of the notice to cure by delivering the overdue amount.\n\n4.6 **Acceleration Upon Uncured Default.** If Defendant fails to cure an installment default within the cure period, then (i) the remaining unpaid balance of the Settlement Amount shall become **immediately due and payable** upon written demand, and (ii) Plaintiff may pursue any lawful remedies, including seeking entry/enforcement of judgment in the Action to the extent permitted by law and consistent with this Agreement, and/or enforcement of this Agreement.\n\n4.7 **No Setoff.** Defendant shall make payments without offset, deduction, counterclaim, or recoupment.\n\n---\n\n## 5. MUTUAL RELEASE OF ALL CLAIMS  \n5.1 **Plaintiff’s Release of Defendant.** Upon Plaintiff’s receipt of the full Settlement Amount (i.e., all four Installment Payments have been received and cleared), Plaintiff, on behalf of Plaintiff and Plaintiff’s heirs, executors, administrators, representatives, successors, and assigns, fully and forever releases and discharges Defendant and Defendant’s past, present, and future owners, members, managers, officers, directors, shareholders, employees, agents, representatives, insurers, attorneys, predecessors, successors, and assigns (collectively, “**Defendant Released Parties**”) from any and all claims, demands, causes of action, obligations, damages, losses, costs, expenses, and liabilities of every kind and nature, whether known or unknown, suspected or unsuspected, asserted or unasserted, that arise out of or relate to: (a) the Vehicle, (b) the April 1, 2026 diagnosis and engine work, (c) any communications, invoices, estimates, representations, or services related thereto, and (d) the Action (collectively, the “**Released Matters**”).\n\n5.2 **Defendant’s Release of Plaintiff.** Upon Plaintiff’s receipt of the full Settlement Amount, Defendant, on behalf of Defendant and Defendant’s past, present, and future owners, members, managers, officers, directors, shareholders, employees, agents, representatives, insurers, attorneys, predecessors, successors, and assigns, fully and forever releases and discharges Plaintiff and Plaintiff’s heirs, executors, administrators, representatives, successors, and assigns (collectively, “**Plaintiff Released Parties**”) from any and all claims, demands, causes of action, obligations, damages, losses, costs, expenses, and liabilities of every kind and nature, whether known or unknown, suspected or unsuspected, asserted or unasserted, arising out of or relating to the Released Matters and/or the Action.\n\n5.3 **California Civil Code Section 1542 Waiver.** Upon Plaintiff’s receipt of the full Settlement Amount, each Party expressly waives and relinquishes any and all rights and benefits under **California Civil Code section 1542**, which provides:\n\n> “A GENERAL RELEASE DOES NOT EXTEND TO CLAIMS THAT THE CREDITOR OR RELEASING PARTY DOES NOT KNOW OR SUSPECT TO EXIST IN HIS OR HER FAVOR AT THE TIME OF EXECUTING THE RELEASE AND THAT, IF KNOWN BY HIM OR HER, WOULD HAVE MATERIALLY AFFECTED HIS OR HER SETTLEMENT WITH THE DEBTOR OR RELEASED PARTY.”\n\nEach Party acknowledges that it may discover facts different from or in addition to those now known or believed to be true with respect to the Released Matters, but it is the intention of the Parties that the releases given in this Agreement shall be and remain effective in all respects notwithstanding such different or additional facts.\n\n5.4 **Scope; No Release of Unrelated Matters.** The releases in this Agreement are intended to cover the Released Matters. Claims wholly unrelated to the Released Matters are not released.\n\n5.5 **Condition Precedent.** The releases in this Section 5 are expressly conditioned upon Plaintiff’s receipt of the full Settlement Amount.\n\n---\n\n## 6. DISMISSAL  \n6.1 **Dismissal Upon Full Payment.** Within **five (5) court days** after Plaintiff’s receipt and clearance of the final Installment Payment (i.e., full payment of the Settlement Amount), Plaintiff shall file a request to dismiss the Action **with prejudice**, with each Party to bear its own costs and fees, except as otherwise provided by this Agreement.\n\n6.2 **If a Dismissal Form Is Required.** The Parties agree to reasonably cooperate in executing any additional court forms necessary to effectuate dismissal, including any request/dismissal form required by the Small Claims Court.\n\n6.3 **No Obligation to Dismiss Before Full Payment.** Plaintiff is not required to dismiss the Action unless and until the Settlement Amount has been paid in full and cleared.\n\n---\n\n## 7. NO ADMISSION OF LIABILITY  \nThis Agreement is a compromise of disputed claims. Neither this Agreement nor any consideration paid under it shall be construed as, or deemed to be, an admission of liability, fault, or wrongdoing by any Party or any released party. Defendant expressly denies liability.\n\n---\n\n## 8. ENTIRE AGREEMENT  \nThis Agreement constitutes the entire agreement between the Parties regarding the subject matter hereof and supersedes all prior and contemporaneous negotiations, discussions, understandings, or agreements, whether oral or written. Any amendment or modification must be in writing and signed by both Parties.\n\n---\n\n## 9. CONFIDENTIALITY  \n9.1 **Confidential Settlement Terms.** The Parties agree that the existence of this Agreement, the Settlement Amount, the payment terms, and all non-public negotiations and communications leading to this Agreement (“**Confidential Information**”) shall be kept confidential and shall not be disclosed to any person or entity except as permitted below.\n\n9.2 **Permitted Disclosures.** Confidential Information may be disclosed only: (a) to a Party’s spouse or domestic partner, attorneys, accountants, tax advisors, or other professional advisors who have a need to know and who are informed of and agree to maintain confidentiality; (b) as required by court order, subpoena, or applicable law (provided the disclosing Party, to the extent lawful, gives prompt notice to the other Party and reasonably cooperates to seek confidential treatment); (c) to enforce this Agreement; (d) to the Small Claims Court as reasonably necessary to effectuate dismissal and/or respond to court inquiries; (e) to Defendant’s insurer (if any) related to the Released Matters; and (f) as otherwise agreed in writing by the Parties.\n\n9.3 **No Publicity.** The Parties agree not to issue public statements, press releases, online postings, or advertisements regarding the Released Matters or the settlement terms.\n\n---\n\n## 10. GOVERNING LAW  \nThis Agreement shall be governed by and construed in accordance with the laws of the **State of California**, without regard to conflict-of-law principles. Venue for any action to enforce or interpret this Agreement shall be in a court of competent jurisdiction in **San Diego County, California**, unless the Parties agree otherwise in writing.\n\n---\n\n## 11. COUNTERPARTS  \nThis Agreement may be executed in counterparts, each of which is deemed an original, and all of which together constitute one and the same instrument. Signatures transmitted by PDF/email or other electronic means shall be treated as original signatures to the fullest extent permitted by law.\n\n---\n\n## SIGNATURE BLOCK\n\n**PLAINTIFF / CLAIMANT:**  \n\nSignature: _______________________________  \nPrinted Name: **Paul Andrew**  \nDate: ___________________  \nAddress: **1 Main Street, Corte Madera, CA 94925**  \n\n---\n\n**DEFENDANT / RESPONDENT:** **ACME AUTO REPAIR**  \n\nBy (Signature): ___________________________  \nPrinted Name: ____________________________ [BLANK]  \nTitle/Capacity (e.g., Owner/Manager/Authorized Agent): ____________________ [BLANK]  \nDate: ___________________  \nAddress: **1 Main Street, San Diego, CA 94965**  \n\n---\n\n**NOTICE INFORMATION (for Section 4.5 default notice and other notices):**  \nPlaintiff notice email (optional): ____________________ [BLANK]  \nDefendant notice email (optional): ____________________ [BLANK]  \nAdditional/alternate notice address (if any): ____________________ [BLANK]	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	f	\N	f	f	f	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	CA	\N	\N	\N	\N
-1	MONEY OWED FOR CAR RENTALS	intake_complete	sonoma	12000	Other	JON DOE	5555555555	1000 MAIN ST	MARIN	CA	94965		JANE DOE		666 EVIL ST	MENLO PAR	CA	94063	f		During a family law case court order required the defendant to allow me to use a vehicle I incurred a lot of rental charges because she hid the car and kept it from me	01/01/2026	my actual expenses were calculated di....f of rental sites where I rented cars	f			where_damage_happened	f		f	f	f	7	t	3	90	2026-04-01 16:36:44.201884+00	2026-04-02 14:05:58.682+00	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	f	f	\N	f	\N	f	f	f	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	f	\N	f	f	f	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	CA	\N	\N	\N	\N
-2	recurit deposit not returned	intake_complete	ventura	5000	Other	Paul ffff	2136433670	1 main	Sausalito	CA	94965-1439		log girl	5555555	 Hobart St	Menlo Park	CA	94025	f		LANDLORD DID NOT RETURN SECURITY DEPOSIT OR GIVE REASON	O1/012025	5000 WAS ON LEASE	t	EMAIL  LAST WEEK		where_defendant_lives	f		f	f	f	7	t	0	0	2026-04-02 14:30:14.302875+00	2026-04-02 15:30:20.563+00		\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	f	f	\N	f	\N	f	f	f	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	f	\N	f	f	f	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	CA	\N	\N	\N	\N
-407	FL Miami-Dade CLK-CT-333 Signed Test Case (auto-cleanup)	draft	fl-miami-dade	2400	goods	Maria Gonzalez	305-555-0101	1234 Brickell Ave	Miami	FL	33131	maria.gonzalez@example.com	South Florida Contractors LLC	305-555-0202	9876 SW 8th St	Miami	FL	33144	f	\N	Defendant failed to complete the contracted renovation work despite receiving full payment. Plaintiff made multiple requests for completion or refund, all of which were ignored.	\N	\N	\N	\N	\N	\N	f	\N	f	f	f	1	f	0	0	2026-06-29 20:24:17.210696+00	2026-06-29 20:24:17.210696+00	\N	test-fl-clkct333-signed-e2e	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	f	f	\N	f	\N	f	f	f	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	f	\N	f	f	f	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	CA	\N	\N	\N	\N
-93	IL SMC Complaint E2E Test	draft	il-cook	3500	services	Jane Smith	(312) 555-1234	123 Main St	Chicago	IL	60601	jane@example.com	ABC Hardware LLC	\N	456 Oak Ave	Chicago	IL	60602	f	\N	Defendant failed to complete contracted home repair work and refused to refund the deposit paid.	\N	Deposit paid was $3,500 which was never refunded.	\N	\N	\N	\N	f	\N	f	f	f	1	f	0	0	2026-06-23 18:00:13.730027+00	2026-06-23 18:00:13.730027+00	\N	test-il-smc-complaint-e2e	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	f	f	\N	f	\N	f	f	f	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	f	\N	f	f	f	\N	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	IL	\N	\N	\N	\N
-\.
-
-
---
--- Data for Name: chat_messages; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.chat_messages (id, case_id, role, content, created_at) FROM stdin;
-\.
-
-
---
--- Data for Name: conversations; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.conversations (id, title, created_at) FROM stdin;
-\.
-
-
---
--- Data for Name: documents; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.documents (id, case_id, filename, original_name, label, mime_type, file_size, file_data, ocr_text, ocr_status, created_at, storage_object_path, description) FROM stdin;
-\.
-
-
---
--- Data for Name: download_tokens; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.download_tokens (token, case_id, user_id, expires_at) FROM stdin;
-test-mc030-1777041427	1	test-user-1	2026-04-24 14:47:07.554814+00
-0f4f7316-00f6-4375-adba-dc802bf58a46	62	test-fl-soc-hillsborough-signed-e2e	2026-06-22 23:42:39.207+00
-d6e004e5-6f84-4b51-a138-cabcea78de4d	61	test-fl-cl219-volusia-signed-e2e	2026-06-22 23:42:39.209+00
-79a3cccc-0ad2-456c-a72f-56fe889d9a69	60	test-fl-clkct333-signed-e2e	2026-06-22 23:42:39.216+00
-17c4842e-ccc9-40e1-97cc-f907e6fedce9	63	test-fl-plain-soc-orange-signed-e2e	2026-06-22 23:42:39.218+00
-test-sc100a-signed2-1777043812	6	user_3BoJEKLMEnNE7gBJq3aar3LkTx2	2026-04-24 15:26:52.708561+00
-test-sc100a-signed3-1777043867	6	user_3BoJEKLMEnNE7gBJq3aar3LkTx2	2026-04-24 15:27:47.825793+00
-69af9111-434e-4a23-a86d-2b1a74ae5cdb	137	test-fl-plain-soc-orange-signed-e2e	2026-06-24 04:10:26.189+00
-ae9f706b-1ed1-4a74-98d2-43ae1661ca76	71	test-fl-clkct333-signed-e2e	2026-06-23 01:32:59.207+00
-d54364e1-3757-4b25-81ea-e444ec24fb46	70	test-fl-soc-hillsborough-signed-e2e	2026-06-23 01:32:59.21+00
-d9cc969d-867b-4ef4-8bc5-f6b96153ae8a	69	test-fl-plain-soc-orange-signed-e2e	2026-06-23 01:32:59.211+00
-25c206ed-48de-4c97-9479-31ab4724cf37	72	test-fl-cl219-volusia-signed-e2e	2026-06-23 01:32:59.21+00
-9825559d-b7d9-48cd-9208-70ce1f0291a6	75	test-fl-clkct333-signed-e2e	2026-06-23 12:49:23.753+00
-f6a4fdf4-83ed-4ccd-b107-bf8b71023c43	13	test-fl-soc-hillsborough-signed-e2e	2026-06-22 13:20:26.967+00
-717667a0-259e-4cd0-9ce4-afdeefcd009f	12	test-fl-plain-soc-orange-signed-e2e	2026-06-22 13:20:26.978+00
-57068e86-013b-4313-a1e5-3a8e81c9d3d8	14	test-fl-clkct333-signed-e2e	2026-06-22 13:20:26.978+00
-416002e3-624b-45e4-b358-8796f99d0680	11	test-fl-cl219-volusia-signed-e2e	2026-06-22 13:20:26.979+00
-427c820c-438d-4f6b-9d3c-1d955b06ea54	16	test-fl-clkct333-signed-e2e	2026-06-22 17:42:42.578+00
-97a8639a-b709-470e-ad0e-7daec0e664f2	15	test-fl-cl219-volusia-signed-e2e	2026-06-22 17:42:42.593+00
-1d4ae0a0-dba1-46e2-af18-dbe3d26410a1	17	test-fl-soc-hillsborough-signed-e2e	2026-06-22 17:42:42.595+00
-1032e7b5-8355-4c60-9023-a3256d65bddd	18	test-fl-plain-soc-orange-signed-e2e	2026-06-22 17:42:42.596+00
-5fefcb2b-5eda-4b86-9695-8cc0542628b4	76	test-fl-soc-hillsborough-signed-e2e	2026-06-23 12:49:23.764+00
-ec5d1331-27a6-4216-b79a-88f5d1e57f03	74	test-fl-cl219-volusia-signed-e2e	2026-06-23 12:49:23.763+00
-63167dc6-53bc-4b8e-a40a-aef24c4d78a0	73	test-fl-plain-soc-orange-signed-e2e	2026-06-23 12:49:23.766+00
-8a3b9098-0f6d-494b-ad3c-142ce50527c9	80	test-fl-clkct333-signed-e2e	2026-06-23 13:50:25.041+00
-58551951-5c53-40c5-9e51-2450d25ae98c	77	test-fl-cl219-volusia-signed-e2e	2026-06-23 13:50:25.043+00
-7b350e45-e248-45cd-866b-78a3f001a626	78	test-fl-plain-soc-orange-signed-e2e	2026-06-23 13:50:25.041+00
-a28d87f8-e478-4b22-9243-58251631b19d	79	test-fl-soc-hillsborough-signed-e2e	2026-06-23 13:50:25.054+00
-dc777d4c-392a-4bb7-a221-f8b50a494294	82	test-il-smc-complaint-e2e	2026-06-23 17:39:47.531+00
-df39bfe7-166f-4067-9816-4f13824bf906	138	test-fl-soc-hillsborough-signed-e2e	2026-06-24 04:10:26.198+00
-3b91d18a-7b06-4c0d-98b2-df096001ab96	140	test-fl-clkct333-signed-e2e	2026-06-24 04:10:26.295+00
-c3d23743-7b69-4426-952b-10544ab7bb4b	139	test-fl-cl219-volusia-signed-e2e	2026-06-24 04:10:26.308+00
-d4ce4b30-bf88-4ce9-a7bc-8702813e5160	170	test-fl-cl219-volusia-signed-e2e	2026-06-24 13:31:51.108+00
-6897f498-858e-4d77-a578-21662f4ac2ef	171	test-fl-soc-hillsborough-signed-e2e	2026-06-24 13:31:51.117+00
-088689be-0bc9-44f6-85aa-a5a03f009dd9	172	test-fl-plain-soc-orange-signed-e2e	2026-06-24 13:31:51.12+00
-2d2e8beb-db34-4ee6-b6da-00c54285e780	173	test-fl-clkct333-signed-e2e	2026-06-24 13:31:51.565+00
-6e44ff17-e0dc-4e64-ac33-54ae87997411	230	test-fl-soc-hillsborough-signed-e2e	2026-06-25 13:23:19.167+00
-e23817b3-1934-4806-bcd5-f7f2fbc5b0c6	229	test-fl-plain-soc-orange-signed-e2e	2026-06-25 13:23:19.167+00
-b5c37ad9-5709-4398-a74d-5f5276fc577d	231	test-fl-cl219-volusia-signed-e2e	2026-06-25 13:23:19.218+00
-0196f2cd-558c-4855-9970-979616007ddf	232	test-fl-clkct333-signed-e2e	2026-06-25 13:23:19.243+00
-553b5597-baf4-4dac-aff3-a2b9f39a69f5	289	test-fl-soc-hillsborough-signed-e2e	2026-06-25 19:23:13.97+00
-a4b24c89-2c1a-49f1-9dd6-d6821d072744	287	test-fl-clkct333-signed-e2e	2026-06-25 19:23:14.019+00
-4c5a0593-b4c7-48d2-a6dd-7eb8eae977f7	288	test-fl-plain-soc-orange-signed-e2e	2026-06-25 19:23:14.031+00
-68b2d6e0-1820-4d31-b8d6-000824abcb4f	286	test-fl-cl219-volusia-signed-e2e	2026-06-25 19:23:14.043+00
-6d012d68-a65f-49a3-a524-1d8fd9ff5e20	100	test-fl-soc-hillsborough-signed-e2e	2026-06-23 19:50:31.723+00
-41d2f0f4-935c-4002-83f1-4975b6b2d188	98	test-fl-cl219-volusia-signed-e2e	2026-06-23 19:50:31.728+00
-bb27c605-6021-4e32-95bf-08ee309afa75	99	test-fl-clkct333-signed-e2e	2026-06-23 19:50:31.722+00
-f6787e50-ade9-4440-9c89-28bdaf3030b5	101	test-fl-plain-soc-orange-signed-e2e	2026-06-23 19:50:31.722+00
-8e3335ff-5e9f-4525-8923-a068918232ee	182	test-il-summons-e2e	2026-06-24 17:41:54.644+00
-3c0963b9-3574-4684-8479-2f9733d933cf	185	test-il-summons-e2e	2026-06-24 17:42:43.928+00
-b0a325c7-96ea-44c9-bcfc-a22fab1a808e	112	test-il-summons-e2e	2026-06-23 21:08:29.466+00
-513552da-465a-4933-b3c9-c251ba715a95	305	test-fl-cl219-volusia-signed-e2e	2026-06-26 01:23:28.222+00
-8246a79e-43b1-4b56-801f-36669b6ac6da	303	test-fl-soc-hillsborough-signed-e2e	2026-06-26 01:23:28.239+00
-b7294f59-55e0-46c1-b290-1f4af5d1490b	115	test-il-summons-e2e	2026-06-23 21:10:14.777+00
-f0017a07-0a7d-4a83-a57d-b003417ffaab	304	test-fl-clkct333-signed-e2e	2026-06-26 01:23:28.251+00
-a70e5154-01fe-483e-82ca-1fd9ac33b406	302	test-fl-plain-soc-orange-signed-e2e	2026-06-26 01:23:28.267+00
-bc2b7188-f74b-4f64-a804-4cd9441a0e4a	307	test-fl-fee-waiver-coord-check	2026-06-26 01:27:57.253+00
-f8294869-63fd-423c-8134-3806d80d9cc8	322	test-fl-cl219-volusia-signed-e2e	2026-06-26 12:22:46.295+00
-8c9f6ecb-70fd-4810-82e5-0b4b2aab3ced	319	test-fl-clkct333-signed-e2e	2026-06-26 12:22:46.296+00
-9fdcbbe5-f0b9-4d7f-849f-4569bd5797d2	129	test-tx-citation-e2e	2026-06-23 21:32:19.939+00
-b9cbb740-8b74-44d0-bde5-c3173a5c5784	129	test-tx-citation-e2e	2026-06-23 21:32:20.047+00
-3d62d71b-9ff8-4d54-87d9-effc0e8da09e	320	test-fl-plain-soc-orange-signed-e2e	2026-06-26 12:22:46.299+00
-c4ec85b2-1a62-4738-aad2-285c193e0ca0	321	test-fl-soc-hillsborough-signed-e2e	2026-06-26 12:22:46.302+00
-5062a2e8-6728-4c44-8fa7-3d1722946797	324	test-fl-clkct333-signed-e2e	2026-06-26 13:12:04.185+00
-b2f8ed7e-dafa-4bfb-8c51-e8091301d0a2	325	test-fl-plain-soc-orange-signed-e2e	2026-06-26 13:12:04.189+00
-fa77e137-e714-493e-86bf-9c6b7917fbcc	323	test-fl-soc-hillsborough-signed-e2e	2026-06-26 13:12:04.193+00
-d6ae4f47-0001-4fbc-a778-acdd3bc79d24	217	test-fl-clkct333-signed-e2e	2026-06-24 19:31:47.357+00
-b115d1cf-71e4-497e-9abc-cb048f48ae91	214	test-fl-cl219-volusia-signed-e2e	2026-06-24 19:31:47.363+00
-504c5a00-b5f3-4ea5-839c-6810605ba577	216	test-fl-soc-hillsborough-signed-e2e	2026-06-24 19:31:47.36+00
-148b9e7c-ab94-463e-9de5-121a5a4b6c80	215	test-fl-plain-soc-orange-signed-e2e	2026-06-24 19:31:47.091+00
-a844d434-63ab-4d16-af26-439377dae95d	326	test-fl-cl219-volusia-signed-e2e	2026-06-26 13:12:04.196+00
-58f6d974-72e3-4456-b7a5-f22b8e0baf54	330	test-fl-plain-soc-orange-signed-e2e	2026-06-26 17:37:41.692+00
-1b6aa587-93df-46c1-ac02-60244a0f69ca	327	test-fl-soc-hillsborough-signed-e2e	2026-06-26 17:37:41.672+00
-6b22e5d0-8c41-4cbc-b1a6-c178f328c9b4	328	test-fl-clkct333-signed-e2e	2026-06-26 17:37:41.704+00
-23317b22-3e5b-4651-8768-8fa5d55e6948	329	test-fl-cl219-volusia-signed-e2e	2026-06-26 17:37:41.707+00
-a2853ee1-14e2-4d52-b894-b9af3eb4d305	332	test-fl-clkct333-signed-e2e	2026-06-27 12:59:46.11+00
-e5cd63a6-7e41-4891-89bd-ced904349bf9	331	test-fl-cl219-volusia-signed-e2e	2026-06-27 12:59:46.102+00
-62912b34-8966-4ad3-8887-ac84f1df26be	333	test-fl-plain-soc-orange-signed-e2e	2026-06-27 12:59:46.086+00
-fb8c2e03-f99f-4a01-a97d-d6ae77782712	334	test-fl-soc-hillsborough-signed-e2e	2026-06-27 12:59:46.153+00
-2dcd7568-a887-4a18-8576-945f9bb9b887	337	test-fl-cl219-volusia-signed-e2e	2026-06-27 13:49:22.108+00
-4a3ea9aa-3205-4a19-a266-38e37cf95f68	338	test-fl-plain-soc-orange-signed-e2e	2026-06-27 13:49:22.111+00
-48fd26a8-9f06-4d28-b069-f7895959dcb3	336	test-fl-soc-hillsborough-signed-e2e	2026-06-27 13:49:22.127+00
-321696d5-c43b-4f36-a97c-8d70b3299d9a	335	test-fl-clkct333-signed-e2e	2026-06-27 13:49:22.129+00
-bfbfe2bf-e0b7-4d7a-a6a9-626a519718fa	339	test-fl-cl219-volusia-signed-e2e	2026-06-27 14:42:59.23+00
-a717c1f2-e499-4d70-99a6-e866617eec86	340	test-fl-clkct333-signed-e2e	2026-06-27 14:42:59.237+00
-45683b11-17b1-4081-82d3-e6efb7c051ff	342	test-fl-plain-soc-orange-signed-e2e	2026-06-27 14:42:59.24+00
-7c80b20b-0f4a-46de-bcb2-dbb7d61f1e91	341	test-fl-soc-hillsborough-signed-e2e	2026-06-27 14:42:59.238+00
-f8d0cc5e-099e-47c5-95e2-5576ce4ef197	344	test-fl-soc-hillsborough-signed-e2e	2026-06-27 15:13:23.73+00
-34634174-c28e-4271-96da-3c4a19a0e97d	346	test-fl-cl219-volusia-signed-e2e	2026-06-27 15:13:23.729+00
-10e54c0f-6f04-4e1b-a835-b6893a8d0e82	345	test-fl-plain-soc-orange-signed-e2e	2026-06-27 15:13:23.745+00
-569a61f4-cb29-43f9-8d0b-90fa4c98212b	343	test-fl-clkct333-signed-e2e	2026-06-27 15:13:23.744+00
-c76637c9-d373-4880-9edc-5366b4f969af	348	test-fl-clkct333-signed-e2e	2026-06-27 15:58:28.823+00
-68ea69f7-d91d-45aa-8d98-143e1a527116	349	test-fl-plain-soc-orange-signed-e2e	2026-06-27 15:58:28.92+00
-6ee95f6d-94d0-4f42-a113-edac1d0853fd	347	test-fl-cl219-volusia-signed-e2e	2026-06-27 15:58:28.925+00
-16b9b36f-3b26-4a78-b998-4d4d2f5f707c	350	test-fl-soc-hillsborough-signed-e2e	2026-06-27 15:58:28.931+00
-562f3108-4428-4cad-b96a-2e59fdce0ba0	354	test-fl-clkct333-signed-e2e	2026-06-27 21:58:31.026+00
-760e9dc1-d20c-4ec0-ba2b-e49b0e16c6e7	351	test-fl-plain-soc-orange-signed-e2e	2026-06-27 21:58:31.035+00
-01980db6-b706-4f67-ac12-364c3d4068c7	353	test-fl-soc-hillsborough-signed-e2e	2026-06-27 21:58:31.039+00
-caf1a00a-d2c9-4470-ab4f-d1c2e63b9887	352	test-fl-cl219-volusia-signed-e2e	2026-06-27 21:58:31.038+00
-04fd2fb0-e9d1-4303-8fe0-721d38f0c9f8	355	test-fl-cl219-volusia-signed-e2e	2026-06-28 15:47:38.982+00
-c853d584-7566-4272-aa7c-7cfc0e565cdd	357	test-fl-soc-hillsborough-signed-e2e	2026-06-28 15:47:38.993+00
-eb159a62-5da5-44ca-843c-e7255a0247d6	358	test-fl-plain-soc-orange-signed-e2e	2026-06-28 15:47:38.996+00
-8c19b116-0bcb-4bcc-87fd-d94d69a67261	356	test-fl-clkct333-signed-e2e	2026-06-28 15:47:39.008+00
-b705737a-3bb6-4556-88e3-e149e9e6b865	697	test-fl-soc-hillsborough-signed-e2e	2026-07-06 02:47:39.275+00
-b2d78dc3-7543-4126-af0f-70f4ac0ce2a5	698	test-fl-plain-soc-orange-signed-e2e	2026-07-06 13:17:54.331+00
-880f3ee1-9489-47bf-9c69-a94c3e041f94	373	test-fl-clkct333-signed-e2e	2026-06-28 17:15:14.524+00
-c4232b88-5876-4b1d-9870-39341c8a5cdb	374	test-fl-cl219-volusia-signed-e2e	2026-06-28 17:15:14.532+00
-a9802f6e-4fcc-42de-8908-c06fa6d864ec	372	test-fl-plain-soc-orange-signed-e2e	2026-06-28 17:15:14.542+00
-0aab84ee-cfae-4fb9-96ba-702607797561	371	test-fl-soc-hillsborough-signed-e2e	2026-06-28 17:15:14.552+00
-4543daee-9279-4c3e-ab38-44b9fa013d1b	375	test-fl-plain-soc-orange-signed-e2e	2026-06-28 18:28:11.762+00
-8f32e164-5dd7-4713-a29e-0db41bb58fb9	376	test-fl-soc-hillsborough-signed-e2e	2026-06-28 18:28:11.779+00
-140bb126-0376-4e5b-ba23-688da65cc4d9	377	test-fl-clkct333-signed-e2e	2026-06-28 18:28:11.782+00
-2e98dfbc-f02c-4ec5-b2cc-4731b086a0d0	378	test-fl-cl219-volusia-signed-e2e	2026-06-28 18:28:11.798+00
-2d309469-0827-47d0-8980-07e8a204f1dd	560	test-fl-cl219-volusia-signed-e2e	2026-07-04 13:55:23.012+00
-3f993674-f9e5-4191-972a-909e50300c77	570	test-fl-clkct333-signed-e2e	2026-07-05 14:53:05.392+00
-3d8b5d6e-d66b-4eed-8808-218898a9aabe	392	test-fl-cl219-volusia-signed-e2e	2026-06-28 22:57:53.275+00
-83bf54a1-3047-4b36-9ed1-7a99cfff67a5	391	test-fl-plain-soc-orange-signed-e2e	2026-06-28 22:57:53.286+00
-b494b62a-a147-46e9-b0c2-804343513f55	393	test-fl-soc-hillsborough-signed-e2e	2026-06-28 22:57:53.289+00
-61ad0ba3-bc84-409f-b127-15071e668dfa	394	test-fl-clkct333-signed-e2e	2026-06-28 22:57:53.292+00
-cadc694f-740c-4ba6-9078-e2cc55f02377	396	test-fl-clkct333-signed-e2e	2026-06-29 05:14:02.923+00
-cca8aa2c-8e29-4998-b44f-ad60aa8da947	398	test-fl-cl219-volusia-signed-e2e	2026-06-29 05:14:03.115+00
-06a0f950-7be0-4f37-a4f9-1bff03177ec4	395	test-fl-plain-soc-orange-signed-e2e	2026-06-29 05:14:03.113+00
-ca334ec4-4fd9-45fe-96c5-25153e97d397	397	test-fl-soc-hillsborough-signed-e2e	2026-06-29 05:14:03.11+00
-26133277-6983-407b-86fd-1d2ea1df65a0	399	test-fl-cl219-volusia-signed-e2e	2026-06-29 14:21:18.063+00
-bc0618c1-4733-4d86-a676-a138d11aec23	400	test-fl-soc-hillsborough-signed-e2e	2026-06-29 14:21:18.057+00
-ae774316-f197-4111-8d9b-f2691f108755	402	test-fl-plain-soc-orange-signed-e2e	2026-06-29 14:21:18.097+00
-4ea9f1b1-7255-443c-b634-da28096a661c	401	test-fl-clkct333-signed-e2e	2026-06-29 14:21:18.095+00
-3011b55f-db9e-418c-9cab-604cd3d17e13	403	test-fl-plain-soc-orange-signed-e2e	2026-06-29 20:15:18.193+00
-92aa7770-9bd4-4893-a213-fd87c0c45070	404	test-fl-clkct333-signed-e2e	2026-06-29 20:15:18.204+00
-fe8336f7-eb21-4669-bcbf-e2f76b5f1337	406	test-fl-cl219-volusia-signed-e2e	2026-06-29 20:15:18.208+00
-d31e5b95-e064-4218-b41b-c44de6408f05	405	test-fl-soc-hillsborough-signed-e2e	2026-06-29 20:15:18.21+00
-ed06542c-eeb6-4734-be5c-dee8a2f46725	418	test-fl-clkct333-signed-e2e	2026-06-30 02:15:23.259+00
-8192348b-463d-46b9-a71e-1d1b32127da8	419	test-fl-cl219-volusia-signed-e2e	2026-06-30 02:15:23.263+00
-c6111221-58eb-4c8e-be6b-c2dc960e80c9	417	test-fl-soc-hillsborough-signed-e2e	2026-06-30 02:15:23.266+00
-2c35e4ea-00a9-42f2-8848-296083ff0d60	420	test-fl-plain-soc-orange-signed-e2e	2026-06-30 02:15:23.266+00
-7d868a82-76c2-410a-82f0-9e58410f60f0	424	test-fl-plain-soc-orange-signed-e2e	2026-06-30 12:44:11.8+00
-8c7e9340-8bf7-4cc3-b2bd-898e27ca6028	422	test-fl-soc-hillsborough-signed-e2e	2026-06-30 12:44:11.796+00
-bd2e7e74-fff8-4dc8-beb4-c155331c5dcc	423	test-fl-cl219-volusia-signed-e2e	2026-06-30 12:44:11.734+00
-38be1540-eafc-4ae5-91fc-dc5ad2ce7c0a	421	test-fl-clkct333-signed-e2e	2026-06-30 12:44:11.808+00
-aca1aec4-b524-419c-a8ec-e296b4f5b1bb	695	test-fl-cl219-volusia-signed-e2e	2026-07-06 02:47:39.203+00
-edcd72f7-6a15-4994-b7a0-df0b55b1c152	700	test-fl-clkct333-signed-e2e	2026-07-06 13:17:54.3+00
-d062671d-8354-42d0-863f-9511a8423c50	705	test-fl-plain-soc-orange-signed-e2e	2026-07-06 14:37:45.546+00
-f0fef8ae-84b1-4772-a564-254f945f1e2f	702	test-fl-soc-hillsborough-signed-e2e	2026-07-06 14:37:45.557+00
-845bf2c4-b9e4-4bc4-9a76-74d03ac380c7	562	test-fl-clkct333-signed-e2e	2026-07-04 13:55:23.013+00
-dd98a49f-d0e5-41e1-8dfa-65181b49e03c	569	test-fl-plain-soc-orange-signed-e2e	2026-07-05 14:53:05.379+00
-bc6a2477-a12c-4b69-a263-84e3794e7cc3	770	test-fl-soc-hillsborough-signed-e2e	2026-07-06 20:37:57.666+00
-cd62477b-08b3-4571-897e-dcbb6f7d48ba	792	test-fl-soc-hillsborough-signed-e2e	2026-07-07 02:37:53.561+00
-789d32a5-8bdf-4dd1-89c5-584cfc4b4063	794	test-fl-plain-soc-orange-signed-e2e	2026-07-07 13:43:01.464+00
-9345902e-7060-4be5-be1d-668c0aff0d70	821	test-fl-cl219-volusia-signed-e2e	2026-07-07 16:59:17.585+00
-4e1d48fa-9c3f-4d54-872a-6e022a4652b2	826	test-fl-cl219-volusia-signed-e2e	2026-07-07 22:59:23.685+00
-086ca81f-4ad6-4a43-9fb1-9836025f4ada	833	test-fl-clkct333-signed-e2e	2026-07-08 06:05:43.471+00
-c7ec04b1-4c72-4faa-8ae1-dcc01d0b322f	863	test-fl-clkct333-signed-e2e	2026-07-08 13:45:31.33+00
-bd8100d6-ff60-4243-97d4-f1b3cac6b9a3	869	test-fl-clkct333-signed-e2e	2026-07-08 14:05:06.526+00
-80556dbf-7997-4df4-bc41-9aad250e0e3f	694	test-fl-plain-soc-orange-signed-e2e	2026-07-06 02:47:39.206+00
-40cb3145-ad07-4dd7-9a42-94b731920e6c	699	test-fl-cl219-volusia-signed-e2e	2026-07-06 13:17:54.328+00
-0a722c35-b244-4262-b5e6-b1aec780c964	703	test-fl-cl219-volusia-signed-e2e	2026-07-06 14:37:45.549+00
-558aae3c-69cd-4517-8556-5583de1b0ecc	563	test-fl-soc-hillsborough-signed-e2e	2026-07-04 13:55:23.079+00
-aa007b5e-8c78-4069-9500-fa0f7d4d0ede	568	test-fl-soc-hillsborough-signed-e2e	2026-07-05 14:53:05.384+00
-c0669be9-0aa2-4473-ac36-3a7ec84c5ece	769	test-fl-clkct333-signed-e2e	2026-07-06 20:37:57.636+00
-c38d83c7-8d9a-498a-9ef6-598f3ccb91d6	772	test-fl-plain-soc-orange-signed-e2e	2026-07-06 20:37:57.668+00
-769240d0-7451-4b09-87c7-dcab0bab759c	778	test-agent-fields-verify	2026-07-06 22:41:18.317+00
-b59c15df-bafe-42fc-b441-a209516e3d60	779	test-agent-fields-verify	2026-07-06 22:41:18.399+00
-8dd4c19f-3bf8-4fa8-8232-4d42d67fa5db	780	test-agent-fields-verify	2026-07-06 22:41:18.424+00
-73770616-adfc-4a7d-857d-95fb19f6b97f	781	test-agent-fields-verify	2026-07-06 22:41:18.443+00
-3d7320a9-a1a8-4680-b9d2-c11fb0291557	782	test-agent-fields-verify	2026-07-06 22:41:18.47+00
-b0ffad91-f790-4687-a6a7-3817a2b6c45a	783	test-agent-fields-verify	2026-07-06 22:41:18.725+00
-fb332774-5f6d-48c1-a365-d4b82874b4a9	791	test-fl-plain-soc-orange-signed-e2e	2026-07-07 02:37:53.55+00
-a3da1e28-f584-45d7-8785-4ec9c93fa88a	793	test-fl-cl219-volusia-signed-e2e	2026-07-07 02:37:53.563+00
-ff1140a8-abbf-47d3-bac9-b973a70dba60	796	test-fl-soc-hillsborough-signed-e2e	2026-07-07 13:43:01.447+00
-c831efd1-9aed-41fa-85eb-48c5f4926a62	795	test-fl-clkct333-signed-e2e	2026-07-07 13:43:01.471+00
-99f12727-10c0-4c0c-837d-ce4b9f0a1394	818	test-fl-clkct333-signed-e2e	2026-07-07 16:59:17.58+00
-ae889892-8bec-4fa8-a553-f46e2e91bfb9	819	test-fl-plain-soc-orange-signed-e2e	2026-07-07 16:59:17.586+00
-cb314479-4884-4841-a3a0-a064a192b0ff	828	test-fl-plain-soc-orange-signed-e2e	2026-07-07 22:59:23.574+00
-5722d95e-3043-4217-9f53-7122debffccf	829	test-fl-clkct333-signed-e2e	2026-07-07 22:59:23.698+00
-3239e179-0eb4-4aa7-ac64-325b874d5ba6	830	test-fl-soc-hillsborough-signed-e2e	2026-07-08 06:05:43.067+00
-59ede112-99f4-45a9-897f-0923fe042e09	832	test-fl-cl219-volusia-signed-e2e	2026-07-08 06:05:43.469+00
-fe69f74e-8999-44dc-bd09-cc8093a04205	864	test-fl-soc-hillsborough-signed-e2e	2026-07-08 13:45:31.33+00
-ae49ee8e-4eb7-4f79-b6dc-7f5364b67ac8	865	test-fl-plain-soc-orange-signed-e2e	2026-07-08 13:45:31.333+00
-bb2e081c-ff2d-4665-bfa2-d14454af7b7f	868	test-fl-cl219-volusia-signed-e2e	2026-07-08 14:05:06.473+00
-561a9084-bd07-4e68-8c9a-c76ec0ebb390	870	test-fl-plain-soc-orange-signed-e2e	2026-07-08 14:05:06.533+00
-bb90209d-66b0-4801-b321-174999a6bf47	883	form-visual-check	2026-07-08 15:02:50.135+00
-b3e2fef1-db79-4b56-9157-f8a25730ddc9	600	test-nj-wa-forms-e2e	2026-07-05 18:49:00.359+00
-b13bf3ae-958d-4b48-86c3-bd4ca50eaf0f	601	test-nj-wa-forms-e2e	2026-07-05 18:49:00.499+00
-2e1cb8f0-b073-467a-808f-a7fc8e8ca37a	601	test-nj-wa-forms-e2e	2026-07-05 18:49:00.641+00
-cab9e1e2-d2ff-44ca-a28f-6e50510f9d2a	435	test-fl-soc-hillsborough-signed-e2e	2026-06-30 18:44:05.848+00
-6e61eda3-2b3f-453a-ad8d-1f4efa4941c9	433	test-fl-clkct333-signed-e2e	2026-06-30 18:44:05.872+00
-9d449f68-711a-4a12-8def-ea8527aa9997	436	test-fl-plain-soc-orange-signed-e2e	2026-06-30 18:44:05.878+00
-bf5c3e5a-7391-4fad-b3d4-f486d3702e56	434	test-fl-cl219-volusia-signed-e2e	2026-06-30 18:44:05.875+00
-dbb5b099-c73f-4d14-9784-9eab69d267ba	696	test-fl-clkct333-signed-e2e	2026-07-06 02:47:39.215+00
-2b8a453e-9acc-466e-98ee-13a5576b9eea	701	test-fl-soc-hillsborough-signed-e2e	2026-07-06 13:17:54.329+00
-07e90473-e53d-47e4-9aa6-b2089faed387	704	test-fl-clkct333-signed-e2e	2026-07-06 14:37:45.546+00
-307bf258-3ba7-4ce0-9ca3-3ff1bad87929	448	test-fl-plain-soc-orange-signed-e2e	2026-07-01 12:53:46.588+00
-37d654fa-cfb5-4b86-bfe8-74dbfebe20f9	447	test-fl-clkct333-signed-e2e	2026-07-01 12:53:46.604+00
-a40f8a13-f55a-465b-b258-1308df1d20e7	446	test-fl-soc-hillsborough-signed-e2e	2026-07-01 12:53:46.589+00
-0f7191ce-e5f4-4a04-b3aa-5c878c66b325	445	test-fl-cl219-volusia-signed-e2e	2026-07-01 12:53:46.617+00
-6e818fd2-4783-455c-b285-9fda02491373	452	test-fl-cl219-volusia-signed-e2e	2026-07-02 00:06:24.994+00
-235087e1-463a-4df8-9892-1c033c677b84	450	test-fl-clkct333-signed-e2e	2026-07-02 00:06:25.017+00
-c51283bb-f271-48ff-9d32-b0c370b95ea9	451	test-fl-soc-hillsborough-signed-e2e	2026-07-02 00:06:25.036+00
-0cb05899-3f19-4324-b57d-2d76d4a9a7c4	449	test-fl-plain-soc-orange-signed-e2e	2026-07-02 00:06:25.038+00
-47c6096d-0d04-429d-b2f6-547963985bf8	453	test-fl-plain-soc-orange-signed-e2e	2026-07-02 00:27:04.513+00
-ad6bc7c9-a719-4e03-b1af-60816229147f	455	test-fl-clkct333-signed-e2e	2026-07-02 00:27:04.527+00
-8d83d2c5-6fe9-42ca-b49a-0c859cca2662	456	test-fl-cl219-volusia-signed-e2e	2026-07-02 00:27:04.53+00
-39cc5a94-053a-40a1-8e93-8046cdbe068a	454	test-fl-soc-hillsborough-signed-e2e	2026-07-02 00:27:04.553+00
-0aa8add4-41a2-4f33-8078-59e36199e601	460	test-fl-clkct333-signed-e2e	2026-07-02 12:37:51.701+00
-068b9579-f151-4469-b881-cfddd65ed704	459	test-fl-plain-soc-orange-signed-e2e	2026-07-02 12:37:51.703+00
-34dc4eaf-4fdd-4335-9861-5ceacbe04f03	457	test-fl-cl219-volusia-signed-e2e	2026-07-02 12:37:51.71+00
-1062bdab-c4e6-43db-bd9d-0ee9b921d67c	458	test-fl-soc-hillsborough-signed-e2e	2026-07-02 12:37:51.713+00
-71ea309d-56ad-4ae0-8c3f-5b4b3aacfb24	462	test-fl-plain-soc-orange-signed-e2e	2026-07-02 20:13:20.943+00
-575a71fb-9bcd-4885-adf8-bcf08f12f1b1	464	test-fl-clkct333-signed-e2e	2026-07-02 20:13:20.96+00
-36e4d010-5a01-4446-beab-3df0dd3c196a	463	test-fl-soc-hillsborough-signed-e2e	2026-07-02 20:13:20.962+00
-5abaa7ba-d096-46a3-9ca4-21f6c3974a8f	461	test-fl-cl219-volusia-signed-e2e	2026-07-02 20:13:20.959+00
-6fa1ab6a-3160-4aa6-b4ab-995440ae65c0	467	test-fl-clkct333-signed-e2e	2026-07-03 01:04:43.088+00
-03242f1e-deef-4de6-af92-6b4762a96edf	468	test-fl-soc-hillsborough-signed-e2e	2026-07-03 01:04:43.098+00
-03a386f6-e814-4210-8cf2-4f2533c210e1	466	test-fl-plain-soc-orange-signed-e2e	2026-07-03 01:04:43.099+00
-24aa662d-f0fc-44cf-ab9f-08866cdde156	465	test-fl-cl219-volusia-signed-e2e	2026-07-03 01:04:43.097+00
-816a2c18-f4d7-4acd-9bbf-43e310f1c8d2	469	test-fl-cl219-volusia-signed-e2e	2026-07-03 13:02:51.63+00
-5766e67d-7942-40b6-b7ce-9906bef4f9ea	471	test-fl-clkct333-signed-e2e	2026-07-03 13:02:51.643+00
-2c7e4bc6-777d-424a-9e12-c0bfccf5377b	470	test-fl-soc-hillsborough-signed-e2e	2026-07-03 13:02:51.656+00
-83cae704-2086-4789-a2db-de3f19c22a52	472	test-fl-plain-soc-orange-signed-e2e	2026-07-03 13:02:51.66+00
-475cec2c-185b-4b2d-81fe-92c9ee65e5c7	561	test-fl-plain-soc-orange-signed-e2e	2026-07-04 13:55:22.959+00
-8cf847a2-95e5-4276-8574-06167a28012e	571	test-fl-cl219-volusia-signed-e2e	2026-07-05 14:53:05.376+00
-347ff192-4ba7-4a62-850d-f4100efbcef1	771	test-fl-cl219-volusia-signed-e2e	2026-07-06 20:37:57.661+00
-33126270-5178-4909-8279-85a4b0fea3c1	790	test-fl-clkct333-signed-e2e	2026-07-07 02:37:53.55+00
-7154c56c-e504-4a30-aeca-b843b888c95d	797	test-fl-cl219-volusia-signed-e2e	2026-07-07 13:43:01.462+00
-d7d9ed34-cb0d-4bc1-b78e-7bdc57708caa	820	test-fl-soc-hillsborough-signed-e2e	2026-07-07 16:59:17.584+00
-4d5609bd-058d-4efb-970f-bf91abf6cd64	827	test-fl-soc-hillsborough-signed-e2e	2026-07-07 22:59:23.684+00
-25392ab6-9b10-4662-95aa-d675843edd3f	831	test-fl-plain-soc-orange-signed-e2e	2026-07-08 06:05:43.335+00
-bd8f7ac8-2446-4c32-aa37-284446977c3e	866	test-fl-cl219-volusia-signed-e2e	2026-07-08 13:45:31.341+00
-7d71e7f7-7fbd-48bf-a541-c2fa52b36b6d	867	test-fl-soc-hillsborough-signed-e2e	2026-07-08 14:05:06.522+00
-\.
-
-
---
--- Data for Name: efile_court_locations; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.efile_court_locations (id, cli_code, jurisdiction_state, courthouse_id, court_name, filing_fee_amount, supports_small_claims, toga_url, review_tool_url, last_refreshed, created_at, updated_at) FROM stdin;
-\.
-
-
---
--- Data for Name: efile_submissions; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.efile_submissions (id, case_id, user_id, jurisdiction_state, court_cli, envelope_id, status, fees_charged, court_fee_amount, convenience_fee_amount, stripe_payment_intent_id, rejection_reason, submitted_at, accepted_at, rejected_at, created_at, updated_at) FROM stdin;
-\.
-
-
---
--- Data for Name: genie_conversions; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.genie_conversions (id, question, answer_snippet, created_at) FROM stdin;
-\.
-
-
---
--- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.messages (id, conversation_id, role, content, created_at) FROM stdin;
-\.
-
-
---
--- Data for Name: purchases; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.purchases (id, user_id, stripe_session_id, stripe_price_id, stripe_product_id, plan_key, amount_total, currency, status, created_at) FROM stdin;
-\.
-
-
---
--- Data for Name: _managed_webhooks; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
-
-COPY stripe._managed_webhooks (id, object, url, enabled_events, description, enabled, livemode, metadata, secret, status, api_version, created, updated_at, last_synced_at, account_id) FROM stdin;
-we_1TWIz6GsJamlGRz5aMh9PenS	webhook_endpoint	https://37b18f57-bb89-46f0-8f3e-61d410712d33-00-i3kbn43k3c01.worf.replit.dev/api/stripe/webhook	["charge.captured", "charge.dispute.closed", "charge.dispute.created", "charge.dispute.funds_reinstated", "charge.dispute.funds_withdrawn", "charge.dispute.updated", "charge.expired", "charge.failed", "charge.pending", "charge.refund.updated", "charge.refunded", "charge.succeeded", "charge.updated", "checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired", "credit_note.created", "credit_note.updated", "credit_note.voided", "customer.created", "customer.deleted", "customer.subscription.created", "customer.subscription.deleted", "customer.subscription.paused", "customer.subscription.pending_update_applied", "customer.subscription.pending_update_expired", "customer.subscription.resumed", "customer.subscription.trial_will_end", "customer.subscription.updated", "customer.tax_id.created", "customer.tax_id.deleted", "customer.tax_id.updated", "customer.updated", "entitlements.active_entitlement_summary.updated", "invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.upcoming", "invoice.updated", "invoice.voided", "payment_intent.amount_capturable_updated", "payment_intent.canceled", "payment_intent.created", "payment_intent.partially_funded", "payment_intent.payment_failed", "payment_intent.processing", "payment_intent.requires_action", "payment_intent.succeeded", "payment_method.attached", "payment_method.automatically_updated", "payment_method.card_automatically_updated", "payment_method.detached", "payment_method.updated", "plan.created", "plan.deleted", "plan.updated", "price.created", "price.deleted", "price.updated", "product.created", "product.deleted", "product.updated", "radar.early_fraud_warning.created", "radar.early_fraud_warning.updated", "refund.created", "refund.failed", "refund.updated", "review.closed", "review.opened", "setup_intent.canceled", "setup_intent.created", "setup_intent.requires_action", "setup_intent.setup_failed", "setup_intent.succeeded", "subscription_schedule.aborted", "subscription_schedule.canceled", "subscription_schedule.completed", "subscription_schedule.created", "subscription_schedule.expiring", "subscription_schedule.released", "subscription_schedule.updated"]	\N	\N	f	{"managed_by": "stripe-sync"}	whsec_iuUmzuwSpLKrHi5T20cjy5OSyPPDvq7m	enabled	\N	1778602600	2026-05-12 16:16:40.492545+00	2026-05-12 16:16:40.491+00	acct_1TSm0mGsJamlGRz5
-we_1TqviYGjdBAJdeVn9CExYx2I	webhook_endpoint	https://37b18f57-bb89-46f0-8f3e-61d410712d33-00-i3kbn43k3c01.worf.replit.dev/api/stripe/webhook	["charge.captured", "charge.dispute.closed", "charge.dispute.created", "charge.dispute.funds_reinstated", "charge.dispute.funds_withdrawn", "charge.dispute.updated", "charge.expired", "charge.failed", "charge.pending", "charge.refund.updated", "charge.refunded", "charge.succeeded", "charge.updated", "checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired", "credit_note.created", "credit_note.updated", "credit_note.voided", "customer.created", "customer.deleted", "customer.subscription.created", "customer.subscription.deleted", "customer.subscription.paused", "customer.subscription.pending_update_applied", "customer.subscription.pending_update_expired", "customer.subscription.resumed", "customer.subscription.trial_will_end", "customer.subscription.updated", "customer.tax_id.created", "customer.tax_id.deleted", "customer.tax_id.updated", "customer.updated", "entitlements.active_entitlement_summary.updated", "invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.upcoming", "invoice.updated", "invoice.voided", "payment_intent.amount_capturable_updated", "payment_intent.canceled", "payment_intent.created", "payment_intent.partially_funded", "payment_intent.payment_failed", "payment_intent.processing", "payment_intent.requires_action", "payment_intent.succeeded", "payment_method.attached", "payment_method.automatically_updated", "payment_method.card_automatically_updated", "payment_method.detached", "payment_method.updated", "plan.created", "plan.deleted", "plan.updated", "price.created", "price.deleted", "price.updated", "product.created", "product.deleted", "product.updated", "radar.early_fraud_warning.created", "radar.early_fraud_warning.updated", "refund.created", "refund.failed", "refund.updated", "review.closed", "review.opened", "setup_intent.canceled", "setup_intent.created", "setup_intent.requires_action", "setup_intent.setup_failed", "setup_intent.succeeded", "subscription_schedule.aborted", "subscription_schedule.canceled", "subscription_schedule.completed", "subscription_schedule.created", "subscription_schedule.expiring", "subscription_schedule.released", "subscription_schedule.updated"]	\N	\N	t	{"managed_by": "stripe-sync"}	whsec_PckwmJXYAQVtayhEvo9covV4sucPUp3t	enabled	\N	1783518050	2026-07-08 13:40:50.850737+00	2026-07-08 13:40:50.849+00	acct_1TSm0YGjdBAJdeVn
-\.
-
-
---
--- Data for Name: _migrations; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
-
-COPY stripe._migrations (id, name, hash, executed_at) FROM stdin;
-0	initial_migration	c18983eedaa79cc2f6d92727d70c4f772256ef3d	2026-05-02 22:53:00.233937
-1	products	b99ffc23df668166b94156f438bfa41818d4e80c	2026-05-02 22:53:00.239832
-2	customers	33e481247ddc217f4e27ad10dfe5430097981670	2026-05-02 22:53:00.251168
-3	prices	7d5ff35640651606cc24cec8a73ff7c02492ecdf	2026-05-02 22:53:00.265035
-4	subscriptions	2cc6121a943c2a623c604e5ab12118a57a6c329a	2026-05-02 22:53:00.289005
-5	invoices	7fbb4ccb4ed76a830552520739aaa163559771b1	2026-05-02 22:53:00.300166
-6	charges	fb284ed969f033f5ce19f479b7a7e27871bddf09	2026-05-02 22:53:00.312121
-7	coupons	7ed6ec4133f120675fd7888c0477b6281743fede	2026-05-02 22:53:00.324263
-8	disputes	29bdb083725efe84252647f043f5f91cd0dabf43	2026-05-02 22:53:00.336395
-9	events	b28cb55b5b69a9f52ef519260210cd76eea3c84e	2026-05-02 22:53:00.346089
-10	payouts	69d1050b88bba1024cea4a671f9633ce7bfe25ff	2026-05-02 22:53:00.364124
-11	plans	fc1ae945e86d1222a59cbcd3ae7e81a3a282a60c	2026-05-02 22:53:00.374837
-12	add_updated_at	1d80945ef050a17a26e35e9983a58178262470f2	2026-05-02 22:53:00.385731
-13	add_subscription_items	2aa63409bfe910add833155ad7468cdab844e0f1	2026-05-02 22:53:00.398097
-14	migrate_subscription_items	8c2a798b44a8a0d83ede6f50ea7113064ecc1807	2026-05-02 22:53:00.414621
-15	add_customer_deleted	6886ddfd8c129d3c4b39b59519f92618b397b395	2026-05-02 22:53:00.423673
-16	add_invoice_indexes	d6bb9a09d5bdf580986ed14f55db71227a4d356d	2026-05-02 22:53:00.427901
-17	drop_charges_unavailable_columns	61cd5adec4ae2c308d2c33d1b0ed203c7d074d6a	2026-05-02 22:53:00.439049
-18	setup_intents	1d45d0fa47fc145f636c9e3c1ea692417fbb870d	2026-05-02 22:53:00.449141
-19	payment_methods	705bdb15b50f1a97260b4f243008b8a34d23fb09	2026-05-02 22:53:00.466556
-20	disputes_payment_intent_created_idx	18b2cecd7c097a7ea3b3f125f228e8790288d5ca	2026-05-02 22:53:00.482549
-21	payment_intent	b1f194ff521b373c4c7cf220c0feadc253ebff0b	2026-05-02 22:53:00.491546
-22	adjust_plans	e4eae536b0bc98ee14d78e818003952636ee877c	2026-05-02 22:53:00.510143
-23	invoice_deleted	78e864c3146174fee7d08f05226b02d931d5b2ae	2026-05-02 22:53:00.519251
-24	subscription_schedules	85fa6adb3815619bb17e1dafb00956ff548f7332	2026-05-02 22:53:00.527109
-25	tax_ids	3f9a1163533f9e60a53d61dae5e451ab937584d9	2026-05-02 22:53:00.540768
-26	credit_notes	e099b6b04ee607ee868d82af5193373c3fc266d2	2026-05-02 22:53:00.558436
-27	add_marketing_features_to_products	6ed1774b0a9606c5937b2385d61057408193e8a7	2026-05-02 22:53:00.577183
-28	early_fraud_warning	e615b0b73fa13d3b0508a1956d496d516f0ebf40	2026-05-02 22:53:00.581861
-29	reviews	dd3f914139725a7934dc1062de4cc05aece77aea	2026-05-02 22:53:00.600013
-30	refunds	f76c4e273eccdc96616424d73967a9bea3baac4e	2026-05-02 22:53:00.618265
-31	add_default_price	6d10566a68bc632831fa25332727d8ff842caec5	2026-05-02 22:53:00.637135
-32	update_subscription_items	e894858d46840ba4be5ea093cdc150728bd1d66f	2026-05-02 22:53:00.642911
-33	add_last_synced_at	43124eb65b18b70c54d57d2b4fcd5dae718a200f	2026-05-02 22:53:00.647712
-34	remove_foreign_keys	e72ec19f3232cf6e6b7308ebab80341c2341745f	2026-05-02 22:53:00.655825
-35	checkout_sessions	dc294f5bb1a4d613be695160b38a714986800a75	2026-05-02 22:53:00.662747
-36	checkout_session_line_items	82c8cfce86d68db63a9fa8de973bfe60c91342dd	2026-05-02 22:53:00.688119
-37	add_features	c68a2c2b7e3808eed28c8828b2ffd3a2c9bf2bd4	2026-05-02 22:53:00.706918
-38	active_entitlement	5b3858e7a52212b01e7f338cf08e29767ab362af	2026-05-02 22:53:00.726257
-39	add_paused_to_subscription_status	09012b5d128f6ba25b0c8f69a1203546cf1c9f10	2026-05-02 22:53:00.751069
-40	managed_webhooks	1d453dfd0e27ff0c2de97955c4ec03919af0af7f	2026-05-02 22:53:00.756894
-41	rename_managed_webhooks	ad7cd1e4971a50790bf997cd157f3403d294484f	2026-05-02 22:53:00.785073
-42	convert_to_jsonb_generated_columns	e0703a0e5cd9d97db53d773ada1983553e37813c	2026-05-02 22:53:00.790754
-43	add_account_id	9a6beffdd0972e3657b7118b2c5001be1f815faf	2026-05-02 22:53:05.702693
-44	make_account_id_required	05c1e9145220e905e0c1ca5329851acaf7e9e506	2026-05-02 22:53:05.756422
-45	sync_status	2f88c4883fa885a6eaa23b8b02da958ca77a1c21	2026-05-02 22:53:05.792459
-46	sync_status_per_account	b1f1f3d4fdb4b4cf4e489d4b195c7f0f97f9f27c	2026-05-02 22:53:05.82489
-47	api_key_hashes	8046e4c57544b8eae277b057d201a28a4529ffe3	2026-05-02 22:53:05.890046
-48	rename_reserved_columns	e32290f655550ed308a7f2dcb5b0114e49a0558e	2026-05-02 22:53:05.896283
-49	remove_redundant_underscores_from_metadata_tables	96d6f3a54e17d8e19abd022a030a95a6161bf73e	2026-05-02 22:53:11.317422
-50	rename_id_to_match_stripe_api	c5300c5a10081c033dab9961f4e3cd6a2440c2b6	2026-05-02 22:53:11.334061
-51	remove_webhook_uuid	289bee08167858dbf4d04ca184f42681660ebb66	2026-05-02 22:53:11.690676
-52	webhook_url_uniqueness	d02aec1815ce3a108b8a1def1ff24e865b26db70	2026-05-02 22:53:11.697706
-\.
-
-
---
--- Data for Name: _sync_status; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
-
-COPY stripe._sync_status (id, resource, status, last_synced_at, last_incremental_cursor, error_message, updated_at, account_id) FROM stdin;
-\.
-
-
---
--- Data for Name: accounts; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
-
-COPY stripe.accounts (_raw_data, first_synced_at, _last_synced_at, _updated_at, api_key_hashes) FROM stdin;
-{"id": "acct_1TSm0mGsJamlGRz5", "type": "standard", "email": "paul@thoxie.com", "object": "account", "country": "US", "settings": {"payouts": {"schedule": {"interval": "daily", "delay_days": 2}, "statement_descriptor": null, "debit_negative_balances": true}, "branding": {"icon": "", "logo": null, "primary_color": null, "secondary_color": null}, "invoices": {"default_account_tax_ids": null, "hosted_payment_method_save": "offer"}, "payments": {"statement_descriptor": "SMALLCLAIMSGENIE.COM", "statement_descriptor_kana": null, "statement_descriptor_kanji": null}, "dashboard": {"timezone": "Etc/UTC", "display_name": "Thoxie sandbox"}, "card_issuing": {"tos_acceptance": {"ip": null, "date": null}}, "card_payments": {"statement_descriptor_prefix": null, "statement_descriptor_prefix_kana": null, "statement_descriptor_prefix_kanji": null}, "bacs_debit_payments": {"display_name": null, "service_user_number": null}, "sepa_debit_payments": {}}, "controller": {"type": "account"}, "capabilities": {}, "business_type": null, "charges_enabled": false, "payouts_enabled": false, "business_profile": {"mcc": null, "url": "https://smallclaimsgenie.com", "name": "Thoxie sandbox", "support_url": null, "support_email": null, "support_phone": null, "annual_revenue": null, "support_address": null, "estimated_worker_count": null, "minority_owned_business_designation": null}, "default_currency": "usd", "details_submitted": false}	2026-05-02 22:53:37.606849+00	2026-05-02 22:53:37.606849+00	2026-05-02 22:53:37.606849+00	{96d33eba38e2706d11be2af1d39a82ed1c0428bd7d3f05c94b7e211c6394117d}
-{"id": "acct_1TSm0YGjdBAJdeVn", "type": "standard", "email": "paul@thoxie.com", "object": "account", "company": {"name": "Goldies Properties LLC", "structure": "single_member_llc"}, "country": "US", "settings": {"payouts": {"schedule": {"interval": "manual", "delay_days": 2}, "statement_descriptor": null, "debit_negative_balances": true}, "branding": {"icon": null, "logo": null, "primary_color": null, "secondary_color": null}, "invoices": {"default_account_tax_ids": null, "hosted_payment_method_save": "offer"}, "payments": {"statement_descriptor": "SMALL CLAIMS GENIE", "statement_descriptor_kana": null, "statement_descriptor_kanji": null}, "dashboard": {"timezone": "America/Cancun", "display_name": "Thoxie"}, "card_issuing": {"tos_acceptance": {"ip": null, "date": null}}, "card_payments": {"statement_descriptor_prefix": null, "statement_descriptor_prefix_kana": null, "statement_descriptor_prefix_kanji": null}, "bacs_debit_payments": {"display_name": null, "service_user_number": null}, "sepa_debit_payments": {}}, "controller": {"type": "account"}, "capabilities": {"transfers": "active", "eps_payments": "active", "pix_payments": "active", "blik_payments": "active", "card_payments": "active", "link_payments": "active", "affirm_payments": "inactive", "klarna_payments": "active", "mb_way_payments": "active", "cashapp_payments": "active", "acss_debit_payments": "active", "amazon_pay_payments": "active", "bancontact_payments": "active", "cartes_bancaires_payments": "pending", "afterpay_clearpay_payments": "active", "us_bank_account_ach_payments": "active"}, "business_type": "company", "charges_enabled": true, "payouts_enabled": true, "business_profile": {"mcc": "7392", "url": "https://smallclaimsgenie.com", "name": "Small Claims Genie", "support_url": null, "support_email": null, "support_phone": "+16506461925", "annual_revenue": null, "support_address": {"city": "Sausalito", "line1": "3020 Bridgeway", "line2": null, "state": "CA", "country": "US", "postal_code": "94965"}, "estimated_worker_count": null, "minority_owned_business_designation": null}, "default_currency": "usd", "details_submitted": true}	2026-05-12 22:56:37.845774+00	2026-06-24 15:22:33.332674+00	2026-06-24 15:22:33.332674+00	{4384cea76da68ac38847f5a74a8ee772e409479d6db6b885b8c64803a0a90aa0,573fcf3e2e1ecc3484ab4cda81476a6403ab3c65c45f80c30966f47544d288e8}
-\.
-
-
---
--- Data for Name: active_entitlements; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+INSERT INTO public.cases VALUES (8, 'Brought my car to ACME auto Repair because of an engine noise when I picked the car and drove off I noticed the noise still existed when I returned to the dealership for the repair to be fixed they refused to do anymore work or or refund my money I took the car to another mechanic and received an estimate of the same amount $5000', 'intake_complete', 'san-diego', 1542.42, 'Money Owed', 'Paul Andrew', '(555) 555-5555', '1 Main Street', 'Corte Madera', 'CA', '94925', 'paul.innit.street.wear@gmail.com', 'ACME AUTO REPAIR', '(560) 555-5555', '1 Main Street', 'SAN DIEGO', 'CA', '94965', true, 'JOE JOE MCJOE', 'I am the plaintiff, Paul Andrew. Defendant ACME AUTO REPAIR is an auto repair business. On April 1, 2026, I brought my 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456) to ACME AUTO REPAIR for diagnosis and engine work to correct an engine “lifter noise.” ACME AUTO REPAIR agreed to perform the work and represented the engine noise would be fixed as part of the repair.
 
-COPY stripe.active_entitlements (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+On April 1, 2026, ACME AUTO REPAIR told me the work was completed and released the vehicle to me. Immediately after leaving, I could still hear the same engine noise. About two hours later, I returned to ACME AUTO REPAIR with a witness who heard the noise, and I told them the problem was not fixed. I asked ACME AUTO REPAIR to complete the repair or refund my payment, but they refused to do any further work and refused to refund me.
 
+I am asking for $1,542.42, which is the amount I paid ACME AUTO REPAIR for the diagnosis and engine work that did not fix the engine noise. I demanded that ACME AUTO REPAIR repair the vehicle or refund me by returning to the shop on April 1, 2026, and by email on April 2, 2026, but ACME AUTO REPAIR did not provide a repair or refund.', '04/01/2026 – 04/01/2026', ' $1,542.42 FROM CONTRACT AND CANCELLED CHECK', true, 'EMAIL AND VISIT BACK T SITE ON 4-1-26', '', 'where_contract_made_broken', false, NULL, false, false, false, 4, true, 4, 100, '2026-04-05 14:18:40.066557+00', '2026-05-21 16:57:39.094+00', 'sd-chula-vista', 'user_3Bti2v3Lju4bFfnrNdXfnq83Q3J', 'Paul Andrew  
+1 Main Street  
+Corte Madera, CA 94925  
+paul.innit.street.wear@gmail.com | (555) 555-5555  
 
---
--- Data for Name: charges; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+April 6, 2026  
 
-COPY stripe.charges (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+ACME AUTO REPAIR  
+1 Main Street  
+Sausalito, CA 94965  
 
+RE: Demand for Payment — 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456) / Engine “Lifter Noise” Repair  
 
---
--- Data for Name: checkout_session_line_items; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+You owe me $5,000.00 due to your failure to correct the engine “lifter noise” you represented would be fixed, and your refusal to complete the repair or refund my payment. This letter is my final demand before filing in court.  
 
-COPY stripe.checkout_session_line_items (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-2026-06-26 13:18:48.407551+00	2026-06-26 13:18:46+00	{"id": "li_1TmDB4GjdBAJdeVnP2JYykdK", "price": "price_1TlscwGjdBAJdeVnm4UN0EwC", "object": "item", "currency": "usd", "metadata": {}, "quantity": 1, "amount_tax": 0, "description": "Genie Plus: Paralegal Review", "amount_total": 15900, "amount_discount": 0, "amount_subtotal": 15900, "checkout_session": "cs_live_b1GRhoMIO1GyyJ1pU94av45oimu1zMA9ZacOwva9pvXBqe6vgmWEicGyi4", "adjustable_quantity": null}	acct_1TSm0YGjdBAJdeVn
-\.
+I am the plaintiff, Paul Andrew. I paid Acme Auto Body, located at 100 Main Street, Menlo Park, California 94025, $1,542.42 to diagnose and perform engine work to repair an engine “lifter noise” on my 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456), and Acme represented that it would fix the engine noise as part of the work. On April 1, 2026, I picked up my vehicle after the shop stated the work was completed, but immediately after leaving I could still hear the same engine noise; I returned to Acme about two hours later, spoke with the manager, John Doe, and demanded that Acme finish the repair or refund my money, and he refused to do either. A few days later, I took the vehicle to ABC Auto Body Repair for a second opinion and an estimate to correct the same engine noise, and ABC quoted $5,000.00 (Invoice No. ABC-040626-208 dated April 6, 2026) for corrective engine repair after verifying the noise remained.  
 
+Demand is hereby made for payment in the total amount of $5,000.00, representing the reasonable cost quoted/charged by ABC Auto Body Repair to repair the problem that remained after Acme’s work. You have until April 20, 2026 to remit payment in full.  
 
---
--- Data for Name: checkout_sessions; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+Failure to pay by this date will result in a court action filed against you in San-Diego County Small Claims Court. I will seek the full amount owed, plus court filing fees, service costs, and any other relief the court deems appropriate. I am prepared to file immediately upon expiration of this deadline.  
 
-COPY stripe.checkout_sessions (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-2026-06-26 13:18:47.08559+00	2026-06-26 13:18:46+00	{"id": "cs_live_b1GRhoMIO1GyyJ1pU94av45oimu1zMA9ZacOwva9pvXBqe6vgmWEicGyi4", "url": null, "mode": "payment", "locale": null, "object": "checkout.session", "status": "expired", "consent": null, "created": 1782393526, "invoice": null, "ui_mode": "hosted_page", "currency": "usd", "customer": null, "livemode": true, "metadata": {"userId": "user_3Bti2v3Lju4bFfnrNdXfnq83Q3J"}, "discounts": [], "cancel_url": "https://smallclaimsgenie.com/pricing?payment=cancelled", "expires_at": 1782479926, "custom_text": {"submit": null, "after_submit": null, "shipping_address": null, "terms_of_service_acceptance": null}, "permissions": null, "submit_type": null, "success_url": "https://smallclaimsgenie.com/dashboard?payment=success", "amount_total": 15900, "payment_link": null, "setup_intent": null, "subscription": null, "automatic_tax": {"status": null, "enabled": false, "provider": null, "liability": null}, "client_secret": null, "custom_fields": [], "shipping_cost": null, "total_details": {"amount_tax": 0, "amount_discount": 0, "amount_shipping": 0}, "customer_email": null, "origin_context": null, "payment_intent": null, "payment_status": "unpaid", "recovered_from": null, "wallet_options": null, "amount_subtotal": 15900, "adaptive_pricing": {"enabled": true}, "after_expiration": null, "customer_account": null, "customer_details": null, "invoice_creation": {"enabled": false, "invoice_data": {"footer": null, "issuer": null, "metadata": {}, "description": null, "custom_fields": null, "account_tax_ids": null, "rendering_options": null}}, "managed_payments": {"enabled": false}, "shipping_options": [], "branding_settings": {"icon": null, "logo": null, "font_family": "default", "border_style": "rounded", "button_color": "#0074d4", "display_name": "Small Claims Genie", "background_color": "#ffffff"}, "customer_creation": "if_required", "consent_collection": null, "client_reference_id": "user_3Bti2v3Lju4bFfnrNdXfnq83Q3J", "currency_conversion": null, "payment_method_types": ["card"], "allow_promotion_codes": true, "collected_information": null, "integration_identifier": null, "payment_method_options": {"card": {"request_three_d_secure": "automatic"}}, "phone_number_collection": {"enabled": false}, "payment_method_collection": "if_required", "billing_address_collection": null, "shipping_address_collection": null, "saved_payment_method_options": null, "payment_method_configuration_details": null}	acct_1TSm0YGjdBAJdeVn
-\.
+Sincerely,  
 
+Paul Andrew', 'firm', 'South County Division — Chula Vista Courthouse', '500 3rd Ave', 'Chula Vista', '91910', '(619) 746-6060', 'https://www.sdcourt.ca.gov', NULL, '[{"id": "e1", "item": "Written repair authorization / estimate you approved", "description": "Shows what Acme agreed to do and that you authorized it (paper form, email, text, or e-sign). Include anything describing the engine noise complaint and the promised fix."}, {"id": "e2", "item": "Proof the noise remained right after pickup", "description": "Same-day audio/video of the engine noise, dashcam clip, or a written statement from a passenger/witness who heard it when you drove away and when you returned."}, {"id": "e3", "item": "Any texts/emails/call logs with Acme about refusing to fix or refund", "description": "Helps show you promptly reported the problem and they refused. Include messages with the manager/service writer and any notes you wrote down with dates/times of in-person conversations."}, {"id": "e4", "item": "Independent mechanic report tying the problem to the same issue", "description": "A written diagnosis from the second shop stating the same engine lifter noise was still present and what repair is needed (not just a price)."}, {"id": "e5", "item": "Itemized quote (or receipt if you paid) for the follow-up repair", "description": "Shows the reasonable cost to correct what wasn’t fixed. Best if it lists labor hours, parts, and a clear description of the work."}, {"id": "e6", "item": "Vehicle history showing the noise wasn’t fixed by Acme", "description": "Any maintenance/repair history around that time (service records, dealer notes, or OBD scan reports) that supports the noise existed before Acme, remained immediately after, and was later diagnosed as needing further work."}]', '', '2026-05-17', '09:00', '', '', '', true, true, false, NULL, true, NULL, false, true, true, 'Paul Andrew  
+1 Main Street  
+Corte Madera, CA 94925  
+paul.innit.street.wear@gmail.com  
+(555) 555-5555  
 
---
--- Data for Name: coupons; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+April 6, 2026  
 
-COPY stripe.coupons (_updated_at, _last_synced_at, _raw_data) FROM stdin;
-\.
+ACME AUTO REPAIR  
+1 Main Street  
+Sausalito, CA 94965  
 
+RE: Settlement Offer — $1,156.82  
 
---
--- Data for Name: credit_notes; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+I am Paul Andrew. I have a money-owed dispute with ACME AUTO REPAIR and I have filed (or am ready to file) this matter in California small claims court. I am making this settlement offer to resolve the dispute without a hearing as a practical business decision to avoid the time and cost of court. My hearing is currently scheduled for Friday, April 17, 2026.  
 
-COPY stripe.credit_notes (_last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+On April 1, 2026, I brought my 2021 Mercedes-Benz CLA (VIN W1K5J4GB7MN123456) to ACME AUTO REPAIR for diagnosis and engine work to correct an engine “lifter noise.” ACME AUTO REPAIR agreed to perform the work and represented the engine noise would be fixed as part of the repair. Later that day, ACME AUTO REPAIR told me the work was completed and released the vehicle to me, but the same engine noise was still present immediately after leaving. About two hours later, I returned with a witness who heard the noise and asked ACME AUTO REPAIR to complete the repair or refund my payment, but ACME AUTO REPAIR refused. I am claiming $1,542.42, the amount I paid for the diagnosis and engine work that did not fix the engine noise, and I previously made a written demand (including by email on April 2, 2026) that was not resolved. This settlement offer is for less than my full claim amount to close the matter efficiently.  
 
+I will settle this dispute for $1,156.82, payable in 4 equal monthly installments of $289.20 each, with the first payment due within 30 days of your written acceptance and the remaining payments due monthly after that until paid in full. To accept, please send written confirmation by April 20, 2026 that you agree to the payment terms and the date you will make the first payment.  
 
---
--- Data for Name: customers; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+If you do not accept, I will continue to pursue the full amount of my claim of $1,542.42 in my small claims case and proceed toward the scheduled hearing on Friday, April 17, 2026. If I do not receive a response by April 20, 2026, I will proceed with my court case.  
 
-COPY stripe.customers (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+Sincerely,  
 
+Paul Andrew', 'firm', '## 1. TITLE  
+**SETTLEMENT AGREEMENT AND MUTUAL RELEASE**
 
---
--- Data for Name: disputes; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+---
 
-COPY stripe.disputes (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+## 2. PREAMBLE  
+This Settlement Agreement and Mutual Release (“**Agreement**”) is entered into as of **April 6, 2026** (“**Effective Date**”), by and between **Paul Andrew** (“**Plaintiff**” or “**Claimant**”), whose address is **1 Main Street, Corte Madera, CA 94925**, and **ACME AUTO REPAIR** (“**Defendant**” or “**Respondent**”), whose address is **1 Main Street, San Diego, CA 94965**. Plaintiff and Defendant may be referred to individually as a “**Party**” and collectively as the “**Parties**.”
 
+The purpose of this Agreement is to fully and finally resolve and settle all claims and disputes between the Parties arising out of or relating to the events described below and the pending or threatened California small claims action.
 
---
--- Data for Name: early_fraud_warnings; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+---
 
-COPY stripe.early_fraud_warnings (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+## 3. RECITALS  
+A. Plaintiff contends that on or about **April 1, 2026**, Plaintiff brought a **2021 Mercedes-Benz CLA**, VIN **W1K5J4GB7MN123456** (the “Vehicle”), to Defendant, an auto repair business, for diagnosis and engine work to correct an engine “lifter noise.” Plaintiff contends Defendant agreed to perform work and represented the engine noise would be fixed as part of the repair.
 
+B. Plaintiff contends that Defendant advised the work was completed on or about **April 1, 2026** and released the Vehicle to Plaintiff; Plaintiff contends the same engine noise remained immediately upon leaving, and Plaintiff returned to Defendant approximately two (2) hours later with a witness who also heard the noise. Plaintiff contends Plaintiff requested completion of the repair or a refund, and Defendant refused to do further work and refused to refund.
 
---
--- Data for Name: events; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+C. Plaintiff contends Plaintiff paid Defendant **$1,542.42** for the diagnosis and engine work and demanded repair or refund on April 1, 2026 and by email on April 2, 2026, without satisfactory resolution.
 
-COPY stripe.events (_updated_at, _last_synced_at, _raw_data) FROM stdin;
-\.
+D. A dispute exists between the Parties. Plaintiff has filed or threatened a claim in **California Small Claims Court**, **San Diego County Small Claims Court**, regarding “money owed,” related to the above events, with a scheduled hearing date of **Friday, April 17, 2026** (the “Action”). Case number: **[BLANK]**.
 
+E. The Parties desire to compromise and settle all disputes between them arising out of or relating to the above-described events and the Action, without further litigation, and with the understanding that this settlement is a compromise of disputed claims.
 
---
--- Data for Name: features; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+Therefore, in consideration of the mutual promises and covenants contained in this Agreement, the Parties agree as follows:
 
-COPY stripe.features (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+---
 
+## 4. SETTLEMENT PAYMENT  
+4.1 **Settlement Amount.** Defendant shall pay Plaintiff a total settlement amount of **One Thousand One Hundred Fifty-Six Dollars and Eighty-Two Cents ($1,156.82)** (“**Settlement Amount**”).
 
---
--- Data for Name: invoices; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+4.2 **Installment Schedule.** The Settlement Amount shall be paid in **four (4) equal monthly installments** of **Two Hundred Eighty-Nine Dollars and Twenty Cents ($289.20)** each (the “Installment Payments”), due and payable as follows:
 
-COPY stripe.invoices (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+- **1st Installment:** $289.20 due **within thirty (30) days after execution** of this Agreement (the “Execution Date”).  
+- **2nd Installment:** $289.20 due on the **same day-of-month** as the 1st Installment in the following month.  
+- **3rd Installment:** $289.20 due on the **same day-of-month** as the 1st Installment in the second following month.  
+- **4th Installment:** $289.20 due on the **same day-of-month** as the 1st Installment in the third following month.
 
+If a due date falls on a weekend or court holiday, payment shall be due the next business day.
 
---
--- Data for Name: payment_intents; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+4.3 **Method and Address for Payment.** All Installment Payments shall be made by **check** payable to **Paul Andrew** and delivered to: **Paul Andrew, 1 Main Street, Corte Madera, CA 94925**, or to such other address as Plaintiff designates in writing.
 
-COPY stripe.payment_intents (_last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+4.4 **Application of Payments.** Payments shall be credited upon receipt. Plaintiff may provide a written receipt upon request, but failure to provide a receipt does not affect the validity of payment.
 
+4.5 **Late Payments; Notice and Cure.** An Installment Payment is late if not received within **five (5) calendar days** after its due date. If a payment is late, Plaintiff shall provide written notice of default to Defendant (email and/or mail acceptable; notice address in Section 12). Defendant shall have **ten (10) calendar days** after Defendant’s receipt of the notice to cure by delivering the overdue amount.
 
---
--- Data for Name: payment_methods; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+4.6 **Acceleration Upon Uncured Default.** If Defendant fails to cure an installment default within the cure period, then (i) the remaining unpaid balance of the Settlement Amount shall become **immediately due and payable** upon written demand, and (ii) Plaintiff may pursue any lawful remedies, including seeking entry/enforcement of judgment in the Action to the extent permitted by law and consistent with this Agreement, and/or enforcement of this Agreement.
 
-COPY stripe.payment_methods (_last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+4.7 **No Setoff.** Defendant shall make payments without offset, deduction, counterclaim, or recoupment.
 
+---
 
---
--- Data for Name: payouts; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+## 5. MUTUAL RELEASE OF ALL CLAIMS  
+5.1 **Plaintiff’s Release of Defendant.** Upon Plaintiff’s receipt of the full Settlement Amount (i.e., all four Installment Payments have been received and cleared), Plaintiff, on behalf of Plaintiff and Plaintiff’s heirs, executors, administrators, representatives, successors, and assigns, fully and forever releases and discharges Defendant and Defendant’s past, present, and future owners, members, managers, officers, directors, shareholders, employees, agents, representatives, insurers, attorneys, predecessors, successors, and assigns (collectively, “**Defendant Released Parties**”) from any and all claims, demands, causes of action, obligations, damages, losses, costs, expenses, and liabilities of every kind and nature, whether known or unknown, suspected or unsuspected, asserted or unasserted, that arise out of or relate to: (a) the Vehicle, (b) the April 1, 2026 diagnosis and engine work, (c) any communications, invoices, estimates, representations, or services related thereto, and (d) the Action (collectively, the “**Released Matters**”).
 
-COPY stripe.payouts (_updated_at, _last_synced_at, _raw_data) FROM stdin;
-\.
+5.2 **Defendant’s Release of Plaintiff.** Upon Plaintiff’s receipt of the full Settlement Amount, Defendant, on behalf of Defendant and Defendant’s past, present, and future owners, members, managers, officers, directors, shareholders, employees, agents, representatives, insurers, attorneys, predecessors, successors, and assigns, fully and forever releases and discharges Plaintiff and Plaintiff’s heirs, executors, administrators, representatives, successors, and assigns (collectively, “**Plaintiff Released Parties**”) from any and all claims, demands, causes of action, obligations, damages, losses, costs, expenses, and liabilities of every kind and nature, whether known or unknown, suspected or unsuspected, asserted or unasserted, arising out of or relating to the Released Matters and/or the Action.
 
+5.3 **California Civil Code Section 1542 Waiver.** Upon Plaintiff’s receipt of the full Settlement Amount, each Party expressly waives and relinquishes any and all rights and benefits under **California Civil Code section 1542**, which provides:
 
---
--- Data for Name: plans; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+> “A GENERAL RELEASE DOES NOT EXTEND TO CLAIMS THAT THE CREDITOR OR RELEASING PARTY DOES NOT KNOW OR SUSPECT TO EXIST IN HIS OR HER FAVOR AT THE TIME OF EXECUTING THE RELEASE AND THAT, IF KNOWN BY HIM OR HER, WOULD HAVE MATERIALLY AFFECTED HIS OR HER SETTLEMENT WITH THE DEBTOR OR RELEASED PARTY.”
 
-COPY stripe.plans (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+Each Party acknowledges that it may discover facts different from or in addition to those now known or believed to be true with respect to the Released Matters, but it is the intention of the Parties that the releases given in this Agreement shall be and remain effective in all respects notwithstanding such different or additional facts.
 
+5.4 **Scope; No Release of Unrelated Matters.** The releases in this Agreement are intended to cover the Released Matters. Claims wholly unrelated to the Released Matters are not released.
 
---
--- Data for Name: prices; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+5.5 **Condition Precedent.** The releases in this Section 5 are expressly conditioned upon Plaintiff’s receipt of the full Settlement Amount.
 
-COPY stripe.prices (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-2026-05-02 22:53:50.796243+00	2026-05-02 22:53:50+00	{"id": "price_1TSmPyGsJamlGRz5Pis1jFyl", "type": "one_time", "active": true, "object": "price", "created": 1777762430, "product": "prod_URflhZ44lEopqL", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 15900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "15900"}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:33.588846+00	2026-05-12 19:18:33+00	{"id": "price_1TWLp7GsJamlGRz5gR3BbYf4", "type": "one_time", "active": true, "object": "price", "created": 1778613513, "product": "prod_UVMYDY6yV8sEpb", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 7900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "7900"}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:34.194295+00	2026-05-12 19:18:33+00	{"id": "price_1TWLp7GsJamlGRz5XNkOi39u", "type": "one_time", "active": true, "object": "price", "created": 1778613513, "product": "prod_UVMYdxyx8j0e4y", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:34.864236+00	2026-05-12 19:18:34+00	{"id": "price_1TWLp8GsJamlGRz5TtlBpbYL", "type": "one_time", "active": true, "object": "price", "created": 1778613514, "product": "prod_UVMYAh9qSVasf6", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:35.495449+00	2026-05-12 19:18:35+00	{"id": "price_1TWLp9GsJamlGRz50h0u3PEA", "type": "one_time", "active": true, "object": "price", "created": 1778613515, "product": "prod_UVMYp4MMQdFT94", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:36.499154+00	2026-05-12 19:18:35+00	{"id": "price_1TWLp9GsJamlGRz5ekweRXnF", "type": "one_time", "active": true, "object": "price", "created": 1778613515, "product": "prod_UVMYx4peDDEnK2", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 8900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "8900"}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:37.068711+00	2026-05-12 19:18:36+00	{"id": "price_1TWLpAGsJamlGRz5rORS5JSB", "type": "one_time", "active": true, "object": "price", "created": 1778613516, "product": "prod_UVMYrzhsY5hkqc", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}	acct_1TSm0mGsJamlGRz5
-2026-05-12 23:02:47.7184+00	2026-05-12 23:02:47+00	{"id": "price_1TWPK7GjdBAJdeVnCxhjPd16", "type": "one_time", "active": true, "object": "price", "created": 1778626967, "product": "prod_UVQAo61jrin0Yx", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 7900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "7900"}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:48.242815+00	2026-05-12 23:02:47+00	{"id": "price_1TWPK7GjdBAJdeVn2oiUICcS", "type": "one_time", "active": true, "object": "price", "created": 1778626967, "product": "prod_UVQABSOxEr1iY4", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:48.904419+00	2026-05-12 23:02:48+00	{"id": "price_1TWPK8GjdBAJdeVnbNR8Nt49", "type": "one_time", "active": true, "object": "price", "created": 1778626968, "product": "prod_UVQAEtNHI3C6FM", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:49.507103+00	2026-05-12 23:02:49+00	{"id": "price_1TWPK9GjdBAJdeVnjq1lSYn7", "type": "one_time", "active": true, "object": "price", "created": 1778626969, "product": "prod_UVQAqYXybODNut", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:50.156233+00	2026-05-12 23:02:49+00	{"id": "price_1TWPK9GjdBAJdeVnf4YKjvX8", "type": "one_time", "active": true, "object": "price", "created": 1778626969, "product": "prod_UVQAWDSQoD7aY6", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 15900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "15900"}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:50.782413+00	2026-05-12 23:02:50+00	{"id": "price_1TWPKAGjdBAJdeVnHflaeF8s", "type": "one_time", "active": true, "object": "price", "created": 1778626970, "product": "prod_UVQAzvNk1wVChH", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 8900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "8900"}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:51.448853+00	2026-05-12 23:02:50+00	{"id": "price_1TWPKAGjdBAJdeVnpSkVRVNS", "type": "one_time", "active": true, "object": "price", "created": 1778626970, "product": "prod_UVQAFvC6UZfmUJ", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}	acct_1TSm0YGjdBAJdeVn
-2026-06-26 13:18:48.400516+00	2026-06-26 13:18:48.4+00	{"id": "price_1TlscwGjdBAJdeVnm4UN0EwC", "type": "one_time", "active": true, "object": "price", "created": 1782314530, "product": "prod_UlPRvVh6N9bUBR", "currency": "usd", "livemode": true, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 15900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "15900"}	acct_1TSm0YGjdBAJdeVn
-\.
+---
 
+## 6. DISMISSAL  
+6.1 **Dismissal Upon Full Payment.** Within **five (5) court days** after Plaintiff’s receipt and clearance of the final Installment Payment (i.e., full payment of the Settlement Amount), Plaintiff shall file a request to dismiss the Action **with prejudice**, with each Party to bear its own costs and fees, except as otherwise provided by this Agreement.
 
---
--- Data for Name: products; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+6.2 **If a Dismissal Form Is Required.** The Parties agree to reasonably cooperate in executing any additional court forms necessary to effectuate dismissal, including any request/dismissal form required by the Small Claims Court.
 
-COPY stripe.products (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-2026-05-02 22:53:50.558078+00	2026-05-02 22:53:50+00	{"id": "prod_URflhZ44lEopqL", "url": null, "name": "Genie Plus: Paralegal Review", "type": "service", "active": true, "images": [], "object": "product", "created": 1777762430, "updated": 1777762430, "livemode": false, "metadata": {"plan": "paralegal"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Small Claims Genie AI tools plus personalized document review and hearing prep from a trained paralegal.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:33.357816+00	2026-05-12 19:18:32+00	{"id": "prod_UVMYDY6yV8sEpb", "url": null, "name": "Personal Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613512, "updated": 1778613512, "livemode": false, "metadata": {"plan": "personal_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:33.942231+00	2026-05-12 19:18:33+00	{"id": "prod_UVMYdxyx8j0e4y", "url": null, "name": "Personal Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613513, "updated": 1778613513, "livemode": false, "metadata": {"plan": "personal_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:34.648554+00	2026-05-12 19:18:34+00	{"id": "prod_UVMYAh9qSVasf6", "url": null, "name": "Business Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613514, "updated": 1778613514, "livemode": false, "metadata": {"plan": "business_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0mGsJamlGRz5
-2026-05-12 23:02:49.90316+00	2026-05-12 23:02:49+00	{"id": "prod_UVQAWDSQoD7aY6", "url": null, "name": "Genie Plus: Paralegal Review", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626969, "updated": 1778626969, "livemode": false, "metadata": {"plan": "paralegal"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Small Claims Genie AI tools plus personalized document review and hearing prep from a trained paralegal.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 19:18:35.275268+00	2026-05-12 19:18:34+00	{"id": "prod_UVMYp4MMQdFT94", "url": null, "name": "Business Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613514, "updated": 1778613514, "livemode": false, "metadata": {"plan": "business_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:18:36.176721+00	2026-05-12 19:18:35+00	{"id": "prod_UVMYx4peDDEnK2", "url": null, "name": "Post-Judgment Collection (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613515, "updated": 1778613515, "livemode": false, "metadata": {"plan": "collection_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0mGsJamlGRz5
-2026-05-12 19:19:16.515111+00	2026-05-12 19:19:16+00	{"id": "prod_UVMYrzhsY5hkqc", "url": null, "name": "Post-Judgment Collection ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613516, "updated": 1778613556, "livemode": false, "metadata": {"plan": "collection_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0mGsJamlGRz5
-2026-05-12 23:02:47.4967+00	2026-05-12 23:02:46+00	{"id": "prod_UVQAo61jrin0Yx", "url": null, "name": "Personal Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626966, "updated": 1778626966, "livemode": false, "metadata": {"plan": "personal_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:48.043745+00	2026-05-12 23:02:47+00	{"id": "prod_UVQABSOxEr1iY4", "url": null, "name": "Personal Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626967, "updated": 1778626967, "livemode": false, "metadata": {"plan": "personal_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:48.674844+00	2026-05-12 23:02:48+00	{"id": "prod_UVQAEtNHI3C6FM", "url": null, "name": "Business Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626968, "updated": 1778626968, "livemode": false, "metadata": {"plan": "business_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:49.315826+00	2026-05-12 23:02:48+00	{"id": "prod_UVQAqYXybODNut", "url": null, "name": "Business Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626968, "updated": 1778626968, "livemode": false, "metadata": {"plan": "business_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:50.536902+00	2026-05-12 23:02:50+00	{"id": "prod_UVQAzvNk1wVChH", "url": null, "name": "Post-Judgment Collection (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626970, "updated": 1778626970, "livemode": false, "metadata": {"plan": "collection_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0YGjdBAJdeVn
-2026-05-12 23:02:51.170458+00	2026-05-12 23:02:50+00	{"id": "prod_UVQAFvC6UZfmUJ", "url": null, "name": "Post-Judgment Collection ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626970, "updated": 1778626970, "livemode": false, "metadata": {"plan": "collection_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}	acct_1TSm0YGjdBAJdeVn
-\.
+6.3 **No Obligation to Dismiss Before Full Payment.** Plaintiff is not required to dismiss the Action unless and until the Settlement Amount has been paid in full and cleared.
 
+---
 
---
--- Data for Name: refunds; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+## 7. NO ADMISSION OF LIABILITY  
+This Agreement is a compromise of disputed claims. Neither this Agreement nor any consideration paid under it shall be construed as, or deemed to be, an admission of liability, fault, or wrongdoing by any Party or any released party. Defendant expressly denies liability.
 
-COPY stripe.refunds (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+---
 
+## 8. ENTIRE AGREEMENT  
+This Agreement constitutes the entire agreement between the Parties regarding the subject matter hereof and supersedes all prior and contemporaneous negotiations, discussions, understandings, or agreements, whether oral or written. Any amendment or modification must be in writing and signed by both Parties.
 
---
--- Data for Name: reviews; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+---
 
-COPY stripe.reviews (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+## 9. CONFIDENTIALITY  
+9.1 **Confidential Settlement Terms.** The Parties agree that the existence of this Agreement, the Settlement Amount, the payment terms, and all non-public negotiations and communications leading to this Agreement (“**Confidential Information**”) shall be kept confidential and shall not be disclosed to any person or entity except as permitted below.
 
+9.2 **Permitted Disclosures.** Confidential Information may be disclosed only: (a) to a Party’s spouse or domestic partner, attorneys, accountants, tax advisors, or other professional advisors who have a need to know and who are informed of and agree to maintain confidentiality; (b) as required by court order, subpoena, or applicable law (provided the disclosing Party, to the extent lawful, gives prompt notice to the other Party and reasonably cooperates to seek confidential treatment); (c) to enforce this Agreement; (d) to the Small Claims Court as reasonably necessary to effectuate dismissal and/or respond to court inquiries; (e) to Defendant’s insurer (if any) related to the Released Matters; and (f) as otherwise agreed in writing by the Parties.
 
---
--- Data for Name: setup_intents; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+9.3 **No Publicity.** The Parties agree not to issue public statements, press releases, online postings, or advertisements regarding the Released Matters or the settlement terms.
 
-COPY stripe.setup_intents (_last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+---
 
+## 10. GOVERNING LAW  
+This Agreement shall be governed by and construed in accordance with the laws of the **State of California**, without regard to conflict-of-law principles. Venue for any action to enforce or interpret this Agreement shall be in a court of competent jurisdiction in **San Diego County, California**, unless the Parties agree otherwise in writing.
 
---
--- Data for Name: subscription_items; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+---
 
-COPY stripe.subscription_items (_last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+## 11. COUNTERPARTS  
+This Agreement may be executed in counterparts, each of which is deemed an original, and all of which together constitute one and the same instrument. Signatures transmitted by PDF/email or other electronic means shall be treated as original signatures to the fullest extent permitted by law.
 
+---
 
---
--- Data for Name: subscription_schedules; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+## SIGNATURE BLOCK
 
-COPY stripe.subscription_schedules (_last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+**PLAINTIFF / CLAIMANT:**  
 
+Signature: _______________________________  
+Printed Name: **Paul Andrew**  
+Date: ___________________  
+Address: **1 Main Street, Corte Madera, CA 94925**  
 
---
--- Data for Name: subscriptions; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+---
 
-COPY stripe.subscriptions (_updated_at, _last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+**DEFENDANT / RESPONDENT:** **ACME AUTO REPAIR**  
 
+By (Signature): ___________________________  
+Printed Name: ____________________________ [BLANK]  
+Title/Capacity (e.g., Owner/Manager/Authorized Agent): ____________________ [BLANK]  
+Date: ___________________  
+Address: **1 Main Street, San Diego, CA 94965**  
 
---
--- Data for Name: tax_ids; Type: TABLE DATA; Schema: stripe; Owner: postgres
---
+---
 
-COPY stripe.tax_ids (_last_synced_at, _raw_data, _account_id) FROM stdin;
-\.
+**NOTICE INFORMATION (for Section 4.5 default notice and other notices):**  
+Plaintiff notice email (optional): ____________________ [BLANK]  
+Defendant notice email (optional): ____________________ [BLANK]  
+Additional/alternate notice address (if any): ____________________ [BLANK]', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.cases VALUES (1, 'MONEY OWED FOR CAR RENTALS', 'intake_complete', 'sonoma', 12000, 'Other', 'JON DOE', '5555555555', '1000 MAIN ST', 'MARIN', 'CA', '94965', '', 'JANE DOE', '', '666 EVIL ST', 'MENLO PAR', 'CA', '94063', false, '', 'During a family law case court order required the defendant to allow me to use a vehicle I incurred a lot of rental charges because she hid the car and kept it from me', '01/01/2026', 'my actual expenses were calculated di....f of rental sites where I rented cars', false, '', '', 'where_damage_happened', false, '', false, false, false, 7, true, 3, 90, '2026-04-01 16:36:44.201884+00', '2026-04-02 14:05:58.682+00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, false, NULL, false, NULL, false, false, false, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.cases VALUES (2, 'recurit deposit not returned', 'intake_complete', 'ventura', 5000, 'Other', 'Paul ffff', '2136433670', '1 main', 'Sausalito', 'CA', '94965-1439', '', 'log girl', '5555555', ' Hobart St', 'Menlo Park', 'CA', '94025', false, '', 'LANDLORD DID NOT RETURN SECURITY DEPOSIT OR GIVE REASON', 'O1/012025', '5000 WAS ON LEASE', true, 'EMAIL  LAST WEEK', '', 'where_defendant_lives', false, '', false, false, false, 7, true, 0, 0, '2026-04-02 14:30:14.302875+00', '2026-04-02 15:30:20.563+00', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, false, NULL, false, NULL, false, false, false, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.cases VALUES (407, 'FL Miami-Dade CLK-CT-333 Signed Test Case (auto-cleanup)', 'draft', 'fl-miami-dade', 2400, 'goods', 'Maria Gonzalez', '305-555-0101', '1234 Brickell Ave', 'Miami', 'FL', '33131', 'maria.gonzalez@example.com', 'South Florida Contractors LLC', '305-555-0202', '9876 SW 8th St', 'Miami', 'FL', '33144', false, NULL, 'Defendant failed to complete the contracted renovation work despite receiving full payment. Plaintiff made multiple requests for completion or refund, all of which were ignored.', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 1, false, 0, 0, '2026-06-29 20:24:17.210696+00', '2026-06-29 20:24:17.210696+00', NULL, 'test-fl-clkct333-signed-e2e', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, false, NULL, false, NULL, false, false, false, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.cases VALUES (987, 'TX JP Verify (auto-cleanup)', 'draft', 'tx-travis', 4850.75, 'goods', 'Maria Gonzalez', '512-555-0142', '742 Evergreen Terrace', 'Austin', 'TX', '78701', 'maria@example.com', 'Lone Star Auto Repair LLC', '512-555-0199', '1900 E Riverside Dr', 'Austin', 'TX', '78741', true, 'Robert Kingsley', 'Defendant was paid in full to rebuild the transmission on plaintiff''s 2015 Honda Accord but returned the vehicle with the same failure, refused to honor the written warranty, and has not refunded the $4,850.75 paid despite repeated written demands over a three-month period.', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 1, false, 0, 0, '2026-07-09 17:11:48.850051+00', '2026-07-09 17:11:48.850051+00', NULL, 'tx-jp-verify-e2e', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'J2-CV-24-001234', NULL, NULL, NULL, NULL, NULL, false, false, false, NULL, false, NULL, false, false, false, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '1900 E Riverside Dr', 'Austin', NULL, '78741', NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.cases VALUES (93, 'IL SMC Complaint E2E Test', 'draft', 'il-cook', 3500, 'services', 'Jane Smith', '(312) 555-1234', '123 Main St', 'Chicago', 'IL', '60601', 'jane@example.com', 'ABC Hardware LLC', NULL, '456 Oak Ave', 'Chicago', 'IL', '60602', false, NULL, 'Defendant failed to complete contracted home repair work and refused to refund the deposit paid.', NULL, 'Deposit paid was $3,500 which was never refunded.', NULL, NULL, NULL, NULL, false, NULL, false, false, false, 1, false, 0, 0, '2026-06-23 18:00:13.730027+00', '2026-06-23 18:00:13.730027+00', NULL, 'test-il-smc-complaint-e2e', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, false, NULL, false, NULL, false, false, false, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'IL', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.cases VALUES (988, 'TX JP Verify (auto-cleanup)', 'draft', 'tx-travis', 4850.75, 'goods', 'Maria Gonzalez', '512-555-0142', '742 Evergreen Terrace', 'Austin', 'TX', '78701', 'maria@example.com', 'Lone Star Auto Repair LLC', '512-555-0199', '1900 E Riverside Dr', 'Austin', 'TX', '78741', true, 'Robert Kingsley', 'Defendant was paid in full to rebuild the transmission on plaintiff''s 2015 Honda Accord but returned the vehicle with the same failure, refused to honor the written warranty, and has not refunded the $4,850.75 paid despite repeated written demands over a three-month period.', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 1, false, 0, 0, '2026-07-09 17:16:26.449167+00', '2026-07-09 17:16:26.449167+00', NULL, 'tx-jp-verify-e2e', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'J2-CV-24-001234', NULL, NULL, NULL, NULL, NULL, false, false, false, NULL, false, NULL, false, false, false, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '1900 E Riverside Dr', 'Austin', NULL, '78741', NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.cases VALUES (1103, 'Diag Test', 'draft', 'fl-hillsborough', NULL, NULL, 'Jane Smith', '(813) 555-9876', '456 Oak Ave', 'Tampa', 'FL', '33601', 'jane@test.com', NULL, NULL, NULL, NULL, 'CA', NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 1, false, 0, 0, '2026-07-11 04:10:29.111688+00', '2026-07-11 04:10:29.111688+00', NULL, 'diag-test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SC-TEST-999', NULL, NULL, NULL, NULL, NULL, false, false, false, NULL, false, NULL, false, false, false, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, false, NULL, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 
 --
--- Name: beta_access_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Data for Name: chat_messages; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.beta_access_id_seq', 1, true);
 
 
 --
--- Name: cases_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Data for Name: conversations; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.cases_id_seq', 903, true);
 
 
---
--- Name: chat_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+-- Data for Name: counties; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.counties VALUES ('alameda', 'Alameda', 'CA', 'Alameda County Superior Court', '1225 Fallon St', 'Oakland', '94612', 30, 50, 75, '(510) 891-6000', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('alpine', 'Alpine', 'CA', 'Alpine County Superior Court', '99 Water St', 'Markleeville', '96120', 30, 50, 75, '(530) 694-2113', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('amador', 'Amador', 'CA', 'Amador County Superior Court', '500 Argonaut Ln', 'Jackson', '95642', 30, 50, 75, '(209) 257-2600', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('butte', 'Butte', 'CA', 'Butte County Superior Court', '1775 Concord Ave', 'Chico', '95928', 30, 50, 75, '(530) 532-7002', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('calaveras', 'Calaveras', 'CA', 'Calaveras County Superior Court', '891 Mountain Ranch Rd', 'San Andreas', '95249', 30, 50, 75, '(209) 754-9800', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('colusa', 'Colusa', 'CA', 'Colusa County Superior Court', '532 Oak St', 'Colusa', '95932', 30, 50, 75, '(530) 458-5149', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('contra-costa', 'Contra Costa', 'CA', 'Contra Costa County Superior Court', '725 Court St', 'Martinez', '94553', 30, 50, 75, '(925) 608-1000', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('del-norte', 'Del Norte', 'CA', 'Del Norte County Superior Court', '450 H St', 'Crescent City', '95531', 30, 50, 75, '(707) 465-2400', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('el-dorado', 'El Dorado', 'CA', 'El Dorado County Superior Court', '495 Main St', 'Placerville', '95667', 30, 50, 75, '(530) 621-7400', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('fresno', 'Fresno', 'CA', 'Fresno County Superior Court', '1130 O St', 'Fresno', '93721', 30, 50, 75, '(559) 457-1600', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('glenn', 'Glenn', 'CA', 'Glenn County Superior Court', '526 W Sycamore St', 'Willows', '95988', 30, 50, 75, '(530) 934-6446', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('humboldt', 'Humboldt', 'CA', 'Humboldt County Superior Court', '825 5th St', 'Eureka', '95501', 30, 50, 75, '(707) 269-1200', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('imperial', 'Imperial', 'CA', 'Imperial County Superior Court', '939 W Main St', 'El Centro', '92243', 30, 50, 75, '(760) 482-2248', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('inyo', 'Inyo', 'CA', 'Inyo County Superior Court', '168 N Edwards St', 'Independence', '93526', 30, 50, 75, '(760) 872-2631', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('kern', 'Kern', 'CA', 'Kern County Superior Court', '1415 Truxtun Ave', 'Bakersfield', '93301', 30, 50, 75, '(661) 868-5000', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('kings', 'Kings', 'CA', 'Kings County Superior Court', '1426 S Drive', 'Hanford', '93230', 30, 50, 75, '(559) 582-1010', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('lake', 'Lake', 'CA', 'Lake County Superior Court', '255 N Forbes St', 'Lakeport', '95453', 30, 50, 75, '(707) 263-2374', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('lassen', 'Lassen', 'CA', 'Lassen County Superior Court', '2610 Riverside Dr', 'Susanville', '96130', 30, 50, 75, '(530) 251-8205', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('los-angeles', 'Los Angeles', 'CA', 'Los Angeles Superior Court - Stanley Mosk Courthouse', '111 N Hill St', 'Los Angeles', '90012', 30, 50, 75, '(213) 830-0803', NULL, 'Multiple courthouse locations. Check lacourt.org for the location nearest you.', '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('madera', 'Madera', 'CA', 'Madera County Superior Court', '200 S G St', 'Madera', '93637', 30, 50, 75, '(559) 416-5700', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('marin', 'Marin', 'CA', 'Marin County Superior Court', '3501 Civic Center Dr', 'San Rafael', '94903', 30, 50, 75, '(415) 444-7000', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('mariposa', 'Mariposa', 'CA', 'Mariposa County Superior Court', '5088 Bullion St', 'Mariposa', '95338', 30, 50, 75, '(209) 966-2005', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('mendocino', 'Mendocino', 'CA', 'Mendocino County Superior Court', '100 N State St', 'Ukiah', '95482', 30, 50, 75, '(707) 463-4202', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('merced', 'Merced', 'CA', 'Merced County Superior Court', '627 W 21st St', 'Merced', '95340', 30, 50, 75, '(209) 725-4100', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('modoc', 'Modoc', 'CA', 'Modoc County Superior Court', '204 S Court St', 'Alturas', '96101', 30, 50, 75, '(530) 233-6200', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('mono', 'Mono', 'CA', 'Mono County Superior Court', '100 Tunney View Dr', 'Bridgeport', '93517', 30, 50, 75, '(760) 932-5233', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('monterey', 'Monterey', 'CA', 'Monterey County Superior Court', '1200 Aguajito Rd', 'Monterey', '93940', 30, 50, 75, '(831) 775-5400', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('napa', 'Napa', 'CA', 'Napa County Superior Court', '825 Brown St', 'Napa', '94559', 30, 50, 75, '(707) 299-1100', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('nevada', 'Nevada', 'CA', 'Nevada County Superior Court', '201 Church St', 'Nevada City', '95959', 30, 50, 75, '(530) 265-1293', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('orange', 'Orange', 'CA', 'Orange County Superior Court - Harbor Justice Center', '4601 Jamboree Rd', 'Newport Beach', '92660', 30, 50, 75, '(657) 622-5000', NULL, 'Multiple courthouse locations. Check occourts.org for the location nearest you.', '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('placer', 'Placer', 'CA', 'Placer County Superior Court', '10820 Justice Center Dr', 'Roseville', '95678', 30, 50, 75, '(530) 886-5200', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('plumas', 'Plumas', 'CA', 'Plumas County Superior Court', '520 Main St', 'Quincy', '95971', 30, 50, 75, '(530) 283-6305', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('riverside', 'Riverside', 'CA', 'Riverside County Superior Court - Historic Courthouse', '4050 Main St', 'Riverside', '92501', 30, 50, 75, '(951) 777-3000', NULL, 'Multiple courthouse locations throughout Riverside County.', '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('sacramento', 'Sacramento', 'CA', 'Sacramento County Superior Court - Gordon D. Schaber Courthouse', '720 9th St', 'Sacramento', '95814', 30, 50, 75, '(916) 874-5522', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('san-benito', 'San Benito', 'CA', 'San Benito County Superior Court', '440 5th St', 'Hollister', '95023', 30, 50, 75, '(831) 636-4057', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('san-bernardino', 'San Bernardino', 'CA', 'San Bernardino County Superior Court - Central Division', '247 W 3rd St', 'San Bernardino', '92415', 30, 50, 75, '(909) 708-8678', NULL, 'Multiple courthouse locations throughout San Bernardino County.', '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('san-diego', 'San Diego', 'CA', 'San Diego County Superior Court - Hall of Justice', '330 W Broadway', 'San Diego', '92101', 30, 50, 75, '(619) 450-7060', NULL, 'Multiple courthouse locations. Check sdcourt.ca.gov for the location nearest you.', '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('san-francisco', 'San Francisco', 'CA', 'San Francisco Superior Court', '400 McAllister St', 'San Francisco', '94102', 30, 50, 75, '(415) 551-3770', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('san-joaquin', 'San Joaquin', 'CA', 'San Joaquin County Superior Court', '180 E Weber Ave', 'Stockton', '95202', 30, 50, 75, '(209) 992-5693', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('san-luis-obispo', 'San Luis Obispo', 'CA', 'San Luis Obispo County Superior Court', '1035 Palm St', 'San Luis Obispo', '93408', 30, 50, 75, '(805) 781-5421', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('san-mateo', 'San Mateo', 'CA', 'San Mateo County Superior Court', '400 County Center', 'Redwood City', '94063', 30, 50, 75, '(650) 261-5100', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('santa-barbara', 'Santa Barbara', 'CA', 'Santa Barbara County Superior Court', '1100 Anacapa St', 'Santa Barbara', '93101', 30, 50, 75, '(805) 882-4600', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('santa-clara', 'Santa Clara', 'CA', 'Santa Clara County Superior Court - Downtown Superior Court', '191 N 1st St', 'San Jose', '95113', 30, 50, 75, '(408) 882-2100', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('santa-cruz', 'Santa Cruz', 'CA', 'Santa Cruz County Superior Court', '701 Ocean St', 'Santa Cruz', '95060', 30, 50, 75, '(831) 420-2200', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('shasta', 'Shasta', 'CA', 'Shasta County Superior Court', '1500 Court St', 'Redding', '96001', 30, 50, 75, '(530) 245-6789', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('sierra', 'Sierra', 'CA', 'Sierra County Superior Court', '100 Courthouse Square', 'Downieville', '95936', 30, 50, 75, '(530) 289-3698', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('siskiyou', 'Siskiyou', 'CA', 'Siskiyou County Superior Court', '311 4th St', 'Yreka', '96097', 30, 50, 75, '(530) 841-2900', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('solano', 'Solano', 'CA', 'Solano County Superior Court', '600 Union Ave', 'Fairfield', '94533', 30, 50, 75, '(707) 207-7330', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('sonoma', 'Sonoma', 'CA', 'Sonoma County Superior Court', '600 Administration Dr', 'Santa Rosa', '95403', 30, 50, 75, '(707) 521-6500', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('stanislaus', 'Stanislaus', 'CA', 'Stanislaus County Superior Court', '800 11th St', 'Modesto', '95353', 30, 50, 75, '(209) 530-3100', NULL, NULL, '2026-07-16 02:16:17.912383+00');
+INSERT INTO public.counties VALUES ('sutter', 'Sutter', 'CA', 'Sutter County Superior Court', '1175 Court St', 'Yuba City', '95991', 30, 50, 75, '(530) 822-3300', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('tehama', 'Tehama', 'CA', 'Tehama County Superior Court', '633 Washington St', 'Red Bluff', '96080', 30, 50, 75, '(530) 527-3350', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('trinity', 'Trinity', 'CA', 'Trinity County Superior Court', '101 Court St', 'Weaverville', '96093', 30, 50, 75, '(530) 623-1208', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('tulare', 'Tulare', 'CA', 'Tulare County Superior Court', '221 S Mooney Blvd', 'Visalia', '93291', 30, 50, 75, '(559) 730-5000', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('tuolumne', 'Tuolumne', 'CA', 'Tuolumne County Superior Court', '41 W Yaney Ave', 'Sonora', '95370', 30, 50, 75, '(209) 533-5519', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('ventura', 'Ventura', 'CA', 'Ventura County Superior Court - Hall of Justice', '800 S Victoria Ave', 'Ventura', '93009', 30, 50, 75, '(805) 289-8900', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('yolo', 'Yolo', 'CA', 'Yolo County Superior Court', '1000 Main St', 'Woodland', '95695', 30, 50, 75, '(530) 406-6700', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('yuba', 'Yuba', 'CA', 'Yuba County Superior Court', '215 5th St', 'Marysville', '95901', 30, 50, 75, '(530) 740-1800', NULL, NULL, '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-alachua', 'Alachua', 'FL', 'Alachua County Courthouse', '201 East University Avenue', 'Gainesville', '32601', 80, 175, 300, '352-374-3636', 'https://www.alachuacounty.us', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-baker', 'Baker', 'FL', 'Baker County Courthouse', '339 East Macclenny Avenue', 'Macclenny', '32063', 80, 175, 300, '904-259-0209', 'https://www.bakerclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-bay', 'Bay', 'FL', 'Bay County Courthouse', '300 East 4th Street', 'Panama City', '32401', 80, 175, 300, '850-763-9061', 'https://baycoclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-bradford', 'Bradford', 'FL', 'Bradford County Courthouse', '945 North Temple Avenue', 'Starke', '32091', 80, 175, 300, '904-966-6280', 'https://bradfordclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-brevard', 'Brevard', 'FL', 'Brevard County Courthouse', '2825 Judge Fran Jamieson Way', 'Viera', '32940', 80, 175, 300, '321-637-2000', 'https://brevardclerk.us', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-broward', 'Broward', 'FL', 'Broward County Courthouse', '201 Southeast 6th Street', 'Fort Lauderdale', '33301', 80, 175, 300, '954-831-6565', 'https://www.browardclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-calhoun', 'Calhoun', 'FL', 'Calhoun County Courthouse', '20859 Central Avenue East, Room 130', 'Blountstown', '32424', 80, 175, 300, '850-674-4545', 'https://www.calhounclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-charlotte', 'Charlotte', 'FL', 'Charlotte County Justice Center', '350 East Marion Avenue', 'Punta Gorda', '33950', 80, 175, 300, '941-505-4716', 'https://clerkportal.charlotteclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-citrus', 'Citrus', 'FL', 'Citrus County Courthouse', '110 North Apopka Avenue', 'Inverness', '34450', 80, 175, 300, '352-341-6424', 'https://www.citrusclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-clay', 'Clay', 'FL', 'Clay County Courthouse', '825 North Orange Avenue', 'Green Cove Springs', '32043', 80, 175, 300, '904-269-6302', 'https://clayclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-collier', 'Collier', 'FL', 'Collier County Courthouse', '3315 Tamiami Trail East, Suite 102', 'Naples', '34112', 80, 175, 300, '239-252-2646', 'https://collierclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-columbia', 'Columbia', 'FL', 'Columbia County Courthouse', '173 Northeast Hernando Avenue', 'Lake City', '32055', 80, 175, 300, '386-758-1342', 'https://columbiaclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-desoto', 'DeSoto', 'FL', 'DeSoto County Courthouse', '115 East Oak Street, Room 101', 'Arcadia', '34266', 80, 175, 300, '863-993-4876', 'https://www.desotoclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-dixie', 'Dixie', 'FL', 'Dixie County Courthouse', '214 NE Highway 351', 'Cross City', '32628', 80, 175, 300, '352-498-1200', 'https://dixieclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-duval', 'Duval', 'FL', 'Duval County Courthouse', '501 West Adams Street', 'Jacksonville', '32202', 80, 175, 300, '904-255-2000', 'https://www.duvalclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-escambia', 'Escambia', 'FL', 'M.C. Blanchard Judicial Building', '190 West Government Street', 'Pensacola', '32502', 80, 175, 300, '850-595-4360', 'https://www.escambiaclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-flagler', 'Flagler', 'FL', 'Kim C. Hammond Justice Center', '1769 East Moody Boulevard, Building 1', 'Bunnell', '32110', 80, 175, 300, '386-313-4400', 'https://flaglerclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-franklin', 'Franklin', 'FL', 'Franklin County Courthouse', '33 Market Street, Suite 203', 'Apalachicola', '32320', 80, 175, 300, '850-653-8861', 'https://www.franklinclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-gadsden', 'Gadsden', 'FL', 'Gadsden County Courthouse', '10 East Jefferson Street', 'Quincy', '32351', 80, 175, 300, '850-875-8601', 'https://www.gadsdenclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-gilchrist', 'Gilchrist', 'FL', 'Gilchrist County Courthouse', '112 South Main Street', 'Trenton', '32693', 80, 175, 300, '352-463-3170', 'https://www.gilchristclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-glades', 'Glades', 'FL', 'Glades County Courthouse', '500 Avenue J, Room 102', 'Moore Haven', '33471', 80, 175, 300, '863-946-6010', 'https://www.gladesclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-gulf', 'Gulf', 'FL', 'Gulf County Courthouse', '1000 Cecil G. Costin Sr. Boulevard, Room 149', 'Port St. Joe', '32456', 80, 175, 300, '850-229-6112', 'https://gulfclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-hamilton', 'Hamilton', 'FL', 'Hamilton County Courthouse', '207 NE 1st Street, Room 106', 'Jasper', '32052', 80, 175, 300, '386-792-1288', 'https://hamiltonclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-hardee', 'Hardee', 'FL', 'Hardee County Courthouse', '417 West Main Street, Suite 202', 'Wauchula', '33873', 80, 175, 300, '863-773-4174', 'https://www.hardeeclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-hendry', 'Hendry', 'FL', 'Hendry County Courthouse', '25 East Hickpochee Avenue', 'LaBelle', '33975', 80, 175, 300, '863-675-5217', 'https://www.hendryclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-hernando', 'Hernando', 'FL', 'Hernando County Courthouse', '20 North Main Street', 'Brooksville', '34601', 80, 175, 300, '352-754-4201', 'https://hernandoclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-highlands', 'Highlands', 'FL', 'Highlands County Courthouse', '590 South Commerce Avenue', 'Sebring', '33870', 80, 175, 300, '863-402-6565', 'https://highlandsclerkfl.gov', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-hillsborough', 'Hillsborough', 'FL', 'Hillsborough County Courthouse', '800 East Twiggs Street', 'Tampa', '33602', 80, 175, 300, '813-276-8100', 'https://www.hillsclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-holmes', 'Holmes', 'FL', 'Holmes County Courthouse', '201 North Oklahoma Street', 'Bonifay', '32425', 80, 175, 300, '850-547-1100', 'https://holmesclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-indian-river', 'Indian River', 'FL', 'Indian River County Courthouse', '2000 16th Avenue', 'Vero Beach', '32960', 80, 175, 300, '772-770-5185', 'https://indianriverclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-jackson', 'Jackson', 'FL', 'Jackson County Courthouse', '4445 Lafayette Street', 'Marianna', '32446', 80, 175, 300, '850-482-9552', 'https://www.jacksonclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-jefferson', 'Jefferson', 'FL', 'Jefferson County Courthouse', '1 Courthouse Circle', 'Monticello', '32344', 80, 175, 300, '850-342-0218', 'https://www.jeffersonclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-lafayette', 'Lafayette', 'FL', 'Lafayette County Courthouse', '120 West Main Street', 'Mayo', '32066', 80, 175, 300, '386-294-1600', 'https://www.lafayetteclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-lake', 'Lake', 'FL', 'Lake County Courthouse', '550 West Main Street', 'Tavares', '32778', 80, 175, 300, '352-742-4100', 'https://www.lakecountyclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-lee', 'Lee', 'FL', 'Lee County Justice Center', '1700 Monroe Street', 'Fort Myers', '33901', 80, 175, 300, '239-533-5000', 'https://www.leeclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-leon', 'Leon', 'FL', 'Leon County Courthouse', '301 South Monroe Street', 'Tallahassee', '32301', 80, 175, 300, '850-606-4000', 'https://cvweb.clerk.leon.fl.us', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-levy', 'Levy', 'FL', 'Levy County Courthouse', '355 South Court Street', 'Bronson', '32621', 80, 175, 300, '352-486-5266', 'https://circuit8.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-liberty', 'Liberty', 'FL', 'Liberty County Courthouse', '10818 NW SR 20', 'Bristol', '32321', 80, 175, 300, '850-643-2215', 'https://libertyclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-madison', 'Madison', 'FL', 'Madison County Courthouse', '125 SW Range Avenue', 'Madison', '32340', 80, 175, 300, '850-973-1500', 'https://www.madisonclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-manatee', 'Manatee', 'FL', 'Manatee County Judicial Center', '1115 Manatee Avenue West', 'Bradenton', '34205', 80, 175, 300, '941-749-1800', 'https://www.manateeclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-marion', 'Marion', 'FL', 'Marion County Judicial Center', '110 NW 1st Avenue', 'Ocala', '34475', 80, 175, 300, '352-671-5510', 'https://www.marioncountyclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-martin', 'Martin', 'FL', 'Martin County Courthouse', '100 East Ocean Boulevard', 'Stuart', '34994', 80, 175, 300, '772-288-5576', 'https://www.martinclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.959304+00');
+INSERT INTO public.counties VALUES ('fl-miami-dade', 'Miami-Dade', 'FL', 'Miami-Dade County Courthouse', '73 West Flagler Street, Suite 133', 'Miami', '33130', 80, 175, 300, '305-275-1155', 'https://www.miamidadeclerk.gov', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-monroe', 'Monroe', 'FL', 'Monroe County Courthouse', '500 Whitehead Street', 'Key West', '33040', 80, 175, 300, '305-292-3963', 'https://monroe-clerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-nassau', 'Nassau', 'FL', 'Robert M. Foster Justice Center', '76347 Veterans Way, Suite 456', 'Yulee', '32097', 80, 175, 300, '904-548-4600', 'https://www.nassauclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-okaloosa', 'Okaloosa', 'FL', 'Okaloosa County Courthouse', '101 East James Lee Boulevard', 'Crestview', '32536', 80, 175, 300, '850-689-5000', 'https://www.okaloosaclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-okeechobee', 'Okeechobee', 'FL', 'Okeechobee County Courthouse', '312 NW 3rd Street', 'Okeechobee', '34972', 80, 175, 300, '863-763-2131', 'https://www.clerk.co.okeechobee.fl.us', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-orange', 'Orange', 'FL', 'Orange County Courthouse', '425 North Orange Avenue', 'Orlando', '32801', 80, 175, 300, '407-836-2000', 'https://www.myorangeclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-osceola', 'Osceola', 'FL', 'Osceola County Courthouse', '2 Courthouse Square', 'Kissimmee', '34741', 80, 175, 300, '407-742-3500', 'https://www.osceolaclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-palm-beach', 'Palm Beach', 'FL', 'Palm Beach County Courthouse', '205 North Dixie Highway', 'West Palm Beach', '33401', 80, 175, 300, '561-355-2996', 'https://mypalmbeachclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-pasco', 'Pasco', 'FL', 'Pasco County Courthouse', '38053 Live Oak Avenue', 'Dade City', '33523', 80, 175, 300, '352-521-4542', 'https://www.pascoclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-pinellas', 'Pinellas', 'FL', 'Pinellas County Justice Center', '14250 49th Street North', 'Clearwater', '33762', 80, 175, 300, '727-464-7000', 'https://www.pinellasclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-polk', 'Polk', 'FL', 'Polk County Courthouse', '255 North Broadway Avenue', 'Bartow', '33830', 80, 175, 300, '863-534-4000', 'https://www.polkclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-putnam', 'Putnam', 'FL', 'Putnam County Courthouse', '410 Saint Johns Avenue', 'Palatka', '32177', 80, 175, 300, '386-329-0361', 'https://www.putnam-fl.com/clerk', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-st-johns', 'St. Johns', 'FL', 'St. Johns County Courthouse', '4010 Lewis Speedway', 'St. Augustine', '32084', 80, 175, 300, '904-819-3600', 'https://www.stjohnsclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-st-lucie', 'St. Lucie', 'FL', 'St. Lucie County Courthouse', '221 South Indian River Drive', 'Fort Pierce', '34950', 80, 175, 300, '772-462-6900', 'https://www.clerkofcourts.co.st-lucie.fl.us', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-santa-rosa', 'Santa Rosa', 'FL', 'Santa Rosa County Courthouse', '6865 Caroline Street', 'Milton', '32570', 80, 175, 300, '850-981-5543', 'https://www.santarosacoc.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-sarasota', 'Sarasota', 'FL', 'Sarasota County Courthouse', '2000 Main Street', 'Sarasota', '34237', 80, 175, 300, '941-861-7400', 'https://www.sarasotaclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-seminole', 'Seminole', 'FL', 'Seminole County Courthouse', '301 North Park Avenue', 'Sanford', '32771', 80, 175, 300, '407-665-4330', 'https://www.seminoleclerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-sumter', 'Sumter', 'FL', 'Sumter County Courthouse', '209 North Florida Street', 'Bushnell', '33513', 80, 175, 300, '352-569-6600', 'https://www.sumterclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-suwannee', 'Suwannee', 'FL', 'Suwannee County Courthouse', '200 South Ohio Avenue', 'Live Oak', '32064', 80, 175, 300, '386-362-0500', 'https://www.suwanneeclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-taylor', 'Taylor', 'FL', 'Taylor County Courthouse', '108 North Jefferson Street', 'Perry', '32347', 80, 175, 300, '850-838-3506', 'https://www.taylorclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-union', 'Union', 'FL', 'Union County Courthouse', '55 West Main Street, Room 103', 'Lake Butler', '32054', 80, 175, 300, '386-496-3711', 'https://www.unionclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-volusia', 'Volusia', 'FL', 'Volusia County Courthouse', '101 North Alabama Avenue', 'DeLand', '32724', 80, 175, 300, '386-736-5915', 'https://www.clerk.org', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-wakulla', 'Wakulla', 'FL', 'Wakulla County Courthouse', '3056 Crawfordville Highway', 'Crawfordville', '32327', 80, 175, 300, '850-926-0905', 'https://www.wakullaclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-walton', 'Walton', 'FL', 'Walton County Courthouse', '571 US Highway 90 East', 'DeFuniak Springs', '32433', 80, 175, 300, '850-892-8115', 'https://www.clerkofcourts.co.walton.fl.us', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('fl-washington', 'Washington', 'FL', 'Washington County Courthouse', '1293 Jackson Avenue, Suite 100', 'Chipley', '32428', 80, 175, 300, '850-638-6285', 'https://www.washingtonclerk.com', 'FL filing fees: <$100: $55 | $101-$500: $80 | $501-$2,500: $175 | >$2,500: $300', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-anderson', 'Anderson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 348', 'Elkhart', '75839', 121, 221, 321, '(903) 764-5661', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-andrews', 'Andrews', 'TX', 'Justice of the Peace, Precinct 1', '215 NW 1st, Ste 3', 'Andrews', '79714', 121, 221, 321, '(432) 524-1413', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-angelina', 'Angelina', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 43', 'Lufkin', '75901', 121, 221, 321, '(936) 634-8334', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-aransas', 'Aransas', 'TX', 'Justice of the Peace, Precinct 1', '308 N Live Oak St', 'Rockport', '78382', 121, 221, 321, '(361) 790-0130', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-archer', 'Archer', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 715', 'Archer City', '76351', 121, 221, 321, '(940) 574-4514', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-armstrong', 'Armstrong', 'TX', 'Justice of the Peace Court', 'P O Box 539', 'Claude', '79019', 121, 221, 321, '(806) 553-2860', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-atascosa', 'Atascosa', 'TX', 'Justice of the Peace, Precinct 1', '2136 2nd St', 'Pleasanton', '78064', 121, 221, 321, '(830) 569-2801', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-austin', 'Austin', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '265 N Chesley, Ste 2', 'Bellville', '77418', 121, 221, 321, '(979) 865-9171', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bailey', 'Bailey', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '306 W 2nd, Ste B', 'Muleshoe', '79347', 121, 221, 321, '(806) 272-4300', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bandera', 'Bandera', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 3216', 'Bandera', '78003', 121, 221, 321, '(830) 796-3812', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bastrop', 'Bastrop', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 336', 'Bastrop', '78602', 121, 221, 321, '(512) 581-4258', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-baylor', 'Baylor', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '101 S Washington St, Ste 3', 'Seymour', '76380', 121, 221, 321, '(940) 889-2662', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bee', 'Bee', 'TX', 'Justice of the Peace, Precinct 1', '105 W Corpus Christi St, #102', 'Beeville', '78102', 121, 221, 321, '(361) 621-1558', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bell', 'Bell', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 88', 'Belton', '76513', 121, 221, 321, '(254) 933-5183', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bexar', 'Bexar', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '3505 Pleasanton Rd', 'San Antonio', '78221', 121, 221, 321, '(210) 335-4500', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-blanco', 'Blanco', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 405', 'Johnson City', '78636', 121, 221, 321, '(830) 868-4888', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-borden', 'Borden', 'TX', 'Justice of the Peace Court', 'P O Box 31', 'Gail', '79738', 121, 221, 321, '(806) 756-4380', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bosque', 'Bosque', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 172', 'Meridian', '76665', 121, 221, 321, '(254) 435-2921', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-bowie', 'Bowie', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '100 N State Line Ave, Box 13', 'Texarkana', '75501', 121, 221, 321, '(903) 798-3006', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-brazoria', 'Brazoria', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '202 Peach St', 'Lake Jackson', '77566', 121, 221, 321, '(979) 297-4650', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-brazos', 'Brazos', 'TX', 'Justice of the Peace, Precinct 1', '412 William D. Fitch Pkwy', 'College Station', '77845', 121, 221, 321, '(979) 695-0136', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-brewster', 'Brewster', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '107 W Ave E, #9', 'Alpine', '79830', 121, 221, 321, '(432) 837-6214', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-briscoe', 'Briscoe', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 67', 'Silverton', '79257', 121, 221, 321, '(806) 823-2253', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-brooks', 'Brooks', 'TX', 'Justice of the Peace, Precinct 1', 'P O Drawer 5516', 'Falfurrias', '78355', 121, 221, 321, '(361) 325-4901', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-brown', 'Brown', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '200 S Broadway, Rm 200', 'Brownwood', '76801', 121, 221, 321, '(325) 643-2688', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.97012+00');
+INSERT INTO public.counties VALUES ('tx-burleson', 'Burleson', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 136', 'Deanville', '77852', 121, 221, 321, '(979) 535-4761', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-burnet', 'Burnet', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '220 S Pierce St, Ste 011', 'Burnet', '78611', 121, 221, 321, '(512) 756-5421', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-caldwell', 'Caldwell', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '110 S Brazos', 'Lockhart', '78644', 121, 221, 321, '(512) 398-1820', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-calhoun', 'Calhoun', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '201 W Austin St, Rm 2', 'Port Lavaca', '77979', 121, 221, 321, '(361) 553-4621', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-callahan', 'Callahan', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 86', 'Clyde', '79510', 121, 221, 321, '(325) 893-4900', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('il-kane', 'Kane', 'IL', 'Kane County Judicial Center', '37W777 IL Route 38', 'St. Charles', '60175', NULL, NULL, NULL, '(630) 232-3413', 'https://www.kanecountyclerkofcourt.org', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-cameron', 'Cameron', 'TX', 'Justice of the Peace, Precinct 1', '505 Hwy 100', 'Port Isabel', '78578', 121, 221, 321, '(956) 943-2520', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-camp', 'Camp', 'TX', 'Justice of the Peace Court', '115 Dr. M. L. King Jr. Ave, Ste C', 'Pittsburg', '75686', 121, 221, 321, '(903) 856-3961', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-carson', 'Carson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 399', 'Groom', '79039', 121, 221, 321, '(806) 248-7444', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-cass', 'Cass', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 341', 'Linden', '75563', 121, 221, 321, '(903) 756-5341', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-castro', 'Castro', 'TX', 'Justice of the Peace Court', '100 E Bedford, Room 201', 'Dimmitt', '79027', 121, 221, 321, '(806) 647-2328', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-chambers', 'Chambers', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 332', 'Winnie', '77665', 121, 221, 321, '(409) 267-2641', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-cherokee', 'Cherokee', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'Rt 5, Box 275', 'Rusk', '75785', 121, 221, 321, '(903) 683-4663', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-childress', 'Childress', 'TX', 'Justice of the Peace Court', '100 Ave E NW, Box 6', 'Childress', '79201', 121, 221, 321, '(940) 937-6145', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-clay', 'Clay', 'TX', 'Justice of the Peace Court', '214 N Main', 'Henrietta', '76365', 121, 221, 321, '(940) 538-6531', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-cochran', 'Cochran', 'TX', 'Justice of the Peace Court', '100 N Main, Rm B-4', 'Morton', '79346', 121, 221, 321, '(806) 266-5302', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-coke', 'Coke', 'TX', 'Justice of the Peace, Precinct 1', '224 W Main St', 'Bronte', '76933', 121, 221, 321, '(325) 473-2323', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-coleman', 'Coleman', 'TX', 'Justice of the Peace Court', '100 W Live Oak St, Ste 103', 'Coleman', '76834', 121, 221, 321, '(325) 625-4223', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-collin', 'Collin', 'TX', 'Justice of the Peace, Precinct 1', '2300 Bloomdale Rd, Ste 1164', 'McKinney', '75071', 121, 221, 321, '(972) 548-4125', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-collingsworth', 'Collingsworth', 'TX', 'Justice of the Peace Court', '800 W Ave, Box 4', 'Wellington', '79095', 121, 221, 321, '(806) 447-5555', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-colorado', 'Colorado', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 783', 'Columbus', '78934', 121, 221, 321, '(979) 732-2734', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-comal', 'Comal', 'TX', 'Justice of the Peace, Precinct 1', '145 David Jonas Dr', 'New Braunfels', '78132', 121, 221, 321, '(830) 608-2025', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-comanche', 'Comanche', 'TX', 'Justice of the Peace Court', '101 W Central', 'Comanche', '76442', 121, 221, 321, '(325) 356-3543', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-concho', 'Concho', 'TX', 'Justice of the Peace Court', 'P O Box 44', 'Paint Rock', '76866', 121, 221, 321, '(325) 732-4706', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-cooke', 'Cooke', 'TX', 'Justice of the Peace, Precinct 1', '320 CR 451', 'Gainesville', '76240', 121, 221, 321, '(940) 668-5463', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-coryell', 'Coryell', 'TX', 'Justice of the Peace, Precinct 1', '210 S 1st St', 'Copperas Cove', '76522', 121, 221, 321, '(254) 547-5993', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-cottle', 'Cottle', 'TX', 'Justice of the Peace Court', 'P O Box 307', 'Paducah', '79248', 121, 221, 321, '(806) 492-3515', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-crane', 'Crane', 'TX', 'Justice of the Peace Court', 'P O Box 148', 'Crane', '79731', 121, 221, 321, '(432) 558-1108', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-crockett', 'Crockett', 'TX', 'Justice of the Peace Court', 'P O Box 2067', 'Ozona', '76943', 121, 221, 321, '(325) 392-2253', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-crosby', 'Crosby', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '201 W Aspen, Ste 400', 'Crosbyton', '79322', 121, 221, 321, '(806) 675-2523', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-culberson', 'Culberson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 367', 'Van Horn', '79855', 121, 221, 321, '(432) 283-2609', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-dallam', 'Dallam', 'TX', 'Justice of the Peace Court', '414 Denver Ave, Ste 101', 'Dalhart', '79022', 121, 221, 321, '(806) 244-4827', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-dallas', 'Dallas', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '8301 S Polk St, Ste 2100', 'Dallas', '75232', 121, 221, 321, '(972) 228-0280', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-dawson', 'Dawson', 'TX', 'Justice of the Peace Court', 'P O Box 1268', 'Lamesa', '79331', 121, 221, 321, '(806) 329-3324', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-dewitt', 'DeWitt', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '208 E Live Oak, Ste D', 'Cuero', '77954', 121, 221, 321, '(361) 275-3443', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-deaf-smith', 'Deaf Smith', 'TX', 'Justice of the Peace Court', '235 E 3rd, Rm 100', 'Hereford', '79045', 121, 221, 321, '(806) 364-0999', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-delta', 'Delta', 'TX', 'Justice of the Peace, Precinct 5 Place 1', '200 W Dallas Ave', 'Cooper', '75432', 121, 221, 321, '(903) 395-4400', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-denton', 'Denton', 'TX', 'Justice of the Peace, Precinct 1', '1 Courthouse Drive, Ste 1100', 'Denton', '76208', 121, 221, 321, '(940) 349-3170', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-dickens', 'Dickens', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 70', 'Dickens', '79229', 121, 221, 321, '(806) 623-5233', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-dimmit', 'Dimmit', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '103 N 5th St', 'Carrizo Springs', '78834', 121, 221, 321, '(830) 876-5486', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-donley', 'Donley', 'TX', 'Justice of the Peace, Precincts 1 & 2 Place 1', 'P O Box 828', 'Clarendon', '79226', 121, 221, 321, '(806) 874-2016', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-duval', 'Duval', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 429', 'San Diego', '78384', 121, 221, 321, '(361) 279-6218', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-eastland', 'Eastland', 'TX', 'Justice of the Peace, Precinct 1', '100 W Main, Bsmt 2', 'Eastland', '76448', 121, 221, 321, '(254) 629-1088', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-ector', 'Ector', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '300 N Grant, Rm 208', 'Odessa', '79761', 121, 221, 321, '(432) 498-4201', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-edwards', 'Edwards', 'TX', 'Justice of the Peace Court', 'P O Box 38', 'Rocksprings', '78880', 121, 221, 321, '(830) 683-5187', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-el-paso', 'El Paso', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '424 Executive Ctr Blvd, #100', 'El Paso', '79902', 121, 221, 321, '(915) 534-3917', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-ellis', 'Ellis', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '207 S Sonoma Trail', 'Ennis', '75119', 121, 221, 321, '(972) 825-5319', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-erath', 'Erath', 'TX', 'Justice of the Peace, Precinct 1, 3 & 4', '298 S Graham', 'Stephenville', '76401', 121, 221, 321, '(254) 965-1489', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-falls', 'Falls', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 835', 'Marlin', '76661', 121, 221, 321, '(254) 883-1427', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-fannin', 'Fannin', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '101 E Sam Rayburn Dr, Ste 109', 'Bonham', '75418', 121, 221, 321, '(903) 583-7489', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-fayette', 'Fayette', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1646 N Jefferson St', 'La Grange', '78945', 121, 221, 321, '(979) 968-3648', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:17.994006+00');
+INSERT INTO public.counties VALUES ('tx-fisher', 'Fisher', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 367', 'Roby', '79543', 121, 221, 321, '(325) 776-2482', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-floyd', 'Floyd', 'TX', 'Justice of the Peace, Precincts 1 & 4', '114 W Virginia', 'Floydada', '79235', 121, 221, 321, '(806) 983-4911', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-foard', 'Foard', 'TX', 'Justice of the Peace Court', 'P O Box 64', 'Crowell', '79227', 121, 221, 321, '(940) 684-1917', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-fort-bend', 'Fort Bend', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '22333 Grand Corner Dr, Ste 3', 'Katy', '22333', 121, 221, 321, '(281) 238-1460', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-franklin', 'Franklin', 'TX', 'Justice of the Peace Court', '200 N Kaufman St', 'Mount Vernon', '75457', 121, 221, 321, '(903) 537-2342', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-freestone', 'Freestone', 'TX', 'Justice of the Peace, Precinct 1', '440 E Main', 'Fairfield', '75840', 121, 221, 321, '(903) 389-8783', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-frio', 'Frio', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '500 E San Antonio St, #9', 'Pearsall', '78061', 121, 221, 321, '(830) 505-2995', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-gaines', 'Gaines', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '101 S Main, Rm 100', 'Seminole', '79360', 121, 221, 321, '(432) 758-4015', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-galveston', 'Galveston', 'TX', 'Justice of the Peace, Precinct 1', '4500 10th St', 'Bacliff', '77518', 121, 221, 321, '(281) 316-8804', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-garza', 'Garza', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '300 W Main, Annex Bldg', 'Post', '79356', 121, 221, 321, '(806) 495-4410', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-gillespie', 'Gillespie', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '125 W Main St', 'Fredericksburg', '78624', 121, 221, 321, '(830) 307-3737', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('il-winnebago', 'Winnebago', 'IL', 'Winnebago County Circuit Court', '400 W State St', 'Rockford', '61101', NULL, NULL, NULL, '(815) 319-4600', 'https://www.win17th.com/clerk/', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-glasscock', 'Glasscock', 'TX', 'Justice of the Peace Court', 'P O Box 91', 'Garden City', '79739', 121, 221, 321, '(432) 354-2382', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-goliad', 'Goliad', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 678', 'Goliad', '77963', 121, 221, 321, '(361) 645-3663', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-gonzales', 'Gonzales', 'TX', 'Justice of the Peace, Precinct 1', '414 St. Joseph St, Ste 202', 'Gonzales', '78629', 121, 221, 321, '(830) 672-3734', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-gray', 'Gray', 'TX', 'Justice of the Peace, Precinct 2', 'P O Box 2054', 'Pampa', '79066', 121, 221, 321, '(806) 669-8015', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-grayson', 'Grayson', 'TX', 'Justice of the Peace, Precinct 1', '100 W Houston, Ste 27', 'Sherman', '75090', 121, 221, 321, '(903) 813-4346', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-gregg', 'Gregg', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '101 E Methvin, Ste 512', 'Longview', '75601', 121, 221, 321, '(903) 236-8470', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-grimes', 'Grimes', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 450', 'Iola', '77861', 121, 221, 321, '(936) 394-2060', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-guadalupe', 'Guadalupe', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'US Hwy 90 E', 'Seguin', '78155', 121, 221, 321, '(830) 372-4223', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hale', 'Hale', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '500 Broadway, Rm 10', 'Plainview', '79072', 121, 221, 321, '(806) 291-5201', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hall', 'Hall', 'TX', 'Justice of the Peace, Precinct 4 Place 1', 'P O Box 37', 'Turkey', '79261', 121, 221, 321, '(806) 423-1498', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hamilton', 'Hamilton', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '102 N Rice St, Ste 115', 'Hamilton', '76531', 121, 221, 321, '(254) 386-1200', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hansford', 'Hansford', 'TX', 'Justice of the Peace Court', '12 NW Court', 'Spearman', '79081', 121, 221, 321, '(806) 659-4165', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hardeman', 'Hardeman', 'TX', 'Justice of the Peace Court', 'P O Box 607', 'Quanah', '79252', 121, 221, 321, '(940) 663-5932', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hardin', 'Hardin', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1102 N 5th St', 'Silsbee', '77656', 121, 221, 321, '(409) 385-3740', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-harris', 'Harris', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '7300 N Shepherd, Rm 138', 'Houston', '77091', 121, 221, 321, '(713) 274-0695', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-harrison', 'Harrison', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 150', 'Waskom', '75692', 121, 221, 321, '(903) 923-6021', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hartley', 'Hartley', 'TX', 'Justice of the Peace Court', '1401 Walnut Ave', 'Dalhart', '79022', 121, 221, 321, '(806) 244-2939', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-haskell', 'Haskell', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1 Avenue D, Rm 8', 'Haskell', '79521', 121, 221, 321, '(940) 864-2903', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hays', 'Hays', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '712 S Stagecoach Trail, Ste 2235', 'San Marcos', '78666', 121, 221, 321, '(512) 393-7871', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hemphill', 'Hemphill', 'TX', 'Justice of the Peace Court', 'P O Box 455', 'Canadian', '79014', 121, 221, 321, '(806) 323-5123', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-henderson', 'Henderson', 'TX', 'Justice of the Peace, Precinct 1', '100 E Tyler St, Rm 200B', 'Athens', '75751', 121, 221, 321, '(903) 677-6373', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hidalgo', 'Hidalgo', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1902 Joe Stephens, Ste 301', 'Weslaco', '78596', 121, 221, 321, '(956) 447-3995', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hill', 'Hill', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '5800 FM 733', 'Whitney', '76692', 121, 221, 321, '(254) 694-3140', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hockley', 'Hockley', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 203', 'Ropesville', '79358', 121, 221, 321, '(806) 564-0011', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hood', 'Hood', 'TX', 'Justice of the Peace, Precinct 1', '1200 W Pearl St', 'Granbury', '76048', 121, 221, 321, '(817) 408-2660', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hopkins', 'Hopkins', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '128K Jefferson St', 'Sulphur Springs', '75482', 121, 221, 321, '(903) 438-4026', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-houston', 'Houston', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '700 S 4th St, Ste B', 'Crockett', '75835', 121, 221, 321, '(936) 544-2564', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-howard', 'Howard', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 1648', 'Big Spring', '79721', 121, 221, 321, '(432) 264-2226', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hudspeth', 'Hudspeth', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 40', 'Sierra Blanca', '79851', 121, 221, 321, '(915) 369-4141', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hunt', 'Hunt', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '2801 Stuart St, Ste 409', 'Greenville', '75401', 121, 221, 321, '(903) 453-6922', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-hutchinson', 'Hutchinson', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 640', 'Stinnett', '79083', 121, 221, 321, '(806) 878-4024', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-irion', 'Irion', 'TX', 'Justice of the Peace Court', 'P O Box 678', 'Mertzon', '76941', 121, 221, 321, '(325) 835-4141', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-jack', 'Jack', 'TX', 'Justice of the Peace Court', '100 N Main St, Ste 101', 'Jacksboro', '76458', 121, 221, 321, '(940) 567-2001', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-jackson', 'Jackson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '411 N Wells, Rm 302', 'Edna', '77957', 121, 221, 321, '(361) 782-5259', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-jasper', 'Jasper', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '2030 W Houston St', 'Jasper', '75951', 121, 221, 321, '(409) 384-2958', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-jeff-davis', 'Jeff Davis', 'TX', 'Justice of the Peace Court', 'P O Box 827', 'Fort Davis', '79734', 121, 221, 321, '(432) 426-3045', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-jefferson', 'Jefferson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1085 Pearl St, Rm 105', 'Beaumont', '77701', 121, 221, 321, '(409) 835-8522', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-mcmullen', 'McMullen', 'TX', 'Justice of the Peace Court', 'P O Box 238', 'Tilden', '78072', 121, 221, 321, '(361) 274-3372', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-jim-hogg', 'Jim Hogg', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '133 E David St', 'Hebbronville', '78361', 121, 221, 321, '(361) 527-5830', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-jim-wells', 'Jim Wells', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '200 N Almond St, Rm B-103', 'Alice', '78332', 121, 221, 321, '(361) 668-5719', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.003424+00');
+INSERT INTO public.counties VALUES ('tx-johnson', 'Johnson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '226 Featherston St', 'Cleburne', '76033', 121, 221, 321, '(817) 556-6032', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-jones', 'Jones', 'TX', 'Justice of the Peace Court', 'P O Box 345', 'Anson', '79501', 121, 221, 321, '(325) 823-3761', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-karnes', 'Karnes', 'TX', 'Justice of the Peace, Precinct 1', '707 W Main St, Ste B', 'Kenedy', '78119', 121, 221, 321, '(830) 583-2102', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kaufman', 'Kaufman', 'TX', 'Justice of the Peace, Precinct 1', '1906 E US Hwy 175', 'Kaufman', '75142', 121, 221, 321, '(469) 376-4182', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kendall', 'Kendall', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '201 E San Antonio St, #20A', 'Boerne', '78006', 121, 221, 321, '(830) 331-8258', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kenedy', 'Kenedy', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 8', 'Sarita', '78385', 121, 221, 321, '(361) 294-5785', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kent', 'Kent', 'TX', 'Justice of the Peace Court', 'P O Box 462', 'Jayton', '79528', 121, 221, 321, '(806) 237-3646', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kerr', 'Kerr', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '700 Main St, Rm 102', 'Kerrville', '78028', 121, 221, 321, '(830) 792-2230', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kimble', 'Kimble', 'TX', 'Justice of the Peace Court', '501 Main St', 'Junction', '76849', 121, 221, 321, '(325) 446-2281', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-king', 'King', 'TX', 'Justice of the Peace Court', 'P O Box 67', 'Guthrie', '79236', 121, 221, 321, '(806) 596-4481', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kinney', 'Kinney', 'TX', 'Justice of the Peace Court', 'P O Box 389', 'Brackettville', '78832', 121, 221, 321, '(830) 563-2881', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-kleberg', 'Kleberg', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '2599 E Kenedy', 'Kingsville', '78363', 121, 221, 321, '(361) 595-1387', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-knox', 'Knox', 'TX', 'Justice of the Peace Court', 'P O Box 76', 'Benjamin', '79505', 121, 221, 321, '(940) 459-3181', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-la-salle', 'La Salle', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '212 Center St', 'Cotulla', '78014', 121, 221, 321, '(830) 202-3051', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lamar', 'Lamar', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '119 N Main St', 'Paris', '75460', 121, 221, 321, '(903) 737-2441', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lamb', 'Lamb', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 798', 'Olton', '79064', 121, 221, 321, '(806) 285-7771', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lampasas', 'Lampasas', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '501 E 4th St, Ste 105', 'Lampasas', '76550', 121, 221, 321, '(512) 564-1845', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lavaca', 'Lavaca', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 288', 'Hallettsville', '77964', 121, 221, 321, '(361) 798-3945', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lee', 'Lee', 'TX', 'Justice of the Peace, Precinct 2 Place 1', '200 S Main St, Rm 114', 'Giddings', '78942', 121, 221, 321, '(979) 542-3030', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-leon', 'Leon', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 609', 'Buffalo', '75831', 121, 221, 321, '(903) 322-4795', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-liberty', 'Liberty', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '2103 Cos St', 'Liberty', '77575', 121, 221, 321, '(936) 336-4558', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-limestone', 'Limestone', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '310 S Dallas St', 'Groesbeck', '76642', 121, 221, 321, '(254) 729-2933', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lipscomb', 'Lipscomb', 'TX', 'Justice of the Peace Court', 'P O Box 37', 'Lipscomb', '79056', 121, 221, 321, '(806) 862-3844', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-live-oak', 'Live Oak', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 1405', 'George West', '78022', 121, 221, 321, '(361) 449-8046', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-llano', 'Llano', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 8759', 'Horseshoe Bay', '78657', 121, 221, 321, '(830) 598-2296', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-loving', 'Loving', 'TX', 'Justice of the Peace Court', '104 W Barstow Ave, Ste 1', 'Mentone', '79754', 121, 221, 321, '(432) 286-9544', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lubbock', 'Lubbock', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 10536', 'Lubbock', '10536', 121, 221, 321, '(806) 775-1549', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-lynn', 'Lynn', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 237', 'Tahoka', '79373', 121, 221, 321, '(806) 561-4337', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-madison', 'Madison', 'TX', 'Justice of the Peace, Precinct 1', '101 W Main, Rm 130', 'Madisonville', '77864', 121, 221, 321, '(936) 348-5151', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-marion', 'Marion', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '114 W Austin St, Rm 204', 'Jefferson', '75657', 121, 221, 321, '(903) 665-2392', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-martin', 'Martin', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 1116', 'Stanton', '79782', 121, 221, 321, '(432) 756-3711', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-mason', 'Mason', 'TX', 'Justice of the Peace Court', 'P O Box 675', 'Mason', '76856', 121, 221, 321, '(325) 347-5412', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-matagorda', 'Matagorda', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1700 7th St, Rm 201', 'Bay City', '77414', 121, 221, 321, '(979) 244-7666', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-maverick', 'Maverick', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1508 Las Quintas', 'Eagle Pass', '78852', 121, 221, 321, '(830) 757-9201', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-mcculloch', 'McCulloch', 'TX', 'Justice of the Peace Court', '104 N College', 'Brady', '76825', 121, 221, 321, '(325) 597-2400', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-mclennan', 'McLennan', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '501 Washington Ave, Rm 104D', 'Waco', '76701', 121, 221, 321, '(254) 757-5040', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-medina', 'Medina', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1100 16th St', 'Hondo', '78861', 121, 221, 321, '(830) 741-6051', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-menard', 'Menard', 'TX', 'Justice of the Peace Court', 'P O Box 1095', 'Menard', '76859', 121, 221, 321, '(325) 396-2239', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-midland', 'Midland', 'TX', 'Justice of the Peace, Precinct 1', '400 S Main St', 'Midland', '79701', 121, 221, 321, '(432) 688-4741', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-milam', 'Milam', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '204 N Central, Ste A', 'Cameron', '76520', 121, 221, 321, '(254) 697-7004', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-mills', 'Mills', 'TX', 'Justice of the Peace Court', 'P O Box 65', 'Goldthwaite', '76844', 121, 221, 321, '(325) 648-2278', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-mitchell', 'Mitchell', 'TX', 'Justice of the Peace, Precincts 1 & 4 Place 1', '349 Oak St, Rm 100', 'Colorado City', '79512', 121, 221, 321, '(325) 728-8906', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-montague', 'Montague', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 106', 'Montague', '76251', 121, 221, 321, '(940) 894-2541', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-montgomery', 'Montgomery', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '300 S Danville', 'Willis', '77378', 121, 221, 321, '(936) 539-7801', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-moore', 'Moore', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '119 W 5th', 'Dumas', '79029', 121, 221, 321, '(806) 935-3920', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-morris', 'Morris', 'TX', 'Justice of the Peace, Precinct 1', '502 Union St', 'Daingerfield', '75638', 121, 221, 321, '(903) 645-3031', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-motley', 'Motley', 'TX', 'Justice of the Peace Court', 'P O Box 657', 'Matador', '79244', 121, 221, 321, '(806) 347-2204', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-nacogdoches', 'Nacogdoches', 'TX', 'Justice of the Peace, Precinct 1', '9373 US Hwy 259', 'Nacogdoches', '75965', 121, 221, 321, '(936) 560-4867', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-navarro', 'Navarro', 'TX', 'Justice of the Peace, Precinct 1', '312 W 2nd Ave', 'Corsicana', '75110', 121, 221, 321, '(903) 654-3055', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.012908+00');
+INSERT INTO public.counties VALUES ('tx-newton', 'Newton', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '195 County Road 3073', 'Kirbyville', '75956', 121, 221, 321, '(409) 397-4545', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-nolan', 'Nolan', 'TX', 'Justice of the Peace Court', '100 E 3rd, Ste 101', 'Sweetwater', '79556', 121, 221, 321, '(325) 235-5482', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-nueces', 'Nueces', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '901 Leopard, Ste 116', 'Corpus Christi', '78401', 121, 221, 321, '(361) 888-0201', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-ochiltree', 'Ochiltree', 'TX', 'Justice of the Peace Court', '511 S Main', 'Perryton', '79070', 121, 221, 321, '(806) 435-8020', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-oldham', 'Oldham', 'TX', 'Justice of the Peace Court', 'P O Box 370', 'Vega', '72092', 121, 221, 321, '(806) 267-2619', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-orange', 'Orange', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '801 W Division, Ste 102', 'Orange', '77630', 121, 221, 321, '(409) 882-7800', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-palo-pinto', 'Palo Pinto', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 129', 'Palo Pinto', '76484', 121, 221, 321, '(940) 659-1202', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-panola', 'Panola', 'TX', 'Justice of the Peace, Precinct 1 & 4', '110 S Sycamore St, Rm 105', 'Carthage', '75633', 121, 221, 321, '(903) 693-0375', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-parker', 'Parker', 'TX', 'Justice of the Peace, Precinct 1', '1020 E Hwy 199', 'Springtown', '76082', 121, 221, 321, '(817) 220-5857', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-parmer', 'Parmer', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 635', 'Friona', '79035', 121, 221, 321, '(806) 250-2412', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-pecos', 'Pecos', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '200 S Nelson', 'Fort Stockton', '79735', 121, 221, 321, '(432) 336-3281', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-polk', 'Polk', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '101 W Mill St, Ste 152', 'Livingston', '77351', 121, 221, 321, '(936) 327-6841', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-potter', 'Potter', 'TX', 'Justice of the Peace, Precinct 1', '900 S Polk, Ste 418', 'Amarillo', '79101', 121, 221, 321, '(806) 349-4880', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-presidio', 'Presidio', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 481', 'Marfa', '79843', 121, 221, 321, '(432) 729-4831', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-rains', 'Rains', 'TX', 'Justice of the Peace Court', '167 E Quitman St, Ste 101', 'Emory', '75440', 121, 221, 321, '(903) 473-5050', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-randall', 'Randall', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '501 16th St, Ste 307', 'Canyon', '79015', 121, 221, 321, '(806) 468-5606', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-reagan', 'Reagan', 'TX', 'Justice of the Peace Court', 'P O Box 100', 'Big Lake', '76932', 121, 221, 321, '(325) 884-3482', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-real', 'Real', 'TX', 'Justice of the Peace Court', 'P O Box 1430', 'Leakey', '78873', 121, 221, 321, '(830) 232-6630', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-red-river', 'Red River', 'TX', 'Justice of the Peace Court', '500 N Cedar St', 'Clarksville', '75426', 121, 221, 321, '(903) 427-3322', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-reeves', 'Reeves', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 913', 'Pecos', '79772', 121, 221, 321, '(432) 287-0241', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-refugio', 'Refugio', 'TX', 'Justice of the Peace, Precinct 1', '808 Commerce, Rm 111', 'Refugio', '78377', 121, 221, 321, '(361) 526-4877', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-roberts', 'Roberts', 'TX', 'Justice of the Peace Court', '300 E Commercial St', 'Miami', '79059', 121, 221, 321, '(806) 868-4111', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-robertson', 'Robertson', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 308', 'Calvert', '77837', 121, 221, 321, '(979) 364-2750', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-rockwall', 'Rockwall', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1111 E Yellowjacket Ln, Ste 301', 'Rockwall', '75087', 121, 221, 321, '(972) 204-6740', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-runnels', 'Runnels', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '613 Hutchings Ave, Rm 303', 'Ballinger', '76821', 121, 221, 321, '(325) 365-2137', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-rusk', 'Rusk', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '210 S Helen', 'Overton', '75684', 121, 221, 321, '(903) 834-3753', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-sabine', 'Sabine', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 219', 'Hemphill', '75948', 121, 221, 321, '(409) 787-3719', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-san-augustine', 'San Augustine', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '221 N Harrison', 'San Augustine', '75972', 121, 221, 321, '(936) 275-3552', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-san-jacinto', 'San Jacinto', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '111 State Hwy 150, Rm A-2', 'Coldspring', '77331', 121, 221, 321, '(936) 653-4578', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-san-patricio', 'San Patricio', 'TX', 'Justice of the Peace, Precinct 1', '300 N Rachal Ave', 'Sinton', '78387', 121, 221, 321, '(361) 364-9620', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-san-saba', 'San Saba', 'TX', 'Justice of the Peace Court', '500 E Wallace, Ste 110', 'San Saba', '76877', 121, 221, 321, '(325) 372-5746', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-schleicher', 'Schleicher', 'TX', 'Justice of the Peace Court', 'P O Box 536', 'Eldorado', '76936', 121, 221, 321, '(325) 853-2766', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-scurry', 'Scurry', 'TX', 'Justice of the Peace, Precinct 1', '1300 26th St, Ste 205', 'Snyder', '79549', 121, 221, 321, '(325) 573-5406', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-shackelford', 'Shackelford', 'TX', 'Justice of the Peace Court', 'P O Box 2211', 'Albany', '76430', 121, 221, 321, '(325) 762-9430', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-shelby', 'Shelby', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '518 Nacogdoches St', 'Center', '75935', 121, 221, 321, '(936) 598-3735', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-sherman', 'Sherman', 'TX', 'Justice of the Peace Court', 'P O Box 342', 'Stratford', '79084', 121, 221, 321, '(806) 366-5645', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-smith', 'Smith', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '200 E Ferguson, Ste 501', 'Tyler', '75702', 121, 221, 321, '(903) 590-2601', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-somervell', 'Somervell', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 237', 'Glen Rose', '76043', 121, 221, 321, '(254) 897-2120', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-starr', 'Starr', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '4192 W Hwy 83', 'Rio Grande City', '78582', 121, 221, 321, '(956) 849-4558', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-stephens', 'Stephens', 'TX', 'Justice of the Peace Court', '200 W Walker, 2nd Fl', 'Breckenridge', '76424', 121, 221, 321, '(254) 559-5322', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-sterling', 'Sterling', 'TX', 'Justice of the Peace Court', 'P O Box 983', 'Sterling City', '76951', 121, 221, 321, '(325) 378-3761', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-stonewall', 'Stonewall', 'TX', 'Justice of the Peace Court', 'P O Box 389', 'Aspermont', '79502', 121, 221, 321, '(940) 989-2213', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-sutton', 'Sutton', 'TX', 'Justice of the Peace Court', 'P O Box 165', 'Sonora', '76950', 121, 221, 321, '(325) 387-3322', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-swisher', 'Swisher', 'TX', 'Justice of the Peace Court', '310 W Broadway', 'Tulia', '79088', 121, 221, 321, '(806) 995-4407', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-tarrant', 'Tarrant', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '100 W Weatherford St, Rm 450', 'Fort Worth', '76196', 121, 221, 321, '(817) 884-1395', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-taylor', 'Taylor', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '450 Pecan, Ste 110', 'Abilene', '79602', 121, 221, 321, '(325) 674-1338', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-terrell', 'Terrell', 'TX', 'Justice of the Peace, Precinct 1 & 2 Place 2', 'P O Box 833', 'Sanderson', '79848', 121, 221, 321, '(432) 345-2341', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-terry', 'Terry', 'TX', 'Justice of the Peace Court', '507B W Main', 'Brownfield', '79316', 121, 221, 321, '(806) 637-4757', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-throckmorton', 'Throckmorton', 'TX', 'Justice of the Peace Court', 'P O Box 721', 'Throckmorton', '76483', 121, 221, 321, '(940) 849-8830', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-titus', 'Titus', 'TX', 'Justice of the Peace, Precinct 2 Place 1', '100 S Madison, Ste 200', 'Mount Pleasant', '75455', 121, 221, 321, '(903) 577-6756', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.021801+00');
+INSERT INTO public.counties VALUES ('tx-tom-green', 'Tom Green', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '122 W Harris, Rm 8', 'San Angelo', '76903', 121, 221, 321, '(325) 659-6444', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-travis', 'Travis', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '4717 Heflin Ln, #107', 'Austin', '78721', 121, 221, 321, '(512) 854-7700', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-trinity', 'Trinity', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 1028', 'Groveton', '75845', 121, 221, 321, '(936) 642-1224', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-tyler', 'Tyler', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '203 W Dogwood St', 'Woodville', '75979', 121, 221, 321, '(409) 283-3631', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-upshur', 'Upshur', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '301 E Butler', 'Gilmer', '75644', 121, 221, 321, '(903) 680-6269', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-upton', 'Upton', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 232', 'Rankin', '79778', 121, 221, 321, '(432) 693-2473', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-uvalde', 'Uvalde', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '#14 Courthouse Sq', 'Uvalde', '78801', 121, 221, 321, '(830) 278-3921', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-val-verde', 'Val Verde', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '309 Mills St, 2nd Fl, Ste D', 'Del Rio', '78841', 121, 221, 321, '(830) 774-7545', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-van-zandt', 'Van Zandt', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 189', 'Grand Saline', '75140', 121, 221, 321, '(903) 962-3471', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-victoria', 'Victoria', 'TX', 'Justice of the Peace, Precinct 1', '704 N Goldman St', 'Victoria', '77901', 121, 221, 321, '(361) 573-0836', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-walker', 'Walker', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '717 FM 2821 W, Ste 300', 'Huntsville', '77320', 121, 221, 321, '(936) 436-4966', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-waller', 'Waller', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '846 6th St, Ste 1', 'Hempstead', '77445', 121, 221, 321, '(979) 826-7745', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-will', 'Will', 'IL', 'Will County Circuit Court', '14 W Jefferson St', 'Joliet', '60432', NULL, NULL, NULL, '(815) 727-8592', 'https://willcountyclerk.gov', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-ward', 'Ward', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'Box 165', 'Monahans', '79756', 121, 221, 321, '(432) 943-7227', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-washington', 'Washington', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1305 E Blue Bell, Ste 114', 'Brenham', '77833', 121, 221, 321, '(979) 277-6260', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-webb', 'Webb', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1110 Victoria, Ste 106', 'Laredo', '78042', 121, 221, 321, '(956) 523-4300', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-wharton', 'Wharton', 'TX', 'Justice of the Peace, Precinct 1', '1017 N Alabama Rd', 'Wharton', '77488', 121, 221, 321, '(979) 532-3941', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-wheeler', 'Wheeler', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 452', 'Wheeler', '79096', 121, 221, 321, '(806) 826-5768', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-wichita', 'Wichita', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '900 7th St, Rm 281', 'Wichita Falls', '76301', 121, 221, 321, '(940) 766-8141', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-wilbarger', 'Wilbarger', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1700 Wilbarger St, Rm 25', 'Vernon', '76384', 121, 221, 321, '(940) 553-2306', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-willacy', 'Willacy', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '576 W Main Ave, Rm 148', 'Raymondville', '78580', 121, 221, 321, '(956) 699-5018', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-williamson', 'Williamson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '1801 E Old Settlers Blvd, Ste 100', 'Round Rock', '78664', 121, 221, 321, '(512) 244-8622', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-wilson', 'Wilson', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '800 10th St, Box 8', 'Floresville', '78114', 121, 221, 321, '(830) 393-5112', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-winkler', 'Winkler', 'TX', 'Justice of the Peace, Precinct 1', '100 E Winkler', 'Kermit', '79745', 121, 221, 321, '(432) 586-2671', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-wise', 'Wise', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 509', 'Decatur', '76234', 121, 221, 321, '(940) 627-2694', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-wood', 'Wood', 'TX', 'Justice of the Peace, Precinct 1', 'P O Box 172', 'Quitman', '75783', 121, 221, 321, '(903) 763-2713', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-yoakum', 'Yoakum', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 532', 'Plains', '79355', 121, 221, 321, '(806) 456-7491', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-young', 'Young', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '516 4th St, Rm B2', 'Graham', '76450', 121, 221, 321, '(940) 549-3636', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-zapata', 'Zapata', 'TX', 'Justice of the Peace, Precinct 1 Place 1', '604A Delmar St', 'Zapata', '78076', 121, 221, 321, '(956) 765-9165', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('tx-zavala', 'Zavala', 'TX', 'Justice of the Peace, Precinct 1 Place 1', 'P O Box 508', 'Batesville', '78829', 121, 221, 321, '(830) 376-4609', NULL, 'TX filing fees (Tex. Gov''t Code §118.121): ≤$200: $46 | $201–$500: $71 | $501–$1,000: $121 | $1,001–$5,000: $221 | $5,001–$10,000: $271 | $10,001–$20,000: $321. File in the JP precinct where the defendant lives or where the transaction occurred.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-cook', 'Cook', 'IL', 'Circuit Court of Cook County', '50 W Washington St', 'Chicago', '60602', NULL, NULL, NULL, '(312) 603-5030', 'https://www.cookcountyclerkofcourt.org', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-dupage', 'DuPage', 'IL', 'DuPage County Circuit Court', '505 N County Farm Rd', 'Wheaton', '60187', NULL, NULL, NULL, '(630) 407-8700', 'https://www.dupagecounty.gov/courts/circuit_clerk/', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-lake', 'Lake', 'IL', 'Lake County Circuit Court', '18 N County St', 'Waukegan', '60085', NULL, NULL, NULL, '(847) 377-3380', 'https://www.19thcircuitcourt.state.il.us/1028/Clerk-of-Court', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-mchenry', 'McHenry', 'IL', 'McHenry County Circuit Court', '2200 N Seminary Ave', 'Woodstock', '60098', NULL, NULL, NULL, '(815) 334-4310', 'https://www.co.mchenry.il.us/county-government/departments-j-z/p-r/circuit-court-clerk', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-kendall', 'Kendall', 'IL', 'Kendall County Circuit Court', '807 W John St', 'Yorkville', '60560', NULL, NULL, NULL, '(630) 553-4183', 'https://www.co.kendall.il.us/government/departments/circuit-clerk', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-champaign', 'Champaign', 'IL', 'Champaign County Circuit Court', '101 E Main St', 'Urbana', '61801', NULL, NULL, NULL, '(217) 384-3725', 'https://www.co.champaign.il.us/circuitclerk/', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-sangamon', 'Sangamon', 'IL', 'Sangamon County Circuit Court', '200 S 9th St', 'Springfield', '62701', NULL, NULL, NULL, '(217) 753-6674', 'https://sangamoncountycircuitclerk.com', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-peoria', 'Peoria', 'IL', 'Peoria County Circuit Court', '324 Main St', 'Peoria', '61602', NULL, NULL, NULL, '(309) 672-6989', 'https://www.peoriacounty.org/circuit-clerk', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-madison', 'Madison', 'IL', 'Madison County Circuit Court', '155 N Main St', 'Edwardsville', '62025', NULL, NULL, NULL, '(618) 692-6240', 'https://www.co.madison.il.us/government/departments/circuit_clerk/', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-st-clair', 'St. Clair', 'IL', 'St. Clair County Circuit Court', '10 Public Square', 'Belleville', '62220', NULL, NULL, NULL, '(618) 277-6900', 'https://www.co.st-clair.il.us/departments/circuit-clerk', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-mclean', 'McLean', 'IL', 'McLean County Law & Justice Center', '104 W Front St', 'Bloomington', '61701', NULL, NULL, NULL, '(309) 888-5301', 'https://www.mcleancountyil.gov/171/Circuit-Clerk', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('il-rock-island', 'Rock Island', 'IL', 'Rock Island County Circuit Court', '210 15th St', 'Rock Island', '61201', NULL, NULL, NULL, '(309) 558-3240', 'https://www.rockislandcounty.org/circuitclerk/', 'IL small claims filing fees vary by claim amount and are set by the circuit court.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('nc-alamance', 'Alamance', 'NC', 'Alamance County Historical Courthouse', '1 Court Square', 'Graham', '27253', 96, 96, 96, '(336) 570-5200', 'https://www.nccourts.gov/locations/alamance-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('nc-alexander', 'Alexander', 'NC', 'Alexander County Courthouse', '29 W. Main Ave.', 'Taylorsville', '28681', 96, 96, 96, '(828) 635-3113', 'https://www.nccourts.gov/locations/alexander-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('nc-alleghany', 'Alleghany', 'NC', 'Alleghany County Courthouse', '12 N Main St', 'Sparta', '28675', 96, 96, 96, '(336) 372-3900', 'https://www.nccourts.gov/locations/alleghany-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('nc-anson', 'Anson', 'NC', 'Anson County Courthouse', '114 N Greene St', 'Wadesboro', '28170', 96, 96, 96, '(704) 994-3800', 'https://www.nccourts.gov/locations/anson-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('nc-ashe', 'Ashe', 'NC', 'Ashe County Courthouse', '150 Government Circle', 'Jefferson', '28640', 96, 96, 96, '(336) 219-1400', 'https://www.nccourts.gov/locations/ashe-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('nc-avery', 'Avery', 'NC', 'Avery County Courthouse', '200 Montezuma St', 'Newland', '28657', 96, 96, 96, '(828) 737-6700', 'https://www.nccourts.gov/locations/avery-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.032605+00');
+INSERT INTO public.counties VALUES ('nc-beaufort', 'Beaufort', 'NC', 'Beaufort County Courthouse', '112 W Second St', 'Washington', '27889', 96, 96, 96, '(252) 940-4000', 'https://www.nccourts.gov/locations/beaufort-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-bertie', 'Bertie', 'NC', 'Bertie County Courthouse', '108 Dundee St', 'Windsor', '27983', 96, 96, 96, '(252) 794-6800', 'https://www.nccourts.gov/locations/bertie-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-bladen', 'Bladen', 'NC', 'Bladen County Courthouse', '166 E. Broad St.', 'Elizabethtown', '28337', 96, 96, 96, '(910) 872-7200', 'https://www.nccourts.gov/locations/bladen-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-brunswick', 'Brunswick', 'NC', 'Brunswick County Courthouse', '310 Government Center Drive, NE', 'Bolivia', '28422', 96, 96, 96, '(910) 253-3900', 'https://www.nccourts.gov/locations/brunswick-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-buncombe', 'Buncombe', 'NC', 'Buncombe County Courthouse', '60 Court Plaza', 'Asheville', '28801', 96, 96, 96, '(828) 259-3400', 'https://www.nccourts.gov/locations/buncombe-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-burke', 'Burke', 'NC', 'Burke County Courthouse', '201 South Green St', 'Morganton', '28655', 96, 96, 96, '(828) 433-3200', 'https://www.nccourts.gov/locations/burke-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-cabarrus', 'Cabarrus', 'NC', 'Cabarrus County Courthouse', '61 Union Street South', 'Concord', '28025', 96, 96, 96, '(704) 262-5500', 'https://www.nccourts.gov/locations/cabarrus-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-caldwell', 'Caldwell', 'NC', 'Caldwell County Courthouse', '216 Main St NW', 'Lenoir', '28645', 96, 96, 96, '(828) 759-3503', 'https://www.nccourts.gov/locations/caldwell-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-camden', 'Camden', 'NC', 'Camden County Courthouse', '117 NC Hwy 343 North', 'Camden', '27921', 96, 96, 96, '(252) 336-4000', 'https://www.nccourts.gov/locations/camden-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-carteret', 'Carteret', 'NC', 'Carteret County Courthouse', '300 Courthouse Square', 'Beaufort', '28516', 96, 96, 96, '(252) 504-4400', 'https://www.nccourts.gov/locations/carteret-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-caswell', 'Caswell', 'NC', 'Caswell County Courthouse', '139 East Church St', 'Yanceyville', '27379', 96, 96, 96, '(336) 459-4000', 'https://www.nccourts.gov/locations/caswell-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-catawba', 'Catawba', 'NC', 'Catawba County Courthouse', '100 Government Drive', 'Newton', '28658', 96, 96, 96, '(828) 695-6100', 'https://www.nccourts.gov/locations/catawba-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-chatham', 'Chatham', 'NC', 'Chatham County Courthouse', '40 E Chatham Street', 'Pittsboro', '27312', 96, 96, 96, '(919) 545-3500', 'https://www.nccourts.gov/locations/chatham-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-cherokee', 'Cherokee', 'NC', 'Cherokee County Courthouse', '75 Peachtree St', 'Murphy', '28906', 96, 96, 96, '(828) 835-7740', 'https://www.nccourts.gov/locations/cherokee-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-chowan', 'Chowan', 'NC', 'Chowan County Courthouse', '101 S Broad St', 'Edenton', '27932', 96, 96, 96, '(252) 368-5000', 'https://www.nccourts.gov/locations/chowan-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-clay', 'Clay', 'NC', 'Clay County Courthouse', '261 Courthouse Dr., Suite 1', 'Hayesville', '28904', 96, 96, 96, '(828) 389-2300', 'https://www.nccourts.gov/locations/clay-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-cleveland', 'Cleveland', 'NC', 'Cleveland County Courthouse', '100 Justice Place', 'Shelby', '28150', 96, 96, 96, '(704) 476-7800', 'https://www.nccourts.gov/locations/cleveland-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-columbus', 'Columbus', 'NC', 'Columbus County Courthouse', '100 Courthouse Circle', 'Whiteville', '28472', 96, 96, 96, '(910) 641-4400', 'https://www.nccourts.gov/locations/columbus-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-craven', 'Craven', 'NC', 'Craven County Courthouse', '302 Broad St', 'New Bern', '28560', 96, 96, 96, '(252) 639-3000', 'https://www.nccourts.gov/locations/craven-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-cumberland', 'Cumberland', 'NC', 'Cumberland County Courthouse', '117 Dick St.', 'Fayetteville', '28301', 96, 96, 96, '(910) 475-3000', 'https://www.nccourts.gov/locations/cumberland-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-currituck', 'Currituck', 'NC', 'Currituck County Courthouse', '2801 Caratoke Hwy', 'Currituck', '27929', 96, 96, 96, '(252) 232-6200', 'https://www.nccourts.gov/locations/currituck-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-dare', 'Dare', 'NC', 'Dare County Courthouse', '962 Marshall Collins Drive', 'Manteo', '27954', 96, 96, 96, '(252) 475-5200', 'https://www.nccourts.gov/locations/dare-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-davidson', 'Davidson', 'NC', 'Davidson County Courthouse', '110 West Center St', 'Lexington', '27292', 96, 96, 96, '(336) 242-6701', 'https://www.nccourts.gov/locations/davidson-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-davie', 'Davie', 'NC', 'Davie County Courthouse', '140 South Main St', 'Mocksville', '27028', 96, 96, 96, '(336) 936-3000', 'https://www.nccourts.gov/locations/davie-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-duplin', 'Duplin', 'NC', 'Duplin County Courthouse', '112 Duplin St.', 'Kenansville', '28349', 96, 96, 96, '(910) 275-7000', 'https://www.nccourts.gov/locations/duplin-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-durham', 'Durham', 'NC', 'Durham County Courthouse', '510 S. Dillard St.', 'Durham', '27701', 96, 96, 96, '(919) 808-3003', 'https://www.nccourts.gov/locations/durham-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-edgecombe', 'Edgecombe', 'NC', 'Edgecombe County Courthouse', '301 St Andrews St.', 'Tarboro', '27886', 96, 96, 96, '(252) 824-3200', 'https://www.nccourts.gov/locations/edgecombe-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-forsyth', 'Forsyth', 'NC', 'Forsyth County Courthouse', '175 N. Chestnut Street', 'Winston-Salem', '27101', 96, 96, 96, '(336) 779-6300', 'https://www.nccourts.gov/locations/forsyth-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-franklin', 'Franklin', 'NC', 'Franklin County Courthouse', '102 S Main St.', 'Louisburg', '27549', 96, 96, 96, '(919) 497-4200', 'https://www.nccourts.gov/locations/franklin-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-gaston', 'Gaston', 'NC', 'Gaston County Courthouse', '325 Dr. Martin Luther King Jr. Way, Suite 1004', 'Gastonia', '28052', 96, 96, 96, '(704) 852-3100', 'https://www.nccourts.gov/locations/gaston-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-gates', 'Gates', 'NC', 'Gates County Courthouse', '202 Court St.', 'Gatesville', '27938', 96, 96, 96, '(252) 357-1365', 'https://www.nccourts.gov/locations/gates-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-graham', 'Graham', 'NC', 'Graham County Courthouse', '12 Court St.', 'Robbinsville', '28771', 96, 96, 96, '(828) 479-7000', 'https://www.nccourts.gov/locations/graham-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-granville', 'Granville', 'NC', 'Granville County Courthouse', '101 Main St.', 'Oxford', '27565', 96, 96, 96, '(919) 690-4800', 'https://www.nccourts.gov/locations/granville-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-greene', 'Greene', 'NC', 'Greene County Courthouse', '301 N Greene St.', 'Snow Hill', '28580', 96, 96, 96, '(252) 747-6200', 'https://www.nccourts.gov/locations/greene-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-guilford', 'Guilford', 'NC', 'Guilford County Courthouse', '201 South Eugene St', 'Greensboro', '27401', 96, 96, 96, '(336) 412-7300', 'https://www.nccourts.gov/locations/guilford-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-halifax', 'Halifax', 'NC', 'Halifax County Courthouse', '357 Ferrell Lane', 'Halifax', '27839', 96, 96, 96, '(252) 593-3000', 'https://www.nccourts.gov/locations/halifax-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-harnett', 'Harnett', 'NC', 'Harnett County Courthouse', '301 W. Cornelius Harnett Blvd, Suite 100', 'Lillington', '27546', 96, 96, 96, '(910) 814-4400', 'https://www.nccourts.gov/locations/harnett-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-haywood', 'Haywood', 'NC', 'Haywood County Courthouse', '285 N Main St, Suite 1500', 'Waynesville', '28786', 96, 96, 96, '(828) 454-6501', 'https://www.nccourts.gov/locations/haywood-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-henderson', 'Henderson', 'NC', 'Henderson County Courthouse', '200 N Grove St, Suite 163', 'Hendersonville', '28792', 96, 96, 96, '(828) 694-4100', 'https://www.nccourts.gov/locations/henderson-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-hertford', 'Hertford', 'NC', 'Hertford County Courthouse', '119 Justice Drive', 'Winton', '27986', 96, 96, 96, '(252) 358-7100', 'https://www.nccourts.gov/locations/hertford-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-hoke', 'Hoke', 'NC', 'Hoke County Courthouse', '304 N Main St', 'Raeford', '28376', 96, 96, 96, '(910) 878-4100', 'https://www.nccourts.gov/locations/hoke-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-hyde', 'Hyde', 'NC', 'Hyde County Courthouse', '40 Oyster Creek Road', 'Swan Quarter', '27885', 96, 96, 96, '(252) 926-4700', 'https://www.nccourts.gov/locations/hyde-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-iredell', 'Iredell', 'NC', 'Iredell County Courthouse', '226 Stockton St', 'Statesville', '28677', 96, 96, 96, '(704) 832-6600', 'https://www.nccourts.gov/locations/iredell-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-jackson', 'Jackson', 'NC', 'Jackson County Courthouse', '401 Grindstaff Cove Rd', 'Sylva', '28779', 96, 96, 96, '(828) 631-6400', 'https://www.nccourts.gov/locations/jackson-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-johnston', 'Johnston', 'NC', 'Johnston County Courthouse', '207 E Johnston St', 'Smithfield', '27577', 96, 96, 96, '(919) 209-5400', 'https://www.nccourts.gov/locations/johnston-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-jones', 'Jones', 'NC', 'Jones County Courthouse', '101 Market St', 'Trenton', '28585', 96, 96, 96, '(252) 448-6220', 'https://www.nccourts.gov/locations/jones-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-lee', 'Lee', 'NC', 'Lee County Courthouse', '1400 S Horner Blvd', 'Sanford', '27330', 96, 96, 96, '(919) 718-6300', 'https://www.nccourts.gov/locations/lee-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-lenoir', 'Lenoir', 'NC', 'Lenoir County Courthouse', '130 S Queen St', 'Kinston', '28501', 96, 96, 96, '(252) 520-5300', 'https://www.nccourts.gov/locations/lenoir-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-lincoln', 'Lincoln', 'NC', 'Lincoln County Courthouse', '120 Justice Drive', 'Lincolnton', '28092', 96, 96, 96, '(704) 742-7800', 'https://www.nccourts.gov/locations/lincoln-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-macon', 'Macon', 'NC', 'Macon County Courthouse', '5 W Main St', 'Franklin', '28734', 96, 96, 96, '(828) 349-7200', 'https://www.nccourts.gov/locations/macon-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.042631+00');
+INSERT INTO public.counties VALUES ('nc-madison', 'Madison', 'NC', 'Madison County Courthouse', '258 Carolina Lane', 'Marshall', '28753', 96, 96, 96, '(828) 649-2200', 'https://www.nccourts.gov/locations/madison-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-martin', 'Martin', 'NC', 'Martin County Courthouse', '305 E Main St', 'Williamston', '27892', 96, 96, 96, '(252) 809-5100', 'https://www.nccourts.gov/locations/martin-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-mcdowell', 'McDowell', 'NC', 'McDowell County Courthouse', '21 S Main St', 'Marion', '28752', 96, 96, 96, '(828) 655-4100', 'https://www.nccourts.gov/locations/mcdowell-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-mecklenburg', 'Mecklenburg', 'NC', 'Mecklenburg County Courthouse', '832 East Fourth St', 'Charlotte', '28202', 96, 96, 96, '(704) 686-0400', 'https://www.nccourts.gov/locations/mecklenburg-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-mitchell', 'Mitchell', 'NC', 'Mitchell County Courthouse', '328 Longview Dr', 'Bakersville', '28705', 96, 96, 96, '(828) 688-5100', 'https://www.nccourts.gov/locations/mitchell-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-montgomery', 'Montgomery', 'NC', 'Montgomery County Courthouse', '108 E Main St', 'Troy', '27371', 96, 96, 96, '(910) 571-3700', 'https://www.nccourts.gov/locations/montgomery-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-moore', 'Moore', 'NC', 'Moore County Courthouse', '102 Monroe St', 'Carthage', '28327', 96, 96, 96, '(910) 722-5000', 'https://www.nccourts.gov/locations/moore-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-nash', 'Nash', 'NC', 'Nash County Courthouse', '234 W Washington St', 'Nashville', '27856', 96, 96, 96, '(252) 220-3000', 'https://www.nccourts.gov/locations/nash-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-new-hanover', 'New Hanover', 'NC', 'New Hanover County Courthouse', '316 Princess St', 'Wilmington', '28401', 96, 96, 96, '(910) 772-6600', 'https://www.nccourts.gov/locations/new-hanover-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-northampton', 'Northampton', 'NC', 'Northampton County Courthouse', '128 East Jefferson St', 'Jackson', '27845', 96, 96, 96, '(252) 574-3100', 'https://www.nccourts.gov/locations/northampton-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-onslow', 'Onslow', 'NC', 'Onslow County Courthouse', 'District Courthouse - 602 Anne Street, Superior Courthouse - 625 Court Street', 'Jacksonville', '28540', 96, 96, 96, '(910) 478-3600', 'https://www.nccourts.gov/locations/onslow-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-orange', 'Orange', 'NC', 'Orange County Courthouse', '106 E Margaret Lane', 'Hillsborough', '27278', 96, 96, 96, '(919) 644-4500', 'https://www.nccourts.gov/locations/orange-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-pamlico', 'Pamlico', 'NC', 'Pamlico County Courthouse', '202 Main St', 'Bayboro', '28515', 96, 96, 96, '(252) 745-6600', 'https://www.nccourts.gov/locations/pamlico-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-pasquotank', 'Pasquotank', 'NC', 'Pasquotank County Courthouse', '206 E Main St', 'Elizabeth City', '27909', 96, 96, 96, '(252) 331-4600', 'https://www.nccourts.gov/locations/pasquotank-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-pender', 'Pender', 'NC', 'Pender County Courthouse', '100 S Wright St', 'Burgaw', '28425', 96, 96, 96, '(910) 663-3900', 'https://www.nccourts.gov/locations/pender-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-perquimans', 'Perquimans', 'NC', 'Perquimans County Courthouse', '128 N Church St', 'Hertford', '27944', 96, 96, 96, '(252) 404-5000', 'https://www.nccourts.gov/locations/perquimans-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-person', 'Person', 'NC', 'Person County Courthouse', '105 S Main St', 'Roxboro', '27573', 96, 96, 96, '(336) 503-5200', 'https://www.nccourts.gov/locations/person-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-pitt', 'Pitt', 'NC', 'Pitt County Courthouse', '100 W Third St', 'Greenville', '27834', 96, 96, 96, '(252) 695-7100', 'https://www.nccourts.gov/locations/pitt-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-polk', 'Polk', 'NC', 'Polk County Courthouse', 'One Courthouse Square', 'Columbus', '28722', 96, 96, 96, '(828) 894-4900', 'https://www.nccourts.gov/locations/polk-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('wa-lincoln', 'Lincoln', 'WA', 'Lincoln County District Court', '406 Sinclair St', 'Davenport', '99122', NULL, NULL, NULL, '(509) 725-2281', 'https://www.co.lincoln.wa.us/districtcourt/', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('nc-randolph', 'Randolph', 'NC', 'Randolph County Courthouse', '176 East Salisbury St', 'Asheboro', '27203', 96, 96, 96, '(336) 328-3000', 'https://www.nccourts.gov/locations/randolph-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-richmond', 'Richmond', 'NC', 'Richmond County Courthouse', '105 W Franklin St', 'Rockingham', '28379', 96, 96, 96, '(910) 419-7400', 'https://www.nccourts.gov/locations/richmond-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-robeson', 'Robeson', 'NC', 'Robeson County Courthouse', '500 North Elm St, Room 101', 'Lumberton', '28359', 96, 96, 96, '(910) 272-5900', 'https://www.nccourts.gov/locations/robeson-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-rockingham', 'Rockingham', 'NC', 'Rockingham County Courthouse', '170 Hwy 65', 'Reidsville', '27320', 96, 96, 96, '(336) 634-6000', 'https://www.nccourts.gov/locations/rockingham-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-rowan', 'Rowan', 'NC', 'Rowan County Courthouse', '210 N Main St', 'Salisbury', '28144', 96, 96, 96, '(704) 797-3001', 'https://www.nccourts.gov/locations/rowan-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-rutherford', 'Rutherford', 'NC', 'Rutherford County Courthouse', '229 N. Main St., Suite 203', 'Rutherfordton', '28139', 96, 96, 96, '(828) 288-6100', 'https://www.nccourts.gov/locations/rutherford-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-sampson', 'Sampson', 'NC', 'Sampson County Courthouse', '101 E. Main St', 'Clinton', '28328', 96, 96, 96, '(910) 596-6600', 'https://www.nccourts.gov/locations/sampson-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-scotland', 'Scotland', 'NC', 'Scotland County Courthouse', '212 Biggs St', 'Laurinburg', '28352', 96, 96, 96, '(910) 266-4400', 'https://www.nccourts.gov/locations/scotland-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-stanly', 'Stanly', 'NC', 'Stanly County Courthouse', '201 S Second St', 'Albemarle', '28002', 96, 96, 96, '(704) 986-7000', 'https://www.nccourts.gov/locations/stanly-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-stokes', 'Stokes', 'NC', 'Stokes County Courthouse', 'Hwy 89 - 1012 Main St', 'Danbury', '27016', 96, 96, 96, '(336) 593-4400', 'https://www.nccourts.gov/locations/stokes-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-surry', 'Surry', 'NC', 'Surry County Courthouse', '201 E. Kapp St', 'Dobson', '27017', 96, 96, 96, '(336) 386-3700', 'https://www.nccourts.gov/locations/surry-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-swain', 'Swain', 'NC', 'Swain County Courthouse', '101 Mitchell St', 'Bryson City', '28713', 96, 96, 96, '(828) 488-7400', 'https://www.nccourts.gov/locations/swain-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-transylvania', 'Transylvania', 'NC', 'Transylvania County Courthouse', '7 East Main St', 'Brevard', '28712', 96, 96, 96, '(828) 885-3000', 'https://www.nccourts.gov/locations/transylvania-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-tyrrell', 'Tyrrell', 'NC', 'Tyrrell County Courthouse', '403 Main St', 'Columbia', '27925', 96, 96, 96, '(252) 766-6510', 'https://www.nccourts.gov/locations/tyrrell-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-union', 'Union', 'NC', 'Union County Courthouse', '400 North Main St', 'Monroe', '28112', 96, 96, 96, '(704) 698-3100', 'https://www.nccourts.gov/locations/union-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-vance', 'Vance', 'NC', 'Vance County Courthouse', '156 Church St, Suite 101', 'Henderson', '27536', 96, 96, 96, '(252) 430-5100', 'https://www.nccourts.gov/locations/vance-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-wake', 'Wake', 'NC', 'Wake County Courthouse', '316 Fayetteville St. Mall', 'Raleigh', '27601', 96, 96, 96, '(919) 792-4000', 'https://www.nccourts.gov/locations/wake-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-warren', 'Warren', 'NC', 'Warren County Courthouse', '109 S Main St', 'Warrenton', '27589', 96, 96, 96, '(252) 257-6300', 'https://www.nccourts.gov/locations/warren-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-washington', 'Washington', 'NC', 'Washington County Courthouse', '120 Adams St', 'Plymouth', '27962', 96, 96, 96, '(252) 791-4000', 'https://www.nccourts.gov/locations/washington-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-watauga', 'Watauga', 'NC', 'Watauga County Courthouse', '842 W King St, Suite 13', 'Boone', '28607', 96, 96, 96, '(828) 268-6600', 'https://www.nccourts.gov/locations/watauga-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-wayne', 'Wayne', 'NC', 'Wayne County Courthouse', '224 E. Walnut St, Room 230', 'Goldsboro', '27530', 96, 96, 96, '(919) 722-6100', 'https://www.nccourts.gov/locations/wayne-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-wilkes', 'Wilkes', 'NC', 'Wilkes County Courthouse', '500 Courthouse Dr', 'Wilkesboro', '28697', 96, 96, 96, '(336) 651-4400', 'https://www.nccourts.gov/locations/wilkes-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-wilson', 'Wilson', 'NC', 'Wilson County Courthouse', '115 E Nash St', 'Wilson', '27894', 96, 96, 96, '(252) 206-3000', 'https://www.nccourts.gov/locations/wilson-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-yadkin', 'Yadkin', 'NC', 'Yadkin County Courthouse', '101 S State St', 'Yadkinville', '27055', 96, 96, 96, '(336) 679-3600', 'https://www.nccourts.gov/locations/yadkin-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('nc-yancey', 'Yancey', 'NC', 'Yancey County Courthouse', '110 Towne Square, Room 5', 'Burnsville', '28714', 96, 96, 96, '(828) 678-5700', 'https://www.nccourts.gov/locations/yancey-county', 'NC filing fee: $96 flat rate for all claim amounts. Sheriff service: $30/defendant.', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('va-accomack', 'Accomack', 'VA', 'Accomack General District Court', '23371 Front Street', 'Accomac', '23301', NULL, NULL, NULL, '(757) 787-0923', 'https://www.vacourts.gov/courts/gd/accomack/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('va-albemarle', 'Albemarle', 'VA', 'Albemarle General District Court', '350 Park Street', 'Charlottesville', '22902', NULL, NULL, NULL, '(434) 972-4004', 'https://www.vacourts.gov/courts/gd/albemarle/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('va-alexandria', 'Alexandria', 'VA', 'Alexandria General District Court', '520 King Street, Second Floor', 'Alexandria', '22320', NULL, NULL, NULL, '(703) 746-4021', 'https://www.vacourts.gov/courts/gd/alexandria/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('va-alleghany', 'Alleghany', 'VA', 'Alleghany General District Court', '266 West Main Street', 'Covington', '24426', NULL, NULL, NULL, '(540) 965-1720', 'https://www.vacourts.gov/courts/combined/alleghany/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('va-amelia', 'Amelia', 'VA', 'Amelia General District Court', '16441 Court Street', 'Amelia', '23002', NULL, NULL, NULL, '(804) 561-2456', 'https://www.vacourts.gov/courts/combined/amelia/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('va-amherst', 'Amherst', 'VA', 'Amherst General District Court', '113 Taylor Street', 'Amherst', '24521', NULL, NULL, NULL, '(434) 946-9351', 'https://www.vacourts.gov/courts/gd/amherst/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.051257+00');
+INSERT INTO public.counties VALUES ('va-appomattox', 'Appomattox', 'VA', 'Appomattox General District Court', '297 Court Street, Second Floor', 'Appomattox', '24522', NULL, NULL, NULL, '(434) 352-5540', 'https://www.vacourts.gov/courts/gd/appomattox/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-arlington', 'Arlington', 'VA', 'Arlington General District Court', '1425 North Courthouse Road, Suite 2400, Second Floor', 'Arlington', '22201', NULL, NULL, NULL, '(703) 228-7900', 'https://www.vacourts.gov/courts/gd/arlington/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-augusta', 'Augusta', 'VA', 'Augusta General District Court', '100 Dick Huff Lane, Suite 1070', 'Verona', '24482', NULL, NULL, NULL, '(540) 245-5300', 'https://www.vacourts.gov/courts/gd/augusta/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-bath', 'Bath', 'VA', 'Bath General District Court', '65 Courthouse Hill Road', 'Warm Springs', '24484', NULL, NULL, NULL, '(540) 839-7241', 'https://www.vacourts.gov/courts/combined/bath/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-bedford', 'Bedford', 'VA', 'Bedford General District Court', '123 East Main Street, Suite 202', 'Bedford', '24523', NULL, NULL, NULL, '(540) 586-7637', 'https://www.vacourts.gov/courts/gd/bedford/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-bland', 'Bland', 'VA', 'Bland General District Court', '612 Main Street, Suite 106', 'Bland', '24315', NULL, NULL, NULL, '(276) 688-4433', 'https://www.vacourts.gov/courts/combined/bland/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-botetourt', 'Botetourt', 'VA', 'Botetourt General District Court', '20 E. Back Street, Suite A', 'Fincastle', '24090', NULL, NULL, NULL, '(540) 928-2270', 'https://www.vacourts.gov/courts/gd/botetourt/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-bristol', 'Bristol', 'VA', 'Bristol General District Court', '497 Cumberland Street, RM 208', 'Bristol', '24201', NULL, NULL, NULL, '(276) 645-7341', 'https://www.vacourts.gov/courts/gd/bristol/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-brunswick', 'Brunswick', 'VA', 'Brunswick General District Court', '202 North Main Street', 'Lawrenceville', '23868', NULL, NULL, NULL, '(434) 848-2315', 'https://www.vacourts.gov/courts/combined/brunswick/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-buchanan', 'Buchanan', 'VA', 'Buchanan General District Court', '1012 Walnut Street, Suite 309', 'Grundy', '24614', NULL, NULL, NULL, '(276) 935-6526', 'https://www.vacourts.gov/courts/combined/buchanan/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-buckingham', 'Buckingham', 'VA', 'Buckingham General District Court', '13049 W. James Anderson Hwy.', 'Buckingham', '23921', NULL, NULL, NULL, '(434) 969-4755', 'https://www.vacourts.gov/courts/combined/buckingham/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-buena-vista', 'Buena Vista', 'VA', 'Buena Vista General District Court', '2039 Sycamore Avenue', 'Buena Vista', '24416', NULL, NULL, NULL, '(540) 264-2163', 'https://www.vacourts.gov/courts/combined/buena_vista/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-campbell', 'Campbell', 'VA', 'Campbell General District Court', '732 Village Highway', 'Rustburg', '24588', NULL, NULL, NULL, '(434) 332-9546', 'https://www.vacourts.gov/courts/gd/campbell/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-caroline', 'Caroline', 'VA', 'Caroline General District Court', '111 Ennis Street', 'Bowling Green', '22427', NULL, NULL, NULL, '(804) 633-5720', 'https://www.vacourts.gov/courts/gd/caroline/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-carroll', 'Carroll', 'VA', 'Carroll General District Court', '605 Pine Street', 'Hillsville', '24343', NULL, NULL, NULL, '(276) 730-3050', 'https://www.vacourts.gov/courts/gd/carroll/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-charles-city', 'Charles City', 'VA', 'Charles City General District Court', '10780 Courthouse Road', 'Charles City', '23030', NULL, NULL, NULL, '(804) 652-2188', 'https://www.vacourts.gov/courts/combined/charles_city/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-charlotte', 'Charlotte', 'VA', 'Charlotte General District Court', '115 David Bruce Ave', 'Charlotte Court House', '23923', NULL, NULL, NULL, '(434) 542-5600', 'https://www.vacourts.gov/courts/gd/charlotte/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-charlottesville', 'Charlottesville', 'VA', 'Charlottesville General District Court', '606 East Market Street', 'Charlottesville', '22902', NULL, NULL, NULL, '(434) 970-3388', 'https://www.vacourts.gov/courts/gd/charlottesville/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-chesapeake', 'Chesapeake', 'VA', 'Chesapeake General District Court', '307 Albemarle Drive, Civic Center', 'Chesapeake', '23322', NULL, NULL, NULL, '(757) 382-3100', 'https://www.vacourts.gov/courts/gd/chesapeake/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-chesterfield', 'Chesterfield', 'VA', 'Chesterfield General District Court', '9500 Courthouse Road', 'Chesterfield', '23832', NULL, NULL, NULL, '(804) 748-1231', 'https://www.vacourts.gov/courts/gd/chesterfield/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-clarke', 'Clarke', 'VA', 'Clarke General District Court', '104 North Church Street', 'Berryville', '22611', NULL, NULL, NULL, '(540) 955-5128', 'https://www.vacourts.gov/courts/gd/clarke/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-colonial-heights', 'Colonial Heights', 'VA', 'Colonial Heights General District Court', '550 Boulevard', 'Colonial Heights', '23834', NULL, NULL, NULL, '(804) 520-9346', 'https://www.vacourts.gov/courts/gd/colonial_heights/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-covington', 'Covington', 'VA', 'Covington General District Court', '266 West Main Street', 'Covington', '24426', NULL, NULL, NULL, '(540) 965-1720', 'https://www.vacourts.gov/courts/combined/alleghany/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-craig', 'Craig', 'VA', 'Craig General District Court', '182 Main Street, Suite 5', 'New Castle', '24127', NULL, NULL, NULL, '(540) 864-5989', 'https://www.vacourts.gov/courts/combined/craig/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-culpeper', 'Culpeper', 'VA', 'Culpeper General District Court', '135 West Cameron Street', 'Culpeper', '22701', NULL, NULL, NULL, '(540) 727-3417', 'https://www.vacourts.gov/courts/gd/culpeper/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-cumberland', 'Cumberland', 'VA', 'Cumberland General District Court', '1 Courthouse Circle', 'Cumberland', '23040', NULL, NULL, NULL, '(804) 492-4848', 'https://www.vacourts.gov/courts/combined/cumberland/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-danville', 'Danville', 'VA', 'Danville General District Court', '401 Patton Street', 'Danville', '24543', NULL, NULL, NULL, '(434) 799-5179', 'https://www.vacourts.gov/courts/gd/danville/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-dickenson', 'Dickenson', 'VA', 'Dickenson General District Court', '119 Courthouse Lane', 'Clintwood', '24228', NULL, NULL, NULL, '(276) 926-1630', 'https://www.vacourts.gov/courts/combined/dickenson/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-dinwiddie', 'Dinwiddie', 'VA', 'Dinwiddie General District Court', '14101 Boydton Plank Road', 'Dinwiddie', '23841', NULL, NULL, NULL, '(804) 469-4533', 'https://www.vacourts.gov/courts/combined/dinwiddie/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk. Some directories list this address as 14008 Boydton Plank Road instead — confirm with the clerk''s office at (804) 469-4533 before visiting', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-emporia', 'Emporia', 'VA', 'Emporia General District Court', '315 South Main Street', 'Emporia', '23847', NULL, NULL, NULL, '(434) 634-5400', 'https://www.vacourts.gov/courts/combined/emporia/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-essex', 'Essex', 'VA', 'Essex General District Court', '300 Prince Street', 'Tappahannock', '22560', NULL, NULL, NULL, '(804) 443-3744', 'https://www.vacourts.gov/courts/combined/essex/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-fairfax-city', 'Fairfax City', 'VA', 'Fairfax City General District Court', '10455 Armstrong Street, City Hall, Room 101', 'Fairfax', '22030', NULL, NULL, NULL, '(703) 385-7866', 'https://www.vacourts.gov/courts/gd/fairfax_city/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-fairfax-county', 'Fairfax County', 'VA', 'Fairfax County General District Court', '4110 Chain Bridge Road, Suite 210', 'Fairfax', '22030', NULL, NULL, NULL, '(703) 691-7320', 'https://www.vacourts.gov/courts/gd/fairfax_county/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-falls-church', 'Falls Church', 'VA', 'Falls Church General District Court', '300 Park Avenue, Suite 151W', 'Falls Church', '22046', NULL, NULL, NULL, '(703) 248-5098', 'https://www.vacourts.gov/courts/combined/falls_church/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-fauquier', 'Fauquier', 'VA', 'Fauquier General District Court', '6 Court Street', 'Warrenton', '20186', NULL, NULL, NULL, '(540) 422-8035', 'https://www.vacourts.gov/courts/gd/fauquier/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-floyd', 'Floyd', 'VA', 'Floyd General District Court', '100 E. Main Street, Room 208', 'Floyd', '24091', NULL, NULL, NULL, '(540) 745-9327', 'https://www.vacourts.gov/courts/combined/floyd/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-fluvanna', 'Fluvanna', 'VA', 'Fluvanna General District Court', '72 Main Street, Suite B', 'Palmyra', '22963', NULL, NULL, NULL, '(434) 591-1980', 'https://www.vacourts.gov/courts/combined/fluvanna/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-franklin-city', 'Franklin City', 'VA', 'Franklin City General District Court', '1020 Pretlow Street', 'Franklin', '23851', NULL, NULL, NULL, '(757) 562-8550', 'https://www.vacourts.gov/courts/combined/franklin_city/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-franklin-county', 'Franklin County', 'VA', 'Franklin County General District Court', '275 South Main Street, Suite 111', 'Rocky Mount', '24151', NULL, NULL, NULL, '(540) 483-3060', 'https://www.vacourts.gov/courts/gd/franklin_county/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-frederick', 'Frederick', 'VA', 'Frederick General District Court', '5 North Kent Street', 'Winchester', '22601', NULL, NULL, NULL, '(540) 722-7208', 'https://www.vacourts.gov/courts/gd/Frederick~Winchester/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-fredericksburg', 'Fredericksburg', 'VA', 'Fredericksburg General District Court', '701 Princess Anne Street, Suite 200', 'Fredericksburg', '22401', NULL, NULL, NULL, '(540) 372-1042', 'https://www.vacourts.gov/courts/gd/fredericksburg/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-galax', 'Galax', 'VA', 'Galax General District Court', '353 North Main Street, Suite 204', 'Galax', '24333', NULL, NULL, NULL, '(276) 236-8731', 'https://www.vacourts.gov/courts/combined/galax/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-giles', 'Giles', 'VA', 'Giles General District Court', '120 North Main Street, Suite 1', 'Pearisburg', '24134', NULL, NULL, NULL, '(540) 921-3533', 'https://www.vacourts.gov/courts/gd/giles/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-gloucester', 'Gloucester', 'VA', 'Gloucester General District Court', '7400 Justice Drive, Room 102', 'Gloucester', '23061', NULL, NULL, NULL, '(804) 693-4860', 'https://www.vacourts.gov/courts/gd/gloucester/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-goochland', 'Goochland', 'VA', 'Goochland General District Court', '2938 River Road West, Building G', 'Goochland', '23063', NULL, NULL, NULL, '(804) 556-5309', 'https://www.vacourts.gov/courts/combined/goochland/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-grayson', 'Grayson', 'VA', 'Grayson General District Court', '129 Davis St.', 'Independence', '24348', NULL, NULL, NULL, '(276) 773-2011', 'https://www.vacourts.gov/courts/combined/grayson/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-greene', 'Greene', 'VA', 'Greene General District Court', '85 Stanard Street', 'Stanardsville', '22973', NULL, NULL, NULL, '(434) 985-5224', 'https://www.vacourts.gov/courts/combined/greene/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-greensville', 'Greensville', 'VA', 'Greensville General District Court', '315 South Main Street', 'Emporia', '23847', NULL, NULL, NULL, '(434) 634-5400', 'https://www.vacourts.gov/courts/combined/greensville/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-halifax', 'Halifax', 'VA', 'Halifax General District Court', '8 South Main Street, Suite 200', 'Halifax', '24558', NULL, NULL, NULL, '(434) 476-3385', 'https://www.vacourts.gov/courts/gd/halifax/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-hampton', 'Hampton', 'VA', 'Hampton General District Court', '236 North King Street, 2nd Floor', 'Hampton', '23669', NULL, NULL, NULL, '(757) 727-6260', 'https://www.vacourts.gov/courts/gd/hampton/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.060114+00');
+INSERT INTO public.counties VALUES ('va-hanover', 'Hanover', 'VA', 'Hanover General District Court', '7530 County Complex Rd, 1st Floor', 'Hanover', '23069', NULL, NULL, NULL, '(804) 365-6457', 'https://www.vacourts.gov/courts/gd/hanover/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-harrisonburg', 'Harrisonburg', 'VA', 'Harrisonburg General District Court', '53 Court Square, Room 132', 'Harrisonburg', '22801', NULL, NULL, NULL, '(540) 564-3130', 'https://www.vacourts.gov/courts/gd/Harrisonburg~Rockingham/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-henrico', 'Henrico', 'VA', 'Henrico General District Court', '4309 East Parham Road', 'Henrico', '23273', NULL, NULL, NULL, '(804) 501-4727', 'https://www.vacourts.gov/courts/gd/henrico/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-henry', 'Henry', 'VA', 'Henry General District Court', '3160 Kings Mountain Road, Suite A', 'Martinsville', '24112', NULL, NULL, NULL, '(276) 634-4815', 'https://www.vacourts.gov/courts/gd/henry/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-highland', 'Highland', 'VA', 'Highland General District Court', '165 West Main Street', 'Monterey', '24465', NULL, NULL, NULL, '(540) 468-2445', 'https://www.vacourts.gov/courts/combined/highland/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-hopewell', 'Hopewell', 'VA', 'Hopewell General District Court', '100 East Broadway', 'Hopewell', '23860', NULL, NULL, NULL, '(804) 541-2257', 'https://www.vacourts.gov/courts/combined/hopewell/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-isle-of-wight', 'Isle of Wight', 'VA', 'Isle of Wight General District Court', '17000 Josiah Parker Circle', 'Isle of Wight', '23397', NULL, NULL, NULL, '(757) 365-6244', 'https://www.vacourts.gov/courts/gd/isle_of_wight/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-james-city', 'James City', 'VA', 'James City General District Court', '5201 Monticello Avenue, Suite 2', 'Williamsburg', '23188', NULL, NULL, NULL, '(757) 564-2400', 'https://www.vacourts.gov/courts/gd/Williamsburg~James_City_County/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-king-and-queen', 'King and Queen', 'VA', 'King and Queen General District Court', '242 Allens Circle', 'King and Queen', '23085', NULL, NULL, NULL, '(804) 785-5982', 'https://www.vacourts.gov/courts/gd/king_and_queen/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-king-george', 'King George', 'VA', 'King George General District Court', '10446 Government Center Blvd., Suite 105', 'King George', '22485', NULL, NULL, NULL, '(540) 775-2390', 'https://www.vacourts.gov/courts/gd/king_george/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-king-william', 'King William', 'VA', 'King William General District Court', '351 Courthouse Lane, Ste 201', 'King William', '23086', NULL, NULL, NULL, '(804) 769-4947', 'https://www.vacourts.gov/courts/gd/king_william/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-lancaster', 'Lancaster', 'VA', 'Lancaster General District Court', '8265 Mary Ball Road', 'Lancaster', '22503', NULL, NULL, NULL, '(804) 462-0012', 'https://www.vacourts.gov/courts/gd/lancaster/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-lee', 'Lee', 'VA', 'Lee General District Court', '33640 Main St, Suite 209', 'Jonesville', '24263', NULL, NULL, NULL, '(276) 346-7729', 'https://www.vacourts.gov/courts/gd/lee/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-lexington', 'Lexington', 'VA', 'Lexington General District Court', '20 South Randolph Street, Suite 200', 'Lexington', '24450', NULL, NULL, NULL, '(540) 463-3631', 'https://www.vacourts.gov/courts/gd/Lexington~Rockbridge/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-loudoun', 'Loudoun', 'VA', 'Loudoun General District Court', '2 Church Street NE', 'Leesburg', '20176', NULL, NULL, NULL, '(703) 777-0312', 'https://www.vacourts.gov/courts/gd/loudoun/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-louisa', 'Louisa', 'VA', 'Louisa General District Court', '314 West Main Street', 'Louisa', '23093', NULL, NULL, NULL, '(540) 967-5330', 'https://www.vacourts.gov/courts/gd/louisa/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-lunenburg', 'Lunenburg', 'VA', 'Lunenburg General District Court', '11435 Courthouse Rd', 'Lunenburg', '23952', NULL, NULL, NULL, '(434) 696-5508', 'https://www.vacourts.gov/courts/combined/lunenburg/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-lynchburg', 'Lynchburg', 'VA', 'Lynchburg General District Court', '905 Court Street', 'Lynchburg', '24504', NULL, NULL, NULL, '(434) 455-2640', 'https://www.vacourts.gov/courts/gd/lynchburg/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-madison', 'Madison', 'VA', 'Madison General District Court', '1 Main Street, Lower Level', 'Madison', '22727', NULL, NULL, NULL, '(540) 948-4657', 'https://www.vacourts.gov/courts/combined/madison/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-manassas', 'Manassas', 'VA', 'Manassas General District Court', '9311 Lee Avenue', 'Manassas', '20110', NULL, NULL, NULL, '(703) 792-6141', 'https://www.vacourts.gov/courts/gd/prince_william/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-manassas-park', 'Manassas Park', 'VA', 'Manassas Park General District Court', '9311 Lee Avenue', 'Manassas', '20110', NULL, NULL, NULL, '(703) 792-6141', 'https://www.vacourts.gov/courts/gd/prince_william/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-martinsville', 'Martinsville', 'VA', 'Martinsville General District Court', '55 West Church Street', 'Martinsville', '24114', NULL, NULL, NULL, '(276) 403-5125', 'https://www.vacourts.gov/courts/gd/martinsville/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-mathews', 'Mathews', 'VA', 'Mathews General District Court', '10622 Buckley Hall Road', 'Mathews', '23109', NULL, NULL, NULL, '(804) 725-2242', 'https://www.vacourts.gov/courts/gd/mathews/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-mecklenburg', 'Mecklenburg', 'VA', 'Mecklenburg General District Court', '911 Madison Street', 'Boydton', '23917', NULL, NULL, NULL, '(434) 738-6260', 'https://www.vacourts.gov/courts/gd/mecklenburg/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-middlesex', 'Middlesex', 'VA', 'Middlesex General District Court', '73 Bowden Street', 'Saluda', '23149', NULL, NULL, NULL, '(804) 758-4312', 'https://www.vacourts.gov/courts/gd/middlesex/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-montgomery', 'Montgomery', 'VA', 'Montgomery General District Court', '55 East Main Street, Third Floor', 'Christiansburg', '24073', NULL, NULL, NULL, '(540) 394-2085', 'https://www.vacourts.gov/courts/gd/montgomery/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-nelson', 'Nelson', 'VA', 'Nelson General District Court', '84 Courthouse Square', 'Lovingston', '22949', NULL, NULL, NULL, '(434) 263-7040', 'https://www.vacourts.gov/courts/gd/nelson/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-new-kent', 'New Kent', 'VA', 'New Kent General District Court', '12001 Courthouse Circle', 'New Kent', '23124', NULL, NULL, NULL, '(804) 966-9530', 'https://www.vacourts.gov/courts/gd/new_kent/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-newport-news', 'Newport News', 'VA', 'Newport News General District Court', '2500 Washington Avenue', 'Newport News', '23607', NULL, NULL, NULL, '(757) 926-3520', 'https://www.vacourts.gov/courts/gd/Newport_News-Civil/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-norfolk', 'Norfolk', 'VA', 'Norfolk General District Court', '150 Saint Paul''s Blvd, Room 3202', 'Norfolk', '23510', NULL, NULL, NULL, '(757) 664-4910', 'https://www.vacourts.gov/courts/gd/norfolk/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-northampton', 'Northampton', 'VA', 'Northampton General District Court', '5229 The Hornes', 'Eastville', '23347', NULL, NULL, NULL, '(757) 678-0466', 'https://www.vacourts.gov/courts/gd/northampton/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-northumberland', 'Northumberland', 'VA', 'Northumberland General District Court', '220 Judicial Place', 'Heathsville', '22473', NULL, NULL, NULL, '(804) 580-4323', 'https://www.vacourts.gov/courts/gd/northumberland/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-norton', 'Norton', 'VA', 'Norton General District Court', '206 East Main Street', 'Wise', '24293', NULL, NULL, NULL, '(276) 328-3426', 'https://www.vacourts.gov/courts/gd/Wise~Norton/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-nottoway', 'Nottoway', 'VA', 'Nottoway General District Court', '328 West Courthouse Road', 'Nottoway', '23955', NULL, NULL, NULL, '(434) 645-9312', 'https://www.vacourts.gov/courts/combined/nottoway/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-orange', 'Orange', 'VA', 'Orange General District Court', '110 North Madison Road, Suite 100', 'Orange', '22960', NULL, NULL, NULL, '(540) 672-6164', 'https://www.vacourts.gov/courts/gd/orange/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-page', 'Page', 'VA', 'Page General District Court', '116 South Court Street, Suite B', 'Luray', '22835', NULL, NULL, NULL, '(540) 743-5705', 'https://www.vacourts.gov/courts/gd/page/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-patrick', 'Patrick', 'VA', 'Patrick General District Court', '106 Rucker Street, Administration Bldg. Room 318', 'Stuart', '24171', NULL, NULL, NULL, '(276) 694-7258', 'https://www.vacourts.gov/courts/gd/patrick/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-petersburg', 'Petersburg', 'VA', 'Petersburg General District Court', '35 East Tabb Street', 'Petersburg', '23803', NULL, NULL, NULL, '(804) 733-2374', 'https://www.vacourts.gov/courts/gd/petersburg/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-pittsylvania', 'Pittsylvania', 'VA', 'Pittsylvania General District Court', '11 Bank Street, Suite 201', 'Chatham', '24531', NULL, NULL, NULL, '(434) 432-7879', 'https://www.vacourts.gov/courts/gd/pittsylvania/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-poquoson', 'Poquoson', 'VA', 'Poquoson General District Court', '300 Ballard Street', 'Yorktown', '23690', NULL, NULL, NULL, '(757) 890-3450', 'https://www.vacourts.gov/courts/gd/york/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-portsmouth', 'Portsmouth', 'VA', 'Portsmouth General District Court', '1345 Court Street, Suite 104', 'Portsmouth', '23704', NULL, NULL, NULL, '(757) 393-8624', 'https://www.vacourts.gov/courts/gd/portsmouth/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-powhatan', 'Powhatan', 'VA', 'Powhatan General District Court', '3880-D Old Buckingham Road', 'Powhatan', '23139', NULL, NULL, NULL, '(804) 598-5665', 'https://www.vacourts.gov/courts/combined/powhatan/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-prince-edward', 'Prince Edward', 'VA', 'Prince Edward General District Court', '111 South Street, Courthouse Building', 'Farmville', '23901', NULL, NULL, NULL, '(434) 392-4024', 'https://www.vacourts.gov/courts/gd/prince_edward/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-prince-george', 'Prince George', 'VA', 'Prince George General District Court', '6601 Courts Drive', 'Prince George', '23875', NULL, NULL, NULL, '(804) 733-2783', 'https://www.vacourts.gov/courts/combined/prince_george/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-prince-william', 'Prince William', 'VA', 'Prince William General District Court', '9311 Lee Avenue', 'Manassas', '20110', NULL, NULL, NULL, '(703) 792-6141', 'https://www.vacourts.gov/courts/gd/prince_william/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-pulaski', 'Pulaski', 'VA', 'Pulaski General District Court', '45 Third Street N.W., Suite 102', 'Pulaski', '24301', NULL, NULL, NULL, '(540) 980-7470', 'https://www.vacourts.gov/courts/gd/pulaski/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-radford', 'Radford', 'VA', 'Radford General District Court', '619 Second Street, Municipal Building', 'Radford', '24141', NULL, NULL, NULL, '(540) 731-3609', 'https://www.vacourts.gov/courts/combined/radford/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-rappahannock', 'Rappahannock', 'VA', 'Rappahannock General District Court', '250 Gay Street', 'Washington', '22747', NULL, NULL, NULL, '(540) 675-5356', 'https://www.vacourts.gov/courts/combined/rappahannock/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-richmond-city', 'Richmond City', 'VA', 'Richmond City General District Court', '400 N. 9th Street', 'Richmond', '23219', NULL, NULL, NULL, '(804) 646-6461', 'https://www.vacourts.gov/courts/gd/richmond_city/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-richmond-county', 'Richmond County', 'VA', 'Richmond County General District Court', '201 Court Circle', 'Warsaw', '22572', NULL, NULL, NULL, '(804) 333-4616', 'https://www.vacourts.gov/courts/combined/richmond_county/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.070753+00');
+INSERT INTO public.counties VALUES ('va-roanoke-city', 'Roanoke City', 'VA', 'Roanoke City General District Court', '315 W. Church Ave. S.W., 2nd Floor', 'Roanoke', '24016', NULL, NULL, NULL, '(540) 853-2511', 'https://www.vacourts.gov/courts/gd/roanoke_city/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-roanoke-county', 'Roanoke County', 'VA', 'Roanoke County General District Court', '305 East Main St.', 'Salem', '24153', NULL, NULL, NULL, '(540) 387-6168', 'https://www.vacourts.gov/courts/gd/roanoke_county/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-rockbridge', 'Rockbridge', 'VA', 'Rockbridge General District Court', '20 South Randolph Street, Suite 200', 'Lexington', '24450', NULL, NULL, NULL, '(540) 463-3631', 'https://www.vacourts.gov/courts/gd/Lexington~Rockbridge/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-rockingham', 'Rockingham', 'VA', 'Rockingham General District Court', '53 Court Square, Room 132', 'Harrisonburg', '22801', NULL, NULL, NULL, '(540) 564-3130', 'https://www.vacourts.gov/courts/gd/Harrisonburg~Rockingham/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-russell', 'Russell', 'VA', 'Russell General District Court', '83 E. Main Street', 'Lebanon', '24266', NULL, NULL, NULL, '(276) 889-8051', 'https://www.vacourts.gov/courts/combined/russell/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-salem', 'Salem', 'VA', 'Salem General District Court', '2 East Calhoun Street', 'Salem', '24153', NULL, NULL, NULL, '(540) 375-3044', 'https://www.vacourts.gov/courts/combined/salem/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-scott', 'Scott', 'VA', 'Scott General District Court', '202 West Jackson Street, Suite 203', 'Gate City', '24251', NULL, NULL, NULL, '(276) 386-7341', 'https://www.vacourts.gov/courts/combined/scott/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-shenandoah', 'Shenandoah', 'VA', 'Shenandoah General District Court', '215 Mill Road, Suite 128', 'Woodstock', '22664', NULL, NULL, NULL, '(540) 459-6130', 'https://www.vacourts.gov/courts/gd/shenandoah/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-smyth', 'Smyth', 'VA', 'Smyth General District Court', '109 West Main Street, Suite 1022', 'Marion', '24354', NULL, NULL, NULL, '(276) 782-4047', 'https://www.vacourts.gov/courts/gd/smyth/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-southampton', 'Southampton', 'VA', 'Southampton General District Court', '22350 Main Street', 'Courtland', '23837', NULL, NULL, NULL, '(757) 653-2673', 'https://www.vacourts.gov/courts/combined/southampton/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-spotsylvania', 'Spotsylvania', 'VA', 'Spotsylvania General District Court', '9111 Courthouse Road, Judicial Center, 1st Floor', 'Spotsylvania', '22553', NULL, NULL, NULL, '(540) 507-7680', 'https://www.vacourts.gov/courts/gd/spotsylvania/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-stafford', 'Stafford', 'VA', 'Stafford General District Court', '1300 Courthouse Road, The Judicial Center', 'Stafford', '22555', NULL, NULL, NULL, '(540) 658-8935', 'https://www.vacourts.gov/courts/gd/stafford/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-staunton', 'Staunton', 'VA', 'Staunton General District Court', '113 E. Beverley St., 1st Floor', 'Staunton', '24401', NULL, NULL, NULL, '(540) 332-3878', 'https://www.vacourts.gov/courts/gd/staunton/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-suffolk', 'Suffolk', 'VA', 'Suffolk General District Court', '150 North Main Street', 'Suffolk', '23434', NULL, NULL, NULL, '(757) 514-4822', 'https://www.vacourts.gov/courts/gd/suffolk/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-surry', 'Surry', 'VA', 'Surry General District Court', '45 School Street', 'Surry', '23883', NULL, NULL, NULL, '(757) 294-5201', 'https://www.vacourts.gov/courts/combined/surry/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-sussex', 'Sussex', 'VA', 'Sussex General District Court', '15098 Courthouse Road', 'Sussex', '23884', NULL, NULL, NULL, '(434) 246-1096', 'https://www.vacourts.gov/courts/combined/sussex/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-tazewell', 'Tazewell', 'VA', 'Tazewell General District Court', '135 Court Street, Suite 300', 'Tazewell', '24651', NULL, NULL, NULL, '(276) 385-1563', 'https://www.vacourts.gov/courts/gd/tazewell/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-virginia-beach', 'Virginia Beach', 'VA', 'Virginia Beach General District Court', '2425 Nimmo Parkway', 'Virginia Beach', '23456', NULL, NULL, NULL, '(757) 385-8531', 'https://www.vacourts.gov/courts/gd/virginia_beach/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-warren', 'Warren', 'VA', 'Warren General District Court', 'One East Main St.', 'Front Royal', '22630', NULL, NULL, NULL, '(540) 635-2335', 'https://www.vacourts.gov/courts/gd/warren/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-washington', 'Washington', 'VA', 'Washington General District Court', '191 East Main Street', 'Abingdon', '24210', NULL, NULL, NULL, '(276) 676-6281', 'https://www.vacourts.gov/courts/gd/washington/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('wa-klickitat', 'Klickitat', 'WA', 'Klickitat County District Court', '501 NE Washington St', 'White Salmon', '98672', NULL, NULL, NULL, '(509) 773-4670', 'http://klickitatcounty.org/498/District-Court-East', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('va-waynesboro', 'Waynesboro', 'VA', 'Waynesboro General District Court', '237 Market Avenue', 'Waynesboro', '22980', NULL, NULL, NULL, '(540) 942-6636', 'https://www.vacourts.gov/courts/gd/waynesboro/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-westmoreland', 'Westmoreland', 'VA', 'Westmoreland General District Court', '175 Polk Street', 'Montross', '22520', NULL, NULL, NULL, '(804) 493-0105', 'https://www.vacourts.gov/courts/gd/westmoreland/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-williamsburg', 'Williamsburg', 'VA', 'Williamsburg General District Court', '5201 Monticello Avenue, Suite 2', 'Williamsburg', '23188', NULL, NULL, NULL, '(757) 564-2400', 'https://www.vacourts.gov/courts/gd/Williamsburg~James_City_County/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-winchester', 'Winchester', 'VA', 'Winchester General District Court', '5 North Kent Street', 'Winchester', '22601', NULL, NULL, NULL, '(540) 722-7208', 'https://www.vacourts.gov/courts/gd/Frederick~Winchester/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-wise', 'Wise', 'VA', 'Wise General District Court', '206 East Main Street', 'Wise', '24293', NULL, NULL, NULL, '(276) 328-3426', 'https://www.vacourts.gov/courts/gd/Wise~Norton/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-wythe', 'Wythe', 'VA', 'Wythe General District Court', '245 South 4th Street, Suite 205', 'Wytheville', '24382', NULL, NULL, NULL, '(276) 223-6075', 'https://www.vacourts.gov/courts/gd/wythe/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('va-york', 'York', 'VA', 'York General District Court', '300 Ballard Street', 'Yorktown', '23690', NULL, NULL, NULL, '(757) 890-3450', 'https://www.vacourts.gov/courts/gd/york/home', 'Filing fees vary by case type and location; use the GDC Civil Filing Fee Calculator or contact the local clerk', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-atlantic', 'Atlantic', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '1201 Bacharach Boulevard', 'Atlantic City', '08401', NULL, NULL, NULL, '609-402-0100', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 47770. Shares a vicinage phone line with Cape May County', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-bergen', 'Bergen', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '10 Main Street, Suite 427', 'Hackensack', '07601', NULL, NULL, NULL, '201-221-0700', 'https://www.njcourts.gov/courts/bergen/offices', 'Special Civil Part ext. 25250', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-burlington', 'Burlington', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '49 Rancocas Road', 'Mount Holly', '08060', NULL, NULL, NULL, '609-288-9500', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 38092', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-camden', 'Camden', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '101 South 5th Street, Suite 150', 'Camden', '08103', NULL, NULL, NULL, '856-650-9100', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 43250', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-cape-may', 'Cape May', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '9 North Main Street', 'Cape May Court House', '08210', NULL, NULL, NULL, '609-402-0100', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 47910. Shares a vicinage phone line with Atlantic County', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-cumberland', 'Cumberland', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '60 West Broad Street', 'Bridgeton', '08302', NULL, NULL, NULL, '856-878-5050', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 15390. Shares a vicinage with Gloucester and Salem counties', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-essex', 'Essex', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '470 Dr. Martin Luther King, Jr. Blvd., Floor 2', 'Newark', '07102', NULL, NULL, NULL, '973-776-9300', 'https://www.njcourts.gov/courts/essex/offices', '', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-gloucester', 'Gloucester', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '1 North Broad Street', 'Woodbury', '08096', NULL, NULL, NULL, '856-878-5050', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 15370. Shares a vicinage with Cumberland and Salem counties', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-hudson', 'Hudson', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '595 Newark Avenue, Suite 104', 'Jersey City', '07306', NULL, NULL, NULL, '201-748-4400', 'https://www.njcourts.gov/courts/hudson/offices', 'Special Civil Part ext. 66680', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-hunterdon', 'Hunterdon', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', 'PO Box 1069', 'Flemington', '08822', NULL, NULL, NULL, '908-824-9750', 'https://www.njcourts.gov/courts/somerset-hunterdon-warren/offices', 'Special Civil Part ext. 13810. Shares a vicinage with Somerset and Warren counties. NJ Courts publish only a PO Box for this vicinage''s Special Civil Part filing address', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-mercer', 'Mercer', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', 'PO Box 8068', 'Trenton', '08650-0068', NULL, NULL, NULL, '609-571-4200', 'https://www.njcourts.gov/courts/mercer/offices', 'Special Civil Part ext. 76019. NJ Courts publish only a PO Box for this vicinage''s Special Civil Part filing address', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-middlesex', 'Middlesex', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', 'PO Box 1146', 'New Brunswick', '08903-0964', NULL, NULL, NULL, '732-645-4300', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 88381. NJ Courts publish only a PO Box for this vicinage''s Special Civil Part filing address', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-monmouth', 'Monmouth', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '71 Monument Street', 'Freehold', '07728', NULL, NULL, NULL, '732-358-8700', 'https://www.njcourts.gov/courts/monmouth/offices', 'Special Civil Part ext. 87590', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-morris', 'Morris', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', 'PO Box 910', 'Morristown', '07960-0910', NULL, NULL, NULL, '862-397-5700', 'https://www.njcourts.gov/courts/morris-sussex/offices', 'Special Civil Part ext. 75365. Shares a vicinage with Sussex County. NJ Courts publish only a PO Box for this vicinage''s Special Civil Part filing address', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-ocean', 'Ocean', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '118 Washington Street, PO Box 2191', 'Toms River', '08754', NULL, NULL, NULL, '732-504-0700', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 64340', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-passaic', 'Passaic', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '77 Hamilton Street, Floor 1', 'Paterson', '07505', NULL, NULL, NULL, '973-653-2910', 'https://www.njcourts.gov/courts/passaic/offices', 'Special Civil Part ext. 24240', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('wa-lewis', 'Lewis', 'WA', 'Lewis County District Court', 'Law and Justice Center, 345 W Main St, Fl 3', 'Chehalis', '98532', NULL, NULL, NULL, '(360) 740-1203', 'https://lewiscountywa.gov/districtcourt', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('nj-salem', 'Salem', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '92 Market Street', 'Salem', '08079', NULL, NULL, NULL, '856-878-5050', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 15945. Shares a vicinage with Cumberland and Gloucester counties', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-somerset', 'Somerset', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', 'PO Box 3000', 'Somerville', '08876', NULL, NULL, NULL, '908-332-7700', 'https://www.njcourts.gov/courts/somerset-hunterdon-warren/offices', 'Special Civil Part ext. 13085. Shares a vicinage with Hunterdon and Warren counties. NJ Courts publish only a PO Box for this vicinage''s Special Civil Part filing address', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-sussex', 'Sussex', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '43-47 High Street', 'Newton', '07860', NULL, NULL, NULL, '862-397-5700', 'https://www.njcourts.gov/courts/morris-sussex/offices', 'Special Civil Part ext. 75455. Shares a vicinage with Morris County', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-union', 'Union', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', '2 Broad Street, Floor 3', 'Elizabeth', '07207', NULL, NULL, NULL, '908-787-1650', 'https://www.njcourts.gov/public/directories/court-services/special-civil-part-offices-dir', 'Special Civil Part ext. 22160', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('nj-warren', 'Warren', 'NJ', 'Superior Court of New Jersey, Law Division, Special Civil Part, Small Claims Section', 'PO Box 900', 'Belvidere', '07823', NULL, NULL, NULL, '908-750-8100', 'https://www.njcourts.gov/courts/somerset-hunterdon-warren/offices', 'Special Civil Part ext. 13910. Shares a vicinage with Somerset and Hunterdon counties. NJ Courts publish only a PO Box for this vicinage''s Special Civil Part filing address', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('wa-adams', 'Adams', 'WA', 'Adams County District Court', '425 E Main St, Ste 300', 'Othello', '99344', NULL, NULL, NULL, '(509) 488-3935', 'http://www.co.adams.wa.us/departments/district_courts/district_court_othello.php', '', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('wa-asotin', 'Asotin', 'WA', 'Asotin County District Court', '135 2nd St', 'Asotin', '99402', NULL, NULL, NULL, '(509) 243-2027', 'https://www.co.asotin.wa.us/187/District-Court', '', '2026-07-16 02:16:18.079142+00');
+INSERT INTO public.counties VALUES ('wa-benton', 'Benton', 'WA', 'Benton County District Court', '7122 W Okanogan Pl, Ste A110', 'Kennewick', '99336', NULL, NULL, NULL, '(509) 735-8476', 'https://www.co.benton.wa.us/pview.aspx?id=705&catID=45', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-chelan', 'Chelan', 'WA', 'Chelan County District Court', '350 Orondo Ave', 'Wenatchee', '98801', NULL, NULL, NULL, '(509) 667-6600', 'https://www.chelancountywa.gov/district-court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-clallam', 'Clallam', 'WA', 'Clallam County District Court I', '223 E 4th St, Ste 10', 'Port Angeles', '98362', NULL, NULL, NULL, '(360) 417-2560', 'http://www.clallam.net/dc1/index.html', 'Clallam County also operates a second District Court II location in Forks', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-clark', 'Clark', 'WA', 'Clark County District Court', '1200 Franklin Street', 'Vancouver', '98660', NULL, NULL, NULL, '(564) 397-2424', 'https://clark.wa.gov/district-court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-columbia', 'Columbia', 'WA', 'Columbia County District Court', '341 E Main St, Ste 4', 'Dayton', '99328', NULL, NULL, NULL, '(509) 382-4812', 'https://www.courts.wa.gov/court_dir/?fa=court_dir.county', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-cowlitz', 'Cowlitz', 'WA', 'Cowlitz County District Court', '312 SW 1st Ave, Rm 207', 'Kelso', '98626', NULL, NULL, NULL, '(360) 577-3073', 'http://www.co.cowlitz.wa.us/districtcourt/', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-douglas', 'Douglas', 'WA', 'Douglas County District Court', '100 NW 19th St, Ste C', 'East Wenatchee', '98802', NULL, NULL, NULL, '(509) 884-3536', 'https://www.douglascountywa.net/171/District-Court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-ferry', 'Ferry', 'WA', 'Ferry County District Court', '350 E Delaware Ave, Ste 6', 'Republic', '99166', NULL, NULL, NULL, '(509) 775-5225', 'https://www.ferry-county.com/law_and_justice/district_court/index.php', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-franklin', 'Franklin', 'WA', 'Franklin County District Court', '1016 N 4th Ave, Rm B218', 'Pasco', '99301', NULL, NULL, NULL, '(509) 545-3593', 'https://www.co.franklin.wa.us/district_court/', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-garfield', 'Garfield', 'WA', 'Garfield County District Court', '789 W Main St', 'Pomeroy', '99347', NULL, NULL, NULL, '(509) 843-1002', 'https://www.courts.wa.gov/court_dir/?fa=court_dir.county', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-grant', 'Grant', 'WA', 'Grant County District Court', '35 C St NW, Fl 3', 'Ephrata', '98823', NULL, NULL, NULL, '(509) 754-2011', 'https://www.grantcountywa.gov/324/District-Court', 'Grant County also operates a District Court branch in Moses Lake', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-grays-harbor', 'Grays Harbor', 'WA', 'Grays Harbor County District Court', '210 E Market St', 'Aberdeen', '98520', NULL, NULL, NULL, '(360) 249-3441', 'http://www.co.grays-harbor.wa.us/government/district_court/index.php', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-island', 'Island', 'WA', 'Island County District Court', '800 SE 8th Ave', 'Oak Harbor', '98277', NULL, NULL, NULL, '(360) 675-5988', 'https://www.islandcountywa.gov/DistrictCourt/Pages/Home.aspx', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-jefferson', 'Jefferson', 'WA', 'Jefferson County District Court', '1820 Jefferson St', 'Port Townsend', '98368', NULL, NULL, NULL, '(360) 385-9135', 'http://www.co.jefferson.wa.us/343/District-Court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-bellevue', 'King (Bellevue)', 'WA', 'King County District Court, Bellevue Facility', '1309 114th Ave. S.E., Suite 100', 'Bellevue', '98004', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-issaquah', 'King (Issaquah)', 'WA', 'King County District Court, Issaquah Facility', '5415 220th Ave. S.E.', 'Issaquah', '98029', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-redmond', 'King (Redmond)', 'WA', 'King County District Court, Redmond Facility', '8601 160th Ave. N.E.', 'Redmond', '98052', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-auburn', 'King (Auburn)', 'WA', 'King County District Court, Auburn Facility', '340 E Main St, Suite 100', 'Auburn', '98002', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-burien', 'King (Burien)', 'WA', 'King County District Court, Burien Facility', '601 S.W. 149th St.', 'Burien', '98166', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-kent', 'King (Kent)', 'WA', 'King County District Court, Maleng Regional Justice Center (Kent)', '401 4th Ave. N., Office 1A', 'Kent', '98032', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-seattle', 'King (Seattle)', 'WA', 'King County District Court, Seattle Facility', '516 Third Avenue, Room E-327', 'Seattle', '98104', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-king-shoreline', 'King (Shoreline)', 'WA', 'King County District Court, Shoreline Facility', '18050 Meridian Ave. N.', 'Shoreline', '98133', NULL, NULL, NULL, '(206) 205-9200', 'https://kingcounty.gov/en/dept/courts/district-court', 'One of King County''s multiple filing facilities.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-kitsap', 'Kitsap', 'WA', 'Kitsap County District Court', '614 Division St, MS 25, Rm 106', 'Port Orchard', '98366', NULL, NULL, NULL, '(360) 337-7109', 'https://spf.kitsapgov.com/dc/Pages/default.aspx', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-kittitas', 'Kittitas', 'WA', 'Kittitas County District Court', '700 E 1st St', 'Cle Elum', '98922', NULL, NULL, NULL, '(509) 962-7511', 'http://www.co.kittitas.wa.us/courts/lower/default.aspx', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-mason', 'Mason', 'WA', 'Mason County District Court', '414 W Franklin St', 'Shelton', '98584', NULL, NULL, NULL, '(360) 427-9670', 'https://masoncountywa.gov/district-court/index.php', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-okanogan', 'Okanogan', 'WA', 'Okanogan County District Court', '149 N 3rd Ave, Rm 306', 'Okanogan', '98840', NULL, NULL, NULL, '(509) 422-7170', 'https://okanogancounty.org/government/district_court_/index.php', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-pacific', 'Pacific', 'WA', 'Pacific County District Court', '300 Memorial Dr', 'South Bend', '98586', NULL, NULL, NULL, '(360) 875-9354', 'https://www.courts.wa.gov/court_dir/?fa=court_dir.county', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-pend-oreille', 'Pend Oreille', 'WA', 'Pend Oreille County District Court', '229 S Garden Ave', 'Newport', '99156', NULL, NULL, NULL, '(509) 447-4110', 'http://pendoreilleco.org/your-government/district-court/', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-pierce', 'Pierce', 'WA', 'Pierce County District Court', '930 Tacoma Ave S, Rm 239', 'Tacoma', '98402', NULL, NULL, NULL, '(253) 798-7487', 'http://www.co.pierce.wa.us/index.aspx?NID=101', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-san-juan', 'San Juan', 'WA', 'San Juan County District Court', '350 Court St', 'Friday Harbor', '98250', NULL, NULL, NULL, '(360) 378-4017', 'https://www.courts.wa.gov/court_dir/?fa=court_dir.county', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-skagit', 'Skagit', 'WA', 'Skagit County District Court', '600 S 3rd St', 'Mount Vernon', '98273', NULL, NULL, NULL, '(360) 416-1250', 'https://www.courts.wa.gov/court_dir/?fa=court_dir.county', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-skamania', 'Skamania', 'WA', 'Skamania County District Court', '240 Vancouver Ave, Rm 35', 'Stevenson', '98648', NULL, NULL, NULL, '(509) 427-3782', 'https://www.skamaniacounty.org/departments-offices/district-court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-snohomish', 'Snohomish', 'WA', 'Snohomish County District Court', '3000 Rockefeller Ave, Mission Building', 'Everett', '98201', NULL, NULL, NULL, '(425) 388-3331', 'http://www.snohomishcountywa.gov/194/District-Court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-spokane', 'Spokane', 'WA', 'Spokane County District Court', '1100 W Mallon Ave, Public Safety Bldg', 'Spokane', '99260', NULL, NULL, NULL, '(509) 477-4770', 'http://www.spokanecounty.org/districtcourt/', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-stevens', 'Stevens', 'WA', 'Stevens County District Court', '215 S Oak St, Rm 213', 'Colville', '99114', NULL, NULL, NULL, '(509) 684-5249', 'https://stevenscountywa.municipalcms.com/pview.aspx?id=20839&catid=25', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-thurston', 'Thurston', 'WA', 'Thurston County District Court', '2000 Lakeridge Dr SW, Bldg 3', 'Olympia', '98502', NULL, NULL, NULL, '(360) 786-5450', 'https://www.thurstoncountywa.gov/departments/district-court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-wahkiakum', 'Wahkiakum', 'WA', 'Wahkiakum County District Court', '64 Main St', 'Cathlamet', '98612', NULL, NULL, NULL, '(360) 795-3461', 'https://www.co.wahkiakum.wa.us/316/District-Court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-walla-walla', 'Walla Walla', 'WA', 'Walla Walla County District Court', '317 W Rose St', 'Walla Walla', '99362', NULL, NULL, NULL, '(509) 524-2760', 'https://www.co.walla-walla.wa.us/government/district_court/index.php', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-whatcom', 'Whatcom', 'WA', 'Whatcom County District Court', '311 Grand Ave, Ste 401', 'Bellingham', '98225', NULL, NULL, NULL, '(360) 778-5400', 'http://www.co.whatcom.wa.us/districtcourt/', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-whitman', 'Whitman', 'WA', 'Whitman County District Court', '325 SE Paradise St', 'Pullman', '99163', NULL, NULL, NULL, '(509) 397-6260', 'http://www.whitmancounty.org/191/District-Court', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('wa-yakima', 'Yakima', 'WA', 'Yakima County District Court', '128 N 2nd St, Ste 217', 'Yakima', '98901', NULL, NULL, NULL, '(509) 574-1804', 'http://www.yakimacounty.us/districtcourt', '', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('az-apache-stjohns', 'Apache', 'AZ', 'Apache County Justice Court — St. Johns Precinct', '75 W Cleveland St', 'St. Johns', '85936', NULL, NULL, NULL, '(928) 337-7550', NULL, 'File small claims at the justice court in the precinct where the defendant lives or where the dispute occurred.', '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('az-apache-chinle', 'Apache', 'AZ', 'Apache County Justice Court — Chinle Precinct', '100 Navajo Blvd', 'Chinle', '86503', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('az-apache-puerco', 'Apache', 'AZ', 'Apache County Justice Court — Puerco Precinct', '385 W Route 66', 'Sanders', '86512', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('az-apache-roundvalley', 'Apache', 'AZ', 'Apache County Justice Court — Round Valley Precinct', '180 N Main St', 'Springerville', '85938', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('az-cochise-bisbee', 'Cochise', 'AZ', 'Cochise County Justice Court — Bisbee Precinct', '100 Quality Hill', 'Bisbee', '85603', NULL, NULL, NULL, '(520) 432-8550', NULL, NULL, '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('az-cochise-douglas', 'Cochise', 'AZ', 'Cochise County Justice Court — Douglas Precinct', '1001 G Ave', 'Douglas', '85607', NULL, NULL, NULL, '(520) 364-8476', NULL, NULL, '2026-07-16 02:16:18.090239+00');
+INSERT INTO public.counties VALUES ('az-cochise-benson', 'Cochise', 'AZ', 'Cochise County Justice Court — Benson Precinct', '120 W 4th St', 'Benson', '85602', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-cochise-willcox', 'Cochise', 'AZ', 'Cochise County Justice Court — Willcox Precinct', '100 S Curtis Ave', 'Willcox', '85643', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-cochise-sierravista', 'Cochise', 'AZ', 'Cochise County Justice Court — Sierra Vista Precinct', '100 Clum St', 'Sierra Vista', '85635', NULL, NULL, NULL, '(520) 803-8730', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-cochise-bowie', 'Cochise', 'AZ', 'Cochise County Justice Court — Bowie Precinct', '301 N Railroad Ave', 'Bowie', '85605', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-coconino-flagstaff', 'Coconino', 'AZ', 'Coconino County Justice Court — Flagstaff Precinct', '200 N San Francisco St', 'Flagstaff', '86001', NULL, NULL, NULL, '(928) 679-8720', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-coconino-fredonia', 'Coconino', 'AZ', 'Coconino County Justice Court — Fredonia Precinct', '35 N Main St', 'Fredonia', '86022', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-coconino-page', 'Coconino', 'AZ', 'Coconino County Justice Court — Page Precinct', '608 Haul Rd', 'Page', '86040', NULL, NULL, NULL, '(928) 645-8851', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-coconino-williams', 'Coconino', 'AZ', 'Coconino County Justice Court — Williams Precinct', '200 W Railroad Ave', 'Williams', '86046', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-gila-globe', 'Gila', 'AZ', 'Gila County Justice Court — Globe Precinct', '1400 E Ash St', 'Globe', '85501', NULL, NULL, NULL, '(928) 425-3231', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-gila-payson', 'Gila', 'AZ', 'Gila County Justice Court — Payson Precinct', '714 S Beeline Hwy', 'Payson', '85541', NULL, NULL, NULL, '(928) 474-6743', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-graham-safford', 'Graham', 'AZ', 'Graham County Justice Court — Safford Precinct', '800 W Main St', 'Safford', '85546', NULL, NULL, NULL, '(928) 428-3560', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-greenlee-clifton', 'Greenlee', 'AZ', 'Greenlee County Justice Court — Clifton Precinct', '1 N Coronado Blvd', 'Clifton', '85533', NULL, NULL, NULL, '(928) 865-4242', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-greenlee-duncan', 'Greenlee', 'AZ', 'Greenlee County Justice Court — Duncan Precinct', '351 Main St', 'Duncan', '85534', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-lapaz-parker', 'La Paz', 'AZ', 'La Paz County Justice Court — Parker Precinct', '1112 Arizona Ave', 'Parker', '85344', NULL, NULL, NULL, '(928) 669-6118', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-santacruz-nogales', 'Santa Cruz', 'AZ', 'Santa Cruz County Justice Court — Nogales Precinct', '2150 N Congress Dr', 'Nogales', '85621', NULL, NULL, NULL, '(520) 375-8000', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-santacruz-sonoita', 'Santa Cruz', 'AZ', 'Santa Cruz County Justice Court — Sonoita Precinct', '3128 AZ-83', 'Sonoita', '85637', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-mohave-kingman', 'Mohave', 'AZ', 'Mohave County Justice Court — Kingman Precinct', '401 E Spring St', 'Kingman', '86401', NULL, NULL, NULL, '(928) 753-0726', NULL, 'Additional Mohave County precincts include Bullhead City and Lake Havasu City. Verify the correct precinct for your case at azcourts.gov.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-mohave-bullheadcity', 'Mohave', 'AZ', 'Mohave County Justice Court — Bullhead City Precinct', '2225 Trane Rd', 'Bullhead City', '86442', NULL, NULL, NULL, '(928) 758-0726', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-mohave-lakehavasucity', 'Mohave', 'AZ', 'Mohave County Justice Court — Lake Havasu City Precinct', '2001 College Dr', 'Lake Havasu City', '86403', NULL, NULL, NULL, '(928) 453-0726', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-navajo-holbrook', 'Navajo', 'AZ', 'Navajo County Justice Court — Holbrook Precinct', '100 E Code Talker Dr', 'Holbrook', '86025', NULL, NULL, NULL, '(928) 524-4188', NULL, 'Additional Navajo County precincts include Show Low and Winslow. Verify the correct precinct at azcourts.gov.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-navajo-showlow', 'Navajo', 'AZ', 'Navajo County Justice Court — Show Low Precinct', '1000 W Deuce of Clubs Ave', 'Show Low', '85901', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-pinal-florence', 'Pinal', 'AZ', 'Pinal County Justice Court — Florence Precinct', '971 N Jason Lopez Cir Bldg A', 'Florence', '85132', NULL, NULL, NULL, '(520) 866-5400', NULL, 'Additional Pinal County precincts include Casa Grande, Apache Junction, and Coolidge. Verify the correct precinct for your case at azcourts.gov.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-pinal-casagrande', 'Pinal', 'AZ', 'Pinal County Justice Court — Casa Grande Precinct', '820 E Cottonwood Ln', 'Casa Grande', '85122', NULL, NULL, NULL, '(520) 866-6840', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-pinal-apachejunction', 'Pinal', 'AZ', 'Pinal County Justice Court — Apache Junction Precinct', '575 N Idaho Rd', 'Apache Junction', '85119', NULL, NULL, NULL, '(480) 982-3440', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-yavapai-prescott', 'Yavapai', 'AZ', 'Yavapai County Justice Court — Prescott Precinct', '255 E Gurley St', 'Prescott', '86301', NULL, NULL, NULL, '(928) 771-3280', NULL, 'Additional Yavapai County precincts include Cottonwood, Camp Verde, and Prescott Valley. Verify the correct precinct at azcourts.gov.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-yavapai-cottonwood', 'Yavapai', 'AZ', 'Yavapai County Justice Court — Cottonwood Precinct', '10 S 6th St', 'Cottonwood', '86326', NULL, NULL, NULL, '(928) 639-8700', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-yuma-yuma', 'Yuma', 'AZ', 'Yuma County Justice Court — Yuma Precinct', '168 S Second Ave', 'Yuma', '85364', NULL, NULL, NULL, '(928) 817-4240', NULL, 'Additional Yuma County precincts include San Luis and Somerton. Verify the correct precinct at azcourts.gov.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-yuma-sanluis', 'Yuma', 'AZ', 'Yuma County Justice Court — San Luis Precinct', '1427 E 21st St', 'San Luis', '85349', NULL, NULL, NULL, '', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-pima-tucson', 'Pima', 'AZ', 'Pima County Justice Court — Tucson Precinct 1', '240 N Court Ave', 'Tucson', '85701', NULL, NULL, NULL, '(520) 724-3171', NULL, 'Pima County has multiple justice court precincts. Verify the correct precinct for your case at pima.gov or azcourts.gov.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-pima-tucson-green-valley', 'Pima', 'AZ', 'Pima County Justice Court — Green Valley Precinct', '601 N La Canada Dr', 'Green Valley', '85614', NULL, NULL, NULL, '(520) 724-9351', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-pima-tucson-eastside', 'Pima', 'AZ', 'Pima County Justice Court — Rincon Precinct (East Tucson)', '2225 E Ajo Way', 'Tucson', '85713', NULL, NULL, NULL, '(520) 740-5010', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-pima-tucson-foothills', 'Pima', 'AZ', 'Pima County Justice Court — Foothills Precinct', '38355 S Craycroft Rd', 'Tucson', '85739', NULL, NULL, NULL, '(520) 724-8750', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-phoenix', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Phoenix Precinct 1', '1700 W Washington St', 'Phoenix', '85007', NULL, NULL, NULL, '(602) 372-5375', NULL, 'Maricopa County has 26 justice court precincts. Find your correct precinct at justicecourts.maricopa.gov — file in the precinct where the defendant lives or where the events occurred.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-mesa', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Mesa Precinct', '222 E Javelina Ave', 'Mesa', '85210', NULL, NULL, NULL, '(480) 926-3600', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-scottsdale', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Scottsdale Precinct', '18380 N 40th St', 'Phoenix', '85032', NULL, NULL, NULL, '(480) 946-4521', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-chandler', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Chandler Precinct', '1837 S Mesa Dr', 'Mesa', '85210', NULL, NULL, NULL, '(480) 926-3600', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-glendale', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Glendale Precinct', '8311 N 35th Ave', 'Phoenix', '85051', NULL, NULL, NULL, '(602) 372-5375', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-gilbert', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Gilbert Precinct', '55 E Civic Center Dr', 'Gilbert', '85296', NULL, NULL, NULL, '(480) 926-3600', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-tempe', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Tempe Precinct', '1837 S Mesa Dr', 'Mesa', '85210', NULL, NULL, NULL, '(480) 926-3600', NULL, 'Maricopa County has 26 justice court precincts. Verify your exact precinct at justicecourts.maricopa.gov.', '2026-07-16 02:16:18.107921+00');
+INSERT INTO public.counties VALUES ('az-maricopa-peoria', 'Maricopa', 'AZ', 'Maricopa County Justice Court — Peoria Precinct', '8311 N 35th Ave', 'Phoenix', '85051', NULL, NULL, NULL, '(602) 372-5375', NULL, NULL, '2026-07-16 02:16:18.107921+00');
+
+
+--
+-- Data for Name: documents; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: download_tokens; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.download_tokens VALUES ('474bdacd-e6a6-4121-a86d-3856be6ba074', 1136, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-11 19:53:06.934+00');
+INSERT INTO public.download_tokens VALUES ('36c13806-3d2d-4da2-ae42-947f68276e04', 1128, 'test-tx-petition-sigcheck-e2e', '2026-07-11 19:53:06.939+00');
+INSERT INTO public.download_tokens VALUES ('c9e3d27b-caec-45c4-8a38-63cf26e18370', 1133, 'test-fl-volusia-summons-sigcheck-e2e', '2026-07-11 19:53:06.947+00');
+INSERT INTO public.download_tokens VALUES ('a10a8de9-92dc-478e-aa14-f729c0120d2e', 1137, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-07-11 19:53:06.95+00');
+INSERT INTO public.download_tokens VALUES ('7d094741-9ba2-4545-bf26-c5446c19b9bb', 1132, 'test-fl-summons-sigcheck-e2e', '2026-07-11 19:53:06.956+00');
+INSERT INTO public.download_tokens VALUES ('b6d48f25-75b5-4dec-a6fe-ce1960871544', 1139, 'test-az-summons-sigcheck-e2e', '2026-07-11 19:53:06.959+00');
+INSERT INTO public.download_tokens VALUES ('3ad1466b-01a0-47ea-b2f8-558fe5c9d2c0', 1140, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-11 19:53:06.964+00');
+INSERT INTO public.download_tokens VALUES ('259d15e8-39f8-4ce5-9c2e-a8d15d188e62', 1135, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-07-11 19:53:06.991+00');
+INSERT INTO public.download_tokens VALUES ('bc80063d-bf34-4173-b0ec-0b66869b2762', 1144, 'test-wa-service-sigcheck-e2e', '2026-07-11 19:53:06.971+00');
+INSERT INTO public.download_tokens VALUES ('797a9ec4-2c64-41dd-9d7f-39d4d7559165', 1143, 'test-va-dc-402-signed-e2e', '2026-07-11 19:48:07.008+00');
+INSERT INTO public.download_tokens VALUES ('7d0ff7b2-0d55-4194-a27d-f6b7ebdf453f', 1129, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-11 19:53:07.013+00');
+INSERT INTO public.download_tokens VALUES ('a0a40a8f-909b-4e3e-a9ff-75ea14712820', 1142, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-11 19:53:07.017+00');
+INSERT INTO public.download_tokens VALUES ('80de87ca-a970-4055-9199-15673439f731', 1134, 'test-fl-statement-of-claim-signed-e2e', '2026-07-11 19:48:06.943+00');
+INSERT INTO public.download_tokens VALUES ('33d4a82b-9559-4021-8a40-edcb3d01c7bd', 1141, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-11 19:53:07.025+00');
+INSERT INTO public.download_tokens VALUES ('59357a33-84e4-4239-8e99-4b602f84376f', 1131, 'test-va-dc-409-sigcheck-e2e', '2026-07-11 19:53:07.032+00');
+INSERT INTO public.download_tokens VALUES ('1afd4ec0-8288-4d84-ac50-9d95796e0212', 1138, 'test-tx-citation-sigcheck-e2e', '2026-07-11 19:53:07.04+00');
+INSERT INTO public.download_tokens VALUES ('e1e08805-9a93-45df-a0fb-b04078e61a73', 1130, 'test-fl-hillsborough-sigcheck-e2e', '2026-07-11 19:53:07.037+00');
+INSERT INTO public.download_tokens VALUES ('acc1ee9d-55ca-42b3-b140-aca8ac69b100', 1145, 'test-fl-summons-sigcheck-e2e', '2026-07-12 17:38:36.465+00');
+INSERT INTO public.download_tokens VALUES ('71c72e60-abca-4f48-9c47-42d117dc97ee', 1157, 'test-tx-petition-jp5-sigcheck-e2e', '2026-07-12 17:38:36.464+00');
+INSERT INTO public.download_tokens VALUES ('b5fcd230-f708-4f9a-bd59-b2933db49ba7', 1147, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-12 17:38:36.479+00');
+INSERT INTO public.download_tokens VALUES ('a3704a48-833a-4cb4-8730-c63ea79d34f0', 1146, 'test-fl-cl219-volusia-signed-e2e', '2026-07-12 17:33:36.456+00');
+INSERT INTO public.download_tokens VALUES ('b004b79b-ac67-4a6a-bd35-bc8ba669c7b5', 1156, 'test-fl-plain-soc-orange-signed-e2e', '2026-07-12 17:33:36.468+00');
+INSERT INTO public.download_tokens VALUES ('36959e6c-1968-46ea-a9ca-eb5facc11ea0', 1149, 'test-fl-volusia-summons-sigcheck-e2e', '2026-07-12 17:38:36.458+00');
+INSERT INTO public.download_tokens VALUES ('8c03e43c-48f7-4c83-8de2-5dc62136044e', 1158, 'test-fl-clkct423-signed-e2e', '2026-07-12 17:33:36.484+00');
+INSERT INTO public.download_tokens VALUES ('ec70aa20-c876-4d58-80e9-58a527ae557e', 1161, 'test-tx-return-of-service-sigcheck-e2e', '2026-07-12 17:38:36.488+00');
+INSERT INTO public.download_tokens VALUES ('c580eda2-f8ce-4e9a-945d-ec7df42332b8', 1160, 'test-tx-citation-sigcheck-e2e', '2026-07-12 17:38:36.49+00');
+INSERT INTO public.download_tokens VALUES ('93572da7-b7c0-4dfc-b314-1e00b74f387e', 1155, 'test-wa-service-sigcheck-e2e', '2026-07-12 17:38:36.493+00');
+INSERT INTO public.download_tokens VALUES ('c33fad2b-8a10-4a57-ac79-221b553d8eea', 1154, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-12 17:38:36.461+00');
+INSERT INTO public.download_tokens VALUES ('97ce5507-3cff-4a7b-8e55-ff276739b47e', 1151, 'test-fl-statement-of-claim-signed-e2e', '2026-07-12 17:33:36.474+00');
+INSERT INTO public.download_tokens VALUES ('1522634f-4668-4bb7-ba48-66274d29d76e', 1148, 'test-fl-clkct333-signed-e2e', '2026-07-12 17:33:36.477+00');
+INSERT INTO public.download_tokens VALUES ('2701b4fc-5027-4b34-a6e0-22eda3891bda', 1153, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-12 17:38:36.562+00');
+INSERT INTO public.download_tokens VALUES ('4534a0f6-998d-4789-982f-205c0986c1c7', 1150, 'test-fl-orange-sigcheck-e2e', '2026-07-12 17:38:36.577+00');
+INSERT INTO public.download_tokens VALUES ('65a7eebe-c54f-4be6-b9a1-4590774ab482', 1159, 'test-fl-broward-summons-sigcheck-e2e', '2026-07-12 17:38:36.58+00');
+INSERT INTO public.download_tokens VALUES ('6aceccd8-f640-4cc9-93b8-420ffffecd2b', 1152, 'test-va-dc-409-sigcheck-e2e', '2026-07-12 17:38:36.565+00');
+INSERT INTO public.download_tokens VALUES ('6b030079-e7d1-4b3b-8a8b-16e8d0eac9b4', 1166, 'test-il-summons-e2e', '2026-07-12 22:28:09.876+00');
+INSERT INTO public.download_tokens VALUES ('9d4e6fec-6c29-42ea-9bfd-314c5289854c', 1173, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-12 23:38:29.307+00');
+INSERT INTO public.download_tokens VALUES ('beb0ff4f-ed86-4670-84d8-bfe10f36fe8a', 1172, 'test-tx-petition-jp2-sigcheck-e2e', '2026-07-12 23:38:29.317+00');
+INSERT INTO public.download_tokens VALUES ('d48fd8c9-80e3-4427-8ee9-72bfb9795826', 1168, 'test-fl-proof-of-service-sigcheck-e2e', '2026-07-12 23:38:29.32+00');
+INSERT INTO public.download_tokens VALUES ('0ef45ee6-2a12-4832-80bc-009c648c6e87', 1171, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-12 23:38:29.315+00');
+INSERT INTO public.download_tokens VALUES ('1aae623a-961d-4e08-8e01-623ff8611669', 1167, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-12 23:38:29.312+00');
+INSERT INTO public.download_tokens VALUES ('a2c1a5bd-f5fd-4a2a-9013-a3db8d80236a', 1174, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-12 23:38:29.346+00');
+INSERT INTO public.download_tokens VALUES ('b06f0db6-5147-49c6-abf3-4952430ede74', 1176, 'test-fl-soc-7330-signed-e2e', '2026-07-12 23:38:29.374+00');
+INSERT INTO public.download_tokens VALUES ('f44b0559-8fdd-4276-ae7f-fb030f7d0f4d', 1169, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-07-12 23:38:29.387+00');
+INSERT INTO public.download_tokens VALUES ('5c9ddc86-9db0-464f-9971-cf79b46591f2', 1177, 'test-fl-soc-7332-signed-e2e', '2026-07-12 23:38:29.442+00');
+INSERT INTO public.download_tokens VALUES ('0854cc90-204b-4ca4-8441-12afc6a29e10', 1175, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-12 23:38:29.429+00');
+INSERT INTO public.download_tokens VALUES ('3efbcab3-9402-4b0a-a181-9591d2da6c72', 1170, 'test-fl-soc-7334-signed-e2e', '2026-07-12 23:38:29.44+00');
+INSERT INTO public.download_tokens VALUES ('467e4974-942c-40d8-afdf-9d198b6e2d7f', 1179, 'test-nj-mv-e2e', '2026-07-13 00:12:23.438+00');
+INSERT INTO public.download_tokens VALUES ('52aebbc3-39e3-477d-873e-34b237cc8d0f', 1188, 'test-az-proof-of-service-signed-e2e', '2026-07-13 14:51:00.848+00');
+INSERT INTO public.download_tokens VALUES ('022e9753-2a45-4366-8405-7371e366451f', 1181, 'test-fl-soc-7331-signed-e2e', '2026-07-13 14:56:00.878+00');
+INSERT INTO public.download_tokens VALUES ('0e5cd8c7-598b-4efe-8cab-bb19910eb057', 1192, 'test-fl-broward-summons-sigcheck-e2e', '2026-07-13 14:56:00.868+00');
+INSERT INTO public.download_tokens VALUES ('74c98f53-ce3f-4d0a-bdb6-77845d744af2', 1195, 'test-il-summons-sigcheck-e2e', '2026-07-13 14:56:00.859+00');
+INSERT INTO public.download_tokens VALUES ('f10b1702-b4a2-4814-8329-5ba01133b6e7', 1194, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-13 14:56:00.871+00');
+INSERT INTO public.download_tokens VALUES ('4b1ba523-39bf-4d23-9fc6-ab0c2e0886e4', 1184, 'test-fl-soc-7334-signed-e2e', '2026-07-13 14:56:00.876+00');
+INSERT INTO public.download_tokens VALUES ('6f6d2b61-6653-48c3-83fc-301e48777e91', 1185, 'test-fl-proof-of-service-sigcheck-e2e', '2026-07-13 14:56:00.879+00');
+INSERT INTO public.download_tokens VALUES ('46a08135-5de4-4136-83eb-39b99b9b1c2f', 1189, 'test-nj-complaint-sigcheck-e2e', '2026-07-13 14:56:00.881+00');
+INSERT INTO public.download_tokens VALUES ('defa6f2b-57d6-43d5-8f1b-91a066f36e29', 1193, 'test-fl-soc-7333-signed-e2e', '2026-07-13 14:56:00.862+00');
+INSERT INTO public.download_tokens VALUES ('7f65df53-6284-4bb2-b1c6-d4a14d922cf3', 1187, 'test-fl-clkct333-signed-e2e', '2026-07-13 14:51:00.881+00');
+INSERT INTO public.download_tokens VALUES ('5f49aae6-b9f4-4ee3-b0cd-6e3951a23f94', 1191, 'test-tx-return-of-service-sigcheck-e2e', '2026-07-13 14:56:00.875+00');
+INSERT INTO public.download_tokens VALUES ('7538f4b0-886d-4702-bc3e-e5ff7786bb2f', 1183, 'test-fl-soc-7337-signed-e2e', '2026-07-13 14:56:00.88+00');
+INSERT INTO public.download_tokens VALUES ('4ba7b15d-c1c8-4e71-aff4-da1803576921', 1186, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-07-13 14:56:00.883+00');
+INSERT INTO public.download_tokens VALUES ('785d32b6-2899-4d26-9fd4-ae9d0419723a', 1190, 'test-fl-soc-7335-signed-e2e', '2026-07-13 14:56:00.887+00');
+INSERT INTO public.download_tokens VALUES ('c0651d15-68c2-4245-a736-9dfecb97b9b3', 1182, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-13 14:56:00.893+00');
+INSERT INTO public.download_tokens VALUES ('1f18217e-7d63-4e68-b443-4bf56b5e68e2', 1206, 'test-fl-clkct423-signed-e2e', '2026-07-14 03:14:26.257+00');
+INSERT INTO public.download_tokens VALUES ('a3f02076-5b83-4aac-9c37-12dcec6dda0c', 1205, 'test-fl-soc-7331-signed-e2e', '2026-07-14 03:19:26.259+00');
+INSERT INTO public.download_tokens VALUES ('8c59a195-b3d0-4eb5-aebd-140c1bc6c350', 1207, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-14 03:19:26.266+00');
+INSERT INTO public.download_tokens VALUES ('5daad14c-ecc8-4244-a40f-7ba5e5b033e7', 1197, 'test-fl-plain-soc-orange-signed-e2e', '2026-07-14 03:14:26.259+00');
+INSERT INTO public.download_tokens VALUES ('88e14e02-3612-4836-a75d-2a28a0d4436c', 1196, 'test-fl-soc-7336-signed-e2e', '2026-07-14 03:19:26.156+00');
+INSERT INTO public.download_tokens VALUES ('7bae8de3-7040-42d9-89ed-e3673b6377f0', 1203, 'test-fl-summons-sigcheck-e2e', '2026-07-14 03:19:26.26+00');
+INSERT INTO public.download_tokens VALUES ('64b0f7ce-969e-4dc2-9c6f-a630d2f4e00e', 1199, 'test-tx-petition-sigcheck-e2e', '2026-07-14 03:19:26.269+00');
+INSERT INTO public.download_tokens VALUES ('ea17c999-5a34-49d0-a803-e1ad366f3161', 1198, 'test-fl-soc-7335-signed-e2e', '2026-07-14 03:19:26.283+00');
+INSERT INTO public.download_tokens VALUES ('39dcf42c-aa46-4eee-8700-c845328f126b', 1202, 'test-wa-notice-sigcheck-e2e', '2026-07-14 03:19:26.276+00');
+INSERT INTO public.download_tokens VALUES ('a422e2e9-2cc9-42ab-819f-4ba6cdae4e13', 1204, 'test-az-summons-sigcheck-e2e', '2026-07-14 03:19:26.28+00');
+INSERT INTO public.download_tokens VALUES ('a9a37ea5-d246-4ae5-a256-66609672d2bf', 1201, 'test-fl-soc-7337-signed-e2e', '2026-07-14 03:19:26.264+00');
+INSERT INTO public.download_tokens VALUES ('707a9243-1a02-48ce-aa44-32a16d04e346', 1200, 'test-va-dc-409-sigcheck-e2e', '2026-07-14 03:19:26.266+00');
+INSERT INTO public.download_tokens VALUES ('fa7a150c-2310-4209-8b19-25510be8036b', 1216, 'test-nj-complaint-sigcheck-e2e', '2026-07-14 20:18:52.367+00');
+INSERT INTO public.download_tokens VALUES ('a7d51676-c691-45d4-8886-1336a2a15ea0', 1215, 'test-fl-summons-sigcheck-e2e', '2026-07-14 20:18:52.362+00');
+INSERT INTO public.download_tokens VALUES ('c8eae82a-f16e-4ae8-90b0-eb023c8040a7', 1218, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-14 20:18:52.402+00');
+INSERT INTO public.download_tokens VALUES ('8764dda0-672f-4789-8f04-51cc7357fb3b', 1214, 'test-fl-volusia-summons-sigcheck-e2e', '2026-07-14 20:18:52.397+00');
+INSERT INTO public.download_tokens VALUES ('2ffcb7c2-ca2e-4358-a671-060ab3e6b241', 1211, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-14 20:18:52.396+00');
+INSERT INTO public.download_tokens VALUES ('8063ac14-6abb-43bb-b34e-148342de4511', 1217, 'test-az-proof-of-service-signed-e2e', '2026-07-14 20:13:52.383+00');
+INSERT INTO public.download_tokens VALUES ('ecab5f76-f99b-44af-9a19-309cec089c88', 1212, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-14 20:18:52.395+00');
+INSERT INTO public.download_tokens VALUES ('ec5e896c-8b78-4372-82b8-2b539467004e', 1209, 'test-fl-soc-7336-signed-e2e', '2026-07-14 20:18:52.368+00');
+INSERT INTO public.download_tokens VALUES ('42475471-3741-4fe1-b972-f8d8e665c53f', 1208, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-14 20:18:52.374+00');
+INSERT INTO public.download_tokens VALUES ('be1ca7cb-be56-4c33-8933-93ef6a31ff7c', 1210, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-07-14 20:18:52.403+00');
+INSERT INTO public.download_tokens VALUES ('0701eb35-b774-4c97-821e-a6b1262dbd42', 1213, 'test-fl-broward-sigcheck-e2e', '2026-07-14 20:18:52.371+00');
+INSERT INTO public.download_tokens VALUES ('c0c0d4da-3829-4fdc-a033-7bc72acc4b34', 1219, 'test-tx-petition-jp5-sigcheck-e2e', '2026-07-14 20:18:52.38+00');
+INSERT INTO public.download_tokens VALUES ('b24c75f9-874e-4f1b-baa8-c21ff2747c74', 1223, 'test-tx-petition-jp2-sigcheck-e2e', '2026-07-15 15:28:47.082+00');
+INSERT INTO public.download_tokens VALUES ('e058386f-09ec-4e5d-9f63-9b13ea6f9e37', 1222, 'test-fl-cl219-volusia-signed-e2e', '2026-07-15 15:23:47.124+00');
+INSERT INTO public.download_tokens VALUES ('7dbf6b57-e3ea-4627-81cf-eed6bafdb5df', 1224, 'test-fl-clkct423-signed-e2e', '2026-07-15 15:23:47.131+00');
+INSERT INTO public.download_tokens VALUES ('16f13edb-8327-4b37-94ee-b4e75df9cc7d', 1220, 'test-az-proof-of-service-signed-e2e', '2026-07-15 15:23:47.129+00');
+INSERT INTO public.download_tokens VALUES ('417bf06b-b3c3-4028-b0ce-6080dbe206ff', 1226, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-15 15:28:47.155+00');
+INSERT INTO public.download_tokens VALUES ('7b95cced-9b90-4f6a-bd2b-15c2abeb43ca', 1225, 'test-fl-soc-7332-signed-e2e', '2026-07-15 15:28:47.153+00');
+INSERT INTO public.download_tokens VALUES ('d50698a2-0771-4274-99a4-aa7753b9cf6a', 1221, 'test-fl-clkct333-signed-e2e', '2026-07-15 15:23:47.176+00');
+INSERT INTO public.download_tokens VALUES ('f2c81455-26d7-4768-bade-867d04566947', 1248, 'test-fl-soc-7334-signed-e2e', '2026-07-15 21:28:58.992+00');
+INSERT INTO public.download_tokens VALUES ('347f86b3-4308-48cb-b3a1-43128271d6ee', 1231, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-15 21:28:59.003+00');
+INSERT INTO public.download_tokens VALUES ('2bb3c37b-f985-42a3-9abc-0a7bda2b7989', 1244, 'test-fl-statement-of-claim-signed-e2e', '2026-07-15 21:23:59.009+00');
+INSERT INTO public.download_tokens VALUES ('c9b08fc5-0d31-4fc6-9bc9-cc2b7775014f', 1243, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-07-15 21:28:59.03+00');
+INSERT INTO public.download_tokens VALUES ('a85e830c-fc89-424e-acf1-3ca8e79f66b8', 1232, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-15 21:28:59.026+00');
+INSERT INTO public.download_tokens VALUES ('caed3703-a02f-4425-ba8e-d60af6df983e', 1247, 'test-fl-proof-of-service-sigcheck-e2e', '2026-07-15 21:28:59.014+00');
+INSERT INTO public.download_tokens VALUES ('c22a47b0-0a57-4859-a643-741a1faf3635', 1246, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-07-15 21:28:59.062+00');
+INSERT INTO public.download_tokens VALUES ('8cd5972e-6299-414e-82f5-a3e42eb243fd', 1236, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-15 21:28:59.04+00');
+INSERT INTO public.download_tokens VALUES ('d5a1aaf7-94b3-40e4-b433-c98dc338b2e1', 1245, 'test-fl-soc-hillsborough-signed-e2e', '2026-07-15 21:23:59.067+00');
+INSERT INTO public.download_tokens VALUES ('50ce4200-62ef-4771-8dbd-f2ab06e38790', 1230, 'test-wa-notice-sigcheck-e2e', '2026-07-15 21:28:59.046+00');
+INSERT INTO public.download_tokens VALUES ('345a308f-3ed4-4e6f-a4a8-6aaa52677d30', 1233, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-15 21:28:59.076+00');
+INSERT INTO public.download_tokens VALUES ('ccc00d0e-8797-4eca-85f8-ede2dbbd113b', 1242, 'test-tx-citation-sigcheck-e2e', '2026-07-15 21:28:59.058+00');
+INSERT INTO public.download_tokens VALUES ('ca72adce-f2ec-4f2b-80be-fd4a52432861', 1235, 'test-fl-broward-sigcheck-e2e', '2026-07-15 21:28:59.079+00');
+INSERT INTO public.download_tokens VALUES ('d1e5be27-5207-44d9-ba8c-70be276a328c', 1237, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-15 21:28:59.101+00');
+INSERT INTO public.download_tokens VALUES ('7b06142d-2c7d-49de-b115-9d42a010d079', 1239, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-15 21:28:59.115+00');
+INSERT INTO public.download_tokens VALUES ('a94f3416-89b7-40a9-ae1b-6e747eac68cc', 1240, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-07-15 21:28:59.119+00');
+INSERT INTO public.download_tokens VALUES ('e53b50c6-832b-4fb4-93a7-f86dedcd2f54', 1234, 'test-fl-cl219-volusia-signed-e2e', '2026-07-15 21:23:59.128+00');
+INSERT INTO public.download_tokens VALUES ('89160f2d-2908-4ec9-8451-5ec5c7b3b353', 1238, 'test-il-proof-of-service-sigcheck-e2e', '2026-07-15 21:28:59.159+00');
+INSERT INTO public.download_tokens VALUES ('7c2ab611-313b-4437-ba6c-8adec241a3d9', 1241, 'test-fl-orange-sigcheck-e2e', '2026-07-15 21:28:59.169+00');
+INSERT INTO public.download_tokens VALUES ('76c1fc0b-7b9f-4a16-9f33-182b76b6505e', 1279, 'test-az-proof-of-service-signed-e2e', '2026-07-16 00:05:45.79+00');
+INSERT INTO public.download_tokens VALUES ('87a59b34-386f-4c55-85f2-5adcfd6f28de', 1271, 'test-az-complaint-signed-e2e', '2026-07-16 00:05:45.763+00');
+INSERT INTO public.download_tokens VALUES ('ec653951-d48d-444e-8408-5d2bbf8fca25', 1276, 'test-nj-complaint-sigcheck-e2e', '2026-07-16 00:10:45.791+00');
+INSERT INTO public.download_tokens VALUES ('f2df8792-c3e8-4bd4-8a1f-91b231ba3a66', 1273, 'test-fl-clkct423-signed-e2e', '2026-07-16 00:05:45.793+00');
+INSERT INTO public.download_tokens VALUES ('a41b3b27-3c31-419d-a44c-19949d1acd9c', 1280, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-16 00:10:45.775+00');
+INSERT INTO public.download_tokens VALUES ('5dda7b3b-8796-4da5-b4f6-241d75c92dcd', 1277, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-16 00:10:45.777+00');
+INSERT INTO public.download_tokens VALUES ('054b2ee9-1576-4de5-b391-cb93ac30f3e7', 1274, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-07-16 00:10:45.786+00');
+INSERT INTO public.download_tokens VALUES ('163df153-c4fe-4387-b715-a16fc202f0e6', 1272, 'test-fl-broward-summons-sigcheck-e2e', '2026-07-16 00:10:45.794+00');
+INSERT INTO public.download_tokens VALUES ('e0c5ac71-7976-4898-b434-62db91a2b62d', 1278, 'test-fl-orange-sigcheck-e2e', '2026-07-16 00:10:45.774+00');
+INSERT INTO public.download_tokens VALUES ('e4013b63-5fce-48d4-a614-0e214071c52c', 1275, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-16 00:10:45.779+00');
+INSERT INTO public.download_tokens VALUES ('f0d62349-6da5-4837-a593-4b35b748db77', 1292, 'test-va-dc-409-sigcheck-e2e', '2026-07-16 03:29:01.751+00');
+INSERT INTO public.download_tokens VALUES ('13194281-ef72-4932-a620-3136a215c406', 1282, 'test-fl-cl219-volusia-signed-e2e', '2026-07-16 03:24:01.749+00');
+INSERT INTO public.download_tokens VALUES ('ae9172d8-f999-4f1c-a9eb-5af5c3afbbb7', 1286, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-16 03:29:01.765+00');
+INSERT INTO public.download_tokens VALUES ('766c9120-3dd4-4492-abbc-3f2cc0e9e905', 1291, 'test-fl-proof-of-service-sigcheck-e2e', '2026-07-16 03:29:01.771+00');
+INSERT INTO public.download_tokens VALUES ('1de8df07-b2c1-4c5d-bcd6-9fe0b5480151', 1296, 'test-nj-complaint-sigcheck-e2e', '2026-07-16 03:29:01.756+00');
+INSERT INTO public.download_tokens VALUES ('a651e7ed-2df6-4684-96bc-673352a7d4d3', 1284, 'test-az-complaint-signed-e2e', '2026-07-16 03:24:01.768+00');
+INSERT INTO public.download_tokens VALUES ('e98bd4f3-605a-4cec-b7a1-5ab05d77fe76', 1281, 'test-az-proof-of-service-signed-e2e', '2026-07-16 03:24:01.753+00');
+INSERT INTO public.download_tokens VALUES ('6360ceda-5f4e-4ae9-9d94-3a1e2d6d1e19', 1288, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-16 03:29:01.76+00');
+INSERT INTO public.download_tokens VALUES ('d7a2de98-2aab-4629-b944-3c126a88ad17', 1290, 'test-fl-volusia-summons-sigcheck-e2e', '2026-07-16 03:29:01.738+00');
+INSERT INTO public.download_tokens VALUES ('1191278d-6f5b-46e9-a1aa-0365ac79687c', 1295, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-16 03:29:01.772+00');
+INSERT INTO public.download_tokens VALUES ('74a18612-eb78-4542-b92c-afa8cfbe7ecf', 1285, 'test-fl-soc-7334-signed-e2e', '2026-07-16 03:29:01.766+00');
+INSERT INTO public.download_tokens VALUES ('3b7cf18d-1e10-4419-a3de-be62515335ef', 1289, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-16 03:29:01.767+00');
+INSERT INTO public.download_tokens VALUES ('a8250796-038b-4ce2-abc5-215cbd0a4460', 1294, 'test-fl-plain-soc-orange-signed-e2e', '2026-07-16 03:24:01.756+00');
+INSERT INTO public.download_tokens VALUES ('8a08f644-aec8-498e-bc3a-0fa4abe800c1', 1287, 'test-il-proof-of-service-sigcheck-e2e', '2026-07-16 03:29:01.776+00');
+INSERT INTO public.download_tokens VALUES ('57b34f22-624b-404a-88ef-12b32b2cf5c5', 1293, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-16 03:29:01.761+00');
+INSERT INTO public.download_tokens VALUES ('452285bb-dde8-48de-b91e-33c3025fdad0', 1283, 'test-fl-soc-7332-signed-e2e', '2026-07-16 03:29:01.771+00');
+INSERT INTO public.download_tokens VALUES ('d4924722-7fa8-46cf-bf64-b01ce4e2726b', 1305, 'test-fl-broward-sigcheck-e2e', '2026-07-16 05:03:51.532+00');
+INSERT INTO public.download_tokens VALUES ('f6834207-5073-4259-a23b-1e5f1560949a', 1307, 'test-fl-soc-hillsborough-signed-e2e', '2026-07-16 04:58:51.553+00');
+INSERT INTO public.download_tokens VALUES ('46bb42c3-450e-4005-9292-cc5479f8c542', 1304, 'test-nj-complaint-sigcheck-e2e', '2026-07-16 05:03:51.529+00');
+INSERT INTO public.download_tokens VALUES ('d2c0dd49-01ce-4422-8536-5323171bd778', 1306, 'test-fl-statement-of-claim-signed-e2e', '2026-07-16 04:58:51.562+00');
+INSERT INTO public.download_tokens VALUES ('03ef23e4-71ea-4063-96a5-feba3ace9b7c', 1308, 'test-fl-soc-7330-signed-e2e', '2026-07-16 05:03:51.531+00');
+INSERT INTO public.download_tokens VALUES ('f5cb21b0-49a6-4a05-bc0d-24d6a6f4a4ee', 1298, 'test-az-complaint-signed-e2e', '2026-07-16 04:58:51.548+00');
+INSERT INTO public.download_tokens VALUES ('52588ed3-54b3-4182-9cdf-10d0153c443c', 1302, 'test-az-proof-of-service-signed-e2e', '2026-07-16 04:58:51.54+00');
+INSERT INTO public.download_tokens VALUES ('89d3d0ce-9a51-41f4-a7ff-9863d00e538f', 1301, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-07-16 05:03:51.56+00');
+INSERT INTO public.download_tokens VALUES ('f89fe1d5-f7e6-4485-b9ec-75b2fa49bc71', 1297, 'test-fl-summons-sigcheck-e2e', '2026-07-16 05:03:51.573+00');
+INSERT INTO public.download_tokens VALUES ('27ff0e08-0c51-434d-a9c0-cd02576f0a85', 1300, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-16 05:03:51.546+00');
+INSERT INTO public.download_tokens VALUES ('4995c0d4-c759-426d-b942-fd4d1498d622', 1299, 'test-fl-soc-7333-signed-e2e', '2026-07-16 05:03:51.6+00');
+INSERT INTO public.download_tokens VALUES ('5cb64d06-a16b-4fb1-95dc-67f1ddc56094', 1303, 'test-wa-notice-sigcheck-e2e', '2026-07-16 05:03:51.636+00');
+INSERT INTO public.download_tokens VALUES ('fcab1fb5-19c8-4123-8366-b4ebf6165ff5', 1312, 'test-az-summons-sigcheck-e2e', '2026-07-16 15:42:41.467+00');
+INSERT INTO public.download_tokens VALUES ('3440f350-4467-41e9-91b7-4e2913adfce0', 1318, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-16 15:42:41.481+00');
+INSERT INTO public.download_tokens VALUES ('dbd8bb90-8602-4444-a40c-ce56cf575307', 1324, 'test-fl-soc-7336-signed-e2e', '2026-07-16 15:42:41.486+00');
+INSERT INTO public.download_tokens VALUES ('1913f536-1b9a-4853-9f0c-4854f9a3c0ea', 1321, 'test-il-proof-of-service-sigcheck-e2e', '2026-07-16 15:42:41.5+00');
+INSERT INTO public.download_tokens VALUES ('b4c91af9-8a0d-4b26-8649-99dff5b6fff0', 1310, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-16 15:42:41.49+00');
+INSERT INTO public.download_tokens VALUES ('a8986fd3-3022-40b7-9aff-ff80b7ac5071', 1315, 'test-va-dc-409-sigcheck-e2e', '2026-07-16 15:42:41.484+00');
+INSERT INTO public.download_tokens VALUES ('fb17d52e-06c1-4850-9711-499f2b148c63', 1320, 'test-fl-soc-7334-signed-e2e', '2026-07-16 15:42:41.491+00');
+INSERT INTO public.download_tokens VALUES ('8c1baadd-0802-4cc3-b4e6-8d7aabc82ab2', 1323, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-07-16 15:42:41.488+00');
+INSERT INTO public.download_tokens VALUES ('682f90ec-2705-4284-9032-58c7c1fc144f', 1322, 'test-fl-plain-soc-orange-signed-e2e', '2026-07-16 15:37:41.492+00');
+INSERT INTO public.download_tokens VALUES ('6b29a2fd-674f-4e79-9e3d-e0bb95aaa9ff', 1319, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-07-16 15:42:41.502+00');
+INSERT INTO public.download_tokens VALUES ('90e7c663-cd5e-4860-84bc-190a843ddc48', 1313, 'test-tx-return-of-service-sigcheck-e2e', '2026-07-16 15:42:41.514+00');
+INSERT INTO public.download_tokens VALUES ('1c2fd6a5-cb94-481c-8230-89fdcb98e9b4', 1309, 'test-fl-broward-summons-sigcheck-e2e', '2026-07-16 15:42:41.506+00');
+INSERT INTO public.download_tokens VALUES ('808e502e-624b-4538-abf4-adb0f11d16b6', 1316, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-16 15:42:41.512+00');
+INSERT INTO public.download_tokens VALUES ('65775490-b4d5-478a-ab33-fef9e804ca34', 1317, 'test-va-dc-402-signed-e2e', '2026-07-16 15:37:41.502+00');
+INSERT INTO public.download_tokens VALUES ('ffecc002-0536-43b8-a06a-95dd59eb71a3', 1314, 'test-fl-broward-sigcheck-e2e', '2026-07-16 15:42:41.504+00');
+INSERT INTO public.download_tokens VALUES ('cf54ff78-4593-4e16-8fcf-00d1ebdb525f', 1311, 'test-fl-soc-7332-signed-e2e', '2026-07-16 15:42:41.512+00');
+INSERT INTO public.download_tokens VALUES ('e76325a4-5868-4091-b5e6-a8c32becfae8', 1335, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-16 22:35:44.562+00');
+INSERT INTO public.download_tokens VALUES ('63b6578e-446d-470d-85a7-20eaeb786133', 1336, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-16 22:35:44.58+00');
+INSERT INTO public.download_tokens VALUES ('8bf4fde4-613f-452f-aed4-62004fc2635e', 1329, 'test-tx-return-of-service-sigcheck-e2e', '2026-07-16 22:35:44.581+00');
+INSERT INTO public.download_tokens VALUES ('3f583398-f985-4e10-802d-390fae5b6edb', 1334, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-16 22:35:44.589+00');
+INSERT INTO public.download_tokens VALUES ('5ca5e464-c277-4aae-80d6-bdd885d0a1fb', 1326, 'test-az-proof-of-service-signed-e2e', '2026-07-16 22:30:44.593+00');
+INSERT INTO public.download_tokens VALUES ('310639a1-dd14-491f-8b6c-0d52ac61c072', 1325, 'test-fl-broward-summons-sigcheck-e2e', '2026-07-16 22:35:44.609+00');
+INSERT INTO public.download_tokens VALUES ('78172fe2-5cc2-4376-ab64-8fc3a857f800', 1333, 'test-fl-soc-7332-signed-e2e', '2026-07-16 22:35:44.628+00');
+INSERT INTO public.download_tokens VALUES ('3adaed4c-d083-4e26-89fd-c8eeee2bf861', 1328, 'test-fl-cl219-volusia-signed-e2e', '2026-07-16 22:30:44.627+00');
+INSERT INTO public.download_tokens VALUES ('1beb7a35-cbd5-498f-a0ec-29d5be435fa1', 1337, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-16 22:35:44.617+00');
+INSERT INTO public.download_tokens VALUES ('c0737236-9de4-4b20-b708-0d174de56f56', 1338, 'test-az-complaint-signed-e2e', '2026-07-16 22:30:44.606+00');
+INSERT INTO public.download_tokens VALUES ('6e0c6b78-f0e3-495d-b55a-f9cf9da1930c', 1327, 'test-va-dc-409-sigcheck-e2e', '2026-07-16 22:35:44.665+00');
+INSERT INTO public.download_tokens VALUES ('8bcd6b08-d411-41a8-b238-16ce6e2df07a', 1331, 'test-tx-petition-sigcheck-e2e', '2026-07-16 22:35:44.669+00');
+INSERT INTO public.download_tokens VALUES ('b1c39d19-de0e-4133-a1f9-cba21fbdec47', 1330, 'test-fl-soc-7331-signed-e2e', '2026-07-16 22:35:44.614+00');
+INSERT INTO public.download_tokens VALUES ('90eefd5e-aa8b-4379-a075-68838f913d5d', 1332, 'test-fl-broward-sigcheck-e2e', '2026-07-16 22:35:44.578+00');
+INSERT INTO public.download_tokens VALUES ('f6ed3f59-fb3a-4906-94f9-5448b20345d4', 1340, 'test-fl-clkct423-signed-e2e', '2026-07-17 19:56:45.78+00');
+INSERT INTO public.download_tokens VALUES ('51da09c8-d86f-4331-934a-b7c0d30a93a2', 1344, 'test-fl-soc-7332-signed-e2e', '2026-07-17 20:01:45.793+00');
+INSERT INTO public.download_tokens VALUES ('05cf24d6-83fe-4bcf-9dc8-67b289063a56', 1343, 'test-fl-soc-7330-signed-e2e', '2026-07-17 20:01:45.808+00');
+INSERT INTO public.download_tokens VALUES ('10f1f91c-a88e-467f-a639-3ea9a91f4c1a', 1341, 'test-fl-soc-7336-signed-e2e', '2026-07-17 20:01:45.796+00');
+INSERT INTO public.download_tokens VALUES ('5007d212-e613-4511-8b55-1901289c5ada', 1339, 'test-nj-complaint-sigcheck-e2e', '2026-07-17 20:01:45.81+00');
+INSERT INTO public.download_tokens VALUES ('913396e3-2e43-4f49-beda-7fd97a3e19e2', 1342, 'test-fl-summons-sigcheck-e2e', '2026-07-17 20:01:45.799+00');
+INSERT INTO public.download_tokens VALUES ('5d522069-db66-4289-8025-4e438d191a29', 1347, 'test-az-complaint-signed-e2e', '2026-07-17 19:56:45.84+00');
+INSERT INTO public.download_tokens VALUES ('029073ab-feb8-4e0e-a8f1-ec17db2bde38', 1346, 'test-fl-soc-7333-signed-e2e', '2026-07-17 20:01:45.848+00');
+INSERT INTO public.download_tokens VALUES ('66d58c5a-4029-4c47-ba15-9e2d254b7262', 1345, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-07-17 20:01:45.855+00');
+INSERT INTO public.download_tokens VALUES ('77a7fa6a-7939-491c-b5db-01d0d6ad35be', 1348, 'test-fl-hillsborough-sigcheck-e2e', '2026-07-17 20:01:45.927+00');
+INSERT INTO public.download_tokens VALUES ('69f6cb98-548d-4dd5-8ce5-3bdcafdcd73e', 1349, 'test-il-summons-sigcheck-e2e', '2026-07-17 20:01:45.954+00');
+INSERT INTO public.download_tokens VALUES ('813c63b0-4193-4cfa-ba61-3c8b61205bea', 1353, 'test-fl-soc-7337-signed-e2e', '2026-07-18 17:30:37.259+00');
+INSERT INTO public.download_tokens VALUES ('20dcca50-a881-493d-a833-c828790c633f', 1352, 'test-fl-summons-sigcheck-e2e', '2026-07-18 17:30:37.257+00');
+INSERT INTO public.download_tokens VALUES ('faf696ba-a948-42d4-8b3f-872fda764d9a', 1350, 'test-fl-clkct333-signed-e2e', '2026-07-18 17:25:37.247+00');
+INSERT INTO public.download_tokens VALUES ('605b53d8-68bf-4a09-b2a5-c59f00542227', 1351, 'test-fl-clkct423-signed-e2e', '2026-07-18 17:25:37.252+00');
+INSERT INTO public.download_tokens VALUES ('ee8505f2-1370-42f1-b94f-1711e94743b6', 1354, 'test-fl-volusia-summons-sigcheck-e2e', '2026-07-18 17:30:37.311+00');
+INSERT INTO public.download_tokens VALUES ('27e2789c-a303-46ec-b75b-d309063d64bb', 1362, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-18 20:11:08.189+00');
+INSERT INTO public.download_tokens VALUES ('1a7cebe2-0de9-4578-98d9-f67d236558f9', 1363, 'test-fl-statement-of-claim-signed-e2e', '2026-07-18 20:06:08.19+00');
+INSERT INTO public.download_tokens VALUES ('9946b57c-93c4-4d8f-9299-5db72b51badb', 1359, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-18 20:11:08.202+00');
+INSERT INTO public.download_tokens VALUES ('2172903d-aa6e-4f9d-8eb7-6fc3a86b95c2', 1357, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-18 20:11:08.173+00');
+INSERT INTO public.download_tokens VALUES ('73f8d856-ee5f-44c3-a8f7-b794ec491cac', 1355, 'test-fl-broward-summons-sigcheck-e2e', '2026-07-18 20:11:08.214+00');
+INSERT INTO public.download_tokens VALUES ('859bef28-8bf1-42a0-924d-8700a0b77717', 1358, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-18 20:11:08.214+00');
+INSERT INTO public.download_tokens VALUES ('ba178956-6a78-4733-9473-fe7907dcbcbd', 1360, 'test-wa-notice-sigcheck-e2e', '2026-07-18 20:11:08.222+00');
+INSERT INTO public.download_tokens VALUES ('863f853b-d4a3-4d5d-87bf-510f4ac82d7b', 1356, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-07-18 20:11:08.207+00');
+INSERT INTO public.download_tokens VALUES ('11e828f8-4dc1-459f-af92-262a5f422fe8', 1361, 'test-fl-soc-7332-signed-e2e', '2026-07-18 20:11:08.211+00');
+INSERT INTO public.download_tokens VALUES ('4b197c23-f1f7-4926-99c8-56599b581f19', 1364, 'test-fl-soc-7331-signed-e2e', '2026-07-18 20:11:08.235+00');
+INSERT INTO public.download_tokens VALUES ('7da710f1-5bd8-4c4f-9a85-f4257ba9c2e9', 1373, 'test-il-summons-sigcheck-e2e', '2026-07-18 21:29:39.299+00');
+INSERT INTO public.download_tokens VALUES ('f1952dde-5715-4ebc-8066-2a3efadd585a', 1379, 'test-fl-proof-of-service-sigcheck-e2e', '2026-07-18 21:29:39.316+00');
+INSERT INTO public.download_tokens VALUES ('cee0b575-b11d-4e7b-9b64-f928f8115dd4', 1375, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-18 21:29:39.289+00');
+INSERT INTO public.download_tokens VALUES ('8fc625bd-bf32-49f0-94d8-ba8a2ac50374', 1372, 'test-fl-fee-waiver-sigcheck-e2e', '2026-07-18 21:29:39.315+00');
+INSERT INTO public.download_tokens VALUES ('079678be-148a-48ab-82ca-6d5356443b1a', 1377, 'test-fl-soc-hillsborough-signed-e2e', '2026-07-18 21:24:39.313+00');
+INSERT INTO public.download_tokens VALUES ('be7447ca-e449-4ebc-b7a8-d6ff33a946db', 1369, 'test-fl-soc-7333-signed-e2e', '2026-07-18 21:29:39.327+00');
+INSERT INTO public.download_tokens VALUES ('e615b651-e204-436b-acd2-53d86b6e61a3', 1367, 'test-az-summons-sigcheck-e2e', '2026-07-18 21:29:39.317+00');
+INSERT INTO public.download_tokens VALUES ('7da48f5f-3fa2-46f6-838d-8280d9bb71da', 1376, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-07-18 21:29:39.316+00');
+INSERT INTO public.download_tokens VALUES ('9e20a0fa-4983-48ad-9185-5472d46ef464', 1365, 'test-fl-soc-7336-signed-e2e', '2026-07-18 21:29:39.335+00');
+INSERT INTO public.download_tokens VALUES ('430382d2-043c-4339-8dea-d43cba22d482', 1366, 'test-fl-broward-sigcheck-e2e', '2026-07-18 21:29:39.321+00');
+INSERT INTO public.download_tokens VALUES ('e72b0c5e-7b61-42e7-8a2e-bce1e23ef0a4', 1368, 'test-wa-notice-sigcheck-e2e', '2026-07-18 21:29:39.318+00');
+INSERT INTO public.download_tokens VALUES ('822e304d-230b-4bb2-aa95-06b5648a0f17', 1371, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-18 21:29:39.323+00');
+INSERT INTO public.download_tokens VALUES ('e3a33660-41d1-4567-8bca-a989dbf12db6', 1370, 'test-fl-soc-7330-signed-e2e', '2026-07-18 21:29:39.347+00');
+INSERT INTO public.download_tokens VALUES ('bdcdbc29-e40d-4401-a960-6cb227411ad7', 1374, 'test-fl-orange-summons-sigcheck-e2e', '2026-07-18 21:29:39.364+00');
+INSERT INTO public.download_tokens VALUES ('95339464-592b-452e-863c-a7baad39a7fb', 1378, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-18 21:29:39.369+00');
+INSERT INTO public.download_tokens VALUES ('935f0c0f-9f16-42cd-af3a-a7795f736835', 1380, 'test-fl-soc-7330-signed-e2e', '2026-07-19 03:29:30.586+00');
+INSERT INTO public.download_tokens VALUES ('80652a68-7453-4018-b655-15e460e58f88', 1385, 'test-az-proof-of-service-signed-e2e', '2026-07-19 03:24:30.594+00');
+INSERT INTO public.download_tokens VALUES ('a60f6bdd-116c-45ea-85c2-ab071497e8eb', 1382, 'test-fl-clkct423-signed-e2e', '2026-07-19 03:24:30.592+00');
+INSERT INTO public.download_tokens VALUES ('6222a0fb-a10d-4625-b110-f902b58c1c76', 1389, 'test-fl-summons-sigcheck-e2e', '2026-07-19 03:29:30.601+00');
+INSERT INTO public.download_tokens VALUES ('da4463c3-da0d-4988-9917-22b461a62f78', 1392, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-19 03:29:30.607+00');
+INSERT INTO public.download_tokens VALUES ('d9650ea6-63fc-464b-942d-2010ecae3fa3', 1396, 'test-va-dc-409-sigcheck-e2e', '2026-07-19 03:29:30.606+00');
+INSERT INTO public.download_tokens VALUES ('58553404-7d4b-43a9-8399-b8477f29ff7c', 1393, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-19 03:29:30.589+00');
+INSERT INTO public.download_tokens VALUES ('7ef32e6d-7e08-40f7-a255-fbf797fd4d4a', 1388, 'test-tx-petition-sigcheck-e2e', '2026-07-19 03:29:30.613+00');
+INSERT INTO public.download_tokens VALUES ('333d3a21-ba88-4d02-91e3-f20f50709a3d', 1395, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-19 03:29:30.615+00');
+INSERT INTO public.download_tokens VALUES ('1b2651e2-0485-45ec-b12c-88dfb7997274', 1381, 'test-tx-fee-waiver-sigcheck-e2e', '2026-07-19 03:29:30.619+00');
+INSERT INTO public.download_tokens VALUES ('0d6e4c7b-7f2b-4937-a00c-29c790e104ca', 1383, 'test-il-proof-of-service-sigcheck-e2e', '2026-07-19 03:29:30.644+00');
+INSERT INTO public.download_tokens VALUES ('0b71460f-e0db-46cc-8680-b8d7e052cf62', 1387, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-19 03:29:30.648+00');
+INSERT INTO public.download_tokens VALUES ('b290e7b3-d427-4e91-9938-bb44418fe4f9', 1391, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-07-19 03:29:30.627+00');
+INSERT INTO public.download_tokens VALUES ('2b940255-69f8-4ab4-a871-49f3925582e1', 1386, 'test-fl-plain-soc-orange-signed-e2e', '2026-07-19 03:24:30.652+00');
+INSERT INTO public.download_tokens VALUES ('5dc26c7d-b185-4a65-8579-324867e12499', 1394, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-07-19 03:29:30.703+00');
+INSERT INTO public.download_tokens VALUES ('706e480c-41f1-412d-b269-4c092ccd500c', 1390, 'test-fl-proof-of-service-sigcheck-e2e', '2026-07-19 03:29:30.692+00');
+INSERT INTO public.download_tokens VALUES ('d8ebdaee-dabc-4246-99c5-1a69cd8e848d', 1384, 'test-fl-soc-7336-signed-e2e', '2026-07-19 03:29:30.695+00');
+INSERT INTO public.download_tokens VALUES ('72500e7e-511d-4da0-ad81-83c0a709cf31', 1405, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-19 12:39:19.381+00');
+INSERT INTO public.download_tokens VALUES ('7da11232-2637-4ead-af3c-fc61722d84f0', 1401, 'test-az-proof-of-service-signed-e2e', '2026-07-19 12:34:19.414+00');
+INSERT INTO public.download_tokens VALUES ('a0cff42c-c863-4efb-a113-b671efecbb03', 1402, 'test-nj-complaint-sigcheck-e2e', '2026-07-19 12:39:19.413+00');
+INSERT INTO public.download_tokens VALUES ('3e5ce481-f4ab-46b5-8c2a-e77227194516', 1406, 'test-fl-soc-7331-signed-e2e', '2026-07-19 12:39:19.428+00');
+INSERT INTO public.download_tokens VALUES ('6c9efa14-2dfc-4d2d-b8de-02724990b144', 1403, 'test-fl-cl219-volusia-signed-e2e', '2026-07-19 12:34:19.491+00');
+INSERT INTO public.download_tokens VALUES ('c38757ca-a98b-47a3-b9b3-3e1aa14e017f', 1397, 'test-fl-orange-sigcheck-e2e', '2026-07-19 12:39:19.493+00');
+INSERT INTO public.download_tokens VALUES ('8e8569a0-91a6-46b4-89f5-0051ecb9cdec', 1408, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-19 12:39:19.498+00');
+INSERT INTO public.download_tokens VALUES ('d3e3da95-5663-442b-82c4-81b0da902939', 1409, 'test-fl-soc-7337-signed-e2e', '2026-07-19 12:39:19.488+00');
+INSERT INTO public.download_tokens VALUES ('e57fea4e-5e58-45db-beb2-7f63b729a65d', 1404, 'test-fl-statement-of-claim-signed-e2e', '2026-07-19 12:34:19.47+00');
+INSERT INTO public.download_tokens VALUES ('123dbcea-bbf8-4ced-90bc-6ed489b7841c', 1398, 'test-va-dc-402-signed-e2e', '2026-07-19 12:34:19.47+00');
+INSERT INTO public.download_tokens VALUES ('331a1a90-4c78-4c84-92ae-90f78f36a8b1', 1410, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-19 12:39:19.401+00');
+INSERT INTO public.download_tokens VALUES ('17013df6-74c2-4bc2-b9a5-d5d7c5f49037', 1399, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-07-19 12:39:19.416+00');
+INSERT INTO public.download_tokens VALUES ('65adee36-faa4-423d-a164-0192e3e10009', 1400, 'test-fl-soc-7332-signed-e2e', '2026-07-19 12:39:19.406+00');
+INSERT INTO public.download_tokens VALUES ('a8d54cfb-b37e-43f1-9874-4ded13dcbdba', 1407, 'test-fl-clkct423-signed-e2e', '2026-07-19 12:34:19.41+00');
+INSERT INTO public.download_tokens VALUES ('58d54a93-da5b-4528-849e-88c63535727a', 1416, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-07-19 14:10:15.697+00');
+INSERT INTO public.download_tokens VALUES ('eaf1afd9-7c4a-4e58-8677-64408e04c262', 1417, 'test-il-fee-waiver-sigcheck-e2e', '2026-07-19 14:10:15.691+00');
+INSERT INTO public.download_tokens VALUES ('9f0aafaa-0cb8-44a8-8323-6047bb9e213a', 1414, 'test-fl-soc-7332-signed-e2e', '2026-07-19 14:10:15.697+00');
+INSERT INTO public.download_tokens VALUES ('1305611f-3423-4c38-a058-921d908abe72', 1413, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-19 14:10:15.709+00');
+INSERT INTO public.download_tokens VALUES ('e1af8c4d-445f-4665-9140-de1fbc99e03c', 1412, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-07-19 14:10:15.702+00');
+INSERT INTO public.download_tokens VALUES ('609c2607-ee80-4ee3-aff6-1d06fb490847', 1411, 'test-fl-soc-7335-signed-e2e', '2026-07-19 14:10:15.704+00');
+INSERT INTO public.download_tokens VALUES ('2e5c9313-4328-4266-9660-f1c08c575dcf', 1415, 'test-tx-petition-sigcheck-e2e', '2026-07-19 14:10:15.858+00');
+INSERT INTO public.download_tokens VALUES ('c2f8a1a5-792c-4f82-b683-39bc5e6334e3', 1425, 'test-az-proof-of-service-signed-e2e', '2026-07-19 23:11:07.943+00');
+INSERT INTO public.download_tokens VALUES ('768fd3cf-1b38-4489-b160-e3bd245d86b5', 1423, 'test-il-summons-sigcheck-e2e', '2026-07-19 23:16:07.971+00');
+INSERT INTO public.download_tokens VALUES ('ace6fde7-367c-49c0-8dfb-38181a965dcb', 1419, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-07-19 23:16:07.976+00');
+INSERT INTO public.download_tokens VALUES ('a52c15ee-21a0-4074-bf83-6d9e8f12e339', 1427, 'test-fl-clkct423-signed-e2e', '2026-07-19 23:11:07.957+00');
+INSERT INTO public.download_tokens VALUES ('6425534e-bf9c-40e6-bb9c-09dd48a86eb7', 1429, 'test-tx-citation-sigcheck-e2e', '2026-07-19 23:16:07.938+00');
+INSERT INTO public.download_tokens VALUES ('9948c98e-811b-4dca-b0a0-abf6dd34bfde', 1424, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-07-19 23:16:08.003+00');
+INSERT INTO public.download_tokens VALUES ('f39d72e4-a539-4c95-b409-6ae90fd1fc0b', 1428, 'test-fl-summons-sigcheck-e2e', '2026-07-19 23:16:07.97+00');
+INSERT INTO public.download_tokens VALUES ('7a4b64e8-3ad8-4618-a776-7798aa03dc6b', 1420, 'test-fl-soc-7336-signed-e2e', '2026-07-19 23:16:07.999+00');
+INSERT INTO public.download_tokens VALUES ('7980bdbf-0749-4820-a310-41ae8bc27e63', 1426, 'test-fl-palm-beach-sigcheck-e2e', '2026-07-19 23:16:08.009+00');
+INSERT INTO public.download_tokens VALUES ('182fc82e-cf4c-4add-88f5-c0d13c4d506f', 1421, 'test-fl-broward-sigcheck-e2e', '2026-07-19 23:16:08.002+00');
+INSERT INTO public.download_tokens VALUES ('73a25d1d-56c7-465f-a9ab-ce15105c564f', 1422, 'test-fl-hillsborough-sigcheck-e2e', '2026-07-19 23:16:07.994+00');
+INSERT INTO public.download_tokens VALUES ('aa0ee9ba-a2fd-48e3-be33-b8dcef38120b', 1418, 'test-wa-notice-sigcheck-e2e', '2026-07-19 23:16:07.992+00');
+INSERT INTO public.download_tokens VALUES ('2a8d0024-0de0-4228-803e-3020aa6d6235', 1434, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-05 03:09:00.599+00');
+INSERT INTO public.download_tokens VALUES ('3137de76-4995-41f4-98ca-773a8a1e589f', 1432, 'test-az-proof-of-service-signed-e2e', '2026-08-05 03:04:00.597+00');
+INSERT INTO public.download_tokens VALUES ('19abd555-4672-45b2-81aa-ecb05bd06191', 1431, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-05 03:09:00.597+00');
+INSERT INTO public.download_tokens VALUES ('9b01afe3-37aa-46ab-be6b-3ac2d38c21bd', 1438, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-05 03:09:00.592+00');
+INSERT INTO public.download_tokens VALUES ('9612df32-6804-45f2-a09d-924759a6656c', 1430, 'test-fl-soc-7335-signed-e2e', '2026-08-05 03:09:00.608+00');
+INSERT INTO public.download_tokens VALUES ('ce25ed07-4fa9-4eaf-83c6-ade94715702b', 1443, 'test-fl-soc-7332-signed-e2e', '2026-08-05 03:09:00.616+00');
+INSERT INTO public.download_tokens VALUES ('ac48f0ed-52a8-450b-9df4-8c573d927ecb', 1435, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-05 03:09:00.607+00');
+INSERT INTO public.download_tokens VALUES ('1940f72a-ae21-429d-bc1f-3b767f12c945', 1442, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-05 03:09:00.609+00');
+INSERT INTO public.download_tokens VALUES ('6e11430e-4b71-4a78-b8c5-dc6b2061e691', 1437, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-05 03:09:00.612+00');
+INSERT INTO public.download_tokens VALUES ('836567bd-990c-4356-8d47-9204f7a4f96a', 1440, 'test-nj-complaint-sigcheck-e2e', '2026-08-05 03:09:00.62+00');
+INSERT INTO public.download_tokens VALUES ('240d4c9a-d73d-407a-b570-0b8b8267488d', 1433, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-05 03:09:00.611+00');
+INSERT INTO public.download_tokens VALUES ('d7890e7c-bc98-4a54-ab70-7da51a5a29c5', 1444, 'test-va-dc-402-signed-e2e', '2026-08-05 03:04:00.602+00');
+INSERT INTO public.download_tokens VALUES ('032c9e2a-3926-42f5-8a7f-4acde213dfa4', 1436, 'test-fl-broward-sigcheck-e2e', '2026-08-05 03:09:00.609+00');
+INSERT INTO public.download_tokens VALUES ('a548b6bc-90c4-4819-a4f6-872c6b7d4bfe', 1441, 'test-az-complaint-signed-e2e', '2026-08-05 03:04:00.626+00');
+INSERT INTO public.download_tokens VALUES ('e13e2719-4a34-4c6e-ad08-39b6515e5ac7', 1439, 'test-fl-soc-7336-signed-e2e', '2026-08-05 03:09:00.638+00');
+INSERT INTO public.download_tokens VALUES ('006b9a70-74ad-4984-aed7-8ecc46a70d68', 1445, 'test-wa-service-sigcheck-e2e', '2026-08-05 03:09:00.709+00');
+INSERT INTO public.download_tokens VALUES ('2be911bd-4504-4cf8-a7a5-423fd10b2c6d', 1447, 'test-fl-summons-sigcheck-e2e', '2026-08-05 15:20:11.343+00');
+INSERT INTO public.download_tokens VALUES ('8778c23e-3b21-4c08-8f3c-a333acceebb7', 1446, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-08-05 15:20:11.351+00');
+INSERT INTO public.download_tokens VALUES ('057af5b5-787c-42a1-b76d-6b76071c2e19', 1464, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-05 15:20:11.354+00');
+INSERT INTO public.download_tokens VALUES ('da8279a4-c1fe-415d-a614-71632f4ffaef', 1448, 'test-fl-broward-sigcheck-e2e', '2026-08-05 15:20:11.365+00');
+INSERT INTO public.download_tokens VALUES ('ec435d02-d245-4d06-9ccf-48f57005d9b4', 1456, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-05 15:20:11.366+00');
+INSERT INTO public.download_tokens VALUES ('fc1c20e5-7d8d-49b4-86f2-4e17337abbfa', 1463, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-05 15:20:11.369+00');
+INSERT INTO public.download_tokens VALUES ('470932a6-2faf-4cc6-833f-57cef5ca3fa4', 1449, 'test-va-dc-402-signed-e2e', '2026-08-05 15:15:11.363+00');
+INSERT INTO public.download_tokens VALUES ('551e59ec-bfd7-42f1-b4db-128261c7ef34', 1454, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-05 15:20:11.366+00');
+INSERT INTO public.download_tokens VALUES ('115589d3-9cbb-49ea-ab0f-ee56684e0d00', 1462, 'test-fl-clkct333-signed-e2e', '2026-08-05 15:15:11.365+00');
+INSERT INTO public.download_tokens VALUES ('8e3b5e6f-0555-478e-a311-3c06e9182f0e', 1450, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-05 15:20:11.37+00');
+INSERT INTO public.download_tokens VALUES ('528736d3-b2f5-4f94-836c-0e4482c4ef4f', 1452, 'test-fl-statement-of-claim-signed-e2e', '2026-08-05 15:15:11.369+00');
+INSERT INTO public.download_tokens VALUES ('978eeaf8-7b57-46dc-bb6d-f8717195c142', 1460, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-05 15:20:11.379+00');
+INSERT INTO public.download_tokens VALUES ('6860f81b-29e6-404f-ab3e-5baa3e80fb43', 1453, 'test-fl-soc-7337-signed-e2e', '2026-08-05 15:20:11.38+00');
+INSERT INTO public.download_tokens VALUES ('666a9f27-fe34-4822-b896-21bc72c89ef9', 1457, 'test-fl-soc-7333-signed-e2e', '2026-08-05 15:20:11.375+00');
+INSERT INTO public.download_tokens VALUES ('c3340e67-7113-42c7-9485-1763c872d84f', 1455, 'test-az-proof-of-service-signed-e2e', '2026-08-05 15:15:11.386+00');
+INSERT INTO public.download_tokens VALUES ('6d00fd7e-4287-41ca-9b77-d98a29d6c560', 1458, 'test-fl-orange-sigcheck-e2e', '2026-08-05 15:20:11.387+00');
+INSERT INTO public.download_tokens VALUES ('86a00fdc-9a41-49c2-8cbd-ebed417c517a', 1451, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-05 15:20:11.413+00');
+INSERT INTO public.download_tokens VALUES ('a8dbc191-c823-4c98-9d59-da0e06d0496b', 1459, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-05 15:20:11.396+00');
+INSERT INTO public.download_tokens VALUES ('7dc36ef0-3c52-462d-91a0-7c4aa58256e7', 1461, 'test-fl-cl219-volusia-signed-e2e', '2026-08-05 15:15:11.423+00');
+INSERT INTO public.download_tokens VALUES ('7afaa6ca-b464-41fb-a9d5-2c0073a72971', 1469, 'test-az-proof-of-service-signed-e2e', '2026-08-05 21:15:10.68+00');
+INSERT INTO public.download_tokens VALUES ('3416efe4-63d3-43be-99c5-5b8aec76141f', 1478, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-05 21:20:10.683+00');
+INSERT INTO public.download_tokens VALUES ('9e00dfe8-0ab8-4003-8a89-655255d357ab', 1479, 'test-fl-orange-sigcheck-e2e', '2026-08-05 21:20:10.685+00');
+INSERT INTO public.download_tokens VALUES ('e268783b-4414-4166-ba01-5b5e52a8c2e3', 1480, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-05 21:15:10.685+00');
+INSERT INTO public.download_tokens VALUES ('c9324dc2-ec61-42eb-8072-7c9dad2d1f57', 1470, 'test-fl-soc-7334-signed-e2e', '2026-08-05 21:20:10.686+00');
+INSERT INTO public.download_tokens VALUES ('2ddc925b-b680-4fda-9ee7-569e0d578a6d', 1471, 'test-wa-service-sigcheck-e2e', '2026-08-05 21:20:10.684+00');
+INSERT INTO public.download_tokens VALUES ('82a30697-d99e-410e-9d26-968f56031489', 1466, 'test-fl-orange-summons-sigcheck-e2e', '2026-08-05 21:20:10.684+00');
+INSERT INTO public.download_tokens VALUES ('b06ca249-a8b2-43e1-b889-c74860740e23', 1474, 'test-fl-soc-7335-signed-e2e', '2026-08-05 21:20:10.687+00');
+INSERT INTO public.download_tokens VALUES ('d869644e-a77d-4a28-976b-cb3b4815687b', 1476, 'test-az-complaint-signed-e2e', '2026-08-05 21:15:10.689+00');
+INSERT INTO public.download_tokens VALUES ('bc077ee4-d0f6-4883-aef2-f655b6baee63', 1468, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-08-05 21:20:10.688+00');
+INSERT INTO public.download_tokens VALUES ('ff508597-a1ba-4ee1-acce-0e4690f2ffc5', 1475, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-05 21:20:10.688+00');
+INSERT INTO public.download_tokens VALUES ('1c27a509-322a-4394-8ac9-22afcbc7fc40', 1473, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-05 21:20:10.692+00');
+INSERT INTO public.download_tokens VALUES ('fb133d89-a201-4be2-bcc5-aa49ba70c87b', 1477, 'test-fl-broward-sigcheck-e2e', '2026-08-05 21:20:10.693+00');
+INSERT INTO public.download_tokens VALUES ('f8192175-0d07-4470-a85d-1f2d103ea601', 1472, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-05 21:20:10.694+00');
+INSERT INTO public.download_tokens VALUES ('e148511e-dcc6-46fb-8f45-b7433c8dc7d0', 1465, 'test-fl-soc-7331-signed-e2e', '2026-08-05 21:20:10.694+00');
+INSERT INTO public.download_tokens VALUES ('a84b9077-97d4-42fb-a83a-ace1ad73d9ef', 1467, 'test-az-summons-sigcheck-e2e', '2026-08-05 21:20:10.695+00');
+INSERT INTO public.download_tokens VALUES ('83ad716f-f59c-4f2e-b5c8-7a2bb216d5b8', 1491, 'test-wa-notice-sigcheck-e2e', '2026-08-06 02:24:59.914+00');
+INSERT INTO public.download_tokens VALUES ('ae9a5cc0-e3d8-48ac-b59f-21deb8d81e16', 1490, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-06 02:24:59.914+00');
+INSERT INTO public.download_tokens VALUES ('17dbc96f-c734-4080-88f8-a03daa1254b7', 1487, 'test-fl-statement-of-claim-signed-e2e', '2026-08-06 02:19:59.929+00');
+INSERT INTO public.download_tokens VALUES ('aa70183d-208e-42d2-b205-63a2ff7a5d4f', 1497, 'test-va-dc-402-signed-e2e', '2026-08-06 02:19:59.93+00');
+INSERT INTO public.download_tokens VALUES ('449b218f-d6a0-423b-9a50-c89fcf6e5cf8', 1482, 'test-tx-petition-sigcheck-e2e', '2026-08-06 02:24:59.93+00');
+INSERT INTO public.download_tokens VALUES ('99a3c3e7-4342-4024-8d10-ea03b799dddf', 1495, 'test-fl-soc-7332-signed-e2e', '2026-08-06 02:24:59.93+00');
+INSERT INTO public.download_tokens VALUES ('ae08c41e-711b-4e5f-9b2a-06c8708f3a56', 1498, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-06 02:24:59.932+00');
+INSERT INTO public.download_tokens VALUES ('b7995a35-b040-45d5-8fec-3c0dfa378f9c', 1493, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-06 02:24:59.944+00');
+INSERT INTO public.download_tokens VALUES ('2c5fa805-25d8-47e0-8451-0357309306d9', 1489, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-06 02:24:59.944+00');
+INSERT INTO public.download_tokens VALUES ('d1236f21-9d8d-40ba-9df3-491b7b59d869', 1481, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-06 02:24:59.943+00');
+INSERT INTO public.download_tokens VALUES ('543446e6-dc78-40fa-b499-f2f62ceed2c5', 1483, 'test-fl-summons-sigcheck-e2e', '2026-08-06 02:24:59.946+00');
+INSERT INTO public.download_tokens VALUES ('b3bf293e-94b4-4d31-bf3b-d2eb797c4188', 1494, 'test-fl-clkct423-signed-e2e', '2026-08-06 02:19:59.946+00');
+INSERT INTO public.download_tokens VALUES ('27533751-28cd-484e-b2a6-3365281605b7', 1486, 'test-fl-soc-7335-signed-e2e', '2026-08-06 02:24:59.946+00');
+INSERT INTO public.download_tokens VALUES ('1d1eb6fb-7ada-4caf-82a3-b3c4c1669d5d', 1492, 'test-fl-soc-7334-signed-e2e', '2026-08-06 02:24:59.945+00');
+INSERT INTO public.download_tokens VALUES ('69c7e0bf-c462-483a-96fd-e0fb959328d6', 1484, 'test-nj-complaint-sigcheck-e2e', '2026-08-06 02:24:59.952+00');
+INSERT INTO public.download_tokens VALUES ('0946ac18-7d94-44a1-8e0a-bd448a8631c2', 1496, 'test-fl-soc-7333-signed-e2e', '2026-08-06 02:24:59.951+00');
+INSERT INTO public.download_tokens VALUES ('7fdc2562-d2ab-49d8-9469-93d5b3a4a3a7', 1485, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-06 02:24:59.95+00');
+INSERT INTO public.download_tokens VALUES ('a41a8f18-05a3-4a92-a6ed-359dcad362bf', 1488, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-06 02:24:59.951+00');
+INSERT INTO public.download_tokens VALUES ('72963ad8-0e31-43f5-870b-697dd1742a4d', 1507, 'test-az-complaint-signed-e2e', '2026-08-06 05:32:17.746+00');
+INSERT INTO public.download_tokens VALUES ('55d87709-39e4-481f-8c92-eac2b9ab27ef', 1509, 'test-wa-service-sigcheck-e2e', '2026-08-06 05:37:17.757+00');
+INSERT INTO public.download_tokens VALUES ('9b7eae25-b410-4f63-965e-86ff09c062c4', 1505, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-06 05:37:17.757+00');
+INSERT INTO public.download_tokens VALUES ('d48b43ef-63f6-4d8b-ab9c-2420685bad07', 1510, 'test-fl-soc-7330-signed-e2e', '2026-08-06 05:37:17.76+00');
+INSERT INTO public.download_tokens VALUES ('c109dc69-1204-4529-9e41-b4ceb984e8dc', 1504, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-06 05:37:17.764+00');
+INSERT INTO public.download_tokens VALUES ('7dc97432-fefa-4e21-8162-6c78f6568148', 1512, 'test-fl-soc-7331-signed-e2e', '2026-08-06 05:37:17.756+00');
+INSERT INTO public.download_tokens VALUES ('14594f35-96bf-4b4a-b243-989dafbe6c13', 1503, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-08-06 05:37:17.763+00');
+INSERT INTO public.download_tokens VALUES ('ab74a0ff-8eb3-4a55-ba5e-2f1db0ec44d5', 1511, 'test-nj-complaint-sigcheck-e2e', '2026-08-06 05:37:17.78+00');
+INSERT INTO public.download_tokens VALUES ('08c4fb21-e540-4c65-9039-92c93e218d9f', 1508, 'test-fl-statement-of-claim-signed-e2e', '2026-08-06 05:32:17.776+00');
+INSERT INTO public.download_tokens VALUES ('9d08b4e6-c4d2-4abb-aa24-2e86fbfdad74', 1501, 'test-fl-soc-7334-signed-e2e', '2026-08-06 05:37:17.788+00');
+INSERT INTO public.download_tokens VALUES ('ba6eb4d8-a7b6-496c-ae4a-b331a95129f2', 1502, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-06 05:37:17.79+00');
+INSERT INTO public.download_tokens VALUES ('74c6c8f6-549e-43f4-bcc1-d354afa5231b', 1506, 'test-fl-soc-7332-signed-e2e', '2026-08-06 05:37:17.778+00');
+INSERT INTO public.download_tokens VALUES ('22b5e66e-11ec-40a5-bddf-01e06cecb334', 1500, 'test-fl-clkct423-signed-e2e', '2026-08-06 05:32:17.789+00');
+INSERT INTO public.download_tokens VALUES ('06f28781-8c17-4ff6-a7af-eeaab7bf281b', 1499, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-06 05:37:17.773+00');
+INSERT INTO public.download_tokens VALUES ('7744f25f-e884-46bb-bde7-f10e41114e61', 1528, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-06 15:05:03.284+00');
+INSERT INTO public.download_tokens VALUES ('27096034-8f21-4278-887a-4e12fd4fd338', 1513, 'test-fl-orange-summons-sigcheck-e2e', '2026-08-06 15:05:03.285+00');
+INSERT INTO public.download_tokens VALUES ('b016fd32-5704-4dea-a635-7654db2a9962', 1524, 'test-fl-cl219-volusia-signed-e2e', '2026-08-06 15:00:03.284+00');
+INSERT INTO public.download_tokens VALUES ('bbbe3e74-d371-4116-8ae3-60fbece12d36', 1527, 'test-nj-complaint-sigcheck-e2e', '2026-08-06 15:05:03.284+00');
+INSERT INTO public.download_tokens VALUES ('cec067ac-20da-4a30-b80b-dbc12a0837c3', 1519, 'test-az-proof-of-service-signed-e2e', '2026-08-06 15:00:03.284+00');
+INSERT INTO public.download_tokens VALUES ('c3dc3d43-e7bd-40b9-b4f1-8f06c107f16c', 1522, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-06 15:05:03.288+00');
+INSERT INTO public.download_tokens VALUES ('7a776e56-a9ec-498a-b00c-f33a8b956d39', 1529, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-06 15:00:03.288+00');
+INSERT INTO public.download_tokens VALUES ('207c60c8-a6e7-4b41-a84a-249b503298ea', 1520, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-06 15:05:03.286+00');
+INSERT INTO public.download_tokens VALUES ('b2d9917a-a26b-429e-abf9-63e6e9823a6d', 1521, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-06 15:05:03.291+00');
+INSERT INTO public.download_tokens VALUES ('edf81d18-7361-44b4-b5d5-9b61578e0886', 1517, 'test-fl-clkct423-signed-e2e', '2026-08-06 15:00:03.287+00');
+INSERT INTO public.download_tokens VALUES ('97482e59-3767-4c14-9a03-61f3e9f820df', 1516, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-08-06 15:05:03.29+00');
+INSERT INTO public.download_tokens VALUES ('1c5d3c70-2fae-4081-8ed7-475363511ff4', 1515, 'test-fl-summons-sigcheck-e2e', '2026-08-06 15:05:03.288+00');
+INSERT INTO public.download_tokens VALUES ('aa70bd1c-b680-4d9f-81ff-29f22241fb33', 1514, 'test-wa-service-sigcheck-e2e', '2026-08-06 15:05:03.298+00');
+INSERT INTO public.download_tokens VALUES ('7c36ac90-717d-4215-a1da-26ebc30a7bf4', 1525, 'test-fl-soc-7332-signed-e2e', '2026-08-06 15:05:03.295+00');
+INSERT INTO public.download_tokens VALUES ('da36892e-4239-4061-92ab-7e61d95db216', 1518, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-06 15:05:03.282+00');
+INSERT INTO public.download_tokens VALUES ('921428e6-fbc9-41ba-b099-0d8f484e759d', 1523, 'test-fl-statement-of-claim-signed-e2e', '2026-08-06 15:00:03.295+00');
+INSERT INTO public.download_tokens VALUES ('03a20575-4d42-42c3-ab3b-59037cad8712', 1530, 'test-fl-clkct333-signed-e2e', '2026-08-06 15:00:03.293+00');
+INSERT INTO public.download_tokens VALUES ('236b106f-9de3-4efd-8f95-7993d8c2ad9d', 1526, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-06 15:05:03.299+00');
+INSERT INTO public.download_tokens VALUES ('9fe4c41e-8662-4c1d-ba48-4d38009af2c0', 1543, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-06 15:20:26.632+00');
+INSERT INTO public.download_tokens VALUES ('41c39d2b-fcba-400d-876d-c60a41a01853', 1535, 'test-fl-soc-7335-signed-e2e', '2026-08-06 15:20:26.635+00');
+INSERT INTO public.download_tokens VALUES ('b1f309ce-4fc6-4ae7-aac1-583ef7ecc17b', 1542, 'test-va-dc-409-sigcheck-e2e', '2026-08-06 15:20:26.636+00');
+INSERT INTO public.download_tokens VALUES ('76a9b24d-7c6d-4f4a-99be-2dbf06f83d19', 1537, 'test-fl-summons-sigcheck-e2e', '2026-08-06 15:20:26.638+00');
+INSERT INTO public.download_tokens VALUES ('7ac07846-5911-4465-9c32-cc75dd7e67b1', 1541, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-06 15:15:26.638+00');
+INSERT INTO public.download_tokens VALUES ('7958c6ac-4898-4fe1-b42b-06c03c9277e7', 1538, 'test-fl-orange-sigcheck-e2e', '2026-08-06 15:20:26.637+00');
+INSERT INTO public.download_tokens VALUES ('65823d62-2e9c-4882-9996-bb6bc77f2e61', 1546, 'test-fl-clkct333-signed-e2e', '2026-08-06 15:15:26.64+00');
+INSERT INTO public.download_tokens VALUES ('89b2ffbc-edd7-41ac-87ec-55583c6118d0', 1532, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-06 15:20:26.636+00');
+INSERT INTO public.download_tokens VALUES ('715d7dd9-ec4e-4b24-8da3-2b0fca9ccd9a', 1539, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-06 15:20:26.643+00');
+INSERT INTO public.download_tokens VALUES ('6fe9af17-ba21-4126-ac41-7b56b2af16af', 1544, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-06 15:20:26.644+00');
+INSERT INTO public.download_tokens VALUES ('9aa8bbfb-4cf4-40f0-b20d-3070d6dcefdf', 1533, 'test-fl-cl219-volusia-signed-e2e', '2026-08-06 15:15:26.636+00');
+INSERT INTO public.download_tokens VALUES ('a546c10b-8997-4a31-babe-7be118c38ce7', 1534, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-06 15:20:26.642+00');
+INSERT INTO public.download_tokens VALUES ('e200d51f-f302-48e1-a44b-6cf8dc4c1c30', 1545, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-06 15:20:26.642+00');
+INSERT INTO public.download_tokens VALUES ('3dba7c26-2b5f-4b3b-b463-e49d3046f97a', 1540, 'test-az-summons-sigcheck-e2e', '2026-08-06 15:20:26.647+00');
+INSERT INTO public.download_tokens VALUES ('edcf5bb4-a00e-4c01-8f7e-1384b13542f6', 1536, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-06 15:20:26.644+00');
+INSERT INTO public.download_tokens VALUES ('26cf9c58-872a-4f8a-812c-1209e9442131', 1531, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-06 15:20:26.647+00');
+INSERT INTO public.download_tokens VALUES ('7fc1d61b-b6e4-4197-a125-b3878d6ab39c', 1554, 'test-fl-soc-7335-signed-e2e', '2026-08-06 17:53:15.275+00');
+INSERT INTO public.download_tokens VALUES ('00df2a0e-4b07-4bd6-bcee-34d0bf68ea23', 1550, 'test-fl-statement-of-claim-signed-e2e', '2026-08-06 17:48:15.279+00');
+INSERT INTO public.download_tokens VALUES ('1ec18ed3-c7eb-49b6-a07a-718f4235412d', 1551, 'test-fl-clkct333-signed-e2e', '2026-08-06 17:48:15.279+00');
+INSERT INTO public.download_tokens VALUES ('a0091cee-ad5f-47f7-b9be-e9bb801da6b5', 1552, 'test-tx-petition-sigcheck-e2e', '2026-08-06 17:53:15.281+00');
+INSERT INTO public.download_tokens VALUES ('9bf8886c-2e66-4b80-a797-f2001d23dbb1', 1557, 'test-fl-clkct423-signed-e2e', '2026-08-06 17:48:15.279+00');
+INSERT INTO public.download_tokens VALUES ('2c70da10-069c-4e22-96b9-f97bb4985e28', 1548, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-06 17:48:15.28+00');
+INSERT INTO public.download_tokens VALUES ('30cc231d-be2a-4348-acd3-e29f46c976b1', 1547, 'test-va-dc-402-signed-e2e', '2026-08-06 17:48:15.283+00');
+INSERT INTO public.download_tokens VALUES ('7d460626-c4ec-4995-bbdc-671cb2758338', 1556, 'test-fl-broward-sigcheck-e2e', '2026-08-06 17:53:15.285+00');
+INSERT INTO public.download_tokens VALUES ('0d6c9fbf-df9d-4ff9-9c13-4f2ed93a5e59', 1553, 'test-az-summons-sigcheck-e2e', '2026-08-06 17:53:15.289+00');
+INSERT INTO public.download_tokens VALUES ('e489d14b-ce3a-435c-a7ec-a79619de8024', 1549, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-06 17:48:15.285+00');
+INSERT INTO public.download_tokens VALUES ('9ccd3519-9b26-4b80-9ac8-aa3328f4f018', 1555, 'test-az-proof-of-service-signed-e2e', '2026-08-06 17:48:15.288+00');
+INSERT INTO public.download_tokens VALUES ('984fca45-e590-4400-b84c-d85da6476b07', 1558, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-06 17:53:15.336+00');
+INSERT INTO public.download_tokens VALUES ('449b82de-fbd3-46c9-9e26-07c97f895d36', 1559, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-06 17:53:15.427+00');
+INSERT INTO public.download_tokens VALUES ('1e8c9e20-2ca1-4c70-b35b-1d723938ea6b', 1560, 'test-fl-soc-7336-signed-e2e', '2026-08-06 17:53:15.515+00');
+INSERT INTO public.download_tokens VALUES ('c11a39c7-edcd-42b0-887a-a06625293d69', 1561, 'test-fl-soc-7334-signed-e2e', '2026-08-06 17:53:16.197+00');
+INSERT INTO public.download_tokens VALUES ('30917708-bc35-4433-8cbd-73c770c53d88', 1575, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-07 02:09:56.851+00');
+INSERT INTO public.download_tokens VALUES ('c199f066-dfd1-4483-a00e-7998a1185b3b', 1567, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-07 02:09:56.853+00');
+INSERT INTO public.download_tokens VALUES ('a9897f27-144c-455f-baa0-3f42c5f2ba37', 1569, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-07 02:09:56.85+00');
+INSERT INTO public.download_tokens VALUES ('9aacc122-e966-4993-8540-e53ea174a97a', 1571, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-07 02:04:56.858+00');
+INSERT INTO public.download_tokens VALUES ('5a01cf9d-14fb-49ec-8743-f97245249841', 1565, 'test-fl-cl219-volusia-signed-e2e', '2026-08-07 02:04:56.86+00');
+INSERT INTO public.download_tokens VALUES ('165b0312-cb76-4f4d-959f-437c233266de', 1574, 'test-nj-complaint-sigcheck-e2e', '2026-08-07 02:09:56.86+00');
+INSERT INTO public.download_tokens VALUES ('7407368e-cca9-4a9b-a6fa-c81740e3e9c0', 1568, 'test-fl-clkct423-signed-e2e', '2026-08-07 02:04:56.864+00');
+INSERT INTO public.download_tokens VALUES ('8b5877a5-48a6-4efd-b803-60262d11864b', 1570, 'test-fl-soc-7333-signed-e2e', '2026-08-07 02:09:56.861+00');
+INSERT INTO public.download_tokens VALUES ('b74d6b56-309c-4b2d-a5be-e5d33097572c', 1566, 'test-va-dc-402-signed-e2e', '2026-08-07 02:04:56.864+00');
+INSERT INTO public.download_tokens VALUES ('323675bd-bbb1-4890-b438-896dd288a025', 1563, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-07 02:09:56.865+00');
+INSERT INTO public.download_tokens VALUES ('df364509-9727-46cf-85c2-391a5c864477', 1562, 'test-fl-soc-7331-signed-e2e', '2026-08-07 02:09:56.867+00');
+INSERT INTO public.download_tokens VALUES ('70cf45f9-736a-4009-9736-a440a9346db7', 1573, 'test-fl-broward-sigcheck-e2e', '2026-08-07 02:09:56.864+00');
+INSERT INTO public.download_tokens VALUES ('ef5b212f-1d28-44a7-ab76-3f3ab8789864', 1572, 'test-fl-soc-7337-signed-e2e', '2026-08-07 02:09:56.867+00');
+INSERT INTO public.download_tokens VALUES ('b580f334-fc50-4c81-b4f2-f2d862d6ab7b', 1564, 'test-az-proof-of-service-signed-e2e', '2026-08-07 02:04:56.861+00');
+INSERT INTO public.download_tokens VALUES ('6f03bcb4-c3a1-4729-abb2-ab1567ac094d', 1580, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-07 05:10:29.405+00');
+INSERT INTO public.download_tokens VALUES ('59703cd5-0706-452a-afdf-19c2d4a53ece', 1578, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-07 05:10:29.411+00');
+INSERT INTO public.download_tokens VALUES ('4ab1e8c1-d9b5-4b36-b56e-23b0bdb5ea6b', 1577, 'test-fl-cl219-volusia-signed-e2e', '2026-08-07 05:05:29.405+00');
+INSERT INTO public.download_tokens VALUES ('852bb928-160d-4cdf-9e4c-1d560d2e6845', 1583, 'test-fl-broward-sigcheck-e2e', '2026-08-07 05:10:29.407+00');
+INSERT INTO public.download_tokens VALUES ('89a47ddb-cbf9-400e-9944-275167e79091', 1592, 'test-fl-soc-7337-signed-e2e', '2026-08-07 05:10:29.415+00');
+INSERT INTO public.download_tokens VALUES ('ed82568a-c937-4b18-8c60-e602d17922cd', 1585, 'test-fl-clkct333-signed-e2e', '2026-08-07 05:05:29.407+00');
+INSERT INTO public.download_tokens VALUES ('6e50fa89-3bda-4ade-beb7-fdaae3a35b5e', 1593, 'test-fl-soc-7331-signed-e2e', '2026-08-07 05:10:29.416+00');
+INSERT INTO public.download_tokens VALUES ('f00b6087-f98a-4a71-87e8-48de335aad13', 1582, 'test-va-dc-409-sigcheck-e2e', '2026-08-07 05:10:29.416+00');
+INSERT INTO public.download_tokens VALUES ('8f9acc9d-33d6-47bc-84a7-adcc0b8c0df7', 1591, 'test-fl-soc-7333-signed-e2e', '2026-08-07 05:10:29.417+00');
+INSERT INTO public.download_tokens VALUES ('f36eb43d-e9f8-4a2f-802e-d81733f57e8e', 1589, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-07 05:10:29.408+00');
+INSERT INTO public.download_tokens VALUES ('26b00761-4671-4f10-9f8d-2ad3182eb913', 1584, 'test-fl-orange-summons-sigcheck-e2e', '2026-08-07 05:10:29.41+00');
+INSERT INTO public.download_tokens VALUES ('8e4ddace-2e58-43dd-bb42-d52cc577f079', 1576, 'test-fl-soc-7334-signed-e2e', '2026-08-07 05:10:29.411+00');
+INSERT INTO public.download_tokens VALUES ('04a9e3bd-1d1f-4bdd-89e9-aa951d3cbc41', 1579, 'test-az-summons-sigcheck-e2e', '2026-08-07 05:10:29.412+00');
+INSERT INTO public.download_tokens VALUES ('8e6d0e88-f934-4d08-98e9-b457771d32a7', 1590, 'test-fl-statement-of-claim-signed-e2e', '2026-08-07 05:05:29.419+00');
+INSERT INTO public.download_tokens VALUES ('38215f4f-c3df-459a-ad59-e79d441e7f85', 1587, 'test-fl-soc-7335-signed-e2e', '2026-08-07 05:10:29.417+00');
+INSERT INTO public.download_tokens VALUES ('96eebfe1-1a1d-4628-8e16-eec144872420', 1586, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-07 05:10:29.418+00');
+INSERT INTO public.download_tokens VALUES ('10bd47b4-961a-4cd5-a698-a6227c916bb9', 1581, 'test-wa-notice-sigcheck-e2e', '2026-08-07 05:10:29.418+00');
+INSERT INTO public.download_tokens VALUES ('32d007cf-069b-49b5-9e3e-10b2c372d989', 1588, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-07 05:10:29.421+00');
+INSERT INTO public.download_tokens VALUES ('b32cc69b-58c6-43c8-b915-7bffe5b72c67', 1599, 'test-va-dc-409-sigcheck-e2e', '2026-08-07 22:48:13.868+00');
+INSERT INTO public.download_tokens VALUES ('7ff9660b-1316-46e6-b5f9-1d4da4805711', 1604, 'test-fl-clkct333-signed-e2e', '2026-08-07 22:43:13.871+00');
+INSERT INTO public.download_tokens VALUES ('0df7b2a0-387a-403f-a052-d4df9e5b8b29', 1596, 'test-fl-soc-7336-signed-e2e', '2026-08-07 22:48:13.871+00');
+INSERT INTO public.download_tokens VALUES ('fd65e78b-26f9-4aff-a6b4-3902847a3bb2', 1602, 'test-fl-clkct423-signed-e2e', '2026-08-07 22:43:13.872+00');
+INSERT INTO public.download_tokens VALUES ('97d6a6b1-ffec-4aa6-80b1-76f4a2ea92c0', 1606, 'test-nj-complaint-sigcheck-e2e', '2026-08-07 22:48:13.875+00');
+INSERT INTO public.download_tokens VALUES ('478f40e4-9caa-49c8-aa29-ef9839722e6d', 1594, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-07 22:48:13.876+00');
+INSERT INTO public.download_tokens VALUES ('140d7d53-ce2a-4c67-acd8-93ae409bc3ef', 1595, 'test-wa-notice-sigcheck-e2e', '2026-08-07 22:48:13.876+00');
+INSERT INTO public.download_tokens VALUES ('cb3de177-d42e-4f17-a432-41780bc3e432', 1601, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-07 22:48:13.878+00');
+INSERT INTO public.download_tokens VALUES ('38291369-3aad-4d37-a25c-f0748198d2c8', 1598, 'test-az-complaint-signed-e2e', '2026-08-07 22:43:13.879+00');
+INSERT INTO public.download_tokens VALUES ('79aa2aff-c384-406b-b974-ba89330f0391', 1600, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-07 22:43:13.881+00');
+INSERT INTO public.download_tokens VALUES ('45a1be4c-df75-47f1-911e-ae224fbd1d74', 1603, 'test-fl-orange-sigcheck-e2e', '2026-08-07 22:48:13.887+00');
+INSERT INTO public.download_tokens VALUES ('acb7ee82-a9d9-4398-980a-50526d16a579', 1605, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-07 22:48:13.881+00');
+INSERT INTO public.download_tokens VALUES ('1e357644-4cd9-403f-a296-977772bd481b', 1597, 'test-az-proof-of-service-signed-e2e', '2026-08-07 22:43:13.871+00');
+INSERT INTO public.download_tokens VALUES ('4eb68d3c-9013-40c4-bc09-342b985f50a4', 1623, 'test-fl-cl219-volusia-signed-e2e', '2026-08-08 17:37:48.631+00');
+INSERT INTO public.download_tokens VALUES ('68310e4e-2ba5-466e-9965-d8b5de34e52b', 1616, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-08 17:42:48.639+00');
+INSERT INTO public.download_tokens VALUES ('254d4179-31c0-4f38-90fe-a11decee06f7', 1610, 'test-fl-soc-7332-signed-e2e', '2026-08-08 17:42:48.632+00');
+INSERT INTO public.download_tokens VALUES ('cc1c23e6-dae9-4c01-b582-6eec1a9c5f15', 1608, 'test-fl-soc-7330-signed-e2e', '2026-08-08 17:42:48.632+00');
+INSERT INTO public.download_tokens VALUES ('91381a7c-ea5a-41a6-b4a3-2d063d84f193', 1619, 'test-tx-petition-sigcheck-e2e', '2026-08-08 17:42:48.639+00');
+INSERT INTO public.download_tokens VALUES ('a2523ba8-9f46-40d7-89b9-9e3ab02fee1c', 1607, 'test-az-complaint-signed-e2e', '2026-08-08 17:37:48.64+00');
+INSERT INTO public.download_tokens VALUES ('2976e08f-63e8-4ab4-ab94-40de629e970e', 1622, 'test-tx-citation-sigcheck-e2e', '2026-08-08 17:42:48.64+00');
+INSERT INTO public.download_tokens VALUES ('8d1963aa-4c95-4df7-ac3b-7b78889c6b16', 1614, 'test-fl-statement-of-claim-signed-e2e', '2026-08-08 17:37:48.64+00');
+INSERT INTO public.download_tokens VALUES ('d007afef-5afb-497e-a88c-e78086e15ddb', 1624, 'test-az-proof-of-service-signed-e2e', '2026-08-08 17:37:48.64+00');
+INSERT INTO public.download_tokens VALUES ('d6837c1f-068c-4ac9-9cdf-98ed9319c1bd', 1609, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-08 17:42:48.641+00');
+INSERT INTO public.download_tokens VALUES ('193f1b5e-e70d-4b57-be2b-f83039c7be18', 1613, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-08 17:42:48.647+00');
+INSERT INTO public.download_tokens VALUES ('41407fa3-3350-4770-b53e-15b620e010ff', 1618, 'test-wa-service-sigcheck-e2e', '2026-08-08 17:42:48.649+00');
+INSERT INTO public.download_tokens VALUES ('fde21f20-1a30-4229-b62c-e778d604a1d0', 1612, 'test-fl-summons-sigcheck-e2e', '2026-08-08 17:42:48.649+00');
+INSERT INTO public.download_tokens VALUES ('9fa669d3-cfd5-48b8-a39d-7558069c5632', 1621, 'test-az-summons-sigcheck-e2e', '2026-08-08 17:42:48.649+00');
+INSERT INTO public.download_tokens VALUES ('6ad59067-6da4-4a1f-b0c4-916da96102db', 1620, 'test-fl-soc-7333-signed-e2e', '2026-08-08 17:42:48.649+00');
+INSERT INTO public.download_tokens VALUES ('a42145e1-73d0-4281-8cdd-af234d8dadd1', 1617, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-08 17:42:48.646+00');
+INSERT INTO public.download_tokens VALUES ('3dee8ee0-eed1-452c-b99a-2b55bf37c486', 1615, 'test-fl-orange-sigcheck-e2e', '2026-08-08 17:42:48.652+00');
+INSERT INTO public.download_tokens VALUES ('3711c804-04bb-4a46-a56c-9c691ce5c80f', 1611, 'test-nj-complaint-sigcheck-e2e', '2026-08-08 17:42:48.654+00');
+INSERT INTO public.download_tokens VALUES ('11d93405-004c-4b6a-bd36-4b80462a50db', 1638, 'test-fl-statement-of-claim-signed-e2e', '2026-08-09 20:20:11.332+00');
+INSERT INTO public.download_tokens VALUES ('37a78e8c-9bf7-4aa4-b6b9-d407cda721bf', 1630, 'test-va-dc-409-sigcheck-e2e', '2026-08-09 20:25:11.335+00');
+INSERT INTO public.download_tokens VALUES ('64a952fa-e31d-4295-a58b-7f31d09b1bd5', 1626, 'test-fl-soc-7335-signed-e2e', '2026-08-09 20:25:11.338+00');
+INSERT INTO public.download_tokens VALUES ('45c5cc68-a07e-4bd1-8113-f926f006c226', 1634, 'test-il-summons-sigcheck-e2e', '2026-08-09 20:25:11.338+00');
+INSERT INTO public.download_tokens VALUES ('0b3e97d2-c24c-4e38-9bb1-5669596fc535', 1633, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-09 20:20:11.335+00');
+INSERT INTO public.download_tokens VALUES ('5afdf075-7928-42af-8f3d-8ed3e0fb6fd2', 1632, 'test-tx-petition-sigcheck-e2e', '2026-08-09 20:25:11.339+00');
+INSERT INTO public.download_tokens VALUES ('129d3079-02ba-4632-9766-9df2bb305e0d', 1631, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-09 20:25:11.336+00');
+INSERT INTO public.download_tokens VALUES ('9709d88d-9395-4450-92fc-282fddcc4e14', 1636, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-09 20:25:11.338+00');
+INSERT INTO public.download_tokens VALUES ('b6c38047-f556-44a6-b4b7-b527309ab3dc', 1629, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-09 20:25:11.338+00');
+INSERT INTO public.download_tokens VALUES ('b3525a8d-8bc2-4ba1-8ca7-cd645c4ff1ca', 1635, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-09 20:20:11.336+00');
+INSERT INTO public.download_tokens VALUES ('d661c611-c84e-45ad-94af-d2a5f07a3c30', 1627, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-09 20:25:11.335+00');
+INSERT INTO public.download_tokens VALUES ('962c9187-0b3e-444c-8c49-84281a114676', 1637, 'test-fl-summons-sigcheck-e2e', '2026-08-09 20:25:11.332+00');
+INSERT INTO public.download_tokens VALUES ('52e6b677-efa6-4db6-b7d5-c4638f4dcc94', 1628, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-09 20:25:11.336+00');
+INSERT INTO public.download_tokens VALUES ('14b5766a-26e7-4195-acd0-7f48cb27f3d9', 1640, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-09 20:25:11.337+00');
+INSERT INTO public.download_tokens VALUES ('aae698d1-49cc-4add-a912-200e7031d43c', 1625, 'test-wa-service-sigcheck-e2e', '2026-08-09 20:25:11.339+00');
+INSERT INTO public.download_tokens VALUES ('c633b5a5-32e1-498a-8688-f2cd29d935e6', 1639, 'test-fl-orange-sigcheck-e2e', '2026-08-09 20:25:11.341+00');
+INSERT INTO public.download_tokens VALUES ('f8d2fa5e-f08d-4b1a-b22c-2009480e78ab', 1656, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-15 17:26:54.902+00');
+INSERT INTO public.download_tokens VALUES ('e5edc207-bf7f-4673-9581-3eff61b68783', 1646, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-15 17:26:54.931+00');
+INSERT INTO public.download_tokens VALUES ('59b5ec5e-bd5b-46c9-8e9c-abeb5a4cb927', 1648, 'test-az-summons-sigcheck-e2e', '2026-08-15 17:26:54.934+00');
+INSERT INTO public.download_tokens VALUES ('6a40c354-d239-4deb-bad1-454d390abe2b', 1642, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-15 17:21:54.939+00');
+INSERT INTO public.download_tokens VALUES ('ec33403e-d463-4bd1-b16c-26a4d3b8cb59', 1650, 'test-va-dc-402-signed-e2e', '2026-08-15 17:21:54.94+00');
+INSERT INTO public.download_tokens VALUES ('e83adc89-0be7-48ce-9f0c-8718bc479fd5', 1641, 'test-fl-soc-7332-signed-e2e', '2026-08-15 17:26:54.931+00');
+INSERT INTO public.download_tokens VALUES ('f1d593bb-a230-465b-8654-6f12a1d2b7d1', 1651, 'test-va-dc-409-sigcheck-e2e', '2026-08-15 17:26:54.942+00');
+INSERT INTO public.download_tokens VALUES ('89e4786d-7e27-4fe1-9009-1498558305ff', 1649, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-15 17:26:54.931+00');
+INSERT INTO public.download_tokens VALUES ('966be3da-ec35-4b1e-94d0-9cbb6575595e', 1652, 'test-fl-soc-7334-signed-e2e', '2026-08-15 17:26:54.877+00');
+INSERT INTO public.download_tokens VALUES ('6141ed38-5466-4ad3-9f4d-c002c63f74c3', 1643, 'test-fl-cl219-volusia-signed-e2e', '2026-08-15 17:21:54.947+00');
+INSERT INTO public.download_tokens VALUES ('c9b24e8c-dda5-4562-a6e7-63849f894d98', 1654, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-08-15 17:26:54.946+00');
+INSERT INTO public.download_tokens VALUES ('8afb43b3-ba65-4089-8c84-d2fea5da141e', 1644, 'test-az-complaint-signed-e2e', '2026-08-15 17:21:54.945+00');
+INSERT INTO public.download_tokens VALUES ('3a463dfb-27d3-48c4-8ec2-7f4fbd5e7651', 1653, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-15 17:26:54.943+00');
+INSERT INTO public.download_tokens VALUES ('5e9a101d-7920-401f-843d-2262f614c952', 1645, 'test-fl-clkct333-signed-e2e', '2026-08-15 17:21:54.943+00');
+INSERT INTO public.download_tokens VALUES ('891f2164-1658-4c57-abda-598a75403283', 1657, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-15 17:26:54.938+00');
+INSERT INTO public.download_tokens VALUES ('5c917641-562d-4001-a4eb-41c03dfd0d24', 1655, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-15 17:26:54.951+00');
+INSERT INTO public.download_tokens VALUES ('7cb67c48-f046-49ce-a739-d5c00034d46a', 1647, 'test-fl-soc-7330-signed-e2e', '2026-08-15 17:26:54.953+00');
+INSERT INTO public.download_tokens VALUES ('ac173d41-86b5-423c-a32d-d07d4e4fd335', 1659, 'test-fl-statement-of-claim-signed-e2e', '2026-08-15 21:17:41.393+00');
+INSERT INTO public.download_tokens VALUES ('c8d0cc94-8b97-4e4c-9b9d-be5922560b0e', 1671, 'test-fl-clkct423-signed-e2e', '2026-08-15 21:17:41.391+00');
+INSERT INTO public.download_tokens VALUES ('9adf6813-5e2a-437e-8f56-5bb2495130f4', 1664, 'test-fl-clkct333-signed-e2e', '2026-08-15 21:17:41.397+00');
+INSERT INTO public.download_tokens VALUES ('d75ef90f-74d0-4a92-bb92-20f98d6c298c', 1667, 'test-fl-soc-7335-signed-e2e', '2026-08-15 21:22:41.397+00');
+INSERT INTO public.download_tokens VALUES ('264b11c3-d5d6-4550-9d5d-2bbb5df75e35', 1662, 'test-fl-soc-7337-signed-e2e', '2026-08-15 21:22:41.399+00');
+INSERT INTO public.download_tokens VALUES ('5ef93218-36ed-4ed4-a0a9-e6fefd98917a', 1658, 'test-fl-soc-7332-signed-e2e', '2026-08-15 21:22:41.4+00');
+INSERT INTO public.download_tokens VALUES ('0e3bf1b7-397b-4472-9133-d4bcc8158174', 1661, 'test-fl-soc-7330-signed-e2e', '2026-08-15 21:22:41.4+00');
+INSERT INTO public.download_tokens VALUES ('0780cb0a-8f3d-4dd8-9e1c-67489b480ddb', 1665, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-15 21:22:41.399+00');
+INSERT INTO public.download_tokens VALUES ('90adc10c-e52f-423f-aebc-54a5144a7264', 1663, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-15 21:22:41.401+00');
+INSERT INTO public.download_tokens VALUES ('58ab829b-1224-4260-828b-a3559e85ebdb', 1668, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-15 21:22:41.404+00');
+INSERT INTO public.download_tokens VALUES ('0f4f9382-334d-4c71-b9de-3bf545fda6a8', 1660, 'test-tx-petition-sigcheck-e2e', '2026-08-15 21:22:41.406+00');
+INSERT INTO public.download_tokens VALUES ('96ab3d60-d7c0-4042-849f-84a7b957e2f4', 1666, 'test-fl-orange-summons-sigcheck-e2e', '2026-08-15 21:22:41.41+00');
+INSERT INTO public.download_tokens VALUES ('6cf2f864-d5fd-414a-9e61-75e96dfe1cb0', 1670, 'test-tx-citation-sigcheck-e2e', '2026-08-15 21:22:41.412+00');
+INSERT INTO public.download_tokens VALUES ('7ec022d3-51da-4daf-8537-1de46306809c', 1669, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-15 21:22:41.413+00');
+INSERT INTO public.download_tokens VALUES ('0beea976-cb11-4e4d-af19-8fc7e884b67d', 1681, 'test-fl-cl219-volusia-signed-e2e', '2026-08-15 22:09:28.917+00');
+INSERT INTO public.download_tokens VALUES ('7c2a6d56-c44c-4048-9f8f-0861b57b9736', 1676, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-15 22:14:28.919+00');
+INSERT INTO public.download_tokens VALUES ('5edaf4ce-cae3-47d9-aa7f-91d9010195ad', 1687, 'test-tx-citation-sigcheck-e2e', '2026-08-15 22:14:28.922+00');
+INSERT INTO public.download_tokens VALUES ('f98dabcc-0a9a-42d1-a6e4-86b4199d6156', 1673, 'test-fl-soc-7331-signed-e2e', '2026-08-15 22:14:28.924+00');
+INSERT INTO public.download_tokens VALUES ('aeed73d5-de19-449c-9358-1f1d6388debc', 1682, 'test-az-proof-of-service-signed-e2e', '2026-08-15 22:09:28.939+00');
+INSERT INTO public.download_tokens VALUES ('c4dc8291-c052-48ab-9e57-b0a6513eda7c', 1675, 'test-fl-statement-of-claim-signed-e2e', '2026-08-15 22:09:28.942+00');
+INSERT INTO public.download_tokens VALUES ('6caec950-104e-44f6-bdb0-f3cbcabed70f', 1672, 'test-va-dc-402-signed-e2e', '2026-08-15 22:09:28.943+00');
+INSERT INTO public.download_tokens VALUES ('10e5abf2-c2a4-4aec-9e9f-863d19b65899', 1678, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-15 22:14:28.943+00');
+INSERT INTO public.download_tokens VALUES ('81cb4bd1-c9eb-49be-875f-10ba336b67dc', 1679, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-15 22:14:28.946+00');
+INSERT INTO public.download_tokens VALUES ('b13dff96-e097-4925-9e58-765d016f3979', 1688, 'test-fl-soc-7330-signed-e2e', '2026-08-15 22:14:28.947+00');
+INSERT INTO public.download_tokens VALUES ('1985a5fb-8aa1-4d42-9b25-91578fa59451', 1674, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-15 22:09:28.951+00');
+INSERT INTO public.download_tokens VALUES ('d57a7707-f516-4e78-8ad5-b6dc466d6a01', 1680, 'test-fl-soc-7333-signed-e2e', '2026-08-15 22:14:28.953+00');
+INSERT INTO public.download_tokens VALUES ('db318169-7616-4fc2-b4c6-7ef143d01fba', 1684, 'test-az-summons-sigcheck-e2e', '2026-08-15 22:14:28.952+00');
+INSERT INTO public.download_tokens VALUES ('b0912c0a-2916-4f72-b503-2917f8d5d820', 1683, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-15 22:14:28.943+00');
+INSERT INTO public.download_tokens VALUES ('462df94b-e909-4c7d-989d-6ae13ed114c5', 1690, 'test-tx-petition-sigcheck-e2e', '2026-08-15 22:14:28.951+00');
+INSERT INTO public.download_tokens VALUES ('4dd695ed-f6d4-477c-afdd-cdd06988bd25', 1685, 'test-wa-notice-sigcheck-e2e', '2026-08-15 22:14:28.944+00');
+INSERT INTO public.download_tokens VALUES ('ea0cd2a4-3818-43b8-a64e-e6f55930749e', 1686, 'test-va-dc-409-sigcheck-e2e', '2026-08-15 22:14:28.956+00');
+INSERT INTO public.download_tokens VALUES ('f77a48bd-5f04-4b1d-96e2-e100e982298d', 1677, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-15 22:14:28.981+00');
+INSERT INTO public.download_tokens VALUES ('453dc5e9-e362-45a4-8e72-0c5da9982b4e', 1689, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-15 22:14:28.99+00');
+INSERT INTO public.download_tokens VALUES ('93d5e5cc-8bf8-4797-af2a-829b14f0bd7e', 1702, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-15 22:55:45.254+00');
+INSERT INTO public.download_tokens VALUES ('659cc445-efc9-4cf9-90ed-51252ec9ac41', 1699, 'test-az-proof-of-service-signed-e2e', '2026-08-15 22:50:45.262+00');
+INSERT INTO public.download_tokens VALUES ('6d208fba-2cc7-4638-9df2-ed3f48561e84', 1694, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-15 22:55:45.263+00');
+INSERT INTO public.download_tokens VALUES ('1fcf569a-333e-4098-a95d-151c5b068c68', 1698, 'test-fl-orange-sigcheck-e2e', '2026-08-15 22:55:45.264+00');
+INSERT INTO public.download_tokens VALUES ('7488f445-beb8-408e-95f3-f449b06b0da3', 1692, 'test-va-dc-409-sigcheck-e2e', '2026-08-15 22:55:45.262+00');
+INSERT INTO public.download_tokens VALUES ('d18018e0-3fc3-4ef9-aef1-276bb300a03f', 1693, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-15 22:50:45.266+00');
+INSERT INTO public.download_tokens VALUES ('253e2ce6-5063-4a65-9373-7a17959ced8c', 1696, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-15 22:50:45.267+00');
+INSERT INTO public.download_tokens VALUES ('9c8f68e5-9083-4f58-8480-d0e0123188b8', 1700, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-15 22:55:45.28+00');
+INSERT INTO public.download_tokens VALUES ('bb0a3aef-560e-41fc-91b6-1dfc0ae020dd', 1701, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-15 22:55:45.27+00');
+INSERT INTO public.download_tokens VALUES ('859adff0-0fc6-449e-b3cb-24f122eaede8', 1691, 'test-az-complaint-signed-e2e', '2026-08-15 22:50:45.29+00');
+INSERT INTO public.download_tokens VALUES ('6cd0d253-cb63-4e58-b070-75accc0e3dcf', 1697, 'test-fl-cl219-volusia-signed-e2e', '2026-08-15 22:50:45.275+00');
+INSERT INTO public.download_tokens VALUES ('a7b62b5d-2b49-44b7-a0bb-b921b41051e8', 1695, 'test-az-summons-sigcheck-e2e', '2026-08-15 22:55:45.306+00');
+INSERT INTO public.download_tokens VALUES ('e70bafc7-aa18-423c-ac1f-e36a63db77a5', 1703, 'test-wa-service-sigcheck-e2e', '2026-08-15 22:55:45.407+00');
+INSERT INTO public.download_tokens VALUES ('49bdcd68-fcaa-48bd-be4f-52d6eafd4d7f', 1704, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-15 22:55:45.525+00');
+INSERT INTO public.download_tokens VALUES ('e8678cf4-b002-4135-8814-bda9d1d4a8b7', 1705, 'test-fl-soc-7336-signed-e2e', '2026-08-15 22:55:46.047+00');
+INSERT INTO public.download_tokens VALUES ('e90b53c3-9cf0-451c-a59b-1932b243bcc2', 1716, 'test-fl-summons-sigcheck-e2e', '2026-08-16 01:42:26.806+00');
+INSERT INTO public.download_tokens VALUES ('9d0bcae6-9570-44f5-923c-75c1abb3acb3', 1709, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-16 01:42:26.806+00');
+INSERT INTO public.download_tokens VALUES ('675a24c1-92f4-4c9e-bcbc-593818f4970f', 1715, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-16 01:42:26.81+00');
+INSERT INTO public.download_tokens VALUES ('dcf3a5a2-f6ec-459e-b46d-f112f348f9d5', 1719, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-16 01:42:26.808+00');
+INSERT INTO public.download_tokens VALUES ('b7155d7f-3122-49be-b2cf-e22f8faf4796', 1708, 'test-va-dc-402-signed-e2e', '2026-08-16 01:37:26.806+00');
+INSERT INTO public.download_tokens VALUES ('0dcc0f01-4712-4707-b530-17df115057ca', 1711, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-16 01:42:26.808+00');
+INSERT INTO public.download_tokens VALUES ('1136a714-81de-4eea-89d1-95ddb48d79f9', 1717, 'test-fl-cl219-volusia-signed-e2e', '2026-08-16 01:37:26.809+00');
+INSERT INTO public.download_tokens VALUES ('c6a99e77-da9f-46c5-9845-09eb016aad0d', 1712, 'test-fl-clkct333-signed-e2e', '2026-08-16 01:37:26.806+00');
+INSERT INTO public.download_tokens VALUES ('32dd8408-64a6-4cba-b250-4a5f672f376d', 1713, 'test-fl-soc-7336-signed-e2e', '2026-08-16 01:42:26.808+00');
+INSERT INTO public.download_tokens VALUES ('a533fb99-5a0c-4d38-b828-a111e950e17b', 1718, 'test-tx-petition-sigcheck-e2e', '2026-08-16 01:42:26.811+00');
+INSERT INTO public.download_tokens VALUES ('aad244c2-2f59-4168-93d2-8040535d320c', 1710, 'test-va-dc-409-sigcheck-e2e', '2026-08-16 01:42:26.813+00');
+INSERT INTO public.download_tokens VALUES ('b7e0423d-c90a-4352-a0b0-495e0ed1817d', 1714, 'test-fl-clkct423-signed-e2e', '2026-08-16 01:37:26.809+00');
+INSERT INTO public.download_tokens VALUES ('37b0a0b1-7d5b-428b-b57f-867da277529a', 1707, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-16 01:42:26.814+00');
+INSERT INTO public.download_tokens VALUES ('cc43c868-266a-4f03-9b31-9cbd31816760', 1706, 'test-tx-citation-sigcheck-e2e', '2026-08-16 01:42:26.818+00');
+INSERT INTO public.download_tokens VALUES ('0d7c76f9-42ef-4ec5-b863-cd826a9ff6c4', 1729, 'test-tx-petition-sigcheck-e2e', '2026-08-16 15:39:58.718+00');
+INSERT INTO public.download_tokens VALUES ('ee2a040a-34be-405b-974f-694293e582ff', 1733, 'test-fl-cl219-volusia-signed-e2e', '2026-08-16 15:34:58.715+00');
+INSERT INTO public.download_tokens VALUES ('31be686c-6e4e-4922-a747-6c77414f3dd1', 1722, 'test-wa-service-sigcheck-e2e', '2026-08-16 15:39:58.718+00');
+INSERT INTO public.download_tokens VALUES ('69d44a35-ee39-4708-b3e2-5cc95bd464f4', 1721, 'test-fl-soc-7331-signed-e2e', '2026-08-16 15:39:58.713+00');
+INSERT INTO public.download_tokens VALUES ('be3921c0-b2ed-4913-a14b-8cfe809c9090', 1732, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-16 15:39:58.714+00');
+INSERT INTO public.download_tokens VALUES ('fdf708fe-583a-4a97-a6a5-d690994f9ba0', 1725, 'test-fl-orange-summons-sigcheck-e2e', '2026-08-16 15:39:58.714+00');
+INSERT INTO public.download_tokens VALUES ('b51283f8-ac62-4f51-82d9-23cc63cb6c37', 1734, 'test-fl-soc-7337-signed-e2e', '2026-08-16 15:39:58.711+00');
+INSERT INTO public.download_tokens VALUES ('43f3d4ba-d881-4f58-8ac9-bfc50e2ab23e', 1728, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-16 15:39:58.716+00');
+INSERT INTO public.download_tokens VALUES ('81806b43-55aa-4d33-8319-66d80b279b07', 1730, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-16 15:39:58.716+00');
+INSERT INTO public.download_tokens VALUES ('c163bc46-15e3-4a0e-b2ec-87750602ea0d', 1726, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-16 15:39:58.713+00');
+INSERT INTO public.download_tokens VALUES ('94aeb454-7066-459b-b0eb-7ad28f51db3b', 1723, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-16 15:39:58.712+00');
+INSERT INTO public.download_tokens VALUES ('d7b3c19d-496a-4967-be95-ba517a6b5de5', 1731, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-16 15:39:58.706+00');
+INSERT INTO public.download_tokens VALUES ('ac7f9727-7a7c-4446-94b4-d480d3c1e8ce', 1727, 'test-fl-soc-7334-signed-e2e', '2026-08-16 15:39:58.707+00');
+INSERT INTO public.download_tokens VALUES ('a7226fb3-24fe-47d3-9278-90183a5b01e2', 1735, 'test-fl-clkct333-signed-e2e', '2026-08-16 15:34:58.718+00');
+INSERT INTO public.download_tokens VALUES ('ff892faf-96d2-4ba7-84f5-6c80723c6942', 1724, 'test-fl-orange-sigcheck-e2e', '2026-08-16 15:39:58.722+00');
+INSERT INTO public.download_tokens VALUES ('bb3419f0-76bc-45fa-8381-a8e865773612', 1720, 'test-fl-soc-7333-signed-e2e', '2026-08-16 15:39:58.722+00');
+INSERT INTO public.download_tokens VALUES ('77f37b6a-b9ab-4a08-bb24-050ff2e9d780', 1741, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-16 23:14:25.598+00');
+INSERT INTO public.download_tokens VALUES ('9ae3d2eb-a7eb-49cf-8eae-ff392a609e89', 1737, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-16 23:09:25.596+00');
+INSERT INTO public.download_tokens VALUES ('1e18cbb1-7ace-45d0-92d6-c5e247a8197d', 1744, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-16 23:14:25.596+00');
+INSERT INTO public.download_tokens VALUES ('6bfa72b2-68be-4b2f-b995-64df90860c71', 1738, 'test-az-complaint-signed-e2e', '2026-08-16 23:09:25.596+00');
+INSERT INTO public.download_tokens VALUES ('e82dd6fa-5fe6-4761-9d99-fbe8e7de4e53', 1740, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-16 23:14:25.598+00');
+INSERT INTO public.download_tokens VALUES ('40bf490e-4772-4635-8c18-157e47243467', 1743, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-16 23:09:25.602+00');
+INSERT INTO public.download_tokens VALUES ('dbd93058-c430-41d8-b49c-5f63281b4244', 1736, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-16 23:14:25.605+00');
+INSERT INTO public.download_tokens VALUES ('e4fd6188-aefe-4e7c-bcb8-15b81cb57b48', 1739, 'test-fl-broward-sigcheck-e2e', '2026-08-16 23:14:25.604+00');
+INSERT INTO public.download_tokens VALUES ('3afb4433-3bb0-493b-b745-92c4d5051b32', 1742, 'test-il-summons-sigcheck-e2e', '2026-08-16 23:14:25.597+00');
+INSERT INTO public.download_tokens VALUES ('1ace366e-5105-4fb5-adbd-6ef17f109f2c', 1745, 'test-fl-summons-sigcheck-e2e', '2026-08-16 23:14:25.681+00');
+INSERT INTO public.download_tokens VALUES ('9186be7f-7105-4568-9ede-08311e7dd7d0', 1746, 'test-tx-citation-sigcheck-e2e', '2026-08-16 23:14:25.855+00');
+INSERT INTO public.download_tokens VALUES ('a9ed4cc5-178a-419d-a0bc-7e2af76c49a1', 1747, 'test-fl-soc-7337-signed-e2e', '2026-08-16 23:14:26.212+00');
+INSERT INTO public.download_tokens VALUES ('4fb35b7e-940c-4964-805f-cd1e7d0d0f96', 1757, 'test-fl-orange-sigcheck-e2e', '2026-08-17 00:39:35.074+00');
+INSERT INTO public.download_tokens VALUES ('1ded50e0-6b88-44af-b193-82a7adf988f1', 1755, 'test-il-summons-sigcheck-e2e', '2026-08-17 00:39:35.074+00');
+INSERT INTO public.download_tokens VALUES ('195875a9-b420-476f-8a26-8839a4212324', 1759, 'test-az-complaint-signed-e2e', '2026-08-17 00:34:35.094+00');
+INSERT INTO public.download_tokens VALUES ('84644d6c-b13b-4336-8a5a-21a27e8fe19e', 1751, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-17 00:39:35.092+00');
+INSERT INTO public.download_tokens VALUES ('8163d1d0-4be2-4d77-ab57-92e5c066c1ea', 1752, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-17 00:39:35.073+00');
+INSERT INTO public.download_tokens VALUES ('dfdbe4f4-3d80-4d1d-b1ee-3ceed7be91be', 1756, 'test-va-dc-402-signed-e2e', '2026-08-17 00:34:35.08+00');
+INSERT INTO public.download_tokens VALUES ('5dbf9dd7-c916-4076-bf32-92a15f55fff3', 1753, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-17 00:39:35.083+00');
+INSERT INTO public.download_tokens VALUES ('eed51f48-e9e3-43f1-907f-9459261ad0a4', 1754, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-17 00:39:35.093+00');
+INSERT INTO public.download_tokens VALUES ('334d70a1-031c-4499-9db5-4aec448e71ba', 1758, 'test-fl-cl219-volusia-signed-e2e', '2026-08-17 00:34:35.085+00');
+INSERT INTO public.download_tokens VALUES ('5ce8ad62-a134-4996-80ba-c2af4ba99811', 1761, 'test-fl-clkct423-signed-e2e', '2026-08-17 00:34:35.343+00');
+INSERT INTO public.download_tokens VALUES ('f13e7483-43c8-4714-81b5-44b1c202defa', 1760, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-17 00:34:35.347+00');
+INSERT INTO public.download_tokens VALUES ('d4ef90e4-ca09-4666-818c-94e49f74e5f5', 1762, 'test-az-proof-of-service-signed-e2e', '2026-08-17 00:34:35.669+00');
+INSERT INTO public.download_tokens VALUES ('26b3d774-f8b4-44bf-9856-33544a4af629', 1763, 'test-wa-notice-sigcheck-e2e', '2026-08-17 00:39:35.682+00');
+INSERT INTO public.download_tokens VALUES ('9394cf13-0982-43bc-b10c-0f1e4ec8fad9', 1764, 'test-va-dc-409-sigcheck-e2e', '2026-08-17 00:39:35.944+00');
+INSERT INTO public.download_tokens VALUES ('d05ced90-0005-483d-b077-9ab135995e58', 1765, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-17 00:39:36.005+00');
+INSERT INTO public.download_tokens VALUES ('ec1bb016-cc64-40d2-9f2e-0eac6c1aaff9', 1766, 'test-fl-soc-7333-signed-e2e', '2026-08-17 00:39:36.173+00');
+INSERT INTO public.download_tokens VALUES ('5f86c67a-bafb-4d08-aeb7-bda59547dce8', 1767, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-17 00:39:36.416+00');
+INSERT INTO public.download_tokens VALUES ('31e78370-cf6b-4879-8e4e-3e72c41fb550', 1777, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-17 03:46:09.771+00');
+INSERT INTO public.download_tokens VALUES ('d30b08ee-da3d-4ec2-9f9e-07b24de762f9', 1771, 'test-fl-summons-sigcheck-e2e', '2026-08-17 03:46:09.779+00');
+INSERT INTO public.download_tokens VALUES ('6a1dfc3a-7293-4d5b-9d7e-1874e7eb2c16', 1774, 'test-fl-clkct423-signed-e2e', '2026-08-17 03:41:09.777+00');
+INSERT INTO public.download_tokens VALUES ('c932cb3d-1771-47e7-b814-da9cd2cd4fdb', 1781, 'test-az-summons-sigcheck-e2e', '2026-08-17 03:46:09.778+00');
+INSERT INTO public.download_tokens VALUES ('25817146-2807-4048-bfb4-a0641094b426', 1780, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-17 03:46:09.776+00');
+INSERT INTO public.download_tokens VALUES ('effeaddd-2ba8-4b5c-8ca5-f6549320b923', 1775, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-17 03:46:09.78+00');
+INSERT INTO public.download_tokens VALUES ('dd031d74-f226-4cd6-95a1-25847106738d', 1773, 'test-wa-notice-sigcheck-e2e', '2026-08-17 03:46:09.779+00');
+INSERT INTO public.download_tokens VALUES ('6443d8c5-82cd-4dd7-b335-1e85d6c67eea', 1776, 'test-fl-clkct333-signed-e2e', '2026-08-17 03:41:09.787+00');
+INSERT INTO public.download_tokens VALUES ('e67cab54-ffb4-46d0-a3c4-3248d6cf0939', 1770, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-17 03:46:09.788+00');
+INSERT INTO public.download_tokens VALUES ('fd55aad6-74ce-43ce-8086-74e9ca9ea369', 1772, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-17 03:46:09.783+00');
+INSERT INTO public.download_tokens VALUES ('b1983247-425b-4038-9541-4d6295b0bc92', 1768, 'test-fl-soc-7331-signed-e2e', '2026-08-17 03:46:09.79+00');
+INSERT INTO public.download_tokens VALUES ('f94c8fd4-31fb-4af9-925f-96ae66a6acef', 1779, 'test-va-dc-402-signed-e2e', '2026-08-17 03:41:09.791+00');
+INSERT INTO public.download_tokens VALUES ('4ef7adbe-28e2-4992-acba-a0e90026877d', 1769, 'test-fl-cl219-volusia-signed-e2e', '2026-08-17 03:41:09.796+00');
+INSERT INTO public.download_tokens VALUES ('8637d186-7e5c-4291-b2d8-e8949df42d0a', 1778, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-17 03:46:09.801+00');
+INSERT INTO public.download_tokens VALUES ('083ddcef-18eb-4ca0-a8a1-1eaa204a9a0c', 1782, 'test-az-complaint-signed-e2e', '2026-08-17 03:41:09.895+00');
+INSERT INTO public.download_tokens VALUES ('c854e6e5-8a1a-44d9-b80a-aac86defd96a', 1783, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-17 03:46:10.087+00');
+INSERT INTO public.download_tokens VALUES ('30476ba0-2691-4cc6-b4a4-34707ac98b40', 1796, 'test-il-summons-sigcheck-e2e', '2026-08-17 14:13:02.952+00');
+INSERT INTO public.download_tokens VALUES ('82ccc33f-7e91-4768-9c93-fea81ec6009d', 1789, 'test-fl-broward-sigcheck-e2e', '2026-08-17 14:13:02.955+00');
+INSERT INTO public.download_tokens VALUES ('e9d78795-c709-4aff-8721-ef819ab0e8fc', 1794, 'test-fl-orange-summons-sigcheck-e2e', '2026-08-17 14:13:02.954+00');
+INSERT INTO public.download_tokens VALUES ('fa9af60e-9c4e-48db-bb2d-0cde279013f7', 1792, 'test-fl-soc-7334-signed-e2e', '2026-08-17 14:13:02.957+00');
+INSERT INTO public.download_tokens VALUES ('78e4e8b2-490e-41d7-bbef-cb56b9ffb846', 1793, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-17 14:13:02.957+00');
+INSERT INTO public.download_tokens VALUES ('f4d18e33-131c-407f-acb1-64a7f6649a5b', 1798, 'test-az-proof-of-service-signed-e2e', '2026-08-17 14:08:02.956+00');
+INSERT INTO public.download_tokens VALUES ('381602ab-4931-4a04-8be4-dc9c4fc6ae51', 1795, 'test-fl-soc-7330-signed-e2e', '2026-08-17 14:13:02.957+00');
+INSERT INTO public.download_tokens VALUES ('12b431a6-f113-4257-95ac-e2c4cc9bf610', 1785, 'test-fl-soc-7336-signed-e2e', '2026-08-17 14:13:02.963+00');
+INSERT INTO public.download_tokens VALUES ('8431f056-fc59-4cb5-8073-2efe9ce9b682', 1791, 'test-fl-orange-sigcheck-e2e', '2026-08-17 14:13:02.966+00');
+INSERT INTO public.download_tokens VALUES ('f732add6-88f7-4aa4-a100-a4bd3951d53a', 1786, 'test-fl-clkct333-signed-e2e', '2026-08-17 14:08:02.965+00');
+INSERT INTO public.download_tokens VALUES ('42e78ac2-716e-4e9c-8427-b2048a7ddd52', 1784, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-17 14:13:02.964+00');
+INSERT INTO public.download_tokens VALUES ('2a7c1837-0f49-4990-94e2-4a7009996490', 1788, 'test-az-complaint-signed-e2e', '2026-08-17 14:08:02.967+00');
+INSERT INTO public.download_tokens VALUES ('e99bc871-8c80-4739-b91f-7a01547c15f1', 1797, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-17 14:13:02.963+00');
+INSERT INTO public.download_tokens VALUES ('2e595dfc-8ce9-473f-af53-6e7c2728956d', 1790, 'test-va-dc-402-signed-e2e', '2026-08-17 14:08:02.975+00');
+INSERT INTO public.download_tokens VALUES ('8f8169c7-909c-42ca-9f52-ee47dc3908c4', 1787, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-17 14:13:02.975+00');
+INSERT INTO public.download_tokens VALUES ('d54dc833-a3c1-4a39-b2b8-4925364cf796', 1799, 'test-tx-fee-waiver-sigcheck-e2e', '2026-08-17 14:13:04.212+00');
+INSERT INTO public.download_tokens VALUES ('3a6bee40-5f25-48dd-a617-498a2331b518', 1836, 'test-wa-notice-sigcheck-e2e', '2026-08-18 01:31:36.523+00');
+INSERT INTO public.download_tokens VALUES ('77934f0a-2187-4cd1-afd2-6e95ff3d6366', 1845, 'test-az-complaint-signed-e2e', '2026-08-18 01:26:36.519+00');
+INSERT INTO public.download_tokens VALUES ('62d856b2-d8b6-4161-a748-35ece97624cd', 1832, 'test-il-fee-waiver-sigcheck-e2e', '2026-08-18 01:31:36.52+00');
+INSERT INTO public.download_tokens VALUES ('770a7cdf-429b-4846-abb9-84e2faf65899', 1837, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-18 01:31:36.522+00');
+INSERT INTO public.download_tokens VALUES ('5a804fb1-dfae-4400-9fc6-67fc58ef355b', 1840, 'test-fl-summons-sigcheck-e2e', '2026-08-18 01:31:36.517+00');
+INSERT INTO public.download_tokens VALUES ('164e429f-a2e4-429f-98c5-0afb426b485c', 1839, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-18 01:26:36.524+00');
+INSERT INTO public.download_tokens VALUES ('b29210a4-a6a6-4f4e-ace2-b0bdcdbeb923', 1843, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-18 01:31:36.52+00');
+INSERT INTO public.download_tokens VALUES ('d9295299-d737-42df-89e6-38f780edbaf0', 1846, 'test-va-dc-402-signed-e2e', '2026-08-18 01:26:36.524+00');
+INSERT INTO public.download_tokens VALUES ('16985c31-68da-49c0-ad51-0f19e57ec531', 1834, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-18 01:31:36.525+00');
+INSERT INTO public.download_tokens VALUES ('d76baa0b-797f-47c2-8c93-91874e502304', 1844, 'test-fl-statement-of-claim-signed-e2e', '2026-08-18 01:26:36.525+00');
+INSERT INTO public.download_tokens VALUES ('44a6d975-793c-4eb0-8e33-1e64367f56c7', 1838, 'test-tx-citation-sigcheck-e2e', '2026-08-18 01:31:36.519+00');
+INSERT INTO public.download_tokens VALUES ('d211669a-c086-4b21-bce1-deee4af44f21', 1842, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-18 01:31:36.522+00');
+INSERT INTO public.download_tokens VALUES ('da1181f2-5968-4575-9999-63938985fea4', 1833, 'test-az-summons-sigcheck-e2e', '2026-08-18 01:31:36.525+00');
+INSERT INTO public.download_tokens VALUES ('ca32ffc1-76b8-4263-bef9-d729dbefbda8', 1841, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-18 01:31:36.527+00');
+INSERT INTO public.download_tokens VALUES ('a90e4a58-2bf0-427b-ab04-860b55412742', 1835, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-18 01:31:36.528+00');
+INSERT INTO public.download_tokens VALUES ('7d3f382a-8d2e-4086-9f7e-3551b39f5d70', 1860, 'test-fl-clkct333-signed-e2e', '2026-08-18 15:03:56.84+00');
+INSERT INTO public.download_tokens VALUES ('1800b777-28cb-4850-a6fe-1f80e2e7f53a', 1847, 'test-fl-soc-7332-signed-e2e', '2026-08-18 15:08:56.837+00');
+INSERT INTO public.download_tokens VALUES ('9b4ae6aa-543c-489f-af02-bd8f2b99284f', 1848, 'test-fl-clkct423-signed-e2e', '2026-08-18 15:03:56.842+00');
+INSERT INTO public.download_tokens VALUES ('2b4b9949-d773-4e4d-bb51-724eec46522a', 1851, 'test-tx-petition-sigcheck-e2e', '2026-08-18 15:08:56.841+00');
+INSERT INTO public.download_tokens VALUES ('887be38e-7d51-4fb0-89ac-ead6f71c843b', 1852, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-18 15:08:56.843+00');
+INSERT INTO public.download_tokens VALUES ('16cbc9a4-c843-43d5-94fa-d365f4499a47', 1853, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-08-18 15:08:56.843+00');
+INSERT INTO public.download_tokens VALUES ('9dc660cd-242d-49b7-9b5c-d7125fc61c67', 1858, 'test-nj-complaint-sigcheck-e2e', '2026-08-18 15:08:56.845+00');
+INSERT INTO public.download_tokens VALUES ('488fd36f-2d1e-4470-a60c-c7d8adb3f0bc', 1854, 'test-tx-citation-sigcheck-e2e', '2026-08-18 15:08:56.847+00');
+INSERT INTO public.download_tokens VALUES ('3b8a321d-f7f4-45a9-89cc-af0f26dda600', 1850, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-18 15:08:56.846+00');
+INSERT INTO public.download_tokens VALUES ('874bdf9e-e082-4214-8bfd-422b2f8ecfd2', 1855, 'test-az-summons-sigcheck-e2e', '2026-08-18 15:08:56.846+00');
+INSERT INTO public.download_tokens VALUES ('86f438de-2068-4315-9a6a-f1d7d0aa9b1c', 1849, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-18 15:03:56.851+00');
+INSERT INTO public.download_tokens VALUES ('e0feaa1a-56ba-4aa9-90e7-bd9acc9b4e76', 1859, 'test-fl-soc-7330-signed-e2e', '2026-08-18 15:08:56.846+00');
+INSERT INTO public.download_tokens VALUES ('5b12aa68-7320-4a91-8b19-641e35cde97f', 1856, 'test-fl-soc-7337-signed-e2e', '2026-08-18 15:08:56.851+00');
+INSERT INTO public.download_tokens VALUES ('2c63933a-9bd6-4096-a752-d1569cbba193', 1857, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-18 15:08:56.918+00');
+INSERT INTO public.download_tokens VALUES ('d4668124-d0e3-40c8-a697-e4b8781eb463', 1870, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-18 15:59:15.338+00');
+INSERT INTO public.download_tokens VALUES ('ce07ed07-cc7c-4bdd-b49f-255469d04502', 1871, 'test-wa-notice-sigcheck-e2e', '2026-08-18 15:59:15.336+00');
+INSERT INTO public.download_tokens VALUES ('cadc23fa-d889-40e0-963d-96b82807071a', 1866, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-18 15:59:15.343+00');
+INSERT INTO public.download_tokens VALUES ('ce487279-6ac9-4ab3-965e-bf22421f17dd', 1863, 'test-fl-broward-sigcheck-e2e', '2026-08-18 15:59:15.349+00');
+INSERT INTO public.download_tokens VALUES ('5dad8d93-8e53-44bc-80b9-29869a57fae1', 1869, 'test-fl-orange-sigcheck-e2e', '2026-08-18 15:59:15.352+00');
+INSERT INTO public.download_tokens VALUES ('4decc33a-2b82-44c3-83e5-63dad5b73644', 1861, 'test-va-dc-409-sigcheck-e2e', '2026-08-18 15:59:15.346+00');
+INSERT INTO public.download_tokens VALUES ('657bdfe4-21ba-4659-82a2-10f26c6f7444', 1862, 'test-va-dc-402-signed-e2e', '2026-08-18 15:54:15.353+00');
+INSERT INTO public.download_tokens VALUES ('06c845e0-1492-44a2-98cd-4eb17ea2e7bc', 1868, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-18 15:59:15.35+00');
+INSERT INTO public.download_tokens VALUES ('a0b7ab3f-a4f1-4735-b0fb-48a35f77c68e', 1865, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-18 15:54:15.354+00');
+INSERT INTO public.download_tokens VALUES ('8441d5e8-0ca8-4027-93c7-fd80be984a7d', 1867, 'test-nj-complaint-sigcheck-e2e', '2026-08-18 15:59:15.363+00');
+INSERT INTO public.download_tokens VALUES ('80727dea-e76e-4651-9563-c11027868acd', 1864, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-18 15:59:15.364+00');
+INSERT INTO public.download_tokens VALUES ('ed5682f9-f8f1-4e59-8745-355a862658c5', 1872, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-18 15:59:15.366+00');
+INSERT INTO public.download_tokens VALUES ('af0a77c0-bcd1-443b-a5da-f161f9a47ac0', 1873, 'test-fl-soc-7332-signed-e2e', '2026-08-18 15:59:15.381+00');
+INSERT INTO public.download_tokens VALUES ('4ec944dc-333e-4267-80fa-80a97195db91', 1874, 'test-fl-clkct333-signed-e2e', '2026-08-18 15:54:15.773+00');
+INSERT INTO public.download_tokens VALUES ('d1e52701-4327-4efd-ae88-bab1b14b4d30', 1878, 'test-tx-return-of-service-sigcheck-e2e', '2026-08-18 18:55:43.873+00');
+INSERT INTO public.download_tokens VALUES ('00755f3f-e8d9-48ec-be36-a747c62ac6c8', 1877, 'test-va-dc-409-sigcheck-e2e', '2026-08-18 18:55:43.874+00');
+INSERT INTO public.download_tokens VALUES ('c2e13edf-512d-4aad-9f3b-47b4865483c0', 1881, 'test-tx-petition-sigcheck-e2e', '2026-08-18 18:55:43.882+00');
+INSERT INTO public.download_tokens VALUES ('83ab868a-bc93-4ce2-b7e4-161312b200dc', 1880, 'test-fl-soc-7335-signed-e2e', '2026-08-18 18:55:43.883+00');
+INSERT INTO public.download_tokens VALUES ('6dcf9665-e3ed-43d7-a1ee-f67b2da5b291', 1883, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-18 18:55:43.882+00');
+INSERT INTO public.download_tokens VALUES ('826fee89-6f8c-42ea-a0c2-9683d106e92f', 1888, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-18 18:55:43.885+00');
+INSERT INTO public.download_tokens VALUES ('e194222c-f054-42f7-9f4e-5758fa95dcd0', 1887, 'test-fl-palm-beach-summons-sigcheck-e2e', '2026-08-18 18:55:43.886+00');
+INSERT INTO public.download_tokens VALUES ('7e8998e4-7cd2-476f-91ea-37b2d241408d', 1886, 'test-wa-notice-sigcheck-e2e', '2026-08-18 18:55:43.887+00');
+INSERT INTO public.download_tokens VALUES ('b5b4d03c-7354-44a5-bf86-a5c46b70964b', 1889, 'test-nj-complaint-sigcheck-e2e', '2026-08-18 18:55:43.886+00');
+INSERT INTO public.download_tokens VALUES ('f6854a75-0c65-4e49-8ce9-e084119ae4ed', 1875, 'test-fl-broward-sigcheck-e2e', '2026-08-18 18:55:43.887+00');
+INSERT INTO public.download_tokens VALUES ('8ad63fed-e5f5-4c20-9d88-3911514b914d', 1876, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-18 18:50:43.888+00');
+INSERT INTO public.download_tokens VALUES ('a76cbf64-f575-467a-afa7-07b5ac4e9444', 1885, 'test-fl-soc-7332-signed-e2e', '2026-08-18 18:55:43.887+00');
+INSERT INTO public.download_tokens VALUES ('daee0265-a534-4421-b1b2-46f28e0615a0', 1879, 'test-fl-clkct423-signed-e2e', '2026-08-18 18:50:43.887+00');
+INSERT INTO public.download_tokens VALUES ('df191c83-f106-4ecf-9d34-1904f7f32cc2', 1884, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-18 18:55:43.889+00');
+INSERT INTO public.download_tokens VALUES ('ed41d552-1fa6-43f8-b4a4-b5b7f9754eda', 1882, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-18 18:55:43.892+00');
+INSERT INTO public.download_tokens VALUES ('ce48fc99-8ba1-4826-bdd9-888fff0f0c3a', 1890, 'test-fl-clkct423-signed-e2e', '2026-08-19 15:54:35.59+00');
+INSERT INTO public.download_tokens VALUES ('b182a6fe-e66a-4290-bdf7-41b70713b98f', 1892, 'test-tx-petition-sigcheck-e2e', '2026-08-19 15:59:35.683+00');
+INSERT INTO public.download_tokens VALUES ('57f59991-b560-408c-8df4-e1dd104f3b13', 1891, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-19 15:59:35.709+00');
+INSERT INTO public.download_tokens VALUES ('e0766dbe-0815-4df7-9493-4d226db9c4de', 1893, 'test-fl-broward-sigcheck-e2e', '2026-08-19 15:59:35.788+00');
+INSERT INTO public.download_tokens VALUES ('5af54aed-a7e9-4da4-a36d-b3cd9487c3d7', 1894, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-19 15:54:35.889+00');
+INSERT INTO public.download_tokens VALUES ('ce332e50-6134-416a-8677-2b3875827f39', 1895, 'test-fl-orange-sigcheck-e2e', '2026-08-19 15:59:35.961+00');
+INSERT INTO public.download_tokens VALUES ('769bf5b4-0d42-4d28-8573-7a1c04ba61ad', 1896, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-19 15:59:35.991+00');
+INSERT INTO public.download_tokens VALUES ('d8e8557b-bb0b-4975-9270-153245aa8664', 1898, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-19 15:59:36.041+00');
+INSERT INTO public.download_tokens VALUES ('9f3237e9-ae5a-4479-8d89-469cf8d6533b', 1897, 'test-fl-soc-hillsborough-signed-e2e', '2026-08-19 15:54:36.025+00');
+INSERT INTO public.download_tokens VALUES ('2217be3c-69c3-456e-afb3-bcdcb1b75702', 1899, 'test-fl-cl219-volusia-signed-e2e', '2026-08-19 15:54:36.063+00');
+INSERT INTO public.download_tokens VALUES ('158d3b57-ec5f-4fbf-8de4-6c4f16d753d9', 1900, 'test-nc-aoc-cvm-200-sigcheck-e2e', '2026-08-19 15:59:36.25+00');
+INSERT INTO public.download_tokens VALUES ('a86b091b-ccb0-410f-9d31-fed649a2e87f', 1901, 'test-fl-statement-of-claim-signed-e2e', '2026-08-19 15:54:36.368+00');
+INSERT INTO public.download_tokens VALUES ('125b972b-64fb-4368-9249-56b958fcf3c0', 1902, 'test-az-proof-of-service-signed-e2e', '2026-08-19 15:54:36.488+00');
+INSERT INTO public.download_tokens VALUES ('72346c53-c240-4a01-a8ea-ceb66b34ee5a', 1903, 'test-fl-volusia-summons-sigcheck-e2e', '2026-08-19 15:59:36.696+00');
+INSERT INTO public.download_tokens VALUES ('5cf051a0-adb7-4e00-bb23-cca5b950821e', 1907, 'test-fl-summons-sigcheck-e2e', '2026-08-19 21:59:49.841+00');
+INSERT INTO public.download_tokens VALUES ('e51a8131-f052-4001-bc15-df3ea18ff912', 1912, 'test-fl-fee-waiver-sigcheck-e2e', '2026-08-19 21:59:49.846+00');
+INSERT INTO public.download_tokens VALUES ('9da8c7d5-6d03-43c6-ac9b-bfe1b6dde320', 1913, 'test-nc-aoc-cvm-100-sigcheck-e2e', '2026-08-19 21:59:49.847+00');
+INSERT INTO public.download_tokens VALUES ('d1a88786-990e-4cd5-a111-ade953994c80', 1916, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-19 21:59:49.848+00');
+INSERT INTO public.download_tokens VALUES ('deb9e25f-5298-43d7-b650-69481beb5b86', 1911, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-19 21:59:49.851+00');
+INSERT INTO public.download_tokens VALUES ('e0b8198e-a055-479e-a964-1336bf8f8840', 1915, 'test-az-fee-waiver-sigcheck-e2e', '2026-08-19 21:59:49.846+00');
+INSERT INTO public.download_tokens VALUES ('8acad9dd-6b0e-4665-aa7a-f3d48e434845', 1906, 'test-fl-clkct423-signed-e2e', '2026-08-19 21:54:49.849+00');
+INSERT INTO public.download_tokens VALUES ('194274fc-11da-4a49-ace8-395a55befbaf', 1908, 'test-fl-broward-summons-sigcheck-e2e', '2026-08-19 21:59:49.845+00');
+INSERT INTO public.download_tokens VALUES ('31de2daf-5ea5-46de-8b17-69c1da02abf5', 1910, 'test-va-dc-402-signed-e2e', '2026-08-19 21:54:49.854+00');
+INSERT INTO public.download_tokens VALUES ('ec49f6f2-5fa3-46ad-a209-5ee41c934be4', 1909, 'test-fl-soc-7333-signed-e2e', '2026-08-19 21:59:49.852+00');
+INSERT INTO public.download_tokens VALUES ('8102e043-abf5-41cd-b32c-67a689018004', 1917, 'test-nc-aoc-g-106-sigcheck-e2e', '2026-08-19 21:59:49.85+00');
+INSERT INTO public.download_tokens VALUES ('6965dd38-3b9f-430a-acf9-2e9fea80506d', 1905, 'test-tx-petition-sigcheck-e2e', '2026-08-19 21:59:49.854+00');
+INSERT INTO public.download_tokens VALUES ('1f2e3af2-d0db-4b97-8f37-4e478288193a', 1904, 'test-az-proof-of-service-signed-e2e', '2026-08-19 21:54:49.851+00');
+INSERT INTO public.download_tokens VALUES ('558b6a4e-a3a3-4779-a932-dfb013b97121', 1914, 'test-fl-plain-soc-orange-signed-e2e', '2026-08-19 21:54:49.856+00');
+INSERT INTO public.download_tokens VALUES ('1345de87-2171-48a2-902d-a8a011aede92', 1927, 'test-fl-proof-of-service-sigcheck-e2e', '2026-08-19 22:53:06.995+00');
+INSERT INTO public.download_tokens VALUES ('e2ca28e4-8a01-494c-b3f4-13621eeae3c6', 1920, 'test-fl-hillsborough-summons-sigcheck-e2e', '2026-08-19 22:53:06.998+00');
+INSERT INTO public.download_tokens VALUES ('3f419b4a-6785-44aa-9016-69de75a29aff', 1921, 'test-il-proof-of-service-sigcheck-e2e', '2026-08-19 22:53:06.999+00');
+INSERT INTO public.download_tokens VALUES ('98642fc8-a846-49a4-bcb6-d687a0310632', 1923, 'test-tx-petition-sigcheck-e2e', '2026-08-19 22:53:07.001+00');
+INSERT INTO public.download_tokens VALUES ('acaef841-e4dd-499d-8e1c-20e1819e6a03', 1928, 'test-fl-broward-sigcheck-e2e', '2026-08-19 22:53:06.998+00');
+INSERT INTO public.download_tokens VALUES ('d463a0be-da5a-4fa3-9bf1-bb240ade4fe5', 1924, 'test-az-proof-of-service-signed-e2e', '2026-08-19 22:48:07+00');
+INSERT INTO public.download_tokens VALUES ('99752445-ee53-4cdf-be63-87e696535407', 1919, 'test-fl-clkct333-signed-e2e', '2026-08-19 22:48:06.998+00');
+INSERT INTO public.download_tokens VALUES ('1f7d29c4-e9de-4826-97d8-d0960fd39c11', 1926, 'test-fl-hillsborough-sigcheck-e2e', '2026-08-19 22:53:07.008+00');
+INSERT INTO public.download_tokens VALUES ('533f4be8-ba34-4cde-8891-4d72f089caca', 1918, 'test-fl-orange-summons-sigcheck-e2e', '2026-08-19 22:53:07.005+00');
+INSERT INTO public.download_tokens VALUES ('1e304d4a-fc75-40c6-a816-99c0965cfcf8', 1922, 'test-fl-palm-beach-sigcheck-e2e', '2026-08-19 22:53:07.007+00');
+INSERT INTO public.download_tokens VALUES ('c2de5288-6ab7-4798-94e6-a83e9dab6565', 1925, 'test-fl-cl219-volusia-pdf-sigcheck-e2e', '2026-08-19 22:53:07.005+00');
+
+
+--
+-- Data for Name: efile_court_locations; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: efile_submissions; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: genie_conversions; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: purchases; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: tester_access; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: accounts; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+INSERT INTO stripe.accounts VALUES ('{"id": "acct_1TSm0mGsJamlGRz5", "type": "standard", "email": "paul@thoxie.com", "object": "account", "country": "US", "settings": {"payouts": {"schedule": {"interval": "daily", "delay_days": 2}, "statement_descriptor": null, "debit_negative_balances": true}, "branding": {"icon": "", "logo": null, "primary_color": null, "secondary_color": null}, "invoices": {"default_account_tax_ids": null, "hosted_payment_method_save": "offer"}, "payments": {"statement_descriptor": "SMALLCLAIMSGENIE.COM", "statement_descriptor_kana": null, "statement_descriptor_kanji": null}, "dashboard": {"timezone": "Etc/UTC", "display_name": "Thoxie sandbox"}, "card_issuing": {"tos_acceptance": {"ip": null, "date": null}}, "card_payments": {"statement_descriptor_prefix": null, "statement_descriptor_prefix_kana": null, "statement_descriptor_prefix_kanji": null}, "bacs_debit_payments": {"display_name": null, "service_user_number": null}, "sepa_debit_payments": {}}, "controller": {"type": "account"}, "capabilities": {}, "business_type": null, "charges_enabled": false, "payouts_enabled": false, "business_profile": {"mcc": null, "url": "https://smallclaimsgenie.com", "name": "Thoxie sandbox", "support_url": null, "support_email": null, "support_phone": null, "annual_revenue": null, "support_address": null, "estimated_worker_count": null, "minority_owned_business_designation": null}, "default_currency": "usd", "details_submitted": false}', '2026-05-02 22:53:37.606849+00', '2026-05-02 22:53:37.606849+00', '2026-05-02 22:53:37.606849+00', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, '{96d33eba38e2706d11be2af1d39a82ed1c0428bd7d3f05c94b7e211c6394117d}', DEFAULT);
+INSERT INTO stripe.accounts VALUES ('{"id": "acct_1TSm0YGjdBAJdeVn", "type": "standard", "email": "paul@thoxie.com", "object": "account", "company": {"name": "Goldies Properties LLC", "structure": "single_member_llc"}, "country": "US", "settings": {"payouts": {"schedule": {"interval": "manual", "delay_days": 2}, "statement_descriptor": null, "debit_negative_balances": true}, "branding": {"icon": null, "logo": null, "primary_color": null, "secondary_color": null}, "invoices": {"default_account_tax_ids": null, "hosted_payment_method_save": "offer"}, "payments": {"statement_descriptor": "SMALL CLAIMS GENIE", "statement_descriptor_kana": null, "statement_descriptor_kanji": null}, "dashboard": {"timezone": "America/Cancun", "display_name": "Thoxie"}, "card_issuing": {"tos_acceptance": {"ip": null, "date": null}}, "card_payments": {"statement_descriptor_prefix": null, "statement_descriptor_prefix_kana": null, "statement_descriptor_prefix_kanji": null}, "bacs_debit_payments": {"display_name": null, "service_user_number": null}, "sepa_debit_payments": {}}, "controller": {"type": "account"}, "capabilities": {"transfers": "active", "eps_payments": "active", "pix_payments": "active", "blik_payments": "active", "card_payments": "active", "link_payments": "active", "affirm_payments": "inactive", "klarna_payments": "active", "mb_way_payments": "active", "cashapp_payments": "active", "acss_debit_payments": "active", "amazon_pay_payments": "active", "bancontact_payments": "active", "cartes_bancaires_payments": "pending", "afterpay_clearpay_payments": "active", "us_bank_account_ach_payments": "active"}, "business_type": "company", "charges_enabled": true, "payouts_enabled": true, "business_profile": {"mcc": "7392", "url": "https://smallclaimsgenie.com", "name": "Small Claims Genie", "support_url": null, "support_email": null, "support_phone": "+16506461925", "annual_revenue": null, "support_address": {"city": "Sausalito", "line1": "3020 Bridgeway", "line2": null, "state": "CA", "country": "US", "postal_code": "94965"}, "estimated_worker_count": null, "minority_owned_business_designation": null}, "default_currency": "usd", "details_submitted": true}', '2026-05-12 22:56:37.845774+00', '2026-06-24 15:22:33.332674+00', '2026-06-24 15:22:33.332674+00', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, '{4384cea76da68ac38847f5a74a8ee772e409479d6db6b885b8c64803a0a90aa0,573fcf3e2e1ecc3484ab4cda81476a6403ab3c65c45f80c30966f47544d288e8}', DEFAULT);
+
+
+--
+-- Data for Name: _managed_webhooks; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+INSERT INTO stripe._managed_webhooks VALUES ('we_1TWIz6GsJamlGRz5aMh9PenS', 'webhook_endpoint', 'https://37b18f57-bb89-46f0-8f3e-61d410712d33-00-i3kbn43k3c01.worf.replit.dev/api/stripe/webhook', '["charge.captured", "charge.dispute.closed", "charge.dispute.created", "charge.dispute.funds_reinstated", "charge.dispute.funds_withdrawn", "charge.dispute.updated", "charge.expired", "charge.failed", "charge.pending", "charge.refund.updated", "charge.refunded", "charge.succeeded", "charge.updated", "checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired", "credit_note.created", "credit_note.updated", "credit_note.voided", "customer.created", "customer.deleted", "customer.subscription.created", "customer.subscription.deleted", "customer.subscription.paused", "customer.subscription.pending_update_applied", "customer.subscription.pending_update_expired", "customer.subscription.resumed", "customer.subscription.trial_will_end", "customer.subscription.updated", "customer.tax_id.created", "customer.tax_id.deleted", "customer.tax_id.updated", "customer.updated", "entitlements.active_entitlement_summary.updated", "invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.upcoming", "invoice.updated", "invoice.voided", "payment_intent.amount_capturable_updated", "payment_intent.canceled", "payment_intent.created", "payment_intent.partially_funded", "payment_intent.payment_failed", "payment_intent.processing", "payment_intent.requires_action", "payment_intent.succeeded", "payment_method.attached", "payment_method.automatically_updated", "payment_method.card_automatically_updated", "payment_method.detached", "payment_method.updated", "plan.created", "plan.deleted", "plan.updated", "price.created", "price.deleted", "price.updated", "product.created", "product.deleted", "product.updated", "radar.early_fraud_warning.created", "radar.early_fraud_warning.updated", "refund.created", "refund.failed", "refund.updated", "review.closed", "review.opened", "setup_intent.canceled", "setup_intent.created", "setup_intent.requires_action", "setup_intent.setup_failed", "setup_intent.succeeded", "subscription_schedule.aborted", "subscription_schedule.canceled", "subscription_schedule.completed", "subscription_schedule.created", "subscription_schedule.expiring", "subscription_schedule.released", "subscription_schedule.updated"]', NULL, NULL, false, '{"managed_by": "stripe-sync"}', 'whsec_iuUmzuwSpLKrHi5T20cjy5OSyPPDvq7m', 'enabled', NULL, 1778602600, '2026-05-12 16:16:40.492545+00', '2026-05-12 16:16:40.491+00', 'acct_1TSm0mGsJamlGRz5');
+INSERT INTO stripe._managed_webhooks VALUES ('we_1U6CdyGjdBAJdeVn3zelEqCq', 'webhook_endpoint', 'https://37b18f57-bb89-46f0-8f3e-61d410712d33-00-i3kbn43k3c01.worf.replit.dev/api/stripe/webhook', '["charge.captured", "charge.dispute.closed", "charge.dispute.created", "charge.dispute.funds_reinstated", "charge.dispute.funds_withdrawn", "charge.dispute.updated", "charge.expired", "charge.failed", "charge.pending", "charge.refund.updated", "charge.refunded", "charge.succeeded", "charge.updated", "checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired", "credit_note.created", "credit_note.updated", "credit_note.voided", "customer.created", "customer.deleted", "customer.subscription.created", "customer.subscription.deleted", "customer.subscription.paused", "customer.subscription.pending_update_applied", "customer.subscription.pending_update_expired", "customer.subscription.resumed", "customer.subscription.trial_will_end", "customer.subscription.updated", "customer.tax_id.created", "customer.tax_id.deleted", "customer.tax_id.updated", "customer.updated", "entitlements.active_entitlement_summary.updated", "invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.upcoming", "invoice.updated", "invoice.voided", "payment_intent.amount_capturable_updated", "payment_intent.canceled", "payment_intent.created", "payment_intent.partially_funded", "payment_intent.payment_failed", "payment_intent.processing", "payment_intent.requires_action", "payment_intent.succeeded", "payment_method.attached", "payment_method.automatically_updated", "payment_method.card_automatically_updated", "payment_method.detached", "payment_method.updated", "plan.created", "plan.deleted", "plan.updated", "price.created", "price.deleted", "price.updated", "product.created", "product.deleted", "product.updated", "radar.early_fraud_warning.created", "radar.early_fraud_warning.updated", "refund.created", "refund.failed", "refund.updated", "review.closed", "review.opened", "setup_intent.canceled", "setup_intent.created", "setup_intent.requires_action", "setup_intent.setup_failed", "setup_intent.succeeded", "subscription_schedule.aborted", "subscription_schedule.canceled", "subscription_schedule.completed", "subscription_schedule.created", "subscription_schedule.expiring", "subscription_schedule.released", "subscription_schedule.updated"]', NULL, NULL, true, '{"managed_by": "stripe-sync"}', 'whsec_BZgndSw7oAHiXFeuf4kujYpteFZM6Rvc', 'enabled', NULL, 1787158034, '2026-08-19 16:47:14.123882+00', '2026-08-19 16:47:14.123+00', 'acct_1TSm0YGjdBAJdeVn');
+
+
+--
+-- Data for Name: _migrations; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+INSERT INTO stripe._migrations VALUES (0, 'initial_migration', 'c18983eedaa79cc2f6d92727d70c4f772256ef3d', '2026-05-02 22:53:00.233937');
+INSERT INTO stripe._migrations VALUES (1, 'products', 'b99ffc23df668166b94156f438bfa41818d4e80c', '2026-05-02 22:53:00.239832');
+INSERT INTO stripe._migrations VALUES (2, 'customers', '33e481247ddc217f4e27ad10dfe5430097981670', '2026-05-02 22:53:00.251168');
+INSERT INTO stripe._migrations VALUES (3, 'prices', '7d5ff35640651606cc24cec8a73ff7c02492ecdf', '2026-05-02 22:53:00.265035');
+INSERT INTO stripe._migrations VALUES (4, 'subscriptions', '2cc6121a943c2a623c604e5ab12118a57a6c329a', '2026-05-02 22:53:00.289005');
+INSERT INTO stripe._migrations VALUES (5, 'invoices', '7fbb4ccb4ed76a830552520739aaa163559771b1', '2026-05-02 22:53:00.300166');
+INSERT INTO stripe._migrations VALUES (6, 'charges', 'fb284ed969f033f5ce19f479b7a7e27871bddf09', '2026-05-02 22:53:00.312121');
+INSERT INTO stripe._migrations VALUES (7, 'coupons', '7ed6ec4133f120675fd7888c0477b6281743fede', '2026-05-02 22:53:00.324263');
+INSERT INTO stripe._migrations VALUES (8, 'disputes', '29bdb083725efe84252647f043f5f91cd0dabf43', '2026-05-02 22:53:00.336395');
+INSERT INTO stripe._migrations VALUES (9, 'events', 'b28cb55b5b69a9f52ef519260210cd76eea3c84e', '2026-05-02 22:53:00.346089');
+INSERT INTO stripe._migrations VALUES (10, 'payouts', '69d1050b88bba1024cea4a671f9633ce7bfe25ff', '2026-05-02 22:53:00.364124');
+INSERT INTO stripe._migrations VALUES (11, 'plans', 'fc1ae945e86d1222a59cbcd3ae7e81a3a282a60c', '2026-05-02 22:53:00.374837');
+INSERT INTO stripe._migrations VALUES (12, 'add_updated_at', '1d80945ef050a17a26e35e9983a58178262470f2', '2026-05-02 22:53:00.385731');
+INSERT INTO stripe._migrations VALUES (13, 'add_subscription_items', '2aa63409bfe910add833155ad7468cdab844e0f1', '2026-05-02 22:53:00.398097');
+INSERT INTO stripe._migrations VALUES (14, 'migrate_subscription_items', '8c2a798b44a8a0d83ede6f50ea7113064ecc1807', '2026-05-02 22:53:00.414621');
+INSERT INTO stripe._migrations VALUES (15, 'add_customer_deleted', '6886ddfd8c129d3c4b39b59519f92618b397b395', '2026-05-02 22:53:00.423673');
+INSERT INTO stripe._migrations VALUES (16, 'add_invoice_indexes', 'd6bb9a09d5bdf580986ed14f55db71227a4d356d', '2026-05-02 22:53:00.427901');
+INSERT INTO stripe._migrations VALUES (17, 'drop_charges_unavailable_columns', '61cd5adec4ae2c308d2c33d1b0ed203c7d074d6a', '2026-05-02 22:53:00.439049');
+INSERT INTO stripe._migrations VALUES (18, 'setup_intents', '1d45d0fa47fc145f636c9e3c1ea692417fbb870d', '2026-05-02 22:53:00.449141');
+INSERT INTO stripe._migrations VALUES (19, 'payment_methods', '705bdb15b50f1a97260b4f243008b8a34d23fb09', '2026-05-02 22:53:00.466556');
+INSERT INTO stripe._migrations VALUES (20, 'disputes_payment_intent_created_idx', '18b2cecd7c097a7ea3b3f125f228e8790288d5ca', '2026-05-02 22:53:00.482549');
+INSERT INTO stripe._migrations VALUES (21, 'payment_intent', 'b1f194ff521b373c4c7cf220c0feadc253ebff0b', '2026-05-02 22:53:00.491546');
+INSERT INTO stripe._migrations VALUES (22, 'adjust_plans', 'e4eae536b0bc98ee14d78e818003952636ee877c', '2026-05-02 22:53:00.510143');
+INSERT INTO stripe._migrations VALUES (23, 'invoice_deleted', '78e864c3146174fee7d08f05226b02d931d5b2ae', '2026-05-02 22:53:00.519251');
+INSERT INTO stripe._migrations VALUES (24, 'subscription_schedules', '85fa6adb3815619bb17e1dafb00956ff548f7332', '2026-05-02 22:53:00.527109');
+INSERT INTO stripe._migrations VALUES (25, 'tax_ids', '3f9a1163533f9e60a53d61dae5e451ab937584d9', '2026-05-02 22:53:00.540768');
+INSERT INTO stripe._migrations VALUES (26, 'credit_notes', 'e099b6b04ee607ee868d82af5193373c3fc266d2', '2026-05-02 22:53:00.558436');
+INSERT INTO stripe._migrations VALUES (27, 'add_marketing_features_to_products', '6ed1774b0a9606c5937b2385d61057408193e8a7', '2026-05-02 22:53:00.577183');
+INSERT INTO stripe._migrations VALUES (28, 'early_fraud_warning', 'e615b0b73fa13d3b0508a1956d496d516f0ebf40', '2026-05-02 22:53:00.581861');
+INSERT INTO stripe._migrations VALUES (29, 'reviews', 'dd3f914139725a7934dc1062de4cc05aece77aea', '2026-05-02 22:53:00.600013');
+INSERT INTO stripe._migrations VALUES (30, 'refunds', 'f76c4e273eccdc96616424d73967a9bea3baac4e', '2026-05-02 22:53:00.618265');
+INSERT INTO stripe._migrations VALUES (31, 'add_default_price', '6d10566a68bc632831fa25332727d8ff842caec5', '2026-05-02 22:53:00.637135');
+INSERT INTO stripe._migrations VALUES (32, 'update_subscription_items', 'e894858d46840ba4be5ea093cdc150728bd1d66f', '2026-05-02 22:53:00.642911');
+INSERT INTO stripe._migrations VALUES (33, 'add_last_synced_at', '43124eb65b18b70c54d57d2b4fcd5dae718a200f', '2026-05-02 22:53:00.647712');
+INSERT INTO stripe._migrations VALUES (34, 'remove_foreign_keys', 'e72ec19f3232cf6e6b7308ebab80341c2341745f', '2026-05-02 22:53:00.655825');
+INSERT INTO stripe._migrations VALUES (35, 'checkout_sessions', 'dc294f5bb1a4d613be695160b38a714986800a75', '2026-05-02 22:53:00.662747');
+INSERT INTO stripe._migrations VALUES (36, 'checkout_session_line_items', '82c8cfce86d68db63a9fa8de973bfe60c91342dd', '2026-05-02 22:53:00.688119');
+INSERT INTO stripe._migrations VALUES (37, 'add_features', 'c68a2c2b7e3808eed28c8828b2ffd3a2c9bf2bd4', '2026-05-02 22:53:00.706918');
+INSERT INTO stripe._migrations VALUES (38, 'active_entitlement', '5b3858e7a52212b01e7f338cf08e29767ab362af', '2026-05-02 22:53:00.726257');
+INSERT INTO stripe._migrations VALUES (39, 'add_paused_to_subscription_status', '09012b5d128f6ba25b0c8f69a1203546cf1c9f10', '2026-05-02 22:53:00.751069');
+INSERT INTO stripe._migrations VALUES (40, 'managed_webhooks', '1d453dfd0e27ff0c2de97955c4ec03919af0af7f', '2026-05-02 22:53:00.756894');
+INSERT INTO stripe._migrations VALUES (41, 'rename_managed_webhooks', 'ad7cd1e4971a50790bf997cd157f3403d294484f', '2026-05-02 22:53:00.785073');
+INSERT INTO stripe._migrations VALUES (42, 'convert_to_jsonb_generated_columns', 'e0703a0e5cd9d97db53d773ada1983553e37813c', '2026-05-02 22:53:00.790754');
+INSERT INTO stripe._migrations VALUES (43, 'add_account_id', '9a6beffdd0972e3657b7118b2c5001be1f815faf', '2026-05-02 22:53:05.702693');
+INSERT INTO stripe._migrations VALUES (44, 'make_account_id_required', '05c1e9145220e905e0c1ca5329851acaf7e9e506', '2026-05-02 22:53:05.756422');
+INSERT INTO stripe._migrations VALUES (45, 'sync_status', '2f88c4883fa885a6eaa23b8b02da958ca77a1c21', '2026-05-02 22:53:05.792459');
+INSERT INTO stripe._migrations VALUES (46, 'sync_status_per_account', 'b1f1f3d4fdb4b4cf4e489d4b195c7f0f97f9f27c', '2026-05-02 22:53:05.82489');
+INSERT INTO stripe._migrations VALUES (47, 'api_key_hashes', '8046e4c57544b8eae277b057d201a28a4529ffe3', '2026-05-02 22:53:05.890046');
+INSERT INTO stripe._migrations VALUES (48, 'rename_reserved_columns', 'e32290f655550ed308a7f2dcb5b0114e49a0558e', '2026-05-02 22:53:05.896283');
+INSERT INTO stripe._migrations VALUES (49, 'remove_redundant_underscores_from_metadata_tables', '96d6f3a54e17d8e19abd022a030a95a6161bf73e', '2026-05-02 22:53:11.317422');
+INSERT INTO stripe._migrations VALUES (50, 'rename_id_to_match_stripe_api', 'c5300c5a10081c033dab9961f4e3cd6a2440c2b6', '2026-05-02 22:53:11.334061');
+INSERT INTO stripe._migrations VALUES (51, 'remove_webhook_uuid', '289bee08167858dbf4d04ca184f42681660ebb66', '2026-05-02 22:53:11.690676');
+INSERT INTO stripe._migrations VALUES (52, 'webhook_url_uniqueness', 'd02aec1815ce3a108b8a1def1ff24e865b26db70', '2026-05-02 22:53:11.697706');
+
+
+--
+-- Data for Name: _sync_status; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: active_entitlements; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: charges; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: checkout_session_line_items; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+INSERT INTO stripe.checkout_session_line_items VALUES ('2026-06-26 13:18:48.407551+00', '2026-06-26 13:18:46+00', '{"id": "li_1TmDB4GjdBAJdeVnP2JYykdK", "price": "price_1TlscwGjdBAJdeVnm4UN0EwC", "object": "item", "currency": "usd", "metadata": {}, "quantity": 1, "amount_tax": 0, "description": "Genie Plus: Paralegal Review", "amount_total": 15900, "amount_discount": 0, "amount_subtotal": 15900, "checkout_session": "cs_live_b1GRhoMIO1GyyJ1pU94av45oimu1zMA9ZacOwva9pvXBqe6vgmWEicGyi4", "adjustable_quantity": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+
+
+--
+-- Data for Name: checkout_sessions; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+INSERT INTO stripe.checkout_sessions VALUES ('2026-06-26 13:18:47.08559+00', '2026-06-26 13:18:46+00', '{"id": "cs_live_b1GRhoMIO1GyyJ1pU94av45oimu1zMA9ZacOwva9pvXBqe6vgmWEicGyi4", "url": null, "mode": "payment", "locale": null, "object": "checkout.session", "status": "expired", "consent": null, "created": 1782393526, "invoice": null, "ui_mode": "hosted_page", "currency": "usd", "customer": null, "livemode": true, "metadata": {"userId": "user_3Bti2v3Lju4bFfnrNdXfnq83Q3J"}, "discounts": [], "cancel_url": "https://smallclaimsgenie.com/pricing?payment=cancelled", "expires_at": 1782479926, "custom_text": {"submit": null, "after_submit": null, "shipping_address": null, "terms_of_service_acceptance": null}, "permissions": null, "submit_type": null, "success_url": "https://smallclaimsgenie.com/dashboard?payment=success", "amount_total": 15900, "payment_link": null, "setup_intent": null, "subscription": null, "automatic_tax": {"status": null, "enabled": false, "provider": null, "liability": null}, "client_secret": null, "custom_fields": [], "shipping_cost": null, "total_details": {"amount_tax": 0, "amount_discount": 0, "amount_shipping": 0}, "customer_email": null, "origin_context": null, "payment_intent": null, "payment_status": "unpaid", "recovered_from": null, "wallet_options": null, "amount_subtotal": 15900, "adaptive_pricing": {"enabled": true}, "after_expiration": null, "customer_account": null, "customer_details": null, "invoice_creation": {"enabled": false, "invoice_data": {"footer": null, "issuer": null, "metadata": {}, "description": null, "custom_fields": null, "account_tax_ids": null, "rendering_options": null}}, "managed_payments": {"enabled": false}, "shipping_options": [], "branding_settings": {"icon": null, "logo": null, "font_family": "default", "border_style": "rounded", "button_color": "#0074d4", "display_name": "Small Claims Genie", "background_color": "#ffffff"}, "customer_creation": "if_required", "consent_collection": null, "client_reference_id": "user_3Bti2v3Lju4bFfnrNdXfnq83Q3J", "currency_conversion": null, "payment_method_types": ["card"], "allow_promotion_codes": true, "collected_information": null, "integration_identifier": null, "payment_method_options": {"card": {"request_three_d_secure": "automatic"}}, "phone_number_collection": {"enabled": false}, "payment_method_collection": "if_required", "billing_address_collection": null, "shipping_address_collection": null, "saved_payment_method_options": null, "payment_method_configuration_details": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+
+
+--
+-- Data for Name: coupons; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: credit_notes; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: customers; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: disputes; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: early_fraud_warnings; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: events; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: features; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: invoices; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: payment_intents; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: payment_methods; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: payouts; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: plans; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: prices; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+INSERT INTO stripe.prices VALUES ('2026-05-02 22:53:50.796243+00', '2026-05-02 22:53:50+00', '{"id": "price_1TSmPyGsJamlGRz5Pis1jFyl", "type": "one_time", "active": true, "object": "price", "created": 1777762430, "product": "prod_URflhZ44lEopqL", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 15900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "15900"}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 19:18:33.588846+00', '2026-05-12 19:18:33+00', '{"id": "price_1TWLp7GsJamlGRz5gR3BbYf4", "type": "one_time", "active": true, "object": "price", "created": 1778613513, "product": "prod_UVMYDY6yV8sEpb", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 7900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "7900"}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 19:18:34.194295+00', '2026-05-12 19:18:33+00', '{"id": "price_1TWLp7GsJamlGRz5XNkOi39u", "type": "one_time", "active": true, "object": "price", "created": 1778613513, "product": "prod_UVMYdxyx8j0e4y", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 19:18:34.864236+00', '2026-05-12 19:18:34+00', '{"id": "price_1TWLp8GsJamlGRz5TtlBpbYL", "type": "one_time", "active": true, "object": "price", "created": 1778613514, "product": "prod_UVMYAh9qSVasf6", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 19:18:35.495449+00', '2026-05-12 19:18:35+00', '{"id": "price_1TWLp9GsJamlGRz50h0u3PEA", "type": "one_time", "active": true, "object": "price", "created": 1778613515, "product": "prod_UVMYp4MMQdFT94", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 19:18:36.499154+00', '2026-05-12 19:18:35+00', '{"id": "price_1TWLp9GsJamlGRz5ekweRXnF", "type": "one_time", "active": true, "object": "price", "created": 1778613515, "product": "prod_UVMYx4peDDEnK2", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 8900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "8900"}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 19:18:37.068711+00', '2026-05-12 19:18:36+00', '{"id": "price_1TWLpAGsJamlGRz5rORS5JSB", "type": "one_time", "active": true, "object": "price", "created": 1778613516, "product": "prod_UVMYrzhsY5hkqc", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 23:02:47.7184+00', '2026-05-12 23:02:47+00', '{"id": "price_1TWPK7GjdBAJdeVnCxhjPd16", "type": "one_time", "active": true, "object": "price", "created": 1778626967, "product": "prod_UVQAo61jrin0Yx", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 7900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "7900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 23:02:48.242815+00', '2026-05-12 23:02:47+00', '{"id": "price_1TWPK7GjdBAJdeVn2oiUICcS", "type": "one_time", "active": true, "object": "price", "created": 1778626967, "product": "prod_UVQABSOxEr1iY4", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 23:02:48.904419+00', '2026-05-12 23:02:48+00', '{"id": "price_1TWPK8GjdBAJdeVnbNR8Nt49", "type": "one_time", "active": true, "object": "price", "created": 1778626968, "product": "prod_UVQAEtNHI3C6FM", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 9900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "9900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 23:02:49.507103+00', '2026-05-12 23:02:49+00', '{"id": "price_1TWPK9GjdBAJdeVnjq1lSYn7", "type": "one_time", "active": true, "object": "price", "created": 1778626969, "product": "prod_UVQAqYXybODNut", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 23:02:50.156233+00', '2026-05-12 23:02:49+00', '{"id": "price_1TWPK9GjdBAJdeVnf4YKjvX8", "type": "one_time", "active": true, "object": "price", "created": 1778626969, "product": "prod_UVQAWDSQoD7aY6", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 15900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "15900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 23:02:50.782413+00', '2026-05-12 23:02:50+00', '{"id": "price_1TWPKAGjdBAJdeVnHflaeF8s", "type": "one_time", "active": true, "object": "price", "created": 1778626970, "product": "prod_UVQAzvNk1wVChH", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 8900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "8900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-05-12 23:02:51.448853+00', '2026-05-12 23:02:50+00', '{"id": "price_1TWPKAGjdBAJdeVnpSkVRVNS", "type": "one_time", "active": true, "object": "price", "created": 1778626970, "product": "prod_UVQAFvC6UZfmUJ", "currency": "usd", "livemode": false, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 10900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "10900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.prices VALUES ('2026-06-26 13:18:48.400516+00', '2026-06-26 13:18:48.4+00', '{"id": "price_1TlscwGjdBAJdeVnm4UN0EwC", "type": "one_time", "active": true, "object": "price", "created": 1782314530, "product": "prod_UlPRvVh6N9bUBR", "currency": "usd", "livemode": true, "metadata": {}, "nickname": null, "recurring": null, "lookup_key": null, "tiers_mode": null, "unit_amount": 15900, "tax_behavior": "unspecified", "billing_scheme": "per_unit", "custom_unit_amount": null, "transform_quantity": null, "unit_amount_decimal": "15900"}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+
+
+--
+-- Data for Name: products; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+INSERT INTO stripe.products VALUES ('2026-05-02 22:53:50.558078+00', '2026-05-02 22:53:50+00', '{"id": "prod_URflhZ44lEopqL", "url": null, "name": "Genie Plus: Paralegal Review", "type": "service", "active": true, "images": [], "object": "product", "created": 1777762430, "updated": 1777762430, "livemode": false, "metadata": {"plan": "paralegal"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Small Claims Genie AI tools plus personalized document review and hearing prep from a trained paralegal.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 19:18:33.357816+00', '2026-05-12 19:18:32+00', '{"id": "prod_UVMYDY6yV8sEpb", "url": null, "name": "Personal Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613512, "updated": 1778613512, "livemode": false, "metadata": {"plan": "personal_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 19:18:33.942231+00', '2026-05-12 19:18:33+00', '{"id": "prod_UVMYdxyx8j0e4y", "url": null, "name": "Personal Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613513, "updated": 1778613513, "livemode": false, "metadata": {"plan": "personal_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 19:18:34.648554+00', '2026-05-12 19:18:34+00', '{"id": "prod_UVMYAh9qSVasf6", "url": null, "name": "Business Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613514, "updated": 1778613514, "livemode": false, "metadata": {"plan": "business_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 23:02:49.90316+00', '2026-05-12 23:02:49+00', '{"id": "prod_UVQAWDSQoD7aY6", "url": null, "name": "Genie Plus: Paralegal Review", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626969, "updated": 1778626969, "livemode": false, "metadata": {"plan": "paralegal"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Small Claims Genie AI tools plus personalized document review and hearing prep from a trained paralegal.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 19:18:35.275268+00', '2026-05-12 19:18:34+00', '{"id": "prod_UVMYp4MMQdFT94", "url": null, "name": "Business Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613514, "updated": 1778613514, "livemode": false, "metadata": {"plan": "business_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 19:18:36.176721+00', '2026-05-12 19:18:35+00', '{"id": "prod_UVMYx4peDDEnK2", "url": null, "name": "Post-Judgment Collection (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613515, "updated": 1778613515, "livemode": false, "metadata": {"plan": "collection_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 19:19:16.515111+00', '2026-05-12 19:19:16+00', '{"id": "prod_UVMYrzhsY5hkqc", "url": null, "name": "Post-Judgment Collection ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778613516, "updated": 1778613556, "livemode": false, "metadata": {"plan": "collection_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0mGsJamlGRz5', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 23:02:47.4967+00', '2026-05-12 23:02:46+00', '{"id": "prod_UVQAo61jrin0Yx", "url": null, "name": "Personal Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626966, "updated": 1778626966, "livemode": false, "metadata": {"plan": "personal_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 23:02:48.043745+00', '2026-05-12 23:02:47+00', '{"id": "prod_UVQABSOxEr1iY4", "url": null, "name": "Personal Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626967, "updated": 1778626967, "livemode": false, "metadata": {"plan": "personal_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For person-versus-person disputes such as neighbor, roommate, or acquaintance conflicts. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 23:02:48.674844+00', '2026-05-12 23:02:48+00', '{"id": "prod_UVQAEtNHI3C6FM", "url": null, "name": "Business Case (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626968, "updated": 1778626968, "livemode": false, "metadata": {"plan": "business_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 23:02:49.315826+00', '2026-05-12 23:02:48+00', '{"id": "prod_UVQAqYXybODNut", "url": null, "name": "Business Case ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626968, "updated": 1778626968, "livemode": false, "metadata": {"plan": "business_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "For any case involving a business on either side — individual suing a business or vice versa. Claims of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 23:02:50.536902+00', '2026-05-12 23:02:50+00', '{"id": "prod_UVQAzvNk1wVChH", "url": null, "name": "Post-Judgment Collection (up to $5,000)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626970, "updated": 1778626970, "livemode": false, "metadata": {"plan": "collection_low"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments up to $5,000.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO stripe.products VALUES ('2026-05-12 23:02:51.170458+00', '2026-05-12 23:02:50+00', '{"id": "prod_UVQAFvC6UZfmUJ", "url": null, "name": "Post-Judgment Collection ($5,000 and above)", "type": "service", "active": true, "images": [], "object": "product", "created": 1778626970, "updated": 1778626970, "livemode": false, "metadata": {"plan": "collection_high"}, "tax_code": null, "shippable": null, "attributes": [], "unit_label": null, "description": "Every enforcement tool California law provides — writs, levies, garnishments, and liens — for judgments of $5,000 or more.", "tax_details": null, "default_price": null, "marketing_features": [], "package_dimensions": null, "statement_descriptor": null}', 'acct_1TSm0YGjdBAJdeVn', DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+
+
+--
+-- Data for Name: refunds; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: reviews; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: setup_intents; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: subscription_items; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: subscription_schedules; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: subscriptions; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Data for Name: tax_ids; Type: TABLE DATA; Schema: stripe; Owner: -
+--
+
+
+
+--
+-- Name: beta_access_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.beta_access_id_seq', 3, true);
+
+
+--
+-- Name: cases_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.cases_id_seq', 1928, true);
+
+
+--
+-- Name: chat_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.chat_messages_id_seq', 2, true);
 
 
 --
--- Name: conversations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: conversations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.conversations_id_seq', 1, false);
 
 
 --
--- Name: documents_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: documents_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.documents_id_seq', 7, true);
 
 
 --
--- Name: efile_court_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: efile_court_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.efile_court_locations_id_seq', 1, false);
 
 
 --
--- Name: efile_submissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: efile_submissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.efile_submissions_id_seq', 1, false);
 
 
 --
--- Name: genie_conversions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: genie_conversions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.genie_conversions_id_seq', 1, false);
 
 
 --
--- Name: messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.messages_id_seq', 1, false);
 
 
 --
--- Name: purchases_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: purchases_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.purchases_id_seq', 1, false);
 
 
 --
--- Name: _sync_status_id_seq; Type: SEQUENCE SET; Schema: stripe; Owner: postgres
+-- Name: tester_access_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.tester_access_id_seq', 4, true);
+
+
+--
+-- Name: _sync_status_id_seq; Type: SEQUENCE SET; Schema: stripe; Owner: -
 --
 
 SELECT pg_catalog.setval('stripe._sync_status_id_seq', 1, false);
 
 
 --
--- Name: ai_rate_limits ai_rate_limits_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ai_rate_limits
-    ADD CONSTRAINT ai_rate_limits_pkey PRIMARY KEY (user_id);
-
-
---
--- Name: beta_access beta_access_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.beta_access
-    ADD CONSTRAINT beta_access_pkey PRIMARY KEY (id);
-
-
---
--- Name: beta_access beta_access_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.beta_access
-    ADD CONSTRAINT beta_access_user_id_unique UNIQUE (user_id);
-
-
---
--- Name: cases cases_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.cases
-    ADD CONSTRAINT cases_pkey PRIMARY KEY (id);
-
-
---
--- Name: chat_messages chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.chat_messages
-    ADD CONSTRAINT chat_messages_pkey PRIMARY KEY (id);
-
-
---
--- Name: conversations conversations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.conversations
-    ADD CONSTRAINT conversations_pkey PRIMARY KEY (id);
-
-
---
--- Name: documents documents_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT documents_pkey PRIMARY KEY (id);
-
-
---
--- Name: download_tokens download_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.download_tokens
-    ADD CONSTRAINT download_tokens_pkey PRIMARY KEY (token);
-
-
---
--- Name: efile_court_locations efile_court_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.efile_court_locations
-    ADD CONSTRAINT efile_court_locations_pkey PRIMARY KEY (id);
-
-
---
--- Name: efile_submissions efile_submissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.efile_submissions
-    ADD CONSTRAINT efile_submissions_pkey PRIMARY KEY (id);
-
-
---
--- Name: genie_conversions genie_conversions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.genie_conversions
-    ADD CONSTRAINT genie_conversions_pkey PRIMARY KEY (id);
-
-
---
--- Name: messages messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT messages_pkey PRIMARY KEY (id);
-
-
---
--- Name: purchases purchases_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.purchases
-    ADD CONSTRAINT purchases_pkey PRIMARY KEY (id);
-
-
---
--- Name: purchases purchases_stripe_session_id_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.purchases
-    ADD CONSTRAINT purchases_stripe_session_id_unique UNIQUE (stripe_session_id);
-
-
---
--- Name: _migrations _migrations_name_key; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._migrations
-    ADD CONSTRAINT _migrations_name_key UNIQUE (name);
-
-
---
--- Name: _migrations _migrations_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._migrations
-    ADD CONSTRAINT _migrations_pkey PRIMARY KEY (id);
-
-
---
--- Name: _sync_status _sync_status_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._sync_status
-    ADD CONSTRAINT _sync_status_pkey PRIMARY KEY (id);
-
-
---
--- Name: _sync_status _sync_status_resource_account_key; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._sync_status
-    ADD CONSTRAINT _sync_status_resource_account_key UNIQUE (resource, account_id);
-
-
---
--- Name: accounts accounts_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.accounts
-    ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
-
-
---
--- Name: active_entitlements active_entitlements_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.active_entitlements
-    ADD CONSTRAINT active_entitlements_pkey PRIMARY KEY (id);
-
-
---
--- Name: charges charges_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.charges
-    ADD CONSTRAINT charges_pkey PRIMARY KEY (id);
-
-
---
--- Name: checkout_session_line_items checkout_session_line_items_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.checkout_session_line_items
-    ADD CONSTRAINT checkout_session_line_items_pkey PRIMARY KEY (id);
-
-
---
--- Name: checkout_sessions checkout_sessions_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.checkout_sessions
-    ADD CONSTRAINT checkout_sessions_pkey PRIMARY KEY (id);
-
-
---
--- Name: coupons coupons_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.coupons
-    ADD CONSTRAINT coupons_pkey PRIMARY KEY (id);
-
-
---
--- Name: credit_notes credit_notes_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.credit_notes
-    ADD CONSTRAINT credit_notes_pkey PRIMARY KEY (id);
-
-
---
--- Name: customers customers_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.customers
-    ADD CONSTRAINT customers_pkey PRIMARY KEY (id);
-
-
---
--- Name: disputes disputes_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.disputes
-    ADD CONSTRAINT disputes_pkey PRIMARY KEY (id);
-
-
---
--- Name: early_fraud_warnings early_fraud_warnings_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.early_fraud_warnings
-    ADD CONSTRAINT early_fraud_warnings_pkey PRIMARY KEY (id);
-
-
---
--- Name: events events_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.events
-    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
-
-
---
--- Name: features features_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.features
-    ADD CONSTRAINT features_pkey PRIMARY KEY (id);
-
-
---
--- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.invoices
-    ADD CONSTRAINT invoices_pkey PRIMARY KEY (id);
-
-
---
--- Name: _managed_webhooks managed_webhooks_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._managed_webhooks
-    ADD CONSTRAINT managed_webhooks_pkey PRIMARY KEY (id);
-
-
---
--- Name: _managed_webhooks managed_webhooks_url_account_unique; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._managed_webhooks
-    ADD CONSTRAINT managed_webhooks_url_account_unique UNIQUE (url, account_id);
-
-
---
--- Name: payment_intents payment_intents_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.payment_intents
-    ADD CONSTRAINT payment_intents_pkey PRIMARY KEY (id);
-
-
---
--- Name: payment_methods payment_methods_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.payment_methods
-    ADD CONSTRAINT payment_methods_pkey PRIMARY KEY (id);
-
-
---
--- Name: payouts payouts_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.payouts
-    ADD CONSTRAINT payouts_pkey PRIMARY KEY (id);
-
-
---
--- Name: plans plans_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.plans
-    ADD CONSTRAINT plans_pkey PRIMARY KEY (id);
-
-
---
--- Name: prices prices_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.prices
-    ADD CONSTRAINT prices_pkey PRIMARY KEY (id);
-
-
---
--- Name: products products_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.products
-    ADD CONSTRAINT products_pkey PRIMARY KEY (id);
-
-
---
--- Name: refunds refunds_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.refunds
-    ADD CONSTRAINT refunds_pkey PRIMARY KEY (id);
-
-
---
--- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.reviews
-    ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
-
-
---
--- Name: setup_intents setup_intents_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.setup_intents
-    ADD CONSTRAINT setup_intents_pkey PRIMARY KEY (id);
-
-
---
--- Name: subscription_items subscription_items_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.subscription_items
-    ADD CONSTRAINT subscription_items_pkey PRIMARY KEY (id);
-
-
---
--- Name: subscription_schedules subscription_schedules_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.subscription_schedules
-    ADD CONSTRAINT subscription_schedules_pkey PRIMARY KEY (id);
-
-
---
--- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.subscriptions
-    ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (id);
-
-
---
--- Name: tax_ids tax_ids_pkey; Type: CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.tax_ids
-    ADD CONSTRAINT tax_ids_pkey PRIMARY KEY (id);
-
-
---
--- Name: cases_confirmation_email_sent_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX cases_confirmation_email_sent_idx ON public.cases USING btree (confirmation_email_sent);
-
-
---
--- Name: cases_hearing_date_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX cases_hearing_date_idx ON public.cases USING btree (hearing_date);
-
-
---
--- Name: cases_intake_complete_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX cases_intake_complete_idx ON public.cases USING btree (intake_complete);
-
-
---
--- Name: cases_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX cases_user_id_idx ON public.cases USING btree (user_id);
-
-
---
--- Name: chat_messages_case_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX chat_messages_case_id_idx ON public.chat_messages USING btree (case_id);
-
-
---
--- Name: documents_case_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX documents_case_id_idx ON public.documents USING btree (case_id);
-
-
---
--- Name: documents_ocr_status_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX documents_ocr_status_idx ON public.documents USING btree (ocr_status);
-
-
---
--- Name: efile_court_locations_cli_state_uidx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX efile_court_locations_cli_state_uidx ON public.efile_court_locations USING btree (cli_code, jurisdiction_state);
-
-
---
--- Name: efile_court_locations_courthouse_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX efile_court_locations_courthouse_idx ON public.efile_court_locations USING btree (courthouse_id);
-
-
---
--- Name: efile_court_locations_state_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX efile_court_locations_state_idx ON public.efile_court_locations USING btree (jurisdiction_state);
-
-
---
--- Name: efile_submissions_case_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX efile_submissions_case_id_idx ON public.efile_submissions USING btree (case_id);
-
-
---
--- Name: efile_submissions_envelope_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX efile_submissions_envelope_id_idx ON public.efile_submissions USING btree (envelope_id);
-
-
---
--- Name: efile_submissions_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX efile_submissions_user_id_idx ON public.efile_submissions USING btree (user_id);
-
-
---
--- Name: purchases_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX purchases_user_id_idx ON public.purchases USING btree (user_id);
-
-
---
--- Name: active_entitlements_lookup_key_key; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE UNIQUE INDEX active_entitlements_lookup_key_key ON stripe.active_entitlements USING btree (lookup_key) WHERE (lookup_key IS NOT NULL);
-
-
---
--- Name: features_lookup_key_key; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE UNIQUE INDEX features_lookup_key_key ON stripe.features USING btree (lookup_key) WHERE (lookup_key IS NOT NULL);
-
-
---
--- Name: idx_accounts_api_key_hashes; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX idx_accounts_api_key_hashes ON stripe.accounts USING gin (api_key_hashes);
-
-
---
--- Name: idx_accounts_business_name; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX idx_accounts_business_name ON stripe.accounts USING btree (business_name);
-
-
---
--- Name: idx_sync_status_resource_account; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX idx_sync_status_resource_account ON stripe._sync_status USING btree (resource, account_id);
-
-
---
--- Name: stripe_active_entitlements_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_active_entitlements_customer_idx ON stripe.active_entitlements USING btree (customer);
-
-
---
--- Name: stripe_active_entitlements_feature_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_active_entitlements_feature_idx ON stripe.active_entitlements USING btree (feature);
-
-
---
--- Name: stripe_checkout_session_line_items_price_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_checkout_session_line_items_price_idx ON stripe.checkout_session_line_items USING btree (price);
-
-
---
--- Name: stripe_checkout_session_line_items_session_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_checkout_session_line_items_session_idx ON stripe.checkout_session_line_items USING btree (checkout_session);
-
-
---
--- Name: stripe_checkout_sessions_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_checkout_sessions_customer_idx ON stripe.checkout_sessions USING btree (customer);
-
-
---
--- Name: stripe_checkout_sessions_invoice_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_checkout_sessions_invoice_idx ON stripe.checkout_sessions USING btree (invoice);
-
-
---
--- Name: stripe_checkout_sessions_payment_intent_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_checkout_sessions_payment_intent_idx ON stripe.checkout_sessions USING btree (payment_intent);
-
-
---
--- Name: stripe_checkout_sessions_subscription_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_checkout_sessions_subscription_idx ON stripe.checkout_sessions USING btree (subscription);
-
-
---
--- Name: stripe_credit_notes_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_credit_notes_customer_idx ON stripe.credit_notes USING btree (customer);
-
-
---
--- Name: stripe_credit_notes_invoice_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_credit_notes_invoice_idx ON stripe.credit_notes USING btree (invoice);
-
-
---
--- Name: stripe_dispute_created_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_dispute_created_idx ON stripe.disputes USING btree (created);
-
-
---
--- Name: stripe_early_fraud_warnings_charge_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_early_fraud_warnings_charge_idx ON stripe.early_fraud_warnings USING btree (charge);
-
-
---
--- Name: stripe_early_fraud_warnings_payment_intent_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_early_fraud_warnings_payment_intent_idx ON stripe.early_fraud_warnings USING btree (payment_intent);
-
-
---
--- Name: stripe_invoices_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_invoices_customer_idx ON stripe.invoices USING btree (customer);
-
-
---
--- Name: stripe_invoices_subscription_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_invoices_subscription_idx ON stripe.invoices USING btree (subscription);
-
-
---
--- Name: stripe_managed_webhooks_enabled_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_managed_webhooks_enabled_idx ON stripe._managed_webhooks USING btree (enabled);
-
-
---
--- Name: stripe_managed_webhooks_status_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_managed_webhooks_status_idx ON stripe._managed_webhooks USING btree (status);
-
-
---
--- Name: stripe_payment_intents_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_payment_intents_customer_idx ON stripe.payment_intents USING btree (customer);
-
-
---
--- Name: stripe_payment_intents_invoice_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_payment_intents_invoice_idx ON stripe.payment_intents USING btree (invoice);
-
-
---
--- Name: stripe_payment_methods_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_payment_methods_customer_idx ON stripe.payment_methods USING btree (customer);
-
-
---
--- Name: stripe_refunds_charge_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_refunds_charge_idx ON stripe.refunds USING btree (charge);
-
-
---
--- Name: stripe_refunds_payment_intent_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_refunds_payment_intent_idx ON stripe.refunds USING btree (payment_intent);
-
-
---
--- Name: stripe_reviews_charge_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_reviews_charge_idx ON stripe.reviews USING btree (charge);
-
-
---
--- Name: stripe_reviews_payment_intent_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_reviews_payment_intent_idx ON stripe.reviews USING btree (payment_intent);
-
-
---
--- Name: stripe_setup_intents_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_setup_intents_customer_idx ON stripe.setup_intents USING btree (customer);
-
-
---
--- Name: stripe_tax_ids_customer_idx; Type: INDEX; Schema: stripe; Owner: postgres
---
-
-CREATE INDEX stripe_tax_ids_customer_idx ON stripe.tax_ids USING btree (customer);
-
-
---
--- Name: _managed_webhooks handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe._managed_webhooks FOR EACH ROW EXECUTE FUNCTION public.set_updated_at_metadata();
-
-
---
--- Name: _sync_status handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe._sync_status FOR EACH ROW EXECUTE FUNCTION public.set_updated_at_metadata();
-
-
---
--- Name: accounts handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.accounts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: active_entitlements handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.active_entitlements FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: charges handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.charges FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: checkout_session_line_items handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.checkout_session_line_items FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: checkout_sessions handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.checkout_sessions FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: coupons handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.coupons FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: customers handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.customers FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: disputes handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.disputes FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: early_fraud_warnings handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.early_fraud_warnings FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: events handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.events FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: features handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.features FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: invoices handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.invoices FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: payouts handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.payouts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: plans handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.plans FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: prices handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.prices FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: products handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.products FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: refunds handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.refunds FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: reviews handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.reviews FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: subscriptions handle_updated_at; Type: TRIGGER; Schema: stripe; Owner: postgres
---
-
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON stripe.subscriptions FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
--- Name: chat_messages chat_messages_case_id_cases_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.chat_messages
-    ADD CONSTRAINT chat_messages_case_id_cases_id_fk FOREIGN KEY (case_id) REFERENCES public.cases(id) ON DELETE CASCADE;
-
-
---
--- Name: documents documents_case_id_cases_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT documents_case_id_cases_id_fk FOREIGN KEY (case_id) REFERENCES public.cases(id) ON DELETE CASCADE;
-
-
---
--- Name: messages messages_conversation_id_conversations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT messages_conversation_id_conversations_id_fk FOREIGN KEY (conversation_id) REFERENCES public.conversations(id) ON DELETE CASCADE;
-
-
---
--- Name: active_entitlements fk_active_entitlements_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.active_entitlements
-    ADD CONSTRAINT fk_active_entitlements_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: charges fk_charges_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.charges
-    ADD CONSTRAINT fk_charges_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: checkout_session_line_items fk_checkout_session_line_items_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.checkout_session_line_items
-    ADD CONSTRAINT fk_checkout_session_line_items_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: checkout_sessions fk_checkout_sessions_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.checkout_sessions
-    ADD CONSTRAINT fk_checkout_sessions_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: credit_notes fk_credit_notes_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.credit_notes
-    ADD CONSTRAINT fk_credit_notes_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: customers fk_customers_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.customers
-    ADD CONSTRAINT fk_customers_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: disputes fk_disputes_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.disputes
-    ADD CONSTRAINT fk_disputes_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: early_fraud_warnings fk_early_fraud_warnings_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.early_fraud_warnings
-    ADD CONSTRAINT fk_early_fraud_warnings_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: features fk_features_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.features
-    ADD CONSTRAINT fk_features_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: invoices fk_invoices_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.invoices
-    ADD CONSTRAINT fk_invoices_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: _managed_webhooks fk_managed_webhooks_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._managed_webhooks
-    ADD CONSTRAINT fk_managed_webhooks_account FOREIGN KEY (account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: payment_intents fk_payment_intents_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.payment_intents
-    ADD CONSTRAINT fk_payment_intents_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: payment_methods fk_payment_methods_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.payment_methods
-    ADD CONSTRAINT fk_payment_methods_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: plans fk_plans_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.plans
-    ADD CONSTRAINT fk_plans_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: prices fk_prices_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.prices
-    ADD CONSTRAINT fk_prices_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: products fk_products_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.products
-    ADD CONSTRAINT fk_products_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: refunds fk_refunds_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.refunds
-    ADD CONSTRAINT fk_refunds_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: reviews fk_reviews_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.reviews
-    ADD CONSTRAINT fk_reviews_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: setup_intents fk_setup_intents_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.setup_intents
-    ADD CONSTRAINT fk_setup_intents_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: subscription_items fk_subscription_items_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.subscription_items
-    ADD CONSTRAINT fk_subscription_items_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: subscription_schedules fk_subscription_schedules_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.subscription_schedules
-    ADD CONSTRAINT fk_subscription_schedules_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: subscriptions fk_subscriptions_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.subscriptions
-    ADD CONSTRAINT fk_subscriptions_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: _sync_status fk_sync_status_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe._sync_status
-    ADD CONSTRAINT fk_sync_status_account FOREIGN KEY (account_id) REFERENCES stripe.accounts(id);
-
-
---
--- Name: tax_ids fk_tax_ids_account; Type: FK CONSTRAINT; Schema: stripe; Owner: postgres
---
-
-ALTER TABLE ONLY stripe.tax_ids
-    ADD CONSTRAINT fk_tax_ids_account FOREIGN KEY (_account_id) REFERENCES stripe.accounts(id);
-
-
---
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 9Svb33I4S0KWaQAZefAuqtHek7VYENBSKs1StiKEGYoP8le4dgwS3m0CAZZGG2t
+\unrestrict GE9dOGJM8WViXS4eRFfkdhIU5UxfcZ2Vl751pm7uck4lKn3CJD3IxdJU6Kg73hI
 

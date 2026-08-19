@@ -12,9 +12,12 @@ services:
       retries: 20
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # schema.sql is schema-only. Import a separately retained data dump after
-      # first boot using the commands in RESTORE.md.
+      # Init scripts run in filename order on first boot (empty data volume only).
+      # 001-schema.sql creates all tables, indexes, and sequences.
+      # 002-data.sql loads the public and stripe schema reference data.
+      # To refresh the data export before building, run: bash scripts/refresh-db-export.sh
       - ./schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - ./small-claims-genie-db.sql:/docker-entrypoint-initdb.d/002-data.sql:ro
 
   api:
     build:

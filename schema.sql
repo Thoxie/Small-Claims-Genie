@@ -19,6 +19,12 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Extensions (plpgsql is the only one installed; it ships with PostgreSQL by default)
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+--
 -- Name: stripe; Type: SCHEMA; Schema: -; Owner: -
 --
 

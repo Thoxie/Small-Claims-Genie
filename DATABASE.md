@@ -52,29 +52,50 @@ export captured from the development database. It includes:
 
 The export contains no application table rows or connection credentials.
 
-## Migration ledger
+## Schema management — Drizzle push (not sequential migrations)
 
-The project’s application schema source is `lib/db/src/schema/` and its schema
-command is:
+The application schema source is `lib/db/src/schema/`. The schema command is:
 
 ```bash
 pnpm --filter @workspace/db run push
 ```
 
-This current workflow uses Drizzle Kit’s schema push rather than a tracked,
-application-owned migration ledger. A query of the live development database
-found no public Drizzle migration table. The only migration ledger present is
-`stripe._migrations`, which belongs to `stripe-replit-sync` and must not be
-used to decide whether application migrations ran.
+This uses **Drizzle Kit's schema push** (`drizzle-kit push`), which diffs the
+TypeScript schema against the live database and applies the necessary ALTER
+statements directly. It does **not** produce a migration file per change and
+does **not** maintain an application-owned migration table.
 
-For a faithful restore:
+The only `_migrations` table in the database is `stripe._migrations`, owned by
+`stripe-replit-sync`. It must not be used to gauge application schema state.
 
-1. Restore `schema.sql` first.
-2. Restore a separately secured data dump if one is required.
-3. Preserve any `stripe._migrations` rows only as part of the full database
-   restore; do not synthesize or edit them.
-4. Do not run `drizzle-kit push` until you have compared the restored schema
-   to the checked-in Drizzle definitions.
+### The three SQL files in `lib/db/migrations/`
+
+```
+lib/db/migrations/add_jurisdiction_state.sql
+lib/db/migrations/add_efile_court_locations_unique_index.sql
+lib/db/migrations/add_mc030_declaration_text.sql
+```
+
+These are one-off DDL patches applied manually during early development before
+the project adopted `drizzle-kit push`. Their changes (the `jurisdiction_state`
+column on `cases`, the unique index on `efile_court_locations`, and the
+`mc030_declaration_text` column on `cases`) are already fully reflected in
+`schema.sql`. **Do not replay them when restoring from `schema.sql`** — they
+will produce "column already exists" / "index already exists" errors.
+
+### Restore order
+
+1. Restore `schema.sql` (creates all tables, types, indexes, functions).
+2. Restore `small-claims-genie-db.sql` (loads all data rows).
+3. Optionally run `drizzle-kit push` only if the checked-in TypeScript schema
+   has diverged from `schema.sql`. Never run it automatically against a
+   restored production database.
+
+### Refreshing the data export
+
+Run `scripts/refresh-db-export.sh` before generating a new portable backup
+archive, or any time the reference data changes significantly (e.g. counties
+updated, Stripe product catalog changed). Commit the updated file.
 
 ## Required extensions and database objects
 

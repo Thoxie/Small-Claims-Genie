@@ -79,3 +79,6 @@ backups/
 attached_assets/
 screenshots/
 .agents/agent_assets_metadata.toml
+
+# Git filter-branch working directory (history-rewrite plumbing, not source)
+.git-rewrite/
