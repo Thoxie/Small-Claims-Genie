@@ -65,6 +65,7 @@
     "test:nj-wa-forms": "tsx ./src/test-nj-wa-forms.ts",
     "test:nc-wa-signed-forms": "tsx ./src/test-nc-wa-signed-forms.ts",
     "test:help-chat-mode-b": "tsx ./src/test-help-chat-mode-b.ts",
+    "test:admin-beta-access": "tsx ../artifacts/api-server/src/scripts/test-admin-beta-access.ts",
     "check:state-completeness": "tsx ./src/check-state-completeness.ts",
     "test:tx-petition-sigcheck": "tsx ./src/test-tx-petition-sigcheck.ts",
     "test:tx-return-of-service-sigcheck": "tsx ./src/test-tx-return-of-service-sigcheck.ts",

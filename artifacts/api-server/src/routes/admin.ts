@@ -1,4 +1,4 @@
-import { Router, type Request, type Response, type NextFunction, type RequestHandler } from "express";
+import { Router, type Request, type Response } from "express";
 import { Readable } from "stream";
 import { db, casesTable, purchasesTable, aiRateLimitsTable, betaAccessTable, genieConversionsTable, documentsTable, countiesTable } from "@workspace/db";
 import { sql, count, sum, eq, gte, lt, desc, asc, and, isNotNull, like } from "drizzle-orm";
@@ -7,7 +7,8 @@ import { logger } from "../lib/logger";
 import { FormRegistry } from "../forms/registry";
 import type { CaseData } from "../forms/types";
 import { getErrors, clearErrors } from "../lib/errorLog";
-import { BETA_LIMIT } from "../lib/beta";
+import { BETA_LIMIT, grantBetaAccess } from "../lib/beta";
+import { requireAdmin } from "../lib/admin-auth";
 import { ObjectStorageService } from "../lib/objectStorage";
 
 const objectStorage = new ObjectStorageService();
@@ -16,21 +17,6 @@ const router = Router();
 
 // In-memory notifications toggle — resets on server restart (acceptable for owner tool)
 let notificationsEnabled = false;
-
-// ── Auth middleware ───────────────────────────────────────────────────────────
-const requireAdmin: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
-  const adminKey = process.env.ADMIN_API_KEY;
-  if (!adminKey) {
-    res.status(503).json({ error: "Admin not configured — set ADMIN_API_KEY in Replit Secrets" });
-    return;
-  }
-  const auth = req.headers.authorization;
-  if (!auth || auth !== `Bearer ${adminKey}`) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-  next();
-};
 
 // ── POST /admin/login (public — validates email + password, returns key) ──────
 router.post("/admin/login", (req: Request, res: Response): void => {
@@ -140,12 +126,37 @@ function clerkSecretKey(): string | undefined {
 
 type ClerkUser = {
   id: string;
-  email_addresses: Array<{ email_address: string }>;
+  email_addresses: Array<{ id?: string; email_address: string }>;
+  primary_email_address_id?: string | null;
   first_name: string | null;
   last_name: string | null;
   created_at: number;
   last_sign_in_at: number | null;
 };
+
+function clerkPrimaryEmail(user: ClerkUser): string | null {
+  const primary = user.primary_email_address_id
+    ? user.email_addresses.find((address) => address.id === user.primary_email_address_id)
+    : undefined;
+  return primary?.email_address ?? user.email_addresses[0]?.email_address ?? null;
+}
+
+async function getClerkUserById(userId: string): Promise<ClerkUser | null> {
+  const secretKey = clerkSecretKey();
+  if (!secretKey) {
+    throw new Error("Clerk management API is not configured");
+  }
+
+  const clerkRes = await fetch(
+    `https://api.clerk.com/v1/users/${encodeURIComponent(userId)}`,
+    { headers: { Authorization: `Bearer ${secretKey}` } },
+  );
+  if (clerkRes.status === 404) return null;
+  if (!clerkRes.ok) {
+    throw new Error(`Clerk user lookup failed with status ${clerkRes.status}`);
+  }
+  return (await clerkRes.json()) as ClerkUser;
+}
 
 async function getAllClerkUsers(): Promise<ClerkUser[]> {
   const secretKey = clerkSecretKey();
@@ -176,7 +187,7 @@ async function getClerkEmails(userIds: string[]): Promise<Map<string, string>> {
     if (!clerkRes.ok) return new Map();
     const users = (await clerkRes.json()) as ClerkUser[];
     return new Map(
-      users.map((u) => [u.id, u.email_addresses[0]?.email_address ?? u.id])
+      users.map((u) => [u.id, clerkPrimaryEmail(u) ?? u.id])
     );
   } catch {
     return new Map();
@@ -239,7 +250,7 @@ router.get("/admin/overview", async (req: Request, res: Response): Promise<void>
 // ── GET /admin/users ──────────────────────────────────────────────────────────
 router.get("/admin/users", async (req: Request, res: Response): Promise<void> => {
   try {
-    const [cases, purchases, allClerkUsers] = await Promise.all([
+    const [cases, purchases, betaAccess, allClerkUsers] = await Promise.all([
       db
         .select({
           id: casesTable.id,
@@ -270,10 +281,12 @@ router.get("/admin/users", async (req: Request, res: Response): Promise<void> =>
         .select({ userId: purchasesTable.userId })
         .from(purchasesTable)
         .where(eq(purchasesTable.status, "complete")),
+      db.select({ userId: betaAccessTable.userId }).from(betaAccessTable),
       getAllClerkUsers(),
     ]);
 
     const paidUserIds = new Set(purchases.map((p) => p.userId));
+    const betaUserIds = new Set(betaAccess.map((row) => row.userId));
     const clerkMap = new Map(allClerkUsers.map((u) => [u.id, u]));
 
     type UserEntry = {
@@ -285,6 +298,8 @@ router.get("/admin/users", async (req: Request, res: Response): Promise<void> =>
       lastSignInAt: string | null;
       cases: typeof cases;
       hasPurchase: boolean;
+      hasBetaAccess: boolean;
+      hasClerkAccount: boolean;
       lastActivity: Date | null;
     };
     const usersMap = new Map<string, UserEntry>();
@@ -303,6 +318,8 @@ router.get("/admin/users", async (req: Request, res: Response): Promise<void> =>
           lastSignInAt: cu?.last_sign_in_at ? new Date(cu.last_sign_in_at).toISOString() : null,
           cases: [],
           hasPurchase: paidUserIds.has(uid),
+          hasBetaAccess: betaUserIds.has(uid),
+          hasClerkAccount: Boolean(cu),
           lastActivity: c.updatedAt,
         });
       }
@@ -321,6 +338,8 @@ router.get("/admin/users", async (req: Request, res: Response): Promise<void> =>
           lastSignInAt: cu.last_sign_in_at ? new Date(cu.last_sign_in_at).toISOString() : null,
           cases: [],
           hasPurchase: paidUserIds.has(cu.id),
+          hasBetaAccess: betaUserIds.has(cu.id),
+          hasClerkAccount: true,
           lastActivity: null,
         });
       }
@@ -1187,19 +1206,32 @@ router.get("/admin/stuck-cases", async (_req: Request, res: Response): Promise<v
 
 // ── POST /admin/beta/grant ────────────────────────────────────────────────────
 router.post("/admin/beta/grant", async (req: Request, res: Response): Promise<void> => {
-  const { userId, email } = req.body as { userId?: string; email?: string };
+  const userId = typeof req.body?.userId === "string" ? req.body.userId.trim() : "";
   if (!userId) {
     res.status(400).json({ error: "userId is required" });
     return;
   }
   try {
-    await db
-      .insert(betaAccessTable)
-      .values({ userId, email: email ?? null })
-      .onConflictDoNothing();
+    const clerkUser = await getClerkUserById(userId);
+    if (!clerkUser) {
+      res.status(404).json({ error: "Clerk user not found" });
+      return;
+    }
+    const email = clerkPrimaryEmail(clerkUser);
+    if (!email) {
+      res.status(400).json({ error: "Clerk user does not have an email address" });
+      return;
+    }
+
+    const result = await grantBetaAccess({ userId, email });
+    if (result === "full") {
+      res.status(409).json({ error: "Beta is full", message: "All beta spots have been claimed." });
+      return;
+    }
+
     const rows = await db.select().from(betaAccessTable).orderBy(desc(betaAccessTable.claimedAt));
-    logger.info({ userId, email }, "Admin granted beta access");
-    res.json({ total: rows.length, limit: BETA_LIMIT, rows });
+    logger.info({ userId, email, alreadyClaimed: result === "alreadyClaimed" }, "Admin granted beta access");
+    res.json({ total: rows.length, limit: BETA_LIMIT, rows, alreadyClaimed: result === "alreadyClaimed" });
   } catch (err) {
     logger.error({ err }, "Admin beta grant error");
     res.status(500).json({ error: "Internal server error" });

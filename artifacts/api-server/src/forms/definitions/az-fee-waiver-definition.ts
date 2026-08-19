@@ -16,10 +16,12 @@
  *
  * Pre-filled fields (case data):
  *   Case Number, Petitioner (plaintiff), Respondent (defendant),
- *   Person Filing (applicant name), City State Zip Code, Telephone
+ *   Person Filing (applicant name), City State Zip Code, Telephone,
+ *   COUNTY dropdown (export value 1–15 mapped from case county),
+ *   COURT text field (justice court name from AZ county directory)
  *
  * Left blank for user to complete:
- *   All financial eligibility sections, COUNTY dropdown, COURT name
+ *   All financial eligibility sections
  *
  * Signature placement (calibrated):
  *   Page 5 (index 4), Applicant_Signature widget: x=324, y=294, w=180, h=18
@@ -37,8 +39,70 @@ import { FormRegistry } from "../registry";
 import { pdftk_fill_form } from "../pdftk-fdf";
 import { FORMS_DIR } from "../../routes/forms-common";
 import type { CaseData } from "../types";
+import { resolveAzCountyName } from "./az-complaint-definition";
+import { ARIZONA_COUNTIES } from "../../data/counties-az";
 
 const PDF_PATH = path.join(FORMS_DIR, "az-aocdfgf1f-fee-waiver.pdf");
+
+/**
+ * Maps AZ county names (title-case, as returned by resolveAzCountyName) to the
+ * COUNTY dropdown export values defined in the AOCDFGF1F AcroForm PDF.
+ * Verified with: pdftk … dump_data_fields | grep -A1 FieldStateOption
+ */
+const AZ_COUNTY_EXPORT_VALUES: Record<string, string> = {
+  "Apache":     "1",
+  "Cochise":    "2",
+  "Coconino":   "3",
+  "Gila":       "4",
+  "Graham":     "5",
+  "Greenlee":   "6",
+  "La Paz":     "7",
+  "Maricopa":   "8",
+  "Mohave":     "9",
+  "Navajo":     "10",
+  "Pima":       "11",
+  "Pinal":      "12",
+  "Santa Cruz": "13",
+  "Yavapai":    "14",
+  "Yuma":       "15",
+};
+
+/**
+ * Normalize a court name string so it is safe for FDF PDF string encoding.
+ *
+ * pdftk writes FDF text values as raw byte sequences using PDF string syntax.
+ * The FDF helper (pdftk-fdf.ts) does not encode non-Latin-1 code-points, so
+ * characters outside U+00FF — including the em dash (U+2014) used throughout
+ * ARIZONA_COUNTIES courthouse names — are written as raw UTF-8 multi-byte
+ * sequences that pdftk then mis-interprets, producing mojibaked field values.
+ *
+ * Replace the em dash with an ASCII " - " (space-hyphen-space) so the string
+ * round-trips correctly through FDF without needing UTF-16BE encoding.
+ * Any other non-ASCII characters are similarly replaced with "?".
+ */
+function toAsciiCourtName(name: string): string {
+  return name
+    .replace(/\u2014/g, " - ")   // em dash → " - "
+    .replace(/\u2013/g, " - ")   // en dash → " - " (defensive)
+    .replace(/[^\x00-\x7F]/g, "?");  // remaining non-ASCII → "?"
+}
+
+/**
+ * Resolve the court name for the COURT text field on the fee waiver.
+ * Uses the courthouse name from case data or the AZ county directory,
+ * falling back to a generic "<County> County Justice Court" string.
+ * The result is normalized to ASCII so it encodes correctly in FDF.
+ */
+function resolveAzFeeWaiverCourtName(d: CaseData): string {
+  if (d.courthouseName) return toAsciiCourtName(d.courthouseName);
+  const rec =
+    ARIZONA_COUNTIES.find((c) => c.id === d.courthouseId) ??
+    ARIZONA_COUNTIES.find((c) => c.id === d.countyId);
+  if (rec) return toAsciiCourtName(rec.courthouseName);
+  const countyName = resolveAzCountyName(d);
+  if (countyName) return `${countyName} County Justice Court`;
+  return "";
+}
 
 function cityStateZip(
   city?: string | null,
@@ -61,8 +125,15 @@ export async function buildAZFeeWaiver(
   const pltAddr = d.plaintiffAddress ?? "";
   const pltCSZ = cityStateZip(d.plaintiffCity, d.plaintiffState ?? "AZ", d.plaintiffZip);
 
+  // Resolve county → COUNTY dropdown export value and court name
+  const countyName = resolveAzCountyName(d);
+  const countyExportValue = countyName ? (AZ_COUNTY_EXPORT_VALUES[countyName] ?? "") : "";
+  const courtName = resolveAzFeeWaiverCourtName(d);
+
   // ── pdftk FDF fill ─────────────────────────────────────────────────────────
   // Field names verified against the placed PDF with `pdftk dump_data_fields`.
+  // COUNTY is a Choice field; its export values are "1"–"15" (see AZ_COUNTY_EXPORT_VALUES).
+  // COURT is a plain Text field pre-filled with the justice court name.
   const filled = await pdftk_fill_form(PDF_PATH, {
     text: {
       // Caption
@@ -78,6 +149,12 @@ export async function buildAZFeeWaiver(
 
       // Print name on signature line (page 5)
       "ApplicantName":          d.plaintiffName ?? "",
+
+      // Pre-fill court & county so users don't have to look them up.
+      // COUNTY uses the numeric export value for the AcroForm Choice field.
+      // Left blank ("") when the county cannot be determined — user fills manually.
+      "COUNTY":                 countyExportValue,
+      "COURT":                  courtName,
     },
   }, { flatten: false });
 

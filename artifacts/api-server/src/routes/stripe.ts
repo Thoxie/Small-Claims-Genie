@@ -3,8 +3,7 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { getUncachableStripeClient, getStripePublishableKey } from "../stripeClient";
 import { logger } from "../lib/logger";
-import { userHasPurchase } from "../lib/purchases";
-import { userHasBetaAccess } from "../lib/beta";
+import { getPaidAccessStatus } from "../lib/paid-access";
 
 // ─── Public router — no auth required ────────────────────────────────────────
 export const stripePublicRouter = Router();
@@ -204,15 +203,16 @@ stripeProtectedRouter.post("/stripe/checkout", async (req: any, res) => {
   }
 });
 
-// Check whether the authenticated user has confirmed access (purchase or beta).
+// Check whether the authenticated user has confirmed app access.
 stripeProtectedRouter.get("/stripe/purchase-status", async (req: any, res) => {
   const userId = req.userId as string;
   try {
-    const [hasPurchase, hasBeta] = await Promise.all([
-      userHasPurchase(userId),
-      userHasBetaAccess(userId),
-    ]);
-    res.json({ hasPurchase: hasPurchase || hasBeta });
+    const access = await getPaidAccessStatus(userId);
+    res.json({
+      hasPurchase: access.hasAccess,
+      accessSource: access.accessSource,
+      hasBetaAccess: access.hasBetaAccess,
+    });
   } catch (err) {
     logger.error({ err }, "stripe/purchase-status error");
     res.status(500).json({ error: "Could not check purchase status" });

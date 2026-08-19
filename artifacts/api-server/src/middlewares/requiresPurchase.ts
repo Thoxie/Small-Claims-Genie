@@ -1,6 +1,5 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { userHasPurchase } from "../lib/purchases";
-import { userHasBetaAccess } from "../lib/beta";
+import { getPaidAccessStatus } from "../lib/paid-access";
 import { logger } from "../lib/logger";
 import { getUserId } from "../lib/owned-case";
 
@@ -11,11 +10,8 @@ export async function requiresPurchase(req: Request, res: Response, next: NextFu
     return;
   }
   try {
-    const [hasBeta, hasPaid] = await Promise.all([
-      userHasBetaAccess(userId),
-      userHasPurchase(userId),
-    ]);
-    if (hasBeta || hasPaid) {
+    const access = await getPaidAccessStatus(userId);
+    if (access.hasAccess) {
       next();
       return;
     }

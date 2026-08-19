@@ -1,9 +1,42 @@
 import { db } from "@workspace/db";
 import { betaAccessTable } from "@workspace/db";
-import { eq, count } from "drizzle-orm";
+import { eq, count, sql } from "drizzle-orm";
 import { logger } from "./logger";
 
 export const BETA_LIMIT = 10;
+
+export type BetaGrantStatus = "inserted" | "alreadyClaimed" | "full";
+
+/**
+ * Adds an account to the shared beta pool. Both public self-service claims and
+ * admin grants use this routine so they share the same race-safe slot limit.
+ */
+export async function grantBetaAccess(input: {
+  userId: string;
+  email: string | null;
+}): Promise<BetaGrantStatus> {
+  return db.transaction(async (tx): Promise<BetaGrantStatus> => {
+    await tx.execute(sql`LOCK TABLE beta_access IN EXCLUSIVE MODE`);
+
+    const existing = await tx
+      .select({ id: betaAccessTable.id })
+      .from(betaAccessTable)
+      .where(eq(betaAccessTable.userId, input.userId))
+      .limit(1);
+
+    if (existing.length > 0) {
+      return "alreadyClaimed";
+    }
+
+    const [row] = await tx.select({ claimed: count() }).from(betaAccessTable);
+    if (Number(row?.claimed ?? 0) >= BETA_LIMIT) {
+      return "full";
+    }
+
+    await tx.insert(betaAccessTable).values(input);
+    return "inserted";
+  });
+}
 
 export async function userHasBetaAccess(userId: string): Promise<boolean> {
   try {

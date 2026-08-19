@@ -170,10 +170,10 @@ export async function fetchStuckCases(): Promise<StuckCaseRow[]> {
   return apiFetch<StuckCaseRow[]>("/admin/stuck-cases");
 }
 
-export async function grantBeta(userId: string, email: string | null): Promise<BetaData> {
+export async function grantBeta(userId: string): Promise<BetaData> {
   return apiFetch<BetaData>("/admin/beta/grant", {
     method: "POST",
-    body: JSON.stringify({ userId, email }),
+    body: JSON.stringify({ userId }),
   });
 }
 
@@ -244,6 +244,8 @@ export interface UserRow {
   lastSignInAt: string | null;
   cases: CaseRow[];
   hasPurchase: boolean;
+  hasBetaAccess: boolean;
+  hasClerkAccount: boolean;
   lastActivity: string | null;
 }
 

@@ -48,6 +48,16 @@ Thumbs.db
 .cache/
 .local/
 
+# Local environment files and database exports. Keep .env.example tracked.
+.env
+.env.*
+!.env.example
+*.dump
+*.backup
+*.sql.gz
+database-data/
+database-data-exports/
+
 # Large video files (exceed GitHub 100MB limit — host on YouTube/CDN instead)
 *.mp4
 *.mov

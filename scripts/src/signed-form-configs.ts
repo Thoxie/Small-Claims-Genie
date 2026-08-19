@@ -173,6 +173,10 @@ export const CONFIGS: Record<string, FormTestConfig> = {
     { kind: "image", regions: [{ page: 5, pdfX: 324, pdfY: 294, w: 180, h: 18 }] },
     { county: "az-maricopa", plaintiffState: "AZ", plaintiffCity: "Phoenix", plaintiffZip: "85007",
       defendantState: "AZ", defendantCity: "Phoenix", defendantZip: "85018",
+      // The AOCDFGF1F COUNTY Choice field stores export value "8" but must render
+      // its user-facing label. The court line falls back to this county-level name
+      // when the fixture has not selected a particular Maricopa precinct.
+      expectStrings: ["MARICOPA", "Maricopa County Justice Court"],
       sigW: 180, sigH: 18 }),
 
   // ─── Clerk-issued / signature-ignored (signed must equal unsigned) ──────────

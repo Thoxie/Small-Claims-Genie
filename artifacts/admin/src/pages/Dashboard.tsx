@@ -658,6 +658,9 @@ function UserRow({ user, onOpenCase }: { user: UserRow; onOpenCase: (caseId: num
             {user.hasPurchase && (
               <Badge className="bg-green-100 text-green-700 text-xs">Paid</Badge>
             )}
+            {user.hasBetaAccess && (
+              <Badge className="bg-amber-100 text-amber-700 text-xs">Beta</Badge>
+            )}
             {user.cases.length === 0 && (
               <Badge className="bg-gray-100 text-gray-500 text-xs">No cases</Badge>
             )}
@@ -1423,16 +1426,16 @@ function exportBetaCSV(betaRows: BetaRow[], users: UserRow[]) {
 function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => void }) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery<BetaData>({ queryKey: ["beta"], queryFn: fetchBeta });
-  const [grantUserId, setGrantUserId] = useState("");
-  const [grantEmail, setGrantEmail] = useState("");
+  const { data: users = [], isLoading: usersLoading } = useQuery<UserRow[]>({ queryKey: ["users"], queryFn: fetchUsers });
+  const [search, setSearch] = useState("");
   const [revoking, setRevoking] = useState<string | null>(null);
 
   const grantMutation = useMutation({
-    mutationFn: () => grantBeta(grantUserId.trim(), grantEmail.trim() || null),
+    mutationFn: (user: UserRow) => grantBeta(user.userId),
     onSuccess: (updated) => {
       qc.setQueryData<BetaData>(["beta"], updated);
-      setGrantUserId("");
-      setGrantEmail("");
+      void qc.invalidateQueries({ queryKey: ["users"] });
+      setSearch("");
     },
   });
 
@@ -1445,9 +1448,23 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
     onError: () => setRevoking(null),
   });
 
-  const { data: users = [], isLoading: usersLoading } = useQuery<UserRow[]>({ queryKey: ["users"], queryFn: fetchUsers });
   if (isLoading || !data) return <LoadingSkeleton rows={2} cols={1} />;
   const slotsRemaining = Math.max(0, data.limit - data.total);
+  const betaUserIds = new Set(data.rows.map((row) => row.userId));
+  const query = search.trim().toLowerCase();
+  const matchingUsers = query
+    ? users
+        .filter((user) => (
+          !betaUserIds.has(user.userId)
+          && user.hasClerkAccount
+          && (
+            user.email.toLowerCase().includes(query)
+            || user.userId.toLowerCase().includes(query)
+            || `${user.firstName ?? ""} ${user.lastName ?? ""}`.toLowerCase().includes(query)
+          )
+        ))
+        .slice(0, 8)
+    : [];
 
   return (
     <div className="space-y-4">
@@ -1462,49 +1479,69 @@ function BetaTab({ onNavigateToUser }: { onNavigateToUser: (email: string) => vo
         />
       </div>
 
-      {/* Grant beta access */}
+      {/* Grant beta access to an existing Clerk account */}
       <Card className="shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2">
             <UserPlus className="h-4 w-4 text-green-600" />
             Grant Beta Access
           </CardTitle>
+          <p className="text-xs text-gray-500">
+            Select a registered account. Beta access skips only the app plan checkout; court,
+            filing, service, and other external fees are not bypassed.
+          </p>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-wrap gap-2 items-end">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500">Clerk User ID</label>
-              <Input
-                placeholder="user_2abc..."
-                value={grantUserId}
-                onChange={(e) => setGrantUserId(e.target.value)}
-                className="h-8 text-xs w-56"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500">Email (optional)</label>
-              <Input
-                placeholder="user@example.com"
-                value={grantEmail}
-                onChange={(e) => setGrantEmail(e.target.value)}
-                className="h-8 text-xs w-52"
-              />
-            </div>
-            <Button
-              size="sm"
-              className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white"
-              disabled={!grantUserId.trim() || grantMutation.isPending}
-              onClick={() => grantMutation.mutate()}
-            >
-              <UserPlus className="h-3.5 w-3.5 mr-1" />
-              {grantMutation.isPending ? "Granting…" : "Grant Access"}
-            </Button>
+        <CardContent className="pt-0 space-y-3">
+          <div className="relative max-w-xl">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              className="pl-9 h-9 text-sm"
+              placeholder="Search registered users by email, name, or user ID…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
           </div>
           {grantMutation.isError && (
             <p className="text-xs text-red-600 mt-2">{(grantMutation.error as Error).message}</p>
           )}
           {grantMutation.isSuccess && (
             <p className="text-xs text-green-600 mt-2">Beta access granted.</p>
+          )}
+          {query && (
+            <div className="rounded-lg border divide-y bg-white max-w-3xl">
+              {usersLoading ? (
+                <p className="text-sm text-gray-400 p-3">Loading users…</p>
+              ) : matchingUsers.length === 0 ? (
+                <p className="text-sm text-gray-400 p-3">No eligible registered account matches this search.</p>
+              ) : (
+                matchingUsers.map((user) => {
+                  const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+                  return (
+                    <div key={user.userId} className="flex items-center gap-3 p-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                          {displayName && <span className="text-xs text-gray-500">{displayName}</span>}
+                          {user.hasPurchase && (
+                            <Badge className="bg-green-100 text-green-700 text-xs">Already paid</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 font-mono truncate">{user.userId}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white"
+                        disabled={grantMutation.isPending || slotsRemaining === 0}
+                        onClick={() => grantMutation.mutate(user)}
+                      >
+                        <UserPlus className="h-3.5 w-3.5 mr-1" />
+                        {grantMutation.isPending ? "Granting…" : "Grant Beta"}
+                      </Button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           )}
         </CardContent>
       </Card>

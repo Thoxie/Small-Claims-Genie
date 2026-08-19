@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16.10
+    environment:
+      POSTGRES_DB: small_claims_genie
+      POSTGRES_USER: small_claims
+      POSTGRES_PASSWORD: change_this_before_exposing_the_database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U small_claims -d small_claims_genie"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # schema.sql is schema-only. Import a separately retained data dump after
+      # first boot using the commands in RESTORE.md.
+      - ./schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+
+  api:
+    build:
+      context: .
+      target: api
+      args:
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
+        VITE_CLERK_PUBLISHABLE_KEY_DEV: ${VITE_CLERK_PUBLISHABLE_KEY_DEV}
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://small_claims:change_this_before_exposing_the_database@db:5432/small_claims_genie?sslmode=disable
+      PORT: "8080"
+      API_PORT: "8080"
+      CHROMIUM_PATH: /usr/bin/chromium
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
+        VITE_CLERK_PUBLISHABLE_KEY_DEV: ${VITE_CLERK_PUBLISHABLE_KEY_DEV}
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:

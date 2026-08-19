@@ -1,8 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
-import { betaAccessTable } from "@workspace/db";
-import { sql, eq, count } from "drizzle-orm";
-import { getBetaSlotCount, BETA_LIMIT } from "../lib/beta";
+import { getBetaSlotCount, BETA_LIMIT, grantBetaAccess } from "../lib/beta";
 import { getUserId } from "../lib/owned-case";
 import { getUncachableResendClient } from "../lib/resend";
 import { logger } from "../lib/logger";
@@ -59,54 +56,14 @@ protectedRouter.post("/beta/claim", async (req, res): Promise<void> => {
   try {
     const email = typeof req.body?.email === "string" ? req.body.email : null;
 
-    // All reads and the insert run inside a single transaction with an
-    // exclusive table lock.  The lock is acquired before any count or
-    // duplicate check, so concurrent claim requests are fully serialized —
-    // only one can proceed at a time, eliminating the TOCTOU race that
-    // previously let multiple accounts exceed BETA_LIMIT.
-    type ClaimResult =
-      | { status: "inserted"; claimed: number }
-      | { status: "alreadyClaimed" }
-      | { status: "full" };
+    const result = await grantBetaAccess({ userId, email });
 
-    const result = await db.transaction(async (tx): Promise<ClaimResult> => {
-      // Exclusive lock serializes all concurrent writers for this table.
-      // Readers (e.g. GET /beta/slots) are not blocked but will wait for
-      // the lock to be released before seeing the new row.
-      await tx.execute(sql`LOCK TABLE beta_access IN EXCLUSIVE MODE`);
-
-      // 1. Idempotency: user already has a row.
-      const existing = await tx
-        .select({ id: betaAccessTable.id })
-        .from(betaAccessTable)
-        .where(eq(betaAccessTable.userId, userId))
-        .limit(1);
-
-      if (existing.length > 0) {
-        return { status: "alreadyClaimed" };
-      }
-
-      // 2. Global cap check — evaluated while the lock is held so the count
-      //    cannot change between this read and the insert below.
-      const [row] = await tx.select({ claimed: count() }).from(betaAccessTable);
-      const claimed = Number(row?.claimed ?? 0);
-
-      if (claimed >= BETA_LIMIT) {
-        return { status: "full" };
-      }
-
-      // 3. Insert — safe because no other transaction can have changed the
-      //    count since we acquired the exclusive lock.
-      await tx.insert(betaAccessTable).values({ userId, email });
-      return { status: "inserted", claimed: claimed + 1 };
-    });
-
-    if (result.status === "alreadyClaimed") {
+    if (result === "alreadyClaimed") {
       res.json({ success: true, alreadyClaimed: true });
       return;
     }
 
-    if (result.status === "full") {
+    if (result === "full") {
       res.status(409).json({ error: "Beta is full", message: "All beta spots have been claimed." });
       return;
     }
@@ -118,7 +75,8 @@ protectedRouter.post("/beta/claim", async (req, res): Promise<void> => {
     if (email) {
       void sendBetaWelcomeEmail(email);
     }
-    void sendAdminNotificationEmail(email, result.claimed);
+    const slots = await getBetaSlotCount();
+    void sendAdminNotificationEmail(email, slots.claimed);
   } catch (err) {
     logger.error({ err, userId }, "[beta] Failed to claim beta slot");
     res.status(500).json({ error: "Could not claim beta slot" });
