@@ -6,6 +6,7 @@
  */
 
 import { Router, type IRouter } from "express";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -81,7 +82,7 @@ router.get("/blog/articles", async (_req, res) => {
     const articles = await fetchArticleList();
     res.json({ articles });
   } catch (err) {
-    console.error("[blog] fetchArticleList error:", err);
+    logger.error({ err }, "[blog] fetchArticleList error");
     res.status(502).json({ error: "Failed to fetch article list" });
   }
 });
@@ -100,7 +101,7 @@ router.get("/blog/articles/:slug", async (req, res) => {
     const content = await fetchArticleContent(article.id);
     res.json({ article: { ...article, content } });
   } catch (err) {
-    console.error("[blog] fetchArticle error:", err);
+    logger.error({ err }, "[blog] fetchArticle error");
     res.status(502).json({ error: "Failed to fetch article content" });
   }
 });
